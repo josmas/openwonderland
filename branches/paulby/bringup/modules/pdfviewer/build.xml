@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="jar-all" name="wonderland-pdfviewer">
+
+    <property name="top.dir" location=".."/>
+    <property name="current.dir" location="."/>
+
+    <!-- Use my-build.properties to override default values in build.properties -->
+    <property file="my.build.properties"/>
+    <property file="build.properties"/>
+
+    <property name="project.name" value="${ant.project.name}"/>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${build-import.dir}/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+
+    <taskdef name="pack200" 
+             classname="com.sun.tools.apache.ant.pack200.Pack200Task" 
+             classpath="${build-import.dir}/Pack200Task.jar"/>
+
+    <taskdef name="unpack200" 
+             classname="com.sun.tools.apache.ant.pack200.Unpack200Task" 
+             classpath="${build-import.dir}/Pack200Task.jar"/>
+    
+    <!-- Do platform/x11/environment specific setup common to all tasks -->
+    <import file="${build-import.dir}/build-setup.xml"/>
+
+    <!-- Initialization - make dirs, unpack ext stuff... -->
+    <target name="init" depends="unpack-ext" description="Initial set-up">
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${build.lib.dir}"/>
+    </target>
+    
+    <!-- Compile the client side code -->
+    <target name="compile" depends="init, jar-bb" description="Compile client code">
+        <javac  debug="${build.debug}"
+                debuglevel="${build.debuglevel}"
+		deprecation="${build.showdeprecation}" 
+		destdir="${build.classes.dir}" 
+		nowarn="true" 
+		source="1.5" 
+		target="1.5"
+                srcdir="${javasrc.dir}">
+            <exclude name="org/jdesktop/lg3d/wonderland/darkstar/server/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/config/server/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/servlet/**"/>
+            <include name="org/jdesktop/lg3d/wonderland/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/darkstar/utils/io/**"/>
+            <include name="org/jdesktop/lg3d/apps/**"/>
+            <include name="org/jdesktop/lg3d/media/**"/>
+            <include name="org/jdesktop/j3d/**"/>
+            <include name="org/jdesktop/jai/**"/>
+            <include name="com/imi/**"/>
+            <include name="com/sun/media/**"/>
+            <include name="demos/**"/>
+           <!-- To add something to the classpath: -->
+            <classpath>
+		<pathelement path="${wonderland-client-compile.classpath}"/>
+	    </classpath>
+        </javac>
+    </target>
+    
+    <!-- Compile the server side code -->
+    <target name="compile-server" depends="init, jar-bb" description="Compile Darkstar Server plugin">
+        <javac  debug="${build.debug}" 
+                debuglevel="${build.debuglevel}"
+		deprecation="${build.showdeprecation}" 
+		destdir="${build.classes.dir}" 
+		nowarn="true" 
+		source="1.5" 
+		target="1.5"
+                srcdir="${javasrc.dir}">
+            <!-- To add something to the classpath: -->
+            <include name="com/sun/sgs/tools/**"/>
+            <include name="org/jdesktop/lg3d/wonderland/darkstar/server/**"/>
+            <include name="org/jdesktop/lg3d/wonderland/darkstar/common/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/darkstar/client/**"/>
+            <include name="org/jdesktop/lg3d/wonderland/config/server/**"/>
+            <include name="org/jdesktop/lg3d/wonderland/config/common/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/config/client/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/scenemanager/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/appshare/**"/>
+            <exclude name="org/jdesktop/lg3d/apps/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/*"/>
+            <exclude name="org/jdesktop/bb/**"/>
+            <exclude name="org/jdesktop/j3d/**"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/examples/*"/>
+            <exclude name="org/jdesktop/lg3d/wonderland/management/**"/>
+            <exclude name="org/jdesktop/lg3d/apps/**"/>
+            <exclude name="org/jdesktop/lg3d/media/**"/>
+	    <include name="org/jdesktop/lg3d/wonderland/wfs/**"/>
+	    <include name="org/jdesktop/lg3d/wonderland/util/**"/>
+            <classpath>
+		<pathelement path="${wonderland-server.classpath}"/>
+	    </classpath>
+        </javac>
+    </target>
+
+    <!-- Compile the client side code -->
+    <target name="compile-bb" depends="init" description="Compile bean builder code">
+        <javac  debug="${build.debug}"
+                debuglevel="${build.debuglevel}"
+		deprecation="${build.showdeprecation}" 
+		destdir="${build.classes.dir}" 
+		nowarn="true" 
+		source="1.5" 
+		target="1.5"
+                srcdir="${javasrc.dir}">
+            <include name="org/jdesktop/bb/**"/>
+
+           <!-- To add something to the classpath: -->
+            <classpath>
+		<path location="${common.javaext.dir}/xml-actions.jar"/>
+	    </classpath>
+        </javac>
+    </target>
+    
+    <!-- Build the client jars -->
+    <target name="jar" depends="compile,jar-modules-client" description="Build client side jars">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-loaders.jar">
+            <manifest>
+            </manifest>
+             <fileset dir="${javasrc.dir}/"
+                includes="org/jdesktop/j3d/utils/loaders/**"/>
+         </jar>
+         
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-utils.jar">
+            <manifest>
+            </manifest>
+            <fileset dir="${build.classes.dir}/" excludes="org/jdesktop/lg3d/**"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/j3d/**"/>
+            <fileset dir="${javasrc.dir}/" includes="com/sun/j3d/**"/>
+            <fileset dir="${javasrc.dir}/" includes="com/imi/**"/>
+         </jar>
+         
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-client.jar">
+            <manifest>
+            </manifest>
+            <!--
+            <fileset dir="${javasrc.dir}/" excludes="org/jdesktop/j3d/**"/>
+            <fileset dir="${javasrc.dir}/" excludes="com/**/*"/>
+            -->
+                
+            <fileset dir="${build.classes.dir}/">
+                <include name="**"/>
+                <exclude name="org/jdesktop/lg3d/wonderland/darkstar/server/**"/>       
+                <exclude name="org/jdesktop/lg3d/wonderland/servlet/**"/>
+            </fileset>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/scenemanager/hud/resources/**"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/scenemanager/resources/**"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/apps/jmfplayer/resources/**/*.png"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/resources/**/*.png"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/resources/**/*.properties"/>
+         </jar>
+         
+    </target>
+    
+    <!-- Build the server jar -->
+    <target name="jar-bb" depends="compile-bb" description="Build the bean-builder jar">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/bean-builder.jar">
+            <manifest>
+            </manifest>
+            <fileset dir="${build.classes.dir}">
+		<include name="org/jdesktop/bb/**"/>
+	    </fileset>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/bb/editors/resources/*.gif"/>
+        </jar>
+    </target>
+    
+    <!-- Build the server jar -->
+    <target name="jar-server" depends="compile-server, jar-modules-server" description="Build the server side jar">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-server.jar">
+            <manifest>
+            </manifest>
+            <fileset dir="${build.classes.dir}">
+		<include name="org/jdesktop/lg3d/wonderland/darkstar/**"/>
+		<include name="org/jdesktop/lg3d/wonderland/config/common/**"/>
+		<include name="org/jdesktop/lg3d/wonderland/config/server/**"/>
+                <include name="org/jdesktop/lg3d/wonderland/util/**"/>
+		<include name="com/sun/sgs/tools/**"/>
+		<include name="org/jdesktop/lg3d/wonderland/wfs/**"/>
+	        <include name="org/jdesktop/lg3d/wonderland/util/**"/>
+	    </fileset>
+        </jar>
+    </target>
+    
+   <target name="jar-all" depends="jar, jar-server" description="Build everything"/>
+
+    <target name="run-benchmark" description="Run a benchmark client">
+        <buildnumber/>
+        <property name="wonderland.benchmark" value="bench-${build.number}"/>
+        <property name="j3d.rend" value="noop"/>
+        <antcall target="run"/>
+    </target>
+    
+    <target name="run-xapps">
+        <antcall target="run"/>
+    </target>
+
+    <target name="run" depends="jar, modules-client-classpath" description="Run Project Wonderland client connecting to Sun Game Server">
+
+        <java classname="org.jdesktop.lg3d.wonderland.Main" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            <jvmarg value="-ea"/>
+<!--            <jvmarg value="-XX:MaxGCPauseMillis=20"/>
+            <jvmarg value="-XX:CompileThreshold=500"/>
+            <jvmarg value="-XX:+UseAdaptiveSizePolicy"/>-->
+            <!--<jvmarg value="-verbose:gc"/>-->
+            <!--<jvmarg value="-XX:-PrintCompilation"/>-->
+            
+         
+           <!--start debug-->
+<!--
+ 	    <jvmarg value="-Xdebug"/>
+	    <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
+ -->
+            <!--end debug-->
+            <!-- <jvmarg value="-agentlib:yjpagent"/> -->
+
+            <jvmarg value="-Djava.util.logging.config.class=org.jdesktop.lg3d.wonderland.LogControl"/>
+            
+            <jvmarg value="-Dlg.appcodebase=file:///${core.ext.dir}/app"/>
+            <jvmarg value="-Dlg.maxfps=30"/>
+            
+            <jvmarg value="-DJ3dFly.SystemPlugins=${j3dfly.dir}/J3dEditor/preferences/editor_plugin_prefs.xml"/>
+            <jvmarg value="-DJ3dFly.UserPlugins="/>
+            <jvmarg value="-DJ3dFly.Loaders=${j3dfly.dir}/J3dFly/preferences/loaders.xml"/>
+            <jvmarg value="-DJ3dEditor.NodeConfigs=${j3dfly.dir}/J3dEditor/preferences/j3deditor-config.xml"/>
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+            
+            <jvmarg value="-Dj3d.cacheAutoComputeBounds=true"/>
+
+            <!-- wonderland.dir overrides the default name of the .wonderland directory-->
+            <!--<jvmarg value="-Dwonderland.dir=.wonderland-test"/>-->
+           
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+	    </classpath>
+
+	    <syspropertyset refid="wonderland.properties"/>
+
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	</java>
+        
+        <if>
+            <equals arg1="${platform-supports-x}" arg2="true"/>
+                <then>
+                    <!-- Workaround for 142 -->
+                    <exec executable="pkill">
+                        <arg line="-9 Xvfb"/>
+                    </exec>
+                </then>
+        </if>
+    </target>
+
+    <target name="run-manager" depends="jar" description="Run manager UI">
+        <java classname="org.jdesktop.lg3d.wonderland.management.ManagerUI" fork="true">
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+           
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run-bridgemonitor" depends="jar" description="Run BridgeMonitor">
+        <java classname="bridgemonitor.BridgeMonitorUI" fork="true">
+            <classpath>
+		<pathelement path="${wonderland.dir}/ext/bridgemonitor/BridgeMonitor.jar"/>
+		<pathelement path="${voicelib.dir}/voicelib.jar"/>
+		<pathelement path="${voicebridge.dir}/bridge.jar"/>
+		<pathelement path="${common.javaext.dir}/swing-layout-1.0.jar"/>
+	    </classpath>
+       </java>
+    </target>
+
+    <target name="softphone" depends="jar" description="Start softphone">
+        <java classname="org.jdesktop.lg3d.wonderland.darkstar/client/SipStarter" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+
+	    <syspropertyset refid="wonderland.properties"/>
+
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	</java>
+    </target>
+
+    <target name="profile" depends="jar, modules-client-classpath" description="Profile Project Wonderland client connecting to Sun Game Server">
+        <nbprofiledirect>
+            <classpath>
+                <pathelement path="${wonderland-client.classpath}"/>
+            </classpath>
+
+            <!-- rootspath controls what is actually profiled -->
+            <rootspath>
+                <pathelement path="${j3d.classpath}"/>
+                <pathelement location="${core.lib.dir}/lg3d-core.jar"/>
+                <pathelement location="${build.lib.dir}/wonderland-client.jar"/>
+                <pathelement location="${build.lib.dir}/wonderland-utils.jar"/>
+            </rootspath>
+        </nbprofiledirect>
+        <java classname="org.jdesktop.lg3d.wonderland.Main" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+
+            <jvmarg value="-Djava.util.logging.config.class=org.jdesktop.lg3d.wonderland.LogControl"/>
+
+            <jvmarg value="-Dlg.appcodebase=file:///${core.ext.dir}/app"/>
+            <jvmarg value="-Dlg.maxfps=30"/>
+
+            <jvmarg value="-DJ3dFly.SystemPlugins=${j3dfly.dir}/J3dEditor/preferences/editor_plugin_prefs.xml"/>
+            <jvmarg value="-DJ3dFly.UserPlugins="/>
+            <jvmarg value="-DJ3dFly.Loaders=${j3dfly.dir}/J3dFly/preferences/loaders.xml"/>
+            <jvmarg value="-DJ3dEditor.NodeConfigs=${j3dfly.dir}/J3dEditor/preferences/j3deditor-config.xml"/>
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+
+            <jvmarg value="-Dj3d.cacheAutoComputeBounds=true"/>
+
+            <!-- Profile -->
+            <jvmarg value="${profiler.info.jvmargs.agent}"/>
+
+            <!-- wonderland.dir overrides the default name of the .wonderland directory-->
+            <!--<jvmarg value="-Dwonderland.dir=.wonderland-test"/>-->
+
+            <classpath>
+                <pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+            </classpath>
+
+            <syspropertyset refid="wonderland.properties"/>
+
+            <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target> 
+    
+    <target name="run-ab5k">
+        <java fork="true" classname="ab5k.Main">
+            <classpath>
+                <pathelement path="${ab5k.classpath}"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <target name="run-checksum" depends="jar" description="Generate asset checksums">
+        <java classname="org.jdesktop.lg3d.wonderland.scenemanager.GenerateChecksums" fork="true">
+            <jvmarg value="-Djava.util.logging.config.file=logging.properties"/>
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="LD_LIBRARY_PATH" path="${native.javaext.dir}"/>
+	</java>
+    </target>
+    
+    <target name="run-map" depends="jar">
+        <java classname="org.jdesktop.lg3d.wonderland.scenemanager.map.MapTest" fork="true">
+            <classpath>
+                <pathelement location="${build.lib.dir}/wonderland-client.jar"/>
+            </classpath>
+        </java>
+        
+    </target>
+
+    <target name="run-dbtest" depends="jar">
+        <java classname="org.jdesktop.lg3d.wonderland.scenemanager.AssetDB" fork="true">
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+        </java>
+	<syspropertyset refid="wonderland.properties"/>
+    </target>
+    
+    <target name="run-texture-prep" depends="jar" description="Prepare textures">
+        <java classname="org.jdesktop.jai.tools.Thumbnail" fork="true">
+            <arg value="-w 512"/>
+            <arg value="../lg3d-wonderland-art/orginal_models/welcome_slides/slide0.gif"/>
+            <arg value="slide512-0.png"/>
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+        </java>
+    </target>
+    
+    <target name="clean" depends="clean-modules" description="Clean all build products.">
+        <delete dir="${build.platform.dir}"/>
+        <delete dir="${release.dir}"/>
+        <delete dir="$(release.javadoc.dir)"/>
+    </target>
+    
+    <target name="clean-cache" description="Clean the world cache">
+        <delete dir="${wonderland.cache.dir}"/>
+        <delete dir="${wonderland.cache.dir}/../AssetDB"/>
+    </target>
+
+    <target name="clean-db" description="Clean the SGS database dir">
+        <delete dir="${sgs.db.dir}"/>
+    </target>
+
+    <target name="scrub" depends="clean,clean-cache,clean-db,clean-ext"
+	    description="Clean all rebuildable stuff."/>
+
+    <target name="javadoc" depends="init" description="Javadoc for Wonderland API" unless="nojavadoc">
+        <mkdir dir="${release.javadoc.dir}"/>
+        <echo message="link: ${javadoc.packagelist.dir}/escher"/>
+        <javadoc destdir="${release.javadoc.dir}/api"
+            sourcepath="${javasrc.dir}"
+            packagenames="org.jdesktop.*">
+            <classpath>
+                <pathelement location="${sgs.lib.dir}/SunGameServer.jar"/>
+            </classpath>
+            <doctitle><![CDATA[<h1>Project Wonderland</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Project Wonderland - http://wonderland.dev.java.net</i>]]></bottom>
+            <link offline="true" href="http://java.sun.com/javase/6/docs/api" packageListLoc="${javadoc.packagelist.dir}/1.5.0"/>
+            <link offline="true" href="http://download.java.net/media/java3d/javadoc/1.5.0/" packageListLoc="${javadoc.packagelist.dir}/j3dapi"/>
+        </javadoc>
+    </target>
+
+    <import file="${build-import.dir}/build-package.xml"/>
+    <import file="${build-import.dir}/build-modules.xml"/>
+    <import file="${build-import.dir}/build-webstart.xml"/>
+        
+    <import file="${build-import.dir}/run-sgs.xml"/>
+    <!--<import file="${build-import.dir}/run-xapps.xml"/>-->
+    <import file="${build-import.dir}/run-smc.xml"/>
+    <import file="${build-import.dir}/run-voice.xml"/>
+    <import file="${build-import.dir}/run-channel-test.xml"/>
+    <import file="${build-import.dir}/run-jmf.xml"/>
+    <import file="${build-import.dir}/run-config.xml"/>
+
+</project>
