@@ -1,0 +1,100 @@
+<!--
+This file is a strict duplicate of build-pkg-macos-x86.xml.
+If ant chages are made to that file, they should by default be incorporated into this one.
+-->
+<project basedir="." default="..." name="wonderland.build-pkg-macos-ppc">
+    <dirname property="imported.basedir" file="${ant.file.build-pkg-macos-ppc}"/>
+
+    <property name="macpkg.name" value="Wonderland.app"/>
+    <property name="release.macpkg.dir" location="${release.dir}/dmg/Wonderland.app/Contents"/>
+    
+    <target name="pkg-platform" depends="pkg-stage" description="Create Mac OS X package">
+        <mkdir dir="${release.macpkg.dir}"/>
+        <mkdir dir="${release.macpkg.dir}/MacOS"/>
+        <mkdir dir="${release.macpkg.dir}/Resources"/>
+        <mkdir dir="${release.macpkg.dir}/Resources/bin"/>
+        
+        <copy todir="${release.macpkg.dir}" overwrite="true">
+	    <fileset dir="${build-macpkg.dir}" includes="Info.plist"/>
+            <filterset>
+                <filter token="VERSION" value="${build.version}"/>
+            </filterset>
+	</copy>
+        
+        <!-- copy executable -->
+        <copy todir="${release.macpkg.dir}/Resources/bin">
+            <fileset dir="${build-macpkg.dir}" includes="wonderland"/>
+        </copy>
+        <chmod perm="755" dir="${release.macpkg.dir}/Resources/bin" includes="*"/>
+        <symlink link="${release.macpkg.dir}/MacOS/wonderland"
+                 resource="../Resources/bin/wonderland"
+                 overwrite="true"/>
+                 
+        <!-- copy icon -->
+        <copy todir="${release.macpkg.dir}/Resources">
+            <fileset dir="${build-macpkg.dir}" includes="wonderland.icns"/>
+        </copy>         
+                 
+        <!-- copy resources -->
+        <copy todir="${release.macpkg.dir}/Resources">
+            <fileset dir="${release.platform.dir}">
+                <include name="ant/*.xml"/>
+                <include name="ant/lib/ant-contrib.jar"/>
+                <include name="ant/run.properties"/>
+                <include name="config/**"/>
+                <include name="audio/**"/>
+                <include name="docs/**"/>
+                <include name="ext/**"/>
+                <include name="lib/**"/>
+                <include name="art/**"/>
+                <include name="modules/**"/>
+                <include name="*.txt"/>
+                <include name="*.properties"/>     
+            </fileset>
+        </copy>
+        
+        <!-- get rid of gc parameters -->
+        <replace file="${release.macpkg.dir}/Resources/ant/run.xml">
+            <replacetoken><![CDATA[<jvmarg value="-Xincgc"/>]]></replacetoken>
+        </replace>
+        <replace file="${release.macpkg.dir}/Resources/ant/run.xml">
+            <replacetoken><![CDATA[<jvmarg value="-XX:+UseParNewGC"/>]]></replacetoken>
+        </replace>
+        <replace file="${release.macpkg.dir}/Resources/ant/run.xml">
+            <replacetoken><![CDATA[<jvmarg value="-XX:+UseConcMarkSweepGC"/>]]></replacetoken>
+        </replace>
+        
+        <!-- copy .command files -->
+        <copy todir="${release.macpkg.dir}/..">
+            <fileset dir="${build-macpkg.dir}">
+                <include name="server.command"/>
+            </fileset>
+        </copy>
+        <chmod perm="+x" file="${release.macpkg.dir}/../server.command"/>
+        
+        <if>
+            <istrue value="${voicebridge.enabled}"/>
+            <then>
+                <copy todir="${release.macpkg.dir}/..">
+                    <fileset dir="${build-macpkg.dir}">
+                        <include name="bridge.command"/>
+                    </fileset>
+                </copy>
+                <chmod perm="+x" file="${release.macpkg.dir}/../bridge.command"/>
+            </then>
+        </if>
+        
+        <!-- make a disk image -->
+        <delete file="${release.pkg.filename}.dmg"/>
+	<chmod perm="+x" file="${build-macpkg.dir}/mkdmg.rb"/>
+        <exec executable="${build-macpkg.dir}/mkdmg.rb" dir="${release.dir}">
+            <arg value="${release.dir}/dmg"/>
+            <arg value="Project Wonderland"/>
+	    <arg value="${release.pkg.filename}.dmg"/>
+        </exec>
+    </target>
+
+    <target name="pkg-platform-clean">
+        <delete dir="${release.dir}/dmg"/>
+    </target>
+</project>
