@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="jar-all" name="wonderland">
+
+<target name="jar-all" description="Jar Everything">
+    <ant dir="core" target="jar-all"/>
+</target>
+
+</project>
