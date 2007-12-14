@@ -1,0 +1,17 @@
+?package(lg3d-wonderland):needs="X11" section="Apps/Graphics" hints="Wonderland"\
+  longtitle="Project Wonderland Server"\
+  icon16x16="/usr/share/icons/hicolor/16x16/apps/wonderland.png"\
+  icon32x32="/usr/share/icons/hicolor/32x32/apps/wonderland.png"\
+  title="Wonderland Server" command="gnome-terminal --hide-menubar -e /usr/share/lg3d-wonderland/bin/wonderland-server.sh"
+
+?package(lg3d-wonderland):needs="X11" section="Apps/Graphics" hints="Wonderland"\
+  longtitle="Project Wonderland Voice Bridge"\
+  icon16x16="/usr/share/icons/hicolor/16x16/apps/wonderland.png"\
+  icon32x32="/usr/share/icons/hicolor/32x32/apps/wonderland.png"\
+  title="Wonderland Voice Bridge" command="gnome-terminal --hide-menubar -e /usr/share/lg3d-wonderland/bin/wonderland-bridge.sh"
+
+?package(lg3d-wonderland):needs="X11" section="Apps/Graphics" hints="Wonderland"\
+  longtitle="Project Wonderland Client"\
+  icon16x16="/usr/share/icons/hicolor/16x16/apps/wonderland.png"\
+  icon32x32="/usr/share/icons/hicolor/32x32/apps/wonderland.png"\
+  title="Wonderland Client" command="gnome-terminal --hide-menubar -e /usr/share/lg3d-wonderland/bin/wonderland-client.sh"
