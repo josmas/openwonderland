@@ -1,0 +1,85 @@
+<project basedir="." default="..." name="wonderland.run-channel-test">
+    <dirname property="imported.basedir" file="${ant.file.build-setup}"/>
+
+    <target name="run-sgs-test" depends="jar-server" description="Run test Sun Game Server for Project Wonderland">
+        <delete dir="${sgs.db.dir}" failonerror="false"/>
+        <mkdir dir="${sgs.db.dir}"/>
+        
+        <copy file="src/darkstar_config/WonderlandTest.cfg" todir="${sgs.javaext.dir}/" overwrite="true">
+            <filterset>
+                <filter token="SGS_ROOT_DIR" value="${sgs.root.dir}"/>
+                <filter token="SGS_PORT" value="${sgs.test.port}"/>
+            </filterset>            
+        </copy>
+        
+        <java classname="com.sun.sgs.impl.kernel.Kernel" fork="true">
+            <jvmarg value="-Djava.library.path=${sgs.javaext.dir}/lib/bdb/${sgs.platform.lib}"/>
+            <jvmarg value="-Djava.util.loggin.config.file=${sgs.javaext.dir}/sgs-logging.properties"/>
+            <jvmarg value="-Dcom.sun.sgs.config.file=${sgs.javaext.dir}/sgs-config.properties"/>
+            <classpath>
+		<pathelement path="${wonderland-server.classpath}"/>
+            </classpath>
+            <arg value="${sgs.javaext.dir}/WonderlandTest.cfg"/>
+        </java>
+	<syspropertyset refid="wonderland.properties"/>
+    </target>
+
+    <target name="run-channel-test" depends="jar" description="Run Project Wonderland Channel Controller Test">
+        <java classname="org.jdesktop.lg3d.wonderland.darkstar.client.ChannelControllerTestUI" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            <jvmarg value="-XX:MaxGCPauseMillis=20"/>
+            <jvmarg value="-XX:CompileThreshold=500"/>
+            <jvmarg value="-XX:+UseAdaptiveSizePolicy"/>
+            <jvmarg value="-Djava.util.logging.config.file=logging.properties"/>
+            <jvmarg value="-Dlg.appcodebase=file:///${core.ext.dir}/app"/>
+            <jvmarg value="-Dlg.maxfps=40"/>
+            <jvmarg value="-Dsgs.port=${sgs.test.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+            
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <syspropertyset refid="wonderland.properties"/>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	</java>
+    </target>
+    
+    <target depends="jar" name="debug-channel-test">
+        <nbjpdastart addressproperty="jpda.address" name="lg3d-wonderland" transport="dt_socket">
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+            </classpath>
+        </nbjpdastart>
+        <java classname="org.jdesktop.lg3d.wonderland.darkstar.client.ChannelControllerTestUI" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            <jvmarg value="-XX:MaxGCPauseMillis=20"/>
+            <jvmarg value="-XX:CompileThreshold=500"/>
+            <jvmarg value="-XX:+UseAdaptiveSizePolicy"/>
+            <jvmarg value="-Djava.util.logging.config.file=logging.properties"/>
+            <jvmarg value="-Dlg.appcodebase=file:///${core.ext.dir}/app"/>
+            <jvmarg value="-Dlg.maxfps=40"/>
+            <jvmarg value="-Dsgs.port=${sgs.test.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+            
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+
+            <!--start debug-->
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <!--end debug-->
+
+	    <syspropertyset refid="wonderland.properties"/>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	</java>
+    </target>
+</project>
