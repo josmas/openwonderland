@@ -1,5 +1,5 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
  * $RCSfile: WonderlandConfigBase.java,v $
  *
@@ -19,12 +19,13 @@
  */
 package org.jdesktop.wonderland.common.config;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Represents Wonderland configuration options common to the entire system (server/client)
  */
+@ExperimentalAPI
 public abstract class WonderlandConfigBase implements WonderlandConfigInterface {
 
     protected static Logger logger = Logger.getLogger("wonderland.config");
