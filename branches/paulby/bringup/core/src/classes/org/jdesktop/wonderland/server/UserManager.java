@@ -26,6 +26,7 @@ import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Manages the entire set of users logged into the system.
@@ -35,6 +36,7 @@ import java.util.HashMap;
  *
  * @author paulby
  */
+@ExperimentalAPI
 public class UserManager implements ManagedObject, Serializable {
     
     private HashMap<ClientSessionId, ManagedReference> uidToUserRef =

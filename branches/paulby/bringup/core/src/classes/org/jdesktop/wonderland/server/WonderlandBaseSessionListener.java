@@ -32,11 +32,13 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.NativeApplicationMessage;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  *
  * @author krishna_gadepalli
  */
+@ExperimentalAPI
 class WonderlandBaseSessionListener implements ClientSessionListener, Serializable {
 
     protected final static Logger logger = Logger.getLogger("org.jdesktop.lg3d.wonderland.session");

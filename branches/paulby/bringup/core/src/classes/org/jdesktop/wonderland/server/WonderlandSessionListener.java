@@ -67,6 +67,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DX11CellGLO;
 import com.sun.sgs.app.ObjectNotFoundException;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.AlsSupportedMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.ServerLaunchXAppMessage;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * 
@@ -78,6 +79,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.ServerLaunchXAppMes
  *
  * @author paulby
  */
+@ExperimentalAPI
 class WonderlandSessionListener extends WonderlandBaseSessionListener implements
 	ManagedCallStatusListener, ManagedCallBeginEndListener, Serializable {
     

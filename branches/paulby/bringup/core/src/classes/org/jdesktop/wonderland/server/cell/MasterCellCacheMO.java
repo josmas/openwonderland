@@ -1,5 +1,5 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
  * $RCSfile: MasterCellCacheGLO.java,v $
  *
@@ -32,14 +32,15 @@ import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.Bounds;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
-import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
-import org.jdesktop.lg3d.wonderland.darkstar.server.*;
+import org.jdesktop.wonderland.common.CellID;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Contains references to all UserCellCacheGLO's
  *
  * @author paulby
  */
+@ExperimentalAPI
 public class MasterCellCacheMO implements ManagedObject, Serializable {
     
     private static final String BINDING_NAME = "MASTER_CELL_CACHE";
