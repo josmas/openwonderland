@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile: MasterCellCacheGLO.java,v $
+ * $RCSfile:$
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -13,19 +13,20 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.14 $
- * $Date: 2007/11/07 15:46:52 $
- * $State: Exp $
+ * $Revision:$
+ * $Date:$
+ * $State:$
  */
-package org.jdesktop.wonderland;
+package org.jdesktop.wonderland.server;
 
 /**
- * Indicates this is an Experimental API. Experimental API's are guarnteed not
- * to change in an incompatible way between dot dot releases, but may change
- * in a dot release.
+ * The root class for all world objects. Provides and optional channel.
+ * 
+ * In most cases world object will be subclasses of CellMO which adds 
+ * spatial context
  * 
  * @author paulby
  */
-public @interface ExperimentalAPI {
+public class WonderlandMO {
 
 }

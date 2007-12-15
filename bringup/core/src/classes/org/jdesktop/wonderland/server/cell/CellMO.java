@@ -21,13 +21,16 @@ package org.jdesktop.wonderland.server.cell;
 
 import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
+import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.server.WonderlandMO;
 
 /**
  * Server side representation of a cell
  * 
  * @author paulby
  */
-public class CellMO {
+@ExperimentalAPI
+public class CellMO extends WonderlandMO {
 
     
     /**
@@ -86,6 +89,6 @@ public class CellMO {
      * @param transform
      */
     public void setTransform(Matrix4d transform) {
-        
+        throw new RuntimeException("Not Implemented");                        
     }
 }

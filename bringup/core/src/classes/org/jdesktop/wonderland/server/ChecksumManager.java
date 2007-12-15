@@ -1,5 +1,5 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
  * $RCSfile: ChecksumManagerGLO.java,v $
  *
@@ -28,6 +28,7 @@ import java.io.StreamTokenizer;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Manages asset checksums
@@ -36,6 +37,7 @@ import java.util.logging.Logger;
  *
  * @author paulby
  */
+@ExperimentalAPI
 public class ChecksumManager implements ManagedObject, Serializable {
     
     // Mapping of filename to checksums
@@ -43,7 +45,7 @@ public class ChecksumManager implements ManagedObject, Serializable {
 
     private static final String BINDING_NAME="CHECKSUM_MANAGER";
     
-    private static ChecksumManager getChecksumManagerGLO() {
+    private static ChecksumManager getChecksumManagerMO() {
         return AppContext.getDataManager().getBinding(BINDING_NAME, ChecksumManager.class);
     }
     
@@ -99,7 +101,7 @@ public class ChecksumManager implements ManagedObject, Serializable {
     }
     
     public static String getChecksum(String file) {
-        return ChecksumManager.getChecksumManagerGLO().getChecksumImpl(file);
+        return ChecksumManager.getChecksumManagerMO().getChecksumImpl(file);
     }
     
 }

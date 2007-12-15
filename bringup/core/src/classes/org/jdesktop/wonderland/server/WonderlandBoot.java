@@ -29,6 +29,7 @@ import com.sun.sgs.app.Delivery;
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.config.WonderlandConfig;
 import org.jdesktop.wonderland.common.messages.ProtocolVersion;
 import org.jdesktop.wonderland.server.cell.MasterCellCacheMO;
@@ -36,9 +37,7 @@ import org.jdesktop.wonderland.server.cell.MasterCellCacheMO;
 /**
  * SGS Boot class for Wonderland
  */
-//public class WonderlandBoot
-//	implements SimBoot<WonderlandBoot>, SimUserListener {
-
+@ExperimentalAPI
 public class WonderlandBoot implements AppListener, Serializable {
     
     private final static Logger logger = Logger.getLogger("wonderland.session");

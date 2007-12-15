@@ -20,12 +20,14 @@
 package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.AppContext;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.server.cell.CellManager;
 
 /**
  *
  * @author paulby
  */
+@ExperimentalAPI
 public class WonderlandContext {
 
     /**
@@ -33,7 +35,7 @@ public class WonderlandContext {
      *
      * @return 
      */
-    public static CellManagerMO getCellManager() {
+    public static CellManager getCellManager() {
         throw new RuntimeException("Not Implemented");
     }
 

@@ -19,13 +19,15 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  *
  * @author paulby
  */
-public class CellManagerMO {
+@ExperimentalAPI
+public class CellManager {
 
     /**
      * Add the child to the parent
