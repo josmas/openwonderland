@@ -21,10 +21,12 @@ package org.jdesktop.wonderland.common.config;
 
 import java.io.Serializable;
 import org.jdesktop.lg3d.wonderland.config.common.WonderlandConfigBase;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Represents Wonderland configuration options common to the entire system (server/client)
  */
+@ExperimentalAPI
 public class WonderlandConfig extends WonderlandConfigBase implements Serializable {
 
     private final static String baseUrl;
