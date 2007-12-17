@@ -20,7 +20,6 @@
 package org.jdesktop.wonderland.common.config;
 
 import java.io.Serializable;
-import org.jdesktop.lg3d.wonderland.config.common.WonderlandConfigBase;
 import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
@@ -63,12 +62,7 @@ public class WonderlandConfig extends WonderlandConfigBase implements Serializab
     }
 
     public boolean isVoiceBridgeEnabled() {
-	if (WonderlandConfigUtil.iAmTheServerMasterClient()) {
-	    System.err.println("******* Forcing voicebridge.enabled to false");
-	    return false;
-	} else {
-	    return Boolean.getBoolean("voicebridge.enabled");
-	}
+	return Boolean.getBoolean("voicebridge.enabled");
     }
 
     public int getRegistrarTimeout() {

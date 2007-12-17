@@ -21,7 +21,6 @@ package org.jdesktop.wonderland.common.cell;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataElement;
 
 /**
  * Basic CellID
@@ -29,7 +28,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataElement;
  * 
  * @author paulby
  */
-public class CellID extends DataElement implements Serializable {
+public class CellID implements Serializable {
     
     long id;
     
@@ -40,6 +39,7 @@ public class CellID extends DataElement implements Serializable {
         this.id = id;
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof CellID)
             if (((CellID) obj).id==id)
@@ -47,10 +47,12 @@ public class CellID extends DataElement implements Serializable {
         return false;
     }
     
+    @Override
     public int hashCode() {
         return (int)id;
     }
     
+    @Override
     public String toString() {
         return Long.toString(id);
     }

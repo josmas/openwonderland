@@ -33,9 +33,16 @@
         <mkdir dir="${build.lib.dir}"/>
     </target>
     
-    <!-- Compile the client side code -->
-    <target name="compile" depends="init, jar-bb" description="Compile client code">
-        <javac  debug="${build.debug}"
+    <!-- compile Wonderland -->
+    <target name="compile" depends="init, compile-common, compile-server, compile-client"/>
+    
+    <!-- basic compile options -->
+    <macrodef name="wl-compile">
+        <element name="compile-classes"/>
+        <element name="compile-classpath"/>
+                
+        <sequential>
+            <javac  debug="${build.debug}"
                 debuglevel="${build.debuglevel}"
 		deprecation="${build.showdeprecation}" 
 		destdir="${build.classes.dir}" 
@@ -43,80 +50,57 @@
 		source="1.5" 
 		target="1.5"
                 srcdir="${javasrc.dir}">
-            <exclude name="org/jdesktop/lg3d/wonderland/darkstar/server/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/config/server/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/servlet/**"/>
-            <include name="org/jdesktop/lg3d/wonderland/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/darkstar/utils/io/**"/>
-            <include name="org/jdesktop/lg3d/apps/**"/>
-            <include name="org/jdesktop/lg3d/media/**"/>
-            <include name="org/jdesktop/j3d/**"/>
-            <include name="org/jdesktop/jai/**"/>
-            <include name="com/imi/**"/>
-            <include name="com/sun/media/**"/>
-            <include name="demos/**"/>
-           <!-- To add something to the classpath: -->
-            <classpath>
+            
+                <compile-classes/>
+                
+                <classpath>
+                    <compile-classpath/>
+                </classpath>
+            </javac>
+        </sequential>
+    </macrodef>
+    
+    <!-- Compile the common -->
+    <target name="compile-common" depends="init" description="Compile common code">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/*.java"/>
+                <include name="org/jdesktop/wonderland/common/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${wonderland-common-compile.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    
+    <!-- Compile the client side code -->
+    <target name="compile-client" depends="init, compile-common" description="Compile client code">
+        <wl-compile>
+            <compile-classes>
+                <exclude name="org/jdesktop/wonderland/client/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
 		<pathelement path="${wonderland-client-compile.classpath}"/>
-	    </classpath>
-        </javac>
+	    </compile-classpath>
+        </wl-compile>
     </target>
     
     <!-- Compile the server side code -->
-    <target name="compile-server" depends="init, jar-bb" description="Compile Darkstar Server plugin">
-        <javac  debug="${build.debug}" 
-                debuglevel="${build.debuglevel}"
-		deprecation="${build.showdeprecation}" 
-		destdir="${build.classes.dir}" 
-		nowarn="true" 
-		source="1.5" 
-		target="1.5"
-                srcdir="${javasrc.dir}">
-            <!-- To add something to the classpath: -->
-            <include name="com/sun/sgs/tools/**"/>
-            <include name="org/jdesktop/lg3d/wonderland/darkstar/server/**"/>
-            <include name="org/jdesktop/lg3d/wonderland/darkstar/common/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/darkstar/client/**"/>
-            <include name="org/jdesktop/lg3d/wonderland/config/server/**"/>
-            <include name="org/jdesktop/lg3d/wonderland/config/common/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/config/client/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/scenemanager/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/appshare/**"/>
-            <exclude name="org/jdesktop/lg3d/apps/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/*"/>
-            <exclude name="org/jdesktop/bb/**"/>
-            <exclude name="org/jdesktop/j3d/**"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/examples/*"/>
-            <exclude name="org/jdesktop/lg3d/wonderland/management/**"/>
-            <exclude name="org/jdesktop/lg3d/apps/**"/>
-            <exclude name="org/jdesktop/lg3d/media/**"/>
-	    <include name="org/jdesktop/lg3d/wonderland/wfs/**"/>
-	    <include name="org/jdesktop/lg3d/wonderland/util/**"/>
-            <classpath>
-		<pathelement path="${wonderland-server.classpath}"/>
-	    </classpath>
-        </javac>
+    <target name="compile-server" depends="init, compile-common" description="Compile Darkstar Server plugin">
+        <wl-compile>
+            <compile-classes>
+                <exclude name="org/jdesktop/wonderland/server/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+		<pathelement path="${wonderland-server-compile.classpath}"/>
+	    </compile-classpath>
+        </wl-compile>
     </target>
 
-    <!-- Compile the client side code -->
-    <target name="compile-bb" depends="init" description="Compile bean builder code">
-        <javac  debug="${build.debug}"
-                debuglevel="${build.debuglevel}"
-		deprecation="${build.showdeprecation}" 
-		destdir="${build.classes.dir}" 
-		nowarn="true" 
-		source="1.5" 
-		target="1.5"
-                srcdir="${javasrc.dir}">
-            <include name="org/jdesktop/bb/**"/>
-
-           <!-- To add something to the classpath: -->
-            <classpath>
-		<path location="${common.javaext.dir}/xml-actions.jar"/>
-	    </classpath>
-        </javac>
-    </target>
-    
     <!-- Build the client jars -->
     <target name="jar" depends="compile,jar-modules-client" description="Build client side jars">
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-loaders.jar">
@@ -155,18 +139,6 @@
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/resources/**/*.properties"/>
          </jar>
          
-    </target>
-    
-    <!-- Build the server jar -->
-    <target name="jar-bb" depends="compile-bb" description="Build the bean-builder jar">
-        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/bean-builder.jar">
-            <manifest>
-            </manifest>
-            <fileset dir="${build.classes.dir}">
-		<include name="org/jdesktop/bb/**"/>
-	    </fileset>
-            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/bb/editors/resources/*.gif"/>
-        </jar>
     </target>
     
     <!-- Build the server jar -->

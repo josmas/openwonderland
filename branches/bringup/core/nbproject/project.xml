@@ -11,14 +11,14 @@
             <properties/>
             <folders>
                 <source-folder>
-                    <label>src/classes</label>
-                    <type>java</type>
-                    <location>src/classes</location>
+                    <label>wonderland-core</label>
+                    <location>.</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>wonderland-core</label>
-                    <location>.</location>
+                    <label>src/classes</label>
+                    <type>java</type>
+                    <location>src/classes</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
             </folders>
