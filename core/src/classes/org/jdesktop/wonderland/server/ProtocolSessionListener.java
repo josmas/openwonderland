@@ -22,7 +22,6 @@ package org.jdesktop.wonderland.server;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import java.io.Serializable;
-import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -43,8 +42,7 @@ import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
  *
  * @author jkaplan
  */
-@ExperimentalAPI
-class WonderlandSessionListener
+class ProtocolSessionListener
         implements ClientSessionListener, Serializable {
     
     /** the session associated with this listener */
@@ -58,7 +56,7 @@ class WonderlandSessionListener
      * session
      * @param session the session connected to this listener
      */
-    public WonderlandSessionListener(ClientSession session) {
+    public ProtocolSessionListener(ClientSession session) {
         this.session = session;
     }
 

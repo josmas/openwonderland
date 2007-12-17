@@ -31,6 +31,15 @@ import org.jdesktop.wonderland.server.cell.CellManager;
 public class WonderlandContext {
 
     /**
+     * Initialize the WonderlandContext, create all singletons
+     */
+    static void intialize() {
+        // instantiate the manager
+        CommsManagerImpl cm = new CommsManagerImpl();
+        AppContext.getDataManager().setBinding(CommsManagerImpl.BINDING_NAME, cm);
+    }
+    
+    /**
      * Return the cell manager singleton.
      *
      * @return 
@@ -45,6 +54,15 @@ public class WonderlandContext {
      */
     public static UserManager getUserManager() {
         return AppContext.getDataManager().getBinding(UserManager.BINDING_NAME, UserManager.class);        
+    }
+    
+    /**
+     * Return the communications manager singleton
+     * @return the communications manager
+     */
+    public static CommsManager getCommsManager() {
+        return AppContext.getDataManager().getBinding(CommsManagerImpl.BINDING_NAME, 
+                                                      CommsManager.class);
     }
     
 }
