@@ -238,16 +238,20 @@
         </and>
     </condition>
     
+    <pathconvert property="wonderland-common-compile.classpath">
+        <path path="${j3d.classpath}"/>
+	<path path="${lg3d-core.classpath}"/>
+        <path path="${voice.classpath}"/>
+	<path path="${darkstar.classpath}"/>
+        <path path="${wonderland-incubator.classpath}"/>
+    </pathconvert>
+    
     <pathconvert property="wonderland-client-compile.classpath">
-	<path path="${j3d.classpath}"/>
+        <path path="${wonderland-common-compile.classpath}"/>
 	<path path="${javaext.classpath}"/>
 	<path path="${wonderlandext.classpath}"/>
-	<path path="${lg3d-core.classpath}"/>
 	<path path="${core.ext.classpath}"/>
-	<path path="${voice.classpath}"/>
-	<path path="${darkstar.classpath}"/>
         <path path="${panorama.classpath}"/>
-        <path path="${wonderland-incubator.classpath}"/>
 	<path location="${build.lib.dir}/bean-builder.jar"/>
 	<path path="${ab5k.classpath}"/>
 	<path path="${extras.classpath}"/>
@@ -263,11 +267,7 @@
     </pathconvert>
 
     <pathconvert property="wonderland-server-compile.classpath">
-	<path path="${j3d.classpath}"/>
-	<path path="${lg3d-core.classpath}"/>
-	<path path="${voice.classpath}"/>
-	<path path="${darkstar.classpath}"/>
-        <path path="${wonderland-incubator.classpath}"/>
+        <path path="${wonderland-common-compile.classpath}"/>
 	<path location="${build.lib.dir}/bean-builder.jar"/>
         <path location="${common.javaext.dir}/commons-beanutils-core.jar"/>
         <path location="${common.javaext.dir}/commons-logging-1.1.jar"/>
