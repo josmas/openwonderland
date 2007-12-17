@@ -64,7 +64,7 @@ public class UserManager implements ManagedObject, Serializable {
      */
     public void addUser(ClientSessionId userID, ManagedReference userRef) {
         uidToUserRef.put(userID, userRef);
-        uidToAvatarRef.put(userID, userRef.get(UserGLO.class).getAvatarCellRef());
+        //uidToAvatarRef.put(userID, userRef.get(UserGLO.class).getAvatarCellRef());
 //        System.out.println("Adding User "+userID+"  total users "+uidToUserRef.size());
     }
     
@@ -95,7 +95,8 @@ public class UserManager implements ManagedObject, Serializable {
      * @return reference to the UserGLO
      */
     private ManagedReference getUser(String userName) {
-        return UserGLO.getUserGLORef(userName);
+        //return UserGLO.getUserGLORef(userName);
+        return null;
     }
     
     /**
@@ -106,7 +107,8 @@ public class UserManager implements ManagedObject, Serializable {
         if (userRef==null)
             return false;
         
-        return userRef.get(UserGLO.class).isLoggedIn();
+        //return userRef.get(UserGLO.class).isLoggedIn();
+        return false;
     }
     
     /**
