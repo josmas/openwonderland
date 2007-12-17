@@ -1,0 +1,136 @@
+####################################################################################
+#                       Template NSIS script for Project Wonderland                #
+####################################################################################
+
+# filled from ant script
+!define releasedir "@RELEASE_DIR@"
+
+!define release "@LG3D_RELEASE@"
+!define version "@LG3D_VERSION@"
+
+# group of products
+!define group "Project Wonderland"
+ 
+!define shortprodname "Wonderland"
+!define prodname "${shortprodname} ${version}"
+
+# installer filename
+!define setup "${release}\@LG3D_INSTALL@-setup.exe"
+
+# Wonderland icon file
+!define iconfile "@LG3D_ICONFILE@"
+ 
+# working directory for shortcut
+!define workingdir "bin"
+ 
+# lg3d license file
+!define licensefile "@LG3D_LICENSE@"
+
+# website url
+!define website "https://lg3d-wonderland.dev.java.net/"
+
+# registry items 
+!define regkey "Software\${group}\${prodname}"
+!define uninstkey "Software\Microsoft\Windows\CurrentVersion\Uninstall\${prodname}"
+ 
+# start menu
+!define startmenu "$SMPROGRAMS\${group}\${prodname}"
+
+# uninstaller filename
+!define uninstaller "uninstall.exe"
+
+####################################################################################
+#                             CONFIGURE PARAMETERS                                 #
+####################################################################################
+
+SetCompressor /SOLID lzma
+SetDateSave on
+SetDatablockOptimize on
+CRCCheck on
+SilentInstall normal
+XPStyle on
+ShowInstDetails show
+ShowUninstDetails hide
+AutoCloseWindow false
+
+Name "${prodname}"
+Caption "${prodname}"
+OutFile "${setup}"
+Icon "${releasedir}\${iconfile}"
+UninstallIcon "${releasedir}\${iconfile}"
+ 
+InstallDir "$PROGRAMFILES\${group}\${prodname}"
+InstallDirRegKey HKLM "${regkey}" ""
+
+LicenseText "License"
+LicenseData "${licensefile}"
+
+Page license
+Page directory
+Page instfiles
+ 
+UninstPage uninstConfirm
+UninstPage instfiles
+ 
+####################################################################################
+#                                INSTALLATION PART                                 #
+####################################################################################
+
+# installation itself
+Section "Basic Installation"
+ 
+  SectionIn RO
+
+  # installation path
+  WriteRegStr HKLM "${regkey}" "Install_Dir" "$INSTDIR"
+
+  # uninstaller regkeys
+  WriteRegStr HKLM "${uninstkey}" "DisplayName" "${prodname} (remove only)"
+  WriteRegStr HKLM "${uninstkey}" "UninstallString" '"$INSTDIR\${uninstaller}"'
+  
+  # uninstaller remove only
+  WriteRegDWORD HKLM "${uninstkey}" "NoModify" 1
+  WriteRegDWORD HKLM "${uninstkey}" "NoRepair" 1
+
+  SetOutPath "$INSTDIR"
+  File /a /r "${releasedir}\*"
+
+  WriteUninstaller "${uninstaller}"
+  
+SectionEnd
+ 
+# shortcuts
+Section "Start Menu Shortcuts"
+  
+  CreateDirectory "${startmenu}"
+  SetOutPath "$INSTDIR\${workingdir}"
+
+  CreateShortCut "${startmenu}\${shortprodname} Voice Bridge.lnk" "$INSTDIR\bin\wonderland-bridge.bat" "" "$INSTDIR\${iconfile}"
+  CreateShortCut "${startmenu}\${shortprodname} Server.lnk" "$INSTDIR\bin\wonderland-server.bat" "" "$INSTDIR\${iconfile}"
+  CreateShortCut "${startmenu}\${shortprodname} Client.lnk" "$INSTDIR\bin\wonderland-client.bat" "" "$INSTDIR\${iconfile}"
+
+  CreateShortCut "${startmenu}\Uninstall ${shortprodname}.lnk" "$INSTDIR\${uninstaller}"
+
+  WriteINIStr "${startmenu}\README.url" "InternetShortcut" "URL" "$INSTDIR\docs\README.html"
+  WriteINIStr "${startmenu}\Website of ${shortprodname}.url" "InternetShortcut" "URL" ${website}
+
+SectionEnd
+ 
+####################################################################################
+#                               UNINSTALLATION PART                                #
+####################################################################################
+ 
+UninstallText "This will uninstall ${prodname}."
+ 
+Section "Uninstall"
+ 
+  DeleteRegKey HKLM "${uninstkey}"
+  DeleteRegKey HKLM "${regkey}"
+  
+  RMDir /r "${startmenu}"
+  RMDir "$SMPROGRAMS\${group}"
+
+  RMDir /r "$INSTDIR"
+  RMDir "$PROGRAMFILES\${group}"
+ 
+SectionEnd
