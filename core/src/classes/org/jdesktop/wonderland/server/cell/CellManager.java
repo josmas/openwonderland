@@ -19,6 +19,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import javax.media.j3d.Bounds;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -66,8 +67,8 @@ public class CellManager {
      * @param cellClasses
      * @return
      */
-    public cellClass[], CellID[] getCells(Bounds b, Class[] cellClasses) {
-        
+    public CellDescription[] getCells(Bounds b, Class[] cellClasses) {
+        return new CellDescription[0];
     }
     
     /**

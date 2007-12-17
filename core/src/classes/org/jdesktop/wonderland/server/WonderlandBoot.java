@@ -24,8 +24,9 @@ import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import java.io.Serializable;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.messages.ProtocolVersion;
+import org.jdesktop.wonderland.server.comms.WonderlandClientCommsProtocol;
 
 /**
  * SGS Boot class for Wonderland
@@ -44,6 +45,15 @@ public class WonderlandBoot implements AppListener, Serializable {
 
         // initialize the context object
         WonderlandContext.intialize();
+        
+        // create default communications protocols
+        WonderlandContext.getCommsManager().registerProtocol(
+                new WonderlandClientCommsProtocol());
+        
+        // initialize plugins
+        for (ServerPlugin plugin : ServiceLoader.load(ServerPlugin.class)) {
+            plugin.initialize();
+        }
     }
     
     /**

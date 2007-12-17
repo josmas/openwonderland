@@ -19,39 +19,54 @@
  */
 package org.jdesktop.wonderland.server;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.Channel;
+import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
+import com.sun.sgs.app.Delivery;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
-import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
 
 /**
- * This core session listener implements the basic Wonderland protocol
- * selection mechanism.  When a new client connects, they request a protcol
- * using a ProtocolSelectionMessage.  This listener handles the protcol
- * selection message, either by sending an error or instantiating the listener
- * associated with the given protocol type.
+ * This is the default session listener is used by Wonderland clients.
+ * Clients can select this listener by specifiying "wonderland_client" in
+ * the protocol selection message.
  * <p>
- * Once the session type has been successfully selected, this listener
- * simply acts as a wrapper, passing all request on to the delegated
- * listener.
+ * The WonderlandSessionListener supports an extensible set of listeners.
+ * Listeners can be registered to listen for specific message types.  These
+ * messages will be reported for all sessions connected to the listener.
+ * Note that listeners are not dynamic: listeners must be registered before
+ * the first session is created.  Listeners added after a session is created
+ * will not be used in this session.
+ * <p>
+ * Other convenience methods exist to send messages to all clients.
  *
  * @author jkaplan
  */
 @ExperimentalAPI
-class WonderlandSessionListener
+public class WonderlandSessionListener
         implements ClientSessionListener, Serializable {
+    
+    /** a logger */
+    private static final Logger logger =
+            Logger.getLogger(WonderlandSessionListener.class.getName());
+    
+    /** 
+     * A single channel that all clients are connected to. This is a private
+     * mechanism that is internal to this listener, and may be extended in
+     * the future to handle lots of connected clients.
+     */
+    private static final String ALL_CLIENT_CHANNEL = "Wonderland.ALL_CLIENT";
     
     /** the session associated with this listener */
     private ClientSession session;
-    
-    /** the wrapped session, or null if no wrapped session exists yet */
-    private ClientSessionListener wrapped;
     
     /**
      * Create a new instance of WonderlandSessionListener for the given
@@ -60,8 +75,44 @@ class WonderlandSessionListener
      */
     public WonderlandSessionListener(ClientSession session) {
         this.session = session;
+    
+        // join to relevant channels
+        joinChannels(session);
     }
+        
 
+    /**
+     * Join the client to the default channels on login
+     * @param session the session to join to channels
+     */
+    protected void joinChannels(ClientSession session) {
+        ChannelManager cm = AppContext.getChannelManager();
+        
+        // the all-clients channel
+        Channel channel = cm.getChannel(ALL_CLIENT_CHANNEL);
+        channel.join(session, null);
+    }
+    
+    /**
+     * Initialize the session listener
+     */
+    public static void initialize() {
+        // create all-users channel
+        ChannelManager cm = AppContext.getChannelManager();
+        cm.createChannel(ALL_CLIENT_CHANNEL, null, Delivery.RELIABLE);
+    }
+    
+    /**
+     * Send a message to all clients.  This will send a message to all
+     * clients that are connected via the WonderlandSessionListener.
+     * @param message the message to send
+     */
+    public static void sendToAllClients(Message message) {
+        ChannelManager cm = AppContext.getChannelManager();
+        Channel channel = cm.getChannel(ALL_CLIENT_CHANNEL);
+        channel.send(message.getBytes());
+    }
+    
     /**
      * Called when the listener receives a message.  If the wrapped session
      * has not yet been defined, look for ProtocolSelectionMessages, otherwise
@@ -69,46 +120,24 @@ class WonderlandSessionListener
      * @param data the message data
      */
     public void receivedMessage(byte[] data) {
-        
-        // if there is a wrapped session, simply forward the data to it
-        if (wrapped != null) {
-            wrapped.receivedMessage(data);
-            return;
-        }
-        
-        // no wrapped session -- look for a ProtocolSelectionMessage
         try {
+            // extract the message
             Message m = Message.extract(data);
             
-            // check the message type
-            if (!(m instanceof ProtocolSelectionMessage)) {
-                sendError(m, "Only ProtcolSelectionMessage allowed");
-                return;
-            }
+            // 
             
-            ProtocolSelectionMessage psm = (ProtocolSelectionMessage) m;
-            CommsManager cm = WonderlandContext.getCommsManager();
-
-            // see if we have a protocol to match the request
-            CommunicationsProtocol cp = cm.getProtocol(psm.getProtocolName());
-            if (cp == null) {
-                sendError(m, "Protocol " + psm.getProtocolName() + " not found");
-                return;
-            }
-            
-            // see if the versions match
-            if (!cp.getVersion().isCompatible(psm.getProtocolVersion())) {
-                sendError(m, "Client version incompatible with server " + 
-                             "version " + cp.getVersion());
-            }
-            
-            // all set -- set the wrapped session
-            wrapped = cp.createSessionListener(session, psm.getProtocolVersion());
         } catch (ExtractMessageException eme) {
-            sendError(eme.getMessageID(), null, eme);
+            logger.log(Level.WARNING, "Error extracting message from client", 
+                       eme);
+            
+            // if possible, send a reply to the client
+            if (eme.getMessageID() != null) {
+                sendError(eme.getMessageID(), eme);
+            }
         } catch (Exception ex) {
-            // TODO: react better?
-            getSession().disconnect();
+            // what to do?
+            logger.log(Level.WARNING, "Error extracting message from client",
+                       ex);
         }
     }
 
@@ -117,11 +146,9 @@ class WonderlandSessionListener
      * @param forced true if the disconnect was forced
      */
     public void disconnected(boolean forced) {
-        if (wrapped != null) {
-            wrapped.disconnected(forced);
-        }
+       
     }
-    
+     
     /**
      * Get the session this listener represents.
      * @return the session connected to this listener
@@ -135,8 +162,17 @@ class WonderlandSessionListener
      * @param message the source message
      * @param error the error to send
      */
-    protected void sendError(Message source, String error) {
-        sendError(source.getMessageID(), error, null);
+    protected void sendError(MessageID messageID, String error) {
+        sendError(messageID, error, null);
+    }
+    
+    /**
+     * Send an error to the session
+     * @param cause the cause of the error
+     * @param error the error to send
+     */
+    protected void sendError(MessageID messageID, Throwable cause) {
+        sendError(messageID, null, cause);
     }
     
     /**

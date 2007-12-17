@@ -1,0 +1,56 @@
+/**
+ * Project Wonderland
+ *
+ * $RCSfile:$
+ *
+ * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision:$
+ * $Date:$
+ * $State:$
+ */
+
+package org.jdesktop.wonderland.server.comms;
+
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionListener;
+import org.jdesktop.wonderland.server.WonderlandSessionListener;
+
+/**
+ * The default communications protocol used by the Wonderland client.
+ * @author jkaplan
+ */
+public class WonderlandClientCommsProtocol implements CommunicationsProtocol {
+    /** the name of this protocol */
+    public static final String PROTOCOL_NAME = "wonderland_client";
+    
+    /**
+     * Get the name of this protocol
+     * @return "wonderland_client"
+     */
+    public String getName() {
+        return PROTOCOL_NAME;
+    }
+
+    /**
+     * Get the version of this protocol
+     * @return the protocol version
+     */
+    public ProtocolVersion getVersion() {
+        return new DefaultProtocolVersion(2, 0, 0);
+    }
+
+    public ClientSessionListener createSessionListener(ClientSession session, 
+                                                       ProtocolVersion version) 
+    {
+        return new WonderlandSessionListener(session);
+    }
+}

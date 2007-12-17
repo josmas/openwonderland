@@ -79,7 +79,7 @@
     <target name="compile-client" depends="init, compile-common" description="Compile client code">
         <wl-compile>
             <compile-classes>
-                <exclude name="org/jdesktop/wonderland/client/**"/>
+                <include name="org/jdesktop/wonderland/client/**"/>
             </compile-classes>
             
             <compile-classpath>
@@ -92,7 +92,7 @@
     <target name="compile-server" depends="init, compile-common" description="Compile Darkstar Server plugin">
         <wl-compile>
             <compile-classes>
-                <exclude name="org/jdesktop/wonderland/server/**"/>
+                <include name="org/jdesktop/wonderland/server/**"/>
             </compile-classes>
             
             <compile-classpath>
@@ -101,36 +101,30 @@
         </wl-compile>
     </target>
 
+    <!-- build wonderland jars -->
+    <target name="jar" depends="compile, jar-client, jar-server" 
+            description="Build Wonderland jars"/>
+    
     <!-- Build the client jars -->
-    <target name="jar" depends="compile,jar-modules-client" description="Build client side jars">
+    <target name="jar-client" depends="compile-client, jar-modules-client" 
+            description="Build client side jars">
+        
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-loaders.jar">
-            <manifest>
-            </manifest>
-             <fileset dir="${javasrc.dir}/"
-                includes="org/jdesktop/j3d/utils/loaders/**"/>
-         </jar>
+            <fileset dir="${javasrc.dir}/"
+                     includes="org/jdesktop/j3d/utils/loaders/**"/>
+        </jar>
          
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-utils.jar">
-            <manifest>
-            </manifest>
             <fileset dir="${build.classes.dir}/" excludes="org/jdesktop/lg3d/**"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/j3d/**"/>
             <fileset dir="${javasrc.dir}/" includes="com/sun/j3d/**"/>
             <fileset dir="${javasrc.dir}/" includes="com/imi/**"/>
-         </jar>
+        </jar>
          
-        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-client.jar">
-            <manifest>
-            </manifest>
-            <!--
-            <fileset dir="${javasrc.dir}/" excludes="org/jdesktop/j3d/**"/>
-            <fileset dir="${javasrc.dir}/" excludes="com/**/*"/>
-            -->
-                
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-client.jar">    
             <fileset dir="${build.classes.dir}/">
-                <include name="**"/>
-                <exclude name="org/jdesktop/lg3d/wonderland/darkstar/server/**"/>       
-                <exclude name="org/jdesktop/lg3d/wonderland/servlet/**"/>
+                <include name="org/jdesktop/wonderland/client/**"/>
+                <include name="org/jdesktop/wonderland/common/**"/>
             </fileset>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/scenemanager/hud/resources/**"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/scenemanager/resources/**"/>
@@ -142,18 +136,12 @@
     </target>
     
     <!-- Build the server jar -->
-    <target name="jar-server" depends="compile-server, jar-modules-server" description="Build the server side jar">
+    <target name="jar-server" depends="compile-server, jar-modules-server" 
+            description="Build the server side jar">
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-server.jar">
-            <manifest>
-            </manifest>
             <fileset dir="${build.classes.dir}">
-		<include name="org/jdesktop/lg3d/wonderland/darkstar/**"/>
-		<include name="org/jdesktop/lg3d/wonderland/config/common/**"/>
-		<include name="org/jdesktop/lg3d/wonderland/config/server/**"/>
-                <include name="org/jdesktop/lg3d/wonderland/util/**"/>
-		<include name="com/sun/sgs/tools/**"/>
-		<include name="org/jdesktop/lg3d/wonderland/wfs/**"/>
-	        <include name="org/jdesktop/lg3d/wonderland/util/**"/>
+		<include name="org/jdesktop/wonderland/server/**"/>
+		<include name="org/jdesktop/wonderland/common/**"/>
 	    </fileset>
         </jar>
     </target>
