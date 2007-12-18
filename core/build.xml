@@ -102,7 +102,7 @@
     </target>
 
     <!-- build wonderland jars -->
-    <target name="jar" depends="compile, jar-client, jar-server" 
+    <target name="jar" depends="compile, jar-client" 
             description="Build Wonderland jars"/>
     
     <!-- Build the client jars -->
@@ -126,11 +126,10 @@
                 <include name="org/jdesktop/wonderland/client/**"/>
                 <include name="org/jdesktop/wonderland/common/**"/>
             </fileset>
-            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/scenemanager/hud/resources/**"/>
-            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/scenemanager/resources/**"/>
-            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/apps/jmfplayer/resources/**/*.png"/>
-            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/resources/**/*.png"/>
-            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/lg3d/wonderland/resources/**/*.properties"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/scenemanager/hud/resources/**"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/scenemanager/resources/**"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.png"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.properties"/>
          </jar>
          
     </target>
@@ -161,7 +160,7 @@
 
     <target name="run" depends="jar, modules-client-classpath" description="Run Project Wonderland client connecting to Sun Game Server">
 
-        <java classname="org.jdesktop.lg3d.wonderland.Main" fork="true">
+        <java classname="org.jdesktop.wonderland.client.Main" fork="true">
             <jvmarg value="-client"/>
             <jvmarg value="-Xmx384m"/>
             <jvmarg value="-Xincgc"/>
@@ -182,15 +181,11 @@
             <!--end debug-->
             <!-- <jvmarg value="-agentlib:yjpagent"/> -->
 
-            <jvmarg value="-Djava.util.logging.config.class=org.jdesktop.lg3d.wonderland.LogControl"/>
+            <jvmarg value="-Djava.util.logging.config.class=org.jdesktop.wonderland.client.LogControl"/>
             
             <jvmarg value="-Dlg.appcodebase=file:///${core.ext.dir}/app"/>
             <jvmarg value="-Dlg.maxfps=30"/>
             
-            <jvmarg value="-DJ3dFly.SystemPlugins=${j3dfly.dir}/J3dEditor/preferences/editor_plugin_prefs.xml"/>
-            <jvmarg value="-DJ3dFly.UserPlugins="/>
-            <jvmarg value="-DJ3dFly.Loaders=${j3dfly.dir}/J3dFly/preferences/loaders.xml"/>
-            <jvmarg value="-DJ3dEditor.NodeConfigs=${j3dfly.dir}/J3dEditor/preferences/j3deditor-config.xml"/>
             <jvmarg value="-Dsgs.port=${sgs.port}"/>
             <jvmarg value="-Dsgs.server=${sgs.server}"/>
             
