@@ -1,5 +1,5 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
  * $RCSfile: LogControl.java,v $
  *
