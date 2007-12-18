@@ -22,6 +22,7 @@ package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
+import java.io.Serializable;
 import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
@@ -33,7 +34,7 @@ import org.jdesktop.wonderland.ExperimentalAPI;
  * @author jkaplan
  */
 @ExperimentalAPI
-public interface CommunicationsProtocol {
+public interface CommunicationsProtocol extends Serializable {
     /**
      * Get the name of this protocol.  The protocol name must be unique,
      * and will be requested by clients.
