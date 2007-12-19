@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="wonderland-serverplugintest" default="all" basedir=".">
+<project name="wonderland-serverprotocoltest" default="all" basedir=".">
     <property name="top.dir" location="../.."/>
     <property name="current.dir" location="."/>
     <property name="core.dir" location="${top.dir}/core"/>
@@ -110,8 +110,23 @@
         </pathconvert>
     </target>
    
-    <target name="run-server">
+    <target name="run-server" depends="jar-server">
         <antcall target="run-sgs"/>
+    </target>
+    
+    <target name="run-client" depends="jar-client">
+        <java classname="org.jdesktop.wonderland.serverprotocoltest.client.ClientMain">
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.username=${sgs.username}"/>
+            <jvmarg value="-Dsgs.password=${sgs.password}"/>
+            
+            <classpath>
+                <pathelement path="${wonderland-client.classpath}"/>
+                <path location="${build.lib.dir}/serverprotocoltest-client.jar"/>
+                <path location="${core.lib.dir}/wonderland-client.jar"/>
+            </classpath>
+        </java>
     </target>
     
     <target name="clean">

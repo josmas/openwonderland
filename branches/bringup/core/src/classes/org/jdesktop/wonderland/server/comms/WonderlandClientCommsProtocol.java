@@ -20,6 +20,8 @@
 
 package org.jdesktop.wonderland.server.comms;
 
+import org.jdesktop.wonderland.common.comms.ProtocolVersion;
+import org.jdesktop.wonderland.common.comms.DefaultProtocolVersion;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import org.jdesktop.wonderland.server.WonderlandSessionListener;

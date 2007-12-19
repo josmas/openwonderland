@@ -25,19 +25,25 @@ import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.ClientChannelListener;
 import com.sun.sgs.client.simple.SimpleClientListener;
 import java.net.PasswordAuthentication;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  *
  * @author paulby
  */
 public class WonderlandClientListener implements SimpleClientListener {
-
+    private static final Logger logger =
+            Logger.getLogger(WonderlandClientListener.class.getName());
+            
     private WonderlandClient client;
     private LoginParameters loginParams;
     private boolean loginComplete;
     private LoginResult loginResult = new LoginResult();
     
-    WonderlandClientListener(WonderlandClient client, LoginParameters loginParams) {
+    public WonderlandClientListener(WonderlandClient client, LoginParameters loginParams) {
         this.client = client;
         this.loginParams = loginParams;
     }
@@ -69,8 +75,8 @@ public class WonderlandClientListener implements SimpleClientListener {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void receivedMessage(byte[] arg0) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void receivedMessage(byte[] data) {
+        
     }
 
     public void reconnecting() {
