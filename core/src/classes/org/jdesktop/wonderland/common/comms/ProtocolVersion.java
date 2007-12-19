@@ -17,7 +17,7 @@
  * $Date:$
  * $State:$
  */
-package org.jdesktop.wonderland.server.comms;
+package org.jdesktop.wonderland.common.comms;
 
 import org.jdesktop.wonderland.ExperimentalAPI;
 

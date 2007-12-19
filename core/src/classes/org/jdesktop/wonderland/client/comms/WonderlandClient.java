@@ -22,6 +22,8 @@ package org.jdesktop.wonderland.client.comms;
 import com.sun.sgs.client.simple.SimpleClient;
 import java.io.IOException;
 import java.util.Properties;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.MessageException;
 
 /**
  * This class provides the client side instance of a particular Wonderland server.
@@ -77,6 +79,20 @@ public class WonderlandClient {
             throw new LoginFailureException(ioe);
         } catch (InterruptedException ie) {
             throw new LoginFailureException(ie);
+        }
+    }
+    
+    /**
+     * Send a message to the server over the session channel
+     * @param message the message to send
+     * @throws MessageException if there is an error getting the bytes
+     * for the message
+     */
+    public void sendMessage(Message message) {
+        try {
+            simpleClient.send(message.getBytes());
+        } catch (IOException ioe) {
+            throw new MessageException(ioe);
         }
     }
     

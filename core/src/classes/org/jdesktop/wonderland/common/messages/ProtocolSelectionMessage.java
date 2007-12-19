@@ -20,7 +20,7 @@
 package org.jdesktop.wonderland.common.messages;
 
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.server.comms.ProtocolVersion;
+import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 
 /**
  * The initial message that a client must send to the Wonderland server

@@ -23,11 +23,11 @@ import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
-import org.jdesktop.wonderland.server.comms.ProtocolVersion;
 import org.jdesktop.wonderland.serverprotocoltest.common.TestProtocolVersion;
 
 /**
@@ -46,7 +46,7 @@ public class TestProtocolPlugin implements ServerPlugin {
     public static class TestProtocol 
             implements CommunicationsProtocol, Serializable
     {
-        private ProtocolVersion version = new TestProtocolVersion();
+        private ProtocolVersion version = TestProtocolVersion.VERSION;
         
         public String getName() {
             return TestProtocolVersion.PROTOCOL_NAME;
@@ -72,18 +72,18 @@ public class TestProtocolPlugin implements ServerPlugin {
         private ClientSession session;
 
         private TestProtocolSessionListener(ClientSession session) {
-            logger.info("New session for " + session);
+            logger.info("New session for " + session.getName());
             
             this.session = session;
         }
             
         public void receivedMessage(byte[] data) {
-            logger.info("Received " + data.length + " bytes from " + session + 
-                        ".");
+            logger.info("Received " + data.length + " bytes from " +
+                        session.getName() + ".");
         }
 
         public void disconnected(boolean forced) {
-            logger.info("Session " + session + " disconnected.");
+            logger.info("Session " + session.getName() + " disconnected.");
         } 
     }
 }

@@ -22,6 +22,7 @@ package org.jdesktop.wonderland.server;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import java.io.Serializable;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -45,6 +46,10 @@ import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
  */
 class ProtocolSessionListener
         implements ClientSessionListener, Serializable {
+    
+    /** a logger */
+    private static final Logger logger =
+            Logger.getLogger(ProtocolSessionListener.class.getName());
     
     /** the session associated with this listener */
     private ClientSession session;
@@ -100,6 +105,9 @@ class ProtocolSessionListener
                 sendError(m, "Client version incompatible with server " + 
                              "version " + cp.getVersion());
             }
+            
+            logger.info("Session " + session.getName() + " connected with " +
+                        "protocol " + cp.getName());
             
             // all set -- set the wrapped session
             wrapped = cp.createSessionListener(session, psm.getProtocolVersion());

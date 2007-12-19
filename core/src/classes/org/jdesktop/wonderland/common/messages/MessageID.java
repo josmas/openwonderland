@@ -42,6 +42,13 @@ public class MessageID implements Externalizable {
     /** the unique identifying string for this message */
     private String id;
     
+    /**
+     * No-arg constructor required for externalizable
+     */
+    public MessageID() {
+        this (null);
+    }
+    
     /** 
      * Create a messageID from the given String.  To generate a brand new,
      * unique messageID, use the generateMessageID() method instead.

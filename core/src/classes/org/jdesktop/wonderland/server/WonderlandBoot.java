@@ -69,6 +69,8 @@ public class WonderlandBoot implements AppListener, Serializable {
      * proper protocol for the client.
      */
     public ClientSessionListener loggedIn(ClientSession session) {
+        logger.info("New session " + session.getName() + " logged in");
+        
         return new ProtocolSessionListener(session);
     }
 }   
