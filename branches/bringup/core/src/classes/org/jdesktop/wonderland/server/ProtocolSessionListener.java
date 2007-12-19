@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
+import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
 
 /**

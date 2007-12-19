@@ -17,48 +17,45 @@
  * $Date: 2007/10/23 18:27:41 $
  * $State: Exp $
  */
-
-package org.jdesktop.wonderland.client;
+package org.jdesktop.wonderland.client.comms;
 
 /**
- * All data to uniquely identify a servre
+ * Data required to log user into a server.
  * 
  * @author paulby
  */
-public class WonderlandServerInfo {
+public class LoginParameters {
 
-    private String hostname;
-    private int sgsPort;
+    private String userName;
+    private char[] password;
+
+    public LoginParameters(String userName, char[] password) {
+        this.userName = userName;
+        this.password = password;
+    }
     
-    public WonderlandServerInfo(String hostname, int sgsPort) {
-        this.hostname = hostname;
-        this.sgsPort = sgsPort;
+    /**
+     * return the userName
+     * @return the userName
+     */
+    public String getUserName() {
+        return userName;
+    }
+
+    void setUserName(String userName) {
+        this.userName = userName;
     }
 
     /**
-     * Return the hostname for this server
+     * Return the users password
      * 
      * @return
      */
-    public String getHostname() {
-        return hostname;
+    public char[] getPassword() {
+        return password;
     }
 
-    void setHostname(String hostname) {
-        this.hostname = hostname;
+    void setPassword(char[] password) {
+        this.password = password;
     }
-
-    /**
-     * Return the darkstar port for this server
-     * 
-     * @return
-     */
-    public int getSgsPort() {
-        return sgsPort;
-    }
-
-    void setSgsPort(int sgsPort) {
-        this.sgsPort = sgsPort;
-    }
-    
 }

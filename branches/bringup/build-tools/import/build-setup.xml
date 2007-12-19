@@ -279,7 +279,6 @@
 	<path location="${build.lib.dir}/wonderland-server.jar"/>
 	<path location="${sgs.lib.dir}/listener.jar"/>
         <path path="${module-server.classpath}"/>
-        <path path="${module-server.classpath}"/>
     </pathconvert>
 
     <!-- Wonderland specific properties passed to the JVM -->
@@ -336,9 +335,51 @@
     <import file="${imported.basedir}/build-unpack.xml"/>
     <import file="${build-import.dir}/build-audio.xml"/>
 
-    <echo file="${current.dir}/nbproject/nb.properties">
+    <if>
+        <available file="${current.dir}/nbproject"/>
+        <then>
+            <echo file="${current.dir}/nbproject/nb.properties">
 lg3d.ostype=${ostype}
 lg3d.arch=${arch}
 lg3d.system.type=${system.type}
-    </echo>
+            </echo>
+        </then>
+    </if>
+    
+    <!-- macros -->
+    <!-- basic compile options -->
+    <macrodef name="wl-compile">
+        <element name="compile-classes"/>
+        <element name="compile-classpath"/>
+                
+        <sequential>
+            <javac  debug="${build.debug}"
+                debuglevel="${build.debuglevel}"
+		deprecation="${build.showdeprecation}" 
+		destdir="${build.classes.dir}" 
+		nowarn="true" 
+		source="1.5" 
+		target="1.5"
+                srcdir="${javasrc.dir}">
+            
+                <compile-classes/>
+                
+                <classpath>
+                    <compile-classpath/>
+                </classpath>
+            </javac>
+        </sequential>
+    </macrodef>
+    
+    <!-- workaround for broken services in ant 1.7 -->
+    <macrodef name="wl-services">
+        <attribute name="dir"/>
+        <attribute name="type"/>
+        <element name="providers"/>
+        
+        <sequential>
+            <mkdir dir="@{dir}/META-INF/services"/>
+            <echo file="@{dir}/META-INF/services/@{type}"><providers/></echo>
+        </sequential>
+    </macrodef>
 </project>

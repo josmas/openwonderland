@@ -20,15 +20,20 @@
 
 package org.jdesktop.wonderland.client;
 
+import org.jdesktop.wonderland.client.comms.LoginParameters;
+import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.WonderlandClient.LoginFailureException;
+import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.client.comms.WonderlandClient;
 
 /**
  *
  * @author  paulby
  */
 public class Main extends javax.swing.JFrame {
+    private static final Logger logger =
+            Logger.getLogger(Main.class.getName());
     
     /** Creates new form Main */
     public Main() {
@@ -36,11 +41,12 @@ public class Main extends javax.swing.JFrame {
 
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         LoginParameters loginParams = new LoginParameters("foo", "test".toCharArray());
-
+        WonderlandClient client = new WonderlandClient(server);
+        
         try {
-             WonderlandClient client = WonderlandClient.login(server, loginParams);
+            client.login(loginParams);
         } catch (LoginFailureException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
     }
     
