@@ -18,8 +18,9 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.client;
+package org.jdesktop.wonderland.client.comms;
 
+import org.jdesktop.wonderland.client.*;
 import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.ClientChannelListener;
 import com.sun.sgs.client.simple.SimpleClientListener;
@@ -85,52 +86,16 @@ public class WonderlandClientListener implements SimpleClientListener {
     }
 
     /**
-     * Waits for the login process to be complete and returns true if it
-     * succeeded and false if failed.
+     * Waits for the login process to be complete and returns the result.
      */
-    public LoginResult waitForLogin() {
+    public LoginResult waitForLogin() throws InterruptedException {
         System.out.println("WAIT FOR LOGIN");
         synchronized(this) {
             while (!loginComplete) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                wait();
             }
         }
 
         return loginResult;
-    }
-    
-    /**
-     * Encapsulate the results of a login attempt
-     */
-    public static class LoginResult {
-
-        public enum Status {
-            CONNECTING, SUCCESS, BAD_AUTH, BAD_SERVER
-        }
-        
-        private Status status;
-        private String reason;
-        
-        public LoginResult() {
-            status = Status.CONNECTING;
-        }
-        
-        public synchronized Status getStatus() {
-            return status;
-        }
-        public synchronized void setStatus(Status status) {
-            this.status = status;
-        }
-        
-        public synchronized String getReason() {
-            return reason;
-        }
-        public synchronized void setReason(String reason) {
-            this.reason = reason;
-        }
     }
 }

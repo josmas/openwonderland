@@ -18,7 +18,7 @@
  * $State:$
  */
 
-package org.jdesktop.wonderland.server;
+package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
 
 /**
  * Implementation of CommsManager
@@ -35,8 +34,6 @@ import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
 class CommsManagerImpl 
         implements CommsManager, ManagedObject, Serializable 
 {
-    static final String BINDING_NAME = CommsManagerImpl.class.getName();
-    
     /** a map from protocol names to protocol objects */
     private Map<String, CommunicationsProtocol> protocols;
     
@@ -76,4 +73,8 @@ class CommsManagerImpl
         return Collections.unmodifiableCollection(protocols.values());
     }
 
+    public static class CommsManagerFactory {
+        
+    }
+    
 }

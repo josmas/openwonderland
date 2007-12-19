@@ -17,11 +17,10 @@
  * $Date:$
  * $State:$
  */
-package org.jdesktop.wonderland.server;
+package org.jdesktop.wonderland.server.comms;
 
 import java.util.Collection;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
 
 /**
  * Manage communications protocols.

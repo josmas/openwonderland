@@ -22,6 +22,8 @@ package org.jdesktop.wonderland.server;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.server.cell.CellManager;
+import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
 
 /**
  *
@@ -34,9 +36,8 @@ public class WonderlandContext {
      * Initialize the WonderlandContext, create all singletons
      */
     static void intialize() {
-        // instantiate the manager
-        CommsManagerImpl cm = new CommsManagerImpl();
-        AppContext.getDataManager().setBinding(CommsManagerImpl.BINDING_NAME, cm);
+        // initialize the comms manager
+        CommsManagerFactory.initialize();
     }
     
     /**
@@ -61,8 +62,7 @@ public class WonderlandContext {
      * @return the communications manager
      */
     public static CommsManager getCommsManager() {
-        return AppContext.getDataManager().getBinding(CommsManagerImpl.BINDING_NAME, 
-                                                      CommsManager.class);
+        return CommsManagerFactory.getCommsManager();
     }
     
 }

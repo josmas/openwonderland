@@ -51,7 +51,11 @@ public class WonderlandBoot implements AppListener, Serializable {
                 new WonderlandClientCommsProtocol());
         
         // initialize plugins
-        for (ServerPlugin plugin : ServiceLoader.load(ServerPlugin.class)) {
+        ServiceLoader<ServerPlugin> plugins =
+                ServiceLoader.load(ServerPlugin.class);
+        
+        for (ServerPlugin plugin : plugins) {
+            logger.info("Initializing plugin: " + plugin);
             plugin.initialize();
         }
     }
