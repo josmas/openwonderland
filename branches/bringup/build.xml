@@ -2,7 +2,14 @@
 <project basedir="." default="jar-all" name="wonderland">
 
 <target name="jar-all" description="Jar Everything">
-    <ant dir="core" target="jar-all"/>
+    <ant dir="core" target="jar"/>
+</target>
+
+<target name="javadoc" description="Build javadco">
+    <ant dir="core" target="javadoc"/>
+</target>
+
+<target name="release" depends="jar-all, javadoc" description="Build release">
 </target>
 
 </project>
