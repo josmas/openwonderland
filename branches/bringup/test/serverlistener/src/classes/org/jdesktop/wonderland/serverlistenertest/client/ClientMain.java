@@ -17,14 +17,15 @@
  * $Date:$
  * $State:$
  */
-package org.jdesktop.wonderland.serverprotocoltest.client;
+package org.jdesktop.wonderland.serverlistenertest.client;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.comms.BaseClient;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
+import org.jdesktop.wonderland.client.comms.WonderlandClient;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.common.comms.ProtocolVersion;
-import org.jdesktop.wonderland.serverprotocoltest.common.TestProtocolVersion;
+import org.jdesktop.wonderland.serverlistenertest.common.TestMessageOne;
+import org.jdesktop.wonderland.serverlistenertest.common.TestMessageThree;
+import org.jdesktop.wonderland.serverlistenertest.common.TestMessageTwo;
 
 /**
  * Simple client
@@ -59,28 +60,14 @@ public class ClientMain {
         String password = System.getProperty("sgs.password", "sample");
 
         // create the client & login
-        TestClient wc = new TestClient(serverInfo);
+        WonderlandClient wc = new WonderlandClient(serverInfo);
         wc.login(new LoginParameters(username, password.toCharArray()));
 
         logger.info("Login suceeded");
-    }
-
-    class TestClient extends BaseClient {
-
-        public TestClient(WonderlandServerInfo serverInfo) {
-            super (serverInfo);
-        }
         
-        @Override
-        protected String getProtocolName() {
-            return TestProtocolVersion.PROTOCOL_NAME;
-        }
-
-        @Override
-        protected ProtocolVersion getProtocolVersion() {
-            return TestProtocolVersion.VERSION;
-        }
-        
+        wc.send(new TestMessageOne("TestOne"));
+        wc.send(new TestMessageTwo("TestTwo"));
+        wc.send(new TestMessageThree("TestThree", 42));
     }
 
     public static void main(String[] args) {

@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 import org.jdesktop.wonderland.common.comms.DefaultProtocolVersion;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
+import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
 import org.jdesktop.wonderland.server.WonderlandSessionListener;
 
 /**
@@ -31,15 +32,12 @@ import org.jdesktop.wonderland.server.WonderlandSessionListener;
  * @author jkaplan
  */
 public class WonderlandClientCommsProtocol implements CommunicationsProtocol {
-    /** the name of this protocol */
-    public static final String PROTOCOL_NAME = "wonderland_client";
-    
     /**
      * Get the name of this protocol
      * @return "wonderland_client"
      */
     public String getName() {
-        return PROTOCOL_NAME;
+        return WonderlandProtocolVersion.PROTOCOL_NAME;
     }
 
     /**
@@ -47,7 +45,7 @@ public class WonderlandClientCommsProtocol implements CommunicationsProtocol {
      * @return the protocol version
      */
     public ProtocolVersion getVersion() {
-        return new DefaultProtocolVersion(2, 0, 0);
+        return WonderlandProtocolVersion.VERSION;
     }
 
     public ClientSessionListener createSessionListener(ClientSession session, 

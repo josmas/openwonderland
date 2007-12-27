@@ -17,20 +17,28 @@
  * $Date:$
  * $State:$
  */
-package org.jdesktop.wonderland.serverplugintest;
-
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.ServerPlugin;
+package org.jdesktop.wonderland.clientlistenertest.common;
 
 /**
- * Sample plugin that doesn't do anything
+ *
  * @author jkaplan
  */
-public class HelloWorldPlugin implements ServerPlugin {
-    private static final Logger logger =
-            Logger.getLogger(HelloWorldPlugin.class.getName());
+public class TestMessageThree extends TestMessageOne {
+    private int number;
     
-    public void initialize() {
-        logger.info("Hello world plugin");
+    public TestMessageThree(String text, int number) {
+        super (text);
+        
+        this.number = number;
+    }
+    
+    public int getNumber() {
+        return number;
+    }
+    
+     @Override
+    public String toString() {
+        return "Message " + getMessageID() + ": TestMessageThree : " + 
+               getText() + " " + getNumber();
     }
 }

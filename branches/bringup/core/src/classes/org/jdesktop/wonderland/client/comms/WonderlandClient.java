@@ -19,97 +19,108 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
-import com.sun.sgs.client.simple.SimpleClient;
-import java.io.IOException;
-import java.util.Properties;
+import com.sun.sgs.client.ClientChannel;
+import com.sun.sgs.client.ClientChannelListener;
+import com.sun.sgs.client.SessionId;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.comms.ProtocolVersion;
+import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
+import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
+import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.common.messages.MessageException;
 
 /**
- * This class provides the client side instance of a particular Wonderland server.
- * All interaction with the server is handled by this and it's related class WonderlandClientListener
+ * This class provides the client side instance of a particular Wonderland
+ * server. All interaction with a server are handled by this class.
  * 
- * @author paulby
+ * @author kaplanj
  */
-public class WonderlandClient {
+@ExperimentalAPI
+public class WonderlandClient extends BaseClient {
+    /** a logger */
+    private static final Logger logger =
+            Logger.getLogger(WonderlandClient.class.getName());
     
-    private WonderlandServerInfo server;
-    private SimpleClient simpleClient;
-    private WonderlandClientListener listener;
-
+    /** the name of the standard all-clients channel */
+    private static final String ALL_CLIENTS_CHANNEL = 
+            WonderlandChannelNames.WONDERLAND_PREFIX + ".ALL_CLIENTS";
+    
     /**
-     * Create a new client to log in to the given server
-     * @param server the server to connect to
+     * {@inheritDoc}
      */
     public WonderlandClient(WonderlandServerInfo server) {
-        this.server = server;
+        super (server);
+        
+        // add default channel listeners
+        registerChannelListenerFactory(new DefaultChannelListenerFactory());   
     }
     
     /**
-     * Get the server this client is connected to
-     * @param loginParams the parameters required for login
-     * @return the result of the login
-     * @throws org.jdesktop.wonderland.client.comms.WonderlandClient.LoginFailureException
+     * Return the Wonderland protocol name
+     * @return the name of the Wonderland client protcol
      */
-    public LoginResult login(LoginParameters loginParams) 
-        throws LoginFailureException
-    {
-        listener = createListener(loginParams);
-        simpleClient = new SimpleClient(listener);
-        
-        Properties connectProperties = new Properties();
-        connectProperties.setProperty("host", server.getHostname());
-        connectProperties.setProperty("port", Integer.toString(server.getSgsPort()));
-        
-        try {
-            System.out.println("Login: " + server.getHostname() + " : " +
-                               server.getSgsPort());
-            
-            simpleClient.login(connectProperties);
-        
-            // wait for the login
-            LoginResult lr = listener.waitForLogin();
-            if (lr.getStatus() != LoginResult.Status.SUCCESS) {
-                throw new LoginFailureException("Login failed: " + 
-                        lr.getStatus() + " : " + lr.getReason());
+    @Override
+    protected String getProtocolName() {
+        return WonderlandProtocolVersion.PROTOCOL_NAME;
+    }
+
+    /**
+     * Return the Wonderland protocol version
+     * @return the version of the Wonderland protocol
+     */
+    @Override
+    protected ProtocolVersion getProtocolVersion() {
+        return WonderlandProtocolVersion.VERSION;
+    }
+   
+    /**
+     * Handle built-in channels
+     */
+    class DefaultChannelListenerFactory implements ChannelListenerFactory {
+        /**
+         * {@inheritDoc}
+         */
+        public ClientChannelListener createListener(BaseClient client,
+                                                    ClientChannel channel)
+        {
+            if (channel.getName().equals(ALL_CLIENTS_CHANNEL)) { 
+                return new AllClientsChannelListener();
+            } else {
+                return null;
             }
-            return lr;
-        
-        } catch (IOException ioe) {
-            throw new LoginFailureException(ioe);
-        } catch (InterruptedException ie) {
-            throw new LoginFailureException(ie);
         }
     }
     
     /**
-     * Send a message to the server over the session channel
-     * @param message the message to send
-     * @throws MessageException if there is an error getting the bytes
-     * for the message
+     * Pass messages from the all-client channel in to the session message
+     * listeners.
      */
-    public void sendMessage(Message message) {
-        try {
-            simpleClient.send(message.getBytes());
-        } catch (IOException ioe) {
-            throw new MessageException(ioe);
+    class AllClientsChannelListener implements ClientChannelListener {
+        /**
+         * {@inheritDoc}
+         */
+        public void receivedMessage(ClientChannel channel, SessionId session, 
+                                    byte[] data) 
+        {
+            try {
+                // extract the message
+                Message message = Message.extract(data);
+            
+                // notify listeners
+                fireSessionMessageReceived(message);
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Error extracting message from server", 
+                           ex);
+            }
         }
-    }
-    
-    /**
-     * Get the simple client connected to the Darkstar server.  This will
-     * only be valid after the login method succeeds.
-     * @return the darkstar client
-     */
-    public SimpleClient getClient() {
-        return simpleClient;
-    }
-    
-    /**
-     * Get the underlying listener.  
-     * @return the client listener
-     */
-    protected WonderlandClientListener createListener(LoginParameters loginParams) {
-        return new WonderlandClientListener(this, loginParams);
+            
+        /**
+         * {@inheritDoc}
+         */
+        public void leftChannel(ClientChannel channel) {
+            // ignore
+        }
     }
 }
