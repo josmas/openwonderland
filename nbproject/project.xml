@@ -6,9 +6,10 @@
             <!-- Do not use Project Properties customizer when editing this file manually. -->
             <name>wonderland</name>
             <properties/>
+            <folders/>
             <ide-actions>
                 <action name="build">
-                    <target>jar-all</target>
+                    <target>release</target>
                 </action>
             </ide-actions>
             <view>
@@ -21,6 +22,7 @@
                     <ide-action name="build"/>
                 </context-menu>
             </view>
+            <subprojects/>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
     </configuration>

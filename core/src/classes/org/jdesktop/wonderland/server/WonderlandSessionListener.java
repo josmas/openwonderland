@@ -24,6 +24,7 @@ import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
+import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
@@ -33,11 +34,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.server.comms.ServerMessageListener;
+import org.jdesktop.wonderland.server.comms.ClientConnectionListener;
+import org.jdesktop.wonderland.server.comms.ClientMessageListener;
 
 /**
  * This is the default session listener is used by Wonderland clients.
@@ -68,10 +71,17 @@ public class WonderlandSessionListener
      * mechanism that is internal to this listener, and may be extended in
      * the future to handle lots of connected clients.
      */
-    private static final String ALL_CLIENT_CHANNEL = "Wonderland.ALL_CLIENT";
+    private static final String ALL_CLIENTS_CHANNEL = 
+            WonderlandChannelNames.WONDERLAND_PREFIX + ".ALL_CLIENTS";
     
     /** the session associated with this listener */
     private ClientSession session;
+    
+    /** the list of message listeners */
+    private List<MessageListenerRecord> messageListeners;
+    
+    /** the list of connection listeners */
+    private List<ClientConnectionListener> connectionListeners;
     
     /**
      * Create a new instance of WonderlandSessionListener for the given
@@ -81,8 +91,16 @@ public class WonderlandSessionListener
     public WonderlandSessionListener(ClientSession session) {
         this.session = session;
     
+        // set up message & connection listeners
+        copyListeners();
+        
         // join to relevant channels
         joinChannels(session);
+        
+        // notify connection listeners
+        for (ClientConnectionListener listener : connectionListeners) {
+            listener.connected(session);
+        }
     }
         
     /**
@@ -93,7 +111,7 @@ public class WonderlandSessionListener
         ChannelManager cm = AppContext.getChannelManager();
         
         // the all-clients channel
-        Channel channel = cm.getChannel(ALL_CLIENT_CHANNEL);
+        Channel channel = cm.getChannel(ALL_CLIENTS_CHANNEL);
         channel.join(session, null);
     }
     
@@ -101,9 +119,14 @@ public class WonderlandSessionListener
      * Initialize the session listener
      */
     public static void initialize() {
-        // create all-users channel
         ChannelManager cm = AppContext.getChannelManager();
-        cm.createChannel(ALL_CLIENT_CHANNEL, null, Delivery.RELIABLE);
+        DataManager dm = AppContext.getDataManager();
+        
+        // create all-users channel
+        cm.createChannel(ALL_CLIENTS_CHANNEL, null, Delivery.RELIABLE);
+    
+        // create listener support
+        dm.setBinding(ListenerSupport.BINDING_NAME, new ListenerSupport());
     }
     
     /**
@@ -113,21 +136,40 @@ public class WonderlandSessionListener
      */
     public static void sendToAllClients(Message message) {
         ChannelManager cm = AppContext.getChannelManager();
-        Channel channel = cm.getChannel(ALL_CLIENT_CHANNEL);
+        Channel channel = cm.getChannel(ALL_CLIENTS_CHANNEL);
         channel.send(message.getBytes());
     }
     
     /**
-     * Register a listener.  This listener will listen for messages
+     * Register a message listener.  This listener will listen for messages
      * on all sessions.  The listener will be stored in the Darkstar
      * data store, so it must be either Serializable or a ManagedObject.
      * @param messageClass the class of message to list for
      * @param listener the listener
      */
-    public static void registerListener(Class<? extends Message> messageClass,
-                                        ServerMessageListener listener)
+    public static void registerMessageListener(
+            Class<? extends Message> messageClass, 
+            ClientMessageListener listener)
     {
-        ListenerSupport.addListener(messageClass, listener);
+        DataManager dm = AppContext.getDataManager();
+        ListenerSupport ls = dm.getBinding(ListenerSupport.BINDING_NAME, 
+                                           ListenerSupport.class);
+        ls.addMessageListener(messageClass, listener);
+    }
+    
+    /**
+     * Register a connection listener.  This listener will listen for clients
+     * connecting to and disconnecting from the Wonderland server.
+     * The listener will be stored in the Darkstar data store, so it must be
+     * either Serializable or a ManagedObject.
+     * @param listener the listener
+     */
+    public static void registerConnectionListener(ClientConnectionListener listener)
+    {
+        DataManager dm = AppContext.getDataManager();
+        ListenerSupport ls = dm.getBinding(ListenerSupport.BINDING_NAME, 
+                                           ListenerSupport.class);
+        ls.addConnectionListener(listener);
     }
     
     /**
@@ -142,7 +184,11 @@ public class WonderlandSessionListener
             Message m = Message.extract(data);
             
             // send to listeners
-            ListenerSupport.fireMessage(m, session);
+            for (MessageListenerRecord record : messageListeners) {
+                if (record.getMessageClass().isAssignableFrom(m.getClass())) {
+                    record.getListener().messageReceived(m, session);
+                }
+            }
             
         } catch (ExtractMessageException eme) {
             logger.log(Level.WARNING, "Error extracting message from client", 
@@ -164,7 +210,10 @@ public class WonderlandSessionListener
      * @param forced true if the disconnect was forced
      */
     public void disconnected(boolean forced) {
-       
+        // notify connection listeners
+        for (ClientConnectionListener listener : connectionListeners) {
+            listener.disconnected(session);
+        }
     }
      
     /**
@@ -207,58 +256,105 @@ public class WonderlandSessionListener
     }
     
     /**
-     * Manage listeners for the server.  
-     * TODO: a more efficient version of this class.
+     * Copy the list of registered message listeners from the listener
+     * manager.
+     * @return a copy of the list of message listeners
      */
-    static class ListenerSupport {
-        private static List<ListenerRecord> listeners =
-                new ArrayList<ListenerRecord>();
-            
+    private void copyListeners() {
+        DataManager dm = AppContext.getDataManager();
+        ListenerSupport ls = dm.getBinding(ListenerSupport.BINDING_NAME, 
+                                           ListenerSupport.class);
+        
+        // copy message listeners
+        messageListeners = new ArrayList<MessageListenerRecord>(ls.getMessageListeners());
+    
+        // copy connection listeners
+        connectionListeners = new ArrayList<ClientConnectionListener>(ls.getConnectionListeners());
+    }
+    
+    /**
+     * Manage listeners for the server.  This managed object stores a 
+     * prototype list of listeners.  The list is *copied* into any
+     * new SessionListeners that are created.  This means that this
+     * object is only used when a new listener is created, not on every
+     * message.  It also means that the list of listeners is not dynamic --
+     * a given session listener will have exactly the set of listeners that
+     * was present when it connected.  For this reason, listeners should
+     * be registered during initialization.
+     */
+    static class ListenerSupport implements ManagedObject, Serializable {
+        static final String BINDING_NAME = ListenerSupport.class.getName();
+        
+        /** message listeners */
+        private List<MessageListenerRecord> messageListeners =
+                new ArrayList<MessageListenerRecord>();
+           
+        /** session listeners */
+        private List<ClientConnectionListener> connectionListeners =
+                new ArrayList<ClientConnectionListener>();
+        
         /**
-         * Add a listener
+         * Add a message listener
          * @param messageClass the class of message to listen for
+         * @param listener the listener to add
          */
-        static void addListener(Class<? extends Message> messageClass, 
-                                ServerMessageListener listener) 
+        public void addMessageListener(Class<? extends Message> messageClass, 
+                                       ClientMessageListener listener) 
         {
-            ListenerRecord lr;
+            MessageListenerRecord lr;
             
             if (listener instanceof ManagedObject) {
-                lr = new ManagedListenerRecord(messageClass, 
-                                               (ManagedObject) listener);
+                lr = new ManagedMessageListenerRecord(messageClass, 
+                                                      (ManagedObject) listener);
             } else {
-                lr = new ListenerRecord(messageClass, listener);
+                lr = new MessageListenerRecord(messageClass, listener);
             }
             
-            listeners.add(lr);
+            messageListeners.add(lr);
         }
         
         /**
-         * Send a message to all listeners.  TODO: make this efficient.
-         * @param message the message
-         * @param session the session
+         * Add a connection listener
+         * @param listener the listener to add
          */
-        static void fireMessage(Message message, ClientSession session) {
-            for (ListenerRecord lr : listeners) {
-                if (lr.getMessageClass().isAssignableFrom(message.getClass())) {
-                    lr.getListener().messageReceived(message, session);
-                }
-            }
+        public void addConnectionListener(ClientConnectionListener listener) {
+            if (listener instanceof ManagedObject) {
+                listener = 
+                        new ManagedConnectionListener((ManagedObject) listener);
+            } 
+            
+            connectionListeners.add(listener);
+        }
+        
+        /**
+         * Get the message listeners
+         * @return the list of listeners
+         */
+        public List<MessageListenerRecord> getMessageListeners() {
+            return messageListeners;
+        }
+        
+        /**
+         * Get the connection listeners
+         * @return the list of listeners
+         */
+        public List<ClientConnectionListener> getConnectionListeners() {
+            return connectionListeners;
         }
     }
     
     /**
      * A listener record, including the class to listen for
      */
-    static class ListenerRecord implements Serializable {
+    static class MessageListenerRecord implements Serializable {
         // the class of message to listen for
         private Class<? extends Message> messageClass;
         
         // the listener
-        private ServerMessageListener listener;
+        private ClientMessageListener listener;
         
-        public ListenerRecord(Class<? extends Message> messageClass, 
-                              ServerMessageListener listener) 
+        public MessageListenerRecord(Class<? extends Message> messageClass, 
+                                     ClientMessageListener listener) 
         {
             this.messageClass = messageClass;
             this.listener = listener;
@@ -268,28 +364,50 @@ public class WonderlandSessionListener
             return messageClass;
         }
         
-        public ServerMessageListener getListener() {
+        public ClientMessageListener getListener() {
             return listener;
         }
     }
     
     /**
-     * A listener record for a listener which is a managed object
+     * A message listener record for a listener which is a managed object
      */
-    static class ManagedListenerRecord extends ListenerRecord {
+    static class ManagedMessageListenerRecord extends MessageListenerRecord {
         // a reference to the listener record
         private ManagedReference listenerRef;
         
-        public ManagedListenerRecord(Class<? extends Message> messageClass,
-                                     ManagedObject listener)
+        public ManagedMessageListenerRecord(Class<? extends Message> messageClass,
+                                            ManagedObject listener)
         {
             super (messageClass, null);
             this.listenerRef = AppContext.getDataManager().createReference(listener);
         }
         
         @Override
-        public ServerMessageListener getListener() {
-            return listenerRef.get(ServerMessageListener.class);
+        public ClientMessageListener getListener() {
+            return listenerRef.get(ClientMessageListener.class);
+        }
+    }
+    
+    /**
+     * A session listener for a session which is a managed object
+     */
+    static class ManagedConnectionListener 
+            implements ClientConnectionListener, Serializable
+    {
+        // a reference to the listener record
+        private ManagedReference listenerRef;
+        
+        public ManagedConnectionListener(ManagedObject listener) {
+            this.listenerRef = AppContext.getDataManager().createReference(listener);
+        }
+
+        public void connected(ClientSession session) {
+            listenerRef.get(ClientConnectionListener.class).connected(session);
+        }
+
+        public void disconnected(ClientSession session) {
+            listenerRef.get(ClientConnectionListener.class).disconnected(session);
         }
     }
 }

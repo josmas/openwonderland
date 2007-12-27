@@ -20,6 +20,7 @@
 
 package org.jdesktop.wonderland.client;
 
+import java.util.ServiceLoader;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import java.util.logging.Level;
@@ -37,16 +38,35 @@ public class Main extends javax.swing.JFrame {
     
     /** Creates new form Main */
     public Main() {
-       initComponents();
+        // create UI components
+        initComponents();
 
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         LoginParameters loginParams = new LoginParameters("foo", "test".toCharArray());
         WonderlandClient client = new WonderlandClient(server);
+
+        // initialize plugins
+        loadPlugins();
         
         try {
             client.login(loginParams);
         } catch (LoginFailureException ex) {
             logger.log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Load client plugins.  Plugins implement the ClientPlugin interface
+     * and register using the Java ServiceLoader mechanism.
+     */
+    private void loadPlugins() {
+        // initialize plugins
+        ServiceLoader<ClientPlugin> plugins =
+                ServiceLoader.load(ClientPlugin.class);
+        
+        for (ClientPlugin plugin : plugins) {
+            logger.info("Initializing plugin: " + plugin);
+            plugin.initialize();
         }
     }
     

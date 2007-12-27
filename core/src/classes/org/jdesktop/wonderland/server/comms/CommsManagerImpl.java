@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.server.WonderlandSessionListener;
 
 /**
  * Implementation of CommsManager
@@ -73,8 +75,27 @@ class CommsManagerImpl
         return Collections.unmodifiableCollection(protocols.values());
     }
 
-    public static class CommsManagerFactory {
-        
+    /**
+     * {@inheritDoc}
+     */
+    public void sendToAllClients(Message message) {
+        WonderlandSessionListener.sendToAllClients(message);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void registerMessageListener(Class<? extends Message> messageClass, 
+                                        ClientMessageListener listener) 
+    {
+        WonderlandSessionListener.registerMessageListener(messageClass, listener);
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public void registerConnectionListener(ClientConnectionListener listener) 
+    {
+        WonderlandSessionListener.registerConnectionListener(listener);
+    }
 }

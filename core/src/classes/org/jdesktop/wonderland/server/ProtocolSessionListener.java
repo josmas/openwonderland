@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
@@ -111,6 +112,9 @@ class ProtocolSessionListener
             
             // all set -- set the wrapped session
             wrapped = cp.createSessionListener(session, psm.getProtocolVersion());
+            
+            // send an OK message
+            getSession().send(new OKMessage(psm.getMessageID()).getBytes());
         } catch (ExtractMessageException eme) {
             sendError(eme.getMessageID(), null, eme);
         } catch (Exception ex) {
