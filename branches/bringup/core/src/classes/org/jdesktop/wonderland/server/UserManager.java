@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: UserManager.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.11 $
- * $Date: 2007/10/02 17:17:01 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 package org.jdesktop.wonderland.server;
 
@@ -48,7 +46,7 @@ public class UserManager implements ManagedObject, Serializable {
     /**
      * Name used in binding this object in DataManager
      **/
-    static final String BINDING_NAME="USER_MANAGER";
+    private static final String BINDING_NAME="USER_MANAGER";
     
     private int userLimit = Integer.MAX_VALUE;
 
@@ -57,6 +55,14 @@ public class UserManager implements ManagedObject, Serializable {
      */
     public UserManager() {
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
+    }
+    
+    /**
+     * Return singleton user manager
+     * @return
+     */
+    public static UserManager getUserManager() {
+        return AppContext.getDataManager().getBinding(UserManager.BINDING_NAME, UserManager.class);                
     }
 
     /**
