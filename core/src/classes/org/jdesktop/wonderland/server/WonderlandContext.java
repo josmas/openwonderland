@@ -38,6 +38,7 @@ public class WonderlandContext {
     static void intialize() {
         // initialize the comms manager
         CommsManagerFactory.initialize();
+        CellManager.initialize();
     }
     
     /**
@@ -46,7 +47,7 @@ public class WonderlandContext {
      * @return 
      */
     public static CellManager getCellManager() {
-        throw new RuntimeException("Not Implemented");
+        return CellManager.getCellManager();
     }
 
     /**
@@ -54,7 +55,7 @@ public class WonderlandContext {
      * @return
      */
     public static UserManager getUserManager() {
-        return AppContext.getDataManager().getBinding(UserManager.BINDING_NAME, UserManager.class);        
+        return UserManager.getUserManager();      
     }
     
     /**

@@ -1,9 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile:$
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,11 +11,14 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision:$
- * $Date:$
- * $State:$
+ * $Revision$
+ * $Date$
+ * $State$
  */
 package org.jdesktop.wonderland.server;
+
+import com.sun.sgs.app.ManagedObject;
+import java.io.Serializable;
 
 /**
  * The root class for all world objects. Provides and optional channel.
@@ -27,6 +28,6 @@ package org.jdesktop.wonderland.server;
  * 
  * @author paulby
  */
-public class WonderlandMO {
+public class WonderlandMO implements ManagedObject, Serializable {
 
 }

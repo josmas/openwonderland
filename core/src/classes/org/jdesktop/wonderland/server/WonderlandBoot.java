@@ -58,6 +58,8 @@ public class WonderlandBoot implements AppListener, Serializable {
             logger.info("Initializing plugin: " + plugin);
             plugin.initialize();
         }
+        
+        WonderlandContext.getCellManager().loadWorld();
     }
     
     /**
