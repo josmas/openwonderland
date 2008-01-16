@@ -17,7 +17,11 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.server.cell.bounds.ServiceBoundsHandler;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.Channel;
+import com.sun.sgs.app.ClientSessionId;
+import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedReference;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -26,15 +30,24 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.media.j3d.BoundingBox;
+import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.Bounds;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Matrix4d;
+import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.SerializationHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
+import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.WonderlandMO;
+import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
+import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
 /**
  * Server side representation of a cell
@@ -45,21 +58,31 @@ import org.jdesktop.wonderland.server.WonderlandMO;
 public class CellMO extends WonderlandMO {
 
     private ManagedReference parentRef=null;
-    private ArrayList<ManagedReference> childrenRef = null;
+    private ArrayList<ManagedReference> childCellRefs = null;
     private Matrix4d transform = null;
     private Matrix4d localToVWorld = null;
-    private transient Bounds localBounds = null;
-    private transient Bounds computedWorldBounds = null;
     private CellID cellID;
+    private transient Bounds localBounds;
     
     private String name=null;
     
     private boolean live = false;
+    private String cellChannelName=null;
+    private Channel cellChannel=null;
+    
+    private long version;
+    
+    private static Logger logger = Logger.getLogger(CellMO.class.getName());
     
     public CellMO() {
-        cellID = WonderlandContext.getCellManager().createCellID(this);
-        transform = new Matrix4d();
-        transform.setIdentity();
+        cellID = WonderlandContext.getMasterCellCache().createCellID(this);
+        transform = null;
+    }
+    
+    public CellMO(Bounds bounds, Matrix4d transform) {
+        this();
+        this.transform = transform;
+        setLocalBounds(bounds);
     }
     
     /**
@@ -67,10 +90,9 @@ public class CellMO extends WonderlandMO {
      * @param bounds
      */
     public void setLocalBounds(Bounds bounds) {
-        this.localBounds = bounds;
-        
+        localBounds = (Bounds) bounds.clone();
         if (live) {
-            WonderlandContext.getCellManager().cellLocalBoundsChanged(this);
+            BoundsHandler.get().setLocalBounds(cellID, bounds);
         }
     }
     
@@ -79,7 +101,7 @@ public class CellMO extends WonderlandMO {
      * @return
      */
     public Bounds getLocalBounds() {
-        return (Bounds) localBounds.clone();        
+        return (Bounds) localBounds.clone();     
     }
     
     /**
@@ -93,13 +115,9 @@ public class CellMO extends WonderlandMO {
         if (!live)
             throw new RuntimeException("Cell is not live");
         
-        Bounds ret = (Bounds) localBounds.clone();
-        Transform3D t3d = new Transform3D(localToVWorld);
-        ret.transform(t3d);
-        
-        return ret;
+        return BoundsHandler.get().getCachedVWBounds(cellID);
     }
-    
+
     /**
      * Return a computed bounds for this cell in World coordinates that 
      * encapsulates the bounds of this cell and all it's children.
@@ -111,7 +129,7 @@ public class CellMO extends WonderlandMO {
      * @return
      */
     public Bounds getComputedWorldBounds() {
-        return computedWorldBounds;        
+        return BoundsHandler.get().getComputedWorldBounds(cellID);   
     }
     
     /**
@@ -120,7 +138,7 @@ public class CellMO extends WonderlandMO {
      * @param bounds
      */
     void setComputedWorldBounds(Bounds bounds) {
-        computedWorldBounds = bounds;
+        BoundsHandler.get().setComputedWorldBounds(cellID, bounds);
     }
     
     /**
@@ -133,15 +151,16 @@ public class CellMO extends WonderlandMO {
      * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
      */
     public void addChild(CellMO child) throws MultipleParentException {
-        if (childrenRef==null)
-            childrenRef = new ArrayList<ManagedReference>();
+        if (childCellRefs==null)
+            childCellRefs = new ArrayList<ManagedReference>();
         
         child.setParent(AppContext.getDataManager().createReference(this));
         
-        childrenRef.add(AppContext.getDataManager().createReference(child));
+        childCellRefs.add(AppContext.getDataManager().createReference(child));
         
         if (live) {
-            WonderlandContext.getCellManager().cellChildrenChanged(this, child, true);
+           child.setLive(true);
+           BoundsHandler.get().cellChildrenChanged(cellID, child.getCellID(), true);
         }
     }
     
@@ -155,11 +174,12 @@ public class CellMO extends WonderlandMO {
     public boolean removeChild(CellMO child) {
         ManagedReference childRef = AppContext.getDataManager().createReference(child);
         
-        if (childrenRef.remove(childRef)) {
+        if (childCellRefs.remove(childRef)) {
             try {
                 child.setParent(null);
                 if (live) {
-                    WonderlandContext.getCellManager().cellChildrenChanged(this, child, false);
+                    child.setLive(false);
+                    BoundsHandler.get().cellChildrenChanged(cellID, child.getCellID(), false);
                 }
                 return true;
             } catch (MultipleParentException ex) {
@@ -177,10 +197,10 @@ public class CellMO extends WonderlandMO {
      * @return
      */
     public int getNumChildren() {
-        if (childrenRef==null)
+        if (childCellRefs==null)
             return 0;
         
-        return childrenRef.size();
+        return childCellRefs.size();
     }
     
     /**
@@ -188,10 +208,10 @@ public class CellMO extends WonderlandMO {
      * @return
      */
     public Iterator<ManagedReference> getAllChildrenRefs() {
-        if (childrenRef==null)
+        if (childCellRefs==null)
             return new ArrayList<ManagedReference>().iterator();
         
-        return childrenRef.iterator();
+        return childCellRefs.iterator();
     }
         
     /**
@@ -233,14 +253,14 @@ public class CellMO extends WonderlandMO {
         this.transform = (Matrix4d) transform.clone();  
         
         if (live) {
-            WonderlandContext.getCellManager().cellTransformChanged(this);
+            BoundsHandler.get().cellTransformChanged(cellID, transform);
         }
     }
     
     /**
-     * Return the cells transform (a clone)
+     * Return the cells transform
      * 
-     * @return
+     * @return return a clone of the transform
      */
     public Matrix4d getTransform() {
         return (Matrix4d) transform.clone();
@@ -252,6 +272,7 @@ public class CellMO extends WonderlandMO {
      */
     void setLocalToVWorld(Matrix4d transform) {
         this.localToVWorld = transform;
+        BoundsHandler.get().setLocalToVworld(cellID, transform);
     }
     
     /**
@@ -289,31 +310,33 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Set the live state of this cell. Live cells are connected to the
-     * world root, inlive cells are not
+     * world root, non-live cells are not
      * @param live
      */
     void setLive(boolean live) {
         this.live = live;
+        if (live) {
+            try {
+                BoundsHandler.get().createBounds(this);
+                if (getParent()!=null) { // Root cell has a null parent
+                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
+                    BoundsHandler.get().addChild(getParent(), this);
+                }
+            } catch (MultipleParentException ex) {
+                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            BoundsHandler.get().removeChild(getParent(), this);
+            BoundsHandler.get().removeBounds(this);
+        }
+        
+        Iterator<ManagedReference> it = getAllChildrenRefs();
+        while(it.hasNext()) {
+            CellMO child = it.next().get(CellMO.class);
+            child.setLive(live);
+        }
     }
     
-    /**
-     * Handle serialization of Bounds
-     */
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-        SerializationHelper.writeBoundsObject(localBounds, out);
-        SerializationHelper.writeBoundsObject(computedWorldBounds, out);
-    }
-    
-    /**
-     * Handle de-serialization of Bounds
-     */
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        localBounds = SerializationHelper.readBoundsObject(in);
-        computedWorldBounds = SerializationHelper.readBoundsObject(in);
-    }
-
     /**
      * Get the name of the cell, by default the name is the cell id.
      * 
@@ -333,4 +356,138 @@ public class CellMO extends WonderlandMO {
     public void setName(String name) {
         this.name = name;
     }
+    
+    /**
+     * Return the name of this cells channel, null if there is no channel
+     */
+    public String getCellChannelName() {
+        return cellChannelName;
+    }
+    
+    /**
+     * Open the channel for this cell.
+     */
+    protected void openCellChannel() {
+        cellChannelName = WonderlandChannelNames.CELL_PREFIX+"."+cellID.toString();
+        cellChannel = AppContext.getChannelManager().createChannel(cellChannelName, null, Delivery.RELIABLE);        
+    }
+    
+    /**
+     * Returns the fully qualified name of the class that represents
+     * this cell on the client
+     */
+    public String getClientCellClassName() {
+        throw new RuntimeException("Not Implemented");
+    }
+    
+    /**
+     * Get the setupdata for this cell
+     */
+    public CellSetup getSetupData() {
+        return null;
+    }
+    
+    /**
+     * Returns a list of Cells that intersect with the supplied bounds. The
+     * bounds are referenced in world coordinates; Returns a list of references to visible cells.
+     *
+     * This call can only be made on live Cells
+     * 
+     * @param bounds The viewing bounds, in world coordinates
+     * @param monitor The performance monitor
+     * @return A list of visible cells
+     */
+    public Iterator<CellID> getVisibleCells(Bounds bounds, UserPerformanceMonitor monitor) {
+        if (!live)
+            throw new RuntimeException("Cell is not live");
+        
+        return BoundsHandler.get().getVisibleCells(cellID, bounds, monitor);
+    }
+    
+     /**
+     * Add the user to this cells channel
+     */
+    public void addUserToCellChannel(ClientSessionId userID) {
+        if (cellChannel!=null)
+            cellChannel.join(userID.getClientSession(), null);
+    }
+    
+    /**
+     * Remove the user from this cells channel
+     */
+    public void removeUserFromCellChannel(ClientSessionId userID ) {
+        if (cellChannel!=null && userID.getClientSession()!=null)
+            cellChannel.leave(userID.getClientSession());
+    }
+    
+   /**
+     * Open the cell channel, TODO make abstract
+     */
+    protected void openChannel() {
+    }
+    
+    /**
+     * Returns the cells channelID
+     */
+    protected Channel getCellChannel() {
+        return cellChannel;
+    }
+      
+    /**
+     * Get the current version number for this CellMO. This is used by
+     * the UserCellCacheGLO to determine if a user's copy of this cell
+     * is up to date.  If the version is higher than the user's version,
+     * the AvatarCellCacheMO will send a reconfigure message to the associated
+     * client.
+     * @return this cells version number
+     */
+    public long getVersion() {
+        return version;
+    }
+    
+    /**
+     * Increment the cell's version number
+     * @return the new version number
+     */
+    public long incrementVersion() {
+        return version++;
+    }
+    
+    /**
+     * Handle serialization of Bounds
+     */
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        SerializationHelper.writeBoundsObject(localBounds, out);
+    }
+    
+    /**
+     * Handle de-serialization of Bounds
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        localBounds = SerializationHelper.readBoundsObject(in);
+    }
+
+    /**
+     * Set up the cell from the given properties
+     * @param properties the properties to setup with
+     */
+    public void setupCell(BasicCellMOSetup<?> setup) {
+        setTransform(BasicCellMOHelper.getCellOrigin(setup));
+        setLocalBounds(BasicCellMOHelper.getCellBounds(setup));
+    }
+    
+    /**
+     * Reconfigure the cell with the given properties.  This just
+     * calls <code>setupCell()</code>.
+     * @param properties the properties to setup with
+     */
+    public void reconfigureCell(BasicCellMOSetup<?> setup) {
+        // just call setupCell, since there is nothing to do differently
+        // if this is a change
+        setupCell(setup);
+    }
+    
 }
+

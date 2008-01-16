@@ -40,4 +40,9 @@ public class WonderlandChannelNames {
      * cell channel for cell 4 is named "Cell.4.Cell_Channel".
      */
     public static final String CELL_PREFIX = "Cell";
+    
+    /**
+     * Prefix for avatar cell cache channel
+     */
+    public static final String AVATAR_CACHE_PREFIX = "AvatarCache";
 }

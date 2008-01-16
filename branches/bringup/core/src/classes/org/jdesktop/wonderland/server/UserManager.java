@@ -19,8 +19,11 @@ package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.NameNotBoundException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,9 +43,6 @@ public class UserManager implements ManagedObject, Serializable {
     private HashMap<ClientSessionId, ManagedReference> uidToUserRef =
 	    new HashMap<ClientSessionId,ManagedReference>();
     
-    private HashMap<ClientSessionId, ManagedReference> uidToAvatarRef =
-	    new HashMap<ClientSessionId,ManagedReference>();
-        
     /**
      * Name used in binding this object in DataManager
      **/
@@ -53,8 +53,12 @@ public class UserManager implements ManagedObject, Serializable {
     /**
      * Creates a new instance of UserManager
      */
-    public UserManager() {
-        AppContext.getDataManager().setBinding(BINDING_NAME, this);
+    private UserManager() {
+    }
+    
+    public static void initialize() {
+        UserManager mgr = new UserManager();
+        AppContext.getDataManager().setBinding(BINDING_NAME, mgr);
     }
     
     /**
@@ -80,7 +84,6 @@ public class UserManager implements ManagedObject, Serializable {
      * @return reference to the UserGLO
      */
     public ManagedReference removeUser(ClientSessionId userID) {
-        uidToAvatarRef.remove(userID);
         ManagedReference userRef = uidToUserRef.remove(userID);
         return userRef;
     }
@@ -96,25 +99,59 @@ public class UserManager implements ManagedObject, Serializable {
     }
     
     /**
-     * Return the UserGLO object associated with the unique userName
+     * Return the UserMO object associated with the unique userName
      *
-     * @return reference to the UserGLO
+     * @return UserMO object for username, or null if no such user
      */
-    private ManagedReference getUser(String userName) {
-        //return UserGLO.getUserGLORef(userName);
-        return null;
+    public static UserMO getUserMO(String username) {
+        String userObjName = "user_"+username;
+        UserMO user=null;
+        
+        DataManager dataMgr = AppContext.getDataManager();
+        try {
+            user = dataMgr.getBinding(userObjName, UserMO.class);
+        } catch(NameNotBoundException ex) {
+            user = null;
+        }
+        
+        return user;
     }
     
+    /**
+     * Find or create and return the user managed object 
+     */
+//    public ManagedReference getOrCreateUserMO(String username) {
+//        
+//        String userObjName = "user_"+username;
+//        UserMO user=null;
+//        
+//        user = getUserMO(username);
+//        if (user==null) {
+//            user = new UserMO(username);
+//            AppContext.getDataManager().setBinding(userObjName, user);
+//        }
+//        
+//        ManagedReference userRef = AppContext.getDataManager().createReference(user);
+//                
+//        return userRef;
+//    }
+    
+    private UserMO createUserMO(String username) {
+        UserMO ret = new UserMO(username);
+        AppContext.getDataManager().setBinding("user_"+username, ret);
+        return ret;
+    }
+
     /**
      * Returns true if the user with the specified userName is currently logged in, false otherwise.
      */
     public boolean isLoggedIn(String userName) {
-        ManagedReference userRef = getUser(userName);
-        if (userRef==null)
+        UserMO user = getUserMO(userName);
+        if (user==null) {
             return false;
+        }
         
-        //return userRef.get(UserGLO.class).isLoggedIn();
-        return false;
+        return user.isLoggedIn();
     }
     
     /**
@@ -127,13 +164,43 @@ public class UserManager implements ManagedObject, Serializable {
     }
     
     /**
+     * Log the user in from the specificed session with the supplied protocol.
+     * Called by the ProtocolSessionListener once the protocol has been established
+     * 
+     * @param session
+     * @param protocolListener
+     */
+    void login(ClientSession session, ProtocolSessionListener protocolListener) {
+        UserMO user = getUserMO(session.getName());
+        if (user==null) {
+            user = createUserMO(session.getName());
+        }
+        user.login(session, protocolListener);
+        uidToUserRef.put(session.getSessionId(), user.getReference());
+    }
+    
+    /**
+     * Log user out of specified session
+     * 
+     * @param session
+     * @param protocolListener
+     */
+    void logout(ClientSession session, ProtocolSessionListener protocolListener) {
+        UserMO user = getUserMO(session.getName());
+        assert(user!=null);
+        
+        user.logout(session, protocolListener);
+        uidToUserRef.remove(session.getSessionId());
+   }
+    
+    /**
      * Return a Collection of all avatars for currently logged in users
      *
      * @return Collection of ManagedReferences to AvatarCellGLO's
      */
-    public Collection<ManagedReference> getAllAvatars() {
-        return uidToAvatarRef.values();
-    }
+//    public Collection<ManagedReference> getAllAvatars() {
+//        return uidToAvatarRef.values();
+//    }
     
     /**
      *  Return total number of users currently logged in

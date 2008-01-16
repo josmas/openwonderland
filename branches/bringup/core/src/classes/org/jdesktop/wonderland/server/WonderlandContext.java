@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.server.cell.CellManager;
+import org.jdesktop.wonderland.server.cell.MasterCellCache;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
 
@@ -38,16 +38,17 @@ public class WonderlandContext {
     static void intialize() {
         // initialize the comms manager
         CommsManagerFactory.initialize();
-        CellManager.initialize();
+        MasterCellCache.initialize();
+        UserManager.initialize();
     }
     
     /**
-     * Return the cell manager singleton.
+     * Return the master cell cache singleton.
      *
      * @return 
      */
-    public static CellManager getCellManager() {
-        return CellManager.getCellManager();
+    public static MasterCellCache getMasterCellCache() {
+        return MasterCellCache.getMasterCellCache();
     }
 
     /**

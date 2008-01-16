@@ -1,9 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile:$
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,16 +11,22 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision:$
- * $Date:$
- * $State:$
+ * $Revision$
+ * $Date$
+ * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.server;
+
+import com.sun.sgs.app.ClientSession;
 
 /**
- *
+ * Test listener, will eventually support Server Manager
+ * 
  * @author paulby
  */
-public class CellClient {
+public class ServerManagerSessionListener extends WonderlandSessionListener {
 
+    public ServerManagerSessionListener(ClientSession session) {
+        super(session);
+    }
 }

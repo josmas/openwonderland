@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.server.comms.ServerManagerCommsProtocol;
 import org.jdesktop.wonderland.server.comms.WonderlandClientCommsProtocol;
 
 /**
@@ -50,6 +51,11 @@ public class WonderlandBoot implements AppListener, Serializable {
         WonderlandContext.getCommsManager().registerProtocol(
                 new WonderlandClientCommsProtocol());
         
+        // Plugin is not ready, so hardcode for the moment
+        // create a test ServerManager communication protocol
+        WonderlandContext.getCommsManager().registerProtocol(
+                new ServerManagerCommsProtocol());
+        
         // initialize plugins
         ServiceLoader<ServerPlugin> plugins =
                 ServiceLoader.load(ServerPlugin.class);
@@ -59,7 +65,7 @@ public class WonderlandBoot implements AppListener, Serializable {
             plugin.initialize();
         }
         
-        WonderlandContext.getCellManager().loadWorld();
+        WonderlandContext.getMasterCellCache().loadWorld();
     }
     
     /**

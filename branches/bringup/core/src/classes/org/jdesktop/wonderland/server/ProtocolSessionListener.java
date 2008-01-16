@@ -113,6 +113,8 @@ class ProtocolSessionListener
             // all set -- set the wrapped session
             wrapped = cp.createSessionListener(session, psm.getProtocolVersion());
             
+            WonderlandContext.getUserManager().login(session, this);
+            
             // send an OK message
             getSession().send(new OKMessage(psm.getMessageID()).getBytes());
         } catch (ExtractMessageException eme) {
@@ -130,6 +132,7 @@ class ProtocolSessionListener
     public void disconnected(boolean forced) {
         if (wrapped != null) {
             wrapped.disconnected(forced);
+            WonderlandContext.getUserManager().logout(session, this);
         }
     }
     
