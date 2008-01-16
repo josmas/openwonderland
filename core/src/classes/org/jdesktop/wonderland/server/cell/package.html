@@ -11,11 +11,12 @@
   </head>
   <body>
   <p>
-      Each Cell in the world has a bounds defined by the developer. The bounds
-      must encapsulate all the geometry for that cell, if the geometry moves then
-      it may be necessary to update the bounds of the cell. The developer is 
-      responsible for ensuring that the bounds always encapsulates the geometry.
-      Cell bounds are defined in Cell local coordinates.
+      Each Cell in the world has a local bounds defined by the developer. The local bounds
+      must encapsulate all the geometry for that cell, if the geometry changes size
+      or position then it may be necessary to update the bounds of the cell. The developer is 
+      responsible for ensuring that the local bounds always encapsulates the geometry.
+      Cell bounds are defined in Cell local coordinates. The local bounds do not have
+      to encapsulate the bounds of the cells children.
   </p>
   <p>
       The bounds of a cell can overlap the bounds of it's sibling cells.
@@ -30,6 +31,10 @@
       the future.
   </p>
      
+  <p>
+      getCacheVWBounds returns the cell bounds in Virtual World coordinates. This
+      call is only valid for live cells.
+  </p>
   
   </body>
 </html>
