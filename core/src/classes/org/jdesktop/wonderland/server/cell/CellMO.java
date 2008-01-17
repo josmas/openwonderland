@@ -27,7 +27,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.j3d.BoundingBox;
@@ -67,22 +70,33 @@ public class CellMO extends WonderlandMO {
     private String name=null;
     
     private boolean live = false;
-    private String cellChannelName=null;
-    private Channel cellChannel=null;
+    
+    private HashMap<String, Channel> cellChannels = null;
+    public final static String DEFAULT_CHANNEL = "DEFAULT";
     
     private long version;
     
     private static Logger logger = Logger.getLogger(CellMO.class.getName());
     
+    /**
+     * Create a CellMO with a localBounds of an empty sphere and a transform of
+     * null
+     */
     public CellMO() {
-        cellID = WonderlandContext.getMasterCellCache().createCellID(this);
-        transform = null;
+        this(new BoundingSphere(),null);
     }
     
-    public CellMO(Bounds bounds, Matrix4d transform) {
-        this();
+    /**
+     * Create a CellMO with the specified localBounds and transform.
+     * @param localBounds, must not be null
+     * @param transform
+     */
+    public CellMO(Bounds localBounds, Matrix4d transform) {
+        assert(localBounds!=null);
+        
+        cellID = WonderlandContext.getMasterCellCache().createCellID(this);
         this.transform = transform;
-        setLocalBounds(bounds);
+        setLocalBounds(localBounds);
     }
     
     /**
@@ -91,6 +105,7 @@ public class CellMO extends WonderlandMO {
      */
     public void setLocalBounds(Bounds bounds) {
         localBounds = (Bounds) bounds.clone();
+        
         if (live) {
             BoundsHandler.get().setLocalBounds(cellID, bounds);
         }
@@ -207,11 +222,11 @@ public class CellMO extends WonderlandMO {
      * Return an Iterator over the children references for this cell. 
      * @return
      */
-    public Iterator<ManagedReference> getAllChildrenRefs() {
+    public Collection<ManagedReference> getAllChildrenRefs() {
         if (childCellRefs==null)
-            return new ArrayList<ManagedReference>().iterator();
+            return new ArrayList<ManagedReference>();
         
-        return childCellRefs.iterator();
+        return (Collection<ManagedReference>) childCellRefs.clone();
     }
         
     /**
@@ -330,9 +345,8 @@ public class CellMO extends WonderlandMO {
             BoundsHandler.get().removeBounds(this);
         }
         
-        Iterator<ManagedReference> it = getAllChildrenRefs();
-        while(it.hasNext()) {
-            CellMO child = it.next().get(CellMO.class);
+        for(ManagedReference ref : getAllChildrenRefs()) {
+            CellMO child = ref.get(CellMO.class);
             child.setLive(live);
         }
     }
@@ -360,16 +374,49 @@ public class CellMO extends WonderlandMO {
     /**
      * Return the name of this cells channel, null if there is no channel
      */
-    public String getCellChannelName() {
-        return cellChannelName;
+    public Set<String> getCellChannelNames() {
+        if (cellChannels==null)
+            return new HashMap<String, Channel>().keySet();
+        
+        return cellChannels.keySet();
     }
     
     /**
      * Open the channel for this cell.
      */
-    protected void openCellChannel() {
-        cellChannelName = WonderlandChannelNames.CELL_PREFIX+"."+cellID.toString();
-        cellChannel = AppContext.getChannelManager().createChannel(cellChannelName, null, Delivery.RELIABLE);        
+    protected void openCellChannel(String channelName) {
+        String chanName = WonderlandChannelNames.CELL_PREFIX+"."+cellID.toString()+channelName;
+        Channel cellChannel = AppContext.getChannelManager().createChannel(chanName, null, Delivery.RELIABLE); 
+        
+        if (cellChannels==null) {
+            cellChannels = new HashMap<String, Channel>();
+        }
+        
+        cellChannels.put(chanName, cellChannel);
+    }
+    
+   /**
+     * Open the cell channels, TODO make abstract. This is called when a CellMO
+    * is created, any cells which required channels should overload this method
+    * and open the required channels.
+     */
+    protected void openChannels() {
+    }
+    
+    /**
+     * Returns the named channel. Throws NoSuchChannelException if a channel
+     * with the specified name does not exist
+     */
+    protected Channel getCellChannel(String name) throws NoSuchChannelException {
+        Channel c;
+        if (cellChannels==null || (c=cellChannels.get(name))==null)
+            throw new NoSuchChannelException("No Such Channel "+name);
+        
+        return c;
+    }
+      
+    protected void closeCellChannel(String channelName) {
+        throw new RuntimeException("Not Implemented");
     }
     
     /**
@@ -397,7 +444,7 @@ public class CellMO extends WonderlandMO {
      * @param monitor The performance monitor
      * @return A list of visible cells
      */
-    public Iterator<CellID> getVisibleCells(Bounds bounds, UserPerformanceMonitor monitor) {
+    public Collection<CellID> getVisibleCells(Bounds bounds, UserPerformanceMonitor monitor) {
         if (!live)
             throw new RuntimeException("Cell is not live");
         
@@ -405,34 +452,52 @@ public class CellMO extends WonderlandMO {
     }
     
      /**
-     * Add the user to this cells channel
+      * Add the user to this cells channel
+      * 
+      * Throws NoSuchChannelException if the channel with the specified name
+      * does not exist
+      */
+//    public void addUserToCellChannel(String channelName, ClientSessionId userID) throws NoSuchChannelException {
+//           getCellChannel(channelName).join(userID.getClientSession(), null);
+//    }
+    
+    /**
+     * Add user to all the cells channels
+     * @param userID
      */
-    public void addUserToCellChannel(ClientSessionId userID) {
-        if (cellChannel!=null)
-            cellChannel.join(userID.getClientSession(), null);
+    public void addUserToCellChannels(ClientSessionId userID) {
+        if (cellChannels==null)
+            return;
+            
+        for(Channel chan : cellChannels.values())
+            chan.join(userID.getClientSession(), null);
     }
     
     /**
-     * Remove the user from this cells channel
-     */
-    public void removeUserFromCellChannel(ClientSessionId userID ) {
-        if (cellChannel!=null && userID.getClientSession()!=null)
-            cellChannel.leave(userID.getClientSession());
-    }
-    
-   /**
-     * Open the cell channel, TODO make abstract
-     */
-    protected void openChannel() {
-    }
+      * Remove the user from this cells channel
+      * 
+      * Throws NoSuchChannelException if the channel with the specified name
+      * does not exist
+      */
+//    public void removeUserFromCellChannel(String channelName, ClientSessionId userID ) throws NoSuchChannelException {
+//        if (userID.getClientSession()!=null) {
+//             getCellChannel(channelName).leave(userID.getClientSession());
+//        }
+//    }
     
     /**
-     * Returns the cells channelID
+     * Remove user from all cell channels
+     * @param userID
      */
-    protected Channel getCellChannel() {
-        return cellChannel;
+    public void removeUserFromCellChannels(ClientSessionId userID) {
+        if (cellChannels==null)
+            return;
+            
+        for(Channel chan : cellChannels.values())
+            chan.leave(userID.getClientSession());
+        
     }
-      
+    
     /**
      * Get the current version number for this CellMO. This is used by
      * the UserCellCacheGLO to determine if a user's copy of this cell

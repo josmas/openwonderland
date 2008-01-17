@@ -161,10 +161,9 @@ public class MasterCellCache implements ManagedObject, Serializable {
             
             UserPerformanceMonitor monitor = new UserPerformanceMonitor();
             Bounds visBounds = new BoundingSphere(new Point3d(), 5);
-            Iterator<CellID> it = c1.getVisibleCells(visBounds, monitor);
             
-            while(it.hasNext()) {
-                System.out.println(it.next());
+            for(CellID cellID : c1.getVisibleCells(visBounds, monitor)) {
+                System.out.println(c1);
             }
             
             // Octtree test
