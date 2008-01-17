@@ -147,7 +147,7 @@ public class OctTreeCellMO extends GroupCellMO implements CellContainerInterface
 
         ManagedReference ref;
         
-        Iterator<ManagedReference> it = getAllChildrenRefs();
+        Iterator<ManagedReference> it = getAllChildrenRefs().iterator();
         
         while(it.hasNext() && parent==null) {
             ref = it.next();

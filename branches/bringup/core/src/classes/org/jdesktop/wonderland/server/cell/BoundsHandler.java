@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import java.util.Iterator;
+import java.util.Collection;
 import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -65,5 +65,5 @@ public abstract class BoundsHandler {
     
     public abstract void cellBoundsChanged(CellID cellID, Bounds bounds);
     
-    public abstract Iterator<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor);
+    public abstract Collection<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor);
 }

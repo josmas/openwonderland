@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.common.messages;
 
+import java.util.Set;
 import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -37,7 +38,7 @@ public class CellHierarchyMessage extends Message {
     private CellID parentID;
     private Bounds bounds;
     private String cellClassName;
-    private String cellChannelName;
+    private Set<String> cellChannelNames;
     private Matrix4d cellOrigin;
     private CellSetup setupData;
     
@@ -52,7 +53,7 @@ public class CellHierarchyMessage extends Message {
                                 Bounds bounds, 
                                 CellID cellID, 
                                 CellID parentID,
-                                String cellChannelName,
+                                Set<String> cellChannelNames,
                                 Matrix4d cellOrigin,
                                 CellSetup setupData) {
         this.msgType = msgType;
@@ -60,7 +61,7 @@ public class CellHierarchyMessage extends Message {
         this.cellID = cellID;
         this.parentID = parentID;
         this.bounds = bounds;
-        this.cellChannelName = cellChannelName;
+        this.cellChannelNames = cellChannelNames;
         this.cellOrigin = cellOrigin;
         this.setupData = setupData;
     }
@@ -78,7 +79,7 @@ public class CellHierarchyMessage extends Message {
             cell.getComputedWorldBounds(),
             cell.getCellID(),
             parent,
-            cell.getCellChannelName(),
+            cell.getCellChannelNames(),
             cell.getTransform(),
             cell.getSetupData()
             );
@@ -170,7 +171,7 @@ public class CellHierarchyMessage extends Message {
             cellGLO.getComputedWorldBounds(),
             cellGLO.getCellID(),
             cellGLO.getParent().getCellID(),
-            cellGLO.getCellChannelName(),
+            cellGLO.getCellChannelNames(),
             cellGLO.getTransform(),
             cellGLO.getSetupData()
             

@@ -31,6 +31,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -163,7 +164,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
 
         UserPerformanceMonitor monitor = new UserPerformanceMonitor();
         BoundsManager boundsMgr = AppContext.getManager(BoundsManager.class);
-        Iterator<CellID> visCells = boundsMgr.getVisibleCells(rootCellID, proximityBounds, monitor);
+        Collection<CellID> visCells = boundsMgr.getVisibleCells(rootCellID, proximityBounds, monitor);
         
         if (logger.isLoggable(Level.FINER)) {
             logger.finer(monitor.getRevalidateStats());
@@ -185,10 +186,9 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
          * 2. If already present, check to see if has been modified
          * These two steps only happen if we are given access to view the cell
          */
-        while(visCells.hasNext()) {
+        for(CellID cellID : visCells) {
             /* Fetech the cell GLO class associated with the visible cell */
-            CellID  cellId  = visCells.next();
-            CellMO cell    = MasterCellCache.getCell(cellId);
+            CellMO cell    = MasterCellCache.getCell(cellID);
             
             // check this client's access to the cell
             if (!CellAccessControl.canView(user, cell)) {
@@ -198,12 +198,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             }
 
             // find the cell in our current list of cells
-            CellRef cellRef = currentCells.get(cellId);  
+            CellRef cellRef = currentCells.get(cellID);  
             
             if (cellRef == null) {
                 // the cell is new -- add it and send a message
                 cellRef = new CellRef(cell);
-                currentCells.put(cellId, cellRef);
+                currentCells.put(cellID, cellRef);
                     
                 if (logger.isLoggable(Level.FINER))
                     logger.finer("Entering cell " + cell +
@@ -212,7 +212,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 msg = CellHierarchyMessage.newCreateCellMessage(cell);
                 cacheChannel.send(msg.getBytes());
                 AppContext.getDataManager().markForUpdate(cell);
-                cell.addUserToCellChannel(userID);
+                cell.addUserToCellChannels(userID);
             } else if (cell.getVersion() > cellRef.getVersion()) {
                 /*
                  * The cell already exist, but has been modified, so we create
@@ -246,7 +246,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     
                     // get suceeded, so cell is just inactive
                     msg = CellHierarchyMessage.newInactiveCellMessage(cell);
-                    cell.removeUserFromCellChannel(userID);
+                    cell.removeUserFromCellChannels(userID);
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
                     msg = CellHierarchyMessage.newDeleteCellMessage(ref.getCellID());

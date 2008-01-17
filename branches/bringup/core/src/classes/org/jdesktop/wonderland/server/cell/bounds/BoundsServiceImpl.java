@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.cell.bounds;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.service.TransactionProxy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -198,12 +199,12 @@ public class BoundsServiceImpl implements BoundsService {
      * @param perfMonitor performance measurement service
      * @return
      */
-    public Iterator<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor) {
+    public Collection<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor) {
         ArrayList<CellID> result = new ArrayList();
         
         getCellBounds(rootCell).getVisibleCells(result, bounds, perfMonitor);
         
-        return result.iterator();
+        return result;
     }
 
     /**

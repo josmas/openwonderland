@@ -86,7 +86,7 @@ public class GroupCellMO extends CellMO implements CellContainerInterface {
         }
         
         // Try our children first
-        Iterator<ManagedReference> it = getAllChildrenRefs();
+        Iterator<ManagedReference> it = getAllChildrenRefs().iterator();
         while(it.hasNext() && parent==null) {
             CellMO child = it.next().get(CellMO.class);
             if (child instanceof CellContainerInterface)

@@ -29,6 +29,7 @@ import java.beans.XMLEncoder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.SimpleTerrainCellMO;
@@ -141,18 +142,18 @@ public class WFSWriter {
             encoder.close();
         }
         
-        Iterator<ManagedReference> it = cell.getAllChildrenRefs();
-        if (it.hasNext()) {
-            // write children
+        // write children
+        Collection<ManagedReference> children = cell.getAllChildrenRefs();
+        if (!children.isEmpty()) {
             int childCount = 0;
             
             // create a directory
             File childDir = new File(directory, cellName + "-wld");
             childDir.mkdir();
             
-            while(it.hasNext()) {
+            for (ManagedReference ref : children) {
                 // write each child
-                writeCell(it.next().get(CellMO.class), childDir, childCount++);
+                writeCell(ref.get(CellMO.class), childDir, childCount++);
             }
         }
     }
