@@ -60,13 +60,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JToolBar;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.jdesktop.bb.model.ObjectHolder;
-import org.jdesktop.beanbox.ui.CommonUI;
-import org.jdesktop.beanbox.util.StatusBar;
+import org.jdesktop.bb.ui.CommonUI;
+import org.jdesktop.bb.util.StatusBar;
+
 
 /**
  * The UI for listing, sorting, and setting component

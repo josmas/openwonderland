@@ -22,7 +22,11 @@
                     <ide-action name="build"/>
                 </context-menu>
             </view>
-            <subprojects/>
+            <subprojects>
+                <project>core</project>
+                <project>utils</project>
+                <project>test</project>
+            </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
     </configuration>

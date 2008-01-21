@@ -3,14 +3,14 @@
     <target name="all" depends="build, jar"/>
     
     <target name="build">
-        <ant antfile="src/wonderland-doclet/build.xml" inheritAll="false" target="build"/>
+        <ant antfile="wonderland-doclet/build.xml" inheritAll="false" target="build"/>
     </target>
     
     <target name="jar">
-        <ant antfile="src/wonderland-doclet/build.xml" inheritAll="false" target="jar"/>
+        <ant antfile="wonderland-doclet/build.xml" inheritAll="false" target="jar"/>
     </target>
     
     <target name="clean">
-        <ant antfile="src/wonderland-doclet/build.xml" inheritAll="false" target="clean"/>
+        <ant antfile="wonderland-doclet/build.xml" inheritAll="false" target="clean"/>
     </target>
 </project>

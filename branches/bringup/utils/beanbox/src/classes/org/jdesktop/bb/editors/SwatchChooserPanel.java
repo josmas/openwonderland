@@ -38,9 +38,6 @@
 
 package org.jdesktop.bb.editors;
 
-import org.jdesktop.beanbox.editors.*;
-import org.jdesktop.beans.editors.*;
-import org.jdesktop.bb.editors.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

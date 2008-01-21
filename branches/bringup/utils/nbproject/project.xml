@@ -15,6 +15,16 @@
                     <location>.</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
+                <source-folder>
+                    <label>wonderland-doclet/src/classes</label>
+                    <type>java</type>
+                    <location>wonderland-doclet/src/classes</location>
+                </source-folder>
+                <source-folder>
+                    <label>beanbox/src/classes</label>
+                    <type>java</type>
+                    <location>beanbox/src/classes</location>
+                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
@@ -39,6 +49,14 @@
             </ide-actions>
             <view>
                 <items>
+                    <source-folder style="packages">
+                        <label>wonderland-doclet/src/classes</label>
+                        <location>wonderland-doclet/src/classes</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>beanbox/src/classes</label>
+                        <location>beanbox/src/classes</location>
+                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -54,6 +72,15 @@
             </view>
             <subprojects/>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>wonderland-doclet/src/classes</package-root>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>beanbox/src/classes</package-root>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
     </configuration>
 </project>
