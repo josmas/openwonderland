@@ -45,7 +45,6 @@ import java.beans.BeanInfo;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,8 +56,8 @@ import java.util.logging.Logger;
 import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
 
-import org.jdesktop.beanbox.util.BeanInfoFactory;
-import org.jdesktop.beanbox.util.DescriptorComparator;
+import org.jdesktop.bb.util.BeanInfoFactory;
+import org.jdesktop.bb.util.DescriptorComparator;
 
 /**
  * Table model used to obtain property names and values. This model encapsulates an array 
@@ -490,36 +489,36 @@ public class PropertyTableModel extends AbstractTableModel {
      */
     private static void registerPropertyEditors()  {
         PropertyEditorManager.registerEditor(Color.class, 
-                org.jdesktop.beanbox.editors.SwingColorEditor.class);
+                org.jdesktop.bb.editors.SwingColorEditor.class);
         PropertyEditorManager.registerEditor(Font.class, 
-                org.jdesktop.beanbox.editors.SwingFontEditor.class);
+                org.jdesktop.bb.editors.SwingFontEditor.class);
         PropertyEditorManager.registerEditor(Border.class, 
-                org.jdesktop.beanbox.editors.SwingBorderEditor.class);
+                org.jdesktop.bb.editors.SwingBorderEditor.class);
         PropertyEditorManager.registerEditor(Boolean.class, 
-                org.jdesktop.beanbox.editors.SwingBooleanEditor.class);
+                org.jdesktop.bb.editors.SwingBooleanEditor.class);
         PropertyEditorManager.registerEditor(boolean.class, 
-                org.jdesktop.beanbox.editors.SwingBooleanEditor.class);
+                org.jdesktop.bb.editors.SwingBooleanEditor.class);
         PropertyEditorManager.registerEditor(Integer.class, 
-                org.jdesktop.beanbox.editors.SwingIntegerEditor.class);
+                org.jdesktop.bb.editors.SwingIntegerEditor.class);
         PropertyEditorManager.registerEditor(int.class, 
-                org.jdesktop.beanbox.editors.SwingIntegerEditor.class);
+                org.jdesktop.bb.editors.SwingIntegerEditor.class);
         PropertyEditorManager.registerEditor(Float.class, 
-                org.jdesktop.beanbox.editors.SwingNumberEditor.class);
+                org.jdesktop.bb.editors.SwingNumberEditor.class);
         PropertyEditorManager.registerEditor(float.class, 
-                org.jdesktop.beanbox.editors.SwingNumberEditor.class);
+                org.jdesktop.bb.editors.SwingNumberEditor.class);
         PropertyEditorManager.registerEditor(java.awt.Dimension.class,
-                org.jdesktop.beanbox.editors.SwingDimensionEditor.class);
+                org.jdesktop.bb.editors.SwingDimensionEditor.class);
         PropertyEditorManager.registerEditor(java.awt.Point.class,
-                org.jdesktop.beanbox.editors.SwingPointEditor.class);
+                org.jdesktop.bb.editors.SwingPointEditor.class);
         PropertyEditorManager.registerEditor(java.awt.Rectangle.class, 
-                org.jdesktop.beanbox.editors.SwingRectangleEditor.class);
+                org.jdesktop.bb.editors.SwingRectangleEditor.class);
         PropertyEditorManager.registerEditor(java.awt.Insets.class, 
-                org.jdesktop.beanbox.editors.SwingInsetsEditor.class);
+                org.jdesktop.bb.editors.SwingInsetsEditor.class);
         PropertyEditorManager.registerEditor(String.class, 
-                org.jdesktop.beanbox.editors.SwingStringEditor.class);
+                org.jdesktop.bb.editors.SwingStringEditor.class);
         PropertyEditorManager.registerEditor(java.net.URL.class, 
-                org.jdesktop.beanbox.editors.URLEditor.class);
+                org.jdesktop.bb.editors.URLEditor.class);
         PropertyEditorManager.registerEditor(Object.class, 
-                org.jdesktop.beanbox.editors.SwingObjectEditor.class);
+                org.jdesktop.bb.editors.SwingObjectEditor.class);
     }
 }
