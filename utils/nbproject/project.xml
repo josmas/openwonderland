@@ -15,18 +15,6 @@
                     <location>.</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
-                <source-folder>
-                    <label>src/beanbox/classes</label>
-                    <type>java</type>
-                    <location>src/beanbox/classes</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
-                <source-folder>
-                    <label>src/wonderland-doclet/src/classes</label>
-                    <type>java</type>
-                    <location>src/wonderland-doclet/src/classes</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
@@ -51,14 +39,6 @@
             </ide-actions>
             <view>
                 <items>
-                    <source-folder style="packages">
-                        <label>src/beanbox/classes</label>
-                        <location>src/beanbox/classes</location>
-                    </source-folder>
-                    <source-folder style="packages">
-                        <label>src/wonderland-doclet/src/classes</label>
-                        <location>src/wonderland-doclet/src/classes</location>
-                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -74,15 +54,6 @@
             </view>
             <subprojects/>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
-            <compilation-unit>
-                <package-root>src/beanbox/classes</package-root>
-                <source-level>1.5</source-level>
-            </compilation-unit>
-            <compilation-unit>
-                <package-root>src/wonderland-doclet/src/classes</package-root>
-                <source-level>1.5</source-level>
-            </compilation-unit>
-        </java-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
     </configuration>
 </project>
