@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="jar-all" name="wonderland">
 
+    <property name="top.dir" location="."/>
+    
 <target name="jar-all" description="Jar Everything">
     <ant dir="core" target="jar"/>
 </target>
 
-<target name="javadoc" description="Build javadco">
+<target name="javadoc" description="Build javadoc">
     <ant dir="core" target="javadoc"/>
 </target>
 
 <target name="release" depends="jar-all, javadoc" description="Build release">
+</target>
+
+<target name="daily-build" depends="release" description="Do the daily build">
+  <copy todir="/export/home/lg3dadmin/lg3d/packages/api-update">
+    <fileset dir="core/release/linux-i686/debug/javadoc/all"/>
+    <fileset dir="core/release/linux-i686/debug/javadoc/api"/>
+  </copy>
+
 </target>
 
 </project>
