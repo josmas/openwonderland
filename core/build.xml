@@ -418,7 +418,7 @@
     <target name="-build-wonderland-doclet" description="Build Wonderland doclet in utils">
         <property name="wonderland.doclet.dir" location="${top.dir}/utils/wonderland-doclet"/>
         
-        <ant antfile="${wonderland.doclet.dir}/build.xml" target="dist" inheritall="false"/>
+        <ant antfile="${wonderland.doclet.dir}/build.xml" target="dist" inheritall="false" dir="${wonderland.doclet.dir}"/>
     </target>
     
     <import file="${build-import.dir}/build-package.xml"/>
