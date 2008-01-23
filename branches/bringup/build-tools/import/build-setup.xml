@@ -130,16 +130,30 @@
 
 	<!-- JInput-->
 	<path location="${jars.javaext.dir}/jinput.jar"/>
+
+        <!-- JME -->
+	<path location="${common.javaext.dir}/jme.jar"/>
+	<path location="${common.javaext.dir}/jme-gamestates.jar"/>
+	<path location="${common.javaext.dir}/jme-awt.jar"/>
+	<path location="${common.javaext.dir}/jme-audio.jar"/>
+	<path location="${common.javaext.dir}/jme-scene.jar"/>
+	<path location="${common.javaext.dir}/jme-model.jar"/>
+	<path location="${common.javaext.dir}/jme-collada.jar"/>
+	<path location="${common.javaext.dir}/jme-xml.jar"/>
+	<path location="${common.javaext.dir}/lwjgl.jar"/>
+
     </pathconvert>
 
     <property name="env.path.defvalue" value="${env.path.value}:${native.javaext.dir}:${yjp.home}/bin/${yjp.platform.dir}"/>
 
     <!-- Looking Glass core jars... -->
+    <!--
     <pathconvert property="lg3d-core.classpath">
 	<path location="${common.javaext.dir}/lg3d-core.jar"/>
 	<path location="${common.javaext.dir}/lg3d-awt-toolkit.jar"/>
 	<path location="${common.javaext.dir}/lg3d-demo-apps.jar"/>
     </pathconvert>
+    -->
     
     <!-- Exta temporary Jars needed -->
     <pathconvert property="extras.classpath">
@@ -165,29 +179,6 @@
         <path location="${common.javaext.dir}/TimingFramework.jar"/>
     </pathconvert>
     
-    <!-- Josh's AB5K stuff... -->
-<!--    <property name="ab5k.home" location="../josh_ab5k/windowhacks/container/"/>
-    <pathconvert property="ab5k.classpath">
-        <path location="${ab5k.home}/build/classes"/>
-        <path location="../josh_ab5k/windowhacks/spec/dist/DeskletSpecification.jar"/>
-        <path location="../josh_ab5k/swingx/dist/swingx.jar"/>
-        <path location="${ab5k.home}/lib/javaws.jar"/>
-        <path location="../josh_ab5k/joshy/dist/joshy-swingx-incubator.jar"/>
-        <path location="../josh_ab5k/swingx/lib/optional/Filters.jar"/>
-        <path location="${ab5k.home}/lib/rome-0.8.jar"/>
-        <path location="${ab5k.home}/lib/JoshUtil.jar"/>
-        <path location="${ab5k.home}/lib/TimingFramework.jar"/>
-        <path location="${ab5k.home}/lib/AB5kUtils.jar"/>
-        <path location="${ab5k.home}/lib/swing-worker.jar"/>
-        <path location="${ab5k.home}/lib/MultipleGradientPaint.jar.jar"/>
-        <path location="${ab5k.home}/lib/jdom-1.0.jar"/>
-        <path location="${ab5k.home}/lib/commons-codec-1.3.jar"/>
-        <path location="${ab5k.home}/lib/commons-httpclient-3.0.1.jar"/>
-        <path location="${ab5k.home}/lib/commons-logging-1.1.jar"/>
-        <path location="${ab5k.home}/lib/AppleStubs.jar"/>
-    </pathconvert>
-    -->
-
     <pathconvert property="voice.classpath">
 	<path location="${voicelib.dir}/${voicelib-jar}"/>
 	<path location="${voicebridge.dir}/bridge_connector.jar"/>
@@ -240,7 +231,6 @@
     
     <pathconvert property="wonderland-common-compile.classpath">
         <path path="${j3d.classpath}"/>
-	<path path="${lg3d-core.classpath}"/>
         <path path="${voice.classpath}"/>
 	<path path="${darkstar.classpath}"/>
         <path path="${wonderland-incubator.classpath}"/>
@@ -253,7 +243,6 @@
 	<path path="${core.ext.classpath}"/>
         <path path="${panorama.classpath}"/>
 	<path location="${build.lib.dir}/bean-builder.jar"/>
-	<path path="${ab5k.classpath}"/>
 	<path path="${extras.classpath}"/>
         <path location="${javaext.dir}/bridgemonitor/BridgeMonitor.jar"/>
     </pathconvert>
@@ -262,6 +251,7 @@
 	<path path="${wonderland-client-compile.classpath}"/>
 	<path location="${build.lib.dir}/wonderland-client.jar"/>
 	<path location="${build.lib.dir}/wonderland-utils.jar"/>
+	<path location="${build.lib.dir}/wonderland-common.jar"/>
 	<path location="${build.lib.dir}/bean-builder.jar"/>
         <path path="${module-client.classpath}"/>
     </pathconvert>
@@ -277,6 +267,7 @@
 	<path path="${wonderland-server-compile.classpath}"/>
         <path path="${panorama.server.classpath}"/>
 	<path location="${build.lib.dir}/wonderland-server.jar"/>
+	<path location="${build.lib.dir}/wonderland-common.jar"/>
 	<path location="${sgs.lib.dir}/listener.jar"/>
         <path path="${module-server.classpath}"/>
     </pathconvert>
