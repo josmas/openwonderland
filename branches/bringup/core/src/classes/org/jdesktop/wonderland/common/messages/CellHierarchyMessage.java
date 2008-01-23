@@ -17,9 +17,9 @@
  */
 package org.jdesktop.wonderland.common.messages;
 
-import java.util.Set;
 import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
  *
  * @author paulby
  */
+@ExperimentalAPI
 public class CellHierarchyMessage extends Message {
     
     public enum ActionType { LOAD_CELL, MOVE_CELL, CELL_INACTIVE, CHANGE_PARENT, SET_WORLD_ROOT,
@@ -38,7 +39,7 @@ public class CellHierarchyMessage extends Message {
     private CellID parentID;
     private Bounds bounds;
     private String cellClassName;
-    private Set<String> cellChannelNames;
+    private String cellChannelName;
     private Matrix4d cellOrigin;
     private CellSetup setupData;
     
@@ -53,7 +54,7 @@ public class CellHierarchyMessage extends Message {
                                 Bounds bounds, 
                                 CellID cellID, 
                                 CellID parentID,
-                                Set<String> cellChannelNames,
+                                String cellChannelName,
                                 Matrix4d cellOrigin,
                                 CellSetup setupData) {
         this.msgType = msgType;
@@ -61,7 +62,7 @@ public class CellHierarchyMessage extends Message {
         this.cellID = cellID;
         this.parentID = parentID;
         this.bounds = bounds;
-        this.cellChannelNames = cellChannelNames;
+        this.cellChannelName = cellChannelName;
         this.cellOrigin = cellOrigin;
         this.setupData = setupData;
     }
@@ -79,7 +80,7 @@ public class CellHierarchyMessage extends Message {
             cell.getComputedWorldBounds(),
             cell.getCellID(),
             parent,
-            cell.getCellChannelNames(),
+            cell.getCellChannelName(),
             cell.getTransform(),
             cell.getSetupData()
             );
@@ -171,7 +172,7 @@ public class CellHierarchyMessage extends Message {
             cellGLO.getComputedWorldBounds(),
             cellGLO.getCellID(),
             cellGLO.getParent().getCellID(),
-            cellGLO.getCellChannelNames(),
+            cellGLO.getCellChannelName(),
             cellGLO.getTransform(),
             cellGLO.getSetupData()
             

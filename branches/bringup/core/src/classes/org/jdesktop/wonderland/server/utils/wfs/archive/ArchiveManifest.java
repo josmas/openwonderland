@@ -18,7 +18,7 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs.archive;
+package org.jdesktop.wonderland.server.utils.wfs.archive;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +32,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
-import org.jdesktop.wonderland.common.wfs.WFS;
+import org.jdesktop.wonderland.server.utils.wfs.WFS;
 
 /**
  * The ArchiveManifest class represents a tree of entries found in the JAR

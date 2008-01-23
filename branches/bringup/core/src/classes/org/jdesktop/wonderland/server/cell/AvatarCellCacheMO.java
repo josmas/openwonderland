@@ -212,7 +212,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 msg = CellHierarchyMessage.newCreateCellMessage(cell);
                 cacheChannel.send(msg.getBytes());
                 AppContext.getDataManager().markForUpdate(cell);
-                cell.addUserToCellChannels(userID);
+                cell.addUserToCellChannel(userID);
             } else if (cell.getVersion() > cellRef.getVersion()) {
                 /*
                  * The cell already exist, but has been modified, so we create
@@ -246,7 +246,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     
                     // get suceeded, so cell is just inactive
                     msg = CellHierarchyMessage.newInactiveCellMessage(cell);
-                    cell.removeUserFromCellChannels(userID);
+                    cell.removeUserFromCellChannel(userID);
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
                     msg = CellHierarchyMessage.newDeleteCellMessage(ref.getCellID());

@@ -18,7 +18,7 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs.archive;
+package org.jdesktop.wonderland.server.utils.wfs.archive;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,8 +35,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-import org.jdesktop.wonderland.common.wfs.*;
-import org.jdesktop.wonderland.common.wfs.WFS;
+import org.jdesktop.wonderland.server.utils.wfs.*;
+import org.jdesktop.wonderland.server.utils.wfs.WFS;
 
 /**
  * The ArchiveWFS class extends the WFS abstract class and represents a Wonderland

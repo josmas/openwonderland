@@ -71,12 +71,12 @@ public class CellMO extends WonderlandMO {
     
     private boolean live = false;
     
-    private HashMap<String, Channel> cellChannels = null;
-    public final static String DEFAULT_CHANNEL = "DEFAULT";
+    private Channel cellChannel = null;
+    private String channelName =null;
     
     private long version;
     
-    private static Logger logger = Logger.getLogger(CellMO.class.getName());
+    protected static Logger logger = Logger.getLogger(CellMO.class.getName());
     
     /**
      * Create a CellMO with a localBounds of an empty sphere and a transform of
@@ -240,6 +240,17 @@ public class CellMO extends WonderlandMO {
     }
     
     /**
+     * Detach this cell from its parent
+     */
+    public void detach() {
+        CellMO parent = getParent();
+        if (parent==null)
+            return;
+        
+        parent.removeChild(this);
+    }
+    
+    /**
      * Set the parent of this cell. Package private because the parent is
      * controlled through add and remove child.
      * 
@@ -372,27 +383,12 @@ public class CellMO extends WonderlandMO {
     }
     
     /**
-     * Return the name of this cells channel, null if there is no channel
-     */
-    public Set<String> getCellChannelNames() {
-        if (cellChannels==null)
-            return new HashMap<String, Channel>().keySet();
-        
-        return cellChannels.keySet();
-    }
-    
-    /**
      * Open the channel for this cell.
      */
-    protected void openCellChannel(String channelName) {
-        String chanName = WonderlandChannelNames.CELL_PREFIX+"."+cellID.toString()+channelName;
-        Channel cellChannel = AppContext.getChannelManager().createChannel(chanName, null, Delivery.RELIABLE); 
+    protected void openCellChannel() {
+        channelName = WonderlandChannelNames.CELL_PREFIX+"."+cellID.toString();
+        cellChannel = AppContext.getChannelManager().createChannel(channelName, null, Delivery.RELIABLE); 
         
-        if (cellChannels==null) {
-            cellChannels = new HashMap<String, Channel>();
-        }
-        
-        cellChannels.put(chanName, cellChannel);
     }
     
    /**
@@ -403,20 +399,35 @@ public class CellMO extends WonderlandMO {
     protected void openChannels() {
     }
     
+    
     /**
-     * Returns the named channel. Throws NoSuchChannelException if a channel
-     * with the specified name does not exist
+     * Add user to all the cells channels, if there is no channel simply return
+     * @param userID
      */
-    protected Channel getCellChannel(String name) throws NoSuchChannelException {
-        Channel c;
-        if (cellChannels==null || (c=cellChannels.get(name))==null)
-            throw new NoSuchChannelException("No Such Channel "+name);
-        
-        return c;
+    public void addUserToCellChannel(ClientSessionId userID) {
+        if (cellChannel==null)
+            return;
+            
+        cellChannel.join(userID.getClientSession(), null);
     }
-      
-    protected void closeCellChannel(String channelName) {
-        throw new RuntimeException("Not Implemented");
+    
+    /**
+     * Remove user from all cell channels
+     * @param userID
+     */
+    public void removeUserFromCellChannel(ClientSessionId userID) {
+        if (cellChannel==null)
+            return;
+            
+        cellChannel.leave(userID.getClientSession());        
+    }
+    
+    /**
+     * Return the name of this cells channel, or null if this cell has no channel
+     * @return
+     */
+    public String getCellChannelName() {
+        return channelName;
     }
     
     /**
@@ -449,53 +460,6 @@ public class CellMO extends WonderlandMO {
             throw new RuntimeException("Cell is not live");
         
         return BoundsHandler.get().getVisibleCells(cellID, bounds, monitor);
-    }
-    
-     /**
-      * Add the user to this cells channel
-      * 
-      * Throws NoSuchChannelException if the channel with the specified name
-      * does not exist
-      */
-//    public void addUserToCellChannel(String channelName, ClientSessionId userID) throws NoSuchChannelException {
-//           getCellChannel(channelName).join(userID.getClientSession(), null);
-//    }
-    
-    /**
-     * Add user to all the cells channels
-     * @param userID
-     */
-    public void addUserToCellChannels(ClientSessionId userID) {
-        if (cellChannels==null)
-            return;
-            
-        for(Channel chan : cellChannels.values())
-            chan.join(userID.getClientSession(), null);
-    }
-    
-    /**
-      * Remove the user from this cells channel
-      * 
-      * Throws NoSuchChannelException if the channel with the specified name
-      * does not exist
-      */
-//    public void removeUserFromCellChannel(String channelName, ClientSessionId userID ) throws NoSuchChannelException {
-//        if (userID.getClientSession()!=null) {
-//             getCellChannel(channelName).leave(userID.getClientSession());
-//        }
-//    }
-    
-    /**
-     * Remove user from all cell channels
-     * @param userID
-     */
-    public void removeUserFromCellChannels(ClientSessionId userID) {
-        if (cellChannels==null)
-            return;
-            
-        for(Channel chan : cellChannels.values())
-            chan.leave(userID.getClientSession());
-        
     }
     
     /**

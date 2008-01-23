@@ -1,7 +1,7 @@
 /**
  * Project Looking Glass
  *
- * $RCSfile: WFSArchiveCell.java,v $
+ * $RCSfile: WFSFileCell.java,v $
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -18,19 +18,19 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs.archive;
+package org.jdesktop.wonderland.server.utils.wfs.file;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.jar.JarEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.wfs.InvalidWFSCellException;
-import org.jdesktop.wonderland.common.wfs.WFS;
-import org.jdesktop.wonderland.common.wfs.WFSCell;
+import org.jdesktop.wonderland.server.utils.wfs.InvalidWFSCellException;
+import org.jdesktop.wonderland.server.utils.wfs.WFS;
+import org.jdesktop.wonderland.server.utils.wfs.WFSCell;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
 import org.jdesktop.wonderland.server.setup.InvalidCellMOSetupException;
 
@@ -41,32 +41,37 @@ import org.jdesktop.wonderland.server.setup.InvalidCellMOSetupException;
  * <p>
  * @author jslott
  */
-public class WFSArchiveCell implements ExceptionListener, WFSCell {
+public class WFSFileCell implements ExceptionListener, WFSCell {
     /** logger */
     private static final Logger logger =
-            Logger.getLogger(WFSArchiveCell.class.getName());
-    
-    /* The manifest file that permits access to JAR file entries */
-    private ArchiveManifest manifest;
+            Logger.getLogger(WFSFileCell.class.getName());
     
     /* The name of the cell, without the standard suffix */
     private String cellName;
     
+    /* The File of the referring WFS Directory */
+    private File file = null;
+ 
     /* The canonical, unique path name of the cell file in the WFS */
     private String canonicalName;
     
     /** Creates a new instance of WFSCell */
-    public WFSArchiveCell(ArchiveManifest manifest, String canonicalName, String cell) {
-        this.manifest = manifest;
+    public WFSFileCell(File file) {
+        this.file = file;
         
         /* Parse out the name of the cell, assuming it has the proper suffix */
         try {
-            int index          = cell.indexOf(WFS.CELL_FILE_SUFFIX);
-            this.cellName      = cell.substring(0, index);
-            this.canonicalName = canonicalName;
+            int index          = file.getName().indexOf(WFS.CELL_FILE_SUFFIX);
+            this.cellName      = file.getName().substring(0, index);
+            this.canonicalName = file.getCanonicalPath();
         } catch (java.lang.IndexOutOfBoundsException excp) {
             WFS.getLogger().log(Level.SEVERE, "A WFSCell class was created with an invalid file");
-            WFS.getLogger().log(Level.SEVERE, "file name: " + canonicalName);
+            WFS.getLogger().log(Level.SEVERE, "file name: " + file.getName());
+            this.cellName = null;
+            this.canonicalName = null;
+        } catch (java.io.IOException excp) {
+            WFS.getLogger().log(Level.SEVERE, "A WFSCell class was created with an invalid file");
+            WFS.getLogger().log(Level.SEVERE, "file name: " + file.getName());
             this.cellName = null;
             this.canonicalName = null;
         }
@@ -78,12 +83,12 @@ public class WFSArchiveCell implements ExceptionListener, WFSCell {
     public String getCellName() {
         return this.cellName;
     }
-       
+        
     /**
-     * Returns the manifest object of the JAR file
+     * Returns the File associated with this WFS file
      */
-    public ArchiveManifest getArchiveManifest() {
-        return this.manifest;
+    public File getFile() {
+        return this.file;
     }
     
     /**
@@ -91,10 +96,7 @@ public class WFSArchiveCell implements ExceptionListener, WFSCell {
      * modified.
      */
     public long getLastModified() {
-        /* Fetch the entry, if it does not exist, return -1 */
-        String   path  = this.getCanonicalName();
-        JarEntry entry = this.getArchiveManifest().getJarEntry(path);
-        return (entry != null) ? entry.getTime() : -1;
+        return this.getFile().lastModified();
     }
     
     /**
@@ -111,29 +113,28 @@ public class WFSArchiveCell implements ExceptionListener, WFSCell {
      * @throw FileNotFoundException If the file cannot be read
      * @throw InvalidWFSCellException If the cell in the file is invalid
      */
-    public <T extends CellMOSetup> T decode() throws FileNotFoundException, InvalidWFSCellException {
+    public <T extends CellMOSetup> T decode() 
+        throws FileNotFoundException, InvalidWFSCellException
+    {
         T setup = null;
         
-        /*
-         * Decode the XML file from disk and return the Properties class read
-         */
+    /*
+     * Decode the XML file from disk and return the Properties class read
+     */
         try {
-            String      fname = this.getCanonicalName();
-            System.out.println("READING CELL: " + fname);
-            InputStream ais   = this.manifest.getEntryInputStream(fname);
-            XMLDecoder  d     = new XMLDecoder(new BufferedInputStream(ais));
+            FileInputStream fis     = new FileInputStream(this.getFile());
+            XMLDecoder      d       = new XMLDecoder(new BufferedInputStream(fis));
             d.setExceptionListener(this);
             setup = (T) d.readObject();
             d.close();
         } catch (java.lang.Exception excp) {
             /* Ignore any exception here and just set the class to null */
-            System.out.println(excp.toString());
             setup = null;
         }
         
         /* If the object returned is invalid, check if null */
         if (setup == null) {
-            throw new InvalidWFSCellException("Invalid Cell from file: " + this.getCellName());
+            throw new InvalidWFSCellException("Invalid Cell from file: " + this.getFile());
         }
         
         /* Invoke the validate method to make sure all of the properties are consistent */
@@ -151,7 +152,6 @@ public class WFSArchiveCell implements ExceptionListener, WFSCell {
      */
     public void exceptionThrown(Exception e) {
         // log a warning
-        logger.log(Level.WARNING, "Error processing WFS properties " + 
-                   canonicalName, e);
+        logger.log(Level.WARNING, "Error processing WFS config file " + file, e);
     }
 }

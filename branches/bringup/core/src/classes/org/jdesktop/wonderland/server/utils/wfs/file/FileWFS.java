@@ -18,7 +18,7 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs.file;
+package org.jdesktop.wonderland.server.utils.wfs.file;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -27,11 +27,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Level;
-import org.jdesktop.wonderland.common.wfs.InvalidWFSException;
-import org.jdesktop.wonderland.common.wfs.WFS;
-import org.jdesktop.wonderland.common.wfs.WFSAliases;
-import org.jdesktop.wonderland.common.wfs.WFSCellDirectory;
-import org.jdesktop.wonderland.common.wfs.WFSVersion;
+import org.jdesktop.wonderland.server.utils.wfs.InvalidWFSException;
+import org.jdesktop.wonderland.server.utils.wfs.WFS;
+import org.jdesktop.wonderland.server.utils.wfs.WFSAliases;
+import org.jdesktop.wonderland.server.utils.wfs.WFSCellDirectory;
+import org.jdesktop.wonderland.server.utils.wfs.WFSVersion;
 
 
 /**

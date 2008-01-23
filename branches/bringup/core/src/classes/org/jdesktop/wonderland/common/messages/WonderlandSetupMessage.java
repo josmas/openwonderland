@@ -15,20 +15,13 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.cell;
-
-import org.jdesktop.wonderland.ExperimentalAPI;
+package org.jdesktop.wonderland.common.messages;
 
 /**
- * Exception generated if user attempts to join or leave an undefined channel
+ * Ask the server to setup a full wonderland client
  * 
  * @author paulby
  */
-@ExperimentalAPI
-class NoSuchChannelException extends Exception {
-
-    public NoSuchChannelException(String msg) {
-        super(msg);
-    }
-
+public class WonderlandSetupMessage extends Message {
+    
 }

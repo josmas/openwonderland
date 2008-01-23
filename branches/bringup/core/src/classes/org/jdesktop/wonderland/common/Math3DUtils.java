@@ -23,12 +23,14 @@ import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Utilities for dealing with 3D Math
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class Math3DUtils {
 
     /**

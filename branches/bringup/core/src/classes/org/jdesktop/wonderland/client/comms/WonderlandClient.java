@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
 import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.WonderlandSetupMessage;
 
 /**
  * This class provides the client side instance of a particular Wonderland
@@ -51,8 +52,15 @@ public class WonderlandClient extends BaseClient {
         super (server);
         
         // add default channel listeners
-        registerChannelListenerFactory(new DefaultChannelListenerFactory());   
+        registerChannelListenerFactory(new DefaultChannelListenerFactory());  
+        
     }
+    
+//    @Override
+//    public void loggedIn() {
+//        send(new WonderlandSetupMessage());
+//        
+//    }
     
     /**
      * Return the Wonderland protocol name

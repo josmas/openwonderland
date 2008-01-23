@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.cell.bounds;
 import java.util.Collection;
 import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
+import org.jdesktop.wonderland.PrivateAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 
@@ -27,6 +28,7 @@ import org.jdesktop.wonderland.server.UserPerformanceMonitor;
  *
  * @author paulby
  */
+@PrivateAPI
 public interface BoundsManager {
 
     public void cellTransformChanged(CellID cellID, Matrix4d transform);
