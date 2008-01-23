@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="jar-all" name="wonderland-core">
+<project basedir="." default="jar" name="wonderland-core">
 
     <property name="top.dir" location=".."/>
     <property name="current.dir" location="."/>
@@ -40,7 +40,6 @@
     <target name="compile-common" depends="init" description="Compile common code">
         <wl-compile>
             <compile-classes>
-                <include name="org/jdesktop/wonderland/*.java"/>
                 <include name="org/jdesktop/wonderland/common/**"/>
             </compile-classes>
             
@@ -77,7 +76,7 @@
     </target>
 
     <!-- build wonderland jars -->
-    <target name="jar" depends="compile, jar-client, jar-server" 
+    <target name="jar" depends="compile, jar-client, jar-server, jar-common" 
             description="Build Wonderland jars"/>
     
     <!-- Build the client jars -->
@@ -99,14 +98,22 @@
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-client.jar">    
             <fileset dir="${build.classes.dir}/">
                 <include name="org/jdesktop/wonderland/client/**"/>
-                <include name="org/jdesktop/wonderland/common/**"/>
             </fileset>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/scenemanager/hud/resources/**"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/scenemanager/resources/**"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.png"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.properties"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/collada/**"/>
          </jar>
-         
+     </target>
+        
+     <target name="jar-common" depends="compile-common" 
+            description="Build common jar">
+       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-common.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/common/**"/>
+            </fileset>
+         </jar>
     </target>
     
     <!-- Build the server jar -->
@@ -115,7 +122,6 @@
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-server.jar">
             <fileset dir="${build.classes.dir}">
 		<include name="org/jdesktop/wonderland/server/**"/>
-		<include name="org/jdesktop/wonderland/common/**"/>
 	    </fileset>
         </jar>
     </target>
@@ -127,10 +133,6 @@
         <antcall target="run"/>
     </target>
     
-    <target name="run-xapps">
-        <antcall target="run"/>
-    </target>
-
     <target name="run" depends="jar, modules-client-classpath" description="Run Project Wonderland client connecting to Sun Game Server">
 
         <java classname="org.jdesktop.wonderland.client.Main" fork="true">
@@ -190,6 +192,17 @@
 
     <target name="run-manager" depends="jar" description="Run manager UI">
         <java classname="org.jdesktop.lg3d.wonderland.management.ManagerUI" fork="true">
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+           
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run-api" depends="jar" description="Run manager UI">
+        <java classname="org.jdesktop.wonderland.client.APIVersion" fork="true">
             <jvmarg value="-Dsgs.port=${sgs.port}"/>
             <jvmarg value="-Dsgs.server=${sgs.server}"/>
            
@@ -278,14 +291,6 @@
         </java>
     </target> 
     
-    <target name="run-ab5k">
-        <java fork="true" classname="ab5k.Main">
-            <classpath>
-                <pathelement path="${ab5k.classpath}"/>
-            </classpath>
-        </java>
-    </target>
-    
     <target name="run-checksum" depends="jar" description="Generate asset checksums">
         <java classname="org.jdesktop.lg3d.wonderland.scenemanager.GenerateChecksums" fork="true">
             <jvmarg value="-Djava.util.logging.config.file=logging.properties"/>
@@ -296,22 +301,44 @@
 	</java>
     </target>
     
-    <target name="run-map" depends="jar">
-        <java classname="org.jdesktop.lg3d.wonderland.scenemanager.map.MapTest" fork="true">
-            <classpath>
-                <pathelement location="${build.lib.dir}/wonderland-client.jar"/>
-            </classpath>
-        </java>
-        
-    </target>
-
     <target name="run-dbtest" depends="jar">
-        <java classname="org.jdesktop.lg3d.wonderland.scenemanager.AssetDB" fork="true">
+        <java classname="org.jdesktop.wonderland.client.datamgr.AssetDB" fork="true">
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
 	    </classpath>
         </java>
 	<syspropertyset refid="wonderland.properties"/>
+    </target>
+    
+    <target name="run-jmetest" depends="jar-client">
+        <java classname="org.jdesktop.wonderland.client.JmeJFrame" fork="true">
+            <!--<jvmarg value="-agentpath:/usr/local/netbeans/profiler2/lib/deployed/jdk15/linux/libprofilerinterface.so=/usr/local/netbeans/profiler2/lib,5140"/>
+            -->
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+    
+    <target name="run-collada2jme" depends="jar-client">
+        <java classname="com.jmex.model.collada.ColladaToJme" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+            <arg value="mpk20.dae"/>
+            <arg value="/home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models/textures/default_building"/>
+            <arg value="mpk20.jme"/>
+        </java>
     </target>
     
     <target name="run-texture-prep" depends="jar" description="Prepare textures">
