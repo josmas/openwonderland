@@ -18,14 +18,14 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs.file;
+package org.jdesktop.wonderland.server.utils.wfs.file;
 
 import java.io.File;
 import java.util.logging.Level;
-import org.jdesktop.wonderland.common.wfs.NoSuchWFSDirectory;
-import org.jdesktop.wonderland.common.wfs.WFS;
-import org.jdesktop.wonderland.common.wfs.WFSCell;
-import org.jdesktop.wonderland.common.wfs.WFSCellDirectory;
+import org.jdesktop.wonderland.server.utils.wfs.NoSuchWFSDirectory;
+import org.jdesktop.wonderland.server.utils.wfs.WFS;
+import org.jdesktop.wonderland.server.utils.wfs.WFSCell;
+import org.jdesktop.wonderland.server.utils.wfs.WFSCellDirectory;
 
 /**
  * The WFSCellDirectory is a directory within a Wonderland File System (WFS)

@@ -18,7 +18,7 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs;
+package org.jdesktop.wonderland.server.utils.wfs;
 
 import java.io.FileNotFoundException;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;

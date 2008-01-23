@@ -18,7 +18,7 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs;
+package org.jdesktop.wonderland.server.utils.wfs;
 
 /**
  * The NoSuchWFSDirectory is thrown if a directory cannot be found in the WFS

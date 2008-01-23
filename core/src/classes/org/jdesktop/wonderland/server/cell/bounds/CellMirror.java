@@ -44,6 +44,7 @@ public class CellMirror {
     private Matrix4d localToVWorld;
     private CellID cellID;
     private Matrix4d transform;
+    private Class cellClass;
     
     private CellMirror parent;
     private ArrayList<CellMirror> children = null;
@@ -53,6 +54,7 @@ public class CellMirror {
         cellID = cell.getCellID();
         localBounds = cell.getLocalBounds();
         transform = cell.getTransform();
+        cellClass = cell.getClass();
     }
     
     /**

@@ -18,7 +18,7 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs;
+package org.jdesktop.wonderland.server.utils.wfs;
 
 /**
  * The InvalidCellGLOSetupException is thrown if an invalid set of JavaBeans

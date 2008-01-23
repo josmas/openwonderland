@@ -18,16 +18,14 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs;
+package org.jdesktop.wonderland.server.utils.wfs;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.wfs.archive.ArchiveWFS;
-import org.jdesktop.wonderland.common.wfs.file.FileWFS;
+import org.jdesktop.wonderland.server.utils.wfs.archive.ArchiveWFS;
+import org.jdesktop.wonderland.server.utils.wfs.file.FileWFS;
 
 /**
  * The WFS class represents a Wonderland File System (WFS). A WFS is a series

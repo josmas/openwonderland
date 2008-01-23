@@ -23,6 +23,7 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -39,6 +40,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.bounds.BoundsManager;
+import org.jdesktop.wonderland.server.utils.wfs.WFS;
+import org.jdesktop.wonderland.server.utils.wfs.WFSCell;
 
 /**
  *
@@ -198,6 +201,30 @@ public class MasterCellCache implements ManagedObject, Serializable {
     }
     
     /**
+     * Builds a world defined by a wonderland file system (e.g. on disk). The
+     * world's root directory must be set in the system property 
+     * wonderland.wfs.root
+     */
+//    private void buildWFSWorld() {
+//        /* Fetch the world root URI, if null, then log an error */
+//        URL root = WonderlandServerConfig.getDefault().getWorldRoot();
+//        if (root == null) {
+//            WFS.getLogger().log(Level.SEVERE, "World Root attribute not set in server config file.");
+//            return;
+//        }
+//
+//        /* Attempt to create a new GLO based upon the WFS root, if not log an error */
+//        WFSCellMO glo = new WFSCellMO(root);
+//        try {
+//            AppContext.getDataManager().setBinding(glo.getBindingName(), glo);
+//            this.addCell(glo);
+//        } catch (java.lang.Exception excp) {
+//            WFS.getLogger().log(Level.SEVERE, "Unable to load WFS into world: " + root.toString());
+//            WFS.getLogger().log(Level.SEVERE, excp.toString());
+//        }
+//    }
+
+    /**
      * Creates a bounding box with the specified dimensions,centered at 0,0,0
      */
     public static BoundingBox createBoundingBox(float xDim, float yDim, float zDim) {
@@ -227,9 +254,16 @@ public class MasterCellCache implements ManagedObject, Serializable {
      * users that are close
      * @param cell
      */
-//    void revalidate(CellMO cell) {
-//        throw new RuntimeException("Not Implemented");                
-//    }
+    void revalidate(CellMO cell) {
+        throw new RuntimeException("Not Implemented");                
+    }
+    
+    /**
+     * TEMP - part of port of wfs
+     */
+    void revalidate() {
+        
+    }
     
     /**
      * Returns a unique cell id and registers the cell with the system

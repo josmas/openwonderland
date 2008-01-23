@@ -18,7 +18,7 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs;
+package org.jdesktop.wonderland.server.utils.wfs;
 
 /**
  * The InvalidWFSException is thrown if a Wonderland File System is invalid, for

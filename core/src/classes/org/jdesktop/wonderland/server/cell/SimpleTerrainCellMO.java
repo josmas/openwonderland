@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.server.cell;
 
 import javax.vecmath.Vector3d;
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.setup.ModelCellSetup;
 import org.jdesktop.wonderland.server.ChecksumManagerGLO;
@@ -28,9 +29,10 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
 
 /**
- *
+ * A cell for static terrain (or building) geometry
  * @author paulby
  */
+@ExperimentalAPI
 public class SimpleTerrainCellMO extends CellMO
     implements BeanSetupMO { 
     
@@ -50,10 +52,12 @@ public class SimpleTerrainCellMO extends CellMO
         super(Math3DUtils.createBoundingBox(center, size), Math3DUtils.createOriginM4d(center));
     }
     
+    @Override
     public String getClientCellClassName() {
         return "org.jdesktop.lg3d.wonderland.darkstar.client.cell.SimpleTerrainCell";
     }
 
+    @Override
     public ModelCellSetup getSetupData() {
 	String checksum = ChecksumManagerGLO.getChecksum(filename);
 	return new ModelCellSetup(baseUrl, filename, checksum);

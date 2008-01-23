@@ -57,8 +57,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * WonderlandClient is the main client used by the Wonderland 3D application.
  * 
  * @author kaplanj
- */
-@ExperimentalAPI
+ */@ExperimentalAPI
 public abstract class BaseClient implements SimpleClientListener {
     /** logger */
     private static final Logger logger =

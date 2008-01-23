@@ -25,6 +25,8 @@ import org.jdesktop.wonderland.common.comms.DefaultProtocolVersion;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.WonderlandSetupMessage;
 import org.jdesktop.wonderland.server.WonderlandSessionListener;
 
 /**
@@ -51,6 +53,17 @@ public class WonderlandClientCommsProtocol implements CommunicationsProtocol {
     public ClientSessionListener createSessionListener(ClientSession session, 
                                                        ProtocolVersion version) 
     {
-        return new WonderlandSessionListener(session);
+        WonderlandSessionListener ret = new WonderlandSessionListener(session);
+        
+        WonderlandSessionListener.registerMessageListener(WonderlandSetupMessage.class, new SetupListener());
+        
+        return ret;
+    }
+    
+    class SetupListener implements ClientMessageListener {
+
+        public void messageReceived(Message message, ClientSession session) {
+            System.out.println("RECEVIED MSG "+message);
+        }
     }
 }

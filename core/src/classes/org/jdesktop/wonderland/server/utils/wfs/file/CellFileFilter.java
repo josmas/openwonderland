@@ -18,11 +18,11 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs.file;
+package org.jdesktop.wonderland.server.utils.wfs.file;
 
 import java.io.File;
 import java.io.FileFilter;
-import org.jdesktop.wonderland.common.wfs.WFS;
+import org.jdesktop.wonderland.server.utils.wfs.WFS;
 
 /**
  * The CellFileFilter filters out all entries in a directory unless they are

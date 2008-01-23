@@ -18,18 +18,18 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.common.wfs.archive;
+package org.jdesktop.wonderland.server.utils.wfs.archive;
 
 import java.io.File;
 import java.util.LinkedList;
 import java.util.Vector;
 import java.util.logging.Level;
-import org.jdesktop.wonderland.common.wfs.NoSuchWFSDirectory;
-import org.jdesktop.wonderland.common.wfs.WFS;
-import org.jdesktop.wonderland.common.wfs.WFSCell;
-import org.jdesktop.wonderland.common.wfs.WFSCellDirectory;
-import org.jdesktop.wonderland.common.wfs.file.FileWFS;
-import org.jdesktop.wonderland.common.wfs.file.WFSFileCell;
+import org.jdesktop.wonderland.server.utils.wfs.NoSuchWFSDirectory;
+import org.jdesktop.wonderland.server.utils.wfs.WFS;
+import org.jdesktop.wonderland.server.utils.wfs.WFSCell;
+import org.jdesktop.wonderland.server.utils.wfs.WFSCellDirectory;
+import org.jdesktop.wonderland.server.utils.wfs.file.FileWFS;
+import org.jdesktop.wonderland.server.utils.wfs.file.WFSFileCell;
 
 /**
  * The WFSArchiveCellDirectory is a directory within a Wonderland File System (WFS)
