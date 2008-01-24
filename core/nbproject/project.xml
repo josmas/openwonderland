@@ -67,7 +67,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">ext/common/j3d-contrib-utils.jar:ext/sgs/darkstar/lib/sgs.jar:ext/sgs/darkstar/lib/sgs-client.jar:ext/linux/jars/j3dcore.jar:ext/linux/jars/j3dutils.jar:ext/linux/jars/jai_codec.jar:ext/linux/jars/jai_core.jar:ext/linux/jars/jai_imageio.jar:ext/linux/jars/vecmath.jar:ext/macosx/jars/j3dcore.jar:ext/macosx/jars/j3dutils.jar:ext/macosx/jars/jai_core.jar:ext/macosx/jars/vecmath.jar</classpath>
+                <classpath mode="compile">ext/common/j3d-contrib-utils.jar:ext/linux/jars/j3dcore.jar:ext/linux/jars/j3dutils.jar:ext/linux/jars/jai_codec.jar:ext/linux/jars/jai_core.jar:ext/linux/jars/jai_imageio.jar:ext/linux/jars/vecmath.jar:ext/macosx/jars/j3dcore.jar:ext/macosx/jars/j3dutils.jar:ext/macosx/jars/jai_core.jar:ext/macosx/jars/vecmath.jar:ext/sgs/sgs-0.9.4-r3093/lib/sgs.jar:ext/sgs/sgs-client-0.9.4-r3093/lib/sgs-client.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
