@@ -59,13 +59,16 @@
     </target>
 
     <target name="unpack-lg3d">
-	<unpack-java-ext pkgname="lg3d"
-			 srcdir="${zip.javaext.dir}" destdir="${common.javaext.dir}"/>
+	<!--<unpack-java-ext pkgname="lg3d"
+			 srcdir="${zip.javaext.dir}" destdir="${common.javaext.dir}"/>-->
     </target>
+    
 
     <target name="unpack-sgs">
-	<unpack-java-ext pkgname="SunGameServer"
-			 srcdir="${zip.javaext.dir}" destdir="${sgs.javaext.dir}/.."/>
+	<unpack-java-ext pkgname="sgs-server"
+			 srcdir="${zip.javaext.dir}" destdir="${sgs.javaext.dir}"/>
+	<unpack-java-ext pkgname="sgs-client"
+			 srcdir="${zip.javaext.dir}" destdir="${sgs.javaext.dir}"/>
     </target>
 
     <target name="unpack-ext"

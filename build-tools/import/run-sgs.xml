@@ -18,11 +18,11 @@
     </target>
 
     <target name="run-sgs" depends="jar-server,setup-sgs,modules-server-classpath" description="Run Sun Game Server for Project Wonderland">
-        <copy file="sgs-logging.properties" todir="ext/sgs/darkstar" failonerror="false"/>
+        <copy file="sgs-logging.properties" todir="${sgs.server.dir}" failonerror="false"/>
         <java classname="com.sun.sgs.impl.kernel.Kernel" fork="true">
-            <jvmarg value="-Djava.library.path=${sgs.javaext.dir}/lib/bdb/${sgs.platform.lib}"/>
-            <jvmarg value="-Djava.util.logging.config.file=${sgs.javaext.dir}/sgs-logging.properties"/>
-            <jvmarg value="-Dcom.sun.sgs.config.file=${sgs.javaext.dir}/sgs-config.properties"/>
+            <jvmarg value="-Djava.library.path=${sgs.bdb.dir}/${sgs.platform.lib}"/>
+            <jvmarg value="-Djava.util.logging.config.file=${sgs.server.dir}/sgs-logging.properties"/>
+            <jvmarg value="-Dcom.sun.sgs.config.file=${sgs.server.dir}/sgs-config.properties"/>
             <jvmarg value="-Dcom.sun.sgs.impl.kernel.Kernel.profile.level=on"/>
             <jvmarg value="-Dcom.sun.sgs.impl.service.voice.watchdog.timeout=${voiceservice.watchdog.timeout}"/>
             <jvmarg value="-Dcom.sun.sgs.impl.service.voice.bridge.ping.timeout=${voiceservice.bridge.ping.timeout}"/>
