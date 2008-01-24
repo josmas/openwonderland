@@ -12,13 +12,13 @@
     <import file="${imported.basedir}/platform-setup.xml"/>
 
     <!-- lg3d-core ext dir -->
-    <available property="core.exists" file="${core.dir}"/>
+<!--    <available property="core.exists" file="${core.dir}"/>
     <property name="core.ext.dir" location="${core.dir}/ext"/>
     <if>
 	<istrue value="${core.exists}"/>
 	<then>
-	    <!-- lg3d-core ext and incubator jars -->
-	    <fileset dir="${core.ext.dir}" id="core.ext.jars">
+	     lg3d-core ext and incubator jars -->
+	    <!--<fileset dir="${core.ext.dir}" id="core.ext.jars">
 		<include name="**/*.jar"/>
 		<exclude name="odejava.jar"/>
 		<exclude name="nwn-0.7.jar"/>
@@ -26,6 +26,7 @@
 	    <pathconvert property="core.ext.classpath" refid="core.ext.jars" />
 	</then>
     </if>
+    -->
 
     <!-- 
 	To better support daily builds on multiple architectures and OS'es
@@ -48,7 +49,7 @@
 
     <!-- Release related defines -->
     <property name="release.dir" location="${current.dir}/release/${build.platform}/${build.level}"/>
-    <property name="release.pkgname" value="lg3d-wonderland"/>
+    <property name="release.pkgname" value="wonderland"/>
     <property name="release.platform.dir" location="${release.dir}/${release.pkgname}"/>
     <property name="release.platform.lib" location="${release.platform.dir}/lib"/>
     <property name="release.platform.bin" location="${release.platform.dir}/bin"/>
@@ -86,8 +87,10 @@
     <!-- Platform independant jars -->
     <property name="common.javaext.dir" location="${javaext.dir}/common"/>
 
-    <property name="sgs.javaext.dir" location="${javaext.dir}/sgs/darkstar"/>
-    <property name="sgs.lib.dir" location="${sgs.javaext.dir}/lib"/>
+    <property name="sgs.javaext.dir" location="${javaext.dir}/sgs"/>
+    <property name="sgs.version" value="0.9.4-r3093"/>
+    <property name="sgs.server.dir" location="${sgs.javaext.dir}/sgs-${sgs.version}"/>
+    <property name="sgs.bdb.dir" location="${sgs.javaext.dir}/bdb-4.5.20"/>
 
     <property name="wonderland.bin.dir" location="${os.javaext.dir}/bin"/>
     <property name="wonderland.xvfb.dir" location="${wonderland.bin.dir}"/>
@@ -158,9 +161,10 @@
     <!-- Exta temporary Jars needed -->
     <pathconvert property="extras.classpath">
 	<path location="libs-private/StarfireExt.jar"/>
-	<path location="${j3dfly.lib.dir}/j3dfly.jar"/>
+<!--	<path location="${j3dfly.lib.dir}/j3dfly.jar"/>
 	<path location="${j3deditor.lib.dir}/j3dedit.jar"/>
 	<path location="${j3deditor.lib.dir}/j3d_interposer.jar"/>
+        -->
     </pathconvert>
     
     <!-- Wonderland incubator -->
@@ -186,12 +190,22 @@
         <path location="${javaext.dir}/bridgemonitor/BridgeMonitor.jar"/>
     </pathconvert>
     
-    <pathconvert property="darkstar.classpath">
-	<path location="${sgs.lib.dir}/sgs.jar"/>
-	<path location="${sgs.lib.dir}/sgs-client.jar"/>
+    <pathconvert property="darkstar.server.classpath">
+	<path location="${sgs.javaext.dir}/sgs-${sgs.version}/lib/sgs.jar"/>
+	<path location="${sgs.javaext.dir}/sgs-client-${sgs.version}/lib/sgs-client.jar"/>
+	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
+	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
+	<path location="${sgs.bdb.dir}/db.jar"/>
+<!--	<path location="${sgs.lib.dir}/listener.jar"/>-->
     </pathconvert>
 
-    <pathconvert property="panorama.classpath">
+     <pathconvert property="darkstar.client.classpath">
+	<path location="${sgs.javaext.dir}/sgs-client-${sgs.version}/lib/sgs-client.jar"/>
+	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
+	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
+    </pathconvert>
+    
+   <pathconvert property="panorama.classpath">
         <path location="${panorama.dir}/distobj-client.jar"/>
         <path location="${panorama.dir}/gdcdemo-client.jar"/>
         <path location="${panorama.dir}/commons-cli-1.0.jar"/>
@@ -232,7 +246,6 @@
     <pathconvert property="wonderland-common-compile.classpath">
         <path path="${j3d.classpath}"/>
         <path path="${voice.classpath}"/>
-	<path path="${darkstar.classpath}"/>
         <path path="${wonderland-incubator.classpath}"/>
     </pathconvert>
     
@@ -241,7 +254,8 @@
 	<path path="${javaext.classpath}"/>
 	<path path="${wonderlandext.classpath}"/>
 	<path path="${core.ext.classpath}"/>
-        <path path="${panorama.classpath}"/>
+        <!--<path path="${panorama.classpath}"/>-->
+	<path path="${darkstar.client.classpath}"/>
 	<path location="${build.lib.dir}/bean-builder.jar"/>
 	<path path="${extras.classpath}"/>
         <path location="${javaext.dir}/bridgemonitor/BridgeMonitor.jar"/>
@@ -258,6 +272,7 @@
 
     <pathconvert property="wonderland-server-compile.classpath">
         <path path="${wonderland-common-compile.classpath}"/>
+	<path path="${darkstar.server.classpath}"/>
 	<path location="${build.lib.dir}/bean-builder.jar"/>
         <path location="${common.javaext.dir}/commons-beanutils-core.jar"/>
         <path location="${common.javaext.dir}/commons-logging-1.1.jar"/>
@@ -268,7 +283,6 @@
         <path path="${panorama.server.classpath}"/>
 	<path location="${build.lib.dir}/wonderland-server.jar"/>
 	<path location="${build.lib.dir}/wonderland-common.jar"/>
-	<path location="${sgs.lib.dir}/listener.jar"/>
         <path path="${module-server.classpath}"/>
     </pathconvert>
 
