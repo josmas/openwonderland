@@ -247,6 +247,7 @@
         <path path="${j3d.classpath}"/>
         <path path="${voice.classpath}"/>
         <path path="${wonderland-incubator.classpath}"/>
+	<path path="${darkstar.client.classpath}"/>
     </pathconvert>
     
     <pathconvert property="wonderland-client-compile.classpath">
@@ -257,7 +258,7 @@
         <!--<path path="${panorama.classpath}"/>-->
 	<path path="${darkstar.client.classpath}"/>
 	<path location="${build.lib.dir}/bean-builder.jar"/>
-	<path path="${extras.classpath}"/>
+	<!--<path path="${extras.classpath}"/>-->
         <path location="${javaext.dir}/bridgemonitor/BridgeMonitor.jar"/>
     </pathconvert>
 

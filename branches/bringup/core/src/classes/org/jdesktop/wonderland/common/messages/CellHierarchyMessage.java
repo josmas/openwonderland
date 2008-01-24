@@ -22,7 +22,6 @@ import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
-import org.jdesktop.wonderland.server.cell.CellMO;
 
 /**
  *
@@ -49,7 +48,7 @@ public class CellHierarchyMessage extends Message {
      * 
      * @param cellClassName Fully qualified classname for cell
      */
-    private CellHierarchyMessage(ActionType msgType, 
+    public CellHierarchyMessage(ActionType msgType, 
                                 String tileClassName, 
                                 Bounds bounds, 
                                 CellID cellID, 
@@ -67,115 +66,5 @@ public class CellHierarchyMessage extends Message {
         this.setupData = setupData;
     }
 
-    /**
-     * Return a new Create cell message
-     */
-    public static CellHierarchyMessage newCreateCellMessage(CellMO cell) {
-        CellID parent;
-        
-        parent = cell.getParent().getCellID();
-        
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
-            cell.getClientCellClassName(),
-            cell.getComputedWorldBounds(),
-            cell.getCellID(),
-            parent,
-            cell.getCellChannelName(),
-            cell.getTransform(),
-            cell.getSetupData()
-            );
-    }
-    
-    /**
-     * Return a new Cell inactive message
-     */
-    public static CellHierarchyMessage newInactiveCellMessage(CellMO cell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CELL_INACTIVE,
-            null,
-            null,
-            cell.getCellID(),
-            null,
-            null,
-            null,
-            null
-            );
-    }
-    
-    /**
-     * Return a new Delete cell message
-     */
-    public static CellHierarchyMessage newDeleteCellMessage(CellID cellID) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.DELETE_CELL,
-            null,
-            null,
-            cellID,
-            null,
-            null,
-            null,
-            null
-            );
-    }
-    /**
-     * Return a new Delete tile message
-     */
-    public static CellHierarchyMessage newRootCellMessage(CellMO cell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.SET_WORLD_ROOT,
-            null,
-            null,
-            cell.getCellID(),
-            null,
-            null,
-            null,
-            null
-            );
-    }
-    
-    /**
-     * Return a new Delete tile message
-     */
-    public static CellHierarchyMessage newChangeParentCellMessage(CellMO childCell, CellMO parentCell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CHANGE_PARENT,
-            null,
-            null,
-            childCell.getCellID(),
-            parentCell.getCellID(),
-            null,
-            null,
-            null
-            
-            );
-    }
-    
-    /**
-     * Return a new tile move message
-     */
-    public static CellHierarchyMessage newCellMoveMessage(CellMO cell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.MOVE_CELL,
-            null,
-            cell.getComputedWorldBounds(),
-            cell.getCellID(),
-            null,
-            null,
-            cell.getTransform(),
-            null
-            );
-    }
-    
-    /**
-     * Return a new cell Reconfigure message.
-     */
-    public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellGLO) {
-        
-        /* Return a new CellHiearchyMessage class, with populated data fields */
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CONTENT_UPDATE_CELL,
-            cellGLO.getClientCellClassName(),
-            cellGLO.getComputedWorldBounds(),
-            cellGLO.getCellID(),
-            cellGLO.getParent().getCellID(),
-            cellGLO.getCellChannelName(),
-            cellGLO.getTransform(),
-            cellGLO.getSetupData()
-            
-            );
-    }
+
 }
