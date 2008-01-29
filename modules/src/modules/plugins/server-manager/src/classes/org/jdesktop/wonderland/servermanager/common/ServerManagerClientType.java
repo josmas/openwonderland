@@ -15,19 +15,21 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.servermanager.server;
+package org.jdesktop.wonderland.servermanager.common;
 
-import org.jdesktop.wonderland.server.*;
-import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.common.comms.ClientType;
 
 /**
- * Test listener, will eventually support Server Manager
- * 
- * @author paulby
+ * The client type for server managers
+ * @author jkaplan
  */
-public class ServerManagerSessionListener extends WonderlandSessionListener {
-
-    public ServerManagerSessionListener(ClientSession session) {
-        super(session);
+public class ServerManagerClientType extends ClientType {
+    /** The server manager client type */
+    public static final ClientType CLIENT_TYPE =
+            new ServerManagerClientType();
+    
+    /** Use the static CLIENT_TYPE, not this constructor */
+    public ServerManagerClientType() {
+        super ("__ServerManagerClient");
     }
 }

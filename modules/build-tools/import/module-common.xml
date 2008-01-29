@@ -2,7 +2,7 @@
     
     <property name="build.debug" value="true"/>
     
-    <property location="${modules.dir}/../.." name="top.dir"/>
+    <property location="${modules.dir}/.." name="top.dir"/>
     <property location="${basedir}/build" name="module.build.dir"/>
     <property location="${module.build.dir}/classes" name="module.classes.dir"/>
     <property location="${module.build.dir}/lib" name="module.build-lib.dir"/>

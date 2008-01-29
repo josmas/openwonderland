@@ -19,22 +19,22 @@
  */
 package org.jdesktop.wonderland.servermanager.server;
 
-import org.jdesktop.wonderland.server.*;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.server.ServerPlugin;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.server.comms.ServerManagerCommsProtocol;
 
 /**
  * Pluging to support the server manager
  * @author paulby
  */
-public class ServerManagerProtocolPlugin implements ServerPlugin {
+public class ServerManagerServerPlugin implements ServerPlugin {
     private static final Logger logger =
-            Logger.getLogger(ServerManagerProtocolPlugin.class.getName());
+            Logger.getLogger(ServerManagerServerPlugin.class.getName());
     
     public void initialize() {
         CommsManager cm = WonderlandContext.getCommsManager();
-        cm.registerProtocol(new ServerManagerCommsProtocol());
+        cm.registerClientHandler(new ServerManagerClientHandler());
     }
     
 }
