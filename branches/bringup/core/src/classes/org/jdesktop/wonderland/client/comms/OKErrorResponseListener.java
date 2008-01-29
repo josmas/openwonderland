@@ -49,11 +49,11 @@ public abstract class OKErrorResponseListener extends WaitResponseListener {
                       response.getClass(), null);
         }
         
-        notifyResponse();
+        notifyResponse(response);
     }
     
     /**
-     * Called when a message receives
+     * Called when a message receives an OK response
      * @param messageID the ID of the message that succeeded
      */
     public abstract void onSuccess(MessageID messageID);

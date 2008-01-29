@@ -204,21 +204,7 @@
 	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
 	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
     </pathconvert>
-    
-   <pathconvert property="panorama.classpath">
-        <path location="${panorama.dir}/distobj-client.jar"/>
-        <path location="${panorama.dir}/gdcdemo-client.jar"/>
-        <path location="${panorama.dir}/commons-cli-1.0.jar"/>
-        <path location="${panorama.dir}/commons-codec-1.3.jar"/>
-        <path location="${panorama.dir}/commons-httpclient-3.0.1.jar"/>
-        <path location="${panorama.dir}/commons-logging-1.1.jar"/>
-    </pathconvert>
-    
-    <pathconvert property="panorama.server.classpath">
-        <path location="${panorama.server.dir}/distobj-server.jar"/>
-        <path location="${panorama.server.dir}/gdcdemo-server.jar"/>
-    </pathconvert>
-
+   
     <!-- wonderland modules -->
     <condition property="use.modules">
         <and>
@@ -255,7 +241,6 @@
 	<path path="${javaext.classpath}"/>
 	<path path="${wonderlandext.classpath}"/>
 	<path path="${core.ext.classpath}"/>
-        <!--<path path="${panorama.classpath}"/>-->
 	<path path="${darkstar.client.classpath}"/>
 	<path location="${build.lib.dir}/bean-builder.jar"/>
 	<!--<path path="${extras.classpath}"/>-->
@@ -281,7 +266,6 @@
 
     <pathconvert property="wonderland-server.classpath">
 	<path path="${wonderland-server-compile.classpath}"/>
-        <path path="${panorama.server.classpath}"/>
 	<path location="${build.lib.dir}/wonderland-server.jar"/>
 	<path location="${build.lib.dir}/wonderland-common.jar"/>
         <path path="${module-server.classpath}"/>

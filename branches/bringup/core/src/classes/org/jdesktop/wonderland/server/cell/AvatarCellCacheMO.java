@@ -44,7 +44,7 @@ import org.jdesktop.wonderland.common.SerializationHelper;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
-import org.jdesktop.wonderland.common.messages.CellHierarchyMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;

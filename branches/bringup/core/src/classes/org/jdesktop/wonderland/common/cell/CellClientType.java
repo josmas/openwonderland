@@ -17,20 +17,20 @@
  * $Date: 2007/10/23 18:27:41 $
  * $State: Exp $
  */
-package org.jdesktop.wonderland.client.comms;
+package org.jdesktop.wonderland.common.cell;
 
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.comms.ClientType;
 
 /**
- * A listener that will be notified of messages over the session channel
- * or the built-in all-clients channel.
- * @author kaplanj
+ * The ClientType of the CellClient
+ * @author jkaplan
  */
-public interface SessionMessageListener {
-    /**
-     * Called when a message is received from the server
-     * @param client the client that received the message
-     * @param message the message that was received
-     */
-    public void messageReceived(BaseClient client, Message message);
+public class CellClientType extends ClientType {
+    /** the client type for the cell client */
+    public static final ClientType CELL_CLIENT_TYPE =
+            new CellClientType("__CellClient");
+    
+    private CellClientType(String type) {
+        super (type);
+    }
 }

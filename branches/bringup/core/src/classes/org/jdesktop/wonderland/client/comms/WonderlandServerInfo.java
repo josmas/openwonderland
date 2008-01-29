@@ -44,10 +44,6 @@ public class WonderlandServerInfo {
         return hostname;
     }
 
-    void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
     /**
      * Return the darkstar port for this server
      * 
@@ -57,8 +53,23 @@ public class WonderlandServerInfo {
         return sgsPort;
     }
 
-    void setSgsPort(int sgsPort) {
-        this.sgsPort = sgsPort;
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof WonderlandServerInfo)) {
+            return false;
+        }
+        
+        WonderlandServerInfo o = (WonderlandServerInfo) obj;
+        return getHostname().equals(o.getHostname()) &&
+               getSgsPort() == o.getSgsPort();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.hostname != null ? this.hostname.hashCode() : 0);
+        hash = 97 * hash + this.sgsPort;
+        return hash;
     }
     
 }

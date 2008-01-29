@@ -26,8 +26,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
-import org.jdesktop.wonderland.client.comms.ServerManagerClient;
-import org.jdesktop.wonderland.client.comms.WonderlandClient;
 
 /**
  *
@@ -37,6 +35,9 @@ public class Main extends javax.swing.JFrame {
     private static final Logger logger =
             Logger.getLogger(Main.class.getName());
     
+    /** the session for communicating with the server */
+    private Wonderland3DClientSession session;
+    
     /** Creates new form Main */
     public Main() {
         // create UI components
@@ -44,15 +45,15 @@ public class Main extends javax.swing.JFrame {
 
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         LoginParameters loginParams = new LoginParameters("foo", "test".toCharArray());
-        WonderlandClient client = new WonderlandClient(server);
-        ServerManagerClient mgrClient = new ServerManagerClient(server);
-
+        
+        // create a session
+        session = new Wonderland3DClientSession(server);
+                
         // initialize plugins
         loadPlugins();
         
         try {
-            client.login(loginParams);
-            mgrClient.login(loginParams);
+            session.login(loginParams);
         } catch (LoginFailureException ex) {
             logger.log(Level.SEVERE, null, ex);
         }

@@ -53,17 +53,6 @@ public class WonderlandClientCommsProtocol implements CommunicationsProtocol {
     public ClientSessionListener createSessionListener(ClientSession session, 
                                                        ProtocolVersion version) 
     {
-        WonderlandSessionListener ret = new WonderlandSessionListener(session);
-        
-        WonderlandSessionListener.registerMessageListener(WonderlandSetupMessage.class, new SetupListener());
-        
-        return ret;
-    }
-    
-    class SetupListener implements ClientMessageListener {
-
-        public void messageReceived(Message message, ClientSession session) {
-            System.out.println("RECEVIED MSG "+message);
-        }
+        return new WonderlandSessionListener(session);        
     }
 }
