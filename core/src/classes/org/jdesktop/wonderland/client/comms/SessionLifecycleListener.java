@@ -20,23 +20,23 @@
 package org.jdesktop.wonderland.client.comms;
 
 /**
- * Listen for new Wonderland clients being created, and changes to the
- * connection status of Wonderland clients.
+ * Listen for new Wonderland sessions being created, and changes to the
+ * connection status of Wonderland sessions.
  * @author kaplanj
  */
-public interface ClientLifecycleListener {
+public interface SessionLifecycleListener {
     /**
-     * Called when a new WonderlandClient is created.  When this method is
-     * called, the client has been initialized, but not logged in.
-     * @param client the client that was created
+     * Called when a new WonderlandSession is created.  When this method is
+     * called, the session has been initialized, but not logged in.
+     * @param session the session that was created
      */
-    public void clientCreated(BaseClient client);
+    public void sessionCreated(WonderlandSession session);
     
     
     /**
-     * Called when a client changes state, to one of the
+     * Called when a session changes state, to one of the
      * CONNECTED, CONNECTING, or DISCONNECTED states.
      */
-    public void clientStatusChanged(BaseClient client, 
-                                    BaseClient.Status status);
+    public void clientStatusChanged(WonderlandSession session, 
+                                    WonderlandSession.Status status);
 }

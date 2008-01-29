@@ -20,13 +20,17 @@
 
 package org.jdesktop.wonderland.server.comms;
 
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.server.ProtocolSessionListener;
 import org.jdesktop.wonderland.server.WonderlandSessionListener;
 
 /**
@@ -47,55 +51,43 @@ class CommsManagerImpl
         protocols = new HashMap<String, CommunicationsProtocol>();
     }
     
-    /**
-     * {@inheritDoc}
-     */
     public void registerProtocol(CommunicationsProtocol protocol) {
         protocols.put(protocol.getName(), protocol);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void unregisterProtocol(CommunicationsProtocol protocol) {
         protocols.remove(protocol.getName());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public CommunicationsProtocol getProtocol(String name) {
         return protocols.get(name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public Collection<CommunicationsProtocol> getProtocols() {
-        return Collections.unmodifiableCollection(protocols.values());
+    public Set<CommunicationsProtocol> getProtocols() {
+        return Collections.unmodifiableSet(new HashSet(protocols.values()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void sendToAllClients(Message message) {
-        WonderlandSessionListener.sendToAllClients(message);
+    public Set<ClientSession> getClients(CommunicationsProtocol protocol) {
+        return ProtocolSessionListener.getClients(protocol);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void registerMessageListener(Class<? extends Message> messageClass, 
-                                        ClientMessageListener listener) 
-    {
-        WonderlandSessionListener.registerMessageListener(messageClass, listener);
+    public void registerClientHandler(ClientHandler handler) {
+        WonderlandSessionListener.registerClientHandler(handler);
     }
     
-    /**
-     * {@inheritDoc}
-     */
-    public void registerConnectionListener(ClientConnectionListener listener) 
-    {
-        WonderlandSessionListener.registerConnectionListener(listener);
+    public Set<ClientSession> getClients(ClientType clientType) {
+        return WonderlandSessionListener.getClients(clientType);
+    }
+
+    public void send(ClientType clientType, Message message) {
+        WonderlandSessionListener.send(clientType, message);
+    }
+
+    public void send(ClientType clientType, Set<ClientSession> sessions, Message message) {
+        WonderlandSessionListener.send(clientType, sessions, message);
+    }
+
+    public void send(ClientType clientType, ClientSession session, Message message) {
+        WonderlandSessionListener.send(clientType, session, message);
     }
 }

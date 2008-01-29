@@ -108,33 +108,66 @@ public abstract class Message implements Serializable {
     }
     
     /**
-     * Extract a message from bytes.
+     * Extract a message from bytes.  Identical to calling
+     * <code>extract(data, 0, data.length, clazz)</code>
+     * 
      * @param data the byte representation of the message
      * @param type the clazz the type of message to extract
      * @return the message after extraction
      * @throws ExtractMessageException if the message cannot be extracted
      */
     public static <T extends Message> T extract(byte[] data, Class<T> clazz) {
-        return (T) extract(data);
+        return extract(data, 0, data.length, clazz);
     }
     
     /**
      * Extract a message from bytes.
+     * @param data the byte representation of the message
+     * @param offset the starting offset of the data
+     * @param length the length of the data to read
+     * @param type the clazz the type of message to extract
+     * @return the message after extraction
+     * @throws ExtractMessageException if the message cannot be extracted
+     */
+    public static <T extends Message> T extract(byte[] data, int offset,
+                                                int length, Class<T> clazz) 
+    {
+        return (T) extract(data, offset, length);
+    }
+    
+    /**
+     * Extract a message from bytes.  Identical to calling 
+     * <code>extract(data, 0, data.length)</code>
+     * 
+     * @param data the data to extract
+     * @return the message after extraction
+     * @throws ExtractMessageException if the message cannot be extracted
+     */
+    public static Message extract(byte[] data) {
+        return extract(data, 0, data.length);
+    }
+    
+    /**
+     * Extract a message from bytes. 
      * <p>
      * A message is read in two steps.  First, the MessageID is read from
      * the stream, followed by the rest of the message contents.  This is to
      * give the maximum chance that the message id can be read, even in the
      * face of other errors. If the MessageID can be extracted, an
      * ExtractMessageException will be thrown.
+     * 
      * @param data the data to extract
+     * @param offset the starting offset of the data
+     * @param length the length of the data to read
      * @return the message after extraction
      * @throws ExtractMessageException if the message cannot be extracted
      */
-    public static Message extract(byte[] data) {
+    public static Message extract(byte[] data, int offset, int length) {
         MessageID messageID = null;
         
         try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(data);
+            ByteArrayInputStream bais = 
+                    new ByteArrayInputStream(data, offset, length);
             ObjectInputStream ois = new ObjectInputStream(bais);
             
             // first, read the message ID

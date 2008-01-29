@@ -5,10 +5,13 @@
 
 package org.jdesktop.wonderland.client.comms;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
+
 /**
  *
  * @author jkaplan
  */
+@ExperimentalAPI
 public class LoginFailureException extends Exception {
 
     /**

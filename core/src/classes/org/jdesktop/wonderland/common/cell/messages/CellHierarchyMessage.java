@@ -15,13 +15,14 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.messages;
+package org.jdesktop.wonderland.common.cell.messages;
 
 import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  *
@@ -65,6 +66,4 @@ public class CellHierarchyMessage extends Message {
         this.cellOrigin = cellOrigin;
         this.setupData = setupData;
     }
-
-
 }

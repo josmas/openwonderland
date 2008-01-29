@@ -17,115 +17,59 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
-import com.sun.sgs.client.ClientChannel;
-import com.sun.sgs.client.ClientChannelListener;
-import com.sun.sgs.client.SessionId;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.ProtocolVersion;
-import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
-import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
+import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.common.messages.WonderlandSetupMessage;
 
 /**
  * This class provides the client side instance of a particular Wonderland
- * server. All interaction with a server are handled by this class.
+ * service. All interaction with a service on a given server are handled
+ * by this a WonderlandClient.
+ * <p>
+ * The client starts out in the DETACHED status, meaning it is not associated
+ * with any WonderlandSession.  Once a client is attached to a session,
+ * it is able to communicate with the server.
  * 
  * @author kaplanj
  */
 @ExperimentalAPI
-public class WonderlandClient extends BaseClient {
-    /** a logger */
-    private static final Logger logger =
-            Logger.getLogger(WonderlandClient.class.getName());
-    
-    /** the name of the standard all-clients channel */
-    private static final String ALL_CLIENTS_CHANNEL = 
-            WonderlandChannelNames.WONDERLAND_PREFIX + ".ALL_CLIENTS";
+public interface WonderlandClient {
+    /** status of this listener */
+    public enum Status { DETACHED, ATTACHED };
     
     /**
-     * {@inheritDoc}
+     * Get the type this client represents.
+     * @return the type of client
      */
-    public WonderlandClient(WonderlandServerInfo server) {
-        super (server);
-        
-        // add default channel listeners
-        registerChannelListenerFactory(new DefaultChannelListenerFactory());  
-        
-    }
-    
-//    @Override
-//    public void loggedIn() {
-//        send(new WonderlandSetupMessage());
-//        
-//    }
+    public ClientType getClientType();
     
     /**
-     * Return the Wonderland protocol name
-     * @return the name of the Wonderland client protcol
+     * Get the session this client is attached to
+     * @return the session this client is attached to, or null if
+     * the client is not attached to a session.
      */
-    @Override
-    protected String getProtocolName() {
-        return WonderlandProtocolVersion.PROTOCOL_NAME;
-    }
-
-    /**
-     * Return the Wonderland protocol version
-     * @return the version of the Wonderland protocol
-     */
-    @Override
-    protected ProtocolVersion getProtocolVersion() {
-        return WonderlandProtocolVersion.VERSION;
-    }
-   
-    /**
-     * Handle built-in channels
-     */
-    class DefaultChannelListenerFactory implements ChannelListenerFactory {
-        /**
-         * {@inheritDoc}
-         */
-        public ClientChannelListener createListener(BaseClient client,
-                                                    ClientChannel channel)
-        {
-            if (channel.getName().equals(ALL_CLIENTS_CHANNEL)) { 
-                return new AllClientsChannelListener();
-            } else {
-                return null;
-            }
-        }
-    }
+    public WonderlandSession getSession();
     
     /**
-     * Pass messages from the all-client channel in to the session message
-     * listeners.
+     * Get the status of this client
+     * @return the status of the client
      */
-    class AllClientsChannelListener implements ClientChannelListener {
-        /**
-         * {@inheritDoc}
-         */
-        public void receivedMessage(ClientChannel channel, SessionId session, 
-                                    byte[] data) 
-        {
-            try {
-                // extract the message
-                Message message = Message.extract(data);
-            
-                // notify listeners
-                fireSessionMessageReceived(message);
-            } catch (Exception ex) {
-                logger.log(Level.WARNING, "Error extracting message from server", 
-                           ex);
-            }
-        }
-            
-        /**
-         * {@inheritDoc}
-         */
-        public void leftChannel(ClientChannel channel) {
-            // ignore
-        }
-    }
+    public Status getStatus();
+    
+    /**
+     * Notify this client that it is attached to given session
+     * @param session the session the client is now attached to
+     */
+    public void attached(WonderlandSession session);
+    
+    /**
+     * Notify this client that it is detached from the current session
+     */
+    public void detached();
+    
+    /**
+     * Handle a message sent to this client
+     * @param message the message
+     */
+    public void messageReceived(Message message);
 }

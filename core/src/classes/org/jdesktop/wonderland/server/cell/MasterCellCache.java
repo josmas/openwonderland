@@ -20,29 +20,24 @@ package org.jdesktop.wonderland.server.cell;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.j3d.BoundingBox;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.Bounds;
-import javax.media.j3d.Transform3D;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.common.messages.CellHierarchyMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
-import org.jdesktop.wonderland.server.cell.bounds.BoundsManager;
-import org.jdesktop.wonderland.server.utils.wfs.WFS;
-import org.jdesktop.wonderland.server.utils.wfs.WFSCell;
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.comms.CommsManager;
 
 /**
  *
@@ -96,6 +91,10 @@ public class MasterCellCache implements ManagedObject, Serializable {
      */
     public static void initialize() {
         new MasterCellCache();
+        
+        // register the cell message listener
+        CommsManager cm = WonderlandContext.getCommsManager();
+        cm.registerClientHandler(new CellClientHandler());
     }
     
     /**

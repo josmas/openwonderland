@@ -13,25 +13,39 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author kaplanj
  */
 @ExperimentalAPI
-public abstract class WaitResponseListener implements ResponseListener {
-    // latch for indicating that the response has happened
-    private boolean response = false;
+public class WaitResponseListener implements ResponseListener {
+    /** The response messsage that we received.  Set to non-null when
+        a response is received */
+    private ResponseMessage response = null;
    
-    /**
-     * Wait for a response to the message.  This method will return once
-     * a response to the given message is received.
-     * @throws InterruptedException if the response is delayed
-     */
-    public synchronized void waitForResponse() throws InterruptedException {
-        wait();
+    public void responseReceived(ResponseMessage response) {
+        notifyResponse(response);
     }
     
     /**
-     * Notify that a message is received.  Subclasses must call this in order
-     * to notify listeners.
+     * Wait for a response to the message.  This method will return once
+     * a response to the given message is received.
+     * @return the ResponseMessage that was received in response to this message
+     * @throws InterruptedException if the response is delayed
      */
-    protected synchronized void notifyResponse() {
-        response = true;
+    public synchronized ResponseMessage waitForResponse() 
+            throws InterruptedException 
+    {
+        while (response == null) {
+            wait();
+        }
+        
+        return response;
+    }
+    
+    /**
+     * Notify that a message is received.  Subclasses that override the
+     * <code>responseReceived()</code> method must call this in order
+     * to notify listeners.
+     * @param response the response message
+     */
+    protected synchronized void notifyResponse(ResponseMessage response) {
+        this.response = response;
         notify();
     }
 }

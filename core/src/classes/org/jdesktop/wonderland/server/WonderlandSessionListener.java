@@ -26,19 +26,31 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.SessionInternalClientType;
 import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
+import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
+import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
+import org.jdesktop.wonderland.common.comms.messages.DetachClientMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.server.comms.ClientConnectionListener;
-import org.jdesktop.wonderland.server.comms.ClientMessageListener;
+import org.jdesktop.wonderland.server.comms.ClientHandler;
+import org.jdesktop.wonderland.server.comms.ClientSender;
 
 /**
  * This is the default session listener is used by Wonderland clients.
@@ -64,22 +76,16 @@ public class WonderlandSessionListener
     private static final Logger logger =
             Logger.getLogger(WonderlandSessionListener.class.getName());
     
-    /** 
-     * A single channel that all clients are connected to. This is a private
-     * mechanism that is internal to this listener, and may be extended in
-     * the future to handle lots of connected clients.
-     */
-    private static final String ALL_CLIENTS_CHANNEL = 
-            WonderlandChannelNames.WONDERLAND_PREFIX + ".ALL_CLIENTS";
+    /** client ID of the internal session handler */
+    private static final short SESSION_INTERNAL_CLIENT_ID =
+            SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID;
     
     /** the session associated with this listener */
     private ClientSession session;
     
-    /** the list of message listeners */
-    private List<MessageListenerRecord> messageListeners;
-    
-    /** the list of connection listeners */
-    private List<ClientConnectionListener> connectionListeners;
+    /** a map from the ID we've assigned a client to the handler for that
+        client */
+    private Map<Short, ClientHandlerRef> handlers;
     
     /**
      * Create a new instance of WonderlandSessionListener for the given
@@ -88,86 +94,29 @@ public class WonderlandSessionListener
      */
     public WonderlandSessionListener(ClientSession session) {
         this.session = session;
-    
-        // set up message & connection listeners
-        copyListeners();
         
-        // join to relevant channels
-        joinChannels(session);
-        
-        // notify connection listeners
-        for (ClientConnectionListener listener : connectionListeners) {
-            listener.connected(session);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.finest("New session listener for " + session.getName());
         }
+        
+        // initialize maps
+        handlers = new HashMap<Short, ClientHandlerRef>();
+        
+        // add internal handler
+        handlers.put(Short.valueOf(SESSION_INTERNAL_CLIENT_ID), 
+                     new ClientHandlerRef(new SessionInternalHandler()));
     }
         
-    /**
-     * Join the client to the default channels on login
-     * @param session the session to join to channels
-     */
-    protected void joinChannels(ClientSession session) {
-        ChannelManager cm = AppContext.getChannelManager();
-        
-        // the all-clients channel
-        Channel channel = cm.getChannel(ALL_CLIENTS_CHANNEL);
-        channel.join(session, null);
-    }
-    
     /**
      * Initialize the session listener
      */
     public static void initialize() {
-        ChannelManager cm = AppContext.getChannelManager();
+        logger.fine("Initialize WonderlandSessionListener");
+        
         DataManager dm = AppContext.getDataManager();
         
-        // create all-users channel
-        cm.createChannel(ALL_CLIENTS_CHANNEL, null, Delivery.RELIABLE);
-    
-        // create listener support
-        dm.setBinding(ListenerSupport.BINDING_NAME, new ListenerSupport());
-    }
-    
-    /**
-     * Send a message to all clients.  This will send a message to all
-     * clients that are connected via the WonderlandSessionListener.
-     * @param message the message to send
-     */
-    public static void sendToAllClients(Message message) {
-        ChannelManager cm = AppContext.getChannelManager();
-        Channel channel = cm.getChannel(ALL_CLIENTS_CHANNEL);
-        channel.send(message.getBytes());
-    }
-    
-    /**
-     * Register a message listener.  This listener will listen for messages
-     * on all sessions.  The listener will be stored in the Darkstar
-     * data store, so it must be either Serializable or a ManagedObject.
-     * @param messageClass the class of message to list for
-     * @param listener the listener
-     */
-    public static void registerMessageListener(
-            Class<? extends Message> messageClass, 
-            ClientMessageListener listener)
-    {
-        DataManager dm = AppContext.getDataManager();
-        ListenerSupport ls = dm.getBinding(ListenerSupport.BINDING_NAME, 
-                                           ListenerSupport.class);
-        ls.addMessageListener(messageClass, listener);
-    }
-    
-    /**
-     * Register a connection listener.  This listener will listen for clients
-     * connecting to and disconnecting from the Wonderland server.
-     * The listener will be stored in the Darkstar data store, so it must be
-     * either Serializable or a ManagedObject.
-     * @param listener the listener
-     */
-    public static void registerConnectionListener(ClientConnectionListener listener)
-    {
-        DataManager dm = AppContext.getDataManager();
-        ListenerSupport ls = dm.getBinding(ListenerSupport.BINDING_NAME, 
-                                           ListenerSupport.class);
-        ls.addConnectionListener(listener);
+        // create store for registered handlers
+        dm.setBinding(HandlerStore.DS_KEY, new HandlerStore());
     }
     
     /**
@@ -178,23 +127,40 @@ public class WonderlandSessionListener
      */
     public void receivedMessage(byte[] data) {
         try {
-            // extract the message
-            Message m = Message.extract(data);
+            // extract the client id
+            DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));
+            Short clientID = Short.valueOf(dis.readShort());
             
-            // send to listeners
-            for (MessageListenerRecord record : messageListeners) {
-                if (record.getMessageClass().isAssignableFrom(m.getClass())) {
-                    record.getListener().messageReceived(m, session);
-                }
+            // extract the message
+            Message m = Message.extract(data, 2, data.length - 2);
+            
+            // find the handler
+            ClientHandler handler = getHandler(clientID);
+            if (handler == null) {
+                logger.fine("Session " + getSession().getName() + 
+                            " unknown handler ID: " + clientID);
+                sendError(m.getMessageID(), clientID,
+                          "Unknown handler ID: " + clientID);
+                return;
             }
             
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Session " + getSession().getName() + 
+                              " received message " + m + 
+                              " for client ID" + clientID + 
+                              " handled by " + handler.getClientType());
+            }
+            
+            // handle the message
+            ClientSender sender = new ClientSenderImpl(clientID.shortValue());
+            handler.messageReceived(sender, m);
         } catch (ExtractMessageException eme) {
             logger.log(Level.WARNING, "Error extracting message from client", 
                        eme);
             
             // if possible, send a reply to the client
             if (eme.getMessageID() != null) {
-                sendError(eme.getMessageID(), eme);
+                sendError(eme.getMessageID(), SESSION_INTERNAL_CLIENT_ID, eme);
             }
         } catch (Exception ex) {
             // what to do?
@@ -208,12 +174,106 @@ public class WonderlandSessionListener
      * @param forced true if the disconnect was forced
      */
     public void disconnected(boolean forced) {
-        // notify connection listeners
-        for (ClientConnectionListener listener : connectionListeners) {
-            listener.disconnected(session);
-        }
+        logger.fine("Session " + getSession().getName() + " disconnected");
     }
      
+    /**
+     * Register a handler that will handle connections from a particular
+     * WonderlandClient type.
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#registerClientHandler(ClientHandler)
+     *
+     * @param handler the handler to register
+     */
+    public static void registerClientHandler(ClientHandler handler) {
+        logger.fine("Register client handler for type " + 
+                    handler.getClientType());
+        
+        HandlerStore store = getHandlerStore();
+        store.register(handler);
+                
+        // let Darkstar know this is an update        
+        AppContext.getDataManager().markForUpdate(store);
+    }
+    
+    /**
+     * Get all clients connected via the given WonderlandClient
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#getClients(ClientType)
+     * 
+     * @param clientType the type of client to get sessions for
+     * @return a set of all client sessions connected via a client of the given
+     * type, or an empty set if no clients are connected via the given type
+     */
+    public static Set<ClientSession> getClients(ClientType clientType) {
+        Channel channel = getHandlerStore().getChannel(clientType);
+        if (channel == null) {
+            return Collections.emptySet();
+        }
+        
+        return channel.getSessions();
+    }
+
+    /**
+     * Send a message to all clients connected via the given WonderlandClient
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Message)
+     * 
+     * @param clientType the type of client to send to
+     * @param message the message to send
+     * @throws IllegalStateException if the given client type is not registered
+     */
+    public static void send(ClientType clientType, Message message) {
+        Channel channel = getHandlerStore().getChannel(clientType);
+        if (channel == null) {
+            throw new IllegalStateException("No handler for client type: " +
+                                            clientType);
+        }
+        
+        channel.send(message.getBytes());
+    }
+
+    /**
+     * Send a message to specific clients connected via the given
+     * WonderlandClient
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Set<ClientSession>, Message)
+     * 
+     * @param clientType the type of client to send to
+     * @param sessions the session to send to
+     * @param message the message to send
+     * @throws IllegalStateException if the given client type is not registered
+     */
+    public static void send(ClientType clientType, Set<ClientSession> sessions, 
+                            Message message) 
+    {
+        Channel channel = getHandlerStore().getChannel(clientType);
+        if (channel == null) {
+            throw new IllegalStateException("No handler for client type: " +
+                                            clientType);
+        }
+        
+        channel.send(sessions, message.getBytes());
+    }
+
+     /**
+     * Send a message to a specific clients connected via the given
+     * WonderlandClient
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Set<ClientSession>, Message)
+     * 
+     * @param clientType the type of client to send to
+     * @param session the session to send to
+     * @param message the message to send
+     * @throws IllegalStateException if the given client type is not registered
+     */
+    public static void send(ClientType clientType, ClientSession session, 
+                            Message message) 
+    {
+        Channel channel = getHandlerStore().getChannel(clientType);
+        if (channel == null) {
+            throw new IllegalStateException("No handler for client type: " +
+                                            clientType);
+        }
+        
+        channel.send(session, message.getBytes());
+    }
+    
     /**
      * Get the session this listener represents.
      * @return the session connected to this listener
@@ -223,189 +283,372 @@ public class WonderlandSessionListener
     }
     
     /**
-     * Send an error to the session
-     * @param message the source message
-     * @param error the error to send
+     * Get a client handler by client ID
+     * @param clientID the id of the client to get
+     * @return the handler for the given ID, or null if there is no 
+     * handler for the given ID
      */
-    protected void sendError(MessageID messageID, String error) {
-        sendError(messageID, error, null);
+    protected ClientHandler getHandler(Short clientID) {
+        ClientHandlerRef ref = handlers.get(clientID);
+        if (ref == null) {
+            return null;
+        }
+        
+        return ref.get();
+    }
+    
+    /**
+     * Handle an attach request
+     * @param messageID the ID of the message to respond to
+     * @param type the type of client to attach
+     */
+    protected void handleAttach(MessageID messageID, ClientType type) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Session " + getSession().getName() + " attach " +
+                        "client type " + type);
+        }
+        
+        // get the handler for this type
+        ClientHandlerRef ref = getHandlerStore().getHandlerRef(type);
+        if (ref == null) {
+            logger.fine("Session " + session.getName() + " no handler for " +
+                        "client type " + type);
+            sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
+                      "No handler for " + type);
+            return;
+        }
+        
+        // get the ID for this type
+        short clientID = getHandlerStore().getClientID(type);
+        
+        // make sure this isn't a duplicate join
+        if (handlers.containsKey(Short.valueOf(clientID))) {
+            logger.fine("Session " + session.getName() + " duplicate client " +
+                        "for type " + type);
+            sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
+                          "Duplicate client for " + type);
+            return;
+        }
+        
+        // add handler to our list
+        handlers.put(Short.valueOf(clientID), ref);
+        
+        // send response message
+        Message resp = new AttachedClientMessage(messageID, clientID);
+        sendToSession(SESSION_INTERNAL_CLIENT_ID, resp);
+        
+        // add the client to the handler's channel
+        Channel channel = getHandlerStore().getChannel(type);
+        channel.join(session, null);
+        
+        // notify the handler
+        ClientSender sender = new ClientSenderImpl(clientID);
+        ref.get().clientAttached(sender);
+    }
+    
+    /**
+     * Handle a detach request
+     * @param clientID the id of the client to detach
+     */
+    protected void handleDetach(short clientID) {
+        ClientHandler handler = getHandler(Short.valueOf(clientID));
+        if (handler == null) {
+            logger.fine("Detach unknown client ID " + clientID);
+            return;
+        }
+        
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Session " + getSession().getName() + " detach " +
+                        "client type " + handler.getClientType());
+        }
+        
+        // remove this client from the handler channel
+        Channel channel = getHandlerStore().getChannel(handler.getClientType());
+        if (channel != null) {
+            channel.leave(session);
+        }
+        
+        // notify the handler
+        handler.clientDetached(session);
     }
     
     /**
      * Send an error to the session
-     * @param cause the cause of the error
+     * @param messageID the source message's ID
+     * @param clientID the client ID to send to
      * @param error the error to send
      */
-    protected void sendError(MessageID messageID, Throwable cause) {
-        sendError(messageID, null, cause);
+    protected void sendError(MessageID messageID, short clientID, String error)
+    {
+        sendError(messageID, clientID, error, null);
+    }
+    
+    /**
+     * Send an error to the session
+     * @param messageID the source message's ID
+     * @param clientID the client ID to send to
+     * @param cause the cause of the error
+     */
+    protected void sendError(MessageID messageID, short clientID, 
+                             Throwable cause)
+    {
+        sendError(messageID, clientID, null, cause);
     }
     
     /**
      * Send an error to the session
      * @param messageID the messageID of the original error
+     * @param clientID the client ID to send to
      * @param error the error message
      * @param cause the underlying exception
      */
-    protected void sendError(MessageID messageID, String error, 
-                             Throwable cause)
+    protected void sendError(MessageID messageID, short clientID, 
+                             String error, Throwable cause)
     {
         ErrorMessage msg = new ErrorMessage(messageID, error, cause);
-        getSession().send(msg.getBytes());
+        sendToSession(clientID, msg);
+    }
+   
+    /**
+     * Send a message to the session channel using the given client ID.
+     * @param clientID the client ID to use when sending
+     * @param message the message to send
+     */
+    protected void sendToSession(short clientID, Message message) {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("Session " + getSession().getName() + " send " +
+                          "message " + message + " to client " + clientID);
+        }
+        
+        byte[] messageData = message.getBytes();
+        int len = messageData.length + 2;
+        
+        // pre-pend the client id
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
+        DataOutputStream out = new DataOutputStream(baos);
+        
+        try {
+            out.writeShort(clientID);
+            out.write(messageData);
+            out.close();
+            
+            getSession().send(baos.toByteArray());
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Unable to write message " + message + 
+                       " to " + clientID, ioe);
+        }
     }
     
     /**
-     * Copy the list of registered message listeners from the listener
-     * manager.
-     * @return a copy of the list of message listeners
+     * Get the store of registered handlers
+     * @return the store of registered handlers
      */
-    private void copyListeners() {
-        DataManager dm = AppContext.getDataManager();
-        ListenerSupport ls = dm.getBinding(ListenerSupport.BINDING_NAME, 
-                                           ListenerSupport.class);
-        
-        // copy message listeners
-        messageListeners = new ArrayList<MessageListenerRecord>(ls.getMessageListeners());
-    
-        // copy connection listeners
-        connectionListeners = new ArrayList<ClientConnectionListener>(ls.getConnectionListeners());
+    private static HandlerStore getHandlerStore() {
+        return AppContext.getDataManager().getBinding(HandlerStore.DS_KEY,
+                                                      HandlerStore.class);
     }
     
     /**
-     * Manage listeners for the server.  This managed object stores a 
-     * prototype list of listeners.  The list is *copied* into any
-     * new SessionListeners that are created.  This means that this
-     * object is only used when a new listener is created, not on every
-     * message.  It also means that the list of listeners is not dynamic --
-     * a given session listener will have exactly the set of listeners that
-     * was present when it connected.  For this reason, listeners should
-     * be registered during initialization.
+     * Implementation of ClientSender
      */
-    static class ListenerSupport implements ManagedObject, Serializable {
-        static final String BINDING_NAME = ListenerSupport.class.getName();
+    class ClientSenderImpl implements ClientSender {
+        private short clientID;
         
-        /** message listeners */
-        private List<MessageListenerRecord> messageListeners =
-                new ArrayList<MessageListenerRecord>();
-           
-        /** session listeners */
-        private List<ClientConnectionListener> connectionListeners =
-                new ArrayList<ClientConnectionListener>();
+        ClientSenderImpl(short clientID) {
+            this.clientID = clientID;
+        }
+
+        public void send(Message message) {
+            sendToSession(clientID, message);
+        }
+
+        public void sendError(MessageID messageID, String error) {
+            WonderlandSessionListener.this.sendError(messageID, clientID, error);
+        }
+
+        public void sendError(MessageID messageID, Throwable cause) {
+            WonderlandSessionListener.this.sendError(messageID, clientID, cause);
+        }
+
+        public void sendError(MessageID messageID, String error, Throwable cause) {
+            WonderlandSessionListener.this.sendError(messageID, clientID, error, cause);
+        }
+
+        public ClientSession getSession() {
+            return session;
+        }
+    }
+    
+    /**
+     * Handle internal messages from the WonderlandSession object
+     */
+    class SessionInternalHandler implements ClientHandler, Serializable {
+
+        public ClientType getClientType() {
+            return SessionInternalClientType.SESSION_INTERNAL_CLIENT_TYPE;
+        }
+
+        public void clientAttached(ClientSender sender) {
+            // ignore
+        }
+        
+        public void clientDetached(ClientSession session) {
+            // ignore
+        }
+
+        public void messageReceived(ClientSender sender, Message message) {
+            if (message instanceof AttachClientMessage) {
+                AttachClientMessage acm = (AttachClientMessage) message;
+                handleAttach(acm.getMessageID(), acm.getClientType());
+            } else if (message instanceof DetachClientMessage) {
+                DetachClientMessage dcm = (DetachClientMessage) message;
+                handleDetach(dcm.getClientID());
+            }
+        }
+    }
+    
+    /**
+     * Store all registered handlers, mapped by ClientType
+     */
+    private static class HandlerStore implements ManagedObject, Serializable {
+        /** the key in the data store */
+        private static final String DS_KEY = HandlerStore.class.getName();
+        
+        /** prefix for client-specific channels */
+        private static final String CLIENT_CHANNEL_PREFIX =
+                WonderlandChannelNames.WONDERLAND_PREFIX + ".Client.";
+    
+        
+        /** the handlers, mapped by ClientType */
+        private Map<ClientType, HandlerRecord> handlers = 
+                new HashMap<ClientType, HandlerRecord>();
+        
+        /** the next client ID to assign */
+        private short clientID = 0;
         
         /**
-         * Add a message listener
-         * @param messageClass the class of message to listen for
-         * @param listener the listener to add
+         * Register a new handler type
+         * @param handler the handler to register
          */
-        public void addMessageListener(Class<? extends Message> messageClass, 
-                                       ClientMessageListener listener) 
-        {
-            MessageListenerRecord lr;
+        public void register(ClientHandler handler) {
             
-            if (listener instanceof ManagedObject) {
-                lr = new ManagedMessageListenerRecord(messageClass, 
-                                                      (ManagedObject) listener);
+            // decide the correct type of reference depending on if the
+            // handler is a managed object or not
+            ClientHandlerRef ref;
+            if (handler instanceof ManagedObject) {
+                ref = new ManagedClientHandlerRef(handler);
             } else {
-                lr = new MessageListenerRecord(messageClass, listener);
+                ref = new ClientHandlerRef(handler);
             }
             
-            messageListeners.add(lr);
-        }
-        
-        /**
-         * Add a connection listener
-         * @param listener the listener to add
-         */
-        public void addConnectionListener(ClientConnectionListener listener) {
-            if (listener instanceof ManagedObject) {
-                listener = 
-                        new ManagedConnectionListener((ManagedObject) listener);
-            } 
+            // create the channel
+            String channelName = CLIENT_CHANNEL_PREFIX + 
+                    handler.getClientType().toString(); 
+             
+            ChannelManager cm = AppContext.getChannelManager();
+            Channel channel = cm.createChannel(channelName, null, 
+                                               Delivery.RELIABLE);
             
-            connectionListeners.add(listener);
+            // add to the map
+            HandlerRecord record = new HandlerRecord();
+            record.ref = ref;
+            record.channel = channel;
+            record.clientID = clientID++;
+            handlers.put(handler.getClientType(), record);
         }
         
         /**
-         * Get the message listeners
-         * @return the list of listeners
+         * Unregister a handler
+         * @param handler the handler to unregister
          */
-        public List<MessageListenerRecord> getMessageListeners() {
-            return messageListeners;
+        public void unregister(ClientHandler handler) {
+            handlers.remove(handler.getClientType());
         }
         
         /**
-         * Get the connection listeners
-         * @return the list of listeners
+         * Get a handler for the given client type
+         * @param type the client type to look up a handler for
+         * @return a handler for the given type, or null if none is
+         * registered
          */
-        public List<ClientConnectionListener> getConnectionListeners() {
-            return connectionListeners;
+        public ClientHandlerRef getHandlerRef(ClientType type) {
+            HandlerRecord record = handlers.get(type);
+            if (record == null) {
+                return null;
+            }
+            
+            return record.ref;
+        }
+        
+        /**
+         * Get the channel for the given client type
+         * @param type the client type to look up a handler for
+         * @return a channel for the given type, or null if none is registered
+         */
+        public Channel getChannel(ClientType type) {
+            HandlerRecord record = handlers.get(type);
+            if (record == null) {
+                return null;
+            }
+            
+            return record.channel;
+        }
+        
+        /**
+         * Get the clientID for the given client type
+         * @param type the client type to look up an ID for
+         * @return the clientID for the given type or -1 if none is found
+         */
+        public short getClientID(ClientType type) {
+            HandlerRecord record = handlers.get(type);
+            if (record == null) {
+                return -1;
+            }
+            
+            return record.clientID;
+        }
+        
+        // a handler reference and its associated channel
+        class HandlerRecord implements Serializable {
+            ClientHandlerRef ref;
+            Channel channel;
+            short clientID;
         }
     }
     
     /**
-     * A listener record, including the class to listen for
+     * A reference to a regular client handler
      */
-    static class MessageListenerRecord implements Serializable {
-        // the class of message to listen for
-        private Class<? extends Message> messageClass;
-        
-        // the listener
-        private ClientMessageListener listener;
-        
-        public MessageListenerRecord(Class<? extends Message> messageClass, 
-                                     ClientMessageListener listener) 
-        {
-            this.messageClass = messageClass;
-            this.listener = listener;
+    static class ClientHandlerRef implements Serializable {
+        private ClientHandler handler;
+       
+        public ClientHandlerRef(ClientHandler handler) {
+            this.handler = handler;
         }
         
-        public Class<? extends Message> getMessageClass() {
-            return messageClass;
-        }
-        
-        public ClientMessageListener getListener() {
-            return listener;
+        public ClientHandler get() {
+            return handler;
         }
     }
     
     /**
-     * A message listener record for a listener which is a managed object
+     * A reference to a managed client handler
      */
-    static class ManagedMessageListenerRecord extends MessageListenerRecord {
-        // a reference to the listener record
-        private ManagedReference listenerRef;
+    static class ManagedClientHandlerRef extends ClientHandlerRef 
+            implements Serializable 
+    {
+        private ManagedReference ref;
         
-        public ManagedMessageListenerRecord(Class<? extends Message> messageClass,
-                                            ManagedObject listener)
-        {
-            super (messageClass, null);
-            this.listenerRef = AppContext.getDataManager().createReference(listener);
+        public ManagedClientHandlerRef(ClientHandler handler) {
+            super (null);
+            
+            DataManager dm = AppContext.getDataManager();
+            ref = dm.createReference((ManagedObject) handler);
         }
         
         @Override
-        public ClientMessageListener getListener() {
-            return listenerRef.get(ClientMessageListener.class);
-        }
-    }
-    
-    /**
-     * A session listener for a session which is a managed object
-     */
-    static class ManagedConnectionListener 
-            implements ClientConnectionListener, Serializable
-    {
-        // a reference to the listener record
-        private ManagedReference listenerRef;
-        
-        public ManagedConnectionListener(ManagedObject listener) {
-            this.listenerRef = AppContext.getDataManager().createReference(listener);
-        }
-
-        public void connected(ClientSession session) {
-            listenerRef.get(ClientConnectionListener.class).connected(session);
-        }
-
-        public void disconnected(ClientSession session) {
-            listenerRef.get(ClientConnectionListener.class).disconnected(session);
+        public ClientHandler get() {
+            return ref.get(ClientHandler.class);
         }
     }
 }

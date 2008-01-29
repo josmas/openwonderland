@@ -24,28 +24,30 @@ import com.sun.sgs.client.ClientChannelListener;
 import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
- * When a new channel is joined, the name of the channel is used to determine
- * the listener factory that will be used to generate the ClientChannelListener
- * to receieve messages for that channel.
+ * When a new channel is joined, ChannelJoinedListeners are used to generate
+ * the listener that will receieve messages for that channel.
  * <p>
- * Factories are tried in the order they are registed.  By convention, channels 
- * in Wonderland are identified by a prefix.  Typically, a factory will look
- * at the prefix of the channel name to determine if it can return a listener
- * for the given channel.
+ * ChannelJoinedListeners are tried in the order they are registed.  By 
+ * convention, channels in Wonderland are identified by a prefix.  Typically, 
+ * a factory will look at the prefix of the channel name to determine if it can
+ * return a listener for the given channel.
  * 
  * @author kaplanj
  */
 @ExperimentalAPI
-public interface ChannelListenerFactory {
+public interface ChannelJoinedListener {
     /**
-     * Generate a listener for the given client and channel.  If this method
-     * returns a non-null listener, it will be used to listen for messages
-     * on the given channel. 
-     * @param client the client that was requested to join the given channel
+     * Generate a listener for the given channel initiated on the given session.  
+     * If this method returns a non-null listener, it will be used to listen 
+     * for messages on the given channel.  The first non-null value returned
+     * by a ChannelJoinedListener will be used as the listener for the
+     * given channel.
+     *  
+     * @param session the session that received the channel join request
      * @param channel the channel to join
      * @return the listener to use for the given channel, or null if this 
      * factory doesn't handle listeners for the given channel.
      */
-    public ClientChannelListener createListener(BaseClient client,
-                                                ClientChannel channel);
+    public ClientChannelListener joinedChannel(WonderlandSession session,
+                                               ClientChannel channel);
 }
