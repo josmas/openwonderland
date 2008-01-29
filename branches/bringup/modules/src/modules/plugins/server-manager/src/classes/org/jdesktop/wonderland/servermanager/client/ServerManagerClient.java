@@ -17,36 +17,26 @@
  */
 package org.jdesktop.wonderland.servermanager.client;
 
-import org.jdesktop.wonderland.client.comms.*;
-import org.jdesktop.wonderland.common.comms.ProtocolVersion;
-import org.jdesktop.wonderland.common.comms.ServerManagerProtocolVersion;
+import org.jdesktop.wonderland.client.comms.BaseClient;
+import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.servermanager.common.ServerManagerClientType;
+
 
 /**
  *
  * @author paulby
  */
-public class ServerManagerClient extends WonderlandClient {
+public class ServerManagerClient extends BaseClient {
 
-    public ServerManagerClient(WonderlandServerInfo server) {
-        super(server);
+    public ServerManagerClient() {
     }
     
-    /**
-     * Return the Wonderland protocol name
-     * @return the name of the Wonderland client protcol
-     */
-    @Override
-    protected String getProtocolName() {
-        return ServerManagerProtocolVersion.PROTOCOL_NAME;
+    public ClientType getClientType() {
+        return ServerManagerClientType.CLIENT_TYPE;
     }
 
-    /**
-     * Return the Wonderland protocol version
-     * @return the version of the Wonderland protocol
-     */
-    @Override
-    protected ProtocolVersion getProtocolVersion() {
-        return ServerManagerProtocolVersion.VERSION;
+    public void messageReceived(Message message) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-   
 }
