@@ -17,18 +17,17 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.j3d.BoundingBox;
-import javax.media.j3d.Bounds;
-import javax.media.j3d.Transform3D;
-import javax.vecmath.Matrix4d;
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
-import org.jdesktop.j3d.utils.math.Math3D;
+import org.jdesktop.wonderland.PrivateAPI;
+import org.jdesktop.wonderland.common.Math3DUtils;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
 /**
@@ -40,13 +39,14 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
  *
  * @author paulby
  */
+@PrivateAPI
 public class OctTreeCellMO extends GroupCellMO implements CellContainerInterface {
 
     public enum Octant { 
         UPPER_NE, UPPER_NW ,UPPER_SE, UPPER_SW, 
         LOWER_NE, LOWER_NW, LOWER_SE, LOWER_SW };
 
-    public OctTreeCellMO(BoundingBox bounds, Matrix4d cellOrigin) {
+    public OctTreeCellMO(BoundingBox bounds, CellTransform cellOrigin) {
         super(bounds, cellOrigin);
 
         for(Octant oct : Octant.values()) {
@@ -59,64 +59,55 @@ public class OctTreeCellMO extends GroupCellMO implements CellContainerInterface
     }
     
     private GroupCellMO createOctant( Octant octant ) {
-        Vector3d octantCenter=null;
+        Vector3f octantCenter=null;
         
-        Point3d upper = new Point3d();
-        Point3d lower = new Point3d();
-        ((BoundingBox)getLocalBounds()).getUpper(upper);
-        ((BoundingBox)getLocalBounds()).getLower(lower);
-
-        double xDim = upper.x - lower.x;
-        double yDim = upper.y - lower.y;
-        double zDim = upper.z - lower.z;
-
-        Point3d center = new Point3d(lower.x+xDim/2,
-                                        lower.y+yDim/2,
-                                        lower.z+zDim/2);
+        Vector3f extents = ((BoundingBox)getLocalBounds()).getExtent(null);
         
-        double xDim4 = xDim/4;
-        double yDim4 = yDim/4;
-        double zDim4 = zDim/4;
+        float xDim = extents.x;
+        float yDim = extents.y;
+        float zDim = extents.z;
+
+        Vector3f center = getLocalBounds().getCenter();
+        
+        float xDim4 = xDim/4;
+        float yDim4 = yDim/4;
+        float zDim4 = zDim/4;
         
         switch(octant) {
             case UPPER_NE :
-                octantCenter = new Vector3d(center.x+xDim4, center.y+yDim4, center.z-zDim4);
+                octantCenter = new Vector3f(center.x+xDim4, center.y+yDim4, center.z-zDim4);
             break;
             case UPPER_NW :
-                octantCenter = new Vector3d(center.x-xDim4, center.y+yDim4, center.z-zDim4);
+                octantCenter = new Vector3f(center.x-xDim4, center.y+yDim4, center.z-zDim4);
             break;
             case UPPER_SE :
-                octantCenter = new Vector3d(center.x+xDim4, center.y+yDim4, center.z+zDim4);
+                octantCenter = new Vector3f(center.x+xDim4, center.y+yDim4, center.z+zDim4);
             break;
             case UPPER_SW :
-                octantCenter = new Vector3d(center.x-xDim4, center.y+yDim4, center.z+zDim4);
+                octantCenter = new Vector3f(center.x-xDim4, center.y+yDim4, center.z+zDim4);
             break;
             case LOWER_NE :
-                octantCenter = new Vector3d(center.x+xDim4, center.y-yDim4, center.z-zDim4);
+                octantCenter = new Vector3f(center.x+xDim4, center.y-yDim4, center.z-zDim4);
             break;
             case LOWER_NW :
-                octantCenter = new Vector3d(center.x-xDim4, center.y-yDim4, center.z-zDim4);
+                octantCenter = new Vector3f(center.x-xDim4, center.y-yDim4, center.z-zDim4);
             break;
             case LOWER_SE :
-                octantCenter = new Vector3d(center.x+xDim4, center.y-yDim4, center.z+zDim4);
+                octantCenter = new Vector3f(center.x+xDim4, center.y-yDim4, center.z+zDim4);
             break;
             case LOWER_SW :
-                octantCenter = new Vector3d(center.x-xDim4, center.y-yDim4, center.z+zDim4);
+                octantCenter = new Vector3f(center.x-xDim4, center.y-yDim4, center.z+zDim4);
             break;
         }
         
-        BoundingBox octantBounds = new BoundingBox(new Point3d(-xDim4, -yDim4, -zDim4), 
-                                                   new Point3d(xDim4, yDim4, zDim4));
-        Matrix4d m4d = new Matrix4d();
-        m4d.setIdentity();
-        m4d.setTranslation(octantCenter);
+        BoundingBox octantBounds = new BoundingBox(new Vector3f(), xDim4, yDim4, zDim4);
         
         GroupCellMO ret;
         
         if (xDim4<1000)
-            ret = new GroupCellMO(octantBounds, m4d);
+            ret = new GroupCellMO(octantBounds, new CellTransform(null, octantCenter));
         else
-            ret = new OctTreeCellMO(octantBounds, m4d);
+            ret = new OctTreeCellMO(octantBounds, new CellTransform(null, octantCenter));
         
         ret.setName(octant.toString()+":"+xDim4);
         
@@ -134,13 +125,13 @@ public class OctTreeCellMO extends GroupCellMO implements CellContainerInterface
      * {@inheritDoc}
      */
     @Override
-    public CellMO insertCellInHierarchy(CellMO insertChild, Bounds childVWBounds)  throws MultipleParentException {
+    public CellMO insertCellInHierarchy(CellMO insertChild, BoundingVolume childVWBounds)  throws MultipleParentException {
         CellMO parent = null;
 
         System.out.println("OctTree bounds "+getCachedVWBounds());
         System.out.println("Child bounds "+childVWBounds);
         
-        if (!Math3D.encloses(getCachedVWBounds(), childVWBounds)) {
+        if (!Math3DUtils.encloses(getCachedVWBounds(), childVWBounds)) {
             System.out.println("child not enclosed by our bounds");
             return null;
         }   
@@ -153,7 +144,7 @@ public class OctTreeCellMO extends GroupCellMO implements CellContainerInterface
             ref = it.next();
             if (ref!=null) {
                 CellMO tmp = ref.get(CellMO.class);
-                if (Math3D.encloses(tmp.getCachedVWBounds(), childVWBounds)) {
+                if (Math3DUtils.encloses(tmp.getCachedVWBounds(), childVWBounds)) {
                     if (tmp instanceof CellContainerInterface) {
                         parent = ((CellContainerInterface)tmp).insertCellInHierarchy(insertChild, childVWBounds);
                     }
@@ -161,15 +152,15 @@ public class OctTreeCellMO extends GroupCellMO implements CellContainerInterface
                     if (parent==null) {
                         try {
                             AppContext.getDataManager().markForUpdate(tmp);
-                            Vector3d parentLoc = new Vector3d();
+                            Vector3f parentLoc = new Vector3f();
                             tmp.getTransform().get(parentLoc);
                             
                             // Adjust childs transform
-                            Vector3d childLoc = new Vector3d();
-                            Matrix4d childTransform = insertChild.getTransform();
+                            Vector3f childLoc = new Vector3f();
+                            CellTransform childTransform = insertChild.getTransform();
                             childTransform.get(childLoc);
                             
-                            childLoc.sub(parentLoc,childLoc);                            
+                            childLoc.subtract(parentLoc,childLoc);                            
                             childTransform.set(childLoc);
                             insertChild.setTransform(childTransform);
                             

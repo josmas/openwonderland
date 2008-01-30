@@ -19,9 +19,10 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import javax.vecmath.Vector3d;
+import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.common.Math3DUtils;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.setup.ModelCellSetup;
 import org.jdesktop.wonderland.server.ChecksumManagerGLO;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
@@ -43,13 +44,13 @@ public class SimpleTerrainCellMO extends CellMO
     }
     
     public SimpleTerrainCellMO(int row, int column, String filename, float size) {
-        this(new Vector3d(row*size+size/2, 0, column*size+size/2), size);
+        this(new Vector3f(row*size+size/2, 0, column*size+size/2), size);
         
         this.filename = filename;
     }
     
-    public SimpleTerrainCellMO(Vector3d center, float size) {
-        super(Math3DUtils.createBoundingBox(center, size), Math3DUtils.createOriginM4d(center));
+    public SimpleTerrainCellMO(Vector3f center, float size) {
+        super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
     }
     
     @Override

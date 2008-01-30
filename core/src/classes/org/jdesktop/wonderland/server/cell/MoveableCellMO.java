@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.server.cell;
 
 import java.util.ArrayList;
-import javax.vecmath.Matrix4d;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * For cells that are expected to move frequently
@@ -30,7 +30,7 @@ public class MoveableCellMO extends CellMO {
     private ArrayList<CellMoveListener> listeners = null;
     
     @Override
-    public void setTransform(Matrix4d transform) {
+    public void setTransform(CellTransform transform) {
         super.setTransform(transform);
         
         // Notify listeners
@@ -62,6 +62,6 @@ public class MoveableCellMO extends CellMO {
     }
     
     public interface CellMoveListener {
-        public void cellMoved(MoveableCellMO cell, Matrix4d transform);
+        public void cellMoved(MoveableCellMO cell, CellTransform transform);
     }
 }

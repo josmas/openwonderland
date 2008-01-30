@@ -1,7 +1,7 @@
 /**
  * Project Looking Glass
  * 
- * $RCSfile: LoadCellGLOException.java,v $
+ * $RCSfile: LoadCellMOException.java,v $
  * 
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  * 
@@ -19,44 +19,47 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
+
 /**
- * An exception when loading a cell glo using a CellGLOProvider
+ * An exception when loading a cell MO using a CellGLOProvider
  * @author jkaplan
  */
-public class LoadCellGLOException extends RuntimeException {
+@ExperimentalAPI
+public class LoadCellMOException extends RuntimeException {
 
     /**
-     * Creates a new instance of <code>LoadCellGLOException</code> without 
+     * Creates a new instance of <code>LoadCellMOException</code> without 
      * detail message.
      */
-    public LoadCellGLOException() {
+    public LoadCellMOException() {
     }
 
     /**
-     * Constructs an instance of <code>LoadCellGLOException</code> with the 
+     * Constructs an instance of <code>LoadCellMOException</code> with the 
      * specified detail message.
      * @param msg the detail message.
      */
-    public LoadCellGLOException(String msg) {
+    public LoadCellMOException(String msg) {
         super (msg);
     }
     
     /**
-     * Constructs an instance of <code>LoadCellGLOException</code> with the 
+     * Constructs an instance of <code>LoadCellMOException</code> with the 
      * specified cause.
      * @param cause the cause.
      */
-    public LoadCellGLOException(Throwable cause) {
+    public LoadCellMOException(Throwable cause) {
         super (cause);
     }
     
     /**
-     * Constructs an instance of <code>LoadCellGLOException</code> with the 
+     * Constructs an instance of <code>LoadCellMOException</code> with the 
      * specified detail message and cause.
      * @param msg the detail message.
      * @param cause the cause
      */
-    public LoadCellGLOException(String msg, Throwable cause) {
+    public LoadCellMOException(String msg, Throwable cause) {
         super (msg, cause);
     }
 }

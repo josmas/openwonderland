@@ -17,11 +17,11 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingVolume;
 import java.util.Collection;
-import javax.media.j3d.Bounds;
-import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.PrivateAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.bounds.ServiceBoundsHandler;
@@ -52,7 +52,7 @@ public abstract class BoundsHandler {
      * @param cellID
      * @return
      */
-    public abstract Bounds getCachedVWBounds(CellID cellID);
+    public abstract BoundingVolume getCachedVWBounds(CellID cellID);
 
     /**
      * Return the computed World Bounds of the specified cell. The computed
@@ -61,7 +61,7 @@ public abstract class BoundsHandler {
      * @param cellID
      * @return
      */
-    public abstract Bounds getComputedWorldBounds(CellID cellID);
+    public abstract BoundingVolume getComputedWorldBounds(CellID cellID);
 
     /**
      * Return the local bounds of the specified cell
@@ -69,7 +69,7 @@ public abstract class BoundsHandler {
      * @param cellID
      * @return
      */
-    public abstract Bounds getLocalBounds(CellID cellID);
+    public abstract BoundingVolume getLocalBounds(CellID cellID);
 
     /**
      * Set the local bounds of the specified cell
@@ -77,11 +77,11 @@ public abstract class BoundsHandler {
      * @param cellID
      * @param bounds
      */
-    public abstract void setLocalBounds(CellID cellID, Bounds bounds);
+    public abstract void setLocalBounds(CellID cellID, BoundingVolume bounds);
 
-    public abstract void setComputedWorldBounds(CellID cellID, Bounds bounds);
+    public abstract void setComputedWorldBounds(CellID cellID, BoundingVolume bounds);
 
-    public abstract void setLocalToVworld(CellID cellID, Matrix4d transform);
+    public abstract void setLocalToVworld(CellID cellID, CellTransform transform);
 
     /**
      * Construct the graph by adding the child to the parent cell
@@ -107,7 +107,7 @@ public abstract class BoundsHandler {
      */
     public abstract void removeBounds(CellMO cell);
     
-    public abstract void cellTransformChanged(CellID cellID, Matrix4d transform);
+    public abstract void cellTransformChanged(CellID cellID, CellTransform transform);
     
     /**
      * Notify handler that the set of children of this cell has changed. This will
@@ -125,9 +125,9 @@ public abstract class BoundsHandler {
      * @param cellID
      * @param bounds
      */
-    public abstract void cellBoundsChanged(CellID cellID, Bounds bounds);
+    public abstract void cellBoundsChanged(CellID cellID, BoundingVolume bounds);
     
-    public abstract Collection<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor);
+    public abstract Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor);
  
     /**
      * 
@@ -139,7 +139,7 @@ public abstract class BoundsHandler {
      * returns only cells of cellClass.
      * @return
      */
-    public Collection<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor, Class cellClass, boolean reportSubclasses) {
+    public Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor, Class cellClass, boolean reportSubclasses) {
         throw new RuntimeException("Not Implemented");
     }
  

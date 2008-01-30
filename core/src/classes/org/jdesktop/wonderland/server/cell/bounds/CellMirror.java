@@ -17,15 +17,14 @@
  */
 package org.jdesktop.wonderland.server.cell.bounds;
 
+import com.jme.bounding.BoundingVolume;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.*;
 import java.util.ArrayList;
 import java.util.Iterator;
-import javax.media.j3d.Bounds;
-import javax.media.j3d.Transform3D;
-import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 
@@ -39,11 +38,11 @@ import org.jdesktop.wonderland.server.UserPerformanceMonitor;
  */
 public class CellMirror {
 
-    private Bounds computedWorldBounds;
-    private Bounds localBounds;
-    private Matrix4d localToVWorld;
+    private BoundingVolume computedWorldBounds;
+    private BoundingVolume localBounds;
+    private CellTransform localToVWorld;
     private CellID cellID;
-    private Matrix4d transform;
+    private CellTransform transform;
     private Class cellClass;
     
     private CellMirror parent;
@@ -64,10 +63,9 @@ public class CellMirror {
      * 
      * @return
      */
-    public Bounds getCachedVWBounds() {
-        Bounds ret = (Bounds) localBounds.clone();
-        Transform3D t3d = new Transform3D(localToVWorld);
-        ret.transform(t3d);
+    public BoundingVolume getCachedVWBounds() {
+        BoundingVolume ret = localBounds.clone(localBounds);
+        localToVWorld.transform(ret);
         
         return ret;
     }
@@ -82,7 +80,7 @@ public class CellMirror {
      * 
      * @return
      */
-    public Bounds getComputedWorldBounds() {
+    public BoundingVolume getComputedWorldBounds() {
         return computedWorldBounds;        
     }
     
@@ -91,31 +89,31 @@ public class CellMirror {
      * 
      * @param bounds
      */
-    public void setComputedWorldBounds(Bounds bounds) {
+    public void setComputedWorldBounds(BoundingVolume bounds) {
         computedWorldBounds = bounds;
     }
 
-    public Bounds getLocalBounds() {
+    public BoundingVolume getLocalBounds() {
         return localBounds;
     }
 
-    public void setLocalBounds(Bounds bounds) {
+    public void setLocalBounds(BoundingVolume bounds) {
         localBounds = bounds;
     }
 
-    public void setLocalToVWorld(Matrix4d transform) {
+    public void setLocalToVWorld(CellTransform transform) {
         localToVWorld = transform;
     }
     
-    public Matrix4d getLocalToVWorld() {
+    public CellTransform getLocalToVWorld() {
         return localToVWorld;
     }
     
-    public void setTransform(Matrix4d transform) {
+    public void setTransform(CellTransform transform) {
         this.transform = transform;
     }
     
-    public Matrix4d getTransform() {
+    public CellTransform getTransform() {
         return transform;
     }
     
@@ -206,7 +204,7 @@ public class CellMirror {
      */
     ArrayList<CellID> getVisibleCells(
                 ArrayList<CellID> list, 
-                Bounds bounds,
+                BoundingVolume bounds,
                 UserPerformanceMonitor monitor) {
         
         long t = System.nanoTime();
@@ -217,12 +215,12 @@ public class CellMirror {
          * origin of the parent. If the parent's bounds is given as null, then
          * we do not need to translate the bounds at all either.
          */
-        Bounds tmpComputedWorldBounds = (Bounds)this.getComputedWorldBounds();
+        BoundingVolume tmpComputedWorldBounds = (BoundingVolume)this.getComputedWorldBounds();
         
         /*
          * We now intersect with the bounds of the cell 
          */
-        boolean intersect = bounds.intersect(tmpComputedWorldBounds);
+        boolean intersect = bounds.intersects(tmpComputedWorldBounds);
         monitor.incRevalidateCalcTime( System.nanoTime()-t );
         monitor.incRevalidateCellCount(getClass());
 

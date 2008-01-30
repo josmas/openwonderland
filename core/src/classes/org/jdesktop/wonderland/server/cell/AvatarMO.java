@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
-import javax.vecmath.Matrix4d;
+import java.io.Serializable;
+import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.UserMO;
 
 /**
@@ -27,9 +29,10 @@ import org.jdesktop.wonderland.server.UserMO;
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class AvatarMO extends MoveableCellMO {
     
-    private ManagedReference avatarCellCache;
+    private ManagedReference avatarCellCacheRef;
     private ManagedReference userRef;
 
     public AvatarMO(UserMO user) {
@@ -40,11 +43,24 @@ public class AvatarMO extends MoveableCellMO {
     public UserMO getUser() {
         return userRef.get(UserMO.class);
     }
-    
-    class AvatarMoveListener implements CellMoveListener {
 
-        public void cellMoved(MoveableCellMO cell, Matrix4d transform) {
-            throw new UnsupportedOperationException("Not supported yet.");
+    /**
+     * Return the avatar cell cache managed object for this avatar
+     * @return
+     */
+    AvatarCellCacheMO getCellCache() {
+        if (avatarCellCacheRef==null) {
+            AvatarCellCacheMO cache = new AvatarCellCacheMO(AppContext.getDataManager().createReference(this));
+            avatarCellCacheRef = AppContext.getDataManager().createReference(cache);
+        }
+        
+        return avatarCellCacheRef.getForUpdate(AvatarCellCacheMO.class);
+    }
+    
+    class AvatarMoveListener implements CellMoveListener, Serializable {
+
+        public void cellMoved(MoveableCellMO cell, CellTransform transform) {
+            System.out.println("AvatarMO.cellMoved");
         }
         
     }

@@ -1,7 +1,7 @@
 /**
  * Project Looking Glass
  * 
- * $RCSfile: CellGLOFactory.java,v $
+ * $RCSfile: CellMOFactory.java,v $
  * 
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  * 
@@ -34,7 +34,7 @@ import java.util.ServiceLoader;
  * is a fully-qualified class name and loads that class.
  * @author jkaplan
  */
-public class CellGLOFactory {
+public class CellMOFactory {
    
     /**
      * Instantiate a cell GLO of the given type with the given arguments.
@@ -44,20 +44,20 @@ public class CellGLOFactory {
      * 
      * @param typeName the name of the cell type to instantiate.
      * @param args the arguments to the constructor of the given cell type
-     * @throws LoadCellGLOException if there is an error loading the
+     * @throws LoadCellMOException if there is an error loading the
      * given cell type with the given arguments
      */
     public static CellMO loadCellGLO(String typeName, Object... args) 
-        throws LoadCellGLOException
+        throws LoadCellMOException
     {       
         CellMO res = null;
         
-        // get the service providers fot the CellGLOProvider class
-        ServiceLoader<CellGLOProvider> s = 
-                ServiceLoader.load(CellGLOProvider.class);
+        // get the service providers fot the CellMOProvider class
+        ServiceLoader<CellMOProvider> s = 
+                ServiceLoader.load(CellMOProvider.class);
     
         // check each provider
-        for (Iterator<CellGLOProvider> i = s.iterator(); i.hasNext();) {
+        for (Iterator<CellMOProvider> i = s.iterator(); i.hasNext();) {
             res = i.next().loadCellGLO(typeName, args);
             if (res != null) {
                 break;
@@ -77,10 +77,10 @@ public class CellGLOFactory {
     }
     
     // default provider
-    static class DefaultCellGLOProvider extends CellGLOProvider {
+    static class DefaultCellGLOProvider extends CellMOProvider {
         @SuppressWarnings("unchecked")
         public CellMO loadCellGLO(String typeName, Object... args) 
-                throws LoadCellGLOException 
+                throws LoadCellMOException 
         {
             // assume type name is a fully-qualified class name
             try {
@@ -88,7 +88,7 @@ public class CellGLOFactory {
                         (Class<CellMO>) Class.forName(typeName);
                 return createCell(clazz, args);
             } catch (Exception ex) {
-                throw new LoadCellGLOException("Error loading type " + typeName, 
+                throw new LoadCellMOException("Error loading type " + typeName, 
                                                ex);
             }
         }

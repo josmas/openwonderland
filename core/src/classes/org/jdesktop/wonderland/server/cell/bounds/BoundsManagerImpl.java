@@ -17,10 +17,12 @@
  */
 package org.jdesktop.wonderland.server.cell.bounds;
 
+import com.jme.bounding.BoundingVolume;
 import java.util.Collection;
 import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 
 /**
@@ -46,15 +48,15 @@ public class BoundsManagerImpl implements BoundsManager {
         service.removeCellBounds(cellID);
     }
 
-    public void cellTransformChanged(CellID cellID, Matrix4d transform) {
+    public void cellTransformChanged(CellID cellID, CellTransform transform) {
         service.cellTransformChanged(cellID, transform);
     }
 
-    public void cellBoundsChanged(CellID cellID, Bounds bounds) {
+    public void cellBoundsChanged(CellID cellID, BoundingVolume bounds) {
         service.cellBoundsChanged(cellID, bounds);
     }
 
-    public Collection<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor) {
+    public Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
         return service.getVisibleCells(rootCell, bounds, perfMonitor);
     }
 

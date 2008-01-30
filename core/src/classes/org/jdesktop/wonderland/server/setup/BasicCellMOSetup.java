@@ -20,9 +20,10 @@
 
 package org.jdesktop.wonderland.server.setup;
 
-import javax.media.j3d.Bounds;
-import javax.vecmath.Matrix4d;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -38,32 +39,26 @@ public class BasicCellMOSetup<T extends CellSetup>
     private String cellGLOClassName;
 
     /* the location of the cell */
-    private double[] origin = new double[] { 0.0, 0.0, 0.0 };
-    private double[] rotation = new double[] { 0.0, 1.0, 0.0, 0.0 };
-    private double scale = 1.0;
+    private CellTransform cellTransform;
 
     /* the bounds of the cell */
     private String boundsType = "SPHERE";
-    private double boundsRadius = 4.0;
+    private float boundsRadius = 4.0f;
     
     public BasicCellMOSetup() {
         this (null, null, null, null);
     }
     
-    public BasicCellMOSetup(Bounds bounds, Matrix4d origin, 
+    public BasicCellMOSetup(BoundingVolume bounds, CellTransform transform, 
                              String cellGLOClassName, T cellSetup)
     {
         setCellGLOClassName(cellGLOClassName);
         setCellSetup(cellSetup);
+        this.cellTransform = transform;
         
         if (bounds != null) {
             setBoundsType(BasicCellMOHelper.getBoundsType(bounds));
             setBoundsRadius(BasicCellMOHelper.getBoundsRadius(bounds));
-        }
-        if (origin != null) {
-            setOrigin(BasicCellMOHelper.getTranslation(origin));
-            setRotation(BasicCellMOHelper.getRotation(origin));
-            setScale(origin.getScale());
         }
     }
     
@@ -83,29 +78,14 @@ public class BasicCellMOSetup<T extends CellSetup>
         this.cellGLOClassName = cellGLOClassName;
     }
 
-    public double[] getOrigin() {
-        return origin;
+    public CellTransform getCellTransform() {
+        return cellTransform;
     }
     
-    public void setOrigin(double[] origin) {
-        this.origin = origin;
+    public void setCellTransform(CellTransform cellTransform) {
+        this.cellTransform = cellTransform;
     }
-    public double[] getRotation() {
-        return rotation;
-    }
-
-    public void setRotation(double[] rotation) {
-        this.rotation = rotation;
-    }
-
-    public double getScale() {
-        return scale;
-    }
-
-    public void setScale(double scale) {
-        this.scale = scale;
-    }
-
+    
     public String getBoundsType() {
         return boundsType;
     }
@@ -114,15 +94,21 @@ public class BasicCellMOSetup<T extends CellSetup>
         this.boundsType = boundsType;
     }
 
-    public double getBoundsRadius() {
+    public float getBoundsRadius() {
         return boundsRadius;
     }
 
-    public void setBoundsRadius(double boundsRadius) {
+    public void setBoundsRadius(float boundsRadius) {
         this.boundsRadius = boundsRadius;
     }
 
     public void validate() throws InvalidCellMOSetupException {
         // do nothing
     }
+    
+    public double[] getOrigin() {
+        Vector3f v3f = cellTransform.get(null);
+        return new double[] { v3f.x, v3f.y, v3f.z };
+    }
+    
 }

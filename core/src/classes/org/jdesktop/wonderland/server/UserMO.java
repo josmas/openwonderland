@@ -42,6 +42,7 @@ public class UserMO implements ManagedObject, Serializable {
     
     private HashMap<ClientSession, ProtocolSessionListener> activeSessions = null;
     private HashMap<String, Serializable> extendedData = null;
+    private HashMap<String, ManagedReference> avatars = new HashMap();
     
     protected static Logger logger = Logger.getLogger(UserMO.class.getName());
 
@@ -103,6 +104,26 @@ public class UserMO implements ManagedObject, Serializable {
         if (extendedData==null)
             return null;
         return extendedData.get(name);
+    }
+    
+    /**
+     * Return the specified avatar for this User, or null if that avatar
+     * does not exist
+     * 
+     * @param avatarName
+     * @return
+     */
+    public ManagedReference getAvatar(String avatarName) {
+        return avatars.get(avatarName);
+    }
+    
+    /**
+     * Put the avatarRef and the name in the set of avatars for this user
+     * @param avatarName
+     * @param avatarRef
+     */
+    public void putAvatar(String avatarName, ManagedReference avatarRef) {
+        avatars.put(avatarName, avatarRef);
     }
     
     /**
