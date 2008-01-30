@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.ExperimentalAPI;
  * Wonderland messages are by default serialized and sent to clients.  
  * Messages that are very frequent should be hand-packed using the 
  * Externalizable interface.
- * {@see java.io.Externalizable}
+ * @see java.io.Externalizable
  * @author jkaplan
  */
 @ExperimentalAPI
@@ -112,7 +112,7 @@ public abstract class Message implements Serializable {
      * <code>extract(data, 0, data.length, clazz)</code>
      * 
      * @param data the byte representation of the message
-     * @param type the clazz the type of message to extract
+     * @param clazz the clazz the type of message to extract
      * @return the message after extraction
      * @throws ExtractMessageException if the message cannot be extracted
      */
@@ -125,7 +125,7 @@ public abstract class Message implements Serializable {
      * @param data the byte representation of the message
      * @param offset the starting offset of the data
      * @param length the length of the data to read
-     * @param type the clazz the type of message to extract
+     * @param clazz the clazz the type of message to extract
      * @return the message after extraction
      * @throws ExtractMessageException if the message cannot be extracted
      */

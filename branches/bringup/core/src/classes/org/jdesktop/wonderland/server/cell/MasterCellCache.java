@@ -84,8 +84,6 @@ public class MasterCellCache implements ManagedObject, Serializable {
     
     /**
      * Initialize the master cell cache
-     *
-     * @return
      */
     public static void initialize() {
         new MasterCellCache();
@@ -100,7 +98,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
     
     /**
      * Return singleton master cell cache
-     * @return
+     * @return the master cell cache
      */
     public static MasterCellCache getMasterCellCache() {
         return AppContext.getDataManager().getBinding(BINDING_NAME, MasterCellCache.class);                
@@ -110,8 +108,8 @@ public class MasterCellCache implements ManagedObject, Serializable {
     /**
      * Return the cell with the given ID, or null if the id is invalid
      * 
-     * @param cellID
-     * @return
+     * @param cellID the cell ID to get
+     * @return the cell with the given ID
      */
     public static CellMO getCell(CellID cellID) {
         return AppContext.getDataManager().getBinding("CELL_"+cellID.toString(), CellMO.class);        
@@ -130,11 +128,12 @@ public class MasterCellCache implements ManagedObject, Serializable {
      *  Traverse all trees and return the set of cells which are within
      * the specified bounds and are of the give Class 
      * 
-     * @param b
-     * @param cellClasses
-     * @return
+     * @param b the bounds to search inside
+     * @param cellClasses the classes of cells to search for
+     * @return an array of cell descriptions that provide details about the
+     * cells in range
      */
-    public CellDescription[] getCells(BoundingVolume b, Class[] cellClasses) {
+    public CellDescription[] getCells(BoundingVolume b, Class<?> ...) {
         return new CellDescription[0];
     }
 
@@ -234,10 +233,10 @@ public class MasterCellCache implements ManagedObject, Serializable {
     /**
      * Create a transform matrix with the specified translation
      * 
-     * @param x
-     * @param y
-     * @param z
-     * @return
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param z the z coordinate
+     * @return a matrix with the given translation
      */
 //    public static Matrix4d createTransform(double x, double y, double z) {
 //        Matrix4d ret = new Matrix4d();

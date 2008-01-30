@@ -233,7 +233,7 @@ public class WonderlandSessionListener
     /**
      * Send a message to specific clients connected via the given
      * WonderlandClient
-     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Set<ClientSession>, Message)
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Set, Message)
      * 
      * @param clientType the type of client to send to
      * @param sessions the session to send to
@@ -255,7 +255,7 @@ public class WonderlandSessionListener
      /**
      * Send a message to a specific clients connected via the given
      * WonderlandClient
-     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Set<ClientSession>, Message)
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Set, Message)
      * 
      * @param clientType the type of client to send to
      * @param session the session to send to

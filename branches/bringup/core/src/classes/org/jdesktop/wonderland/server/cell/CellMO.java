@@ -83,8 +83,8 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Create a CellMO with the specified localBounds and transform.
-     * @param localBounds, must not be null
-     * @param transform
+     * @param localBounds the bounds of the new cell, must not be null
+     * @param transform the transform for this cell
      */
     public CellMO(BoundingVolume localBounds, CellTransform transform) {
         assert(localBounds!=null);
@@ -108,7 +108,7 @@ public class CellMO extends WonderlandMO {
     
     /**
      *  Return (a clone) of the cells bounds in cell local coordinates
-     * @return
+     * @return the bounds in local coordinates
      */
     public BoundingVolume getLocalBounds() {
         return (BoundingVolume) localBounds.clone(null);     
@@ -136,7 +136,7 @@ public class CellMO extends WonderlandMO {
      * to the local bounds of this node or any of it's children may not be 
      * immediately reflected in this bounds.
      * 
-     * @return
+     * @return the bounds in world coordinates
      */
     public BoundingVolume getComputedWorldBounds() {
         return BoundsHandler.get().getComputedWorldBounds(cellID);   
@@ -204,7 +204,7 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Return the number of children of this cell
-     * @return
+     * @return the number of children
      */
     public int getNumChildren() {
         if (childCellRefs==null)
@@ -215,7 +215,7 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Return an Iterator over the children references for this cell. 
-     * @return
+     * @return a collection of references to the children of this cell.
      */
     public Collection<ManagedReference> getAllChildrenRefs() {
         if (childCellRefs==null)
@@ -359,8 +359,7 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Get the name of the cell, by default the name is the cell id.
-     * 
-     * @return
+     * @return the cell's name
      */
     public String getName() {
         if (name==null)
@@ -420,7 +419,7 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Return the name of this cells channel, or null if this cell has no channel
-     * @return
+     * @return the name of the cell's channel
      */
     public String getCellChannelName() {
         return channelName;
@@ -508,7 +507,7 @@ public class CellMO extends WonderlandMO {
 
     /**
      * Set up the cell from the given properties
-     * @param properties the properties to setup with
+     * @param setup the properties to setup with
      */
     public void setupCell(BasicCellMOSetup<?> setup) {
         setTransform(BasicCellMOHelper.getCellTransform(setup));
@@ -518,7 +517,7 @@ public class CellMO extends WonderlandMO {
     /**
      * Reconfigure the cell with the given properties.  This just
      * calls <code>setupCell()</code>.
-     * @param properties the properties to setup with
+     * @param setup the properties to setup with
      */
     public void reconfigureCell(BasicCellMOSetup<?> setup) {
         // just call setupCell, since there is nothing to do differently

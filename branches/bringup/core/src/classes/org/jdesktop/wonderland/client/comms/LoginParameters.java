@@ -19,11 +19,14 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
+
 /**
  * Data required to log user into a server.
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class LoginParameters {
 
     private String userName;
@@ -48,8 +51,7 @@ public class LoginParameters {
 
     /**
      * Return the users password
-     * 
-     * @return
+     * @return the password, as a character array
      */
     public char[] getPassword() {
         return password;

@@ -19,11 +19,14 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
+
 /**
  * Listen for new Wonderland sessions being created, and changes to the
  * connection status of Wonderland sessions.
  * @author kaplanj
  */
+@ExperimentalAPI
 public interface SessionLifecycleListener {
     /**
      * Called when a new WonderlandSession is created.  When this method is
