@@ -17,11 +17,11 @@
  */
 package org.jdesktop.wonderland.common.cell.messages;
 
-import javax.media.j3d.Bounds;
-import javax.vecmath.Matrix4d;
+import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -30,17 +30,17 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 @ExperimentalAPI
 public class CellHierarchyMessage extends Message {
-    
+
     public enum ActionType { LOAD_CELL, MOVE_CELL, CELL_INACTIVE, CHANGE_PARENT, SET_WORLD_ROOT,
         DELETE_CELL, CONTENT_UPDATE_CELL};
     
     private ActionType msgType;
     private CellID cellID;
     private CellID parentID;
-    private Bounds bounds;
+    private BoundingVolume bounds;
     private String cellClassName;
     private String cellChannelName;
-    private Matrix4d cellOrigin;
+    private CellTransform cellOrigin;
     private CellSetup setupData;
     
     /**
@@ -51,11 +51,11 @@ public class CellHierarchyMessage extends Message {
      */
     public CellHierarchyMessage(ActionType msgType, 
                                 String tileClassName, 
-                                Bounds bounds, 
+                                BoundingVolume bounds, 
                                 CellID cellID, 
                                 CellID parentID,
                                 String cellChannelName,
-                                Matrix4d cellOrigin,
+                                CellTransform cellOrigin,
                                 CellSetup setupData) {
         this.msgType = msgType;
         this.cellClassName = tileClassName;

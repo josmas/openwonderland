@@ -76,17 +76,17 @@ public class WFSWriter {
             if (!(cell instanceof SimpleTerrainCellMO)) {
                 // origin of cells is currently relative to 50,0,50 -- make sure
                 // the origin is relative to 0,0,0
-                BasicCellMOSetup bcgs = (BasicCellMOSetup) setup;
-                double[] origin = bcgs.getOrigin();
-                origin[0] -= 50;
-                origin[2] -= 50;
-                bcgs.setOrigin(origin);
-                
-                // overwrite 0 rotations with the default so it won't be
-                // included in the files
-                if (bcgs.getRotation() != null && bcgs.getRotation()[3] == 0) {
-                    bcgs.setRotation(new double[] { 0, 1, 0, 0 });
-                }
+//                BasicCellMOSetup bcgs = (BasicCellMOSetup) setup;
+//                double[] origin = bcgs.getOrigin();
+//                origin[0] -= 50;
+//                origin[2] -= 50;
+//                bcgs.setOrigin(origin);
+//                
+//                // overwrite 0 rotations with the default so it won't be
+//                // included in the files
+//                if (bcgs.getRotation() != null && bcgs.getRotation()[3] == 0) {
+//                    bcgs.setRotation(new double[] { 0, 1, 0, 0 });
+//                }
             }
             
 //            if (cell instanceof AudioCellGLO) {

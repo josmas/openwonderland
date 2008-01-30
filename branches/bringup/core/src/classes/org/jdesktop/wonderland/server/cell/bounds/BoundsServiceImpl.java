@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.server.cell.bounds;
 
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.service.TransactionProxy;
 import java.util.ArrayList;
@@ -27,11 +29,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.j3d.Bounds;
-import javax.vecmath.Matrix4d;
-import javax.vecmath.Point3d;
-import org.jdesktop.j3d.utils.math.Math3D;
+import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.GroupCellMO;
 
@@ -75,13 +75,13 @@ public class BoundsServiceImpl implements BoundsService {
         bounds.put(cellBounds.getCellID(), cellBounds);
     }
 
-    public void cellTransformChanged(CellID cellID, Matrix4d transform) {
+    public void cellTransformChanged(CellID cellID, CellTransform transform) {
         CellMirror cellBounds = getCellBounds(cellID);
         cellBounds.setTransform(transform);
         cellTransformChanged(cellBounds);
     }
 
-    public void cellBoundsChanged(CellID cellID, Bounds bounds) {
+    public void cellBoundsChanged(CellID cellID, BoundingVolume bounds) {
         CellMirror cellBounds = getCellBounds(cellID);
         cellBounds.setLocalBounds(bounds);
         cellLocalBoundsChanged(cellBounds);
@@ -95,10 +95,10 @@ public class BoundsServiceImpl implements BoundsService {
         // Synchronize to make changes atomic
         synchronized(bounds) {        
             // Compute and set computedWorldBounds
-            Bounds b = cell.getCachedVWBounds();
+            BoundingVolume b = cell.getCachedVWBounds();
             Iterator<CellMirror> it = cell.getAllChildren();
             while(it.hasNext()) {
-                b.combine(it.next().getComputedWorldBounds());
+                b.mergeLocal(it.next().getComputedWorldBounds());
             }
             cell.setComputedWorldBounds(b);
 
@@ -127,10 +127,10 @@ public class BoundsServiceImpl implements BoundsService {
      * @param child
      * @return the combined bounds of the child and all it's children
      */
-    private Bounds transformTreeUpdate(CellMirror parent, CellMirror child) {
-        Matrix4d parentL2VW = parent.getLocalToVWorld();
+    private BoundingVolume transformTreeUpdate(CellMirror parent, CellMirror child) {
+        CellTransform parentL2VW = parent.getLocalToVWorld();
         
-        Matrix4d childTransform = child.getTransform();
+        CellTransform childTransform = child.getTransform();
         
         if (childTransform!=null) {
             childTransform.mul(parentL2VW);
@@ -139,11 +139,11 @@ public class BoundsServiceImpl implements BoundsService {
             child.setLocalToVWorld(parentL2VW);
         }
         
-        Bounds ret = child.getCachedVWBounds();
+        BoundingVolume ret = child.getCachedVWBounds();
         
         Iterator<CellMirror> it = child.getAllChildren();
         while(it.hasNext()) {
-            ret.combine(transformTreeUpdate(child, it.next()));
+            ret.mergeLocal(transformTreeUpdate(child, it.next()));
         }
         
         child.setComputedWorldBounds(ret);
@@ -165,8 +165,8 @@ public class BoundsServiceImpl implements BoundsService {
      * @param child
      */
     private void checkForReparent(CellMirror parent, CellMirror child) {
-        Point3d center = GroupCellMO.getBoundsCenter(child.getCachedVWBounds());
-        if (!GroupCellMO.boundsContainsPoint(parent.getCachedVWBounds(), center)) {
+        Vector3f center = child.getCachedVWBounds().getCenter();
+        if (!parent.getCachedVWBounds().contains(center)) {
             System.out.println("WARNING child outside parents preferred bounds");
         }        
     }
@@ -179,13 +179,13 @@ public class BoundsServiceImpl implements BoundsService {
      * @param childComputedWorldBounds
      */
     private void checkParentBounds(CellMirror parent, CellMirror child) {
-        Bounds childComputedWorldBounds = child.getComputedWorldBounds();
-        Bounds parentBounds = parent.getComputedWorldBounds();
+        BoundingVolume childComputedWorldBounds = child.getComputedWorldBounds();
+        BoundingVolume parentBounds = parent.getComputedWorldBounds();
 
-        if (Math3D.encloses(parentBounds, childComputedWorldBounds))
+        if (Math3DUtils.encloses(parentBounds, childComputedWorldBounds))
             return;
         
-        parentBounds.combine(childComputedWorldBounds);
+        parentBounds.mergeLocal(childComputedWorldBounds);
         parent.setComputedWorldBounds(parentBounds);
         checkParentBounds(parent.getParent(), parent);
     }
@@ -199,7 +199,7 @@ public class BoundsServiceImpl implements BoundsService {
      * @param perfMonitor performance measurement service
      * @return
      */
-    public Collection<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor) {
+    public Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
         ArrayList<CellID> result = new ArrayList();
         
         getCellBounds(rootCell).getVisibleCells(result, bounds, perfMonitor);

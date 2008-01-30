@@ -17,6 +17,10 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
@@ -24,14 +28,9 @@ import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.j3d.BoundingBox;
-import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.Bounds;
-import javax.vecmath.Matrix4d;
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -65,10 +64,9 @@ public class MasterCellCache implements ManagedObject, Serializable {
     private void createRootCell() {
         CellMO root = new CellMO();
         rootCellID = root.getCellID();
-        BoundingSphere rootBounds = new BoundingSphere(new Point3d(), Float.POSITIVE_INFINITY);
+        BoundingSphere rootBounds = new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f());
         root.setLocalBounds(rootBounds);
-        Matrix4d orig = new Matrix4d();
-        orig.setIdentity();
+        CellTransform orig = new CellTransform(null, null);
         root.setTransform(orig);
         root.setName("root");
         root.setLive(true);       
@@ -95,6 +93,9 @@ public class MasterCellCache implements ManagedObject, Serializable {
         // register the cell message listener
         CommsManager cm = WonderlandContext.getCommsManager();
         cm.registerClientHandler(new CellClientHandler());
+        
+        // Register the cell cache message handler
+        cm.registerClientHandler(new CellCacheClientHandler());
     }
     
     /**
@@ -133,7 +134,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
      * @param cellClasses
      * @return
      */
-    public CellDescription[] getCells(Bounds b, Class[] cellClasses) {
+    public CellDescription[] getCells(BoundingVolume b, Class[] cellClasses) {
         return new CellDescription[0];
     }
 
@@ -143,19 +144,15 @@ public class MasterCellCache implements ManagedObject, Serializable {
     public void loadWorld() {
 
         try {
-            Matrix4d m4 = new Matrix4d();
-            m4.setIdentity();
-            BoundingBox bounds = new BoundingBox(new Point3d(-1,-1,-1), new Point3d(1,1,1));
+            BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
 
-            CellMO c1 = new CellMO();
-            m4.setTranslation(new Vector3d(1, 1, 1));
-            c1.setTransform(m4);
+            CellMO c1 = new SimpleTerrainCellMO();
+            c1.setTransform(new CellTransform(null, new Vector3f(1,1,1)));
             c1.setName("c1");
             c1.setLocalBounds(bounds);
 
-            CellMO c2 = new CellMO();
-            m4.setTranslation(new Vector3d(10, 10, 10));
-            c2.setTransform(m4);
+            CellMO c2 = new SimpleTerrainCellMO();
+            c2.setTransform(new CellTransform(null, new Vector3f(10,10,10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
 
@@ -163,7 +160,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
             addCell(c1);
             
             UserPerformanceMonitor monitor = new UserPerformanceMonitor();
-            Bounds visBounds = new BoundingSphere(new Point3d(), 5);
+            BoundingVolume visBounds = new BoundingSphere(5, new Vector3f());
             
             for(CellID cellID : c1.getVisibleCells(visBounds, monitor)) {
                 System.out.println(c1);
@@ -227,12 +224,12 @@ public class MasterCellCache implements ManagedObject, Serializable {
     /**
      * Creates a bounding box with the specified dimensions,centered at 0,0,0
      */
-    public static BoundingBox createBoundingBox(float xDim, float yDim, float zDim) {
-        BoundingBox cellBounds = new BoundingBox(
-                new Point3d(-xDim/2f, -yDim/2f, -zDim/2f), 
-                new Point3d(xDim/2f, yDim/2f, zDim/2f));
-        return cellBounds;
-    }
+//    public static BoundingBox createBoundingBox(float xDim, float yDim, float zDim) {
+//        BoundingBox cellBounds = new BoundingBox(
+//                new Point3d(-xDim/2f, -yDim/2f, -zDim/2f), 
+//                new Point3d(xDim/2f, yDim/2f, zDim/2f));
+//        return cellBounds;
+//    }
     
     /**
      * Create a transform matrix with the specified translation
@@ -242,12 +239,12 @@ public class MasterCellCache implements ManagedObject, Serializable {
      * @param z
      * @return
      */
-    public static Matrix4d createTransform(double x, double y, double z) {
-        Matrix4d ret = new Matrix4d();
-        ret.setIdentity();
-        ret.setTranslation(new Vector3d(x,y,z));
-        return ret;
-    }
+//    public static Matrix4d createTransform(double x, double y, double z) {
+//        Matrix4d ret = new Matrix4d();
+//        ret.setIdentity();
+//        ret.setTranslation(new Vector3d(x,y,z));
+//        return ret;
+//    }
     
     /**
      *  Cell has moved, revalidate the user cell caches for those
@@ -297,11 +294,11 @@ public class MasterCellCache implements ManagedObject, Serializable {
 //    abstract void cellChildrenChanged(CellMO parent, CellMO child, boolean childAdded);
 
     static class TestTask implements Task, Serializable {
-            private Vector3d[] pos = new Vector3d[] {
-                new Vector3d(375, 375, 375),
-                new Vector3d(-375, 375, 375),
-                new Vector3d(-375, 375, -375),
-                new Vector3d(375, 375, -375),
+            private Vector3f[] pos = new Vector3f[] {
+                new Vector3f(375, 375, 375),
+                new Vector3f(-375, 375, 375),
+                new Vector3f(-375, 375, -375),
+                new Vector3f(375, 375, -375),
             };
             private int i = 0;
             private ManagedReference cellRef;
@@ -313,10 +310,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
 
             public void run() throws Exception {
                 System.out.println("MOVING Cell "+pos[i]);
-                Matrix4d m4d = new Matrix4d();
-                m4d.setIdentity();
-                m4d.set(pos[i]);
-                cellRef.get(CellMO.class).setTransform(m4d);
+                cellRef.get(CellMO.class).setTransform(new CellTransform(null, pos[i]));
 
                 i++;
                 if (i>=pos.length) i=0;
@@ -327,9 +321,12 @@ public class MasterCellCache implements ManagedObject, Serializable {
      * Return a new Create cell message
      */
     public static CellHierarchyMessage newCreateCellMessage(CellMO cell) {
-        CellID parent;
+        CellID parent=null;
         
-        parent = cell.getParent().getCellID();
+        CellMO p = cell.getParent();
+        if (p!=null) {
+            parent = p.getCellID();
+        }
         
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
             cell.getClientCellClassName(),

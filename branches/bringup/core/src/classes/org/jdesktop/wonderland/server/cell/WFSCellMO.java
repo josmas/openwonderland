@@ -20,6 +20,8 @@
 
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
@@ -32,8 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.j3d.BoundingBox;
-import javax.vecmath.Point3d;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -79,12 +79,7 @@ public class WFSCellMO extends CellMO
          * These bounds may not entirely be correct -- a WFSCellGLO should simply
          * assume the bounds of its parent.
          */
-        super(new BoundingBox(new Point3d(Double.NEGATIVE_INFINITY,
-            Double.NEGATIVE_INFINITY,
-            Double.NEGATIVE_INFINITY),
-            new Point3d(Double.POSITIVE_INFINITY,
-            Double.POSITIVE_INFINITY,
-            Double.POSITIVE_INFINITY)), null);
+        super(new BoundingBox(new Vector3f(), Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY), null);
         this.root = root;
         
         /* Load the world initially */
@@ -360,7 +355,7 @@ public class WFSCellMO extends CellMO
                 /* Load the cell from disk, catching exceptions below */
                 CellMOSetup setup = cell.decode();
                 CellMO cellGLO =
-                    CellGLOFactory.loadCellGLO(setup.getCellGLOClassName());
+                    CellMOFactory.loadCellGLO(setup.getCellGLOClassName());
                 
                 /* Call the cell's setup method */
                 try {

@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import javax.media.j3d.Bounds;
+import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
 /**
@@ -39,5 +39,5 @@ public interface CellContainerInterface {
      *
      * @returns  the parent
      */
-    public CellMO insertCellInHierarchy(CellMO insertChild, Bounds cellVWBounds) throws MultipleParentException;
+    public CellMO insertCellInHierarchy(CellMO insertChild, BoundingVolume cellVWBounds) throws MultipleParentException;
 }

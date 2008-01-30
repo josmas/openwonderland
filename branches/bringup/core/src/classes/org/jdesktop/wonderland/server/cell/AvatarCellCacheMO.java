@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ChannelManager;
@@ -38,17 +40,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.vecmath.Point3f;
-import javax.media.j3d.BoundingSphere;
 import org.jdesktop.wonderland.common.SerializationHelper;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
+import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.bounds.BoundsManager;
+import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
 
 /**
  * Container for the cell cache for an avatar.
@@ -65,18 +68,16 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     
     private final static Logger logger = Logger.getLogger(AvatarCellCacheMO.class.getName());
     
-    private Channel cacheChannel;
+//    private Channel cacheChannel;
 //    private CellRef rootCellRef;
     
     private ManagedReference avatarRef;
     private String username;
     private ClientSessionId userID;
     private CellID rootCellID;
+    private ClientType clientType;
     
-    /**
-     * Serialized using writeObject
-     */
-    private transient BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(new Point3f());
+    private BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(new Vector3f());
     
     /**
      * List of currently visible cells (ManagedReference of CellGLO)
@@ -98,13 +99,13 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         
         AvatarMO avatar = avatarRef.get(AvatarMO.class);
         
-        cacheChannel = chanMgr.createChannel(WonderlandChannelNames.AVATAR_CACHE_PREFIX+"_"+username+"_"+avatar.getCellID(), null, Delivery.RELIABLE);
+//        cacheChannel = chanMgr.createChannel(WonderlandChannelNames.AVATAR_CACHE_PREFIX+"_"+username+"_"+avatar.getCellID(), null, Delivery.RELIABLE);
     }
     
     /**
      * Notify CellCache that user has logged out
      */
-    public void logout(ClientSessionId userID) {
+    void logout(ClientSessionId userID) {
         currentCells.clear();
 //        MasterCellCacheGLO master = MasterCellCacheGLO.getMasterCellCache();
 //        AppContext.getDataManager().markForUpdate(master);
@@ -114,20 +115,22 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     /**
      * Notify CellCache that user has logged in
      */
-    public void login(ClientSessionId userID) {
+    void login(ClientSessionId userID, ClientType clientType) {
         this.userID = userID;
-        cacheChannel.join(userID.getClientSession(), null);
+        this.clientType = clientType;
 //        MasterCellCacheGLO master = MasterCellCacheGLO.getMasterCellCache();
 //        AppContext.getDataManager().markForUpdate(master);
 //        master.addUserCellCache(this);
+        
+        CommsManager cacheChannel = CommsManagerFactory.getCommsManager();
         
         // Setup Root Cell
         CellHierarchyMessage msg;
         CellMO rootCell = MasterCellCache.getCell(rootCellID);
         msg = MasterCellCache.newCreateCellMessage(rootCell);
-        cacheChannel.send(msg.getBytes());
+        cacheChannel.send(clientType, msg);
         msg = MasterCellCache.newRootCellMessage(rootCell);
-        cacheChannel.send(userID.getClientSession(), msg.getBytes());
+        cacheChannel.send(clientType, userID.getClientSession(), msg);
         currentCells.put(rootCellID, new CellRef(rootCell));
         
         // revalidate to discover initial cells
@@ -175,7 +178,8 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         
         CellHierarchyMessage msg;
         AvatarMO user = avatarRef.get(AvatarMO.class);
-        
+        CommsManager cacheChannel = CommsManagerFactory.getCommsManager();
+         
         // TODO now visCells is a list of cellID's refactor so we don't have to
         // get the cells from sgs if they are already visible. The main issue
         // here is handling the cell version check
@@ -210,7 +214,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                                  "   cellcache for user " + username);
                     
                 msg = MasterCellCache.newCreateCellMessage(cell);
-                cacheChannel.send(msg.getBytes());
+                cacheChannel.send(clientType, msg);
                 AppContext.getDataManager().markForUpdate(cell);
                 cell.addUserToCellChannel(userID);
             } else if (cell.getVersion() > cellRef.getVersion()) {
@@ -220,7 +224,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                  * to clear the 'modify' bit in the cell
                  */
                 msg = MasterCellCache.newContentUpdateCellMessage(cell);
-                cacheChannel.send(msg.getBytes());
+                cacheChannel.send(clientType, msg);
                 
                 // update the cell reference in our list
                 cellRef.setVersion(cell.getVersion());
@@ -252,7 +256,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     msg = MasterCellCache.newDeleteCellMessage(ref.getCellID());
                 }
                 
-                cacheChannel.send(msg.getBytes());
+                cacheChannel.send(clientType, msg);
                 
                 // the cell is no longer visible on this client, so remove
                 // our current reference to it.  This client will no longer
@@ -273,7 +277,8 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      */
     void cellMoved(MoveableCellMO cell) {
         CellHierarchyMessage msg = MasterCellCache.newCellMoveMessage(cell);
-        cacheChannel.send(msg.getBytes());
+        CommsManager cacheChannel = CommsManagerFactory.getCommsManager();
+        cacheChannel.send(clientType, msg);
     }
     
     /**
@@ -286,18 +291,18 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     /**
      * Write the non serializable data
      */
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-        SerializationHelper.writeBoundsObject(proximityBounds, out);
-    }
-    
-    /**
-     * Read the non serializable data
-     */
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        proximityBounds = (BoundingSphere)SerializationHelper.readBoundsObject(in);
-    }
+//    private void writeObject(ObjectOutputStream out) throws IOException {
+//        out.defaultWriteObject();
+//        SerializationHelper.writeBoundsObject(proximityBounds, out);
+//    }
+//    
+//    /**
+//     * Read the non serializable data
+//     */
+//    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+//        in.defaultReadObject();
+//        proximityBounds = (BoundingSphere)SerializationHelper.readBoundsObject(in);
+//    }
    
 
     

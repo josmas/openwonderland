@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.server.cell.bounds.ServiceBoundsHandler;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ClientSessionId;
@@ -29,13 +32,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.Bounds;
-import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.SerializationHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
@@ -56,10 +57,10 @@ public class CellMO extends WonderlandMO {
 
     private ManagedReference parentRef=null;
     private ArrayList<ManagedReference> childCellRefs = null;
-    private Matrix4d transform = null;
-    private Matrix4d localToVWorld = null;
+    private CellTransform transform = null;
+    private CellTransform localToVWorld = null;
     private CellID cellID;
-    private transient Bounds localBounds;
+    private BoundingVolume localBounds;
     
     private String name=null;
     
@@ -85,7 +86,7 @@ public class CellMO extends WonderlandMO {
      * @param localBounds, must not be null
      * @param transform
      */
-    public CellMO(Bounds localBounds, Matrix4d transform) {
+    public CellMO(BoundingVolume localBounds, CellTransform transform) {
         assert(localBounds!=null);
         
         cellID = WonderlandContext.getMasterCellCache().createCellID(this);
@@ -97,8 +98,8 @@ public class CellMO extends WonderlandMO {
      * Set the bounds of the cell in cell local coordinates
      * @param bounds
      */
-    public void setLocalBounds(Bounds bounds) {
-        localBounds = (Bounds) bounds.clone();
+    public void setLocalBounds(BoundingVolume bounds) {
+        localBounds = bounds.clone(null);
         
         if (live) {
             BoundsHandler.get().setLocalBounds(cellID, bounds);
@@ -109,8 +110,8 @@ public class CellMO extends WonderlandMO {
      *  Return (a clone) of the cells bounds in cell local coordinates
      * @return
      */
-    public Bounds getLocalBounds() {
-        return (Bounds) localBounds.clone();     
+    public BoundingVolume getLocalBounds() {
+        return (BoundingVolume) localBounds.clone(null);     
     }
     
     /**
@@ -120,7 +121,7 @@ public class CellMO extends WonderlandMO {
      * 
      * @return
      */
-    Bounds getCachedVWBounds() {
+    BoundingVolume getCachedVWBounds() {
         if (!live)
             throw new RuntimeException("Cell is not live");
         
@@ -137,7 +138,7 @@ public class CellMO extends WonderlandMO {
      * 
      * @return
      */
-    public Bounds getComputedWorldBounds() {
+    public BoundingVolume getComputedWorldBounds() {
         return BoundsHandler.get().getComputedWorldBounds(cellID);   
     }
     
@@ -146,7 +147,7 @@ public class CellMO extends WonderlandMO {
      * 
      * @param bounds
      */
-    void setComputedWorldBounds(Bounds bounds) {
+    void setComputedWorldBounds(BoundingVolume bounds) {
         BoundsHandler.get().setComputedWorldBounds(cellID, bounds);
     }
     
@@ -269,8 +270,8 @@ public class CellMO extends WonderlandMO {
      * 
      * @param transform
      */
-    public void setTransform(Matrix4d transform) {
-        this.transform = (Matrix4d) transform.clone();  
+    public void setTransform(CellTransform transform) {
+        this.transform = (CellTransform) transform.clone();  
         
         if (live) {
             BoundsHandler.get().cellTransformChanged(cellID, transform);
@@ -282,15 +283,15 @@ public class CellMO extends WonderlandMO {
      * 
      * @return return a clone of the transform
      */
-    public Matrix4d getTransform() {
-        return (Matrix4d) transform.clone();
+    public CellTransform getTransform() {
+        return (CellTransform) transform.clone();
     }
     
     /**
      * Set the local to VWorld transform of this cells origin
      * @param transform
      */
-    void setLocalToVWorld(Matrix4d transform) {
+    void setLocalToVWorld(CellTransform transform) {
         this.localToVWorld = transform;
         BoundsHandler.get().setLocalToVworld(cellID, transform);
     }
@@ -304,7 +305,7 @@ public class CellMO extends WonderlandMO {
      * 
      * @return
      */
-    Matrix4d getLocalToVWorld() {
+    CellTransform getLocalToVWorld() {
         if (!live)
             throw new RuntimeException("Unsupported Operation");
         
@@ -377,7 +378,8 @@ public class CellMO extends WonderlandMO {
     }
     
     /**
-     * Open the channel for this cell.
+     * Convenience method to open the channel for this cell. Creates a
+     * channelName based on the cellID.
      */
     protected void openCellChannel() {
         channelName = WonderlandChannelNames.CELL_PREFIX+"."+cellID.toString();
@@ -386,11 +388,11 @@ public class CellMO extends WonderlandMO {
     }
     
    /**
-     * Open the cell channels, TODO make abstract. This is called when a CellMO
-    * is created, any cells which required channels should overload this method
-    * and open the required channels.
+     * Cells that have a channel should overload this method to actually open the
+    * channel. The convenience method openCellChannel can be used to open the channel
+    * with a default channel name.
      */
-    protected void openChannels() {
+    protected void openChannel() {
     }
     
     
@@ -439,11 +441,13 @@ public class CellMO extends WonderlandMO {
      * this cell on the client
      */
     public String getClientCellClassName() {
-        throw new RuntimeException("Not Implemented");
+//        throw new RuntimeException("Not Implemented");
+        return "dummy";
     }
     
     /**
-     * Get the setupdata for this cell
+     * Get the setupdata for this cell. Subclasses should overload to
+     * return their specific setup object.
      */
     public CellSetup getSetupData() {
         return null;
@@ -459,7 +463,7 @@ public class CellMO extends WonderlandMO {
      * @param monitor The performance monitor
      * @return A list of visible cells
      */
-    public Collection<CellID> getVisibleCells(Bounds bounds, UserPerformanceMonitor monitor) {
+    public Collection<CellID> getVisibleCells(BoundingVolume bounds, UserPerformanceMonitor monitor) {
         if (!live)
             throw new RuntimeException("Cell is not live");
         
@@ -486,28 +490,28 @@ public class CellMO extends WonderlandMO {
         return version++;
     }
     
-    /**
-     * Handle serialization of Bounds
-     */
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-        SerializationHelper.writeBoundsObject(localBounds, out);
-    }
-    
-    /**
-     * Handle de-serialization of Bounds
-     */
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        localBounds = SerializationHelper.readBoundsObject(in);
-    }
+//    /**
+//     * Handle serialization of Bounds
+//     */
+//    private void writeObject(ObjectOutputStream out) throws IOException {
+//        out.defaultWriteObject();
+//        SerializationHelper.writeBoundsObject(localBounds, out);
+//    }
+//    
+//    /**
+//     * Handle de-serialization of Bounds
+//     */
+//    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+//        in.defaultReadObject();
+//        localBounds = SerializationHelper.readBoundsObject(in);
+//    }
 
     /**
      * Set up the cell from the given properties
      * @param properties the properties to setup with
      */
     public void setupCell(BasicCellMOSetup<?> setup) {
-        setTransform(BasicCellMOHelper.getCellOrigin(setup));
+        setTransform(BasicCellMOHelper.getCellTransform(setup));
         setLocalBounds(BasicCellMOHelper.getCellBounds(setup));
     }
     

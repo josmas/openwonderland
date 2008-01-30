@@ -1,7 +1,7 @@
 /**
  * Project Looking Glass
  *
- * $RCSfile: CellGLOProvider.java,v $
+ * $RCSfile: CellMOProvider.java,v $
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -50,7 +50,7 @@ import java.util.List;
  * a constructor that accepts the given argument list.
  * @author jkaplan
  */
-public abstract class CellGLOProvider {
+public abstract class CellMOProvider {
 
     /**
      * Load a cell of the given type.  If this provider supports the given
@@ -63,11 +63,11 @@ public abstract class CellGLOProvider {
      * @param args the arguments to use while loading the cell
      * @returns an instantiated cell with the given type name, or null
      * if the given cell type is not supported
-     * @throws LoadCellGLOException if there is an error loading the cell
+     * @throws LoadCellMOException if there is an error loading the cell
      */
     public abstract CellMO loadCellGLO(String typeName, 
                                                   Object... args)
-        throws LoadCellGLOException;
+        throws LoadCellMOException;
 
     /**
      * Load a cell through reflection.

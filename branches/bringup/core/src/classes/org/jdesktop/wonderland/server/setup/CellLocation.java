@@ -20,6 +20,8 @@
 
 package org.jdesktop.wonderland.server.setup;
 
+import org.jdesktop.wonderland.common.cell.CellTransform;
+
 /**
  *
  * @author jkaplan
@@ -28,15 +30,17 @@ public interface CellLocation {
     public String getBoundsType();
     public void setBoundsType(String boundsType);
    
-    public double getBoundsRadius();
-    public void setBoundsRadius(double boundsRadius);
+    public float getBoundsRadius();
+    public void setBoundsRadius(float boundsRadius);
     
-    public double[] getOrigin();
-    public void setOrigin(double[] origin);
-    
-    public double[] getRotation();
-    public void setRotation(double[] rotation);
-    
-    public double getScale();
-    public void setScale(double scale);
+//    public float[] getOrigin();
+//    public void setOrigin(float[] origin);
+//    
+//    public float[] getRotation();
+//    public void setRotation(float[] rotation);
+//    
+//    public float getScale();
+//    public void setScale(float scale);
+    public CellTransform getCellTransform();
+    public void setCellTransform(CellTransform transform);
 }

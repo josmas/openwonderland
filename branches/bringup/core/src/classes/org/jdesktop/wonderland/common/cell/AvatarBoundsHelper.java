@@ -17,24 +17,11 @@
  */
 package org.jdesktop.wonderland.common.cell;
 
-import javax.media.j3d.Appearance;
-import javax.media.j3d.BoundingBox;
-import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.Bounds;
-import javax.media.j3d.Geometry;
-import javax.media.j3d.LineArray;
-import javax.media.j3d.LineStripArray;
-import javax.media.j3d.PolygonAttributes;
-import javax.media.j3d.QuadArray;
-import javax.media.j3d.Shape3D;
-import javax.media.j3d.Transform3D;
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Color3f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point3d;
-import javax.vecmath.Point3f;
-import javax.vecmath.Tuple3f;
-import javax.vecmath.Vector3f;
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Matrix4f;
+import com.jme.math.Vector3f;
 
 /**
  * Support methods for dealing with avatar bounds
@@ -53,10 +40,8 @@ public class AvatarBoundsHelper {
     /**
      * Return the bounds of the avatar cell.
      */
-    public static Bounds getCellBounds(Tuple3f center) {
-        Bounds tileBounds = new BoundingBox(
-                new Point3d(-AVATAR_CELL_SIZE/2+center.x, -AVATAR_CELL_SIZE/2+center.y, -AVATAR_CELL_SIZE/2+center.z), 
-                new Point3d(AVATAR_CELL_SIZE/2+center.x, AVATAR_CELL_SIZE/2+center.y, AVATAR_CELL_SIZE/2+center.z));
+    public static BoundingVolume getCellBounds(Vector3f center) {
+        BoundingVolume tileBounds = new BoundingBox(center, AVATAR_CELL_SIZE, AVATAR_CELL_SIZE, AVATAR_CELL_SIZE); 
         return tileBounds;
         
     }
@@ -65,27 +50,25 @@ public class AvatarBoundsHelper {
      * Returns the proximity bounds for the avatar with
      * specified center
      */
-    public static BoundingSphere getProximityBounds(Tuple3f center) {
-        Point3d p3d = new Point3d(center);
-        
-        return new BoundingSphere(p3d, PROXIMITY_SIZE);
+    public static BoundingSphere getProximityBounds(Vector3f center) {
+        return new BoundingSphere(PROXIMITY_SIZE, center);
     }
     
     /**
      * Returns the view frustum bounds. This is computed from the values
      * provided in the last computeViewPlatformTransform call
      */
-    public static Bounds getFrustumBounds(Transform3D avatarT3D) {
-        Point3d p = new Point3d(0f,0f,-MAX_VIEW_DISTANCE/2f*0.95f);
+    public static BoundingVolume getFrustumBounds(CellTransform avatarT3D) {
+        Vector3f p = new Vector3f(0f,0f,-MAX_VIEW_DISTANCE/2f*0.95f);
         avatarT3D.transform(p);
                 
-        return new BoundingSphere(p, MAX_VIEW_DISTANCE/2);
+        return new BoundingSphere(MAX_VIEW_DISTANCE/2, p);
     }
     
     /**
      * Compute and return the View Platform Transform3D give the users position, direction and up
      */
-    public static Transform3D computeViewPlatformTransform(Point3f userPosition, Vector3f direction, Vector3f up) {        
+    public static Matrix4f computeViewPlatformTransform(Vector3f userPosition, Vector3f direction, Vector3f up) {        
         Matrix4f mat = new Matrix4f();
         Vector3f axisX = new Vector3f();
         Vector3f axisY = new Vector3f();
@@ -119,7 +102,7 @@ public class AvatarBoundsHelper {
         mat.m23 = userPosition.z;
         mat.m33 = 1.0f;
 
-        return new Transform3D(mat);
+        return mat;
     }
 
 //    private static Shape3D getCellBoundsShape() {

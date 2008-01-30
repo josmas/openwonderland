@@ -17,14 +17,14 @@
  */
 package org.jdesktop.wonderland.server.cell.bounds;
 
+import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import java.util.Collection;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.*;
-import javax.media.j3d.Bounds;
-import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -51,7 +51,7 @@ public class ServiceBoundsHandler extends BoundsHandler {
      * 
      * @return
      */
-    public Bounds getCachedVWBounds(CellID cellID) {
+    public BoundingVolume getCachedVWBounds(CellID cellID) {
         return get(cellID).getCachedVWBounds();
     }
     
@@ -65,7 +65,7 @@ public class ServiceBoundsHandler extends BoundsHandler {
      * 
      * @return
      */
-    public Bounds getComputedWorldBounds(CellID cellID) {
+    public BoundingVolume getComputedWorldBounds(CellID cellID) {
         return get(cellID).getComputedWorldBounds();        
     }
     
@@ -74,22 +74,22 @@ public class ServiceBoundsHandler extends BoundsHandler {
      * 
      * @param bounds
      */
-    public void setComputedWorldBounds(CellID cellID, Bounds bounds) {
+    public void setComputedWorldBounds(CellID cellID, BoundingVolume bounds) {
         get(cellID).setComputedWorldBounds(bounds);
     }
 
     @Override
-    public Bounds getLocalBounds(CellID cellID) {
+    public BoundingVolume getLocalBounds(CellID cellID) {
         return get(cellID).getLocalBounds();
     }
 
     @Override
-    public void setLocalBounds(CellID cellID, Bounds bounds) {
+    public void setLocalBounds(CellID cellID, BoundingVolume bounds) {
         get(cellID).setLocalBounds(bounds);
     }
 
     @Override
-    public void setLocalToVworld(CellID cellID, Matrix4d transform) {
+    public void setLocalToVworld(CellID cellID, CellTransform transform) {
         get(cellID).setLocalToVWorld(transform);
     }
 
@@ -116,19 +116,19 @@ public class ServiceBoundsHandler extends BoundsHandler {
     }
 
     @Override
-    public void cellTransformChanged(CellID cellID, Matrix4d transform) {
+    public void cellTransformChanged(CellID cellID, CellTransform transform) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
         mgr.cellTransformChanged(cellID, transform);
     }
 
     @Override
-    public void cellBoundsChanged(CellID cellID, Bounds bounds) {
+    public void cellBoundsChanged(CellID cellID, BoundingVolume bounds) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
         mgr.cellBoundsChanged(cellID, bounds);
     }
 
     @Override
-    public Collection<CellID> getVisibleCells(CellID rootCell, Bounds bounds, UserPerformanceMonitor perfMonitor) {
+    public Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
         return mgr.getVisibleCells(rootCell, bounds, perfMonitor);
     }
