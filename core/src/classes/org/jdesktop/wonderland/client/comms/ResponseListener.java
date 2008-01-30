@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 public interface ResponseListener {
     /** 
      * Called when the response to a message is received
-     * @param responseMessage the message
+     * @param response the response message that was received
      */
     public void responseReceived(ResponseMessage response);
 }

@@ -20,11 +20,14 @@
 
 package org.jdesktop.wonderland.client.comms;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
+
 /**
  * All data to uniquely identify a servre
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class WonderlandServerInfo {
 
     private String hostname;
@@ -37,8 +40,7 @@ public class WonderlandServerInfo {
 
     /**
      * Return the hostname for this server
-     * 
-     * @return
+     * @return the hostname
      */
     public String getHostname() {
         return hostname;
@@ -46,8 +48,7 @@ public class WonderlandServerInfo {
 
     /**
      * Return the darkstar port for this server
-     * 
-     * @return
+     * @return the sgs port
      */
     public int getSgsPort() {
         return sgsPort;

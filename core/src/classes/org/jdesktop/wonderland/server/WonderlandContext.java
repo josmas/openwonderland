@@ -44,8 +44,7 @@ public class WonderlandContext {
     
     /**
      * Return the master cell cache singleton.
-     *
-     * @return 
+     * @return  the master cell cache
      */
     public static MasterCellCache getMasterCellCache() {
         return MasterCellCache.getMasterCellCache();
@@ -53,7 +52,7 @@ public class WonderlandContext {
 
     /**
      * Return the user manager singleton.
-     * @return
+     * @return the user manager
      */
     public static UserManager getUserManager() {
         return UserManager.getUserManager();      

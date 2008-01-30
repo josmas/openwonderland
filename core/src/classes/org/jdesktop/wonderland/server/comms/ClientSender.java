@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
 
@@ -30,6 +31,7 @@ import org.jdesktop.wonderland.common.messages.MessageID;
  * 
  * @author jkaplan
  */
+@ExperimentalAPI
 public interface ClientSender {
     /**
      * Send a message directly to a client's session.  This will send a message

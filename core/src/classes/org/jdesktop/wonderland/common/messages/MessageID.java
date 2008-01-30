@@ -139,6 +139,7 @@ public class MessageID implements Externalizable {
      * A utility class for generating message ids. Use the 
      * setMessageIDGenerator() to change the default generator.
      */
+    @ExperimentalAPI
     public interface MessageIDGenerator {
         /**
          * Generate the next unique message ID
@@ -150,6 +151,7 @@ public class MessageID implements Externalizable {
      * The default MessageIDGenerator uses a static long to generate message
      * ids.
      */
+    @ExperimentalAPI
     public static class DefaultMessageIDGenerator 
             implements MessageIDGenerator 
     {

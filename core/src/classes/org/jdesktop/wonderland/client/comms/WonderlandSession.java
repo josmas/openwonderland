@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 @ExperimentalAPI
 public interface WonderlandSession {
     /** possible states of the client */
+    @ExperimentalAPI
     public enum Status { DISCONNECTED, CONNECTING, CONNECTED };
     
     /**
@@ -188,7 +189,7 @@ public interface WonderlandSession {
      * responds with a non-null ClientChannelListener will be used to handle
      * messages on the given channel.
      * 
-     * @param listner the listener to register
+     * @param listener the listener to register
      */
     public void addChannelJoinedListener(ChannelJoinedListener listener);
     

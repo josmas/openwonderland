@@ -35,7 +35,7 @@ public abstract class OKErrorResponseListener extends WaitResponseListener {
     
     /** 
      * Called when the response to a message is received
-     * @param responseMessage the message
+     * @param response the message that was received as a response
      */
     public void responseReceived(ResponseMessage response) {
         if (response instanceof OKMessage) {

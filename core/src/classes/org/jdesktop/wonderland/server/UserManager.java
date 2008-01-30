@@ -63,7 +63,7 @@ public class UserManager implements ManagedObject, Serializable {
     
     /**
      * Return singleton user manager
-     * @return
+     * @return the user manager
      */
     public static UserManager getUserManager() {
         return AppContext.getDataManager().getBinding(UserManager.BINDING_NAME, UserManager.class);                

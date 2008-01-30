@@ -56,7 +56,7 @@ public class Wonderland3DClientSession extends WonderlandSessionImpl {
      * Override the login message to attach clients after the login
      * succeeds.  If a client fails to attach, the login will be aborted and
      * a LoginFailureException will be thrown
-     * @param loginParameters the parameters to login with
+     * @param loginParams the parameters to login with
      * @throws LoginFailureException if the login fails or any of the clients
      * fail to attach
      */
