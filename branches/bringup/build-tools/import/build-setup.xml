@@ -11,23 +11,6 @@
     <!-- Do platform specific setup -->
     <import file="${imported.basedir}/platform-setup.xml"/>
 
-    <!-- lg3d-core ext dir -->
-<!--    <available property="core.exists" file="${core.dir}"/>
-    <property name="core.ext.dir" location="${core.dir}/ext"/>
-    <if>
-	<istrue value="${core.exists}"/>
-	<then>
-	     lg3d-core ext and incubator jars -->
-	    <!--<fileset dir="${core.ext.dir}" id="core.ext.jars">
-		<include name="**/*.jar"/>
-		<exclude name="odejava.jar"/>
-		<exclude name="nwn-0.7.jar"/>
-	    </fileset>
-	    <pathconvert property="core.ext.classpath" refid="core.ext.jars" />
-	</then>
-    </if>
-    -->
-
     <!-- 
 	To better support daily builds on multiple architectures and OS'es
 	the platformBuild flag will cause the build files to go into platform
@@ -94,6 +77,9 @@
 
     <property name="wonderland.bin.dir" location="${os.javaext.dir}/bin"/>
     <property name="wonderland.xvfb.dir" location="${wonderland.bin.dir}"/>
+    
+    <property name="jme.dir" location="${javaext.dir}/jme"/>
+    <property name="jme.native.dir" location="${jme.dir}/lib"/>
 
     <!-- Jars needed to use Java3d-->
     <pathconvert property="j3d.classpath">
@@ -103,24 +89,37 @@
 	<path location="${common.javaext.dir}/j3d-contrib-utils.jar"/>
     </pathconvert>
 
+    <pathconvert property="jme.classpath">
+	<path location="${jme.dir}/jme/jme.jar"/>
+	<path location="${jme.dir}/jme/jme-gamestates.jar"/>
+	<path location="${jme.dir}/jme/jme-awt.jar"/>
+	<path location="${jme.dir}/jme/jme-audio.jar"/>
+	<path location="${jme.dir}/jme/jme-scene.jar"/>
+	<path location="${jme.dir}/jme/jme-model.jar"/>
+	<path location="${jme.dir}/jme/jme-collada.jar"/>
+	<path location="${jme.dir}/jme/jme-xml.jar"/>
+	<path location="${jme.dir}/jme/jme-terrain.jar"/>
+	<path location="${jme.dir}/lib/lwjgl.jar"/>
+    </pathconvert>
+    
     <!-- All other jars in the ext dir -->
     <pathconvert property="javaext.classpath">
 	<path location="${os.javaext.dir}"/>
 	<path location="${jars.javaext.dir}"/>
 
 	<!-- Escher -->
-	<path location="${jars.javaext.dir}/escher-0.2.2.lg.jar"/>
+	<!--<path location="${jars.javaext.dir}/escher-0.2.2.lg.jar"/>-->
 
 	<!-- JMF, Fobs4JMF -->
-	<path location="${jars.javaext.dir}/jmf.jar"/>
+	<!--<path location="${jars.javaext.dir}/jmf.jar"/>
 	<path location="${jars.javaext.dir}/jipcam.jar"/>
 	<path location="${jars.javaext.dir}/mediaplayer.jar"/>
-	<path location="${jars.javaext.dir}/fobs4jmf.jar"/>
+	<path location="${jars.javaext.dir}/fobs4jmf.jar"/>-->
 
 	<!-- JOAL + JOGL -->
-	<path location="${jars.javaext.dir}/joal.jar"/>
+	<!--<path location="${jars.javaext.dir}/joal.jar"/>
 	<path location="${jars.javaext.dir}/jogl.jar"/>
-	<path location="${jars.javaext.dir}/gluegen-rt.jar"/>
+	<path location="${jars.javaext.dir}/gluegen-rt.jar"/>-->
 
 	<!-- JAI -->
 	<path location="${jars.javaext.dir}/jai_core.jar"/>
@@ -134,20 +133,9 @@
 	<!-- JInput-->
 	<path location="${jars.javaext.dir}/jinput.jar"/>
 
-        <!-- JME -->
-	<path location="${common.javaext.dir}/jme.jar"/>
-	<path location="${common.javaext.dir}/jme-gamestates.jar"/>
-	<path location="${common.javaext.dir}/jme-awt.jar"/>
-	<path location="${common.javaext.dir}/jme-audio.jar"/>
-	<path location="${common.javaext.dir}/jme-scene.jar"/>
-	<path location="${common.javaext.dir}/jme-model.jar"/>
-	<path location="${common.javaext.dir}/jme-collada.jar"/>
-	<path location="${common.javaext.dir}/jme-xml.jar"/>
-	<path location="${common.javaext.dir}/lwjgl.jar"/>
-
     </pathconvert>
 
-    <property name="env.path.defvalue" value="${env.path.value}:${native.javaext.dir}:${yjp.home}/bin/${yjp.platform.dir}"/>
+    <property name="env.path.defvalue" value="${env.path.value}:${native.javaext.dir}:${jme.native.dir}:${yjp.home}/bin/${yjp.platform.dir}"/>
 
     <!-- Looking Glass core jars... -->
     <!--
@@ -192,7 +180,6 @@
     
     <pathconvert property="darkstar.server.classpath">
 	<path location="${sgs.javaext.dir}/sgs-${sgs.version}/lib/sgs.jar"/>
-	<path location="${sgs.javaext.dir}/sgs-client-${sgs.version}/lib/sgs-client.jar"/>
 	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
 	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
 	<path location="${sgs.bdb.dir}/db.jar"/>
@@ -234,6 +221,7 @@
         <path path="${voice.classpath}"/>
         <path path="${wonderland-incubator.classpath}"/>
 	<path path="${darkstar.client.classpath}"/>
+	<path path="${jme.classpath}"/>
     </pathconvert>
     
     <pathconvert property="wonderland-client-compile.classpath">
