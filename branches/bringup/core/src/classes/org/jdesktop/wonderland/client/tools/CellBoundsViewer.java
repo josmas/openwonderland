@@ -20,13 +20,18 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCacheClient;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -40,14 +45,16 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     
     /** Creates new form CellBoundsViewer */
     public CellBoundsViewer() {
+        BoundsPanel boundsPanel;
         initComponents();
-        centerPanel.add(new BoundsPanel(), BorderLayout.CENTER);
+        boundsPanel = new BoundsPanel();
+        centerPanel.add(boundsPanel, BorderLayout.CENTER);
         
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         LoginParameters loginParams = new LoginParameters("foo", "test".toCharArray());
         
         // create a session
-        session = new BoundsTestClientSession(server);
+        session = new BoundsTestClientSession(server, boundsPanel);
                 
         try {
             session.login(loginParams);
@@ -101,10 +108,10 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     }//GEN-LAST:event_exitMIActionPerformed
     
     
-    class BoundsPanel extends JPanel {
-        private ArrayList<Cell> cells = new ArrayList<Cell>();
-        private Vector3f center = new Vector3f();
-        private Vector3f extent = new Vector3f();
+    class BoundsPanel extends JPanel implements CellCacheClient.CellCacheMessageListener {
+        private HashMap<CellID, Cell> cells = new HashMap<CellID, Cell>();
+        private Vector3f center = new Vector3f();  // Temporary variable
+        private Vector3f extent = new Vector3f();   // Temporary variable
         private float scale = 20f;
         private float panelTranslationX = 0f;
         private float panelTranslationY = 0f;
@@ -112,8 +119,8 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         private Point mousePress = null;
         
         public BoundsPanel() {
-            cells.add(createTestCell(5,5,2,true));
-            cells.add(createTestCell(10,10,3,false));
+//            cells.add(createTestCell(5,5,2,true));
+//            cells.add(createTestCell(10,10,3,false));
             
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
@@ -148,7 +155,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         }
         
         private Cell createTestCell(int x, int z, int size, boolean useBox) {
-            Cell cell = new Cell();
+            Cell cell = new Cell(new CellID(0));
             
             if (useBox) {
                 BoundingBox box = new BoundingBox(new Vector3f(x,0,z), size, size, size);
@@ -161,18 +168,23 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             return cell;
         }
         
+        public void addTestCell(CellID cellID, BoundingVolume computedWorldBounds) {
+            Cell cell = new Cell(cellID);
+            cell.setComputedWorldBounds(computedWorldBounds);
+        }
+        
         @Override
         public void paint(Graphics gr) {
             Graphics2D g = (Graphics2D)gr;
             g.translate(panelTranslationX, panelTranslationY);
             g.clearRect(0, 0, (int)(getWidth()*scale), (int)(getHeight()*scale));
             
-            for(Cell c : cells)
+            for(Cell c : cells.values())
                 drawCell(c, g);
         }
         
         private void drawCell(Cell cell, Graphics2D g) {
-            drawBounds(cell.getCachedVWBounds(), g);
+            drawBounds(cell.getComputedWorldBounds(), g);
         }
         
         private void drawBounds(BoundingVolume bounds, Graphics2D g) {
@@ -196,6 +208,27 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                            radius);
             } else
                 System.out.println("Bounds type not supported "+bounds.getClass().getName());
+            System.out.println("Drawing Cell with center "+center);
+        }
+
+        public void loadCell(CellID cellID, String className, BoundingVolume computedWorldBounds, CellID parentCellID, String channelName, CellTransform cellTransform, CellSetup setup) {
+            addTestCell(cellID, computedWorldBounds);
+        }
+
+        public void unloadCell(CellID cellID) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void deleteCell(CellID cellID) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setRootCell(CellID cellID) {
+            // Do nothing
+        }
+
+        public void moveCell(CellID cellID, BoundingVolume computedWorldBounds, CellTransform cellTransform) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
     
@@ -210,6 +243,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         });
     }
     
+   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenuItem exitMI;

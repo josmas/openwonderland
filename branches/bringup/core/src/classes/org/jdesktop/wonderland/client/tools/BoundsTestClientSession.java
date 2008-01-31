@@ -19,10 +19,11 @@
  */
 package org.jdesktop.wonderland.client.tools;
 
+import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.client.*;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
-import org.jdesktop.wonderland.client.cell.CellClient;
+import org.jdesktop.wonderland.client.cell.CellCacheClient.CellCacheMessageListener;
 import org.jdesktop.wonderland.client.comms.AttachFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
@@ -40,10 +41,11 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
     /** the cell client */
     private CellCacheClient cellClient;
     
-    public BoundsTestClientSession(WonderlandServerInfo serverInfo) {
+    public BoundsTestClientSession(WonderlandServerInfo serverInfo, CellCacheMessageListener messageListener) {
         super (serverInfo);
         
         cellClient = new CellCacheClient();
+        cellClient.addListener(messageListener);
     }
     
     /** 
@@ -80,4 +82,6 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
             throw new LoginFailureException("Failed to attach client" , afe);
         }
     }
+    
+
 }
