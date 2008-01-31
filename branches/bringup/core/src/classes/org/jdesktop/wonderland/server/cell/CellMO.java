@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.common.SerializationHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;

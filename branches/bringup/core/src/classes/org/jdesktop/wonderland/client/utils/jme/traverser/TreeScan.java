@@ -68,7 +68,7 @@ public class TreeScan extends Object {
      * @throws CapabilityNotSetException If the node is live or compiled and the scene graph
      * contains groups without ALLOW_CHILDREN_READ capability
      */
-    public static void findNode(SceneElement treeRoot,Class nodeClass,ProcessNodeInterface processor,boolean onlyEnabledSwitchChildren,boolean sharedGroupsOnce) throws javax.media.j3d.CapabilityNotSetException {
+    public static void findNode(SceneElement treeRoot,Class nodeClass,ProcessNodeInterface processor,boolean onlyEnabledSwitchChildren,boolean sharedGroupsOnce) {
         
         Class[] nodeClasses = new Class[]{ nodeClass };
         
@@ -105,8 +105,7 @@ public class TreeScan extends Object {
             Class[] nodeClasses,
             ProcessNodeInterface processor,
             boolean onlyEnabledSwitchChildren,
-            boolean sharedGroupsOnce ) throws
-            javax.media.j3d.CapabilityNotSetException {
+            boolean sharedGroupsOnce ) {
         if (sharedGroupsOnce)
             if (visitedSharedGroups==null)
                 visitedSharedGroups = new HashSet();
@@ -139,8 +138,7 @@ public class TreeScan extends Object {
             Class[] nodeClasses,
             ProcessNodeInterface processor,
             boolean onlyEnabledSwitchChildren,
-            boolean sharedGroupsOnce ) throws
-            javax.media.j3d.CapabilityNotSetException {
+            boolean sharedGroupsOnce ) {
         boolean doChildren = true;
         
         if (treeRoot == null)
