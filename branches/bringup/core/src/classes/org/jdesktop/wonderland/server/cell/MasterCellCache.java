@@ -133,7 +133,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
      * @return an array of cell descriptions that provide details about the
      * cells in range
      */
-    public CellDescription[] getCells(BoundingVolume b, Class<?> ...) {
+    public CellDescription[] getCells(BoundingVolume b, Class<?>... cellClasses) {
         return new CellDescription[0];
     }
 
