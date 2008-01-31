@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -33,6 +34,7 @@ import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
 import org.jdesktop.wonderland.server.comms.ClientSender;
+import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
 
 /**
  * Handler for the cell cache
@@ -62,7 +64,7 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
             avatar = avatarRef.get(AvatarMO.class);
         }
         
-        avatar.getCellCache().login(sender.getSession().getSessionId(), getClientType());
+        avatar.getCellCache().login(sender.getSession().getSessionId(), this);
     }
 
     public void clientDetached(ClientSession session) {
@@ -95,5 +97,22 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
         MasterCellCache mcc = WonderlandContext.getMasterCellCache();
         
         System.out.println("CellCacheHandler.messageReceived");
+    }
+    
+    /**
+     * Send a message to the specified client
+     * @param sessionId
+     * @param msg
+     */
+    public void send(ClientSessionId sessionId, Message msg) {
+        CommsManagerFactory.getCommsManager().send(getClientType(), sessionId.getClientSession(), msg); 
+    }
+    
+    /**
+     * Send message to all clients on this 'channel'
+     * @param msg
+     */
+    public void send(Message msg) {
+        CommsManagerFactory.getCommsManager().send(getClientType(), msg); 
     }
 }

@@ -19,8 +19,11 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.ClientChannelListener;
+import java.util.ArrayList;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.AttachFailureException;
 import org.jdesktop.wonderland.client.comms.BaseClient;
@@ -29,6 +32,10 @@ import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellCacheClientType;
 import org.jdesktop.wonderland.common.cell.CellClientType;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
@@ -46,7 +53,11 @@ public class CellCacheClient extends BaseClient {
             WonderlandChannelNames.AVATAR_CACHE_PREFIX + ".";
     
     /** a channel joined listener */
-    private ChannelJoinedListener listener = new CellChannelJoinedListener();
+    private ChannelJoinedListener listener = new CellCacheChannelJoinedListener();
+    
+    private static final Logger logger = Logger.getLogger(CellCacheClient.class.getName());
+    
+    private ArrayList<CellCacheMessageListener> listeners = new ArrayList();
     
     /**
      * Get the type of client
@@ -56,6 +67,15 @@ public class CellCacheClient extends BaseClient {
         return CellCacheClientType.CELL_CLIENT_TYPE;
     }
 
+    /**
+     * Add a listener for cell cache actions. This should be called during setup
+     * not once the system is running
+     * @param listener
+     */
+    public void addListener(CellCacheMessageListener listener) {
+        listeners.add(listener);
+    }
+    
     /**
      * Send a cell message to a specific cell on the server
      * @see org.jdesktop.wonderland.client.comms.WonderlandSession#send(WonderlandClient, Message)
@@ -100,6 +120,37 @@ public class CellCacheClient extends BaseClient {
      */
     public void messageReceived(Message message) {
         System.out.println("CellCacheClient.messageReceived "+message);
+        if (!(message instanceof CellHierarchyMessage))
+            throw new RuntimeException("Unexpected message type "+message.getClass().getName());
+        
+        CellHierarchyMessage msg = (CellHierarchyMessage)message;
+        switch(msg.getActionType()) {
+            case LOAD_CELL :
+                for(CellCacheMessageListener l : listeners) {
+                    l.loadCell(msg.getCellID(),
+                                msg.getCellClassName(),
+                                msg.getBounds(),
+                                msg.getParentID(),
+                                msg.getCellChannelName(),
+                                msg.getCellTransform(),
+                                msg.getSetupData());
+                }
+                break;
+            case MOVE_CELL :
+                for(CellCacheMessageListener l : listeners) {
+                    l.moveCell(msg.getCellID(), 
+                            msg.getBounds(), 
+                            msg.getCellTransform());
+                }
+                 break;
+            case SET_WORLD_ROOT :
+                for(CellCacheMessageListener l : listeners) {
+                    l.setRootCell(msg.getCellID());
+                }
+                break;
+            default :
+                logger.warning("Message type not implemented "+msg.getActionType());
+        }
     }
 
     @Override
@@ -127,12 +178,15 @@ public class CellCacheClient extends BaseClient {
     public void detached() {
         // unregister the listener
         getSession().removeChannelJoinedListener(listener);
+        
+        // remove any action listeners
+        listeners.clear();
     }
     
     /**
      * Map cell channels to the cell they match
      */
-    class CellChannelJoinedListener implements ChannelJoinedListener {
+    class CellCacheChannelJoinedListener implements ChannelJoinedListener {
         public ClientChannelListener joinedChannel(WonderlandSession session, 
                                                    ClientChannel channel)
         {
@@ -145,5 +199,47 @@ public class CellCacheClient extends BaseClient {
             
             return null;
         }
+    }
+   
+    /**
+     * Listener interface for cell cache action messages
+     */
+    public static interface CellCacheMessageListener {
+        /**
+         * Load the cell and prepare it for use
+         * @param cellID
+         * @param className
+         * @param computedWorldBounds
+         * @param parentCellID
+         * @param channelName
+         * @param cellTransform
+         * @param setup
+         */
+        public void loadCell(CellID cellID, 
+                               String className, 
+                               BoundingVolume computedWorldBounds,
+                               CellID parentCellID,
+                               String channelName,
+                               CellTransform cellTransform,
+                               CellSetup setup);
+        
+        /**
+         * Unload the cell. This removes the cell from memory but will leave
+         * cell data cached on the client
+         * @param cellID
+         */
+        public void unloadCell(CellID cellID);
+        
+        /**
+         * Delete the cell and all its content from the client
+         * @param cellID
+         */
+        public void deleteCell(CellID cellID);
+        
+        public void setRootCell(CellID cellID);
+       
+        public void moveCell(CellID cellID,
+                             BoundingVolume computedWorldBounds,
+                             CellTransform cellTransform);
     }
 }

@@ -341,8 +341,8 @@ public class MasterCellCache implements ManagedObject, Serializable {
     /**
      * Return a new Cell inactive message
      */
-    public static CellHierarchyMessage newInactiveCellMessage(CellMO cell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CELL_INACTIVE,
+    public static CellHierarchyMessage newUnloadCellMessage(CellMO cell) {
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CELL_UNLOAD,
             null,
             null,
             cell.getCellID(),
@@ -350,6 +350,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
             null,
             null,
             null
+            
             );
     }
     

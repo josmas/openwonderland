@@ -224,15 +224,12 @@ public class CellMirror {
         monitor.incRevalidateCalcTime( System.nanoTime()-t );
         monitor.incRevalidateCellCount(getClass());
 
-        /*
-        CellGLO.logger.log(Level.INFO, this.getCellID() +
+        logger.log(Level.INFO, this.getCellID() +
             " - " + ((intersect == true) ? "(VISIBLE) " : "(NOT VISIBLE) ") +
-            "worldBounds: " + worldBounds.toString() +
+            "worldBounds: " + getComputedWorldBounds() +
             " parent origin: " +
-            ((parentOrigin != null) ? ("(" + parentOrigin.m03 + "," + parentOrigin.m13 + "," + parentOrigin.m23 + ")") : "null") +
-            " cellBounds: " + this.getBounds().toString() +
-            " viewing bounds: " + bounds.toString());
-         */
+            " cellBounds: " + getCachedVWBounds() +
+            " viewing bounds: " + bounds);
         
         if (intersect) {
             if (logger.isLoggable(Level.FINEST)) {

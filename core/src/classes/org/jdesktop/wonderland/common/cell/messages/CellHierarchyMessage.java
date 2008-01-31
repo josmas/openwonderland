@@ -30,9 +30,6 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 @ExperimentalAPI
 public class CellHierarchyMessage extends Message {
-
-    public enum ActionType { LOAD_CELL, MOVE_CELL, CELL_INACTIVE, CHANGE_PARENT, SET_WORLD_ROOT,
-        DELETE_CELL, CONTENT_UPDATE_CELL};
     
     private ActionType msgType;
     private CellID cellID;
@@ -42,6 +39,38 @@ public class CellHierarchyMessage extends Message {
     private String cellChannelName;
     private CellTransform cellOrigin;
     private CellSetup setupData;
+    
+
+    public CellID getCellID() {
+        return cellID;
+    }
+
+    public CellID getParentID() {
+        return parentID;
+    }
+
+    public BoundingVolume getBounds() {
+        return bounds;
+    }
+
+    public String getCellClassName() {
+        return cellClassName;
+    }
+
+    public String getCellChannelName() {
+        return cellChannelName;
+    }
+
+    public CellTransform getCellTransform() {
+        return cellOrigin;
+    }
+
+    public CellSetup getSetupData() {
+        return setupData;
+    }
+
+    public enum ActionType { LOAD_CELL, MOVE_CELL, CELL_UNLOAD, CHANGE_PARENT, SET_WORLD_ROOT,
+        DELETE_CELL, CONTENT_UPDATE_CELL};
     
     /**
      * Creates a new instance of CellHierarchyMessage 
@@ -55,7 +84,7 @@ public class CellHierarchyMessage extends Message {
                                 CellID cellID, 
                                 CellID parentID,
                                 String cellChannelName,
-                                CellTransform cellOrigin,
+                                CellTransform cellTransform,
                                 CellSetup setupData) {
         this.msgType = msgType;
         this.cellClassName = tileClassName;
@@ -65,5 +94,13 @@ public class CellHierarchyMessage extends Message {
         this.cellChannelName = cellChannelName;
         this.cellOrigin = cellOrigin;
         this.setupData = setupData;
+    }
+    
+    /**
+     * Return the action type of this message
+     * @return
+     */
+    public ActionType getActionType() {
+        return msgType;
     }
 }

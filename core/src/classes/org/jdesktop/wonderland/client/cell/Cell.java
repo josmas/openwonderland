@@ -22,6 +22,7 @@ package org.jdesktop.wonderland.client.cell;
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
@@ -37,9 +38,10 @@ public class Cell {
     private ArrayList<Cell> children = null;
     private CellTransform localTransform;
     private CellTransform local2VW;
+    private CellID cellID;
     
-    public Cell() {
-        
+    public Cell(CellID cellID) {
+        this.cellID = cellID;
     }
     
     /**
@@ -152,5 +154,9 @@ public class Cell {
      */
     public BoundingVolume getComputedWorldBounds() {
         return computedWorldBounds;
+    }
+
+    public void setComputedWorldBounds(BoundingVolume computedWorldBounds) {
+        this.computedWorldBounds = computedWorldBounds;
     }
 }
