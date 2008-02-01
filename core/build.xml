@@ -80,7 +80,7 @@
             description="Build Wonderland jars"/>
     
     <!-- Build the client jars -->
-    <target name="jar-client" depends="compile-client, jar-modules-client" 
+    <target name="jar-client" depends="compile-client, jar-common, jar-modules-client" 
             description="Build client side jars">
         
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-loaders.jar">
@@ -102,6 +102,7 @@
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/scenemanager/hud/resources/**"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/scenemanager/resources/**"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.png"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.jpg"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.properties"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/collada/**"/>
          </jar>
@@ -117,7 +118,7 @@
     </target>
     
     <!-- Build the server jar -->
-    <target name="jar-server" depends="compile-server, jar-modules-server" 
+    <target name="jar-server" depends="compile-server, jar-common, jar-modules-server" 
             description="Build the server side jar">
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-server.jar">
             <fileset dir="${build.classes.dir}">
@@ -311,7 +312,7 @@
     </target>
     
     <target name="run-jmetest" depends="jar-client">
-        <java classname="org.jdesktop.wonderland.client.JmeJFrame" fork="true">
+        <java classname="org.jdesktop.wonderland.client.jme.Lesson5" fork="true">
             <!--<jvmarg value="-agentpath:/usr/local/netbeans/profiler2/lib/deployed/jdk15/linux/libprofilerinterface.so=/usr/local/netbeans/profiler2/lib,5140"/>
             -->
             <jvmarg value="-client"/>
@@ -325,6 +326,19 @@
         </java>
     </target>
     
+    <target name="run-bounds" depends="jar-client">
+        <java classname="org.jdesktop.wonderland.client.tools.CellBoundsViewer" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+
     <target name="run-collada2jme" depends="jar-client">
         <java classname="com.jmex.model.collada.ColladaToJme" fork="true">
             <jvmarg value="-client"/>
