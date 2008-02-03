@@ -128,6 +128,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
                          SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
         addClientRecord(internal, internalRecord.getClientID());
         
+        // the internal client is always attached
+        internal.attached(this);
+        
         // add the internal listener, which handles joining the client-specific
         // channels
         ChannelJoinedListener cjl = new SessionInternalChannelJoinedListener();
@@ -229,7 +232,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         ResponseMessage response;
         
         try {
-            response = sendAndWait(getInternalClient(), attachMessage);
+            response = getInternalClient().sendAndWait(attachMessage);
         } catch (InterruptedException ie) {
             throw new AttachFailureException("Interrupted", ie);
         }
@@ -299,7 +302,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
         
         // send a message
-        send(getInternalClient(), 
+        getInternalClient().send(
              new DetachClientMessage(record.getClientID()));
     
         // update the client
@@ -307,12 +310,6 @@ public class WonderlandSessionImpl implements WonderlandSession {
     }
     
     public void send(WonderlandClient client, Message message) {
-        send(client, message, null);
-    }
-   
-    public void send(WonderlandClient client, Message message, 
-                     ResponseListener listener) 
-    {
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest(getName() + " sending message " + message + 
                           " to client " + client);
@@ -329,11 +326,6 @@ public class WonderlandSessionImpl implements WonderlandSession {
         if (record == null) {
             throw new IllegalStateException(
                     "Client " + client.getClientType() + " not attached.");
-        }
-        
-        // if a listener was specified, register it with the client
-        if (listener != null) {
-            record.addResponseListener(message.getMessageID(), listener);
         }
         
         // send the message to the server
@@ -355,16 +347,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
             throw new MessageException(ioe);
         }
     }
-    
-    public ResponseMessage sendAndWait(WonderlandClient client, Message message)
-        throws InterruptedException
-    {
-        WaitResponseListener listener = new WaitResponseListener();
-        send(client, message, listener);
-        return listener.waitForResponse();
-    }
-    
- 
+   
     public void addChannelJoinedListener(ChannelJoinedListener listener) {
         channelJoinedListeners.add(listener);
     }
@@ -453,8 +436,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * Get the default client for handling traffic over the session channel
      * @return the default client
      */
-    protected WonderlandClient getInternalClient() {
-        return getClient(INTERNAL_CLIENT_TYPE);
+    protected SessionInternalClient getInternalClient() {
+        return (SessionInternalClient) getClient(INTERNAL_CLIENT_TYPE);
     }
     
     /**
@@ -709,7 +692,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
             };
             
             // send the message using the default client
-            send(getInternalClient(), psm, rl);
+            getInternalClient().send(psm, rl);
         }
         
         /**
@@ -782,16 +765,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
         /** the id of this client, as assigned by the server */
         private short clientID;
         
-        /** outstanding message listeners, mapped by id */
-        private Map<MessageID, ResponseListener> responseListeners;
-    
         public ClientRecord(WonderlandClient client, short clientID) {
             this.client = client;
             this.clientID = clientID;
-            
-            // initialize the map of response listeners
-            responseListeners = Collections.synchronizedMap(
-                    new HashMap<MessageID, ResponseListener>());
         }
         
         /**
@@ -803,17 +779,6 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
 
         /**
-         * Add a response listener
-         * @param messageID the id of the message to listen for
-         * @param listener the response listener
-         */
-        public void addResponseListener(MessageID messageID, 
-                                        ResponseListener listener)
-        {
-            responseListeners.put(messageID, listener);
-        }
-        
-        /**
          * Get the clientID for this client as sent by the server.  When
          * the client attaches a given protocol, the server assigns an ID
          * that must be pre-pended to outgoing messages so the server
@@ -822,25 +787,6 @@ public class WonderlandSessionImpl implements WonderlandSession {
          */
         protected short getClientID() {
             return clientID;
-        }
-        
-        /**
-         * Notify any registered response listeners that a response to the
-         * given message was received.
-         * @param response the response message
-         * @return true if a listener was found to respond to this message,
-         * or false if not
-         */
-        protected boolean notifyResponseListener(ResponseMessage response) {
-            ResponseListener listener = 
-                responseListeners.remove(response.getMessageID());
-        
-            if (listener != null) {  
-                listener.responseReceived(response);
-            }
-            
-            // return true if we found a listener or false if not
-            return (listener != null);
         }
         
         /**
@@ -900,17 +846,6 @@ public class WonderlandSessionImpl implements WonderlandSession {
                               " received message " + message);
             }
             
-            // see if we are waiting for a response
-            if (message instanceof ResponseMessage &&
-                    notifyResponseListener((ResponseMessage) message)) 
-            {
-                // if notifyResponseListener returned true, it means there
-                // was a response listener waiting for the response
-                // to the given message, so we should stop processing
-                // here
-                return;
-            }
-
             // send to the client
             getClient().messageReceived(message);
         }
@@ -938,13 +873,13 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /**
      * Handle traffic over the session channel
      */
-    class SessionInternalClient extends BaseClient {
+    protected static class SessionInternalClient extends BaseClient {
         public ClientType getClientType() {
             // only used internally
             return INTERNAL_CLIENT_TYPE;
         }
 
-        public void messageReceived(Message message) {
+        public void handleMessage(Message message) {
             // unhandled session messages?
             logger.warning("Unhandled message: " + message);
         }   

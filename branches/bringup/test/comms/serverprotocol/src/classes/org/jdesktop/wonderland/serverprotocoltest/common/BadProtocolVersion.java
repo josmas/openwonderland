@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile: LogControl.java,v $
+ * $RCSfile:$
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -13,24 +13,24 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3 $
- * $Date: 2007/10/23 18:27:41 $
- * $State: Exp $
+ * $Revision:$
+ * $Date:$
+ * $State:$
  */
-package org.jdesktop.wonderland.common.cell;
 
-import org.jdesktop.wonderland.common.comms.ClientType;
+package org.jdesktop.wonderland.serverprotocoltest.common;
+
+import org.jdesktop.wonderland.common.comms.DefaultProtocolVersion;
 
 /**
- * The ClientType of the CellClient
+ * Protocol version used for testing.
  * @author jkaplan
  */
-public class CellClientType extends ClientType {
-    /** the client type for the cell client */
-    public static final ClientType CLIENT_TYPE =
-            new CellClientType("__CellClient");
+public class BadProtocolVersion extends DefaultProtocolVersion {
+    public static final String PROTOCOL_NAME = "bad_protocol";
+    public static final BadProtocolVersion VERSION = new BadProtocolVersion();
     
-    private CellClientType(String type) {
-        super (type);
+    private BadProtocolVersion() {
+        super (1, 0, 0);
     }
 }

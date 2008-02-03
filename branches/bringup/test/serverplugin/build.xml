@@ -2,13 +2,14 @@
 <project name="wonderland-serverplugintest" default="all" basedir=".">
     <property name="top.dir" location="../.."/>
     <property name="current.dir" location="."/>
+    <property name="test.import.dir" location="${top.dir}/test/build-tools/import"/>
     
     <property name="servertest.src" value="org/jdesktop/wonderland/serverplugintest"/>
     <property name="servertest.packagename" value="org.jdesktop.wonderland.serverplugintest"/>
     <property name="servertest.jarname" value="serverplugintest"/>
     <property name="servertest.plugins" value="HelloWorldPlugin"/>
     
-    <import file="${top.dir}/test/build-tools/import/servertest-common.xml"/>
+    <import file="${test.import.dir}/servertest-common.xml"/>
     
     <target name="build" depends="init, compile-common, compile-server"/>
     <target name="jar" depends="build, jar-server"/>

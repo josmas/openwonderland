@@ -20,23 +20,17 @@ package org.jdesktop.wonderland.server.cell;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.ObjectNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,15 +38,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.bounds.BoundsManager;
-import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
 
 /**
  * Container for the cell cache for an avatar.
@@ -75,6 +66,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable, CacheHelp
     private ManagedReference avatarRef;
     private String username;
     private ClientSessionId userID;
+    private WonderlandClientSession session;
     private CellID rootCellID;
     private CellCacheClientHandler cacheHandler;
     
@@ -122,17 +114,18 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable, CacheHelp
     /**
      * Notify CellCache that user has logged in
      */
-    void login(ClientSessionId userID, CellCacheClientHandler cacheHandler) {
-        this.userID = userID;
-        this.cacheHandler = cacheHandler;
+    void login(WonderlandClientSession session) {
+        this.userID = session.getSessionId();
+        this.session = session;
+        
         
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
         CellMO rootCell = MasterCellCache.getCell(rootCellID);
         msg = MasterCellCache.newCreateCellMessage(rootCell);
-        cacheHandler.send(userID, msg);
+        session.send(msg);
         msg = MasterCellCache.newRootCellMessage(rootCell);
-        cacheHandler.send(userID, msg);
+        session.send(msg);
         currentCells.put(rootCellID, new CellRef(rootCell));
         
         // revalidate to discover initial cells
@@ -215,7 +208,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable, CacheHelp
                                  "   cellcache for user " + username);
                     
                 msg = MasterCellCache.newCreateCellMessage(cell);
-                cacheHandler.send(userID, msg);
+                session.send(msg);
                 AppContext.getDataManager().markForUpdate(cell);
                 cell.addUserToCellChannel(userID);
                 if (cell instanceof CacheHelperInterface) {
@@ -226,11 +219,11 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable, CacheHelp
                     switch (update) {
                         case TRANSFORM:
                             msg = MasterCellCache.newCellMoveMessage(cell);
-                            cacheHandler.send(userID, msg);
+                            session.send(msg);
                             break;
                         case CONTENT:
                             msg = MasterCellCache.newContentUpdateCellMessage(cell);
-                            cacheHandler.send(userID, msg);
+                            session.send(msg);
                             break;
                     }
                 }
@@ -266,7 +259,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable, CacheHelp
                     msg = MasterCellCache.newDeleteCellMessage(ref.getCellID());
                 }
                 
-                cacheHandler.send(userID, msg);
+                session.send(msg);
                 
                 // the cell is no longer visible on this client, so remove
                 // our current reference to it.  This client will no longer
