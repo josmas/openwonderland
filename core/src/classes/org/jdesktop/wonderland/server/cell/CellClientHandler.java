@@ -18,15 +18,16 @@
 
 package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellClientType;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
-import org.jdesktop.wonderland.server.comms.ClientSender;
+import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
 
 /**
  * Handles CellMessages sent by the Wonderland client
@@ -35,33 +36,42 @@ import org.jdesktop.wonderland.server.comms.ClientSender;
 class CellClientHandler implements ClientHandler, Serializable {
     
     public ClientType getClientType() {
-        return CellClientType.CELL_CLIENT_TYPE;
+        return CellClientType.CLIENT_TYPE;
     }
 
-    public void clientAttached(ClientSender sender) {
-        // ignore
-    }
-
-    public void clientDetached(ClientSession session) {
+    public void registered(WonderlandClientChannel channel) {
         // ignore
     }
     
-    public void messageReceived(ClientSender sender, Message message) {
+    public void clientAttached(WonderlandClientSession session) {
+        // ignore
+    }
+
+    public void clientDetached(WonderlandClientSession session) {
+        // ignore
+    }
+    
+    public void messageReceived(WonderlandClientSession session, 
+                                Message message) 
+    {
         if (message instanceof CellMessage) {
-            messageReceived(sender, (CellMessage) message);
+            messageReceived(session, (CellMessage) message);
         } else {
-            sender.sendError(message.getMessageID(), 
-                             "Unexpected message type: " + message.getClass());
+            session.send(new ErrorMessage(message.getMessageID(), 
+                             "Unexpected message type: " + message.getClass()));
         }
     }
   
     /**
      * When a cell message is received, dispatch it to the appropriate cell.
      * If the cell does not exist, send back an error message.
+     * @param session the session that generated the message
      * @param message the cell message
-     * @param sender the message sender to send responses to
+     
      */
-    public void messageReceived(ClientSender sender, CellMessage message) {
+    public void messageReceived(WonderlandClientSession session, 
+                                CellMessage message) 
+    {
         // get the MasterCellCache
         MasterCellCache mcc = WonderlandContext.getMasterCellCache();
         
@@ -70,12 +80,12 @@ class CellClientHandler implements ClientHandler, Serializable {
         
         // if there was no cell, handle the error
         if (cell == null) {
-            sender.sendError(message.getMessageID(), "Unknown cell id: " + 
-                             message.getCellID());
+            session.send(new ErrorMessage(message.getMessageID(),
+                            "Unknown cell id: " + message.getCellID()));
             return;
         }
         
         // dispatch the message
-        cell.messageReceived(sender, message);
+        cell.messageReceived(session, message);
     }
 }

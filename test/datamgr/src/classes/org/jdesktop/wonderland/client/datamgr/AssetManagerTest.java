@@ -21,8 +21,6 @@ package org.jdesktop.wonderland.client.datamgr;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.AssetType;
 import org.junit.After;
 import org.junit.Before;

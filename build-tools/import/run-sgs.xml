@@ -1,11 +1,11 @@
 <project basedir="." default="..." name="wonderland.run-sgs">
     <dirname property="imported.basedir" file="${ant.file.build-setup}"/>
     
-    <target name="setup-sgs">
+    <target name="setup-sgs" depends="-setup-assertions,-setup-no-assertions">
         <delete dir="${sgs.db.dir}" failonerror="false"/>
         <mkdir dir="${sgs.db.dir}"/>
         
-        <copy file="${src.dir}/darkstar_config/WonderlandMain.cfg" 
+        <copy file="${sgs.config.src.dir}/WonderlandMain.cfg" 
               todir="${build.dir}" overwrite="true">
             <filterset>
                 <filter token="SGS_ROOT_DIR" value="${sgs.root.dir}"/>
@@ -17,8 +17,25 @@
         <property name="sgs.config.file" location="${build.dir}/WonderlandMain.cfg"/>
     </target>
 
-    <target name="run-sgs" depends="jar-server,setup-sgs,modules-server-classpath" description="Run Sun Game Server for Project Wonderland">
+    <target name="-setup-assertions" if="use.assertions">
+        <assertions id="sgs.assertions">
+            <enable/>
+        </assertions>
+    </target>
+    
+    <target name="-setup-no-assertions" unless="use.assertions">
+        <assertions id="sgs.assertions">
+            <disable/>
+        </assertions>
+    </target>
+    
+    <target name="run-sgs" depends="jar-server,setup-sgs,modules-server-classpath" 
+            description="Run Sun Game Server for Project Wonderland">
+           
+        <!-- copy logging.properties if it exists -->
         <copy file="sgs-logging.properties" todir="${sgs.server.dir}" failonerror="false"/>
+      
+        <!-- run server -->
         <java classname="com.sun.sgs.impl.kernel.Kernel" fork="true">
             <jvmarg value="-Djava.library.path=${sgs.bdb.dir}/${sgs.platform.lib}"/>
             <jvmarg value="-Djava.util.logging.config.file=${sgs.server.dir}/sgs-logging.properties"/>
@@ -33,6 +50,10 @@
                 <pathelement location="ext/sgs/darkstar/lib/listener.jar"/>
                 <pathelement path="${module-server.classpath}"/>
             </classpath>
+            
+            <!-- override the reference to enabled assertions -->
+            <assertions refid="sgs.assertions"/>
+            
             <!-- <jvmarg value="-agentlib:yjpagent"/> -->
 	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
 	    <syspropertyset refid="wonderland.properties"/>

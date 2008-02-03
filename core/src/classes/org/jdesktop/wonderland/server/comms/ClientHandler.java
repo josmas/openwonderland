@@ -37,25 +37,31 @@ public interface ClientHandler {
     public ClientType getClientType();
     
     /**
+     * Called when the handler is registered with the CommsManager
+     * @param channel the WonderlandClientChannel that can be used to
+     * send to all clients of the given type
+     */
+    public void registered(WonderlandClientChannel channel);
+    
+    /**
      * Handle when a new session attaches to this handler.  A session 
      * attaches when a client calls <code>WonderlandSession.attach()</code>
      * to attach a new session.
-     * @param sender a sender that allows messages to be sent to the
-     * attached client
+     * @param session the session that attached
      */
-    public void clientAttached(ClientSender sender);
+    public void clientAttached(WonderlandClientSession session);
     
     /**
      * Handle a message from a client
-     * @param sender a sender that allows message to be sent to the client
-     * that sent the message
+     * @param session the session that sent the message
      * @param message the message that was generated
      */
-    public void messageReceived(ClientSender sender, Message message);
+    public void messageReceived(WonderlandClientSession session, 
+                                Message message);
     
     /**
      * Handle when a session detaches from this handler
      * @param session the session that detached
      */
-    public void clientDetached(ClientSession session);
+    public void clientDetached(WonderlandClientSession session);
 }

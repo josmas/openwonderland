@@ -21,6 +21,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.Delivery;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -50,7 +52,8 @@ import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
-import org.jdesktop.wonderland.server.comms.ClientSender;
+import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
 
 /**
  * This is the default session listener is used by Wonderland clients.
@@ -151,9 +154,12 @@ public class WonderlandSessionListener
                               " handled by " + handler.getClientType());
             }
             
-            // handle the message
-            ClientSender sender = new ClientSenderImpl(clientID.shortValue());
-            handler.messageReceived(sender, m);
+            // create a new WonderlandClientSession to pass in
+            WonderlandClientSession wonderlandSession = 
+                    new WonderlandClientSessionImpl(handler.getClientType(),
+                                                    clientID.shortValue(),
+                                                    getSession());
+            handler.messageReceived(wonderlandSession, m);
         } catch (ExtractMessageException eme) {
             logger.log(Level.WARNING, "Error extracting message from client", 
                        eme);
@@ -175,6 +181,18 @@ public class WonderlandSessionListener
      */
     public void disconnected(boolean forced) {
         logger.warning("Session " + getSession().getName() + " disconnected");
+        
+        // Detach all handlers. Convert IDs to an array first because
+        // the map is modified in the handleDetach method, which causes
+        // a concurrent modification exception if we are iterating directly
+        // over the key set
+        Short[] clientIDs = handlers.keySet().toArray(new Short[0]);
+        for (Short clientID : clientIDs) {
+            handleDetach(clientID.shortValue());
+        }
+        
+        // clear the list
+        handlers.clear();
     }
      
     /**
@@ -189,91 +207,69 @@ public class WonderlandSessionListener
                     handler.getClientType());
         
         HandlerStore store = getHandlerStore();
-        store.register(handler);
+        short clientID = store.register(handler);
                 
+        // get the channel for this hander
+        Channel channel = store.getChannel(handler.getClientType());
+        
         // let Darkstar know this is an update        
         AppContext.getDataManager().markForUpdate(store);
+        
+        // notify the handler
+        WonderlandClientChannel wonderlandChannel =
+                new WonderlandClientChannelImpl(handler.getClientType(),
+                                                clientID, channel);
+        handler.registered(wonderlandChannel);
     }
     
     /**
      * Get all clients connected via the given WonderlandClient
      * @see org.jdesktop.wonderland.server.comms.CommsManager#getClients(ClientType)
      * 
-     * @param clientType the type of client to get sessions for
+     * @param type the type of client to get sessions for
      * @return a set of all client sessions connected via a client of the given
      * type, or an empty set if no clients are connected via the given type
+     * @throws IllegalStateException if the given type is not registered
      */
-    public static Set<ClientSession> getClients(ClientType clientType) {
-        Channel channel = getHandlerStore().getChannel(clientType);
+    public static Set<WonderlandClientSession> getClients(ClientType type) {
+        Channel channel = getHandlerStore().getChannel(type);
         if (channel == null) {
-            return Collections.emptySet();
+            throw new IllegalStateException("Client type not registered: " + 
+                                            type);
         }
-        
-        return channel.getSessions();
-    }
-
-    /**
-     * Send a message to all clients connected via the given WonderlandClient
-     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Message)
-     * 
-     * @param clientType the type of client to send to
-     * @param message the message to send
-     * @throws IllegalStateException if the given client type is not registered
-     */
-    public static void send(ClientType clientType, Message message) {
-        Channel channel = getHandlerStore().getChannel(clientType);
-        if (channel == null) {
-            throw new IllegalStateException("No handler for client type: " +
-                                            clientType);
+        short clientID = getHandlerStore().getClientID(type);
+                
+        // wrap the sessions
+        Set<WonderlandClientSession> out = 
+                 new HashSet<WonderlandClientSession>();
+        for (ClientSession session : channel.getSessions()) {
+            out.add(new WonderlandClientSessionImpl(type, clientID, session));
         }
-        
-        channel.send(message.getBytes());
-    }
-
-    /**
-     * Send a message to specific clients connected via the given
-     * WonderlandClient
-     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Set, Message)
-     * 
-     * @param clientType the type of client to send to
-     * @param sessions the session to send to
-     * @param message the message to send
-     * @throws IllegalStateException if the given client type is not registered
-     */
-    public static void send(ClientType clientType, Set<ClientSession> sessions, 
-                            Message message) 
-    {
-        Channel channel = getHandlerStore().getChannel(clientType);
-        if (channel == null) {
-            throw new IllegalStateException("No handler for client type: " +
-                                            clientType);
-        }
-        
-        channel.send(sessions, message.getBytes());
-    }
-
-     /**
-     * Send a message to a specific clients connected via the given
-     * WonderlandClient
-     * @see org.jdesktop.wonderland.server.comms.CommsManager#send(ClientType, Set, Message)
-     * 
-     * @param clientType the type of client to send to
-     * @param session the session to send to
-     * @param message the message to send
-     * @throws IllegalStateException if the given client type is not registered
-     */
-    public static void send(ClientType clientType, ClientSession session, 
-                            Message message) 
-    {
-        Channel channel = getHandlerStore().getChannel(clientType);
-        if (channel == null) {
-            throw new IllegalStateException("No handler for client type: " +
-                                            clientType);
-        }
-        
-        channel.send(session, message.getBytes());
+            
+        return out;
     }
     
+    /**
+     * Get a channel that can be used to send messages to all clients
+     * of a given ClientType
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#getChannel(ClientType)
+     * 
+     * @param type the type of client to get a channel to
+     * @return a channel for sending to all clients of the given type
+     * @throws IllegalStateException if no handler is registered for the given
+     * type
+     */
+    public static WonderlandClientChannel getChannel(ClientType type) {
+        Channel channel = getHandlerStore().getChannel(type);
+        if (channel == null) {
+            throw new IllegalStateException("Client type not registered: " + 
+                                            type);
+        }
+        short clientID = getHandlerStore().getClientID(type);
+                
+        return new WonderlandClientChannelImpl(type, clientID, channel);
+    }
+
     /**
      * Get the session this listener represents.
      * @return the session connected to this listener
@@ -290,6 +286,21 @@ public class WonderlandSessionListener
      */
     protected ClientHandler getHandler(Short clientID) {
         ClientHandlerRef ref = handlers.get(clientID);
+        if (ref == null) {
+            return null;
+        }
+        
+        return ref.get();
+    }
+    
+    /**
+     * Remove the client handler with the given clientID
+     * @param clientID the id of the client to remove
+     * @return the removed handler for the given ID, or null if there is no 
+     * handler for the given ID
+     */
+    protected ClientHandler removeHandler(Short clientID) {
+        ClientHandlerRef ref = handlers.remove(clientID);
         if (ref == null) {
             return null;
         }
@@ -342,8 +353,9 @@ public class WonderlandSessionListener
         channel.join(session, null);
         
         // notify the handler
-        ClientSender sender = new ClientSenderImpl(clientID);
-        ref.get().clientAttached(sender);
+        WonderlandClientSession wonderlandSession =
+                new WonderlandClientSessionImpl(type, clientID, getSession());
+        ref.get().clientAttached(wonderlandSession);
     }
     
     /**
@@ -368,8 +380,14 @@ public class WonderlandSessionListener
             channel.leave(session);
         }
         
+        // remove the handler from the map
+        removeHandler(Short.valueOf(clientID));
+        
         // notify the handler
-        handler.clientDetached(session);
+        WonderlandClientSession wonderlandSession =
+                new WonderlandClientSessionImpl(handler.getClientType(), 
+                                                clientID, getSession());
+        handler.clientDetached(wonderlandSession);
     }
     
     /**
@@ -420,8 +438,26 @@ public class WonderlandSessionListener
                           "message " + message + " to client " + clientID);
         }
         
-        byte[] messageData = message.getBytes();
-        int len = messageData.length + 2;
+        sendToSession(getSession(), clientID, message.getBytes());
+    }
+    
+    /**
+     * Send a message to the given session channel using the given client ID.
+     * This will pre-pend the client id onto the given data and send it
+     * over the session channel.
+     * @param session the session to send to
+     * @param clientID the client ID to use when sending
+     * @param data the data to send
+     */
+    protected static void sendToSession(ClientSession session, short clientID, 
+                                        byte[] data) {
+    
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("Session " + session.getName() + " send " +
+                          data.length + " bytes to client " + clientID);
+        }
+        
+        int len = data.length + 2;
         
         // pre-pend the client id
         ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
@@ -429,13 +465,12 @@ public class WonderlandSessionListener
         
         try {
             out.writeShort(clientID);
-            out.write(messageData);
+            out.write(data);
             out.close();
             
-            getSession().send(baos.toByteArray());
+            session.send(baos.toByteArray());
         } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Unable to write message " + message + 
-                       " to " + clientID, ioe);
+            logger.log(Level.WARNING, "Unable to end to " + clientID, ioe);
         }
     }
     
@@ -449,33 +484,135 @@ public class WonderlandSessionListener
     }
     
     /**
-     * Implementation of ClientSender
+     * Wrap Darkstar channel into a WonderlandClientChannel.  This is used
+     * by ClientHandlers to send to the particular client.
      */
-    class ClientSenderImpl implements ClientSender {
+    static class WonderlandClientChannelImpl 
+            implements WonderlandClientChannel, Serializable
+    {
+        /** the client type */
+        private ClientType type;
+        
+        /** the underlying channel */
+        private Channel channel;
+        
+        /** the client ID for this client */
         private short clientID;
         
-        ClientSenderImpl(short clientID) {
+        /** 
+         * Create a new WonderlandClientChannelImpl
+         * @param type the client type
+         * @param clientID the client ID to send with
+         * @param channel the channel to wrap
+         */
+        public WonderlandClientChannelImpl(ClientType type, short clientID,
+                                           Channel channel) 
+        {
+            this.type = type;
+            this.channel = channel;
             this.clientID = clientID;
+        }
+        
+        public ClientType getClientType() {
+            return type;
+        }
+
+        public Set<WonderlandClientSession> getSessions() {
+            Set<WonderlandClientSession> out = 
+                    new HashSet<WonderlandClientSession>();
+            
+            // wrap the sessions
+            for (ClientSession session : channel.getSessions()) {
+                out.add(new WonderlandClientSessionImpl(type, clientID, session));
+            }
+            
+            return out;
+        }
+
+        public String getName() {
+            return channel.getName();
+        }
+
+        public Delivery getDeliveryRequirement() {
+            return channel.getDeliveryRequirement();
+        }
+
+        public boolean hasSessions() {
+            return channel.hasSessions();
         }
 
         public void send(Message message) {
-            sendToSession(clientID, message);
+            channel.send(message.getBytes());
         }
 
-        public void sendError(MessageID messageID, String error) {
-            WonderlandSessionListener.this.sendError(messageID, clientID, error);
+        public void send(WonderlandClientSession session, Message message) {
+            channel.send(session, message.getBytes());
         }
 
-        public void sendError(MessageID messageID, Throwable cause) {
-            WonderlandSessionListener.this.sendError(messageID, clientID, cause);
+        public void send(Set<WonderlandClientSession> sessions, Message message) 
+        {
+            // convert to the right type
+            Set<ClientSession> clientSessions = new HashSet<ClientSession>(sessions);
+            channel.send(clientSessions, message.getBytes());
+        }
+    }
+    
+    /**
+     * Wrap a WonderlandSession
+     */
+    static class WonderlandClientSessionImpl 
+            implements WonderlandClientSession, Serializable
+    {
+        /** the client type */
+        private ClientType type;
+        
+        /** the client id to send with */
+        private short clientID;
+        
+        /** the wrapped session */
+        private ClientSession session;
+        
+        /**
+         * Create a new WonderlandClientSessionImpl
+         * @param type the type of client
+         * @param clientID the client id to send with
+         * @param session the session to wrap
+         */
+        public WonderlandClientSessionImpl(ClientType type, short clientID,
+                                           ClientSession session)
+        {
+            this.type = type;
+            this.clientID = clientID;
+            this.session = session;
+        }
+        
+        public ClientType getClientType() {
+            return type;
         }
 
-        public void sendError(MessageID messageID, String error, Throwable cause) {
-            WonderlandSessionListener.this.sendError(messageID, clientID, error, cause);
+        public void send(Message message) {
+            send(message.getBytes());
         }
 
-        public ClientSession getSession() {
-            return session;
+        public void send(byte[] data) {
+            sendToSession(session, clientID, data);
+        }
+        
+        public String getName() {
+            return session.getName();
+        }
+
+        public ClientSessionId getSessionId() {
+            return session.getSessionId();
+        }
+
+        public boolean isConnected() {
+            return session.isConnected();
+        }
+
+        public void disconnect() {
+            throw new UnsupportedOperationException(
+                    "Cannot disconnect WonderlandClientSession");
         }
     }
     
@@ -488,15 +625,21 @@ public class WonderlandSessionListener
             return SessionInternalClientType.SESSION_INTERNAL_CLIENT_TYPE;
         }
 
-        public void clientAttached(ClientSender sender) {
+        public void registered(WonderlandClientChannel channel) {
             // ignore
         }
         
-        public void clientDetached(ClientSession session) {
+        public void clientAttached(WonderlandClientSession session) {
+            // ignore
+        }
+        
+        public void clientDetached(WonderlandClientSession session) {
             // ignore
         }
 
-        public void messageReceived(ClientSender sender, Message message) {
+        public void messageReceived(WonderlandClientSession session, 
+                                    Message message)
+        {
             if (message instanceof AttachClientMessage) {
                 AttachClientMessage acm = (AttachClientMessage) message;
                 handleAttach(acm.getMessageID(), acm.getClientType());
@@ -529,8 +672,15 @@ public class WonderlandSessionListener
         /**
          * Register a new handler type
          * @param handler the handler to register
+         * @return the clientID that will be used for this handler
          */
-        public void register(ClientHandler handler) {
+        public short register(ClientHandler handler) {
+            
+            // check for duplicates
+            if (handlers.containsKey(handler.getClientType())) {
+                throw new IllegalStateException("Handler for type " + 
+                        handler.getClientType() + " already registered.");
+            }
             
             // decide the correct type of reference depending on if the
             // handler is a managed object or not
@@ -555,6 +705,8 @@ public class WonderlandSessionListener
             record.channel = channel;
             record.clientID = clientID++;
             handlers.put(handler.getClientType(), record);
+            
+            return record.clientID;
         }
         
         /**
@@ -562,7 +714,13 @@ public class WonderlandSessionListener
          * @param handler the handler to unregister
          */
         public void unregister(ClientHandler handler) {
-            handlers.remove(handler.getClientType());
+            HandlerRecord record = handlers.remove(handler.getClientType());
+            
+            // clear the reference, which will remove a managed object
+            // handler from the data store
+            if (record != null) {
+                record.ref.clear();
+            }
         }
         
         /**
@@ -629,6 +787,10 @@ public class WonderlandSessionListener
         public ClientHandler get() {
             return handler;
         }
+        
+        public void clear() {
+            handler = null;
+        }
     }
     
     /**
@@ -649,6 +811,12 @@ public class WonderlandSessionListener
         @Override
         public ClientHandler get() {
             return ref.get(ClientHandler.class);
+        }
+        
+        @Override
+        public void clear() {
+            ClientHandler handler = get();
+            AppContext.getDataManager().removeObject((ManagedObject) handler);
         }
     }
 }

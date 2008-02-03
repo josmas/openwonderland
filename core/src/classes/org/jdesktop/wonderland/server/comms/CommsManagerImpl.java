@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jdesktop.wonderland.common.comms.ClientType;
-import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.ProtocolSessionListener;
 import org.jdesktop.wonderland.server.WonderlandSessionListener;
 
@@ -75,19 +74,11 @@ class CommsManagerImpl
         WonderlandSessionListener.registerClientHandler(handler);
     }
     
-    public Set<ClientSession> getClients(ClientType clientType) {
+    public Set<WonderlandClientSession> getClients(ClientType clientType) {
         return WonderlandSessionListener.getClients(clientType);
     }
-
-    public void send(ClientType clientType, Message message) {
-        WonderlandSessionListener.send(clientType, message);
-    }
-
-    public void send(ClientType clientType, Set<ClientSession> sessions, Message message) {
-        WonderlandSessionListener.send(clientType, sessions, message);
-    }
-
-    public void send(ClientType clientType, ClientSession session, Message message) {
-        WonderlandSessionListener.send(clientType, session, message);
+    
+    public WonderlandClientChannel getChannel(ClientType clientType) {
+        return WonderlandSessionListener.getChannel(clientType);
     }
 }

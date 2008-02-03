@@ -55,7 +55,8 @@ class AvatarCellCacheTask implements Task, Serializable {
             userCache.getForUpdate(AvatarCellCacheMO.class).revalidate();
             break;
         case CELL_MOVED :
-            userCache.getForUpdate(AvatarCellCacheMO.class).cellMoved(moveableCellRef.get(MoveableCellMO.class));
+            // TODO fix
+            //userCache.getForUpdate(AvatarCellCacheMO.class).cellMoved(moveableCellRef.get(MoveableCellMO.class));
             break;
         }
     }

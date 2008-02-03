@@ -181,10 +181,12 @@ public class WFSCellMO extends CellMO
         }
     }
     
+    @Override
     public String getClientCellClassName() {
         return "org.jdesktop.lg3d.wonderland.darkstar.client.cell.WorldRootCell";
     }
     
+    @Override
     public CellSetup getSetupData() {
         return null;
     }
@@ -306,7 +308,8 @@ public class WFSCellMO extends CellMO
                 
                 /* update the version number to notify the user cell caches 
                    that the cell is modified */
-                glo.incrementVersion();
+                /* TODO fix */
+                //glo.incrementVersion();
                 
                 logger.log(Level.INFO, "WFS Reload: cell id=" +
                     glo.getCellID() +

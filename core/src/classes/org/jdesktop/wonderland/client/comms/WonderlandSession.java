@@ -133,54 +133,16 @@ public interface WonderlandSession {
     
     /**
      * Send a message to the server over the session channel on behalf of the 
-     * given client.  Identical to calling send(message, null).
+     * given client. The client must be successfully attached to this session 
+     * in order for the send to work.
      * @param client the client that is sending the message
      * @param message the message to send
      * @throws MessageException if there is an error getting the bytes
      * for the message
+     * @throws IllegalStateException if the client is not attached to this
+     * session or the session is not connected
      */
     public void send(WonderlandClient client, Message message);
-    
-    /**
-     * Send a message to the server over the session channel and provide a
-     * listener.  The message is sent on behalf of the given WonderlandClient.
-     * The client must be successfully attached to this session in order
-     * for the send to work.
-     * <p>
-     * The given listener will be notified when a response is received. If
-     * the listener is not null, it is critical that the server guarantees 
-     * that either a ResponseMessage or an ErrorMessage will be sent in response
-     * to this message, otherwise this will cause a memory leak.
-     * <p>
-     * Note that listeners are cleared as soon as the given client detaches
-     * from the session, so responses are not guaranteed in this case.
-     * 
-     * @param client the client that is sending the message
-     * @param message the message to send
-     * @param listener the message response listener to notify when a 
-     * response is received
-     * @throws MessageException if there is an error getting the bytes
-     * for the message
-     */
-    public void send(WonderlandClient client, Message message, 
-                     ResponseListener listener);
-    
-    /**
-     * Send a message to the server and wait for the response. This
-     * method blocks until the response is received.
-     * <p>
-     * If the given client disconnects before a response is received from the
-     * server, this method should throw an InterruptedException.
-     * 
-     * @param client the client that is sending the message
-     * @param message the message to send
-     * @return the response to the given message
-     * @throws MessageException if there is an error getting the bytes
-     * for the message
-     * @throws InterruptedException if the wait is interrupted
-     */
-    public ResponseMessage sendAndWait(WonderlandClient client, Message message)
-        throws InterruptedException;
     
     /**
      * Add a listener that will be notified when a new channel is joined.

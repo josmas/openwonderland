@@ -19,15 +19,11 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-import org.jdesktop.wonderland.server.cell.bounds.ServiceBoundsHandler;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedReference;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -42,7 +38,7 @@ import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.WonderlandMO;
-import org.jdesktop.wonderland.server.comms.ClientSender;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
 import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
@@ -430,11 +426,14 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Handle messages sent to this cell.
-     * @param sender a message sender that identifies the client session and
-     * lets you send responses back conveniently
+     * @param session a session that can be used to send messages back to 
+     * the session that originated this message.  Messages will automatically
+     * be sent to the correct WonderlandClient.
      * @param message the message to handle
      */
-    protected void messageReceived(ClientSender sender, CellMessage message) {
+    protected void messageReceived(WonderlandClientSession session, 
+                                   CellMessage message) 
+    {
         throw new RuntimeException("Not Implemented");
     }
     

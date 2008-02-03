@@ -40,6 +40,7 @@
             <compile-classpath>
 		<pathelement path="${wonderland-client-compile.classpath}"/>
                 <pathelement path="${core.lib.dir}/wonderland-client.jar"/>
+                <pathelement path="${core.lib.dir}/wonderland-common.jar"/>
                 <pathelement path="${build-import.dir}/junit-4.4.jar"/>
 	    </compile-classpath>
         </wl-compile>
@@ -65,6 +66,7 @@
             <classpath>
 		<pathelement path="${wonderland-client-compile.classpath}"/>
                 <pathelement path="${core.lib.dir}/wonderland-client.jar"/>
+                <pathelement path="${core.lib.dir}/wonderland-common.jar"/>
                 <pathelement location="../../build-tools/import/junit-4.4.jar"/>
                 <pathelement path="${build.classes.dir}"/>
 	    </classpath>

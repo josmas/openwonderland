@@ -4,6 +4,7 @@
     
     <!-- Use my-build.properties to override default values in build.properties -->
     <property file="${current.dir}/my.build.properties"/>
+    <property file="${test.import.dir}/build.properties"/>
     <property file="${core.dir}/my.build.properties"/>
     <property file="${core.dir}/build.properties"/>
     
@@ -36,7 +37,7 @@
             
             <compile-classpath>
 		<pathelement path="${wonderland-common-compile.classpath}"/>
-                <pathelement path="${core.lib.dir}/wonderland-server.jar"/>
+                <pathelement path="${core.lib.dir}/wonderland-common.jar"/>
 	    </compile-classpath>
         </wl-compile>
     </target>
@@ -50,6 +51,7 @@
             <compile-classpath>
 		<pathelement path="${wonderland-server-compile.classpath}"/>
                 <pathelement path="${core.lib.dir}/wonderland-server.jar"/>
+                <pathelement path="${core.lib.dir}/wonderland-common.jar"/>
 	    </compile-classpath>
         </wl-compile>
     </target>
@@ -63,6 +65,7 @@
             <compile-classpath>
 		<pathelement path="${wonderland-client-compile.classpath}"/>
                 <pathelement path="${core.lib.dir}/wonderland-client.jar"/>
+                <pathelement path="${core.lib.dir}/wonderland-common.jar"/>
 	    </compile-classpath>
         </wl-compile>
     </target>
@@ -111,10 +114,14 @@
         <pathconvert property="module-server.classpath">
             <path location="${build.lib.dir}/${servertest.jarname}-server.jar"/>
             <path location="${core.lib.dir}/wonderland-server.jar"/>
+            <path location="${core.lib.dir}/wonderland-common.jar"/>
         </pathconvert>
     </target>
    
     <target name="-do-run-server" depends="jar-server">
+        <!-- turn on assertions -->
+        <property name="use.assertions" value="true"/>
+        
         <antcall target="run-sgs"/>
     </target>
     
@@ -129,7 +136,12 @@
                 <pathelement path="${wonderland-client.classpath}"/>
                 <path location="${build.lib.dir}/${servertest.jarname}-client.jar"/>
                 <path location="${core.lib.dir}/wonderland-client.jar"/>
+                <path location="${core.lib.dir}/wonderland-common.jar"/>
             </classpath>
+            
+            <assertions>
+                <enable/>
+            </assertions>
         </java>
     </target>
     

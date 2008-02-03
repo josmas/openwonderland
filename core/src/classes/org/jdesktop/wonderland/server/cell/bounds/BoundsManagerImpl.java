@@ -19,8 +19,6 @@ package org.jdesktop.wonderland.server.cell.bounds;
 
 import com.jme.bounding.BoundingVolume;
 import java.util.Collection;
-import javax.media.j3d.Bounds;
-import javax.vecmath.Matrix4d;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;

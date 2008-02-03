@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.comms.ClientType;
  */
 public class CellCacheClientType extends ClientType {
     /** the client type for the cell client */
-    public static final ClientType CELL_CLIENT_TYPE =
+    public static final ClientType CLIENT_TYPE =
             new CellCacheClientType("__CellCacheClient");
     
     private CellCacheClientType(String type) {

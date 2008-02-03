@@ -97,35 +97,20 @@ public interface CommsManager {
      * Get all clients connected via the WonderlandProtocol that have
      * attached clients of the given type.
      * @param clientType the type of client
-     * @return all clients who have attached the given client type
+     * @return all clients who have attached the given client type, or an
+     * empty set if no clients are attached
+     * @throws IllegalStateException if no handler is registered for the given
+     * type
      */
-    public Set<ClientSession> getClients(ClientType clientType);
+    public Set<WonderlandClientSession> getClients(ClientType clientType);
     
     /**
-     * Send a message to all clients connected via the WonderlandProtocol that
-     * have attached clients of the given type.
-     * @param clientType the type of client to send to
-     * @param message the message to send
+     * Get a channel that can be used to send messages to all clients
+     * of a given ClientType
+     * @param clientType the type of client
+     * @return a channel for sending to all clients of the given type
+     * @throws IllegalStateException if no handler is registered for the given
+     * type
      */
-    public void send(ClientType clientType, Message message);
-
-    /**
-     * Send a message to a subset of clients who have attached 
-     * WonderlandClients of the given type
-     * @param clientType the type of client to send to
-     * @param sessions the sessions to send to
-     * @param message the message to send
-     */
-    public void send(ClientType clientType, Set<ClientSession> sessions,
-                     Message message);
-    
-    /**
-     * Send a message to a single client via that has attached a 
-     * WonderlandClient of the given type.
-     * @param clientType the type of client to send to
-     * @param session the session to send to
-     * @param message the message to send
-     */
-    public void send(ClientType clientType, ClientSession session,
-                     Message message);
+    public WonderlandClientChannel getChannel(ClientType clientType);
 }

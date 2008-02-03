@@ -52,7 +52,7 @@ public class CellClient extends BaseClient {
      * @return CellClientType.CELL_CLIENT_TYPE
      */
     public ClientType getClientType() {
-        return CellClientType.CELL_CLIENT_TYPE;
+        return CellClientType.CLIENT_TYPE;
     }
 
     /**
@@ -62,7 +62,7 @@ public class CellClient extends BaseClient {
      * @param message the cell message to send
      */
     public void send(CellMessage message) {
-        getSession().send(this, message);
+        super.send(message);
     }
     
     /**
@@ -75,7 +75,7 @@ public class CellClient extends BaseClient {
      * is received.
      */
     public void send(CellMessage message, ResponseListener listener) {
-        getSession().send(this, message, listener);
+        super.send(message, listener);
     }
     
     /**
@@ -90,14 +90,14 @@ public class CellClient extends BaseClient {
     public ResponseMessage sendAndWait(CellMessage message)
         throws InterruptedException
     {
-        return getSession().sendAndWait(this, message);
+        return super.sendAndWait(message);
     }
     
     /**
      * Handle a message from the server
      * @param message the message to handle
      */
-    public void messageReceived(Message message) {
+    public void handleMessage(Message message) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
