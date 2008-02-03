@@ -34,10 +34,12 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
@@ -63,7 +65,7 @@ import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
  *
  * @author paulby
  */
-public class AvatarCellCacheMO implements ManagedObject, Serializable {
+public class AvatarCellCacheMO implements ManagedObject, Serializable, CacheHelperListener {
     
     private final static Logger logger = Logger.getLogger(AvatarCellCacheMO.class.getName());
     
@@ -103,10 +105,18 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      * Notify CellCache that user has logged out
      */
     void logout(ClientSessionId userID) {
+        logger.warning("DEBUG - logout");
+        for(CellRef ref : currentCells.values()) {
+            try {
+                CellMO cell = ref.get();
+                if (cell instanceof CacheHelperInterface) {
+                    ((CacheHelperInterface)ref.getForUpdate()).removeCache(this);
+                }
+            } catch(ObjectNotFoundException e) {
+                // The cell may have been removed, in which case continue...
+            }
+        }
         currentCells.clear();
-//        MasterCellCacheGLO master = MasterCellCacheGLO.getMasterCellCache();
-//        AppContext.getDataManager().markForUpdate(master);
-//        master.removeUserCellCache(this);
     }
     
     /**
@@ -115,11 +125,8 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     void login(ClientSessionId userID, CellCacheClientHandler cacheHandler) {
         this.userID = userID;
         this.cacheHandler = cacheHandler;
-//        MasterCellCacheGLO master = MasterCellCacheGLO.getMasterCellCache();
-//        AppContext.getDataManager().markForUpdate(master);
-//        master.addUserCellCache(this);
         
-        // Setup Root Cell
+        // Setup the Root Cell on the client
         CellHierarchyMessage msg;
         CellMO rootCell = MasterCellCache.getCell(rootCellID);
         msg = MasterCellCache.newCreateCellMessage(rootCell);
@@ -158,7 +165,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             return;
         }
         
-        logger.warning("Revalidating CellCache for   "+userID.getClientSession().isConnected()+"  "+proximityBounds);
+//        logger.warning("Revalidating CellCache for   "+userID.getClientSession().isConnected()+"  "+proximityBounds);
 
         UserPerformanceMonitor monitor = new UserPerformanceMonitor();
         BoundsManager boundsMgr = AppContext.getManager(BoundsManager.class);
@@ -211,17 +218,23 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 cacheHandler.send(userID, msg);
                 AppContext.getDataManager().markForUpdate(cell);
                 cell.addUserToCellChannel(userID);
-            } else if (cell.getVersion() > cellRef.getVersion()) {
-                /*
-                 * The cell already exist, but has been modified, so we create
-                 * a new cell modify message and send to the client. We need
-                 * to clear the 'modify' bit in the cell
-                 */
-                msg = MasterCellCache.newContentUpdateCellMessage(cell);
-                cacheHandler.send(userID, msg);
-                
-                // update the cell reference in our list
-                cellRef.setVersion(cell.getVersion());
+                if (cell instanceof CacheHelperInterface) {
+                    ((CacheHelperInterface)cell).addCache(this);
+                }
+            } else if (cellRef.hasUpdates()) {
+                for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
+                    switch (update) {
+                        case TRANSFORM:
+                            msg = MasterCellCache.newCellMoveMessage(cell);
+                            cacheHandler.send(userID, msg);
+                            break;
+                        case CONTENT:
+                            msg = MasterCellCache.newContentUpdateCellMessage(cell);
+                            cacheHandler.send(userID, msg);
+                            break;
+                    }
+                }
+                cellRef.clearUpdateTypes();
                 
                 // t is still visible, so remove it from the oldCells set
                 oldCells.remove(cellRef);
@@ -245,6 +258,9 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     // get suceeded, so cell is just inactive
                     msg = MasterCellCache.newUnloadCellMessage(cell);
                     cell.removeUserFromCellChannel(userID);
+                    if (cell instanceof CacheHelperInterface) {
+                        ((CacheHelperInterface)cell).addCache(this);
+                    }
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
                     msg = MasterCellCache.newDeleteCellMessage(ref.getCellID());
@@ -269,11 +285,11 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     /**
      * Notify client that this cell has moved
      */
-    void cellMoved(MoveableCellMO cell) {
-        CellHierarchyMessage msg = MasterCellCache.newCellMoveMessage(cell);
-        CommsManager cacheChannel = CommsManagerFactory.getCommsManager();
-        cacheHandler.send(userID, msg);
-    }
+//    void cellMoved(MoveableCellMO cell) {
+//        CellHierarchyMessage msg = MasterCellCache.newCellMoveMessage(cell);
+//        CommsManager cacheChannel = CommsManagerFactory.getCommsManager();
+//        cacheHandler.send(userID, msg);
+//    }
     
     /**
      * The Users avatar has either entered or exited the cell
@@ -283,24 +299,6 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Write the non serializable data
-     */
-//    private void writeObject(ObjectOutputStream out) throws IOException {
-//        out.defaultWriteObject();
-//        SerializationHelper.writeBoundsObject(proximityBounds, out);
-//    }
-//    
-//    /**
-//     * Read the non serializable data
-//     */
-//    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-//        in.defaultReadObject();
-//        proximityBounds = (BoundingSphere)SerializationHelper.readBoundsObject(in);
-//    }
-   
-
-    
-    /**
      * Information about a cell in our cache.  This object contains our record
      * of the given cell, including a reference to the cell and the cell's
      * id.  CellRef object are compared by cellID, so two CellRefs with the
@@ -308,15 +306,16 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      */
     private static class CellRef implements Serializable {
         private static final long serialVersionUID = 1L;
+
+        enum UpdateType { TRANSFORM, CONTENT };
+        
+        private Set<UpdateType> updateTypes=null;
         
         // the cell id of the cell we reference
         private CellID id;
         
         // a reference to the cell itself
         private ManagedReference cellRef;
-        
-        // the last version of the cell we sent to clients
-        private long version;
         
         public CellRef(CellID id) {
             this (id, null);
@@ -333,8 +332,6 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             if (cell != null) {
                 DataManager dm = AppContext.getDataManager();
                 cellRef = dm.createReference(cell);
-         
-//                this.version = cell.getVersion();
             }
         }
         
@@ -350,12 +347,25 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             return cellRef.getForUpdate(CellMO.class);
         }
         
-        public long getVersion() {
-            return version;
+        public Collection<UpdateType> getUpdateTypes() {
+            return updateTypes;
+        }
+
+        public void addUpdateType(UpdateType updateType) {
+            if (updateTypes==null)
+                updateTypes = EnumSet.of(updateType);
+            else
+                updateTypes.add(updateType);
         }
         
-        public void setVersion(long version) {
-            this.version = version;
+        public void clearUpdateTypes() {
+            updateTypes.clear();
+        }
+        
+        public boolean hasUpdates() {
+            if (updateTypes==null)
+                return false;
+            return updateTypes.size()!=0;
         }
         
         @Override
@@ -372,5 +382,28 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             return id.hashCode();
         }
     }
+
+    /***********************************************
+     * CacheHelperListener impl
+     ***********************************************/
+    
+    public void notifyTransformUpdate(CellMO cell) {
+        CellRef cr = currentCells.get(cell.getCellID());
+        cr.addUpdateType(CellRef.UpdateType.TRANSFORM);
+        
+        // TEST - remove this, instead mark the cache as dirty
+        revalidate();
+    }
+    
+    public void notifyContentUpdate(CellMO cell) {
+        CellRef cr = currentCells.get(cell.getCellID());
+        cr.addUpdateType(CellRef.UpdateType.CONTENT);  
+        
+        // TODO mark the cache as dirty
+    }
+    
+    /***********************************************
+     * End CacheHelperListener impl
+     ***********************************************/
 }
 

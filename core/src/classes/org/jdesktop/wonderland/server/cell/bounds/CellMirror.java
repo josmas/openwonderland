@@ -64,7 +64,7 @@ public class CellMirror {
      * @return
      */
     public BoundingVolume getCachedVWBounds() {
-        BoundingVolume ret = localBounds.clone(localBounds);
+        BoundingVolume ret = localBounds.clone(null);
         localToVWorld.transform(ret);
         
         return ret;
@@ -90,31 +90,36 @@ public class CellMirror {
      * @param bounds
      */
     public void setComputedWorldBounds(BoundingVolume bounds) {
-        computedWorldBounds = bounds;
+//        System.out.println("Setting CWB "+getCellID()+" : "+bounds);
+        computedWorldBounds = bounds.clone(computedWorldBounds);
     }
 
+    /**
+     * Returns a copy of the local bounds
+     * @return
+     */
     public BoundingVolume getLocalBounds() {
-        return localBounds;
+        return localBounds.clone(null);
     }
 
     public void setLocalBounds(BoundingVolume bounds) {
-        localBounds = bounds;
+        localBounds = bounds.clone(null);
     }
 
     public void setLocalToVWorld(CellTransform transform) {
-        localToVWorld = transform;
+        localToVWorld = (CellTransform) transform.clone();
     }
     
     public CellTransform getLocalToVWorld() {
-        return localToVWorld;
+        return (CellTransform) localToVWorld.clone();
     }
     
     public void setTransform(CellTransform transform) {
-        this.transform = transform;
+        this.transform = (CellTransform) transform.clone();
     }
     
     public CellTransform getTransform() {
-        return transform;
+        return (CellTransform) transform.clone();
     }
     
     /**
@@ -224,12 +229,12 @@ public class CellMirror {
         monitor.incRevalidateCalcTime( System.nanoTime()-t );
         monitor.incRevalidateCellCount(getClass());
 
-        logger.log(Level.INFO, this.getCellID() +
-            " - " + ((intersect == true) ? "(VISIBLE) " : "(NOT VISIBLE) ") +
-            "worldBounds: " + getComputedWorldBounds() +
-            " parent origin: " +
-            " cellBounds: " + getCachedVWBounds() +
-            " viewing bounds: " + bounds);
+//        logger.log(Level.INFO, this.getCellID() +
+//            " - " + ((intersect == true) ? "(VISIBLE) " : "(NOT VISIBLE) ") +
+//            "worldBounds: " + getComputedWorldBounds() +
+//            " parent origin: " +
+//            " cellBounds: " + getCachedVWBounds() +
+//            " viewing bounds: " + bounds);
         
         if (intersect) {
             if (logger.isLoggable(Level.FINEST)) {

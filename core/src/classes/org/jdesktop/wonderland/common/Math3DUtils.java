@@ -215,8 +215,8 @@ public class Math3DUtils {
     public static boolean encloses(BoundingBox parent, BoundingBox child) {
         Vector3f pExtent = parent.getExtent(null);
         Vector3f cExtent = child.getExtent(null);
-        Vector3f pCenter = parent.getCenter(null);
-        Vector3f cCenter = child.getCenter(null);
+        Vector3f pCenter = parent.getCenter();
+        Vector3f cCenter = child.getCenter();
 
         if (cCenter.x+cExtent.x > pCenter.x+pExtent.x ||
             cCenter.y+cExtent.y > pCenter.y+pExtent.y ||

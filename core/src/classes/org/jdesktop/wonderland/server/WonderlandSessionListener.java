@@ -174,7 +174,7 @@ public class WonderlandSessionListener
      * @param forced true if the disconnect was forced
      */
     public void disconnected(boolean forced) {
-        logger.fine("Session " + getSession().getName() + " disconnected");
+        logger.warning("Session " + getSession().getName() + " disconnected");
     }
      
     /**

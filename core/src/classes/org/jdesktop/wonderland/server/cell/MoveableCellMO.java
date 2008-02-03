@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
 import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -25,17 +28,32 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * 
  * @author paulby
  */
-public class MoveableCellMO extends CellMO {
+public class MoveableCellMO extends CellMO implements CacheHelperInterface {
 
-    private ArrayList<CellMoveListener> listeners = null;
+    private ArrayList<ManagedReference> listeners = null;
+    private ArrayList<ManagedReference> caches = new ArrayList<ManagedReference>();
     
     @Override
     public void setTransform(CellTransform transform) {
         super.setTransform(transform);
         
+        // Notify caches we have moved
+        synchronized(caches) {
+            for(ManagedReference ref : caches) 
+                ref.getForUpdate(CacheHelperListener.class).notifyTransformUpdate(this);
+        }
         // Notify listeners
-        for(CellMoveListener listener : listeners)
-            listener.cellMoved(this, transform);
+        if (listeners!=null)
+            for(ManagedReference listenerRef : listeners)
+                listenerRef.getForUpdate(CellMoveListener.class).cellMoved(this, transform);
+    }
+    
+    /**
+     * Notify the client that the contents of the cell have changed
+     */
+    public void contentChanged() {
+        for(ManagedReference ref : caches) 
+            ref.getForUpdate(CacheHelperListener.class).notifyContentUpdate(this);        
     }
     
     /**
@@ -47,9 +65,9 @@ public class MoveableCellMO extends CellMO {
      */
     public void addCellMoveListener(CellMoveListener listener) {
         if (listeners==null)
-            listeners = new ArrayList<CellMoveListener>();
+            listeners = new ArrayList<ManagedReference>();
         
-        listeners.add(listener);
+        listeners.add(AppContext.getDataManager().createReference(listener));
     }
     
     /**
@@ -58,10 +76,24 @@ public class MoveableCellMO extends CellMO {
      */
     public void removeCellMoveListener(CellMoveListener listener) {
         if (listeners!=null)
-            listeners.remove(listener);
+            listeners.remove(AppContext.getDataManager().createReference(listener));
     }
     
-    public interface CellMoveListener {
+    public void addCache(CacheHelperListener cache) {
+        synchronized(caches) {
+            caches.add(AppContext.getDataManager().createReference(cache));
+        }
+    }
+
+    public void removeCache(CacheHelperListener cache) {
+        synchronized(caches) {
+            caches.remove(AppContext.getDataManager().createReference(cache));
+        }
+    }
+    
+    
+    public interface CellMoveListener extends ManagedObject {
         public void cellMoved(MoveableCellMO cell, CellTransform transform);
     }
+
 }

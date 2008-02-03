@@ -70,7 +70,9 @@ public class MasterCellCache implements ManagedObject, Serializable {
         root.setTransform(orig);
         root.setName("root");
         root.setLive(true);       
-        root.setLocalToVWorld(orig);
+        
+        // Special case for the root cell, ensure the bounds are updated
+        BoundsHandler.get().cellTransformChanged(rootCellID, orig);  
         rootCellRef = AppContext.getDataManager().createReference(root);
     }
     
@@ -138,10 +140,38 @@ public class MasterCellCache implements ManagedObject, Serializable {
     }
 
     /**
+     * Create a static grid of nodes
+     */
+    private void createStaticGrid() {
+        int gridWidth = 10;
+        int gridDepth = 10;
+        
+        float boundsDim = 5;
+        BoundingBox gridBounds = new BoundingBox(new Vector3f(), boundsDim, boundsDim, boundsDim);
+        
+        for(int x=0; x<gridWidth; x++) {
+            for(int z=0; z<gridDepth; z++) {
+                try {
+                    CellMO cell = new SimpleTerrainCellMO();
+                    cell.setTransform(new CellTransform(null, new Vector3f(x * boundsDim*2, 0, z * boundsDim*2)));
+                    cell.setName("grid_" + x + "_" + z);
+                    cell.setLocalBounds(gridBounds);
+                    addCell(cell);
+                } catch (MultipleParentException ex) {
+                    Logger.getLogger(MasterCellCache.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+                
+    }
+    
+    
+    /**
      * For testing.....
      */
     public void loadWorld() {
-
+        createStaticGrid();
+        
         try {
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
 
@@ -150,20 +180,37 @@ public class MasterCellCache implements ManagedObject, Serializable {
             c1.setName("c1");
             c1.setLocalBounds(bounds);
 
-            CellMO c2 = new SimpleTerrainCellMO();
+            CellMO c2 = new MoveableCellMO();
             c2.setTransform(new CellTransform(null, new Vector3f(10,10,10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
 
+            CellMO c3 = new MoveableCellMO();
+            c3.setTransform(new CellTransform(null, new Vector3f(5,5,5)));
+            c3.setName("c3");
+            c3.setLocalBounds(new BoundingSphere(2, new Vector3f()));
+
+            CellMO c4 = new MoveableCellMO();
+            c4.setTransform(new CellTransform(null, new Vector3f(0,0,0)));
+            c4.setName("c4");
+            c4.setLocalBounds(new BoundingSphere(0.5f, new Vector3f()));
+            
+            c3.addChild(c4);
+            
             c1.addChild(c2);
+            c1.addChild(c3);
             addCell(c1);
+            
+            Task t = new TestTask(c3, c2);
+            
+            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
             
             UserPerformanceMonitor monitor = new UserPerformanceMonitor();
             BoundingVolume visBounds = new BoundingSphere(5, new Vector3f());
             
-            for(CellID cellID : c1.getVisibleCells(visBounds, monitor)) {
-                System.out.println(c1);
-            }
+//            for(CellID cellID : getCell(getRootCellID()).getVisibleCells(visBounds, monitor)) {
+//                System.out.println(cellID);
+//            }
             
             // Octtree test
 //            Matrix4d centerTransform = new Matrix4d();
@@ -191,7 +238,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
 //            
 //            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
             
-        } catch (MultipleParentException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(MasterCellCache.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -293,26 +340,27 @@ public class MasterCellCache implements ManagedObject, Serializable {
 //    abstract void cellChildrenChanged(CellMO parent, CellMO child, boolean childAdded);
 
     static class TestTask implements Task, Serializable {
-            private Vector3f[] pos = new Vector3f[] {
-                new Vector3f(375, 375, 375),
-                new Vector3f(-375, 375, 375),
-                new Vector3f(-375, 375, -375),
-                new Vector3f(375, 375, -375),
-            };
-            private int i = 0;
             private ManagedReference cellRef;
+            private Vector3f pos;
+            private Vector3f pos2;
+            private int dir = 2;
+            private ManagedReference cell2Ref;
             
-            public TestTask(CellMO cell) {
+            public TestTask(CellMO cell, CellMO c2) {
                 this.cellRef = AppContext.getDataManager().createReference(cell);
+                this.cell2Ref = AppContext.getDataManager().createReference(c2);
+                pos = cell.getTransform().get(null);
+                pos2 = cell.getTransform().get(null);
             }
             
 
             public void run() throws Exception {
-                System.out.println("MOVING Cell "+pos[i]);
-                cellRef.get(CellMO.class).setTransform(new CellTransform(null, pos[i]));
-
-                i++;
-                if (i>=pos.length) i=0;
+                pos.x += dir;
+                pos2.y += dir;
+                if (pos.x > 40 || pos.x<2)
+                    dir = -dir;
+                cellRef.get(MoveableCellMO.class).setTransform(new CellTransform(null, pos));
+                cell2Ref.get(MoveableCellMO.class).setTransform(new CellTransform(null, pos2));
             }
     
     }
@@ -329,7 +377,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
         
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
             cell.getClientCellClassName(),
-            cell.getComputedWorldBounds(),
+            cell.getLocalBounds(),
             cell.getCellID(),
             parent,
             cell.getCellChannelName(),
@@ -342,7 +390,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
      * Return a new Cell inactive message
      */
     public static CellHierarchyMessage newUnloadCellMessage(CellMO cell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CELL_UNLOAD,
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UNLOAD_CELL,
             null,
             null,
             cell.getCellID(),
@@ -350,6 +398,8 @@ public class MasterCellCache implements ManagedObject, Serializable {
             null,
             null,
             null
+            
+            
             
             );
     }
@@ -405,7 +455,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
     public static CellHierarchyMessage newCellMoveMessage(CellMO cell) {
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.MOVE_CELL,
             null,
-            cell.getComputedWorldBounds(),
+            cell.getLocalBounds(),
             cell.getCellID(),
             null,
             null,
@@ -420,14 +470,16 @@ public class MasterCellCache implements ManagedObject, Serializable {
     public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellGLO) {
         
         /* Return a new CellHiearchyMessage class, with populated data fields */
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CONTENT_UPDATE_CELL,
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UPDATE_CELL_CONTENT,
             cellGLO.getClientCellClassName(),
-            cellGLO.getComputedWorldBounds(),
+            cellGLO.getLocalBounds(),
             cellGLO.getCellID(),
             cellGLO.getParent().getCellID(),
             cellGLO.getCellChannelName(),
             cellGLO.getTransform(),
             cellGLO.getSetupData()
+            
+            
             
             );
     }

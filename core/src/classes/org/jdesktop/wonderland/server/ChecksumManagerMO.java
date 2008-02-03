@@ -1,7 +1,7 @@
 /**
  * Project Looking Glass
  *
- * $RCSfile: ChecksumManagerGLO.java,v $
+ * $RCSfile: ChecksumManagerMO.java,v $
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -28,6 +28,7 @@ import java.io.StreamTokenizer;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.config.WonderlandConfig;
 
 /**
  * Manages asset checksums
@@ -36,21 +37,28 @@ import java.util.logging.Logger;
  *
  * @author paulby
  */
-public class ChecksumManagerGLO implements ManagedObject, Serializable {
+public class ChecksumManagerMO implements ManagedObject, Serializable {
+
+    /**
+     * Initialize the ChecksumManager
+     */
+    static void initialize() {
+        new ChecksumManagerMO(WonderlandConfig.getBaseURL()); // Use static getter to get reference to GLO
+    }
     
     // Mapping of filename to checksums
     private HashMap<String, String> checksums = new HashMap<String, String>();
 
     private static final String BINDING_NAME="CHECKSUM_MANAGER";
     
-    private static ChecksumManagerGLO getChecksumManagerGLO() {
-        return AppContext.getDataManager().getBinding(BINDING_NAME, ChecksumManagerGLO.class);
+    private static ChecksumManagerMO getChecksumManagerGLO() {
+        return AppContext.getDataManager().getBinding(BINDING_NAME, ChecksumManagerMO.class);
     }
     
     /**
      * Setup the checksum db from the provided asset server
      */
-    public ChecksumManagerGLO(String assetServerUrl) {
+    private ChecksumManagerMO(String assetServerUrl) {
         // File format is checksum filedata filename
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
         
@@ -99,7 +107,7 @@ public class ChecksumManagerGLO implements ManagedObject, Serializable {
     }
     
     public static String getChecksum(String file) {
-        return ChecksumManagerGLO.getChecksumManagerGLO().getChecksumImpl(file);
+        return ChecksumManagerMO.getChecksumManagerGLO().getChecksumImpl(file);
     }
     
 }

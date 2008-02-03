@@ -19,7 +19,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +31,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
 /**
  *
@@ -44,14 +44,16 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     private BoundsTestClientSession session;
     
     /** Creates new form CellBoundsViewer */
-    public CellBoundsViewer() {
+    public CellBoundsViewer(String[] args) {
         BoundsPanel boundsPanel;
         initComponents();
         boundsPanel = new BoundsPanel();
         centerPanel.add(boundsPanel, BorderLayout.CENTER);
         
+        long userNum = System.currentTimeMillis();
+        
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
-        LoginParameters loginParams = new LoginParameters("foo", "test".toCharArray());
+        LoginParameters loginParams = new LoginParameters("foo"+userNum, "test".toCharArray());
         
         // create a session
         session = new BoundsTestClientSession(server, boundsPanel);
@@ -115,13 +117,11 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         private float scale = 20f;
         private float panelTranslationX = 0f;
         private float panelTranslationY = 0f;
+        private Cell rootCell;
         
         private Point mousePress = null;
         
         public BoundsPanel() {
-//            cells.add(createTestCell(5,5,2,true));
-//            cells.add(createTestCell(10,10,3,false));
-            
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseDragged(MouseEvent e) {
@@ -154,37 +154,23 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             });
         }
         
-        private Cell createTestCell(int x, int z, int size, boolean useBox) {
-            Cell cell = new Cell(new CellID(0));
-            
-            if (useBox) {
-                BoundingBox box = new BoundingBox(new Vector3f(x,0,z), size, size, size);
-                cell.setCachedVWBounds(box);
-            } else {
-                BoundingSphere sphere = new BoundingSphere(size, new Vector3f(x,0,z));
-                cell.setCachedVWBounds(sphere);
-            }
-            
-            return cell;
-        }
-        
-        public void addTestCell(CellID cellID, BoundingVolume computedWorldBounds) {
-            Cell cell = new Cell(cellID);
-            cell.setComputedWorldBounds(computedWorldBounds);
-        }
-        
         @Override
         public void paint(Graphics gr) {
             Graphics2D g = (Graphics2D)gr;
+            g.clearRect(0, 0, getWidth(), getHeight());
             g.translate(panelTranslationX, panelTranslationY);
-            g.clearRect(0, 0, (int)(getWidth()*scale), (int)(getHeight()*scale));
             
-            for(Cell c : cells.values())
-                drawCell(c, g);
+            synchronized(cells) {
+                for(Cell c : cells.values())
+                    drawCell(c, g);
+            }
         }
         
         private void drawCell(Cell cell, Graphics2D g) {
-            drawBounds(cell.getComputedWorldBounds(), g);
+            drawBounds(cell.getCachedVWBounds(), g);
+            
+            Vector3f cellPos = cell.getLocalToVWorld().get(null);
+            g.drawString(cell.getName(), cellPos.x*scale, cellPos.z*scale);
         }
         
         private void drawBounds(BoundingVolume bounds, Graphics2D g) {
@@ -193,6 +179,9 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 center = box.getCenter(center);
                 extent = box.getExtent(extent);
                 
+                if (extent.x==Float.POSITIVE_INFINITY)
+                    return;
+                
                 g.drawRect((int)((center.x-extent.x)*scale), 
                            (int)((center.z-extent.z)*scale), 
                            (int)((extent.x*2)*scale), 
@@ -200,45 +189,84 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             } else if (bounds instanceof BoundingSphere) {
                 BoundingSphere sphere = (BoundingSphere)bounds;
                 center = sphere.getCenter(center);
-                int radius = (int)(sphere.getRadius()*scale);
+                float radius = sphere.getRadius();
                 
-                g.drawOval((int)((center.x)*scale), 
-                           (int)((center.z)*scale),
-                           radius,
-                           radius);
-            } else
-                System.out.println("Bounds type not supported "+bounds.getClass().getName());
-            System.out.println("Drawing Cell with center "+center);
+                if (radius==Float.POSITIVE_INFINITY)
+                    return;
+                
+                g.drawOval((int)((center.x-radius)*scale), 
+                           (int)((center.z-radius)*scale), 
+                           (int)((radius*2)*scale), 
+                           (int)((radius*2)*scale));
+            } else {
+                System.out.println("Unsupported bounds type "+bounds);
+            }
         }
 
-        public void loadCell(CellID cellID, String className, BoundingVolume computedWorldBounds, CellID parentCellID, String channelName, CellTransform cellTransform, CellSetup setup) {
-            addTestCell(cellID, computedWorldBounds);
+        public void loadCell(CellID cellID, 
+                String className, 
+                BoundingVolume localBounds, 
+                CellID parentCellID, 
+                String channelName, 
+                CellTransform cellTransform, 
+                CellSetup setup) {
+
+            try {
+                Cell cell = new Cell(cellID);
+                cell.setLocalBounds(localBounds);
+                cell.setTransform(cellTransform);
+                Cell parent = cells.get(parentCellID);
+                if (parent!=null) {
+                    parent.addChild(cell);                    
+                }
+                CellTransform l2vw = cell.getLocalToVWorld();
+                BoundingVolume vwBounds = localBounds.clone(null);
+                l2vw.transform(vwBounds);
+                cell.setCachedVWBounds(vwBounds);
+                
+                synchronized(cells) {
+                    cells.put(cellID, cell);
+                }
+            } catch (MultipleParentException ex) {
+                Logger.getLogger(CellBoundsViewer.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         public void unloadCell(CellID cellID) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            cells.remove(cellID);
+            repaint();
         }
 
         public void deleteCell(CellID cellID) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            cells.remove(cellID);
+            repaint();
         }
 
         public void setRootCell(CellID cellID) {
-            // Do nothing
+            rootCell = cells.get(cellID);
         }
 
-        public void moveCell(CellID cellID, BoundingVolume computedWorldBounds, CellTransform cellTransform) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public void moveCell(CellID cellID, CellTransform cellTransform) {
+            Cell cell = cells.get(cellID);
+            cell.setTransform(cellTransform);
+            
+            CellTransform l2vw = cell.getLocalToVWorld();
+            BoundingVolume vwBounds = cell.getLocalBounds();
+            l2vw.transform(vwBounds);
+            cell.setCachedVWBounds(vwBounds);
+            
+            repaint();
         }
+        
     }
     
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(final String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new CellBoundsViewer().setVisible(true);
+                new CellBoundsViewer(args).setVisible(true);
             }
         });
     }

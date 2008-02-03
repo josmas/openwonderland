@@ -40,6 +40,7 @@ public class WonderlandContext {
         CommsManagerFactory.initialize();
         MasterCellCache.initialize();
         UserManager.initialize();
+        ChecksumManagerMO.initialize();
     }
     
     /**
