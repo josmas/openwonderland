@@ -24,7 +24,7 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.setup.ModelCellSetup;
-import org.jdesktop.wonderland.server.ChecksumManagerGLO;
+import org.jdesktop.wonderland.server.ChecksumManagerMO;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
@@ -60,7 +60,7 @@ public class SimpleTerrainCellMO extends CellMO
 
     @Override
     public ModelCellSetup getSetupData() {
-	String checksum = ChecksumManagerGLO.getChecksum(filename);
+	String checksum = ChecksumManagerMO.getChecksum(filename);
 	return new ModelCellSetup(baseUrl, filename, checksum);
     }
 

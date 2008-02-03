@@ -109,13 +109,22 @@ public class BoundsServiceImpl implements BoundsService {
 
     void cellTransformChanged(CellMirror cell) {
         synchronized(bounds) {
-            // Change the bounds and localToVWorld on all children
-            transformTreeUpdate(cell.getParent(), cell);
+            if (cell.getParent()==null) {
+                // Special case for root cell
+                BoundingVolume b = cell.getLocalBounds();
+                CellTransform t = cell.getTransform();
+                t.transform(b);
+                cell.setComputedWorldBounds(b);
+                cell.setLocalToVWorld(t);
+            } else {
+                // Change the bounds and localToVWorld on all children
+                transformTreeUpdate(cell.getParent(), cell);
 
-            checkForReparent(cell.getParent(), cell);
+//                checkForReparent(cell.getParent(), cell);
 
-            //Ensure this cells bounds are fully enclosed by parents
-            checkParentBounds(cell.getParent(), cell);    
+                //Ensure this cells bounds are fully enclosed by parents
+                checkParentBounds(cell.getParent(), cell);   
+            }
         }
     }
 
@@ -182,6 +191,9 @@ public class BoundsServiceImpl implements BoundsService {
         BoundingVolume childComputedWorldBounds = child.getComputedWorldBounds();
         BoundingVolume parentBounds = parent.getComputedWorldBounds();
 
+//        System.out.println("Parent "+parent.getCellID()+" b "+parentBounds);
+//        System.out.println("Child cwb "+childComputedWorldBounds);
+        
         if (Math3DUtils.encloses(parentBounds, childComputedWorldBounds))
             return;
         

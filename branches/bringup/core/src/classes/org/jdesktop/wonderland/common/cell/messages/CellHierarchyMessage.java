@@ -34,43 +34,18 @@ public class CellHierarchyMessage extends Message {
     private ActionType msgType;
     private CellID cellID;
     private CellID parentID;
-    private BoundingVolume bounds;
+    private BoundingVolume localBounds;
+    private BoundingVolume computedBounds;
     private String cellClassName;
     private String cellChannelName;
-    private CellTransform cellOrigin;
+    private CellTransform cellTransform;
     private CellSetup setupData;
     
+    private CellTransform cellLocal2VW;      // FOR TESTING - TODO REMOVE
 
-    public CellID getCellID() {
-        return cellID;
-    }
 
-    public CellID getParentID() {
-        return parentID;
-    }
-
-    public BoundingVolume getBounds() {
-        return bounds;
-    }
-
-    public String getCellClassName() {
-        return cellClassName;
-    }
-
-    public String getCellChannelName() {
-        return cellChannelName;
-    }
-
-    public CellTransform getCellTransform() {
-        return cellOrigin;
-    }
-
-    public CellSetup getSetupData() {
-        return setupData;
-    }
-
-    public enum ActionType { LOAD_CELL, MOVE_CELL, CELL_UNLOAD, CHANGE_PARENT, SET_WORLD_ROOT,
-        DELETE_CELL, CONTENT_UPDATE_CELL};
+    public enum ActionType { LOAD_CELL, MOVE_CELL, UNLOAD_CELL, CHANGE_PARENT, SET_WORLD_ROOT,
+        DELETE_CELL, UPDATE_CELL_CONTENT};
     
     /**
      * Creates a new instance of CellHierarchyMessage 
@@ -79,20 +54,20 @@ public class CellHierarchyMessage extends Message {
      * @param cellClassName Fully qualified classname for cell
      */
     public CellHierarchyMessage(ActionType msgType, 
-                                String tileClassName, 
-                                BoundingVolume bounds, 
+                                String cellClassName, 
+                                 BoundingVolume localBounds, 
                                 CellID cellID, 
                                 CellID parentID,
                                 String cellChannelName,
                                 CellTransform cellTransform,
                                 CellSetup setupData) {
         this.msgType = msgType;
-        this.cellClassName = tileClassName;
+        this.cellClassName = cellClassName;
         this.cellID = cellID;
         this.parentID = parentID;
-        this.bounds = bounds;
+        this.localBounds = localBounds;
         this.cellChannelName = cellChannelName;
-        this.cellOrigin = cellOrigin;
+        this.cellTransform = cellTransform;
         this.setupData = setupData;
     }
     
@@ -103,4 +78,57 @@ public class CellHierarchyMessage extends Message {
     public ActionType getActionType() {
         return msgType;
     }
+
+    public CellID getCellID() {
+        return cellID;
+    }
+
+    public CellID getParentID() {
+        return parentID;
+    }
+
+    public BoundingVolume getLocalBounds() {
+        return localBounds;
+    }
+
+    public BoundingVolume getComputedBounds() {
+        return computedBounds;
+    }
+    
+    public String getCellClassName() {
+        return cellClassName;
+    }
+
+    public String getCellChannelName() {
+        return cellChannelName;
+    }
+
+    public CellTransform getCellTransform() {
+        return cellTransform;
+    }
+
+    public CellSetup getSetupData() {
+        return setupData;
+    }
+
+    /**
+     * FOR TESTING
+     * TODO REMOVE
+     * @return
+     */
+    public CellTransform getCellLocal2VW() {
+        return cellLocal2VW;
+    }
+
+    /**
+     * FOR TESTING
+     * TODO REMOVE
+     * @return
+     */
+    public void setCellLocal2VW(CellTransform cellLocal2VW) {
+        this.cellLocal2VW = cellLocal2VW;
+    }
+
+
+
 }

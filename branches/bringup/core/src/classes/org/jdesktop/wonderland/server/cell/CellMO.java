@@ -68,8 +68,6 @@ public class CellMO extends WonderlandMO {
     private Channel cellChannel = null;
     private String channelName =null;
     
-    private long version;
-    
     protected static Logger logger = Logger.getLogger(CellMO.class.getName());
     
     /**
@@ -135,9 +133,15 @@ public class CellMO extends WonderlandMO {
      * to the local bounds of this node or any of it's children may not be 
      * immediately reflected in this bounds.
      * 
+     * This call is only valid for live
+     * cells
+     * 
      * @return the bounds in world coordinates
      */
     public BoundingVolume getComputedWorldBounds() {
+        if (!live)
+            throw new RuntimeException("Cell is not live");
+        
         return BoundsHandler.get().getComputedWorldBounds(cellID);   
     }
     
@@ -468,42 +472,6 @@ public class CellMO extends WonderlandMO {
         return BoundsHandler.get().getVisibleCells(cellID, bounds, monitor);
     }
     
-    /**
-     * Get the current version number for this CellMO. This is used by
-     * the UserCellCacheGLO to determine if a user's copy of this cell
-     * is up to date.  If the version is higher than the user's version,
-     * the AvatarCellCacheMO will send a reconfigure message to the associated
-     * client.
-     * @return this cells version number
-     */
-    public long getVersion() {
-        return version;
-    }
-    
-    /**
-     * Increment the cell's version number
-     * @return the new version number
-     */
-    public long incrementVersion() {
-        return version++;
-    }
-    
-//    /**
-//     * Handle serialization of Bounds
-//     */
-//    private void writeObject(ObjectOutputStream out) throws IOException {
-//        out.defaultWriteObject();
-//        SerializationHelper.writeBoundsObject(localBounds, out);
-//    }
-//    
-//    /**
-//     * Handle de-serialization of Bounds
-//     */
-//    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-//        in.defaultReadObject();
-//        localBounds = SerializationHelper.readBoundsObject(in);
-//    }
-
     /**
      * Set up the cell from the given properties
      * @param setup the properties to setup with

@@ -52,8 +52,8 @@ public class CellTransform implements Serializable {
     }
 
     private CellTransform(CellTransform orig) {
-        this.rotate = orig.rotate;
-        this.translation = orig.translation;
+        this.rotate = new Quaternion(orig.rotate);
+        this.translation = new Vector3f(orig.translation);
     }
     
     @Override
@@ -66,7 +66,8 @@ public class CellTransform implements Serializable {
      * @param ret
      */
     public void transform(BoundingVolume ret) {
-        ret.transform(rotate, translation, scale);
+        assert(ret!=null);
+        ret.transform(rotate, translation, scale, ret);
     }
     
     /**
@@ -87,8 +88,10 @@ public class CellTransform implements Serializable {
      * @return this
      */
     public CellTransform mul(CellTransform t1) {
-        rotate.mult(t1.rotate);
-        translation.mult(t1.translation);
+        rotate.multLocal(t1.rotate);
+//        System.out.print(translation +"  + "+t1.translation);
+        translation.addLocal(t1.translation);
+//        System.out.println(" = "+translation);
         return this;
     }
     
@@ -101,7 +104,7 @@ public class CellTransform implements Serializable {
      */
     public Vector3f get(Vector3f translation) {
         if (translation==null)
-            return new Vector3f(translation);
+            return new Vector3f(this.translation);
         
         translation.set(this.translation);
         return translation;

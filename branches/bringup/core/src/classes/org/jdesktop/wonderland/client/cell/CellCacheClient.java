@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.client.comms.ChannelJoinedListener;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellCacheClientType;
-import org.jdesktop.wonderland.common.cell.CellClientType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -119,7 +118,6 @@ public class CellCacheClient extends BaseClient {
      * @param message the message to handle
      */
     public void messageReceived(Message message) {
-        System.out.println("CellCacheClient.messageReceived "+message);
         if (!(message instanceof CellHierarchyMessage))
             throw new RuntimeException("Unexpected message type "+message.getClass().getName());
         
@@ -129,7 +127,7 @@ public class CellCacheClient extends BaseClient {
                 for(CellCacheMessageListener l : listeners) {
                     l.loadCell(msg.getCellID(),
                                 msg.getCellClassName(),
-                                msg.getBounds(),
+                                msg.getLocalBounds(),
                                 msg.getParentID(),
                                 msg.getCellChannelName(),
                                 msg.getCellTransform(),
@@ -138,8 +136,7 @@ public class CellCacheClient extends BaseClient {
                 break;
             case MOVE_CELL :
                 for(CellCacheMessageListener l : listeners) {
-                    l.moveCell(msg.getCellID(), 
-                            msg.getBounds(), 
+                    l.moveCell(msg.getCellID(),
                             msg.getCellTransform());
                 }
                  break;
@@ -217,7 +214,7 @@ public class CellCacheClient extends BaseClient {
          */
         public void loadCell(CellID cellID, 
                                String className, 
-                               BoundingVolume computedWorldBounds,
+                               BoundingVolume localBounds,
                                CellID parentCellID,
                                String channelName,
                                CellTransform cellTransform,
@@ -239,7 +236,6 @@ public class CellCacheClient extends BaseClient {
         public void setRootCell(CellID cellID);
        
         public void moveCell(CellID cellID,
-                             BoundingVolume computedWorldBounds,
                              CellTransform cellTransform);
     }
 }

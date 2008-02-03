@@ -37,7 +37,7 @@ public class AvatarMO extends MoveableCellMO {
 
     public AvatarMO(UserMO user) {
         this.userRef = AppContext.getDataManager().createReference(user);
-        addCellMoveListener(new AvatarMoveListener());
+//        addCellMoveListener(new AvatarMoveListener());
     }
     
     public UserMO getUser() {

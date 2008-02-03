@@ -22,6 +22,8 @@ package org.jdesktop.wonderland.client.cell;
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -34,14 +36,24 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 public class Cell {
     private BoundingVolume cachedVWBounds;
     private BoundingVolume computedWorldBounds;
+    private BoundingVolume localBounds;
     private Cell parent;
     private ArrayList<Cell> children = null;
     private CellTransform localTransform;
-    private CellTransform local2VW;
+    private CellTransform local2VW = new CellTransform(null, null);
     private CellID cellID;
+    private String name=null;
     
     public Cell(CellID cellID) {
         this.cellID = cellID;
+    }
+    
+    /**
+     * Return the unique id of this cell
+     * @return the cell id
+     */
+    public CellID getCellID() {
+        return cellID;
     }
     
     /**
@@ -107,30 +119,97 @@ public class Cell {
         return children.size();
     }
     
-    /** TODO This is public for test purposes only, make package scope
-     * 
-     * @param cachedVWBounds
-     */
-    public void setCachedVWBounds(BoundingVolume cachedVWBounds) {
-        this.cachedVWBounds = cachedVWBounds;
-    }
-         
     /**
      * Return the transform for this cell
      * @return
      */
     public CellTransform getTransform() {
-        return localTransform;
+        return (CellTransform) localTransform.clone();
+    }
+    
+    /**
+     * Set the transform for this cell
+     * @param localTransform
+     */
+    public void setTransform(CellTransform localTransform) {
+        this.localTransform = (CellTransform) localTransform.clone();
+        if (parent!=null) {
+            local2VW = local2VW.mul(parent.getLocalToVWorld());
+        }
+        
+        for(Cell child : getChildren())
+            transformTreeUpdate(this, child);
     }
     
     /**
      * Return the local to Virtual World transform for this cell.
      * @return
      */
-    public CellTransform getLocal2VWorld() {
-        return local2VW;
+    public CellTransform getLocalToVWorld() {
+        return computeLocal2VWorld(this);
+    }
+    
+    void setLocalToVWorld(CellTransform localToVWorld) {
+        local2VW = (CellTransform) localToVWorld.clone();
+        localBounds.clone(cachedVWBounds);
+        local2VW.transform(cachedVWBounds);
+    }
+    
+    /**
+     * Compute the local to vworld of the cell, this for test purposes only
+     * @param parent
+     * @return
+     */
+    private CellTransform computeLocal2VWorld(Cell cell) {
+        LinkedList<CellTransform> transformStack = new LinkedList<CellTransform>();
+        
+        // Get the root
+        Cell current=cell;
+        while(current.getParent()!=null) {
+            transformStack.addFirst(current.localTransform);
+            current = current.getParent();
+        }
+        CellTransform ret = new CellTransform(null, null);
+        for(CellTransform t : transformStack) {
+            if (t!=null)
+                ret.mul(t);
+        }
+        
+        return ret;
     }
 
+    /**
+     * Update local2VWorld and bounds of child and all its children to
+     * reflect changes in a parent
+     * 
+     * @param parent
+     * @param child
+     * @return the combined bounds of the child and all it's children
+     */
+    private BoundingVolume transformTreeUpdate(Cell parent, Cell child) {
+        CellTransform parentL2VW = parent.getLocalToVWorld();
+        
+        CellTransform childTransform = child.getTransform();
+        
+        if (childTransform!=null) {
+            childTransform.mul(parentL2VW);
+            child.setLocalToVWorld(childTransform);
+        } else {
+            child.setLocalToVWorld(parentL2VW);
+        }
+        
+        BoundingVolume ret = child.getCachedVWBounds();
+        
+        Iterator<Cell> it = child.getChildren().iterator();
+        while(it.hasNext()) {
+            ret.mergeLocal(transformTreeUpdate(child, it.next()));
+        }
+        
+//        child.setComputedWorldBounds(ret);
+        
+        return null;
+    }
+    
     /**
      * Returns the local bounds transformed into VW coordinates. These bounds
      * do not include the subgraph bounds. This call is only valid for live
@@ -143,6 +222,14 @@ public class Cell {
     }
 
     /**
+     * TODO should not be public
+     * @param cachedVWBounds
+     */
+    public void setCachedVWBounds(BoundingVolume cachedVWBounds) {
+        this.cachedVWBounds = cachedVWBounds;
+    }
+    
+    /**
      * Return a computed bounds for this cell in World coordinates that 
      * encapsulates the bounds of this cell and all it's children.
      * 
@@ -152,11 +239,39 @@ public class Cell {
      * 
      * @return
      */
-    public BoundingVolume getComputedWorldBounds() {
-        return computedWorldBounds;
+//    public BoundingVolume getComputedWorldBounds() {
+//        return computedWorldBounds;
+//    }
+//
+//    public void setComputedWorldBounds(BoundingVolume computedWorldBounds) {
+//        this.computedWorldBounds = computedWorldBounds;
+//    }
+
+    /**
+     * Return the name for this cell (defaults to cellID)
+     * @return
+     */
+    public String getName() {
+        if (name==null)
+            return cellID.toString();
+        return name;
     }
 
-    public void setComputedWorldBounds(BoundingVolume computedWorldBounds) {
-        this.computedWorldBounds = computedWorldBounds;
+    /**
+     * Set a name for the cell
+     * @param name
+     */
+    public void setName(String name) {
+        this.name = name;
     }
+
+    public BoundingVolume getLocalBounds() {
+        return localBounds.clone(null);
+    }
+
+    public void setLocalBounds(BoundingVolume localBounds) {
+        this.localBounds = localBounds;
+    }
+
+
 }
