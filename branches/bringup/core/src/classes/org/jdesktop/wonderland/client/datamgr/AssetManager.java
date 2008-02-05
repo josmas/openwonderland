@@ -38,7 +38,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.j3d.utils.scenegraph.ImageComponent2DURL;
 import org.jdesktop.wonderland.client.datamgr.TrackingInputStream.ProgressListener;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
@@ -228,7 +227,8 @@ public class AssetManager {
             case FILE :
                 return new AssetFile(repository, filename);
             case IMAGE :
-                return new AssetImageComponent2DURL(repository, filename);
+                throw new RuntimeException("NOT IMPLEMENTED");
+//                return new AssetImageComponent2DURL(repository, filename);
             case MODEL :
                 return new AssetBranchGroup(repository, filename);
             case OTHER :
@@ -392,17 +392,17 @@ public class AssetManager {
     
 
 
-    class ImageComponent2DURLAssetManager implements ImageComponent2DURL.AssetManager {
-
-        public void loadImage(ImageComponent2DURL arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public ImageComponent2DURL createImageComponent2DURL(URL arg0, String arg1) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-    }
+//    class ImageComponent2DURLAssetManager implements ImageComponent2DURL.AssetManager {
+//
+//        public void loadImage(ImageComponent2DURL arg0) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        public ImageComponent2DURL createImageComponent2DURL(URL arg0, String arg1) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//        
+//    }
     
     /**
      * Used to load assets in parallel.
