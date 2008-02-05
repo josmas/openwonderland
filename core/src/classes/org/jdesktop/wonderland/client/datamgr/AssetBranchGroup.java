@@ -19,14 +19,14 @@
  */
 package org.jdesktop.wonderland.client.datamgr;
 
-import javax.media.j3d.BranchGroup;
+import com.jme.scene.Spatial;
 import org.jdesktop.wonderland.common.AssetType;
 
 /**
  *
  * @author paulby
  */
-public class AssetBranchGroup extends Asset<BranchGroup> {
+public class AssetBranchGroup extends Asset<Spatial> {
 
     AssetBranchGroup(Repository repository, String filename) {
         super(repository, filename);
@@ -39,7 +39,7 @@ public class AssetBranchGroup extends Asset<BranchGroup> {
     }
 
     @Override
-    public BranchGroup getAsset() {
+    public Spatial getAsset() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
