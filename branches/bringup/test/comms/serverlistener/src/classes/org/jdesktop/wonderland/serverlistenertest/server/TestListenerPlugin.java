@@ -19,6 +19,7 @@
  */
 package org.jdesktop.wonderland.serverlistenertest.server;
 
+import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -29,7 +30,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
 import org.jdesktop.wonderland.serverlistenertest.common.TestClientType;
 import org.jdesktop.wonderland.serverlistenertest.common.TestMessageOne;
 import org.jdesktop.wonderland.serverlistenertest.common.TestMessageTwo;
@@ -57,19 +57,23 @@ public class TestListenerPlugin implements ServerPlugin {
             logger.info(getName() + " registered: " + channel.getName());
         }
         
-        public void clientAttached(WonderlandClientSession session) {
-            logger.info(getName() + " client attached: " + session);
+        public void clientAttached(WonderlandClientChannel channel,
+                                   ClientSessionId sessionId) {
+            logger.info(getName() + " client attached: " + sessionId);
         }
         
-        public void messageReceived(WonderlandClientSession session, 
+        public void messageReceived(WonderlandClientChannel channel,
+                                    ClientSessionId sessionId,
                                     Message message)
         {
             logger.info(getName() + " received message " + message +
-                        " from session " + session.getName());
+                        " from session " + sessionId);
         }
         
-        public void clientDetached(WonderlandClientSession session) {
-            logger.info(getName() + " client detached: " + session);
+        public void clientDetached(WonderlandClientChannel channel,
+                                   ClientSessionId sessionId) 
+        {
+            logger.info(getName() + " client detached: " + sessionId);
         }
     }
     
@@ -83,13 +87,14 @@ public class TestListenerPlugin implements ServerPlugin {
         }
         
         @Override
-        public void messageReceived(WonderlandClientSession session, 
+        public void messageReceived(WonderlandClientChannel channel,
+                                    ClientSessionId sessionId,
                                     Message message)
         {
             assert message instanceof TestMessageOne :
                    logger.getName() + " received bad message: " + message;
             
-            super.messageReceived(session, message);
+            super.messageReceived(channel, sessionId, message);
         }
     }
     
@@ -105,14 +110,15 @@ public class TestListenerPlugin implements ServerPlugin {
         }
         
         @Override
-        public void messageReceived(WonderlandClientSession session, 
+        public void messageReceived(WonderlandClientChannel channel,
+                                    ClientSessionId sessionId, 
                                     Message message)
         {
             assert message instanceof TestMessageTwo :
                    getName() + " received bad message: " + message;
             
             logger.info(getName() + " received message " + message +
-                        " from session " + session.getName() + 
+                        " from session " + sessionId + 
                         " count " + count++);
         }
     }
@@ -127,13 +133,14 @@ public class TestListenerPlugin implements ServerPlugin {
         }
         
         @Override
-        public void messageReceived(WonderlandClientSession session, 
+        public void messageReceived(WonderlandClientChannel channel,
+                                    ClientSessionId sessionId, 
                                     Message message)
         {
             assert !(message instanceof TestMessageOne) : 
                    getName() + " received bad message: " + message;
             
-            super.messageReceived(session, message);
+            super.messageReceived(channel, sessionId, message);
         }
     }
 }

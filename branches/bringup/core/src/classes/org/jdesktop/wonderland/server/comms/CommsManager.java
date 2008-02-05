@@ -94,19 +94,29 @@ public interface CommsManager {
     public void registerClientHandler(ClientHandler handler);
     
     /**
-     * Get all clients connected via the WonderlandProtocol that have
-     * attached clients of the given type.
-     * @param clientType the type of client
-     * @return all clients who have attached the given client type, or an
-     * empty set if no clients are attached
-     * @throws IllegalStateException if no handler is registered for the given
-     * type
+     * Unregister a client handler for the given type
+     * @param handler the handler to unregister
      */
-    public Set<WonderlandClientSession> getClients(ClientType clientType);
+    public void unregisterClientHandler(ClientHandler handler);
+    
+     /**
+     * Get a ClientHandler by the ClientType it handles
+     * @param clientType the type of the handler to search for
+     * @return the handler registered for the given type
+     */
+    public ClientHandler getClientHandler(ClientType clientType);
+    
+    /**
+     * Get all registered client handler
+     * @return all available handlers
+     */
+    public Set<ClientHandler> getClientHandlers();
     
     /**
      * Get a channel that can be used to send messages to all clients
-     * of a given ClientType
+     * of a given ClientType.  This channel can also be used to query
+     * all the session connected via the given session type.
+     * 
      * @param clientType the type of client
      * @return a channel for sending to all clients of the given type
      * @throws IllegalStateException if no handler is registered for the given

@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.WonderlandMO;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
+import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
 import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
@@ -426,12 +426,14 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Handle messages sent to this cell.
-     * @param session a session that can be used to send messages back to 
-     * the session that originated this message.  Messages will automatically
+     * @param channel a channel that can be used to send messages back to 
+     * the client that originated this message.  Messages will automatically
      * be sent to the correct WonderlandClient.
+     * @param sessionId the sessionId that sent the message
      * @param message the message to handle
      */
-    protected void messageReceived(WonderlandClientSession session, 
+    protected void messageReceived(WonderlandClientChannel channel,
+                                   ClientSessionId sessionId, 
                                    CellMessage message) 
     {
         throw new RuntimeException("Not Implemented");

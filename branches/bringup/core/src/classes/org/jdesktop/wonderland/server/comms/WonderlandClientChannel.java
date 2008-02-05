@@ -19,6 +19,7 @@
  */
 package org.jdesktop.wonderland.server.comms;
 
+import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.Delivery;
 import java.util.Set;
 import org.jdesktop.wonderland.ExperimentalAPI;
@@ -48,13 +49,13 @@ public interface WonderlandClientChannel {
      */
     public ClientType getClientType();
     
-   /**
-     * Get the WonderlandClientSessions associated with this channel.  The
-     * returned values here are WonderlandClientSessions.
-     * @return a set of WonderlandClientSessions that are attached to
-     * this client type
+    /**
+     * Get the SessionIds associated with this channel.  To send to a 
+     * particular client of the given type, use the 
+     * <code>send(ClientSessionId, Message)</code> method.
+     * @return a set of session ids that are connected to this channel. 
      */
-    public Set<WonderlandClientSession> getSessions();
+    public Set<ClientSessionId> getSessions();
     
     /**
      * Get the name of this channel.
@@ -85,17 +86,6 @@ public interface WonderlandClientChannel {
     public void send(Message message);
     
     /**
-     * Send a message to a single of client connected via this channel.  The
-     * message will be handled by the WonderlandClient attached with the
-     * ClientType of this channel.
-     * @param session the session to send to
-     * @param message the message to send
-     * @throws IllegalStateException if the handler for this client type
-     * has been unregistered
-     */
-    public void send(WonderlandClientSession session, Message message);
-        
-    /**
      * Send a message to a set of clients connected via this channel.  The
      * message will be handled by the WonderlandClient attached with the
      * ClientType of this channel.
@@ -104,5 +94,16 @@ public interface WonderlandClientChannel {
      * @throws IllegalStateException if the handler for this client type
      * has been unregistered
      */
-    public void send(Set<WonderlandClientSession> sessions, Message message);
+    public void send(Set<ClientSessionId> sessions, Message message);
+    
+    /**
+     * Send a message to a single of client connected via this channel.  The
+     * message will be handled by the WonderlandClient attached with the
+     * ClientType of this channel.
+     * @param sessionId the id of the session to send to
+     * @param message the message to send
+     * @throws IllegalStateException if the handler for this client type
+     * has been unregistered
+     */
+    public void send(ClientSessionId session, Message message);
 }

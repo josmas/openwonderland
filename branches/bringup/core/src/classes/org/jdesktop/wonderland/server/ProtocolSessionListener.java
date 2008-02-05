@@ -157,9 +157,6 @@ public class ProtocolSessionListener
             sendToSession(new OKMessage(psm.getMessageID()));
         } catch (ExtractMessageException eme) {
             sendError(eme.getMessageID(), null, eme);
-        } catch (Exception ex) {
-            // TODO: react better?
-            getSession().disconnect();
         }
     }
 

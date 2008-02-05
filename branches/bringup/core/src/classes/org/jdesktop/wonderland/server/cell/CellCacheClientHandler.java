@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -31,7 +32,6 @@ import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
 
 /**
  * Handler for the cell cache
@@ -53,11 +53,13 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
         // ignore
     }
     
-    public void clientAttached(WonderlandClientSession session) {
+    public void clientAttached(WonderlandClientChannel channel,
+                               ClientSessionId sessionId)
+    {
         // Get the avatar and AvatarCellCache. Notify the cache
         // that the avatar is active (logged in)
         System.out.println("********* CellCacheClientHandler.clientAttached");
-        UserMO user = WonderlandContext.getUserManager().getUser(session.getSessionId()).get(UserMO.class);
+        UserMO user = WonderlandContext.getUserManager().getUser(sessionId).get(UserMO.class);
         ManagedReference avatarRef = user.getAvatar(DEFAULT_AVATAR);
         AvatarMO avatar;
         if (avatarRef==null) {
@@ -68,24 +70,29 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
             avatar = avatarRef.get(AvatarMO.class);
         }
         
-        avatar.getCellCache().login(session);
+        avatar.getCellCache().login(channel, sessionId);
     }
 
-    public void clientDetached(WonderlandClientSession session) {
-        UserMO user = WonderlandContext.getUserManager().getUser(session.getSessionId()).get(UserMO.class);
+    public void clientDetached(WonderlandClientChannel channel,
+                               ClientSessionId sessionId) 
+    {
+        UserMO user = WonderlandContext.getUserManager().getUser(sessionId).get(UserMO.class);
         ManagedReference avatarRef = user.getAvatar(DEFAULT_AVATAR);
         if (avatarRef==null) {
             logger.severe("clientDetached has null avatar for session");
             return;
         }
-        avatarRef.getForUpdate(AvatarMO.class).getCellCache().logout(session.getSessionId());
+        avatarRef.getForUpdate(AvatarMO.class).getCellCache().logout(sessionId);
     }
     
-    public void messageReceived(WonderlandClientSession session, Message message) {
+    public void messageReceived(WonderlandClientChannel channel,
+                                ClientSessionId sessionId, 
+                                Message message)
+    {
         if (message instanceof CellHierarchyMessage) {
-            messageReceived(session, (CellHierarchyMessage) message);
+            messageReceived(channel, sessionId, (CellHierarchyMessage) message);
         } else {
-            session.send(new ErrorMessage(message.getMessageID(),
+            channel.send(sessionId, new ErrorMessage(message.getMessageID(),
                          "Unexpected message type: " + message.getClass()));
         }
     }
@@ -96,7 +103,8 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
      * @param message the cell message
      * @param sender the message sender to send responses to
      */
-    public void messageReceived(WonderlandClientSession session, 
+    public void messageReceived(WonderlandClientChannel channel,
+                                ClientSessionId sessionId,
                                 CellHierarchyMessage message)
     {
         // get the MasterCellCache

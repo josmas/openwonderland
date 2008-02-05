@@ -158,6 +158,7 @@ public class ClientMain {
         try {
             cm.runTest();
         } catch (Exception ex) {
+            System.out.println("Exception: " + ex);
             ex.printStackTrace();
         }
     }
