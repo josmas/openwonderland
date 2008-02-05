@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="wonderland-serverprotocoltest" default="all" basedir=".">
-    <property name="top.dir" location="../.."/>
+<project name="wonderland-clientlistenertest" default="all" basedir=".">
+    <property name="top.dir" location="../../.."/>
     <property name="current.dir" location="."/>
-    
+    <property name="test.import.dir" location="${top.dir}/test/build-tools/import"/>
+        
     <property name="servertest.src" value="org/jdesktop/wonderland/clientlistenertest"/>
     <property name="servertest.packagename" value="org.jdesktop.wonderland.clientlistenertest"/>
     <property name="servertest.jarname" value="clientlistenertest"/>
     <property name="servertest.plugins" value="ClientListenerPlugin"/>
     
-    <import file="${top.dir}/test/build-tools/import/servertest-common.xml"/>
+    <import file="${test.import.dir}/servertest-common.xml"/>
     
     <target name="build" depends="init, compile-common, compile-server, compile-client"/>
     <target name="jar" depends="build, jar-server, jar-client"/>

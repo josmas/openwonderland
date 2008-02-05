@@ -21,15 +21,17 @@ package org.jdesktop.wonderland.clientlistenertest.client;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.BaseClient;
-import org.jdesktop.wonderland.client.comms.BaseClient.Status;
-import org.jdesktop.wonderland.client.comms.ClientLifecycleListener;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
-import org.jdesktop.wonderland.client.comms.SessionMessageListener;
 import org.jdesktop.wonderland.client.comms.WonderlandClient;
+import org.jdesktop.wonderland.client.comms.WonderlandClient.Status;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionFactory;
+import org.jdesktop.wonderland.clientlistenertest.common.TestClientType;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageOne;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageThree;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageTwo;
+import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -64,23 +66,15 @@ public class ClientMain {
         String username = System.getProperty("sgs.user", "sample");
         String password = System.getProperty("sgs.password", "sample");
 
-        // add a lifecycle listener
-        WonderlandClient.addLifecycleListener(new TestLifecycleListener());
-        
-        // create the client & login
-        WonderlandClient wc = new WonderlandClient(serverInfo);
-        
-        // register listeners
-        wc.addSessionMessageListener(TestMessageOne.class, 
-                                     new TestMessageOneListener());
-        wc.addSessionMessageListener(TestMessageTwo.class, 
-                                     new TestMessageTwoListener());
-        wc.addSessionMessageListener(TestMessageThree.class, 
-                                     new TestMessageThreeListener());
-
-        wc.login(new LoginParameters(username, password.toCharArray()));
+        // create the session & login
+        WonderlandSession session = WonderlandSessionFactory.getSession(serverInfo);
+        session.login(new LoginParameters(username, password.toCharArray()));
+           
         logger.info("Login suceeded");
      
+        // attach client
+        session.attach(new TestOneClient());
+        
         // wait for end-session message
         waitForFinish();
     }
@@ -94,6 +88,7 @@ public class ClientMain {
     
     protected synchronized void setFinished() {
         finished = true;
+        notify();
     }
     
     public static void main(String[] args) {
@@ -114,49 +109,18 @@ public class ClientMain {
         }
     }
     
-    class TestLifecycleListener implements ClientLifecycleListener {
-        public void clientCreated(BaseClient client) {
-            logger.info("New client created: " + 
-                        client.getServerInfo().getHostname());
+    class TestOneClient extends BaseClient {
+        public ClientType getClientType() {
+            return TestClientType.CLIENT_ONE_TYPE;
         }
-
-        public void clientStatusChanged(BaseClient client, Status status) {
-            logger.info("Client status changed: " + status);
-        }
-    }
-    
-    class TestMessageOneListener implements SessionMessageListener {
-        public void messageReceived(BaseClient client, Message message) {
-            if (!(message instanceof TestMessageOne)) {
-                logger.warning("Received bad message: " + message);
-            }
-            
-            logger.info("Received TestMessageOne: " + message + " from " + 
-                        client.getServerInfo().getHostname());
-        }
-    }
-    
-    class TestMessageTwoListener implements SessionMessageListener {
-        public void messageReceived(BaseClient client, Message message) {
-            if (!(message instanceof TestMessageTwo)) {
-                logger.warning("Received bad message: " + message);
-            }
-            
-            logger.info("Received TestMessageTwo: " + message + " from " + 
-                        client.getServerInfo().getHostname());
-        }
-    }
-     
-    class TestMessageThreeListener implements SessionMessageListener {
-        public void messageReceived(BaseClient client, Message message) {
-            if (!(message instanceof TestMessageThree)) {
-                logger.warning("Received bad message: " + message);
-            }
-            
-            logger.info("Received TestMessageThree: " + message + " from " + 
-                        client.getServerInfo().getHostname());
+  
+        @Override
+        public void handleMessage(Message message) {
+            logger.info("Received message: " + message);
         
-            setFinished();
+            if (message instanceof TestMessageThree) {
+                setFinished();
+            }
         }
     }
 }
