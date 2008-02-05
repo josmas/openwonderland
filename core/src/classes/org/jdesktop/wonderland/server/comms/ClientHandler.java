@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.server.comms;
 
-import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionId;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -47,21 +47,30 @@ public interface ClientHandler {
      * Handle when a new session attaches to this handler.  A session 
      * attaches when a client calls <code>WonderlandSession.attach()</code>
      * to attach a new session.
-     * @param session the session that attached
+     * @param channel the channel that can be used to send to clients
+     * of this handler
+     * @param sessionId the id of the session that attached
      */
-    public void clientAttached(WonderlandClientSession session);
+    public void clientAttached(WonderlandClientChannel channel,
+                               ClientSessionId sessionId);
     
     /**
      * Handle a message from a client
-     * @param session the session that sent the message
+     * @param channel the channel that can be used to send to clients of
+     * this handler
+     * @param sessionId the sessionId that sent the message
      * @param message the message that was generated
      */
-    public void messageReceived(WonderlandClientSession session, 
+    public void messageReceived(WonderlandClientChannel channel,
+                                ClientSessionId sessionId,
                                 Message message);
     
     /**
      * Handle when a session detaches from this handler
-     * @param session the session that detached
+     * @param channel the channel that can be used to send to clients
+     * of this handler
+     * @param sessionId the id of the session that attached
      */
-    public void clientDetached(WonderlandClientSession session);
+    public void clientDetached(WonderlandClientChannel channel,
+                               ClientSessionId sessionId);
 }

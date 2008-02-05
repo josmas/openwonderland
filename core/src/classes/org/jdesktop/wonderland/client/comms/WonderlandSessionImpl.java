@@ -314,7 +314,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         logger.fine(getName() + " detach " + client);
         
         // get the client record
-        ClientRecord record = getClientRecord(client);
+        ClientRecord record = removeClientRecord(client);
         if (record == null) {
             // ignore
             logger.warning(getName() + " trying to detach a client which is " +
@@ -325,8 +325,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // send a message
         getInternalClient().send(
              new DetachClientMessage(record.getClientID()));
-    
-        // update the client
+        
+        // notify the client
         client.detached();
     }
     
@@ -535,8 +535,10 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /**
      * Remove a client record
      * @param client the client to remove a record for
+     * @return the client record that was removed, or null if no record
+     * was removed
      */
-    protected void removeClientRecord(WonderlandClient client) {
+    protected ClientRecord removeClientRecord(WonderlandClient client) {
         logger.fine(getName() + "Removing record for client " + client);
         
         ClientRecord record = getClientRecord(client);
@@ -546,6 +548,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
                 clientsByID.remove(Short.valueOf(record.getClientID()));
             }
         }
+        
+        return record;
     }
     
     /**
@@ -627,7 +631,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
          * {@inheritDoc}
          */
         public void disconnected(boolean graceful, String reason) {
-            logger.fine(getName() + " disconnected");
+            logger.fine(getName() + " disconnected, reason: " + reason);
             synchronized (this) {
                 // are we in the process of logging in?
                 if (getCurrentLogin() != null) {

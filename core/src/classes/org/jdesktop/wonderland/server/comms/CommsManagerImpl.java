@@ -73,9 +73,17 @@ class CommsManagerImpl
     public void registerClientHandler(ClientHandler handler) {
         WonderlandSessionListener.registerClientHandler(handler);
     }
-    
-    public Set<WonderlandClientSession> getClients(ClientType clientType) {
-        return WonderlandSessionListener.getClients(clientType);
+  
+    public void unregisterClientHandler(ClientHandler handler) {
+        WonderlandSessionListener.unregisterClientHandler(handler);
+    }
+
+    public ClientHandler getClientHandler(ClientType clientType) {
+        return WonderlandSessionListener.getClientHandler(clientType);
+    }
+
+    public Set<ClientHandler> getClientHandlers() {
+        return WonderlandSessionListener.getClientHandlers();
     }
     
     public WonderlandClientChannel getChannel(ClientType clientType) {

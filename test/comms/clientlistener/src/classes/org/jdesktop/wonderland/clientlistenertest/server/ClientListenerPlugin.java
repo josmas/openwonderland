@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.clientlistenertest.server;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
@@ -35,7 +36,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
 
 /**
  * Sample plugin that doesn't do anything
@@ -53,54 +53,55 @@ public class ClientListenerPlugin implements ServerPlugin {
     static class TestClientHandler
             implements ClientHandler, ManagedObject, Serializable
     {
-        private WonderlandClientChannel channel;
-        
         public ClientType getClientType() {
             return TestClientType.CLIENT_ONE_TYPE;
         }
 
         public void registered(WonderlandClientChannel channel) {
-            this.channel = channel;
         }
 
-        public void clientAttached(WonderlandClientSession session) {
-            logger.info("Session connected: " + session.getName());
+        public void clientAttached(WonderlandClientChannel channel,
+                                   ClientSessionId sessionId) 
+        {
+            logger.info("Session connected: " + sessionId);
             
             // send message over session channel
-            session.send(new TestMessageOne("TestOne"));
+            channel.send(sessionId, new TestMessageOne("TestOne"));
             
             // send message over all-clients channel
             channel.send(new TestMessageTwo("TestTwo"));
             
             // now schedule a task to send more messages
             AppContext.getTaskManager().scheduleTask(new SendTask(channel, 
-                                                                  session));
+                                                                  sessionId));
         }
 
-        public void messageReceived(WonderlandClientSession session, 
+        public void messageReceived(WonderlandClientChannel channel,
+                                    ClientSessionId sessionId, 
                                     Message message)
         {
             // ignore
         }
 
-        public void clientDetached(WonderlandClientSession session) {
+        public void clientDetached(WonderlandClientChannel channel,
+                                   ClientSessionId sessionId) {
             // ignore
         }
         
         static class SendTask implements Task, Serializable {
-            private WonderlandClientSession session;
             private WonderlandClientChannel channel;
+            private ClientSessionId sessionId;
             
             public SendTask(WonderlandClientChannel channel, 
-                            WonderlandClientSession session) 
+                            ClientSessionId sessionId) 
             {
                 this.channel = channel;
-                this.session = session;
+                this.sessionId = sessionId;
             }
 
             public void run() throws Exception {
                 channel.send(new TestMessageOne("TestOneFromTask"));
-                session.send(new TestMessageThree("TestThree", 42));
+                channel.send(sessionId, new TestMessageThree("TestThree", 42));
             }   
         }
     }
