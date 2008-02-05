@@ -132,6 +132,8 @@
             <jvmarg value="-Dsgs.username=${sgs.username}"/>
             <jvmarg value="-Dsgs.password=${sgs.password}"/>
             
+            <jvmarg value="-Djava.util.logging.config.class=org.jdesktop.wonderland.client.LogControl"/>
+            
             <classpath>
                 <pathelement path="${wonderland-client.classpath}"/>
                 <path location="${build.lib.dir}/${servertest.jarname}-client.jar"/>

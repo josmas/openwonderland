@@ -124,9 +124,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // add the internal client, which handles traffic over the session
         // channel
         SessionInternalClient internal = new SessionInternalClient();
-        ClientRecord internalRecord = new ClientRecord(internal,
-                         SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
-        addClientRecord(internal, internalRecord.getClientID());
+        ClientRecord internalRecord = addClientRecord(internal);
+        setClientID(internalRecord, 
+                    SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
         
         // the internal client is always attached
         internal.attached(this);
@@ -227,37 +227,58 @@ public class WonderlandSessionImpl implements WonderlandSession {
             throw new AttachFailureException("Session not connected");
         }
         
-        // send a request to the server to attach the given client type
-        Message attachMessage = new AttachClientMessage(client.getClientType());
-        ResponseMessage response;
+        final ClientRecord record;
         
-        try {
-            response = getInternalClient().sendAndWait(attachMessage);
-        } catch (InterruptedException ie) {
-            throw new AttachFailureException("Interrupted", ie);
+        // check if there is already a client registered (or registering) for
+        // this client type
+        synchronized (clients) {
+            if (getClientRecord(client.getClientType()) != null) {
+                throw new AttachFailureException("Duplicate attach for " +
+                        "client type " + client.getClientType());
+            }
+            
+            // Add a client record.  Adding a client record at this early
+            // guarantees that there will only be one registration for the
+            // given type in progress at any time. If the attach fails
+            // for any reason, we have to make sure to clean this record
+            // up before we exit
+            record = addClientRecord(client);
         }
         
-        // handle the response
-        if (response instanceof AttachedClientMessage) {
-            AttachedClientMessage acm = (AttachedClientMessage) response;
-
-            // success - create a client record and add it to the map
-            addClientRecord(client, acm.getClientID());
-
-            // notify the client that it is now attached
-            client.attached(this);
+        // send a request to the server to attach the given client type
+        Message attachMessage = new AttachClientMessage(client.getClientType());
+        
+        // Create a listener to handle the response.  We cannot do this
+        // using just sendAndWait() because the response has to be
+        // processed immediately, otherwise messages received immediately
+        // after the response to this message will not be handled
+        // properly.
+        AttachResponseListener listener = new AttachResponseListener(record);
+        
+        // whether or not the attach attempt succeeded
+        boolean success = false;
+        
+        try {
+            getInternalClient().send(attachMessage, listener);
+            listener.waitForResponse();
             
+            // check for success -- if we didn't succeed for any reason,
+            // throw an exception
+            success = listener.isSuccess();
+            if (!success) {
+                // throw the relevant exception
+                throw listener.getException();
+            }
+                
             logger.fine(getName() + " attached succeeded for " + client);
-            
-        } else if (response instanceof ErrorMessage) {
-            // error -- throw an exception
-            ErrorMessage e = (ErrorMessage) response;
-            throw new AttachFailureException(e.getErrorMessage(),
-                                             e.getErrorCause());
-        } else {
-            // bad situation
-            throw new AttachFailureException("Unexpected response type: " +
-                    response);
+
+        } catch (InterruptedException ie) {
+            throw new AttachFailureException("Interrupted", ie);
+        } finally {
+            // clean up the client record if the attach failed
+            if (!success) {
+                removeClientRecord(client);
+            }
         }
     }
 
@@ -319,6 +340,11 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // CONNECTED
         if (client != getInternalClient() && getStatus() != Status.CONNECTED) {
             throw new IllegalStateException("Session not connected");
+        }
+        
+        // make sure the client is attached before we send
+        if (client.getStatus() != WonderlandClient.Status.ATTACHED) {
+            throw new IllegalStateException("Client not attached");
         }
         
         // get the record for the given client
@@ -443,20 +469,27 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /**
      * Add a client record to the map
      * @param client the client to add a record for
-     * @param clientID the id assigned by the server
+     * @return the newly added record
      */
-    protected void addClientRecord(WonderlandClient client, 
-                                   short clientID) 
-    {
-        logger.fine(getName() + " adding record for client " + client + 
-                    " as ID " + clientID);
+    protected ClientRecord addClientRecord(WonderlandClient client) {
+        logger.fine(getName() + " adding record for client " + client);
+        ClientRecord record = new ClientRecord(client);
+        clients.put(client.getClientType(), record);
+        return record;
+    }
+    
+    /**
+     * Set the client id of a given client
+     * @param record the record to set the id for
+     * @param clientID the id to set
+     */
+    protected void setClientID(ClientRecord record, short clientID) {
+        logger.fine(getName() + " setting client ID for " + record.toString() +
+                    " " + clientID);
         
-        // make sure adding both lists are synchronized together
         synchronized (clients) {
-            ClientRecord cr = new ClientRecord(client, clientID);
-        
-            clients.put(client.getClientType(), cr);
-            clientsByID.put(Short.valueOf(clientID), cr);
+            record.setClientID(clientID);
+            clientsByID.put(Short.valueOf(clientID), record);
         }
     }
     
@@ -765,9 +798,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
         /** the id of this client, as assigned by the server */
         private short clientID;
         
-        public ClientRecord(WonderlandClient client, short clientID) {
+        public ClientRecord(WonderlandClient client) {
             this.client = client;
-            this.clientID = clientID;
         }
         
         /**
@@ -777,7 +809,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         public WonderlandClient getClient() {
             return client;
         }
-
+        
         /**
          * Get the clientID for this client as sent by the server.  When
          * the client attaches a given protocol, the server assigns an ID
@@ -785,8 +817,16 @@ public class WonderlandSessionImpl implements WonderlandSession {
          * can determine which client they are intended for. 
          * @return the id of this client
          */
-        protected short getClientID() {
+        protected synchronized short getClientID() {
             return clientID;
+        }
+         
+        /**
+         * Set the client ID associated with this record
+         * @param clientID the client id to set
+         */
+        protected synchronized void setClientID(short clientID) {
+            this.clientID = clientID;
         }
         
         /**
@@ -922,4 +962,64 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
     }
     
+    /**
+     * Listen for responses to the attach() message.
+     */
+    class AttachResponseListener extends WaitResponseListener {
+        /** the record to update on success */
+        private ClientRecord record;
+        
+        /** whether or not we succeeded */
+        private boolean success = false;
+        
+        /** the exception if we failed */
+        private AttachFailureException exception;
+        
+        public AttachResponseListener(ClientRecord record) {
+            this.record = record;
+        }
+        
+        @Override
+        public void responseReceived(ResponseMessage response) {
+            if (response instanceof AttachedClientMessage) {
+                AttachedClientMessage acm = (AttachedClientMessage) response;
+
+                // set the client id
+                setClientID(record, acm.getClientID());
+                
+                // notify the client that we are now attached
+                record.getClient().attached(WonderlandSessionImpl.this);
+                
+                // success
+                setSuccess(true);
+            } else if (response instanceof ErrorMessage) {
+                // error -- throw an exception
+                ErrorMessage e = (ErrorMessage) response;
+                setException(new AttachFailureException(e.getErrorMessage(),
+                                                        e.getErrorCause()));
+            } else {
+                // bad situation
+                setException(new AttachFailureException("Unexpected response " +
+                                                        "type: " + response));
+            }
+            
+            super.responseReceived(response);
+        }
+        
+        public synchronized boolean isSuccess() {
+            return success;
+        }
+        
+        private synchronized void setSuccess(boolean success) {
+            this.success = success;
+        }
+        
+        public synchronized AttachFailureException getException() {
+            return exception;
+        }
+        
+        public synchronized void setException(AttachFailureException exception) {
+            this.exception = exception;
+        }
+    }
 }

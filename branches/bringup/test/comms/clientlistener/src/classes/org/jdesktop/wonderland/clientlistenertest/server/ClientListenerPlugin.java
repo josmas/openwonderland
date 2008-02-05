@@ -1,7 +1,9 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * $RCSfile:$
+ *
+ * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,22 +13,29 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * $Revision:$
+ * $Date:$
+ * $State:$
  */
 package org.jdesktop.wonderland.clientlistenertest.server;
 
-import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.clientlistenertest.common.TestClientType;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageOne;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageThree;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageTwo;
+import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.comms.ClientConnectionListener;
+import org.jdesktop.wonderland.server.comms.ClientHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSession;
 
 /**
  * Sample plugin that doesn't do anything
@@ -38,32 +47,61 @@ public class ClientListenerPlugin implements ServerPlugin {
     
     public void initialize() {
         CommsManager cm = WonderlandContext.getCommsManager();
-        cm.registerConnectionListener(new TestConnectionListener());
+        cm.registerClientHandler(new TestClientHandler());
     }
     
-    static class TestConnectionListener
-            implements ClientConnectionListener, Serializable 
+    static class TestClientHandler
+            implements ClientHandler, ManagedObject, Serializable
     {
+        private WonderlandClientChannel channel;
+        
+        public ClientType getClientType() {
+            return TestClientType.CLIENT_ONE_TYPE;
+        }
 
-        public void connected(ClientSession session) {
+        public void registered(WonderlandClientChannel channel) {
+            this.channel = channel;
+        }
+
+        public void clientAttached(WonderlandClientSession session) {
             logger.info("Session connected: " + session.getName());
             
             // send message over session channel
-            session.send(new TestMessageOne("TestOne").getBytes());
+            session.send(new TestMessageOne("TestOne"));
             
             // send message over all-clients channel
-            CommsManager cm = WonderlandContext.getCommsManager();
-            cm.sendToAllClients(new TestMessageTwo("TestTwo"));
+            channel.send(new TestMessageTwo("TestTwo"));
             
-            // send another message over session channel
-            session.send(new TestMessageThree("TestThree", 42).getBytes());
+            // now schedule a task to send more messages
+            AppContext.getTaskManager().scheduleTask(new SendTask(channel, 
+                                                                  session));
         }
 
-        public void disconnected(ClientSession session) {
-            logger.info("Session disconnected: " + session.getName());
+        public void messageReceived(WonderlandClientSession session, 
+                                    Message message)
+        {
+            // ignore
+        }
+
+        public void clientDetached(WonderlandClientSession session) {
+            // ignore
         }
         
+        static class SendTask implements Task, Serializable {
+            private WonderlandClientSession session;
+            private WonderlandClientChannel channel;
+            
+            public SendTask(WonderlandClientChannel channel, 
+                            WonderlandClientSession session) 
+            {
+                this.channel = channel;
+                this.session = session;
+            }
+
+            public void run() throws Exception {
+                channel.send(new TestMessageOne("TestOneFromTask"));
+                session.send(new TestMessageThree("TestThree", 42));
+            }   
+        }
     }
-    
-    
 }
