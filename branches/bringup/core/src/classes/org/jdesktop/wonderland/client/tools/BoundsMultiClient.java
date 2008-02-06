@@ -20,8 +20,12 @@
 package org.jdesktop.wonderland.client.tools;
 
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.FastMath;
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -55,6 +59,9 @@ public class BoundsMultiClient
         session.login(login);
         
         logger.info(getName() + " login succeeded");
+        
+        LocalAvatar avatar = session.getLocalAvatar();
+        new MoverThread(avatar).start();
     }
     
     public String getName() {
@@ -83,7 +90,7 @@ public class BoundsMultiClient
     public static void main(String[] args) {
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         
-        int count = 50;
+        int count = 10;
         
         BoundsMultiClient[] bmc = new BoundsMultiClient[count];
         
@@ -104,6 +111,38 @@ public class BoundsMultiClient
             Thread.sleep(60 * 60 * 1000);
         } catch (InterruptedException ie) {
         }
+    }
+
+    public void loadClientAvatar(CellID cellID, String className, BoundingVolume localBounds, CellID parentCellID, String channelName, CellTransform cellTransform, CellSetup setup) {
+    }
+    
+    class MoverThread extends Thread {
+        private Vector3f location = new Vector3f();
+        private Quaternion orientation = null;
+        private LocalAvatar avatar;
+        
+        public MoverThread(LocalAvatar avatar) {
+            this.avatar = avatar;
+            
+        }
+
+        public void run() {
+            while(true) {
+                randomPosition();
+                avatar.localMoveRequest(location, orientation);
+                try {
+                    sleep(1000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(BoundsMultiClient.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        
+        private void randomPosition() {
+            location.x = FastMath.rand.nextFloat()*50;
+            location.z = FastMath.rand.nextFloat()*50;
+        }
+        
     }
     
 }

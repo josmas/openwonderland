@@ -177,7 +177,7 @@ public class WFSCellMO extends CellMO
         
         /* Revalidate the entire world */
         if (init == false) {
-            WonderlandContext.getMasterCellCache().revalidate();
+            WonderlandContext.getCellManager().revalidate();
         }
     }
     
@@ -306,10 +306,8 @@ public class WFSCellMO extends CellMO
                 deletedCells.remove(canonical);
                 this.fileModifiedMap.put(canonical, modified);
                 
-                /* update the version number to notify the user cell caches 
-                   that the cell is modified */
-                /* TODO fix */
-                //glo.incrementVersion();
+		// Notify the cell that it's content has changed
+                ((MoveableCellMO)glo).contentChanged();
                 
                 logger.log(Level.INFO, "WFS Reload: cell id=" +
                     glo.getCellID() +

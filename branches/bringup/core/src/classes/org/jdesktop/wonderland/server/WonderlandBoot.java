@@ -60,7 +60,7 @@ public class WonderlandBoot implements AppListener, Serializable {
         }
         
         // load the initial world
-        WonderlandContext.getMasterCellCache().loadWorld();
+        WonderlandContext.getCellManager().loadWorld();
     }
     
     /**

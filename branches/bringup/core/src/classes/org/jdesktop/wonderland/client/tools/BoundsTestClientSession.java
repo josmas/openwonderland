@@ -20,8 +20,11 @@
 package org.jdesktop.wonderland.client.tools;
 
 import com.jme.bounding.BoundingVolume;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.*;
 import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
 import org.jdesktop.wonderland.client.cell.CellCacheClient.CellCacheMessageListener;
 import org.jdesktop.wonderland.client.comms.AttachFailureException;
@@ -29,6 +32,10 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
+import org.jdesktop.wonderland.client.tools.AvatarClient.AvatarMessageListener;
+import org.jdesktop.wonderland.common.cell.messages.AvatarCreateResponseMessage;
+import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 
 /**
  * An extension of WonderlandSession that attaches all the relevant
@@ -39,23 +46,32 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 public class BoundsTestClientSession extends WonderlandSessionImpl {
     
     /** the cell client */
-    private CellCacheClient cellClient;
+    private CellCacheClient cellCacheClient;
+    private AvatarClient avatarClient;
+    private LocalAvatar localAvatar;
     
-    public BoundsTestClientSession(WonderlandServerInfo serverInfo, CellCacheMessageListener messageListener) {
+    public BoundsTestClientSession(WonderlandServerInfo serverInfo, 
+            CellCacheMessageListener messageListener) {
         super (serverInfo);
         
-        cellClient = new CellCacheClient();
-        cellClient.addListener(messageListener);
+        
+        avatarClient = new AvatarClient();
+        localAvatar = new LocalAvatar(avatarClient);
+        avatarClient.addListener(localAvatar);
+
+        cellCacheClient = new CellCacheClient();
+        cellCacheClient.addListener(messageListener);
+        
     }
     
-    /** 
-     * Get the CellClient for sending cell messages 
-     * @return the cell client
+    /**
+     * Return the local avatar for this session
+     * @return
      */
-    public CellCacheClient getCellClient() {
-        return cellClient;
+    public LocalAvatar getLocalAvatar() {
+        return localAvatar;
     }
-
+    
     /**
      * Override the login message to attach clients after the login
      * succeeds.  If a client fails to attach, the login will be aborted and
@@ -71,9 +87,21 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
         // this will wait for login to succeed
         super.login(loginParams);
         
+        String AVATAR_ID = "DEFAULT";
+        
         // if login succeeds, attach the various clients
         try {
-            cellClient.attach(this);
+            avatarClient.attach(this);
+            AvatarCreateResponseMessage response = (AvatarCreateResponseMessage) 
+                    avatarClient.sendAndWait(AvatarMessage.newCreateMessage(AVATAR_ID));
+            localAvatar.setAvatarCellID(response.getAvatarCellID());
+            System.out.println("CREATED AVATAR "+response.getAvatarCellID());
+            
+            // Now attach to the cellCache and inform it what avatar to associate with
+            cellCacheClient.attach(this);
+            cellCacheClient.send(CellHierarchyMessage.newSetAvatarMessage(AVATAR_ID));
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BoundsTestClientSession.class.getName()).log(Level.SEVERE, null, ex);
         } catch (AttachFailureException afe) {
             // a client failed to attach -- logout
             disconnect();

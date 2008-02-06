@@ -21,6 +21,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -31,21 +32,21 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 public class MoveableCellMO extends CellMO implements CacheHelperInterface {
 
     private ArrayList<ManagedReference> listeners = null;
-    private ArrayList<ManagedReference> caches = new ArrayList<ManagedReference>();
+    private CopyOnWriteArrayList<ManagedReference> caches = new CopyOnWriteArrayList<ManagedReference>();
     
     @Override
     public void setTransform(CellTransform transform) {
         super.setTransform(transform);
         
         // Notify caches we have moved
-        synchronized(caches) {
-            for(ManagedReference ref : caches) 
-                ref.getForUpdate(CacheHelperListener.class).notifyTransformUpdate(this);
-        }
+        for(ManagedReference ref : caches) 
+            ref.getForUpdate(CacheHelperListener.class).notifyTransformUpdate(this);
+        
         // Notify listeners
-        if (listeners!=null)
+        if (listeners!=null) {
             for(ManagedReference listenerRef : listeners)
                 listenerRef.getForUpdate(CellMoveListener.class).cellMoved(this, transform);
+        }
     }
     
     /**
@@ -80,15 +81,11 @@ public class MoveableCellMO extends CellMO implements CacheHelperInterface {
     }
     
     public void addCache(CacheHelperListener cache) {
-        synchronized(caches) {
-            caches.add(AppContext.getDataManager().createReference(cache));
-        }
+        caches.add(AppContext.getDataManager().createReference(cache));
     }
 
     public void removeCache(CacheHelperListener cache) {
-        synchronized(caches) {
-            caches.remove(AppContext.getDataManager().createReference(cache));
-        }
+        caches.remove(AppContext.getDataManager().createReference(cache));
     }
     
     

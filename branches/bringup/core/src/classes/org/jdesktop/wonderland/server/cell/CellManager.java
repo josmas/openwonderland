@@ -33,7 +33,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -43,20 +42,20 @@ import org.jdesktop.wonderland.server.comms.CommsManager;
  * @author paulby
  */
 @ExperimentalAPI
-public class MasterCellCache implements ManagedObject, Serializable {
+public class CellManager implements ManagedObject, Serializable {
 
     // Used to generate unique cell ids
     private long cellCounter=0;
     private ManagedReference rootCellRef;
     private CellID rootCellID;
     
-    private static final String BINDING_NAME=MasterCellCache.class.getName();
+    private static final String BINDING_NAME=CellManager.class.getName();
     
     
     /**
-     * Creates a new instance of MasterCellCache
+     * Creates a new instance of CellManager
      */
-    MasterCellCache() {
+    CellManager() {
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
         createRootCell();
     }
@@ -88,7 +87,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
      * Initialize the master cell cache
      */
     public static void initialize() {
-        new MasterCellCache();
+        new CellManager();
         
         // register the cell message listener
         CommsManager cm = WonderlandContext.getCommsManager();
@@ -96,14 +95,17 @@ public class MasterCellCache implements ManagedObject, Serializable {
         
         // Register the cell cache message handler
         cm.registerClientHandler(new CellCacheClientHandler());
+        
+        // Register the avatar message handler
+        cm.registerClientHandler(new AvatarClientHandler());
     }
     
     /**
      * Return singleton master cell cache
      * @return the master cell cache
      */
-    public static MasterCellCache getMasterCellCache() {
-        return AppContext.getDataManager().getBinding(BINDING_NAME, MasterCellCache.class);                
+    public static CellManager getCellManager() {
+        return AppContext.getDataManager().getBinding(BINDING_NAME, CellManager.class);                
     }
     
 
@@ -158,7 +160,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
                     cell.setLocalBounds(gridBounds);
                     addCell(cell);
                 } catch (MultipleParentException ex) {
-                    Logger.getLogger(MasterCellCache.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(CellManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -170,7 +172,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
      * For testing.....
      */
     public void loadWorld() {
-        createStaticGrid();
+//        createStaticGrid();
         
         try {
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
@@ -239,7 +241,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
 //            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
             
         } catch (Exception ex) {
-            Logger.getLogger(MasterCellCache.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CellManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -364,6 +366,7 @@ public class MasterCellCache implements ManagedObject, Serializable {
             }
     
     }
+    
     /**
      * Return a new Create cell message
      */
@@ -376,6 +379,28 @@ public class MasterCellCache implements ManagedObject, Serializable {
         }
         
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
+            cell.getClientCellClassName(),
+            cell.getLocalBounds(),
+            cell.getCellID(),
+            parent,
+            cell.getCellChannelName(),
+            cell.getTransform(),
+            cell.getSetupData()
+            );
+    }
+    
+    /**
+     * Return a new Create cell message
+     */
+    public static CellHierarchyMessage newLoadLocalAvatarMessage(AvatarMO cell) {
+        CellID parent=null;
+        
+        CellMO p = cell.getParent();
+        if (p!=null) {
+            parent = p.getCellID();
+        }
+        
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CLIENT_AVATAR,
             cell.getClientCellClassName(),
             cell.getLocalBounds(),
             cell.getCellID(),

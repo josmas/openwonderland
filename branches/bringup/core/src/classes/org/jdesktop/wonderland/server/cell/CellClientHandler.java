@@ -81,8 +81,8 @@ class CellClientHandler implements ClientHandler, Serializable {
                                 ClientSessionId sessionId,
                                 CellMessage message) 
     {
-        // get the MasterCellCache
-        MasterCellCache mcc = WonderlandContext.getMasterCellCache();
+        // get the CellManager
+        CellManager mcc = WonderlandContext.getCellManager();
         
         // find the appropriate cell
         CellMO cell = mcc.getCell(message.getCellID());
