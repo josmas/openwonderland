@@ -99,6 +99,11 @@ public class BoundsMultiClient
             }
         }
         
+        // wait 
+        try {
+            Thread.sleep(60 * 60 * 1000);
+        } catch (InterruptedException ie) {
+        }
     }
     
 }
