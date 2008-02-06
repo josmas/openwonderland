@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.UserMO;
 
@@ -38,12 +41,14 @@ public class AvatarMO extends MoveableCellMO {
     public AvatarMO(UserMO user) {
         this.userRef = AppContext.getDataManager().createReference(user);
 //        addCellMoveListener(new AvatarMoveListener());
+        setTransform(new CellTransform(null, new Vector3f()));
+        setLocalBounds(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()));
     }
     
     public UserMO getUser() {
         return userRef.get(UserMO.class);
     }
-
+    
     /**
      * Return the avatar cell cache managed object for this avatar
      * @return

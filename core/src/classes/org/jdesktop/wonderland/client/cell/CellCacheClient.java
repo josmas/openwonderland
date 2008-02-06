@@ -81,7 +81,7 @@ public class CellCacheClient extends BaseClient {
      * 
      * @param message the cell message to send
      */
-    public void send(CellMessage message) {
+    public void send(CellHierarchyMessage message) {
         super.send(message);
     }
     
@@ -94,7 +94,7 @@ public class CellCacheClient extends BaseClient {
      * @param listener the response listener to notify when a response
      * is received.
      */
-    public void send(CellMessage message, ResponseListener listener) {
+    public void send(CellHierarchyMessage message, ResponseListener listener) {
         super.send(message, listener);
     }
     
@@ -145,6 +145,23 @@ public class CellCacheClient extends BaseClient {
                     l.setRootCell(msg.getCellID());
                 }
                 break;
+            case UNLOAD_CELL :
+                for(CellCacheMessageListener l : listeners) {
+                    l.unloadCell(msg.getCellID());
+                }
+                break;
+                
+//            case LOAD_CLIENT_AVATAR :
+//                for(CellCacheMessageListener l : listeners) {
+//                    l.loadClientAvatar(msg.getCellID(),
+//                                msg.getCellClassName(),
+//                                msg.getLocalBounds(),
+//                                msg.getParentID(),
+//                                msg.getCellChannelName(),
+//                                msg.getCellTransform(),
+//                                msg.getSetupData());
+//                }
+//                
             default :
                 logger.warning("Message type not implemented "+msg.getActionType());
         }
@@ -219,7 +236,23 @@ public class CellCacheClient extends BaseClient {
                                String channelName,
                                CellTransform cellTransform,
                                CellSetup setup);
-        
+        /**
+         * Load the avatar for this client
+         * @param cellID
+         * @param className
+         * @param localBounds
+         * @param parentCellID
+         * @param channelName
+         * @param cellTransform
+         * @param setup
+         */
+//        public void loadClientAvatar(CellID cellID, 
+//                               String className, 
+//                               BoundingVolume localBounds,
+//                               CellID parentCellID,
+//                               String channelName,
+//                               CellTransform cellTransform,
+//                               CellSetup setup);
         /**
          * Unload the cell. This removes the cell from memory but will leave
          * cell data cached on the client
@@ -238,4 +271,5 @@ public class CellCacheClient extends BaseClient {
         public void moveCell(CellID cellID,
                              CellTransform cellTransform);
     }
+    
 }

@@ -82,7 +82,7 @@ public class CellMO extends WonderlandMO {
     public CellMO(BoundingVolume localBounds, CellTransform transform) {
         assert(localBounds!=null);
         
-        cellID = WonderlandContext.getMasterCellCache().createCellID(this);
+        cellID = WonderlandContext.getCellManager().createCellID(this);
         this.transform = transform;
         setLocalBounds(localBounds);
     }
@@ -339,7 +339,7 @@ public class CellMO extends WonderlandMO {
             try {
                 BoundsHandler.get().createBounds(this);
                 if (getParent()!=null) { // Root cell has a null parent
-                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
+//                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
                     BoundsHandler.get().addChild(getParent(), this);
                 }
             } catch (MultipleParentException ex) {

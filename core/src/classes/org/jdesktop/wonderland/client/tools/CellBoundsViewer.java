@@ -23,11 +23,13 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.tools.AvatarClient.AvatarMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -43,6 +45,11 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     
     private BoundsTestClientSession session;
     
+    private LocalAvatar localAvatar;
+    
+    private Vector3f location = new Vector3f();
+    private static final float STEP = 2f;
+    
     /** Creates new form CellBoundsViewer */
     public CellBoundsViewer(String[] args) {
         BoundsPanel boundsPanel;
@@ -56,7 +63,10 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         LoginParameters loginParams = new LoginParameters("foo"+userNum, "test".toCharArray());
         
         // create a session
-        session = new BoundsTestClientSession(server, boundsPanel);
+        session = new BoundsTestClientSession(server, 
+                boundsPanel);
+        
+        localAvatar = session.getLocalAvatar();
                 
         try {
             session.login(loginParams);
@@ -72,8 +82,14 @@ public class CellBoundsViewer extends javax.swing.JFrame {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         centerPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        leftB = new javax.swing.JButton();
+        rightB = new javax.swing.JButton();
+        forwardB = new javax.swing.JButton();
+        backwardB = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         exitMI = new javax.swing.JMenuItem();
@@ -83,6 +99,56 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         setMinimumSize(new java.awt.Dimension(640, 480));
 
         centerPanel.setLayout(new java.awt.BorderLayout());
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        leftB.setText("Left");
+        leftB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                leftBActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        jPanel1.add(leftB, gridBagConstraints);
+
+        rightB.setText("Right");
+        rightB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rightBActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel1.add(rightB, gridBagConstraints);
+
+        forwardB.setText("Forward");
+        forwardB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                forwardBActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        jPanel1.add(forwardB, gridBagConstraints);
+
+        backwardB.setText("Backward");
+        backwardB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backwardBActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        jPanel1.add(backwardB, gridBagConstraints);
+
+        centerPanel.add(jPanel1, java.awt.BorderLayout.PAGE_END);
+
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
         jMenu1.setText("File");
@@ -108,6 +174,28 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMIActionPerformed
         System.exit(0);
     }//GEN-LAST:event_exitMIActionPerformed
+
+    private void leftBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_leftBActionPerformed
+        location.x -= STEP;
+        localAvatar.localMoveRequest(location, null);
+}//GEN-LAST:event_leftBActionPerformed
+
+    private void rightBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rightBActionPerformed
+        location.x += STEP;
+        localAvatar.localMoveRequest(location, null);
+    }//GEN-LAST:event_rightBActionPerformed
+
+    private void backwardBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardBActionPerformed
+        location.z += STEP;
+        localAvatar.localMoveRequest(location, null);
+
+    }//GEN-LAST:event_backwardBActionPerformed
+
+    private void forwardBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardBActionPerformed
+        location.z -=STEP;
+        localAvatar.localMoveRequest(location, null);
+
+    }//GEN-LAST:event_forwardBActionPerformed
     
     
     class BoundsPanel extends JPanel implements CellCacheClient.CellCacheMessageListener {
@@ -257,6 +345,11 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             
             repaint();
         }
+
+        public void loadClientAvatar(CellID cellID, String className, BoundingVolume localBounds, CellID parentCellID, String channelName, CellTransform cellTransform, CellSetup setup) {
+            loadCell(cellID, className, localBounds, parentCellID, channelName, cellTransform, setup);
+            System.out.println("CellBoundsViewer.loadClientAvatar GOT LOCAL AVATAR "+cellID);
+        }
         
     }
     
@@ -273,11 +366,16 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     
    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton backwardB;
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenuItem exitMI;
+    private javax.swing.JButton forwardB;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton leftB;
+    private javax.swing.JButton rightB;
     // End of variables declaration//GEN-END:variables
     
 }

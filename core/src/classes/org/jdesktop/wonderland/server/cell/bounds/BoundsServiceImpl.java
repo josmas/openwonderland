@@ -228,7 +228,6 @@ public class BoundsServiceImpl implements BoundsService {
      * @param childAdded
      */
     public void childrenChanged(CellID parentID, CellID childID, boolean childAdded) {
-        System.out.println("childrenChanged "+parentID);
         synchronized(bounds) {
             if (childAdded) {
                 transformTreeUpdate(getCellBounds(parentID), getCellBounds(childID));
