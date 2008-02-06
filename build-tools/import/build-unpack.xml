@@ -76,7 +76,7 @@
     </target>
 
     <target name="unpack-ext"
-	depends="unpack-jme, unpack-j3d, unpack-jai,unpack-jai-iio,unpack-jmf,unpack-joal,unpack-jogl,unpack-jinput,unpack-fobs,unpack-xremwin,unpack-xvfb-xorg,unpack-xorgxset,unpack-sgs,unpack-lg3d,unpack-escher,unpack-audio-jar">
+	depends="unpack-jme, unpack-jai,unpack-jai-iio,unpack-jmf,unpack-joal,unpack-jogl,unpack-jinput,unpack-fobs,unpack-xremwin,unpack-xvfb-xorg,unpack-xorgxset,unpack-sgs,unpack-lg3d,unpack-escher,unpack-audio-jar">
 	<chmod perm="ugo+x" dir="${os.javaext.dir}/bin" includes="*"/>
     </target>
 
