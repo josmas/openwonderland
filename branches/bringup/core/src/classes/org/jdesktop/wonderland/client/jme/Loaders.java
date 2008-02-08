@@ -37,7 +37,6 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.JmeTest;
 
 /**
  *
@@ -53,7 +52,7 @@ public class Loaders {
         try {
             ResourceLocatorTool.addResourceLocator(
                     ResourceLocatorTool.TYPE_TEXTURE,
-                    new SimpleResourceLocator(JmeTest.class.getClassLoader().getResource(
+                    new SimpleResourceLocator(Loaders.class.getClassLoader().getResource(
                     "org/jdesktop/wonderland/client/resources/collada/")));
         } catch (URISyntaxException e1) {
             logger.warning("Unable to add texture directory to RLT: " + e1.toString());
