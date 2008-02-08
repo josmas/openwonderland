@@ -312,7 +312,7 @@
     </target>
     
     <target name="run-jmetest" depends="jar-client">
-        <java classname="org.jdesktop.wonderland.client.jme.Lesson5" fork="true">
+        <java classname="org.jdesktop.wonderland.client.jme.WonderlandJmeClient" fork="true">
             <!--<jvmarg value="-agentpath:/usr/local/netbeans/profiler2/lib/deployed/jdk15/linux/libprofilerinterface.so=/usr/local/netbeans/profiler2/lib,5140"/>
             -->
             <jvmarg value="-client"/>
@@ -339,6 +339,19 @@
         </java>
     </target>
 
+    <target name="run-multibounds" depends="jar-client">
+        <java classname="org.jdesktop.wonderland.client.tools.BoundsMultiClient" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <!--<jvmarg value="-Xincgc"/>-->
+            <jvmarg value="-Xms32m"/>
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+    
     <target name="run-collada2jme" depends="jar-client">
         <java classname="com.jmex.model.collada.ColladaToJme" fork="true">
             <jvmarg value="-client"/>
