@@ -64,6 +64,8 @@ public class CellMO extends WonderlandMO {
     private Channel cellChannel = null;
     private String channelName =null;
     
+    private long transformVersion = Long.MIN_VALUE;
+    
     protected static Logger logger = Logger.getLogger(CellMO.class.getName());
     
     /**
@@ -274,7 +276,12 @@ public class CellMO extends WonderlandMO {
         
         if (live) {
             BoundsHandler.get().cellTransformChanged(cellID, transform);
+            transformVersion++;
         }
+    }
+    
+    public long getTransformVersion() {
+        return transformVersion;
     }
     
     /**
@@ -466,7 +473,7 @@ public class CellMO extends WonderlandMO {
      * @param monitor The performance monitor
      * @return A list of visible cells
      */
-    public Collection<CellID> getVisibleCells(BoundingVolume bounds, UserPerformanceMonitor monitor) {
+    public Collection<CellMirror> getVisibleCells(BoundingVolume bounds, UserPerformanceMonitor monitor) {
         if (!live)
             throw new RuntimeException("Cell is not live");
         

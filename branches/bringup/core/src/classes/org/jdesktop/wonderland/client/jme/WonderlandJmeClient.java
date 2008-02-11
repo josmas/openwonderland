@@ -20,11 +20,14 @@ package org.jdesktop.wonderland.client.jme;
 import com.jme.app.BaseGame;
 import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
+import com.jme.input.AbsoluteMouse;
 import com.jme.input.ChaseCamera;
 import com.jme.input.InputHandler;
 import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
+import com.jme.input.MouseInput;
 import com.jme.input.thirdperson.ThirdPersonMouseLook;
+import com.jme.intersection.BoundingPickResults;
 import com.jme.light.DirectionalLight;
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -33,17 +36,20 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.Skybox;
 import com.jme.scene.shape.Box;
+import com.jme.scene.state.AlphaState;
 import com.jme.scene.state.CullState;
 import com.jme.scene.state.LightState;
+import com.jme.scene.state.TextureState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.system.DisplaySystem;
 import com.jme.system.JmeException;
 import com.jme.util.TextureManager;
-import com.jme.util.Timer;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.JmeTest;
 import org.jdesktop.wonderland.client.jme.WonderlandJmeClient.PendingModuleAction.Action;
 
 /**
@@ -161,6 +167,8 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         // Gather rendering stats
         display.getRenderer().enableStatistics(true);
 
+        // Enable hardware cursor
+        MouseInput.get().setCursorVisible(true);
     }
 
     @Override
@@ -190,8 +198,11 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         addModule(avatarModule);
         
         addModule(new ChaseCameraModule(avatarModule));
+//        addModule(new CursorModule(avatarModule));
         
         addModule(new HUDModule());
+        
+        addModule(new CellModule());
         
         // update the scene graph for rendering
         renderInfo.getRoot().updateGeometricState(0.0f, true);
@@ -352,13 +363,12 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
                 b.setModelBound(new BoundingBox());
                 b.updateModelBound();
 
-                avatarRoot = new Node("Player Node");
+                avatarRoot = new Node("Avatar Node");
                 avatarRoot.setLocalTranslation(new Vector3f(0, 0, 0));
                 info.getRoot().attachChild(avatarRoot);
                 avatarRoot.attachChild(b);
 //                avatarRoot.attachChild(a);
                 avatarRoot.updateWorldBound();
-                logger.severe("PLAYER BOUNDS "+avatarRoot.getWorldBound());
                 
                 input = new WonderlandDefaultHandler(avatarRoot, properties.getRenderer());
             } catch (Exception ex) {
@@ -375,6 +385,10 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
          */
         public Node getAvatarRoot() {
             return avatarRoot;
+        }
+        
+        public InputHandler getInputHandler() {
+            return input;
         }
 
         public void render(RenderInfo info, float interpolation) {
@@ -414,6 +428,61 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         public void render(RenderInfo info, float interpolation) {
             // Nothing to do
         }
+        
+    }
+    
+    public class CursorModule implements RenderModule {
+
+        private BoundingPickResults pr;
+        private AbsoluteMouse am;
+        private InputHandler input;
+        
+        public CursorModule(AvatarModule avatarModule) {
+            input = avatarModule.getInputHandler();
+        }
+        
+        public void init(RenderInfo info) {
+            pr = new BoundingPickResults();
+            display = DisplaySystem.getDisplaySystem();
+
+            // Create a new mouse. Restrict its movements to the display screen.
+            am = new AbsoluteMouse("The Mouse", display.getWidth(), display
+                    .getHeight());
+
+            // Get a picture for my mouse.
+            TextureState ts = display.getRenderer().createTextureState();
+            URL cursorLoc = JmeTest.class.getClassLoader().getResource(
+                    "org/jdesktop/wonderland/client/resources/cursor1.png" );
+            Texture t = TextureManager.loadTexture(cursorLoc, Texture.MM_LINEAR,
+                    Texture.FM_LINEAR);
+            ts.setTexture(t);
+            am.setRenderState(ts);
+
+            // Make the mouse's background blend with what's already there
+            AlphaState as = display.getRenderer().createAlphaState();
+            as.setBlendEnabled(true);
+            as.setSrcFunction(AlphaState.SB_SRC_ALPHA);
+            as.setDstFunction(AlphaState.DB_ONE_MINUS_SRC_ALPHA);
+            as.setTestEnabled(true);
+            as.setTestFunction(AlphaState.TF_GREATER);
+            am.setRenderState(as);
+
+            // Get the mouse input device and assign it to the AbsoluteMouse
+            // Move the mouse to the middle of the screen to start with
+            am.setLocalTranslation(new Vector3f(display.getWidth() / 2, display
+                    .getHeight() / 2, 0));
+            // Assign the mouse to an input handler
+            am.registerWithInputHandler( input );
+            
+        }
+
+        public void update(RenderInfo info, float interpolation) {
+            // do nothing
+        }
+
+        public void render(RenderInfo info, float interpolation) {
+            // do nothing
+         }
         
     }
     

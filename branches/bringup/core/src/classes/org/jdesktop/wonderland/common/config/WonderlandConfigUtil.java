@@ -60,12 +60,8 @@ public class WonderlandConfigUtil implements Serializable {
             return homeDir + ".wonderland-"+System.getProperty("wonderland.benchmark");
         }       
             
-        if (System.getProperty("wl.serverMasterClient", "false").equalsIgnoreCase("true")) {
-            return homeDir + ".wonderland-smc";
-        }
-        
-        if (System.getProperty("wonderland.dir")!=null) {
-            return homeDir+System.getProperty("wonderland.dir");
+        if (System.getProperty("wonderland.user.dir")!=null) {
+            return System.getProperty("wonderland.user.dir");
         }
         
         return homeDir + ".wonderland";

@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.CellMirror;
 
 /**
  *
@@ -34,16 +35,16 @@ public class BoundsManagerImpl implements BoundsManager {
         this.service = service;
     }
 
-    public CellMirror getCellBounds(CellID cellID) {
-        return service.getCellBounds(cellID);
+    public CellMirrorImpl getCellMirrorImpl(CellID cellID) {
+        return service.getCellMirrorImpl(cellID);
     }
     
-    public void putCellBounds(CellMirror cellBounds) {
-        service.putCellBounds(cellBounds);
+    public void putCellMirrorImpl(CellMirrorImpl cellBounds) {
+        service.putCellMirrorImpl(cellBounds);
     }
     
-    public void removeCellBounds(CellID cellID) {
-        service.removeCellBounds(cellID);
+    public void removeCellMirrorImpl(CellID cellID) {
+        service.removeCellMirrorImpl(cellID);
     }
 
     public void cellTransformChanged(CellID cellID, CellTransform transform) {
@@ -54,7 +55,7 @@ public class BoundsManagerImpl implements BoundsManager {
         service.cellBoundsChanged(cellID, bounds);
     }
 
-    public Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
+    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
         return service.getVisibleCells(rootCell, bounds, perfMonitor);
     }
 
