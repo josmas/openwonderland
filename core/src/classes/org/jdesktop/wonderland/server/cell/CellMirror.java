@@ -17,23 +17,24 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.app.ManagedObject;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- *
+ * A mirror of a cell from the Bounds service
+ * 
  * @author paulby
  */
-public interface CacheHelperListener extends ManagedObject {
-
-    /**
-     * The cell is notifying the cache that its transform has changed
-     * @param cell
-     */
-    public void notifyTransformUpdate(CellMO cell);
+public interface CellMirror {
     
     /**
-     * The contents of the cell have changed
-     * @param cell
+     * Returns the cell ID
+     * @return
      */
-    public void notifyContentUpdate(CellMO cell);
+    public CellID getCellID();
+    
+    /**
+     * Return the version number of the cells transform
+     * @return
+     */
+    public long getTransformVersion();
 }

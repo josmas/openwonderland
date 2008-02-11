@@ -26,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.DigestOutputStream;
@@ -119,19 +121,27 @@ public class AssetManager {
                     } else {
                         Asset tmp = assetDB.getAsset(filename);
         
+                        logger.warning("CHECK LOCAL CACHE found "+tmp);
                         if (tmp==null) {
                             // Asset is not in local cache, so get if from the server
                             asset = downloadFromServer(assetType, repository, filename);
                         } else {
-                            if (checksum.equals(tmp.getLocalChecksum())) {
+                            if (checksum==null || checksum.equals(tmp.getLocalChecksum())) {
                                 // Asset is in cache, so load it from there
                                 logger.info("Asset in local cache");
                                 asset = tmp;
-
+                                try {
+                                    asset.setLocalCacheFile(new File(new URL(cacheDir.toURI().toURL().toExternalForm() + "/" + asset.getFilename()).toURI()));
+                                } catch(MalformedURLException e) {
+                                    logger.log(Level.WARNING, "Cache problem ", e);
+                                } catch(URISyntaxException e) {
+                                    logger.log(Level.WARNING, "Cache problem ", e);                                    
+                                }
                                 AssetLoader loader = new AssetLoader(asset, false);
                                 loadingAssets.put(filename, loader);
 
-                                localloadService.submit(loader);
+                                Future f = localloadService.submit(loader);
+                                loader.setFuture(f);
                             } else {
                                 // Local cache is out of date, get from server
                                 logger.info("Asset checksum out of date");
@@ -157,6 +167,9 @@ public class AssetManager {
             if (loader == null) {
                 return true;
             }
+            
+            System.out.println("Loader "+loader);
+            System.out.println("Future "+loader.getFuture());
             Object o = loader.getFuture().get();
             
             if (o==null) {
@@ -227,8 +240,7 @@ public class AssetManager {
             case FILE :
                 return new AssetFile(repository, filename);
             case IMAGE :
-                throw new RuntimeException("NOT IMPLEMENTED");
-//                return new AssetImageComponent2DURL(repository, filename);
+                return new AssetImage(repository, filename);
             case MODEL :
                 return new AssetBranchGroup(repository, filename);
             case OTHER :

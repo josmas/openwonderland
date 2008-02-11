@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * 
  * @author paulby
  */
-public class MoveableCellMO extends CellMO implements CacheHelperInterface {
+public class MoveableCellMO extends CellMO {
 
     private ArrayList<ManagedReference> listeners = null;
     private CopyOnWriteArrayList<ManagedReference> caches = new CopyOnWriteArrayList<ManagedReference>();
@@ -38,10 +38,6 @@ public class MoveableCellMO extends CellMO implements CacheHelperInterface {
     public void setTransform(CellTransform transform) {
         super.setTransform(transform);
         
-        // Notify caches we have moved
-        for(ManagedReference ref : caches) 
-            ref.getForUpdate(CacheHelperListener.class).notifyTransformUpdate(this);
-        
         // Notify listeners
         if (listeners!=null) {
             for(ManagedReference listenerRef : listeners)
@@ -49,12 +45,12 @@ public class MoveableCellMO extends CellMO implements CacheHelperInterface {
         }
     }
     
+    
     /**
      * Notify the client that the contents of the cell have changed
      */
     public void contentChanged() {
-        for(ManagedReference ref : caches) 
-            ref.getForUpdate(CacheHelperListener.class).notifyContentUpdate(this);        
+        logger.severe("MoveableCellMO.contentChanged NOT IMPLEMENTED");
     }
     
     /**
@@ -64,12 +60,12 @@ public class MoveableCellMO extends CellMO implements CacheHelperInterface {
      * 
      * @param listener
      */
-    public void addCellMoveListener(CellMoveListener listener) {
-        if (listeners==null)
-            listeners = new ArrayList<ManagedReference>();
-        
-        listeners.add(AppContext.getDataManager().createReference(listener));
-    }
+//    public void addCellMoveListener(CellMoveListener listener) {
+//        if (listeners==null)
+//            listeners = new ArrayList<ManagedReference>();
+//        
+//        listeners.add(AppContext.getDataManager().createReference(listener));
+//    }
     
     /**
      * Remove the CellMoveListener
@@ -79,16 +75,7 @@ public class MoveableCellMO extends CellMO implements CacheHelperInterface {
         if (listeners!=null)
             listeners.remove(AppContext.getDataManager().createReference(listener));
     }
-    
-    public void addCache(CacheHelperListener cache) {
-        caches.add(AppContext.getDataManager().createReference(cache));
-    }
-
-    public void removeCache(CacheHelperListener cache) {
-        caches.remove(AppContext.getDataManager().createReference(cache));
-    }
-    
-    
+       
     public interface CellMoveListener extends ManagedObject {
         public void cellMoved(MoveableCellMO cell, CellTransform transform);
     }

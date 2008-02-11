@@ -93,6 +93,7 @@ class AvatarClientHandler implements ClientHandler, Serializable {
         switch(message.getActionType()) {
             case MOVE_REQUEST :
                 AvatarMO avatar = (AvatarMO) CellManager.getCell(message.getCellID());
+                AppContext.getDataManager().markForUpdate(avatar);
                 avatar.setTransform(new CellTransform(message.getOrientation(), message.getLocation()));
                 break;
             case MOVED :

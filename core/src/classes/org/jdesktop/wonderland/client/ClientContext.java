@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client;
 
+import org.jdesktop.wonderland.client.datamgr.AssetManager;
+
 /**
  *
  * @author paulby

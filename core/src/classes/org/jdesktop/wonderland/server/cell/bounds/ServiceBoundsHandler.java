@@ -39,9 +39,9 @@ public class ServiceBoundsHandler extends BoundsHandler {
     public ServiceBoundsHandler() {
     }
     
-    private CellMirror get(CellID cellID) {
+    private CellMirrorImpl get(CellID cellID) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
-        return mgr.getCellBounds(cellID);
+        return mgr.getCellMirrorImpl(cellID);
     }
     
     /**
@@ -106,13 +106,13 @@ public class ServiceBoundsHandler extends BoundsHandler {
     @Override
     public void createBounds(CellMO cell) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
-        mgr.putCellBounds(new CellMirror(cell));
+        mgr.putCellMirrorImpl(new CellMirrorImpl(cell));
     }
 
     @Override
     public void removeBounds(CellMO cell) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
-        mgr.removeCellBounds(cell.getCellID());
+        mgr.removeCellMirrorImpl(cell.getCellID());
     }
 
     @Override
@@ -128,7 +128,7 @@ public class ServiceBoundsHandler extends BoundsHandler {
     }
 
     @Override
-    public Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
+    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
         return mgr.getVisibleCells(rootCell, bounds, perfMonitor);
     }

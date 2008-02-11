@@ -321,27 +321,36 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         }
 
         public void unloadCell(CellID cellID) {
-            cells.remove(cellID);
+            synchronized(cells) {
+                cells.remove(cellID);
+            }
             repaint();
         }
 
         public void deleteCell(CellID cellID) {
-            cells.remove(cellID);
+            synchronized(cells) {
+                cells.remove(cellID);
+            }
             repaint();
         }
 
         public void setRootCell(CellID cellID) {
-            rootCell = cells.get(cellID);
+            synchronized(cells) {
+                rootCell = cells.get(cellID);
+            }
         }
 
         public void moveCell(CellID cellID, CellTransform cellTransform) {
-            Cell cell = cells.get(cellID);
-            cell.setTransform(cellTransform);
+            synchronized(cells) {
+                Cell cell = cells.get(cellID);
             
-            CellTransform l2vw = cell.getLocalToVWorld();
-            BoundingVolume vwBounds = cell.getLocalBounds();
-            l2vw.transform(vwBounds);
-            cell.setCachedVWBounds(vwBounds);
+                cell.setTransform(cellTransform);
+
+                CellTransform l2vw = cell.getLocalToVWorld();
+                BoundingVolume vwBounds = cell.getLocalBounds();
+                l2vw.transform(vwBounds);
+                cell.setCachedVWBounds(vwBounds);
+            }
             
             repaint();
         }

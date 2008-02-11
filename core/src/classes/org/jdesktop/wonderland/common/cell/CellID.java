@@ -29,12 +29,14 @@ import java.nio.ByteBuffer;
 public class CellID implements Serializable {
     
     long id;
+    private String str;
     
     /**
      * Creates a new instance of CellID
      */
     public CellID(long id) {
         this.id = id;
+        str = Long.toString(id);
     }
     
     @Override
@@ -52,7 +54,7 @@ public class CellID implements Serializable {
     
     @Override
     public String toString() {
-        return Long.toString(id);
+        return str;
     }
     
     /**

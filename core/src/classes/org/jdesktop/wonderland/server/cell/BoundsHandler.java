@@ -127,7 +127,7 @@ public abstract class BoundsHandler {
      */
     public abstract void cellBoundsChanged(CellID cellID, BoundingVolume bounds);
     
-    public abstract Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor);
+    public abstract Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor);
  
     /**
      * 
@@ -139,7 +139,7 @@ public abstract class BoundsHandler {
      * returns only cells of cellClass.
      * @return
      */
-    public Collection<CellID> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor, Class cellClass, boolean reportSubclasses) {
+    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor, Class cellClass, boolean reportSubclasses) {
         throw new RuntimeException("Not Implemented");
     }
  

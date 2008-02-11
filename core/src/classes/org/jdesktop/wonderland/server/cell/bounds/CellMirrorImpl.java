@@ -36,24 +36,34 @@ import org.jdesktop.wonderland.server.UserPerformanceMonitor;
  * 
  * @author paulby
  */
-public class CellMirror {
+public class CellMirrorImpl implements CellMirror {
 
     private BoundingVolume computedWorldBounds;
     private BoundingVolume localBounds;
     private CellTransform localToVWorld;
     private CellID cellID;
     private CellTransform transform;
+    private long transformVersion;
     private Class cellClass;
     
-    private CellMirror parent;
-    private ArrayList<CellMirror> children = null;
-    private static Logger logger = Logger.getLogger(CellMirror.class.getName());
+    private CellMirrorImpl parent;
+    private ArrayList<CellMirrorImpl> children = null;
+    private static Logger logger = Logger.getLogger(CellMirrorImpl.class.getName());
     
-    CellMirror(CellMO cell) {
+    CellMirrorImpl(CellMO cell) {
         cellID = cell.getCellID();
         localBounds = cell.getLocalBounds();
         transform = cell.getTransform();
         cellClass = cell.getClass();
+    }
+    
+    /**
+     * Create new CellMirror from the provided mirror
+     * @param mirror
+     */
+    CellMirrorImpl(CellMirror mirror) {
+        this.cellID = mirror.getCellID();
+        this.transformVersion = mirror.getTransformVersion();
     }
     
     /**
@@ -116,6 +126,7 @@ public class CellMirror {
     
     public void setTransform(CellTransform transform) {
         this.transform = (CellTransform) transform.clone();
+        transformVersion++;
     }
     
     public CellTransform getTransform() {
@@ -137,9 +148,9 @@ public class CellMirror {
      * @param child
      * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
      */
-    public void addChild(CellMirror child) throws MultipleParentException {
+    public void addChild(CellMirrorImpl child) throws MultipleParentException {
         if (children==null)
-            children = new ArrayList<CellMirror>();
+            children = new ArrayList<CellMirrorImpl>();
         
         children.add(child);
         child.setParent(this);
@@ -149,7 +160,7 @@ public class CellMirror {
      * Remove the specified
      * @param child
      */
-    public void removeChild(CellMirror child) {
+    public void removeChild(CellMirrorImpl child) {
             if (children == null) {
                 return;
             }
@@ -159,7 +170,7 @@ public class CellMirror {
                 } catch (MultipleParentException ex) {
                     // Should never get here, setting a null parent does not
                     // throw this exception
-                    Logger.getLogger(CellMirror.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(CellMirrorImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
     }
@@ -169,9 +180,9 @@ public class CellMirror {
      * 
      * @return
      */
-    public Iterator<CellMirror> getAllChildren() {
+    public Iterator<CellMirrorImpl> getAllChildren() {
         if (children==null)
-            return new ArrayList<CellMirror>().iterator();
+            return new ArrayList<CellMirrorImpl>().iterator();
         return children.iterator();
     }
     
@@ -182,7 +193,7 @@ public class CellMirror {
      * @param parent
      * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
      */
-    void setParent(CellMirror newParent) throws MultipleParentException {
+    void setParent(CellMirrorImpl newParent) throws MultipleParentException {
         if (newParent!=null && parent!=null)
             throw new MultipleParentException();
         
@@ -190,10 +201,10 @@ public class CellMirror {
     }
     
     /**
-     * Return the parent CellMirror
+     * Return the parent CellMirrorImpl
      * @return
      */
-    public CellMirror getParent() {
+    public CellMirrorImpl getParent() {
         return parent;
     }
 
@@ -207,8 +218,8 @@ public class CellMirror {
      * @param monitor The performance monitor
      * @return A list of visible cells
      */
-    ArrayList<CellID> getVisibleCells(
-                ArrayList<CellID> list, 
+    ArrayList<CellMirror> getVisibleCells(
+                ArrayList<CellMirror> list, 
                 BoundingVolume bounds,
                 UserPerformanceMonitor monitor) {
         
@@ -241,14 +252,14 @@ public class CellMirror {
                 logger.finest("Intersect " + cellID + " " + tmpComputedWorldBounds);
             }
             
-            list.add(cellID);
+            list.add(new CellMirrorImpl(this));
             if (children!=null) {
                 /*
                  * Recursively call getVisibleCells() to find the visible
                  * cells amongst the children. 
                  */
                 
-                for(CellMirror c : children) {
+                for(CellMirrorImpl c : children) {
                     t = System.nanoTime();
                     monitor.incRevalidateCellGetTime(c.getClass(), System.nanoTime()-t);
                     c.getVisibleCells(list, bounds, monitor);
@@ -261,6 +272,13 @@ public class CellMirror {
         }
         
         return list;
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    public long getTransformVersion() {
+        return transformVersion;
     }
     
 }

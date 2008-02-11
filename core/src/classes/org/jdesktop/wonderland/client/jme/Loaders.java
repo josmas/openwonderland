@@ -22,7 +22,6 @@ import com.jme.animation.Bone;
 import com.jme.animation.BoneAnimation;
 import com.jme.animation.SkinNode;
 import com.jme.bounding.BoundingSphere;
-import com.jme.input.FirstPersonHandler;
 import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
 import com.jme.math.Quaternion;
