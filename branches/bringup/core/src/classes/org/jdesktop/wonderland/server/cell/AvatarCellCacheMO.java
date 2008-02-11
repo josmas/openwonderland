@@ -26,6 +26,7 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.ObjectNotFoundException;
+import com.sun.sgs.app.PeriodicTaskHandle;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -78,6 +79,10 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      */
     private Map<CellID, CellRef> currentCells = new HashMap<CellID, CellRef>();
     
+    private static final boolean USE_CACHE_MANAGER = true;
+    
+    private PeriodicTaskHandle task = null;
+    
     /**
      * Creates a new instance of AvatarCellCacheMO
      */
@@ -100,6 +105,11 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     void logout(ClientSessionId userID) {
         logger.warning("DEBUG - logout");
         currentCells.clear();
+        if (USE_CACHE_MANAGER) {
+            CacheManager.removeCache(this);
+        } else {
+            task.cancel();
+        }
     }
     
     /**
@@ -120,9 +130,13 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         channel.send(userID, msg);
         currentCells.put(rootCellID, new CellRef(rootCell));
         
-        // Periodically revalidate the cache
-        AppContext.getTaskManager().schedulePeriodicTask(
-                new AvatarCellCacheRevalidateTask(this), 100, 500);        
+        if (USE_CACHE_MANAGER) {
+            CacheManager.addCache(this);            
+        } else {
+            // Periodically revalidate the cache
+             task = AppContext.getTaskManager().schedulePeriodicTask(
+                    new AvatarCellCacheRevalidateTask(this), 100, 500); 
+        }
     }
     
     /**
@@ -173,7 +187,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
          * 2. If already present, check to see if has been modified
          * These two steps only happen if we are given access to view the cell
          */
-        System.out.println("VisCells.size "+visCells.size());
+//        System.out.println("VisCells.size "+visCells.size());
         for(CellMirror cellMirror : visCells) {
             CellID cellID = cellMirror.getCellID();
             /* Fetech the cell GLO class associated with the visible cell */
@@ -187,16 +201,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
 
             // find the cell in our current list of cells
             CellRef cellRef = currentCells.get(cellID);  
-            long a = System.nanoTime();
-////            CellMO cell;
-////            if (cellRef!=null)
-////                cell = cellRef.get();
-////            else 
-            getCellTime +=(System.nanoTime() - a);
             
             if (cellRef == null) {
                 // the cell is new -- add it and send a message
+                long a = System.nanoTime();
                 CellMO cell = CellManager.getCell(cellID);
+                getCellTime +=(System.nanoTime() - a);
                 cellRef = new CellRef(cell);
                 currentCells.put(cellID, cellRef);
                     
@@ -213,7 +223,9 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
 //                }
             } else if (cellRef.hasUpdates(cellMirror)) {
                 for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
+                    long a = System.nanoTime();
                     CellMO cell = cellRef.get();
+                    getCellTime +=(System.nanoTime() - a);
                     switch (update) {
                         case TRANSFORM:
                             msg = CellManager.newCellMoveMessage(cell);
@@ -275,7 +287,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             throw e;
         }
         
-        System.out.println("Revalidation took "+toMilliSecond(System.nanoTime()-startTime)+" ms.  ServiceTime "+toMilliSecond(serviceTime)+"  newCells "+toMilliSecond(newCellsTime) +"  getCell "+toMilliSecond(getCellTime));
+//        System.out.println("Revalidation took "+toMilliSecond(System.nanoTime()-startTime)+" ms.  ServiceTime "+toMilliSecond(serviceTime)+"  newCells "+toMilliSecond(newCellsTime) +"  getCell "+toMilliSecond(getCellTime));
     }
     
     private long toMilliSecond(long nanoSecond) {

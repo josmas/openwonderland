@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.server.cell.CacheManager;
 import org.jdesktop.wonderland.server.cell.CellManager;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
@@ -41,6 +42,7 @@ public class WonderlandContext {
         CellManager.initialize();
         UserManager.initialize();
         ChecksumManagerMO.initialize();
+        CacheManager.initialize();
     }
     
     /**
