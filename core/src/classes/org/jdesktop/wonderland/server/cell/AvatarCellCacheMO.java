@@ -293,7 +293,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             monitor.incTotalTime(System.nanoTime() - startTime);
             monitor.updateTotals();
             
-            logger.info(monitor.getMessageStats());
+            //logger.info(monitor.getMessageStats());
             
             // print stats
             if (RevalidatePerformanceMonitor.printTotals()) {
