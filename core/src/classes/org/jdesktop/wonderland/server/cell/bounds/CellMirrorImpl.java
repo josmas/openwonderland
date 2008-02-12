@@ -26,7 +26,7 @@ import java.util.Iterator;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 
 /**
  * A partial mirror of a CellMO. Used for performing time processing that
@@ -221,7 +221,7 @@ public class CellMirrorImpl implements CellMirror {
     ArrayList<CellMirror> getVisibleCells(
                 ArrayList<CellMirror> list, 
                 BoundingVolume bounds,
-                UserPerformanceMonitor monitor) {
+                RevalidatePerformanceMonitor monitor) {
         
         long t = System.nanoTime();
         
@@ -237,8 +237,8 @@ public class CellMirrorImpl implements CellMirror {
          * We now intersect with the bounds of the cell 
          */
         boolean intersect = bounds.intersects(tmpComputedWorldBounds);
-        monitor.incRevalidateCalcTime( System.nanoTime()-t );
-        monitor.incRevalidateCellCount(getClass());
+        monitor.incBoundsCalcTime( System.nanoTime()-t );
+        monitor.incBoundsCellCount(getClass());
 
 //        logger.log(Level.INFO, this.getCellID() +
 //            " - " + ((intersect == true) ? "(VISIBLE) " : "(NOT VISIBLE) ") +
@@ -261,7 +261,7 @@ public class CellMirrorImpl implements CellMirror {
                 
                 for(CellMirrorImpl c : children) {
                     t = System.nanoTime();
-                    monitor.incRevalidateCellGetTime(c.getClass(), System.nanoTime()-t);
+                    monitor.incBoundsGetTime(c.getClass(), System.nanoTime()-t);
                     c.getVisibleCells(list, bounds, monitor);
                 }
             }

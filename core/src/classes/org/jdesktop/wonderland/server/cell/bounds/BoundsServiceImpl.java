@@ -30,7 +30,7 @@ import java.util.Properties;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.CellMirror;
 
 /**
@@ -42,8 +42,10 @@ import org.jdesktop.wonderland.server.cell.CellMirror;
 public class BoundsServiceImpl implements BoundsService {
     private Map<CellID, CellMirrorImpl> bounds;
     
-    public BoundsServiceImpl(Properties properties,
-                             ComponentRegistry systemRegistry) {
+    public BoundsServiceImpl(Properties properties, 
+                             ComponentRegistry systemRegistry,
+                             TransactionProxy proxy)
+    {
         bounds = new HashMap<CellID, CellMirrorImpl>();
     }
     
@@ -51,20 +53,15 @@ public class BoundsServiceImpl implements BoundsService {
         return BoundsServiceImpl.class.getName();
     }
 
-    public void configure(ComponentRegistry arg0, TransactionProxy arg1) {
-        // nothing to do
-        System.out.println("configure");
+    public void ready() throws Exception {
+        // ignore
     }
 
     public boolean shutdown() {
         bounds.clear();
         return true;
     }
-
-    public void ready() throws Exception {
-        // ignore
-    }
-
+    
     public CellMirrorImpl getCellMirrorImpl(CellID cellID) {
         return bounds.get(cellID);
     }
@@ -209,7 +206,7 @@ public class BoundsServiceImpl implements BoundsService {
      * @param perfMonitor performance measurement service
      * @return
      */
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
+    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
         ArrayList<CellMirror> result = new ArrayList();
         
         getCellMirrorImpl(rootCell).getVisibleCells(result, bounds, perfMonitor);

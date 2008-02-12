@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
-import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.WonderlandMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
@@ -473,7 +473,7 @@ public class CellMO extends WonderlandMO {
      * @param monitor The performance monitor
      * @return A list of visible cells
      */
-    public Collection<CellMirror> getVisibleCells(BoundingVolume bounds, UserPerformanceMonitor monitor) {
+    public Collection<CellMirror> getVisibleCells(BoundingVolume bounds, RevalidatePerformanceMonitor monitor) {
         if (!live)
             throw new RuntimeException("Cell is not live");
         

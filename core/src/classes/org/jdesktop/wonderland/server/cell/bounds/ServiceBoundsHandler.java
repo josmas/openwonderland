@@ -21,7 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import java.util.Collection;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -128,7 +128,7 @@ public class ServiceBoundsHandler extends BoundsHandler {
     }
 
     @Override
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor) {
+    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
         return mgr.getVisibleCells(rootCell, bounds, perfMonitor);
     }

@@ -332,6 +332,7 @@
             <jvmarg value="-Xmx384m"/>
             <!--<jvmarg value="-Xincgc"/>-->
             <jvmarg value="-Xms32m"/>
+            <jvmarg value="-Djava.util.logging.config.class=org.jdesktop.wonderland.client.LogControl"/>
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
 	    </classpath>
