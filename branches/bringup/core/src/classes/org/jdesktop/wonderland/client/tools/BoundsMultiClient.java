@@ -28,7 +28,10 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
+import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -38,7 +41,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author jkaplan
  */
 public class BoundsMultiClient
-        implements CellCacheClient.CellCacheMessageListener
+        implements CellCacheClient.CellCacheMessageListener,
+                   SessionStatusListener
 {
     /** a logger */
     private static final Logger logger = 
@@ -46,6 +50,9 @@ public class BoundsMultiClient
     
     /** the name of this client */
     private String name;
+    
+    /** the mover thread */
+    private MoverThread mover;
     
     public BoundsMultiClient(WonderlandServerInfo server, 
                              LoginParameters login) 
@@ -56,12 +63,14 @@ public class BoundsMultiClient
         // login
         BoundsTestClientSession session =
                 new BoundsTestClientSession(server, this);
+        session.addSessionStatusListener(this);
         session.login(login);
         
         logger.info(getName() + " login succeeded");
         
         LocalAvatar avatar = session.getLocalAvatar();
-        new MoverThread(avatar).start();
+        mover = new MoverThread(avatar);
+        mover.start();
     }
     
     public String getName() {
@@ -87,10 +96,35 @@ public class BoundsMultiClient
     public void moveCell(CellID cellID, CellTransform cellTransform) {
     }
     
+    public void loadClientAvatar(CellID cellID, String className, 
+                                 BoundingVolume localBounds, CellID parentCellID, 
+                                 String channelName, CellTransform cellTransform, 
+                                 CellSetup setup)
+    {
+    }
+    
+    public void sessionStatusChanged(WonderlandSession session, 
+                                     Status status)
+    {
+        logger.info(getName() + " change session status: " + status);
+        if (status == Status.DISCONNECTED  && mover != null) {
+            mover.quit();
+        }
+    }
+    
+    public void waitForFinish() throws InterruptedException {
+        if (mover == null) {
+            return;
+        }
+        
+        // wait for the thread to end
+        mover.join();
+    }
+    
     public static void main(String[] args) {
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         
-        int count = 5;
+        int count = 10;
         
         BoundsMultiClient[] bmc = new BoundsMultiClient[count];
         
@@ -106,28 +140,37 @@ public class BoundsMultiClient
             }
         }
         
-        // wait 
-        try {
-            Thread.sleep(60 * 60 * 1000);
+        // wait for each client 
+        try {   
+            for (BoundsMultiClient client : bmc) {
+                client.waitForFinish();
+            }
         } catch (InterruptedException ie) {
         }
     }
 
-    public void loadClientAvatar(CellID cellID, String className, BoundingVolume localBounds, CellID parentCellID, String channelName, CellTransform cellTransform, CellSetup setup) {
-    }
-    
     class MoverThread extends Thread {
         private Vector3f location = new Vector3f();
         private Quaternion orientation = null;
         private LocalAvatar avatar;
+        private boolean quit = false;
         
         public MoverThread(LocalAvatar avatar) {
             this.avatar = avatar;
             
         }
 
+        public synchronized boolean isQuit() {
+            return quit;
+        }
+        
+        public synchronized void quit() {
+            this.quit = true;
+        }
+        
+        @Override
         public void run() {
-            while(true) {
+            while(!isQuit()) {
                 randomPosition();
                 avatar.localMoveRequest(location, orientation);
                 try {
@@ -144,5 +187,4 @@ public class BoundsMultiClient
         }
         
     }
-    
 }

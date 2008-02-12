@@ -20,10 +20,10 @@
 package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionId;
 import java.util.Set;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.ClientType;
-import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  * Manage communications protocols.
@@ -59,6 +59,14 @@ public interface CommsManager {
      * @return all available protocols
      */
     public Set<CommunicationsProtocol> getProtocols();
+    
+    /**
+     * Get the communication protocol used by the given client session
+     * @param sessionId the ID of the client session to check
+     * @return the protocol in use by the given client, or null if
+     * the given client is not connected
+     */
+    public CommunicationsProtocol getProtocol(ClientSessionId sessionId);
     
     /**
      * Get all sessions that are connected using the given protocol

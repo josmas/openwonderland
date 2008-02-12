@@ -19,7 +19,6 @@
  */
 package org.jdesktop.wonderland.client.tools;
 
-import com.jme.bounding.BoundingVolume;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.*;
@@ -32,7 +31,6 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
-import org.jdesktop.wonderland.client.tools.AvatarClient.AvatarMessageListener;
 import org.jdesktop.wonderland.common.cell.messages.AvatarCreateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
@@ -110,6 +108,4 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
             throw new LoginFailureException("Failed to attach client" , afe);
         }
     }
-    
-
 }

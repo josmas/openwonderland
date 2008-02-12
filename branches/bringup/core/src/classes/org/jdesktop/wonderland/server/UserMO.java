@@ -19,12 +19,18 @@ package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.server.cell.AvatarMO;
 
 /**
  * This class represensents a real world user. A user can be logged into
@@ -34,15 +40,16 @@ import java.util.logging.Logger;
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class UserMO implements ManagedObject, Serializable {
 
     private String username;
     private String fullname;
     private ArrayList<String> groups = null;
     
-    private HashMap<ClientSession, ProtocolSessionListener> activeSessions = null;
-    private HashMap<String, Serializable> extendedData = null;
-    private HashMap<String, ManagedReference> avatars = new HashMap();
+    private Set<ClientSession> activeSessions = null;
+    private Map<String, Serializable> extendedData = null;
+    private Map<String, ManagedReference> avatars = new HashMap();
     
     protected static Logger logger = Logger.getLogger(UserMO.class.getName());
 
@@ -113,17 +120,23 @@ public class UserMO implements ManagedObject, Serializable {
      * @param avatarName
      * @return
      */
-    public ManagedReference getAvatar(String avatarName) {
-        return avatars.get(avatarName);
+    public AvatarMO getAvatar(String avatarName) {
+        ManagedReference avatarRef = avatars.get(avatarName);
+        if (avatarRef == null) {
+            return null;
+        }
+        
+        return avatarRef.get(AvatarMO.class);
     }
     
     /**
      * Put the avatarRef and the name in the set of avatars for this user
      * @param avatarName
-     * @param avatarRef
+     * @param avatar
      */
-    public void putAvatar(String avatarName, ManagedReference avatarRef) {
-        avatars.put(avatarName, avatarRef);
+    public void putAvatar(String avatarName, AvatarMO avatar) {
+        DataManager dm = AppContext.getDataManager();
+        avatars.put(avatarName, dm.createReference(avatar));
     }
     
     /**
@@ -131,12 +144,12 @@ public class UserMO implements ManagedObject, Serializable {
      * @param session
      * @param protocol
      */
-    void login(ClientSession session, ProtocolSessionListener protocolListener) {
+    void login(ClientSession session) {
         if (activeSessions==null) {
-            activeSessions = new HashMap();
+            activeSessions = new HashSet();
         }
-        logger.info("User Login "+username+" with protocol "+protocolListener.getClass().getCanonicalName());
-        activeSessions.put(session, protocolListener);
+        logger.info("User Login " + username);
+        activeSessions.add(session);
     }
     
     /**
@@ -144,7 +157,7 @@ public class UserMO implements ManagedObject, Serializable {
      * @param session
      * @param protocol
      */
-    void logout(ClientSession session, ProtocolSessionListener protocolListener) {
+    void logout(ClientSession session) {
         activeSessions.remove(session);
     }
     

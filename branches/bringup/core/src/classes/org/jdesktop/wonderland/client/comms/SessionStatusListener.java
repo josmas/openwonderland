@@ -22,15 +22,16 @@ package org.jdesktop.wonderland.client.comms;
 import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
- * Listen for new Wonderland sessions being created.
- * @author kaplanj
+ * Listen for changes to the session status.  Status is one of
+ * CONNECTED, CONNECTING or DISCONNECTED
+ * @author jkaplan
  */
 @ExperimentalAPI
-public interface SessionLifecycleListener {
+public interface SessionStatusListener {
     /**
-     * Called when a new WonderlandSession is created.  When this method is
-     * called, the session has been initialized, but not logged in.
-     * @param session the session that was created
+     * Called when a session changes state, to one of the
+     * CONNECTED, CONNECTING, or DISCONNECTED states.
      */
-    public void sessionCreated(WonderlandSession session);
+    public void sessionStatusChanged(WonderlandSession session, 
+                                     WonderlandSession.Status status);
 }

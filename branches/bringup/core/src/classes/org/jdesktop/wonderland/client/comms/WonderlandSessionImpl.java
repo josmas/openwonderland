@@ -94,9 +94,12 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /** the connected client */
     private SimpleClient simpleClient;
    
+    /** listeners to notify when our status changes */
+    private List<SessionStatusListener> sessionStatusListeners;
+    
     /** listeners to notify when we join a channel */
     private List<ChannelJoinedListener> channelJoinedListeners;
-    
+   
     /** attached clients */
     private Map<ClientType, ClientRecord> clients;
     private Map<Short, ClientRecord> clientsByID;
@@ -112,6 +115,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
         status = Status.DISCONNECTED;
        
         // initialize listeners
+        sessionStatusListeners =
+                new CopyOnWriteArrayList<SessionStatusListener>();
         channelJoinedListeners = 
                 new CopyOnWriteArrayList<ChannelJoinedListener>();
     
@@ -166,7 +171,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         // notify listeners
         if (changed) {
-            WonderlandSessionFactory.fireClientStatusChanged(this, status);
+            fireClientStatusChanged(status);
         }
     }
     
@@ -374,6 +379,14 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
     }
    
+    public void addSessionStatusListener(SessionStatusListener listener) {
+        sessionStatusListeners.add(listener);
+    }
+    
+    public void removeSessionStatusListener(SessionStatusListener listener) {
+        sessionStatusListeners.remove(listener);
+    }
+    
     public void addChannelJoinedListener(ChannelJoinedListener listener) {
         channelJoinedListeners.add(listener);
     }
@@ -442,6 +455,18 @@ public class WonderlandSessionImpl implements WonderlandSession {
         record.receivedMessage(data, 2, data.length - 2);
     }
       
+    /**
+     * Notify any registered status listeners of a status change
+     * @param session the session that changed
+     * @param status the new status
+     */
+    protected void fireClientStatusChanged(WonderlandSession.Status status) 
+    {
+        for (SessionStatusListener listener : sessionStatusListeners) {
+            listener.sessionStatusChanged(this, status);
+        }
+    }
+    
     /**
      * Get the name of the protocol to connect with
      * @return the name of the protocol to connect with

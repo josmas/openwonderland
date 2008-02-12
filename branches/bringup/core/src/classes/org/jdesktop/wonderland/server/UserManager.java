@@ -72,10 +72,9 @@ public class UserManager implements ManagedObject, Serializable {
     /**
      * Add a user to the set of logged in users
      */
-    public void addUser(ClientSessionId userID, ManagedReference userRef) {
-        uidToUserRef.put(userID, userRef);
-        //uidToAvatarRef.put(userID, userRef.get(UserGLO.class).getAvatarCellRef());
-//        System.out.println("Adding User "+userID+"  total users "+uidToUserRef.size());
+    public void addUser(ClientSessionId userID, UserMO user) {
+        DataManager dm = AppContext.getDataManager();
+        uidToUserRef.put(userID, dm.createReference(user));
     }
     
     /**
@@ -83,9 +82,13 @@ public class UserManager implements ManagedObject, Serializable {
      *
      * @return reference to the UserGLO
      */
-    public ManagedReference removeUser(ClientSessionId userID) {
+    public UserMO removeUser(ClientSessionId userID) {
         ManagedReference userRef = uidToUserRef.remove(userID);
-        return userRef;
+        if (userRef == null) {
+            return null;
+        }
+        
+        return userRef.get(UserMO.class);
     }
     
     /**
@@ -93,9 +96,13 @@ public class UserManager implements ManagedObject, Serializable {
      *
      * @return reference to the UserGLO
      */
-    public ManagedReference getUser(ClientSessionId userID) {
-//        System.out.println("Get User "+userID+"  "+uidToUserRef.get(userID));
-        return uidToUserRef.get(userID);
+    public UserMO getUser(ClientSessionId userID) {
+        ManagedReference userRef = uidToUserRef.get(userID);
+        if (userRef == null) {
+            return null;
+        }
+        
+        return userRef.get(UserMO.class);
     }
     
     /**
@@ -164,32 +171,27 @@ public class UserManager implements ManagedObject, Serializable {
     }
     
     /**
-     * Log the user in from the specificed session with the supplied protocol.
-     * Called by the ProtocolSessionListener once the protocol has been established
-     * 
-     * @param session
-     * @param protocolListener
+     * Log the user in from the specificed session. 
+     * @param session 
      */
-    void login(ClientSession session, ProtocolSessionListener protocolListener) {
+    public void login(ClientSession session) {
         UserMO user = getUserMO(session.getName());
         if (user==null) {
             user = createUserMO(session.getName());
         }
-        user.login(session, protocolListener);
+        user.login(session);
         uidToUserRef.put(session.getSessionId(), user.getReference());
     }
     
     /**
      * Log user out of specified session
-     * 
      * @param session
-     * @param protocolListener
      */
-    void logout(ClientSession session, ProtocolSessionListener protocolListener) {
+    public void logout(ClientSession session) {
         UserMO user = getUserMO(session.getName());
         assert(user!=null);
         
-        user.logout(session, protocolListener);
+        user.logout(session);
         uidToUserRef.remove(session.getSessionId());
    }
     

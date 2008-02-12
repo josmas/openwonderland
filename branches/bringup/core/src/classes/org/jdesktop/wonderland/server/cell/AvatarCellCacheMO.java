@@ -288,12 +288,17 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             }
         } catch(RuntimeException e) {
             monitor.setException(true);
+            
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, "Rethrowing exception", e);
+            }
+            
             throw e;
         } finally {
             monitor.incTotalTime(System.nanoTime() - startTime);
             monitor.updateTotals();
             
-            //logger.info(monitor.getMessageStats());
+            // logger.info(monitor.getMessageStats());
             
             // print stats
             if (RevalidatePerformanceMonitor.printTotals()) {

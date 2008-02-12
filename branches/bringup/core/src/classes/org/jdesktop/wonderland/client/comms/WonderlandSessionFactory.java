@@ -94,17 +94,4 @@ public class WonderlandSessionFactory {
             listener.sessionCreated(session);
         }
     }
-    
-    /**
-     * Notify any registered lifecycle listeners of a status change
-     * @param session the session that changed
-     * @param status the new status
-     */
-    protected static void fireClientStatusChanged(WonderlandSession session,
-                                                  WonderlandSession.Status status) 
-    {
-        for (SessionLifecycleListener listener : lifecycleListeners) {
-            listener.clientStatusChanged(session, status);
-        }
-    }
 }

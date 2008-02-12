@@ -21,6 +21,7 @@
 package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 import java.util.Collections;
@@ -29,8 +30,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jdesktop.wonderland.common.comms.ClientType;
-import org.jdesktop.wonderland.server.ProtocolSessionListener;
-import org.jdesktop.wonderland.server.WonderlandSessionListener;
 
 /**
  * Implementation of CommsManager
@@ -50,6 +49,18 @@ class CommsManagerImpl
         protocols = new HashMap<String, CommunicationsProtocol>();
     }
     
+    /**
+     * Static initializer sets up the ProtocolSessionListener and
+     * WonderlandSessionListener
+     */
+    public static void initialize() {
+         // initialize the default session listener
+        ProtocolSessionListener.initialize();
+        
+        // initialize the Wonderland session listener
+        WonderlandSessionListener.initialize();
+    }
+    
     public void registerProtocol(CommunicationsProtocol protocol) {
         protocols.put(protocol.getName(), protocol);
     }
@@ -66,6 +77,10 @@ class CommsManagerImpl
         return Collections.unmodifiableSet(new HashSet(protocols.values()));
     }
 
+    public CommunicationsProtocol getProtocol(ClientSessionId sessionId) {
+        return ProtocolSessionListener.getProtocol(sessionId);
+    }
+    
     public Set<ClientSession> getClients(CommunicationsProtocol protocol) {
         return ProtocolSessionListener.getClients(protocol);
     }

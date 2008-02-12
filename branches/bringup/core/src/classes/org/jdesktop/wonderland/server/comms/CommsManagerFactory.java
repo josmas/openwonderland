@@ -18,8 +18,6 @@
 package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.AppContext;
-import org.jdesktop.wonderland.server.ProtocolSessionListener;
-import org.jdesktop.wonderland.server.WonderlandSessionListener;
 
 /**
  * Create the comms manager.
@@ -32,15 +30,12 @@ public class CommsManagerFactory {
      * Setup the comms manager
      */
     public static void initialize() {
+        // initialize the comms manager
+        CommsManagerImpl.initialize();
+        
         // instantiate the manager
         CommsManagerImpl cm = new CommsManagerImpl();
         AppContext.getDataManager().setBinding(BINDING_NAME, cm);
-    
-        // initialize the default session listener
-        ProtocolSessionListener.initialize();
-        
-        // initialize the Wonderland session listener
-        WonderlandSessionListener.initialize();
     }
 
     /**

@@ -61,13 +61,13 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
     public void clientDetached(WonderlandClientChannel channel,
                                ClientSessionId sessionId) 
     {
-        UserMO user = WonderlandContext.getUserManager().getUser(sessionId).get(UserMO.class);
-        ManagedReference avatarRef = user.getAvatar(avatarID);
-        if (avatarRef==null) {
+        UserMO user = WonderlandContext.getUserManager().getUser(sessionId);
+        AvatarMO avatar = user.getAvatar(avatarID);
+        if (avatar == null) {
             logger.severe("clientDetached has null avatar for session");
             return;
         }
-        avatarRef.getForUpdate(AvatarMO.class).getCellCache().logout(sessionId);
+        avatar.getCellCache().logout(sessionId);
     }
     
     public void messageReceived(WonderlandClientChannel channel,
@@ -94,14 +94,11 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
         switch(message.getActionType()) {
             case SET_AVATAR :
                 avatarID = message.getAvatarID();
-                UserMO user = WonderlandContext.getUserManager().getUser(sessionId).get(UserMO.class);
-                ManagedReference avatarRef = user.getAvatar(avatarID);
-                AvatarMO avatar;
-                if (avatarRef==null) {
+                UserMO user = WonderlandContext.getUserManager().getUser(sessionId);
+                AvatarMO avatar = user.getAvatar(avatarID);
+                if (avatar == null) {
                     logger.severe("Unable to locate avatar");
                     return;
-                } else {
-                    avatar = avatarRef.get(AvatarMO.class);
                 }
 
                 avatar.getCellCache().login(channel, sessionId);
