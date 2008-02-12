@@ -168,8 +168,6 @@ public class AssetManager {
                 return true;
             }
             
-            System.out.println("Loader "+loader);
-            System.out.println("Future "+loader.getFuture());
             Object o = loader.getFuture().get();
             
             if (o==null) {

@@ -355,9 +355,11 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         private Node avatarRoot;
 
         public void init(RenderInfo info) {
+            float HEIGHT = 1.7f;
+            
             try {
                 //box stand in
-                Box b = new Box("box", new Vector3f(), 0.35f, 0.25f, 0.5f);
+                Box b = new Box("box", new Vector3f(0f,HEIGHT/2f,0f), 0.35f, HEIGHT, 0.5f);
 //                Node a = Loaders.loadColladaAvatar(new Vector3f(0,0,0));
                 b.setModelBound(new BoundingBox());
                 b.updateModelBound();

@@ -18,33 +18,23 @@
 
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.animation.AnimationController;
-import com.jme.animation.Bone;
-import com.jme.animation.BoneAnimation;
-import com.jme.animation.SkinNode;
 import com.jme.bounding.BoundingSphere;
-import com.jme.input.KeyBindingManager;
-import com.jme.input.KeyInput;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.scene.Controller;
 import com.jme.scene.Node;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
-import com.jme.util.resource.SimpleResourceLocator;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
-import org.jdesktop.wonderland.client.datamgr.AssetManager.Checksum;
 import org.jdesktop.wonderland.client.datamgr.Repository;
 import org.jdesktop.wonderland.common.AssetType;
 
@@ -59,6 +49,7 @@ public class CellModule implements RenderModule {
     public void init(RenderInfo info) {
         try {
             Node model = loadStaticCollada(new URL("file:////home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.dae"), new Vector3f());
+//            Node model = loadStaticCollada(new URL("file:////home/paulby/local-code/java.net/wonderland/branches/bringup/core/tmp-avatar.dae"), new Vector3f());
             model.setModelBound(new BoundingSphere());
             model.updateModelBound();
             model.lock();
@@ -81,8 +72,6 @@ public class CellModule implements RenderModule {
                 ResourceLocatorTool.TYPE_TEXTURE,
                 new WonderlandResourceLocator());
 
-        KeyBindingManager.getKeyBindingManager().set("bones", KeyInput.KEY_SPACE);
-
         InputStream mobboss = asset.openStream();
         if (mobboss == null) {
             logger.info("Unable to find file, did you include jme-test.jar in classpath?");
@@ -100,7 +89,7 @@ public class CellModule implements RenderModule {
         Node node = new Node();
         node.setLocalTranslation(origin);
         node.setLocalRotation(new Quaternion().fromAngleAxis((float)-Math.PI/2, new Vector3f(1,0,0)));
-        node.setLocalScale(0.5f);
+//        node.setLocalScale(0.5f);
         //attach the skeleton and the skin to the rootnode. Skeletons could possibly
         //be used to update multiple skins, so they are seperate objects.
         node.attachChild(ColladaImporter.getModel());
@@ -118,43 +107,44 @@ public class CellModule implements RenderModule {
     class WonderlandResourceLocator implements ResourceLocator {
 
         private Repository repository;
+        private HashMap<String, URL> loadedTextures = new HashMap();
         
         public WonderlandResourceLocator() {
             try {
-                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models"));
-//                repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
+//                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models"));
+//                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core"));
+                repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
             } catch (MalformedURLException ex) {
                 Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
         public URL locateResource(String filename) {
-              URL ret;
-//            AssetManager assetManager = AssetManager.getAssetManager();
-//            Asset asset = assetManager.getAsset(AssetType.IMAGE, repository, filename, null);
-//            assetManager.waitForAsset(asset);
-//
-//            System.out.println("Looking for Texture " + filename);
-//            
-//            try {
-//                File f = asset.getLocalCacheFile();
-//                if (f==null)
-//                    return null;
-//                ret = f.toURI().toURL();
-//            } catch (MalformedURLException ex) {
-//                Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
-//                ret = null;
-//            }
+            //Check if we already processed this texture
+            URL ret=loadedTextures.get(filename);
+              
+            if (ret==null) {
+                AssetManager assetManager = AssetManager.getAssetManager();
+                Asset asset = assetManager.getAsset(AssetType.IMAGE, repository, filename, null);
+                assetManager.waitForAsset(asset);
 
+                System.out.println("Looking for Texture " + filename);
 
-//            return ret;
-            try {
-                System.out.println("Looking for texture "+filename);
-                return new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models/" + filename);
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
+                try {
+                    File f = asset.getLocalCacheFile();
+                    if (f==null)
+                        return null;
+                    ret = f.toURI().toURL();
+                    loadedTextures.put(ret.getFile(), ret);
+                } catch (MalformedURLException ex) {
+                    Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
+                    ret = null;
+                }
             }
-            return null;
+
+
+            return ret;
+              
         }
         
     }
