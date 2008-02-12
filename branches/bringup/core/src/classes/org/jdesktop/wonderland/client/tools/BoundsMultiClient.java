@@ -90,7 +90,7 @@ public class BoundsMultiClient
     public static void main(String[] args) {
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         
-        int count = 10;
+        int count = 5;
         
         BoundsMultiClient[] bmc = new BoundsMultiClient[count];
         
@@ -100,7 +100,7 @@ public class BoundsMultiClient
             
             try {
                 bmc[i] = new BoundsMultiClient(server, login);
-                Thread.sleep(100);
+                Thread.sleep(500);
             } catch (Exception ex) {
                 logger.log(Level.WARNING, "Error logging in", ex);
             }
@@ -131,7 +131,7 @@ public class BoundsMultiClient
                 randomPosition();
                 avatar.localMoveRequest(location, orientation);
                 try {
-                    sleep(1000);
+                    sleep(200);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(BoundsMultiClient.class.getName()).log(Level.SEVERE, null, ex);
                 }

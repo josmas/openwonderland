@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.JmeTest;
 import org.jdesktop.wonderland.client.jme.WonderlandJmeClient.PendingModuleAction.Action;
 
 /**
@@ -451,7 +450,7 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
 
             // Get a picture for my mouse.
             TextureState ts = display.getRenderer().createTextureState();
-            URL cursorLoc = JmeTest.class.getClassLoader().getResource(
+            URL cursorLoc = WonderlandJmeClient.class.getClassLoader().getResource(
                     "org/jdesktop/wonderland/client/resources/cursor1.png" );
             Texture t = TextureManager.loadTexture(cursorLoc, Texture.MM_LINEAR,
                     Texture.FM_LINEAR);

@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.server.CellAccessControl;
-import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.bounds.BoundsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
@@ -79,7 +79,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      */
     private Map<CellID, CellRef> currentCells = new HashMap<CellID, CellRef>();
     
-    private static final boolean USE_CACHE_MANAGER = true;
+    private static final boolean USE_CACHE_MANAGER = false;
     
     private PeriodicTaskHandle task = null;
     
@@ -148,112 +148,116 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      */
     void revalidate() {
         // make sure the user is still logged on
-        long startTime = System.nanoTime();
-        long serviceTime;
-        long newCellsTime;
-        long getCellTime=0;
-        try {
         if (userID == null || userID.getClientSession() == null) {
             return;
         }
         
+        // create a performance monitor
+        RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
+        long startTime = System.nanoTime();
+        
+        try {
+            // get the current user's bounds
+            AvatarMO user = avatarRef.get(AvatarMO.class);
+            proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().get(null));
+            
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("Revalidating CellCache for   " + 
+                              userID.getClientSession().getName() + "  " + 
+                              proximityBounds);
+            }
 
-        AvatarMO user = avatarRef.get(AvatarMO.class);
-        proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().get(null));
-//        logger.warning("Revalidating CellCache for   "+userID.getClientSession().isConnected()+"  "+proximityBounds);
-
-        UserPerformanceMonitor monitor = new UserPerformanceMonitor();
-        BoundsManager boundsMgr = AppContext.getManager(BoundsManager.class);
-        Collection<CellMirror> visCells = boundsMgr.getVisibleCells(rootCellID, proximityBounds, monitor);
+            // find the visible cells
+            BoundsManager boundsMgr = AppContext.getManager(BoundsManager.class);
+            Collection<CellMirror> visCells = 
+                    boundsMgr.getVisibleCells(rootCellID, proximityBounds, monitor);
+            monitor.setVisibleCellCount(visCells.size());
+            
+            // copy the existing cells into the list of known cells 
+            Collection<CellRef> oldCells = new ArrayList(currentCells.values());
         
-        serviceTime = System.nanoTime() - startTime;
-        
-        if (logger.isLoggable(Level.FINER)) {
-            logger.finer(monitor.getRevalidateStats());
-        }
-        
-        // copy the existing cells into the list of known cells 
-        Collection<CellRef> oldCells = new ArrayList(currentCells.values());
-        
-        CellHierarchyMessage msg;
+            CellHierarchyMessage msg;
          
-        // TODO now visCells is a list of cellID's refactor so we don't have to
-        // get the cells from sgs if they are already visible. The main issue
-        // here is handling the cell version check
+            // TODO now visCells is a list of cellID's refactor so we don't have to
+            // get the cells from sgs if they are already visible. The main issue
+            // here is handling the cell version check
         
-        /*
-         * Loop through all of the visible cells and:
-         * 1. If not already present, create it
-         * 2. If already present, check to see if has been modified
-         * These two steps only happen if we are given access to view the cell
-         */
-//        System.out.println("VisCells.size "+visCells.size());
-        for(CellMirror cellMirror : visCells) {
-            CellID cellID = cellMirror.getCellID();
-            /* Fetech the cell GLO class associated with the visible cell */
+            /*
+             * Loop through all of the visible cells and:
+             * 1. If not already present, create it
+             * 2. If already present, check to see if has been modified
+             * These two steps only happen if we are given access to view the cell
+             */
+            for(CellMirror cellMirror : visCells) {
+                long cellStartTime = System.nanoTime();
+                CellID cellID = cellMirror.getCellID();
             
-            // check this client's access to the cell
-            if (!CellAccessControl.canView(user, cellMirror)) {
-                // the user doesn't have access to this cell -- just skip
-                // it and go on                
-                continue;
-            }
-
-            // find the cell in our current list of cells
-            CellRef cellRef = currentCells.get(cellID);  
-            
-            if (cellRef == null) {
-                // the cell is new -- add it and send a message
-                long a = System.nanoTime();
-                CellMO cell = CellManager.getCell(cellID);
-                getCellTime +=(System.nanoTime() - a);
-                cellRef = new CellRef(cell);
-                currentCells.put(cellID, cellRef);
-                    
-                if (logger.isLoggable(Level.FINER))
-                    logger.finer("Entering cell " + cell +
-                                 "   cellcache for user " + username);
-                    
-                msg = CellManager.newCreateCellMessage(cell);
-                channel.send(userID, msg);
-                cell.addUserToCellChannel(userID);
-//                if (cell instanceof CacheHelperInterface) {
-//                    AppContext.getDataManager().markForUpdate(cell);
-//                    ((CacheHelperInterface)cell).addCache(this);
-//                }
-            } else if (cellRef.hasUpdates(cellMirror)) {
-                for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
-                    long a = System.nanoTime();
-                    CellMO cell = cellRef.get();
-                    getCellTime +=(System.nanoTime() - a);
-                    switch (update) {
-                        case TRANSFORM:
-                            msg = CellManager.newCellMoveMessage(cell);
-                            channel.send(userID, msg);
-                            break;
-                        case CONTENT:
-                            msg = CellManager.newContentUpdateCellMessage(cell);
-                            channel.send(userID, msg);
-                            break;
-                    }
+                // check this client's access to the cell
+                if (!CellAccessControl.canView(user, cellMirror)) {
+                    // the user doesn't have access to this cell -- just skip
+                    // it and go on                
+                    continue;
                 }
-                cellRef.clearUpdateTypes(cellMirror);
+
+                // find the cell in our current list of cells
+                CellRef cellRef = currentCells.get(cellID);           
+                if (cellRef == null) {
+                    // the cell is new -- add it and send a message
+                    CellMO cell = CellManager.getCell(cellID);
+                    cellRef = new CellRef(cell);
+                    currentCells.put(cellID, cellRef);
+                    
+                    if (logger.isLoggable(Level.FINER)) {
+                        logger.finer("Entering cell " + cell +
+                                     "   cellcache for user " + username);
+                    }
+                    
+                    msg = CellManager.newCreateCellMessage(cell);
+                    monitor.incMessageBytes(msg.getBytes().length);
+                    channel.send(userID, msg);
+                    cell.addUserToCellChannel(userID);
+                    
+                    // update performance monitoring
+                    monitor.incNewCellTime(System.nanoTime() - cellStartTime);
+                } else if (cellRef.hasUpdates(cellMirror)) {
+                    for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
+                        CellMO cell = cellRef.get();
+                        switch (update) {
+                            case TRANSFORM:
+                                msg = CellManager.newCellMoveMessage(cell);
+                                monitor.incMessageBytes(msg.getBytes().length);
+                                channel.send(userID, msg);
+                                break;
+                            case CONTENT:
+                                msg = CellManager.newContentUpdateCellMessage(cell);
+                                monitor.incMessageBytes(msg.getBytes().length);
+                                channel.send(userID, msg);
+                                monitor.incMessageBytes(msg.getBytes().length);
+                                break;
+                        }
+                    }
+                    cellRef.clearUpdateTypes(cellMirror);
                 
-                // t is still visible, so remove it from the oldCells set
-                oldCells.remove(cellRef);
-            } else {
-                // t is still visible, so remove it from the oldCells set
-                oldCells.remove(cellRef);
+                    // it is still visible, so remove it from the oldCells set
+                    oldCells.remove(cellRef);
+                    
+                    // update the monitor
+                    monitor.incUpdateCellTime(System.nanoTime() - cellStartTime);
+                } else {
+                    // t is still visible, so remove it from the oldCells set
+                    oldCells.remove(cellRef);
+                }
             }
-        }
-        
-        newCellsTime = System.nanoTime() - startTime;
-        
+               
             // oldCells contains the set of cells to be removed from client memory
             for(CellRef ref : oldCells) {
-                if (logger.isLoggable(Level.FINER))
-                    logger.finer("Leaving cell "+ref.getCellID()+"   cellcache for user "+username);
-
+                long cellStartTime = System.nanoTime();
+                
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.finer("Leaving cell " + ref.getCellID() +
+                                 " cellcache for user "+username);
+                }
+                
                 // the cell may be inactive or removed.  Try to get the cell,
                 // and catch the exception if it no longer exists.
                 try {
@@ -262,15 +266,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     // get suceeded, so cell is just inactive
                     msg = CellManager.newUnloadCellMessage(cell);
                     cell.removeUserFromCellChannel(userID);
-//                    if (cell instanceof CacheHelperInterface) {
-//                        AppContext.getDataManager().markForUpdate(cell);
-//                        ((CacheHelperInterface)cell).removeCache(this);
-//                    }
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
                     msg = CellManager.newDeleteCellMessage(ref.getCellID());
                 }
-
+                
+                monitor.incMessageBytes(msg.getBytes().length);
                 channel.send(userID, msg);
 
                 // the cell is no longer visible on this client, so remove
@@ -281,19 +282,27 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 // may have been deleted.
                 // TODO periodically clean out client cell cache
                 currentCells.remove(ref.getCellID());
+                
+                // update the monitor
+                monitor.incOldCellTime(System.nanoTime() - cellStartTime);
             }
         } catch(RuntimeException e) {
-            logger.warning("Exception "+e.getClass().getName());
+            monitor.setException(true);
             throw e;
+        } finally {
+            monitor.incTotalTime(System.nanoTime() - startTime);
+            monitor.updateTotals();
+            
+            logger.info(monitor.getMessageStats());
+            
+            // print stats
+            if (RevalidatePerformanceMonitor.printTotals()) {
+                logger.info(RevalidatePerformanceMonitor.getTotals());
+                RevalidatePerformanceMonitor.resetTotals();
+            }
         }
-        
-//        System.out.println("Revalidation took "+toMilliSecond(System.nanoTime()-startTime)+" ms.  ServiceTime "+toMilliSecond(serviceTime)+"  newCells "+toMilliSecond(newCellsTime) +"  getCell "+toMilliSecond(getCellTime));
     }
-    
-    private long toMilliSecond(long nanoSecond) {
-        return nanoSecond/1000000;
-    }
-        
+ 
     /**
      * The Users avatar has either entered or exited the cell
      */

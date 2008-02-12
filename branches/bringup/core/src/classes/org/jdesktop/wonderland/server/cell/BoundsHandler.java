@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.PrivateAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.bounds.ServiceBoundsHandler;
 
 /**
@@ -127,7 +127,7 @@ public abstract class BoundsHandler {
      */
     public abstract void cellBoundsChanged(CellID cellID, BoundingVolume bounds);
     
-    public abstract Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor);
+    public abstract Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor);
  
     /**
      * 
@@ -139,7 +139,7 @@ public abstract class BoundsHandler {
      * returns only cells of cellClass.
      * @return
      */
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor, Class cellClass, boolean reportSubclasses) {
+    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor, Class cellClass, boolean reportSubclasses) {
         throw new RuntimeException("Not Implemented");
     }
  

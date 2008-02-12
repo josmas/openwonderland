@@ -22,7 +22,7 @@ import java.util.Collection;
 import org.jdesktop.wonderland.PrivateAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.CellMirror;
 
 /**
@@ -37,6 +37,6 @@ public interface BoundsManager {
     public CellMirrorImpl getCellMirrorImpl(CellID cellID);
     public void putCellMirrorImpl(CellMirrorImpl cellBounds);
     public void removeCellMirrorImpl(CellID cellID);
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, UserPerformanceMonitor perfMonitor);
+    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor);
     public void childrenChanged(CellID parent, CellID child, boolean childAdded);
 }

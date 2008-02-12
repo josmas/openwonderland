@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.server.UserPerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 
@@ -207,7 +207,7 @@ public class CellManager implements ManagedObject, Serializable {
             
             AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
             
-            UserPerformanceMonitor monitor = new UserPerformanceMonitor();
+            RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
             BoundingVolume visBounds = new BoundingSphere(5, new Vector3f());
             
 //            for(CellID cellID : getCell(getRootCellID()).getVisibleCells(visBounds, monitor)) {
