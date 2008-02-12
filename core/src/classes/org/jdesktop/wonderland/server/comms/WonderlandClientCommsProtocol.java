@@ -21,13 +21,9 @@
 package org.jdesktop.wonderland.server.comms;
 
 import org.jdesktop.wonderland.common.comms.ProtocolVersion;
-import org.jdesktop.wonderland.common.comms.DefaultProtocolVersion;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
-import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.common.messages.WonderlandSetupMessage;
-import org.jdesktop.wonderland.server.WonderlandSessionListener;
 
 /**
  * The default communications protocol used by the Wonderland client.

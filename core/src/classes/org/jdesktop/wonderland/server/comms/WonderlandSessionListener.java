@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server;
+package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
@@ -50,8 +50,6 @@ import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.server.comms.ClientHandler;
-import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
 
 /**
  * This is the default session listener is used by Wonderland clients.

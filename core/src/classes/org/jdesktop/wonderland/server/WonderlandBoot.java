@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.server.comms.ProtocolSessionListener;
 import org.jdesktop.wonderland.server.comms.WonderlandClientCommsProtocol;
 
 /**
@@ -50,14 +51,8 @@ public class WonderlandBoot implements AppListener, Serializable {
         WonderlandContext.getCommsManager().registerProtocol(
                 new WonderlandClientCommsProtocol());
         
-        // initialize plugins
-        ServiceLoader<ServerPlugin> plugins =
-                ServiceLoader.load(ServerPlugin.class);
-        
-        for (ServerPlugin plugin : plugins) {
-            logger.info("Initializing plugin: " + plugin);
-            plugin.initialize();
-        }
+        // load all plugins
+        loadPlugins();
         
         // load the initial world
         WonderlandContext.getCellManager().loadWorld();
@@ -75,5 +70,19 @@ public class WonderlandBoot implements AppListener, Serializable {
         logger.info("New session " + session.getName() + " logged in");
         
         return new ProtocolSessionListener(session);
+    }
+    
+    /**
+     * Load plugins specified as services in the various plugin jars
+     */
+    protected void loadPlugins() {
+        // initialize plugins
+        ServiceLoader<ServerPlugin> plugins =
+                ServiceLoader.load(ServerPlugin.class);
+        
+        for (ServerPlugin plugin : plugins) {
+            logger.info("Initializing plugin: " + plugin);
+            plugin.initialize();
+        }
     }
 }   

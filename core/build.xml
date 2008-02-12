@@ -319,7 +319,7 @@
             
             <jvmarg value="-client"/>
             <jvmarg value="-Xmx384m"/>
-            <jvmarg value="-Xincgc"/>
+            <!--<jvmarg value="-Xincgc"/>-->
             <jvmarg value="-Xms32m"/>
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>

@@ -145,6 +145,20 @@ public interface WonderlandSession {
     public void send(WonderlandClient client, Message message);
     
     /**
+     * Add a listener that will be notified when the status of this
+     * session changes.
+     * @param listener the listener to add
+     */
+    public void addSessionStatusListener(SessionStatusListener listener);
+    
+    /**
+     * Remove a listener that will be notified when the status of this
+     * session changes.
+     * @param listener the listener to remove
+     */
+    public void removeSessionStatusListener(SessionStatusListener listener);
+    
+    /**
      * Add a listener that will be notified when a new channel is joined.
      * When a new channel is joined, each ChannelJoinedListener is notifed
      * in the order in which they were added.  The first listener that

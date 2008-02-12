@@ -19,7 +19,6 @@
  */
 package org.jdesktop.wonderland.server;
 
-import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.server.cell.CacheManager;
 import org.jdesktop.wonderland.server.cell.CellManager;

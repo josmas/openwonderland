@@ -17,10 +17,11 @@
  * $Date:$
  * $State:$
  */
-package org.jdesktop.wonderland.server;
+package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
@@ -43,8 +44,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
-import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.server.comms.CommunicationsProtocol;
+import org.jdesktop.wonderland.server.WonderlandContext;
 
 /**
  * This core session listener implements the basic Wonderland protocol
@@ -147,7 +147,7 @@ public class ProtocolSessionListener
             
             // TODO: is this the right thing to do, or should we only
             // do this automatically for the Wonderland protocol?
-            WonderlandContext.getUserManager().login(session, this);
+            WonderlandContext.getUserManager().login(session);
             
             // record the client connection
             this.protocol = cp;
@@ -170,7 +170,7 @@ public class ProtocolSessionListener
             
             // TODO: is this the right thing to do, or should we only
             // do this automatically from the Wonderland protocol?
-            WonderlandContext.getUserManager().logout(session, this);
+            WonderlandContext.getUserManager().logout(session);
         }
         
         // record client disconnect
@@ -188,6 +188,17 @@ public class ProtocolSessionListener
     public static Set<ClientSession> getClients(CommunicationsProtocol protocol)
     {
         return getProtocolClientMap().get(protocol);
+    }
+    
+    /**
+     * Get the protocol in use by the given client
+     * @param sessionId the id of the client to get
+     * @return the protocol used by that client, or null if the client
+     * is not registered
+     */
+    public static CommunicationsProtocol getProtocol(ClientSessionId sessionId)
+    {
+        return getProtocolClientMap().get(sessionId);
     }
     
     /**
@@ -296,12 +307,19 @@ public class ProtocolSessionListener
         private Map<CommunicationsProtocol, ManagedReference> clientMap = 
                 new HashMap<CommunicationsProtocol, ManagedReference>();
         
+        /** mapping from clients to protocols */
+        private Map<ClientSessionId, CommunicationsProtocol> protocolMap =
+                new HashMap<ClientSessionId, CommunicationsProtocol>();
+        
         /**
          * Add a session to a communications protocol
          * @param protocol the communications protocol
          * @param session the client session associated with the given protocol
          */
         public void add(CommunicationsProtocol protocol, ClientSession session) {
+            // Add a reference to this client in the set of clients for
+            // the given protocol.  If the set does not exist, then
+            // create it.
             ManagedReference ref = clientMap.get(protocol);
             if (ref == null) {
                 ProtocolClientSet sessions = new ProtocolClientSet();
@@ -311,6 +329,9 @@ public class ProtocolSessionListener
             
             ProtocolClientSet sessions = ref.getForUpdate(ProtocolClientSet.class);
             sessions.add(session);
+        
+            // add a reference to the protocol from this client's session
+            protocolMap.put(session.getSessionId(), protocol);
         }
         
         /**
@@ -319,6 +340,9 @@ public class ProtocolSessionListener
          * @param session the client session associated with the given protocol
          */
         public void remove(CommunicationsProtocol protocol, ClientSession session) {
+            // Remove the reference to thei client in the set of client for
+            // the given protocol.  If the set is empty, remove the set
+            // altogether.
             ManagedReference ref = clientMap.get(protocol);
             if (ref != null) {
                 ProtocolClientSet sessions = ref.getForUpdate(ProtocolClientSet.class);
@@ -328,6 +352,9 @@ public class ProtocolSessionListener
                     clientMap.remove(protocol);
                 }
             }
+            
+            // remove the reference to the protcol from this client's session
+            protocolMap.remove(session.getSessionId());
         }
         
         /**
@@ -345,6 +372,16 @@ public class ProtocolSessionListener
             
             // return a copy of the set
             return new HashSet(ref.get(ProtocolClientSet.class));
+        }
+        
+        /**
+         * Get the protocol associated with the given session
+         * @param sessionId the id of the session to get
+         * @return the protocol in use by that session, or null if the
+         * sessionId does not exist
+         */
+        public CommunicationsProtocol get(ClientSessionId sessionId) {
+            return protocolMap.get(sessionId);
         }
     }
     

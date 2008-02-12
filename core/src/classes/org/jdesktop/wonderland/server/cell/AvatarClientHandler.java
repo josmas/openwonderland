@@ -107,15 +107,12 @@ class AvatarClientHandler implements ClientHandler, Serializable {
     }
     
     private AvatarCreateResponseMessage createAvatar(ClientSessionId sessionId, AvatarMessage msg) {
-        UserMO user = WonderlandContext.getUserManager().getUser(sessionId).get(UserMO.class);
-        ManagedReference avatarRef = user.getAvatar(msg.getAvatarID());
-        AvatarMO avatar;
-        if (avatarRef == null) {
+        UserMO user = WonderlandContext.getUserManager().getUser(sessionId);
+        AvatarMO avatar = user.getAvatar(msg.getAvatarID());
+        if (avatar == null) {
             user.getReference().getForUpdate(UserMO.class); // Mark for update
             avatar = new AvatarMO(user);
-            user.putAvatar(msg.getAvatarID(), AppContext.getDataManager().createReference(avatar));
-        } else {
-            avatar = avatarRef.get(AvatarMO.class);
+            user.putAvatar(msg.getAvatarID(), avatar);
         }
 
         try {
