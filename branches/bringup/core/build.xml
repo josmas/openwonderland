@@ -159,14 +159,9 @@
 
             <jvmarg value="-Djava.util.logging.config.class=org.jdesktop.wonderland.client.LogControl"/>
             
-            <jvmarg value="-Dlg.appcodebase=file:///${core.ext.dir}/app"/>
-            <jvmarg value="-Dlg.maxfps=30"/>
-            
             <jvmarg value="-Dsgs.port=${sgs.port}"/>
             <jvmarg value="-Dsgs.server=${sgs.server}"/>
             
-            <jvmarg value="-Dj3d.cacheAutoComputeBounds=true"/>
-
             <!-- wonderland.dir overrides the default name of the .wonderland directory-->
             <!--<jvmarg value="-Dwonderland.dir=.wonderland-test"/>-->
            
@@ -313,8 +308,15 @@
     
     <target name="run-jmetest" depends="jar-client">
         <java classname="org.jdesktop.wonderland.client.jme.WonderlandJmeClient" fork="true">
-            <!--<jvmarg value="-agentpath:/usr/local/netbeans/profiler2/lib/deployed/jdk15/linux/libprofilerinterface.so=/usr/local/netbeans/profiler2/lib,5140"/>
+            <!--start debug-->
+            <!--
+ 	    <jvmarg value="-Xdebug"/>
+	    <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
+ 	    -->
+	    <!--
+            <jvmarg value="-agentpath:/usr/local/netbeans/profiler2/lib/deployed/jdk15/linux/libprofilerinterface.so=/usr/local/netbeans/profiler2/lib,5140"/>
             -->
+            
             <jvmarg value="-client"/>
             <jvmarg value="-Xmx384m"/>
             <jvmarg value="-Xincgc"/>
@@ -323,6 +325,7 @@
 		<pathelement path="${wonderland-client.classpath}"/>
 	    </classpath>
 	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	    <syspropertyset refid="wonderland.properties"/>
         </java>
     </target>
     
