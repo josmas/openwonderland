@@ -21,11 +21,31 @@ package org.jdesktop.wonderland.client.jme;
  *
  * @author paulby
  */
-public interface RenderModule {
+public abstract class RenderModule {
 
-    public void init(RenderInfo info);
+    private boolean active;
     
-    public void update(RenderInfo info, float interpolation);
+    /**
+     * Initialise the module
+     * @param info
+     */
+    public abstract void init(RenderInfo info);
     
-    public void render(RenderInfo info, float interpolation);
+    public void setActive(boolean active, RenderInfo info) {
+        if (active==this.active)
+            return;
+        
+        setActiveImpl(active, info);
+        this.active = active;
+    }
+    
+    public boolean isActive() {
+        return active;
+    }
+    
+    public abstract void setActiveImpl(boolean active, RenderInfo info);
+    
+    public abstract void update(RenderInfo info, float interpolation);
+    
+    public abstract void render(RenderInfo info, float interpolation);
 }

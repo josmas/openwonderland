@@ -30,7 +30,7 @@ import com.jme.util.TextureManager;
  *
  * @author paulby
  */
-public class HUDModule implements RenderModule {
+public class HUDModule extends RenderModule {
 
     public static String fontLocation = "com/jme/app/defaultfont.tga";
     protected Node fpsNode;
@@ -83,6 +83,11 @@ public class HUDModule implements RenderModule {
 
     public void render(RenderInfo info, float interpolation) {
         info.getDisplay().getRenderer().draw(fpsNode);
+    }
+
+    @Override
+    public void setActiveImpl(boolean active, RenderInfo info) {
+        // nothing to do
     }
 
 }

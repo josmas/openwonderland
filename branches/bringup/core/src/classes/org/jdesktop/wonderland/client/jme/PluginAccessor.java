@@ -29,4 +29,10 @@ public interface PluginAccessor {
      * Set the desired fps rate
      */
     public void setFPS(int fps);
+    
+    /**
+     * Returns the module manager
+     * @return
+     */
+    public ModuleManager getModuleManager();
 }
