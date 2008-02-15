@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.jdesktop.wonderland.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
  * 
  * @author paulby
  */
+@InternalAPI
 public class CellMirrorImpl implements CellMirror {
 
     private BoundingVolume computedWorldBounds;
@@ -43,7 +45,8 @@ public class CellMirrorImpl implements CellMirror {
     private CellTransform localToVWorld;
     private CellID cellID;
     private CellTransform transform;
-    private long transformVersion;
+    private int transformVersion;
+    private int contentsVersion;
     private Class cellClass;
     
     private CellMirrorImpl parent;
@@ -64,6 +67,7 @@ public class CellMirrorImpl implements CellMirror {
     CellMirrorImpl(CellMirror mirror) {
         this.cellID = mirror.getCellID();
         this.transformVersion = mirror.getTransformVersion();
+        this.contentsVersion = mirror.getContentsVersion();
     }
     
     /**
@@ -185,6 +189,10 @@ public class CellMirrorImpl implements CellMirror {
             return new ArrayList<CellMirrorImpl>().iterator();
         return children.iterator();
     }
+
+    void contentsChanged() {
+        contentsVersion++;
+    }
     
     /**
      * Set the parent of this object, throws a MultipleParentExcetion if this
@@ -277,8 +285,15 @@ public class CellMirrorImpl implements CellMirror {
     /**
      * @{inheritDoc}
      */
-    public long getTransformVersion() {
+    public int getTransformVersion() {
         return transformVersion;
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    public int getContentsVersion() {
+        return contentsVersion;
     }
     
 }

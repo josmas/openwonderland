@@ -138,4 +138,9 @@ public class ServiceBoundsHandler extends BoundsHandler {
         AppContext.getManager(BoundsManager.class).childrenChanged(parent, child, childAdded);
     }
 
+    @Override
+    public void cellContentsChanged(CellID cellID) {
+        AppContext.getManager(BoundsManager.class).cellContentsChanged(cellID);
+    }
+
 }

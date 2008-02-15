@@ -19,9 +19,18 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.bounding.BoundingSphere;
+import com.jme.image.Texture;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.SceneElement;
+import com.jme.scene.Spatial;
+import com.jme.scene.state.RenderState;
+import com.jme.scene.state.TextureState;
+import com.jme.util.TextureKey;
+import com.jme.util.TextureManager;
+import com.jme.util.export.binary.BinaryExporter;
+import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
@@ -36,6 +45,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
 import org.jdesktop.wonderland.client.datamgr.Repository;
+import org.jdesktop.wonderland.client.utils.jme.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.utils.jme.traverser.TreeScan;
 import org.jdesktop.wonderland.common.AssetType;
 
 /**
@@ -48,15 +59,52 @@ public class CellModule implements RenderModule {
     
     public void init(RenderInfo info) {
         try {
-            Node model = loadStaticCollada(new URL("file:////home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.dae"), new Vector3f());
-//            Node model = loadStaticCollada(new URL("file:////home/paulby/local-code/java.net/wonderland/branches/bringup/core/tmp-avatar.dae"), new Vector3f());
+            Repository repository = new Repository(new URL("http://192.18.37.42/"));
+
+            Asset asset = AssetManager.getAssetManager().getAsset(AssetType.FILE, repository, "mpk20.jme", null);
+            AssetManager.getAssetManager().waitForAsset(asset);
+            URL url = asset.getLocalCacheFile().toURI().toURL();
+            
+            Node model = Loaders.loadJMEBinary(url, new Vector3f());
+//            Node model = Loaders.loadJMEBinary(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.jme"), new Vector3f());
+//            Node model = loadStaticCollada(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.dae"), new Vector3f());
+//            Node model = loadStaticCollada(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mannikin.dae"), new Vector3f());
+
+//            fixTextureKeys(model);
             model.setModelBound(new BoundingSphere());
             model.updateModelBound();
+//            File file = new File("tmp.jme");
+//            BinaryExporter.getInstance().save(model, file);
+
             model.lock();
             info.getRoot().attachChild(model);
+            
+            TextureManager.preloadCache(info.getDisplay().getRenderer());
         } catch (IOException ex) {
             Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
         } 
+    }
+    
+    private void fixTextureKeys(Node node) {
+        TreeScan.findNode(node, new ProcessNodeInterface() {
+
+            public boolean processNode(SceneElement node) {
+                if (node instanceof Spatial) {
+                    TextureState ts = (TextureState)node.getRenderState(RenderState.RS_TEXTURE);
+                    if (ts==null)
+                        return true;
+                    Texture t = ts.getTexture();
+                    if (t==null)
+                        return true;
+                    TextureKey key = t.getTextureKey();
+                    System.out.println("key "+key.getLocation());
+                    
+                }
+                
+                return true;
+            }
+            
+        });
     }
 
     public void update(RenderInfo info, float interpolation) {
@@ -101,51 +149,6 @@ public class CellModule implements RenderModule {
         ColladaImporter.cleanUp();
         
         return node;
-        
-    }
-
-    class WonderlandResourceLocator implements ResourceLocator {
-
-        private Repository repository;
-        private HashMap<String, URL> loadedTextures = new HashMap();
-        
-        public WonderlandResourceLocator() {
-            try {
-//                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models"));
-//                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core"));
-                repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        
-        public URL locateResource(String filename) {
-            //Check if we already processed this texture
-            URL ret=loadedTextures.get(filename);
-              
-            if (ret==null) {
-                AssetManager assetManager = AssetManager.getAssetManager();
-                Asset asset = assetManager.getAsset(AssetType.IMAGE, repository, filename, null);
-                assetManager.waitForAsset(asset);
-
-                System.out.println("Looking for Texture " + filename);
-
-                try {
-                    File f = asset.getLocalCacheFile();
-                    if (f==null)
-                        return null;
-                    ret = f.toURI().toURL();
-                    loadedTextures.put(ret.getFile(), ret);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
-                    ret = null;
-                }
-            }
-
-
-            return ret;
-              
-        }
         
     }
 }

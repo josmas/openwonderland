@@ -24,4 +24,9 @@ package org.jdesktop.wonderland.client.jme;
 public interface PluginAccessor {
 
     public void addModule(RenderModule module);
+
+    /**
+     * Set the desired fps rate
+     */
+    public void setFPS(int fps);
 }

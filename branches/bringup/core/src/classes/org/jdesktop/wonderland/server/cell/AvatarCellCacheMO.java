@@ -334,7 +334,8 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         // a reference to the cell itself
         private ManagedReference cellRef;
         
-        private long transformVersion=0;
+        private int transformVersion=Integer.MIN_VALUE;
+        private int contentsVersion=Integer.MIN_VALUE;
         
         public CellRef(CellID id) {
             this (id, null);
@@ -347,7 +348,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         private CellRef(CellID id, CellMO cell) {
             this.id = id;
             
-            // create a reference to the given CellGLO
+            // create a reference to the given CellMO
             if (cell != null) {
                 DataManager dm = AppContext.getDataManager();
                 cellRef = dm.createReference(cell);
@@ -379,28 +380,39 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         
         public void clearUpdateTypes(CellMirror cellMirror) {
             transformVersion = cellMirror.getTransformVersion();
+            contentsVersion = cellMirror.getContentsVersion();
             
             updateTypes.clear();
         }
         
-        public long getTransformVersion() {
+        public int getTransformVersion() {
             return transformVersion;
         }
 
-        public void setTransformVersion(long transformVersion) {
+        public void setTransformVersion(int transformVersion) {
             this.transformVersion = transformVersion;
         }
 
+        public int getContentsVersion() {
+            return contentsVersion;
+        }
+
+        public void setContentsVersion(int contentsVersion) {
+            this.contentsVersion = contentsVersion;
+        }
+
         public boolean hasUpdates(CellMirror cellMirror) {
-//            if (updateTypes==null)
-//                return false;
-//            return updateTypes.size()!=0;
+            boolean ret = false;
             if (cellMirror.getTransformVersion()!=transformVersion) {
                 addUpdateType(UpdateType.TRANSFORM);
-                return true;
+                ret = true;
+            }
+            if (cellMirror.getContentsVersion()!=contentsVersion) {
+                addUpdateType(UpdateType.CONTENT);
+                ret = true;
             }
             
-            return false;
+            return ret;
         }
         
         @Override
@@ -418,34 +430,5 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         }
     }
 
-    /***********************************************
-     * CacheHelperListener impl
-     ***********************************************/
-    
-    public void notifyTransformUpdate(CellMO cell) {
-        CellRef cr;
-    
-        cr = currentCells.get(cell.getCellID());
-        if (cr==null)
-            return;
-        cr.addUpdateType(CellRef.UpdateType.TRANSFORM);
-        
-        throw new RuntimeException("DEPRECATED");
-    }
-    
-    public void notifyContentUpdate(CellMO cell) {
-        CellRef cr;
-        cr = currentCells.get(cell.getCellID());
-        if (cr==null)
-            return;
-        cr.addUpdateType(CellRef.UpdateType.CONTENT);  
-        
-        throw new RuntimeException("DEPRECATED");
-        // TODO mark the cache as dirty
-    }
-    
-    /***********************************************
-     * End CacheHelperListener impl
-     ***********************************************/
 }
 

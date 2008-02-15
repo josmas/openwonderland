@@ -156,6 +156,15 @@ public class AssetManager {
         return asset;
     }
     
+    /**
+     * Wait for the specified asset to load. This method will return once
+     * the asset is either loaded, or the load fails.
+     * 
+     * If the load is successful true is returned, otherwise false is returned
+     * 
+     * @param asset
+     * @return true if asset is ready, false if there was a failure
+     */
     public boolean waitForAsset(Asset asset) {
         try {
             AssetLoader loader;
@@ -402,18 +411,6 @@ public class AssetManager {
     
 
 
-//    class ImageComponent2DURLAssetManager implements ImageComponent2DURL.AssetManager {
-//
-//        public void loadImage(ImageComponent2DURL arg0) {
-//            throw new UnsupportedOperationException("Not supported yet.");
-//        }
-//
-//        public ImageComponent2DURL createImageComponent2DURL(URL arg0, String arg1) {
-//            throw new UnsupportedOperationException("Not supported yet.");
-//        }
-//        
-//    }
-    
     /**
      * Used to load assets in parallel.
      */
@@ -472,13 +469,14 @@ public class AssetManager {
             return asset.getAsset();
         }
         
-        private void getFromServer() {
+        private void getFromServer() throws IOException {
             try {
                 getAssetFromRepository(asset, null);
                 asset.postProcess();
             } catch (IOException ex) {
                 // TODO try different repositories
                 Logger.getLogger(AssetManager.class.getName()).log(Level.SEVERE, null, ex);
+                throw ex;
             }
             
         }

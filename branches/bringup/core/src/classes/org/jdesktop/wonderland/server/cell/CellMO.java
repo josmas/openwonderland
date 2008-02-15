@@ -294,6 +294,13 @@ public class CellMO extends WonderlandMO {
     }
     
     /**
+     * Notify the client that the contents of the cell have changed
+     */
+    public void contentChanged() {
+        logger.severe("MoveableCellMO.contentChanged NOT IMPLEMENTED");
+    }
+    
+    /**
      * Set the local to VWorld transform of this cells origin
      * @param transform
      */

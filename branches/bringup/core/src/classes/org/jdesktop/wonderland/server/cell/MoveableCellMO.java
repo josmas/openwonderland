@@ -47,13 +47,6 @@ public class MoveableCellMO extends CellMO {
     
     
     /**
-     * Notify the client that the contents of the cell have changed
-     */
-    public void contentChanged() {
-        logger.severe("MoveableCellMO.contentChanged NOT IMPLEMENTED");
-    }
-    
-    /**
      * Add a CellMoveListener. This listener is notified when the setTransform 
      * method is called. super.setTransform is called first, so the cell transform
      * will have been updated before the listener is called.

@@ -48,6 +48,7 @@ import com.jme.scene.Node;
 import com.jme.scene.SceneElement;
 import com.jme.scene.Spatial;
 import com.jme.scene.SwitchNode;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class TreeScan extends Object {
@@ -178,9 +179,12 @@ public class TreeScan extends Object {
 //                actualFindNode( ((Switch)treeRoot).currentChild(), nodeClasses,
 //                        processor, onlyEnabledSwitchChildren, sharedGroupsOnce );
         } else if (treeRoot instanceof Node) {
-            for(Spatial sp : ((Node)treeRoot).getChildren()) {
-                actualFindNode( sp, nodeClasses, processor,
-                        onlyEnabledSwitchChildren, sharedGroupsOnce  );
+            ArrayList<Spatial> children = ((Node)treeRoot).getChildren();
+            if (children!=null) {
+                for(Spatial sp : children) {
+                    actualFindNode( sp, nodeClasses, processor,
+                            onlyEnabledSwitchChildren, sharedGroupsOnce  );
+                }
             }
         }
     }
