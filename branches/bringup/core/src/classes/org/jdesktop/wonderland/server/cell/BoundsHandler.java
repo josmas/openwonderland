@@ -152,5 +152,5 @@ public abstract class BoundsHandler {
         throw new RuntimeException("Not Implemented");
     }
  
-    
+    public abstract CellMirror getCellMirror(CellID cellID);
 }

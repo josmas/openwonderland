@@ -69,7 +69,17 @@ public class BoundsMultiClient
         logger.info(getName() + " login succeeded");
         
         LocalAvatar avatar = session.getLocalAvatar();
-        mover = new MoverThread(avatar);
+        
+        // pick a direction to move
+        int dir = (int) Math.random() * 10;
+        if (dir < 2) {
+            mover = new RandomMover(avatar);
+        } else if (dir < 6) {
+            mover = new XMover(avatar);
+        } else {
+            mover = new YMover(avatar);
+        }
+        
         mover.start();
     }
     
@@ -149,8 +159,8 @@ public class BoundsMultiClient
         }
     }
 
-    class MoverThread extends Thread {
-        private Vector3f location = new Vector3f();
+    abstract class MoverThread extends Thread {
+        protected Vector3f location = new Vector3f();
         private Quaternion orientation = null;
         private LocalAvatar avatar;
         private boolean quit = false;
@@ -170,8 +180,10 @@ public class BoundsMultiClient
         
         @Override
         public void run() {
+            randomPosition();
+                            
             while(!isQuit()) {
-                randomPosition();
+                nextPosition();
                 avatar.localMoveRequest(location, orientation);
                 try {
                     sleep(200);
@@ -181,10 +193,46 @@ public class BoundsMultiClient
             }
         }
         
-        private void randomPosition() {
+        protected void randomPosition() {
             location.x = FastMath.rand.nextFloat()*50;
             location.z = FastMath.rand.nextFloat()*50;
         }
         
+        protected abstract void nextPosition();
+        
     }
+    
+    class RandomMover extends MoverThread {
+        public RandomMover(LocalAvatar avatar) {
+            super (avatar);
+        }
+        
+        @Override
+        protected void nextPosition() {
+            randomPosition();
+        }
+    }
+    
+    class XMover extends MoverThread {
+        public XMover(LocalAvatar avatar) {
+            super (avatar);
+        }
+        
+        @Override
+        protected void nextPosition() {
+            location.x = Math.abs(location.x--) % 50;
+        }
+    }
+    
+    class YMover extends MoverThread {
+        public YMover(LocalAvatar avatar) {
+            super (avatar);
+        }
+        
+        @Override
+        protected void nextPosition() {
+            location.y = Math.abs(location.y++) % 50;
+        }
+    }
+    
 }

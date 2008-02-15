@@ -143,4 +143,9 @@ public class ServiceBoundsHandler extends BoundsHandler {
         AppContext.getManager(BoundsManager.class).cellContentsChanged(cellID);
     }
 
+    @Override
+    public CellMirror getCellMirror(CellID cellID) {
+        BoundsManager mgr = AppContext.getManager(BoundsManager.class);
+        return mgr.getCellMirrorImpl(cellID);
+    }
 }
