@@ -73,15 +73,19 @@ public abstract class Asset<T> {
         return localCacheFile;
     }
 
-    public void setLocalCacheFile(File localCacheFile) {
+    void setLocalCacheFile(File localCacheFile) {
         this.localCacheFile = localCacheFile;
     }
 
+    /**
+     * Get the checksum of this file in the local cache.
+     * @return
+     */
     public Checksum getLocalChecksum() {
         return localChecksum;
     }
 
-    public void setLocalChecksum(Checksum checksum) {
+    void setLocalChecksum(Checksum checksum) {
         this.localChecksum = checksum;
     }
     

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.server.cell.bounds;
 
 import com.jme.bounding.BoundingVolume;
 import java.util.Collection;
+import org.jdesktop.wonderland.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
@@ -28,6 +29,7 @@ import org.jdesktop.wonderland.server.cell.CellMirror;
  *
  * @author paulby
  */
+@InternalAPI
 public class BoundsManagerImpl implements BoundsManager {
     private BoundsService service;
     
@@ -61,6 +63,10 @@ public class BoundsManagerImpl implements BoundsManager {
 
     public void childrenChanged(CellID parent, CellID child, boolean childAdded) {
         service.childrenChanged(parent, child, childAdded);
+    }
+
+    public void cellContentsChanged(CellID cellID) {
+        service.cellContentsChanged(cellID);
     }
 
 

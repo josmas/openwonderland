@@ -44,6 +44,9 @@ public class AssetImage extends Asset<File> {
 
     @Override
     boolean loadLocal() {
+        if (getLocalCacheFile()==null) {
+            return false;
+        }
         return getLocalCacheFile().canRead();
     }
 

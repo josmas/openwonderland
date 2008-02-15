@@ -126,6 +126,15 @@ public abstract class BoundsHandler {
      * @param bounds
      */
     public abstract void cellBoundsChanged(CellID cellID, BoundingVolume bounds);
+
+    /**
+     * Notify handler that the contents of the cell has changed, this
+     * will cause change notifications to be sent from each AvatarCellCacheMO
+     * that contains this cell during the next revalidation cycle
+     * 
+     * @param cellID
+     */
+    public abstract void cellContentsChanged(CellID cellID);
     
     public abstract Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor);
  

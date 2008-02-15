@@ -232,4 +232,8 @@ public class BoundsServiceImpl implements BoundsService {
         }
     }
 
+    public void cellContentsChanged(CellID cellID) {
+        getCellMirrorImpl(cellID).contentsChanged();
+    }
+
 }

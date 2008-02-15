@@ -18,7 +18,9 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.app.BaseGame;
+import com.jme.app.FixedFramerateGame;
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import com.jme.image.Texture;
 import com.jme.input.AbsoluteMouse;
 import com.jme.input.ChaseCamera;
@@ -26,15 +28,21 @@ import com.jme.input.InputHandler;
 import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
 import com.jme.input.MouseInput;
+import com.jme.input.action.InputActionEvent;
+import com.jme.input.action.MouseInputAction;
 import com.jme.input.thirdperson.ThirdPersonMouseLook;
 import com.jme.intersection.BoundingPickResults;
+import com.jme.intersection.PickResults;
 import com.jme.light.DirectionalLight;
 import com.jme.math.FastMath;
+import com.jme.math.Ray;
+import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.Camera;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.Skybox;
+import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.AlphaState;
 import com.jme.scene.state.CullState;
@@ -44,18 +52,24 @@ import com.jme.scene.state.ZBufferState;
 import com.jme.system.DisplaySystem;
 import com.jme.system.JmeException;
 import com.jme.util.TextureManager;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.datamgr.Asset;
+import org.jdesktop.wonderland.client.datamgr.AssetManager;
+import org.jdesktop.wonderland.client.datamgr.Repository;
 import org.jdesktop.wonderland.client.jme.WonderlandJmeClient.PendingModuleAction.Action;
+import org.jdesktop.wonderland.common.AssetType;
 
 /**
  *
  * @author paulby
  */
-public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
+public class WonderlandJmeClient extends FixedFramerateGame implements PluginAccessor {
     private boolean fullscreen;
     private int freq;
     private int depth;
@@ -133,6 +147,7 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         try {
             display = DisplaySystem.getDisplaySystem(properties.getRenderer());
             display.createWindow(width, height, depth, freq, fullscreen);
+            display.setTitle("Project Wonderland");
 
             cam = display.getRenderer().createCamera(width, height);
         } catch (JmeException e) {
@@ -167,7 +182,7 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         display.getRenderer().enableStatistics(true);
 
         // Enable hardware cursor
-        MouseInput.get().setCursorVisible(true);
+//        MouseInput.get().setCursorVisible(true);
     }
 
     @Override
@@ -195,9 +210,9 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         
         AvatarModule avatarModule = new AvatarModule();
         addModule(avatarModule);
-        
+                
         addModule(new ChaseCameraModule(avatarModule));
-//        addModule(new CursorModule(avatarModule));
+        addModule(new CursorModule(avatarModule));
         
         addModule(new HUDModule());
         
@@ -232,7 +247,17 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         toolFrame.dispose();
     }
     
+    public void setFPS(int fps) {
+        setFrameRate(fps);
+    }
+
     public static void main(String args[]) {
+//        try {
+//            URL u = new URL("wlasset://server/test.a#/base/url");
+//            u.openStream();
+//        } catch (IOException ex) {
+//            Logger.getLogger(WonderlandJmeClient.class.getName()).log(Level.SEVERE, null, ex);
+//        } 
         WonderlandJmeClient app = new WonderlandJmeClient();
         app.setDialogBehaviour(FIRSTRUN_OR_NOCONFIGFILE_SHOW_PROPS_DIALOG, 
                 WonderlandJmeClient.class.getClassLoader().getResource(
@@ -263,10 +288,16 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
             light.setDirection(new Vector3f(1,-1,0));
             light.setEnabled(true);
 
+            DirectionalLight light2 = new DirectionalLight();
+            light2.setDiffuse(new ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
+            light2.setDirection(new Vector3f(-1,-1,0));
+            light2.setEnabled(true);
+            
               /** Attach the light to a lightState and the lightState to rootNode. */
             LightState lightState = info.getDisplay().getRenderer().createLightState();
             lightState.setEnabled(true);
             lightState.attach(light);
+            lightState.attach(light2);
             info.getRoot().setRenderState(lightState);
         }
 
@@ -355,20 +386,29 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         private Node avatarRoot;
 
         public void init(RenderInfo info) {
-            float HEIGHT = 1.7f;
+//            float HEIGHT = 1.7f;
             
             try {
                 //box stand in
-                Box b = new Box("box", new Vector3f(0f,HEIGHT/2f,0f), 0.35f, HEIGHT, 0.5f);
-//                Node a = Loaders.loadColladaAvatar(new Vector3f(0,0,0));
-                b.setModelBound(new BoundingBox());
-                b.updateModelBound();
+//                Box b = new Box("box", new Vector3f(0f,HEIGHT/2f,0f), 0.65f, HEIGHT, 0.4f);
+                Repository repository = new Repository(new URL("http://192.18.37.42/"));
+
+                Asset asset = AssetManager.getAssetManager().getAsset(AssetType.FILE, repository, "mannikin.jme", null);
+                AssetManager.getAssetManager().waitForAsset(asset);
+                // new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mannikin.jme")
+                URL url = asset.getLocalCacheFile().toURI().toURL();
+                
+                Node model = Loaders.loadJMEBinary(url, new Vector3f());
+                model.setModelBound(new BoundingBox());
+                model.updateModelBound();
+                
+//                b.setModelBound(new BoundingBox());
+//                b.updateModelBound();
 
                 avatarRoot = new Node("Avatar Node");
                 avatarRoot.setLocalTranslation(new Vector3f(0, 0, 0));
                 info.getRoot().attachChild(avatarRoot);
-                avatarRoot.attachChild(b);
-//                avatarRoot.attachChild(a);
+                avatarRoot.attachChild(model);
                 avatarRoot.updateWorldBound();
                 
                 input = new WonderlandDefaultHandler(avatarRoot, properties.getRenderer());
@@ -388,6 +428,11 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
             return avatarRoot;
         }
         
+        /**
+         * Return the input handler for this avatar
+         * 
+         * @return
+         */
         public InputHandler getInputHandler() {
             return input;
         }
@@ -409,7 +454,8 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         
         public void init(RenderInfo info) {
             Vector3f targetOffset = new Vector3f();
-            targetOffset.y = ((BoundingBox) avatarModule.getAvatarRoot().getWorldBound()).yExtent * 1.5f;
+//            targetOffset.y = ((BoundingBox) avatarModule.getAvatarRoot().getWorldBound()).yExtent * 1.5f;
+            targetOffset.y = 2.8f;
             HashMap<String, Object> props = new HashMap<String, Object>();
             props.put(ThirdPersonMouseLook.PROP_MAXROLLOUT, "6");
             props.put(ThirdPersonMouseLook.PROP_MINROLLOUT, "3");
@@ -475,6 +521,11 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
             // Assign the mouse to an input handler
             am.registerWithInputHandler( input );
             
+            input.addAction(new MousePick(renderInfo.getCamera(), 
+                    renderInfo.getRoot(),
+                    am));
+            
+            info.getRoot().attachChild(am);
         }
 
         public void update(RenderInfo info, float interpolation) {
@@ -484,6 +535,57 @@ public class WonderlandJmeClient extends BaseGame implements PluginAccessor {
         public void render(RenderInfo info, float interpolation) {
             // do nothing
          }
+        
+    }
+    
+    class MousePick extends MouseInputAction {
+
+        private Camera camera;
+        private Spatial scene;
+        private AbsoluteMouse absMouse;
+        
+        private int hits;
+        private String hitItems;
+        
+        public MousePick(Camera camera, Spatial scene, AbsoluteMouse absMouse) {
+            this.camera = camera;
+            this.scene = scene;
+            this.absMouse = absMouse;
+        }
+        
+        public void performAction(InputActionEvent evt) {
+            if( MouseInput.get().isButtonDown(0)) {
+                PickResults results = new BoundingPickResults();
+                Vector2f screenPos = new Vector2f();
+                
+                // Get the position that the mouse is pointing to
+                screenPos.set(absMouse.getHotSpotPosition().x, absMouse.getHotSpotPosition().y);
+                // Get the world location of that X,Y value
+                Vector3f worldCoords = display.getWorldCoordinates(screenPos, 1.0f);
+                // Create a ray starting from the camera, and going in the direction
+                // of the mouse's location
+                Ray mouseRay = new Ray(camera.getLocation(), worldCoords
+                                .subtractLocal(camera.getLocation()));
+                mouseRay.getDirection().normalizeLocal();
+                results.clear();
+
+                scene.calculatePick(mouseRay, results);
+                        
+                hits += results.getNumber();
+                hitItems = "";
+                if(results.getNumber() > 0) {
+                    for(int i = 0; i < results.getNumber(); i++) {
+                        hitItems += results.getPickData(i).getTargetMesh().getParentGeom().getName() + " " + results.getPickData(i).getDistance();
+                        if(i != results.getNumber() -1) {
+                            hitItems += ", ";
+                        }
+                    }
+                }
+                results.clear();
+                System.out.println("Ray "+mouseRay);
+                System.out.println("Hits: " + hits + " : " + hitItems);
+            }
+        }
         
     }
     

@@ -15,32 +15,24 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.client.protocols.wltexture;
 
-import org.jdesktop.wonderland.common.cell.CellID;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 
 /**
- * A mirror of a cell from the Bounds service
+ * Handler for the wltexture: protocol
  * 
  * @author paulby
  */
-public interface CellMirror {
-    
-    /**
-     * Returns the cell ID
-     * @return
-     */
-    public CellID getCellID();
+public class Handler extends URLStreamHandler {
 
-    /**
-     * Returns the version number of the cells contents
-     * @return
-     */
-    public int getContentsVersion();
-    
-    /**
-     * Return the version number of the cells transform
-     * @return
-     */
-    public int getTransformVersion();
+    @Override
+    protected URLConnection openConnection(URL url) throws IOException {
+        assert(url.getProtocol().equalsIgnoreCase("wltexture"));
+        return new WlTextureURLConnection(url);
+    }
+
 }

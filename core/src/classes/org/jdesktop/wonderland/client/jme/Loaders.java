@@ -28,13 +28,16 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Controller;
 import com.jme.scene.Node;
+import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -45,6 +48,21 @@ public class Loaders {
     
     private static final Logger logger = Logger.getLogger(Loaders.class.getName());
 
+    public static Node loadJMEBinary(URL asset, Vector3f origin) {
+        try {
+            ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, new WonderlandResourceLocator());
+
+            Node ret;
+
+            ret = (Node) BinaryImporter.getInstance().load(asset);
+
+            return ret;
+        } catch (IOException ex) {
+            Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
     public static Node loadColladaAvatar(Vector3f origin) throws IOException {
         AnimationController ac;
         

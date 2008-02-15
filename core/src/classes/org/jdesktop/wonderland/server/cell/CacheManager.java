@@ -23,6 +23,7 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.ArrayList;
+import org.jdesktop.wonderland.InternalAPI;
 
 /**
  * Temporary approach. In the final version AvatarCellCaches will be updated
@@ -30,6 +31,7 @@ import java.util.ArrayList;
  * 
  * @author paulby
  */
+@InternalAPI
 public class CacheManager implements ManagedObject, Serializable {
 
     private ArrayList<ManagedReference> caches = new ArrayList();
@@ -42,6 +44,9 @@ public class CacheManager implements ManagedObject, Serializable {
         AppContext.getTaskManager().schedulePeriodicTask(new CacheRevalidateTask(), 2000, 500);
     }
     
+    /**
+     * Initialize the CacheManager, called by WonderlandContext during startup
+     */
     public static void initialize() {
         new CacheManager();
     }
@@ -54,6 +59,10 @@ public class CacheManager implements ManagedObject, Serializable {
         caches.remove(AppContext.getDataManager().createReference(cache));
     }
     
+    /**
+     * Add an avatar cache, called when avatar logs in.
+     * @param cache
+     */
     public static void addCache(AvatarCellCacheMO cache) {
         CacheManager mgr = AppContext.getDataManager().getBinding(BINDING_NAME, CacheManager.class);
         AppContext.getDataManager().markForUpdate(mgr);
@@ -61,6 +70,10 @@ public class CacheManager implements ManagedObject, Serializable {
         mgr.addCacheImpl(cache);
     }
 
+    /**
+     * Remove an avatar cache, called when avatar logs out.
+     * @param cache
+     */
     public static void removeCache(AvatarCellCacheMO cache) {
         CacheManager mgr = AppContext.getDataManager().getBinding(BINDING_NAME, CacheManager.class);
         AppContext.getDataManager().markForUpdate(mgr);
