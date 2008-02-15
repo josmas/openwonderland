@@ -182,7 +182,7 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         display.getRenderer().enableStatistics(true);
 
         // Enable hardware cursor
-//        MouseInput.get().setCursorVisible(true);
+        MouseInput.get().setCursorVisible(true);
     }
 
     @Override
