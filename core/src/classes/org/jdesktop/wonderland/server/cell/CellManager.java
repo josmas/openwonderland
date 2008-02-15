@@ -493,13 +493,17 @@ public class CellManager implements ManagedObject, Serializable {
      * Return a new cell Reconfigure message.
      */
     public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellGLO) {
+        CellID parentID = null;
+        if (cellGLO.getParent() != null) {
+            parentID = cellGLO.getParent().getCellID();
+        }
         
         /* Return a new CellHiearchyMessage class, with populated data fields */
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UPDATE_CELL_CONTENT,
             cellGLO.getClientCellClassName(),
             cellGLO.getLocalBounds(),
             cellGLO.getCellID(),
-            cellGLO.getParent().getCellID(),
+            parentID,
             cellGLO.getCellChannelName(),
             cellGLO.getTransform(),
             cellGLO.getSetupData()

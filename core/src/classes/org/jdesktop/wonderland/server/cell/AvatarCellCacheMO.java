@@ -204,7 +204,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 if (cellRef == null) {
                     // the cell is new -- add it and send a message
                     CellMO cell = CellManager.getCell(cellID);
-                    cellRef = new CellRef(cell);
+                    cellRef = new CellRef(cell, cellMirror);
                     currentCells.put(cellID, cellRef);
                     
                     if (logger.isLoggable(Level.FINER)) {
@@ -232,7 +232,6 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                                 msg = CellManager.newContentUpdateCellMessage(cell);
                                 monitor.incMessageBytes(msg.getBytes().length);
                                 channel.send(userID, msg);
-                                monitor.incMessageBytes(msg.getBytes().length);
                                 break;
                         }
                     }
@@ -337,21 +336,27 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         private int transformVersion=Integer.MIN_VALUE;
         private int contentsVersion=Integer.MIN_VALUE;
         
-        public CellRef(CellID id) {
-            this (id, null);
-        }
-        
         public CellRef(CellMO cell) {
-            this (cell.getCellID(), cell);
+            this (cell, BoundsHandler.get().getCellMirror(cell.getCellID()));
         }
         
-        private CellRef(CellID id, CellMO cell) {
+        public CellRef(CellMO cell, CellMirror cellMirror) {
+            this (cell.getCellID(), cell, cellMirror);
+        }
+        
+        private CellRef(CellID id, CellMO cell, CellMirror cellMirror) {
             this.id = id;
             
             // create a reference to the given CellMO
             if (cell != null) {
                 DataManager dm = AppContext.getDataManager();
                 cellRef = dm.createReference(cell);
+            }
+            
+            // initialize versions
+            if (cellMirror != null) {
+                transformVersion = cellMirror.getTransformVersion();
+                contentsVersion = cellMirror.getContentsVersion();
             }
         }
         
@@ -381,7 +386,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         public void clearUpdateTypes(CellMirror cellMirror) {
             transformVersion = cellMirror.getTransformVersion();
             contentsVersion = cellMirror.getContentsVersion();
-            
+      
             updateTypes.clear();
         }
         
