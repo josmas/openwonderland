@@ -53,9 +53,10 @@ import org.jdesktop.wonderland.common.AssetType;
  *
  * @author paulby
  */
-public class CellModule implements RenderModule {
+public class CellModule extends RenderModule {
 
     private static final Logger logger = Logger.getLogger(CellModule.class.getName());
+    private Node model;
     
     public void init(RenderInfo info) {
         try {
@@ -65,10 +66,10 @@ public class CellModule implements RenderModule {
             AssetManager.getAssetManager().waitForAsset(asset);
             URL url = asset.getLocalCacheFile().toURI().toURL();
             
-            Node model = Loaders.loadJMEBinary(url, new Vector3f());
-//            Node model = Loaders.loadJMEBinary(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.jme"), new Vector3f());
-//            Node model = loadStaticCollada(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.dae"), new Vector3f());
-//            Node model = loadStaticCollada(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mannikin.dae"), new Vector3f());
+            model = Loaders.loadJMEBinary(url, new Vector3f());
+//            model = Loaders.loadJMEBinary(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.jme"), new Vector3f());
+//            model = loadStaticCollada(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.dae"), new Vector3f());
+//            model = loadStaticCollada(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mannikin.dae"), new Vector3f());
 
 //            fixTextureKeys(model);
             model.setModelBound(new BoundingSphere());
@@ -77,7 +78,6 @@ public class CellModule implements RenderModule {
 //            BinaryExporter.getInstance().save(model, file);
 
             model.lock();
-            info.getRoot().attachChild(model);
             
             TextureManager.preloadCache(info.getDisplay().getRenderer());
         } catch (IOException ex) {
@@ -85,7 +85,7 @@ public class CellModule implements RenderModule {
         } 
     }
     
-    private void fixTextureKeys(Node node) {
+    private void printTextureKeys(Node node) {
         TreeScan.findNode(node, new ProcessNodeInterface() {
 
             public boolean processNode(SceneElement node) {
@@ -151,4 +151,14 @@ public class CellModule implements RenderModule {
         return node;
         
     }
+
+    public void setActiveImpl(boolean active, RenderInfo info) {
+        if (active)
+            info.getRoot().attachChild(model);
+        else
+            info.getRoot().detachChild(model);
+        
+    }
+
+  
 }

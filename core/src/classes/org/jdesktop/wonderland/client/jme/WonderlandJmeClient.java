@@ -87,6 +87,8 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
     
     private boolean isRunning = false;
     
+    private ModuleManager moduleManager = new ModuleManager(this);
+    
     @Override
     protected void update(float interpolation) {
         // update the time to get the framerate
@@ -95,18 +97,29 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         synchronized(pendingActions) {
             if (pendingActions.size()!=0) {
                 for(PendingModuleAction pending : pendingActions) {
+                    RenderModule module = pending.getModule();
                     switch(pending.getAction()) {
                         case ADD :
-                            modules.add(pending.getModule());
+                            module.init(renderInfo);
+                            module.setActive(true, renderInfo);
+                            modules.add(module);
+                            renderInfo.getRoot().updateGeometricState(renderInfo.getTimer().getTime(), true);
+                            renderInfo.getRoot().updateRenderState();
                             break;
                         case REMOVE :
-                            modules.remove(pending.getModule());
+                            modules.remove(module);
+                            module.setActive(false, renderInfo);
+                            
+                            // Not sure we need to do both of these for remove
+                            renderInfo.getRoot().updateGeometricState(renderInfo.getTimer().getTime(), true);
+                            renderInfo.getRoot().updateRenderState();
                             break;
                         default :
                             throw new RuntimeException("Unknown Pending Action Type");
                     }
                 }
             }
+            pendingActions.clear();
         }
         
         interpolation = renderInfo.getTimer().getTimePerFrame();
@@ -202,21 +215,23 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         cs.setCullMode(CullState.CS_BACK);
         renderInfo.getRoot().setRenderState(cs);
      
-        addModule(new WorldModule());
+        moduleManager.addModule(new WorldModule(), true);
         
-        addModule(new LightModule());
+        moduleManager.addModule(new LightModule(), true);
         
-        addModule(new SkyBoxModule());
+        moduleManager.addModule(new SkyBoxModule(), true);
         
         AvatarModule avatarModule = new AvatarModule();
-        addModule(avatarModule);
+        moduleManager.addModule(avatarModule, true);
                 
-        addModule(new ChaseCameraModule(avatarModule));
-        addModule(new CursorModule(avatarModule));
+        moduleManager.addModule(new ChaseCameraModule(avatarModule), true);
+        moduleManager.addModule(new CursorModule(avatarModule), true);
         
-        addModule(new HUDModule());
+        moduleManager.addModule(new HUDModule(), true);
         
-        addModule(new CellModule());
+        moduleManager.addModule(new CellModule(), false);
+        
+        moduleManager.addModule(new PortalModule(), true);
         
         // update the scene graph for rendering
         renderInfo.getRoot().updateGeometricState(0.0f, true);
@@ -232,10 +247,22 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
             }
         } else {
             module.init(renderInfo);
+            module.setActive(true, renderInfo);
             modules.add(module);
         }
     }
 
+    public void removeModule(RenderModule module) {
+        if (isRunning) {
+            synchronized(pendingActions) {
+                pendingActions.add(new PendingModuleAction(Action.REMOVE, module));
+            }
+        } else {
+            module.setActive(false, renderInfo);
+            modules.remove(module);
+        }
+    }
+    
     @Override
     protected void reinit() {
         display.recreateWindow(width, height, depth, freq, fullscreen);
@@ -249,6 +276,10 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
     
     public void setFPS(int fps) {
         setFrameRate(fps);
+    }
+    
+    public ModuleManager getModuleManager() {
+        return moduleManager;
     }
 
     public static void main(String args[]) {
@@ -266,7 +297,7 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         
     }
     
-    class WorldModule implements RenderModule {
+    class WorldModule extends RenderModule {
 
         public void init(RenderInfo info) {
         }
@@ -276,10 +307,15 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
 
         public void render(RenderInfo info, float interpolation) {
         }
+
+        @Override
+        public void setActiveImpl(boolean active, RenderInfo info) {
+        }
         
     }
     
-    class LightModule implements RenderModule {
+    class LightModule extends RenderModule {
+        private LightState lightState;
 
         public void init(RenderInfo info) {
             DirectionalLight light = new DirectionalLight();
@@ -294,11 +330,10 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
             light2.setEnabled(true);
             
               /** Attach the light to a lightState and the lightState to rootNode. */
-            LightState lightState = info.getDisplay().getRenderer().createLightState();
+            lightState = info.getDisplay().getRenderer().createLightState();
             lightState.setEnabled(true);
             lightState.attach(light);
             lightState.attach(light2);
-            info.getRoot().setRenderState(lightState);
         }
 
         public void update(RenderInfo info, float interpolation) {
@@ -308,9 +343,17 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         public void render(RenderInfo info, float interpolation) {
             // Nothing to do
         }
+
+        @Override
+        public void setActiveImpl(boolean active, RenderInfo info) {
+            if (active)
+                info.getRoot().setRenderState(lightState);
+            else
+                System.out.println("Disabling lights not implemented");
+        }
     }
     
-    class SkyBoxModule implements RenderModule {
+    class SkyBoxModule extends RenderModule {
 
         private Skybox skybox;
         private Texture up;
@@ -359,7 +402,6 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
             skybox.setTexture(Skybox.UP, up);
             skybox.setTexture(Skybox.DOWN, down);
             skybox.preloadTextures();
-            info.getRoot().attachChild(skybox);        
         }
 
         public void update(RenderInfo info, float interpolation) {
@@ -377,10 +419,18 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         public void render(RenderInfo info, float interpolation) {
             // Nothing to do
         }
+
+        @Override
+        public void setActiveImpl(boolean active, RenderInfo info) {
+            if (active)
+                info.getRoot().attachChild(skybox);        
+            else
+                info.getRoot().detachChild(skybox);        
+        }
      
     }
     
-    class AvatarModule implements RenderModule {
+    class AvatarModule extends RenderModule {
 
         private InputHandler input;
         private Node avatarRoot;
@@ -407,7 +457,6 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
 
                 avatarRoot = new Node("Avatar Node");
                 avatarRoot.setLocalTranslation(new Vector3f(0, 0, 0));
-                info.getRoot().attachChild(avatarRoot);
                 avatarRoot.attachChild(model);
                 avatarRoot.updateWorldBound();
                 
@@ -440,10 +489,18 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         public void render(RenderInfo info, float interpolation) {
             // Nothing to do
         }
+
+        @Override
+        public void setActiveImpl(boolean active, RenderInfo info) {
+            if (active)
+                info.getRoot().attachChild(avatarRoot);
+            else
+                info.getRoot().detachChild(avatarRoot);
+        }
         
     }
     
-    class ChaseCameraModule implements RenderModule {
+    class ChaseCameraModule extends RenderModule {
 
         private ChaseCamera chaser;
         private AvatarModule avatarModule;
@@ -475,10 +532,15 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         public void render(RenderInfo info, float interpolation) {
             // Nothing to do
         }
+
+        @Override
+        public void setActiveImpl(boolean active, RenderInfo info) {
+            // nothing to do
+        }
         
     }
     
-    public class CursorModule implements RenderModule {
+    public class CursorModule extends RenderModule {
 
         private BoundingPickResults pr;
         private AbsoluteMouse am;
@@ -535,6 +597,11 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         public void render(RenderInfo info, float interpolation) {
             // do nothing
          }
+
+        @Override
+        public void setActiveImpl(boolean active, RenderInfo info) {
+            // nothing to do
+        }
         
     }
     
