@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.cell.bounds;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.kernel.ComponentRegistry;
+import com.sun.sgs.service.Service;
 import com.sun.sgs.service.TransactionProxy;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,7 +90,7 @@ public class BoundsServiceImpl implements BoundsService {
     void cellLocalBoundsChanged(CellMirrorImpl cell) {
         // Synchronize to make changes atomic
         synchronized(bounds) {        
-            // Compute and set computedWorldBounds
+            // Compute and setTranslation computedWorldBounds
             BoundingVolume b = cell.getCachedVWBounds();
             Iterator<CellMirrorImpl> it = cell.getAllChildren();
             while(it.hasNext()) {
@@ -198,7 +199,7 @@ public class BoundsServiceImpl implements BoundsService {
     }
 
     /**
-     * Return an iterator over the set of visible cells, specifically child cells whose bounds interesect
+     * Return an iterator over the setTranslation of visible cells, specifically child cells whose bounds interesect
      * with the supplied bounds
      * 
      * @param rootCell from which to start search
@@ -234,6 +235,10 @@ public class BoundsServiceImpl implements BoundsService {
 
     public void cellContentsChanged(CellID cellID) {
         getCellMirrorImpl(cellID).contentsChanged();
+    }
+    
+    public void configure(com.sun.sgs.kernel.ComponentRegistry a,com.sun.sgs.service.TransactionProxy b) {
+        
     }
 
 }
