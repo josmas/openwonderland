@@ -71,7 +71,8 @@
     <property name="common.javaext.dir" location="${javaext.dir}/common"/>
 
     <property name="sgs.javaext.dir" location="${javaext.dir}/sgs"/>
-    <property name="sgs.version" value="0.9.5.1-r3730"/>
+<!--    <property name="sgs.version" value="0.9.5.1-r3730"/>-->
+    <property name="sgs.version" value="0.9.4-r3093"/>
     <property name="sgs.server.dir" location="${sgs.javaext.dir}/sgs-${sgs.version}"/>
     <property name="sgs.bdb.dir" location="${sgs.javaext.dir}/bdb-4.5.20"/>
 
@@ -82,12 +83,13 @@
     <property name="jme.native.dir" location="${jme.dir}/lib"/>
 
     <!-- Jars needed to use Java3d-->
-    <pathconvert property="j3d.classpath">
+<!--    <pathconvert property="j3d.classpath">
 	<path location="${jars.javaext.dir}/j3dcore.jar"/>
 	<path location="${jars.javaext.dir}/j3dutils.jar"/>
 	<path location="${jars.javaext.dir}/vecmath.jar"/>
 	<path location="${common.javaext.dir}/j3d-contrib-utils.jar"/>
     </pathconvert>
+-->
 
     <pathconvert property="jme.classpath">
 	<path location="${jme.dir}/jme/jme.jar"/>
@@ -169,6 +171,7 @@
         <path location="${common.javaext.dir}/commons-logging-1.1.jar"/>
         <path location="${common.javaext.dir}/swing-layout-1.0.jar"/>
         <path location="${common.javaext.dir}/TimingFramework.jar"/>
+        <path location="${common.javaext.dir}/gvis.jar"/>
     </pathconvert>
     
     <pathconvert property="voice.classpath">
@@ -184,12 +187,15 @@
 	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
 	<path location="${sgs.bdb.dir}/db.jar"/>
 <!--	<path location="${sgs.lib.dir}/listener.jar"/>-->
+        <path location="${common.javaext.dir}/smack.jar"/>
     </pathconvert>
 
      <pathconvert property="darkstar.client.classpath">
 	<path location="${sgs.javaext.dir}/sgs-client-${sgs.version}/lib/sgs-client.jar"/>
 	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
 	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
+        <path location="${common.javaext.dir}/smack.jar"/>
+        <path location="${common.javaext.dir}/smackx.jar"/>
     </pathconvert>
    
     <!-- wonderland modules -->
