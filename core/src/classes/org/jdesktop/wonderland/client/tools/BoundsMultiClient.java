@@ -134,13 +134,16 @@ public class BoundsMultiClient
     public static void main(String[] args) {
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         
+        System.out.println("args "+args[0]);
+        int buildNumber = Integer.parseInt(args[0]);
+        
         int count = 10;
         
         BoundsMultiClient[] bmc = new BoundsMultiClient[count];
         
         for (int i = 0; i < count; i++) {
             LoginParameters login = 
-                    new LoginParameters("foo" + i, "test".toCharArray());
+                    new LoginParameters("foo" + buildNumber+"_"+i, "test".toCharArray());
             
             try {
                 bmc[i] = new BoundsMultiClient(server, login);
