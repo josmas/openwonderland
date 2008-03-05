@@ -43,9 +43,26 @@ import org.jdesktop.wonderland.server.cell.CellMirror;
 public class BoundsServiceImpl implements BoundsService {
     private Map<CellID, CellMirrorImpl> bounds;
     
+    /**
+     * SGS 0.9.5 constructor
+     * @param properties
+     * @param systemRegistry
+     * @param proxy
+     */
     public BoundsServiceImpl(Properties properties, 
                              ComponentRegistry systemRegistry,
                              TransactionProxy proxy)
+    {
+        bounds = new HashMap<CellID, CellMirrorImpl>();
+    }
+    
+    /**
+     * SGS 0.9.4 constructor 
+     * @param properties
+     * @param systemRegistry
+     */
+    public BoundsServiceImpl(Properties properties, 
+                             ComponentRegistry systemRegistry)
     {
         bounds = new HashMap<CellID, CellMirrorImpl>();
     }
