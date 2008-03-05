@@ -344,11 +344,13 @@
     </target>
 
     <target name="run-multibounds" depends="jar-client">
+        <buildnumber/>
         <java classname="org.jdesktop.wonderland.client.tools.BoundsMultiClient" fork="true">
             <jvmarg value="-client"/>
             <jvmarg value="-Xmx384m"/>
             <!--<jvmarg value="-Xincgc"/>-->
             <jvmarg value="-Xms32m"/>
+            <arg value="${build.number}"/>
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
 	    </classpath>
