@@ -1,40 +1,5 @@
 <project basedir="." default="..." name="platform-setup">
 
-    <!-- Make sure that we are building/running under Java 6+ -->
-    <if>
-	<not>
-	    <available classname="java.io.Console"/>
-	</not>
-	<then>
-	    <fail message="Project Wonderland needs Java 6 or later..."/>
-	</then>
-    </if>
-
-    <!-- Make sure that there is no Java3D installed into the JRE or if it is,
-         then it atleast version 1.5 or later -->
-    <if>
-	<available classname="javax.media.j3d.NioImageBuffer"/>
-	<then>
-	    <echo>
-WARNING! Project Wonderland comes bundled with the latest version of Java3D
-         So please make sure that Java3D is NOT installed into the JRE or if
-         it is, make sure that it is the latest version (version 1.5.1+)
-	    </echo>
-	</then>
-	<else>
-	    <if>
-		<available classname="javax.media.j3d.Texture"/>
-		<then>
-		    <fail>
-ERROR! Project Wonderland comes bundled with the latest version of Java3D
-       So please make sure that Java3D is NOT installed into the JRE or if
-       it is, make sure that it is the latest version (version 1.5.1+)
-		    </fail>
-		</then>
-	    </if>
-	</else>
-    </if>
-
     <!-- Suck in all the environment variables (prefixed by env) -->
     <property environment="env"/>
 

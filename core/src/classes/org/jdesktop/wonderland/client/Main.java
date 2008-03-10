@@ -20,12 +20,13 @@
 
 package org.jdesktop.wonderland.client;
 
-import java.util.ServiceLoader;
+import java.util.Iterator;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import sun.misc.Service;
 
 /**
  *
@@ -65,10 +66,11 @@ public class Main extends javax.swing.JFrame {
      */
     private void loadPlugins() {
         // initialize plugins
-        ServiceLoader<ClientPlugin> plugins =
-                ServiceLoader.load(ClientPlugin.class);
-        
-        for (ClientPlugin plugin : plugins) {
+        for (Iterator<ClientPlugin> plugins = Service.providers(ClientPlugin.class);
+             plugins.hasNext();)
+        {
+            ClientPlugin plugin = plugins.next();
+            
             logger.info("Initializing plugin: " + plugin);
             plugin.initialize();
         }
@@ -97,15 +99,15 @@ public class Main extends javax.swing.JFrame {
 
         setJMenuBar(mainMenuBar);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 275, Short.MAX_VALUE)
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 275, Short.MAX_VALUE)
         );
 
         pack();

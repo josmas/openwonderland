@@ -29,6 +29,7 @@ import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import javax.swing.JLabel;
+import org.jdesktop.layout.Baseline;
 
 /**
  * JLabel with a drop-shadow
@@ -67,7 +68,7 @@ public class DropShadowJLabel extends JLabel {
         // get the original text placement
         Insets insets = getInsets();
         float textX = insets.left;
-        float textY = getBaseline(getWidth(), getHeight());
+        float textY = Baseline.getBaseline(this, getWidth(), getHeight());
         float shadowX = textX + getOffsetLeft();
         float shadowY = textY + getOffsetTop();
         

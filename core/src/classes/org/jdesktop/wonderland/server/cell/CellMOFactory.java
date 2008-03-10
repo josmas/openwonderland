@@ -20,7 +20,7 @@
 package org.jdesktop.wonderland.server.cell;
 
 import java.util.Iterator;
-import java.util.ServiceLoader;
+import sun.misc.Service;
 
 /**
  * A factory that creates cell GLOs by type.  This uses the service provider
@@ -52,12 +52,10 @@ public class CellMOFactory {
     {       
         CellMO res = null;
         
-        // get the service providers fot the CellMOProvider class
-        ServiceLoader<CellMOProvider> s = 
-                ServiceLoader.load(CellMOProvider.class);
-    
         // check each provider
-        for (Iterator<CellMOProvider> i = s.iterator(); i.hasNext();) {
+        for (Iterator<CellMOProvider> i = Service.providers(CellMOProvider.class); 
+             i.hasNext();)
+        {
             res = i.next().loadCellGLO(typeName, args);
             if (res != null) {
                 break;
