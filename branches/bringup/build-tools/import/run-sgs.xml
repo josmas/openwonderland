@@ -100,4 +100,52 @@
 
 	</java>
     </target>
+    
+    <target name="profile-sgs" depends="jar-server,setup-sgs,modules-server-classpath" 
+            description="Run Sun Game Server for Project Wonderland">
+           
+        <!-- copy logging.properties if it exists -->
+        <copy file="sgs-logging.properties" todir="${sgs.server.dir}" failonerror="false"/>
+      
+        <!-- setup profiling -->
+        <nbprofiledirect>
+            <classpath>
+                <pathelement path="${wonderland-server.classpath}"/>
+                <pathelement path="${module-server.classpath}"/>
+            </classpath>
+
+            <!-- rootspath controls what is actually profiled -->
+            <rootspath>
+                <pathelement location="${build.lib.dir}/wonderland-server.jar"/>
+                <pathelement location="${build.lib.dir}/wonderland-common.jar"/>
+            </rootspath>
+        </nbprofiledirect>
+        
+        <!-- run server -->
+        <java classname="com.sun.sgs.impl.kernel.Kernel" fork="true">
+            <jvmarg value="-Djava.library.path=${sgs.bdb.dir}/${sgs.platform.lib}"/>
+            <jvmarg value="-Djava.util.logging.config.file=${sgs.server.dir}/sgs-logging.properties"/>
+            <jvmarg value="-Dcom.sun.sgs.config.file=${sgs.server.dir}/sgs-config.properties"/>
+            <jvmarg value="-Dcom.sun.sgs.impl.service.voice.watchdog.timeout=${voiceservice.watchdog.timeout}"/>
+            <jvmarg value="-Dcom.sun.sgs.impl.service.voice.bridge.ping.timeout=${voiceservice.bridge.ping.timeout}"/>
+            <jvmarg value="-Dcom.sun.sgs.txn.timeout=1000"/>
+
+            <!-- Profile -->
+            <jvmarg value="${profiler.info.jvmargs.agent}"/>
+            
+            <classpath>
+		<pathelement path="${wonderland-server.classpath}"/>
+                <pathelement location="ext/sgs/darkstar/lib/listener.jar"/>
+                <pathelement path="${module-server.classpath}"/>
+            </classpath>
+            
+            <!-- override the reference to enabled assertions -->
+            <assertions refid="sgs.assertions"/>
+            
+            <!-- <jvmarg value="-agentlib:yjpagent"/> -->
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	    <syspropertyset refid="wonderland.properties"/>
+            <arg value="${sgs.config.file}"/>
+        </java>
+    </target>
 </project>

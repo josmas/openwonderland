@@ -23,11 +23,12 @@ import com.sun.sgs.app.AppListener;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.comms.ProtocolSessionListener;
 import org.jdesktop.wonderland.server.comms.WonderlandClientCommsProtocol;
+import sun.misc.Service;
 
 /**
  * SGS Boot class for Wonderland
@@ -76,11 +77,13 @@ public class WonderlandBoot implements AppListener, Serializable {
      * Load plugins specified as services in the various plugin jars
      */
     protected void loadPlugins() {
-        // initialize plugins
-        ServiceLoader<ServerPlugin> plugins =
-                ServiceLoader.load(ServerPlugin.class);
-        
-        for (ServerPlugin plugin : plugins) {
+        // get the service providers fot the CellGLOProvider class
+        // and check each provider
+        for (Iterator<ServerPlugin> services = Service.providers(ServerPlugin.class); 
+             services.hasNext();)
+        {
+            ServerPlugin plugin = services.next();
+            
             logger.info("Initializing plugin: " + plugin);
             plugin.initialize();
         }
