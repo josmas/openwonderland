@@ -49,6 +49,13 @@ public class RevalidatePerformanceMonitor {
     private static int  visibleMaxCount;
     private static long visibleMaxTime;
     
+    private static int  changeTotalCount;
+    private static long changeTotalTime;
+    private static int  changeMinCount;
+    private static long changeMinTime;
+    private static int  changeMaxCount;
+    private static long changeMaxTime;
+    
     // individual values
     private long userTotalTime;
     
@@ -100,6 +107,12 @@ public class RevalidatePerformanceMonitor {
         visibleMinTime    = Long.MAX_VALUE;
         visibleMaxCount   = 0;
         visibleMaxTime    = 0;
+        changeTotalCount = 0;
+        changeTotalTime  = 0;
+        changeMinCount   = Integer.MAX_VALUE;
+        changeMinTime    = Long.MAX_VALUE;
+        changeMaxCount   = 0;
+        changeMaxTime    = 0;
     }
     
     public synchronized static boolean printTotals() {
@@ -113,7 +126,7 @@ public class RevalidatePerformanceMonitor {
         stats.append(" exception: " + totalException + "\n");
         
         stats.append("Details:\n");
-        stats.append("  Cells looked at: \n");
+        stats.append("  Total cells at: \n");
         stats.append("        Min    : " + boundsMinCount);
         stats.append(" / " + scale(boundsMinTime) + "\n");
         stats.append("        Average: " + (boundsTotalCount / totalCount));
@@ -129,6 +142,14 @@ public class RevalidatePerformanceMonitor {
         stats.append("        Max    : " + visibleMaxCount);
         stats.append(" / " + scale(visibleMaxTime) + "\n");
         
+        stats.append("  Changed cells  : \n");
+        stats.append("        Min    : " + changeMinCount);
+        stats.append(" / " + scale(changeMinTime) + "\n");
+        stats.append("        Average: " + (changeTotalCount / totalCount));
+        stats.append(" / " + scale(changeTotalTime / totalCount) + "\n");
+        stats.append("        Max    : " + changeMaxCount);
+        stats.append(" / " + scale(changeMaxTime) + "\n");
+        
         return stats.toString();
     }
     
@@ -138,6 +159,9 @@ public class RevalidatePerformanceMonitor {
         
         if (monitor.exception) {
             totalException++;
+            
+            // don't collect statistics when there is an exception
+            return;
         }
         
         boundsTotalCount  += monitor.boundsCellCount;
@@ -172,6 +196,28 @@ public class RevalidatePerformanceMonitor {
         }
         if (userVisibleTotalTime < visibleMinTime) {
             visibleMinTime = userVisibleTotalTime;
+        }
+        
+        int changeCount = monitor.newCellCount + monitor.updateCellCount +
+                          monitor.oldCellCount;
+        long changeTime = monitor.newCellTime + monitor.updateCellTime +
+                          monitor.oldCellTime;  
+        
+        changeTotalCount += changeCount;
+        changeTotalTime  += changeTime;
+        
+        if (changeCount > changeMaxCount) {
+            changeMaxCount = changeCount;
+        }
+        if (changeCount < changeMinCount) {
+            changeMinCount = changeCount;
+        }
+        
+        if (changeTime > changeMaxTime) {
+            changeMaxTime = changeTime;
+        }
+        if (changeTime < changeMinTime) {
+            changeMinTime = changeTime;
         }
     }
     
