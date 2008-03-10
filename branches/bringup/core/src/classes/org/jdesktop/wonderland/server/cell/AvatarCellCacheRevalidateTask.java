@@ -36,7 +36,7 @@ public class AvatarCellCacheRevalidateTask implements Task, Serializable {
     }
     
     public void run() throws Exception {
-        cellCacheRef.getForUpdate(AvatarCellCacheMO.class).revalidate();
+        cellCacheRef.get(AvatarCellCacheMO.class).revalidate();
     }
 
 }

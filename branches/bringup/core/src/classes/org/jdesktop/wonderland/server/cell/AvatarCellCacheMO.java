@@ -71,9 +71,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     private WonderlandClientChannel channel;
     private CellID rootCellID;
     private CellCacheClientHandler cacheHandler;
-    
-    private BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(new Vector3f());
-    
+     
     /**
      * List of currently visible cells (ManagedReference of CellGLO)
      */
@@ -159,7 +157,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         try {
             // get the current user's bounds
             AvatarMO user = avatarRef.get(AvatarMO.class);
-            proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().get(null));
+            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().get(null));
             
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer("Revalidating CellCache for   " + 
@@ -206,6 +204,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     CellMO cell = CellManager.getCell(cellID);
                     cellRef = new CellRef(cell, cellMirror);
                     currentCells.put(cellID, cellRef);
+                    markForUpdate();
                     
                     if (logger.isLoggable(Level.FINER)) {
                         logger.finer("Entering cell " + cell +
@@ -281,6 +280,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 // may have been deleted.
                 // TODO periodically clean out client cell cache
                 currentCells.remove(ref.getCellID());
+                markForUpdate();
                 
                 // update the monitor
                 monitor.incOldCellTime(System.nanoTime() - cellStartTime);
@@ -312,6 +312,14 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      */
     void avatarEnteredExitedCell(boolean enter, CellID cellID) {
         
+    }
+    
+    /**
+     * Utility method to mark ourself for update
+     */
+    protected void markForUpdate() {
+        DataManager dm = AppContext.getDataManager();
+        dm.markForUpdate(this);
     }
     
     /**

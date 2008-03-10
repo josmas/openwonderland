@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
@@ -86,6 +87,10 @@ public class WonderlandSessionListener
         client */
     private Map<Short, ClientHandlerRef> handlers;
     
+    /** a map from the ID we've assigned a client to the channel for that
+        client */
+    private Map<Short, WonderlandClientChannel> channels;
+    
     /**
      * Create a new instance of WonderlandSessionListener for the given
      * session
@@ -99,8 +104,9 @@ public class WonderlandSessionListener
         }
         
         // initialize maps
-        handlers = new HashMap<Short, ClientHandlerRef>();
-        
+        handlers = new TreeMap<Short, ClientHandlerRef>();
+        channels = new TreeMap<Short, WonderlandClientChannel>();
+                
         // add internal handler
         ClientHandlerRef internalRef = getHandlerStore().getHandlerRef(
                     SessionInternalClientType.SESSION_INTERNAL_CLIENT_TYPE);
@@ -157,7 +163,7 @@ public class WonderlandSessionListener
             }
             
             // get the WonderlandClientChannel to pass in
-            WonderlandClientChannel channel = getChannel(handler.getClientType());
+            WonderlandClientChannel channel = channels.get(clientID);
             
             // call the handler
             handler.messageReceived(channel, session.getSessionId(), m);
@@ -361,8 +367,13 @@ public class WonderlandSessionListener
         Channel channel = getHandlerStore().getChannel(type);
         channel.join(session, null);
         
-        // notify the handler
+        // get and save the WonderlandChannel that we can use to communicate 
+        // with this cell.  Store the channel locally since it is used in
+        // every call to messageReceived()
         WonderlandClientChannel wonderlandChannel = getChannel(type);
+        channels.put(clientID, wonderlandChannel);
+        
+        // notify the handler
         ref.get().clientAttached(wonderlandChannel, session.getSessionId());
     }
     
@@ -392,7 +403,7 @@ public class WonderlandSessionListener
         removeHandler(Short.valueOf(clientID));
         
         // notify the handler
-        WonderlandClientChannel wonderlandChannel = getChannel(handler.getClientType());
+        WonderlandClientChannel wonderlandChannel = channels.remove(clientID);
         handler.clientDetached(wonderlandChannel, session.getSessionId());
     }
     
