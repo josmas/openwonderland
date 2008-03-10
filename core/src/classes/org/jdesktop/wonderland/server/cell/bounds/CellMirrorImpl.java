@@ -68,6 +68,8 @@ public class CellMirrorImpl implements CellMirror {
         this.cellID = mirror.getCellID();
         this.transformVersion = mirror.getTransformVersion();
         this.contentsVersion = mirror.getContentsVersion();
+        this.localBounds = mirror.getLocalBounds();
+        this.transform = mirror.getTransform();
     }
     
     /**

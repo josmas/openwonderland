@@ -51,6 +51,13 @@ public class RevalidatePerformanceMonitor {
     
     private static int  changeTotalCount;
     private static long changeTotalTime;
+    private static int  newTotalCount;
+    private static long newTotalTime;
+    private static int  updateTotalCount;
+    private static long updateTotalTime;
+    private static int  oldTotalCount;
+    private static long oldTotalTime;
+    
     private static int  changeMinCount;
     private static long changeMinTime;
     private static int  changeMaxCount;
@@ -107,12 +114,18 @@ public class RevalidatePerformanceMonitor {
         visibleMinTime    = Long.MAX_VALUE;
         visibleMaxCount   = 0;
         visibleMaxTime    = 0;
-        changeTotalCount = 0;
-        changeTotalTime  = 0;
-        changeMinCount   = Integer.MAX_VALUE;
-        changeMinTime    = Long.MAX_VALUE;
-        changeMaxCount   = 0;
-        changeMaxTime    = 0;
+        changeTotalCount  = 0;
+        changeTotalTime   = 0;
+        newTotalCount     = 0;
+        newTotalTime      = 0;
+        updateTotalCount  = 0;
+        updateTotalTime   = 0;
+        oldTotalCount     = 0;
+        oldTotalTime      = 0;
+        changeMinCount    = Integer.MAX_VALUE;
+        changeMinTime     = Long.MAX_VALUE;
+        changeMaxCount    = 0;
+        changeMaxTime     = 0;
     }
     
     public synchronized static boolean printTotals() {
@@ -146,7 +159,13 @@ public class RevalidatePerformanceMonitor {
         stats.append("        Min    : " + changeMinCount);
         stats.append(" / " + scale(changeMinTime) + "\n");
         stats.append("        Average: " + (changeTotalCount / totalCount));
-        stats.append(" / " + scale(changeTotalTime / totalCount) + "\n");
+        stats.append(" / " + scale(changeTotalTime / changeTotalCount) + "\n"); 
+        stats.append("          Added  : " + (newTotalCount / totalCount));
+        stats.append(" / " + scale(newTotalTime / newTotalCount) + "\n");
+        stats.append("          Updated: " + (updateTotalCount / totalCount));
+        stats.append(" / " + scale(updateTotalTime / updateTotalCount) + "\n");
+        stats.append("          Removed: " + (oldTotalCount / totalCount));
+        stats.append(" / " + scale(oldTotalTime / oldTotalCount) + "\n");
         stats.append("        Max    : " + changeMaxCount);
         stats.append(" / " + scale(changeMaxTime) + "\n");
         
@@ -205,6 +224,12 @@ public class RevalidatePerformanceMonitor {
         
         changeTotalCount += changeCount;
         changeTotalTime  += changeTime;
+        newTotalCount    += monitor.newCellCount;
+        newTotalTime     += monitor.newCellTime;
+        updateTotalCount += monitor.updateCellCount;
+        updateTotalTime  += monitor.updateCellTime;
+        oldTotalCount    += monitor.oldCellCount;
+        oldTotalTime     += monitor.oldCellTime;
         
         if (changeCount > changeMaxCount) {
             changeMaxCount = changeCount;

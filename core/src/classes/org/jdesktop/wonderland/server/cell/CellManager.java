@@ -477,7 +477,7 @@ public class CellManager implements ManagedObject, Serializable {
     /**
      * Return a new tile move message
      */
-    public static CellHierarchyMessage newCellMoveMessage(CellMO cell) {
+    public static CellHierarchyMessage newCellMoveMessage(CellMirror cell) {
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.MOVE_CELL,
             null,
             cell.getLocalBounds(),
