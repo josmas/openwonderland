@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A mirror of a cell from the Bounds service
@@ -43,4 +45,16 @@ public interface CellMirror {
      * @return
      */
     public int getTransformVersion();
+    
+     /**
+     * Returns a copy of the cell's local bounds
+     * @return
+     */
+    public BoundingVolume getLocalBounds();
+    
+    /**
+     * Returns a copy of the cell's current transform
+     * @return
+     */
+    public CellTransform getTransform();
 }
