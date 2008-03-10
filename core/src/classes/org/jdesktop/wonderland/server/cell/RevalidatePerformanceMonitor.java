@@ -154,15 +154,15 @@ public class RevalidatePerformanceMonitor {
     }
     
     private synchronized static void record(RevalidatePerformanceMonitor monitor) {
-        totalCount++;
-        totalTime += monitor.userTotalTime;
-        
         if (monitor.exception) {
             totalException++;
             
             // don't collect statistics when there is an exception
             return;
         }
+        
+        totalCount++;
+        totalTime += monitor.userTotalTime;
         
         boundsTotalCount  += monitor.boundsCellCount;
         if (monitor.boundsCellCount > boundsMaxCount) {
