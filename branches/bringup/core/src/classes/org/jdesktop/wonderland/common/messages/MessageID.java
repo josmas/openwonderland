@@ -22,7 +22,9 @@ package org.jdesktop.wonderland.common.messages;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
@@ -100,6 +102,14 @@ public class MessageID implements Externalizable {
         in.read(idBytes);
         
         id = new String(idBytes, ENCODING);
+    }
+    
+    public void packObject(ObjectOutputStream out) throws IOException {
+        out.writeLong(Long.parseLong(id));
+    }
+    
+    public void unpackObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        id = String.valueOf(in.readLong());
     }
     
     /**

@@ -21,6 +21,7 @@
 package org.jdesktop.wonderland.server.utils.wfs.archive;
 
 import java.io.File;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -53,6 +54,8 @@ public class WFSArchiveCellDirectory implements WFSCellDirectory {
      */
     private String canonicalParent;
     
+    private URL jarURL;
+    
     /**
      * Creates a new instance of WFSArchiveCellDirectory, takes the manifest
      * that permits access to the JAR file entrys, the name of the directory,
@@ -61,7 +64,8 @@ public class WFSArchiveCellDirectory implements WFSCellDirectory {
      * @param manifest The archive's manifest and contents
      * @param canonicalParent A unique name of the parent cell
      */
-    public WFSArchiveCellDirectory(ArchiveManifest manifest, String dir, String canonicalParent) {
+    public WFSArchiveCellDirectory(URL url, ArchiveManifest manifest, String dir, String canonicalParent) {
+        this.jarURL          = url;
         this.manifest        = manifest;
         this.dir             = dir;
         this.canonicalParent = canonicalParent;
@@ -110,7 +114,7 @@ public class WFSArchiveCellDirectory implements WFSCellDirectory {
         if (manifest.isValidEntry(name) == false) {
             throw new NoSuchWFSDirectory("The WFS Directory does not exist: " + name);
         }
-        return new WFSArchiveCellDirectory(manifest, name, canonicalParent);
+        return new WFSArchiveCellDirectory(jarURL, manifest, name, canonicalParent);
     }
     
     /**
@@ -137,7 +141,7 @@ public class WFSArchiveCellDirectory implements WFSCellDirectory {
         for (String entry : entries) {
             if (entry.endsWith(WFS.CELL_FILE_SUFFIX) == true) {
                 WFS.getLogger().log(Level.INFO, "Cell found " + entry);
-                cells.add(new WFSArchiveCell(manifest, dir + "/" + entry, entry));
+                cells.add(new WFSArchiveCell(jarURL, manifest, dir + "/" + entry, entry));
             }
         }
         return cells.toArray(new WFSCell[] {});

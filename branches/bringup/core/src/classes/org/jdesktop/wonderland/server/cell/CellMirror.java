@@ -57,4 +57,10 @@ public interface CellMirror {
      * @return
      */
     public CellTransform getTransform();
+    
+    /**
+     * Return the cells priority
+     * @return
+     */
+    public short getPriority();
 }

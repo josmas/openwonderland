@@ -33,6 +33,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -112,7 +114,7 @@ public class CellManager implements ManagedObject, Serializable {
     /**
      * Return the cell with the given ID, or null if the id is invalid
      * 
-     * @param cellID the cell ID to get
+     * @param cellID the cell ID to getTranslation
      * @return the cell with the given ID
      */
     public static CellMO getCell(CellID cellID) {
@@ -129,7 +131,7 @@ public class CellManager implements ManagedObject, Serializable {
     }
     
     /**
-     *  Traverse all trees and return the set of cells which are within
+     *  Traverse all trees and return the setTranslation of cells which are within
      * the specified bounds and are of the give Class 
      * 
      * @param b the bounds to search inside
@@ -247,14 +249,14 @@ public class CellManager implements ManagedObject, Serializable {
     
     /**
      * Builds a world defined by a wonderland file system (e.g. on disk). The
-     * world's root directory must be set in the system property 
+     * world's root directory must be setTranslation in the system property 
      * wonderland.wfs.root
      */
 //    private void buildWFSWorld() {
 //        /* Fetch the world root URI, if null, then log an error */
 //        URL root = WonderlandServerConfig.getDefault().getWorldRoot();
 //        if (root == null) {
-//            WFS.getLogger().log(Level.SEVERE, "World Root attribute not set in server config file.");
+//            WFS.getLogger().log(Level.SEVERE, "World Root attribute not setTranslation in server config file.");
 //            return;
 //        }
 //
@@ -351,8 +353,8 @@ public class CellManager implements ManagedObject, Serializable {
             public TestTask(CellMO cell, CellMO c2) {
                 this.cellRef = AppContext.getDataManager().createReference(cell);
                 this.cell2Ref = AppContext.getDataManager().createReference(c2);
-                pos = cell.getTransform().get(null);
-                pos2 = cell.getTransform().get(null);
+                pos = cell.getTransform().getTranslation(null);
+                pos2 = cell.getTransform().getTranslation(null);
             }
             
 
@@ -414,19 +416,8 @@ public class CellManager implements ManagedObject, Serializable {
     /**
      * Return a new Cell inactive message
      */
-    public static CellHierarchyMessage newUnloadCellMessage(CellMO cell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UNLOAD_CELL,
-            null,
-            null,
-            cell.getCellID(),
-            null,
-            null,
-            null,
-            null
-            
-            
-            
-            );
+    public static CellHierarchyUnloadMessage newUnloadCellMessage(CellMO cell) {
+        return new CellHierarchyUnloadMessage(cell.getCellID());
     }
     
     /**
@@ -478,14 +469,9 @@ public class CellManager implements ManagedObject, Serializable {
      * Return a new tile move message
      */
     public static CellHierarchyMessage newCellMoveMessage(CellMirror cell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.MOVE_CELL,
-            null,
-            cell.getLocalBounds(),
+        return new CellHierarchyMoveMessage(cell.getLocalBounds(),
             cell.getCellID(),
-            null,
-            null,
-            cell.getTransform(),
-            null
+            cell.getTransform()
             );
     }
     

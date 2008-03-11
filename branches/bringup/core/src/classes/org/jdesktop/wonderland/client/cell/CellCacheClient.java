@@ -86,7 +86,7 @@ public class CellCacheClient extends BaseClient {
     }
     
     /**
-     * Send a cell messag to a specific cell on the server with the given
+     * Send a cell message to a specific cell on the server with the given
      * listener.
      * @see org.jdesktop.wonderland.client.comms.WonderlandSession#send(WonderlandClient, Message, ResponseListener)
      * 
@@ -99,7 +99,7 @@ public class CellCacheClient extends BaseClient {
     }
     
     /**
-     * Send a cell messag to a specific cell on the server and wait for a 
+     * Send a cell message to a specific cell on the server and wait for a 
      * response.
      * @see org.jdesktop.wonderland.client.comms.WonderlandSession#sendAndWait(WonderlandClient, Message)
      * 

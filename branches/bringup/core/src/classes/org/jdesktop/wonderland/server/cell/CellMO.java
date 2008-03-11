@@ -68,6 +68,8 @@ public class CellMO extends WonderlandMO {
     
     protected static Logger logger = Logger.getLogger(CellMO.class.getName());
     
+    private short priority;
+    
     /**
      * Create a CellMO with a localBounds of an empty sphere and a transform of
      * null
@@ -448,8 +450,7 @@ public class CellMO extends WonderlandMO {
      */
     protected void messageReceived(WonderlandClientChannel channel,
                                    ClientSessionId sessionId, 
-                                   CellMessage message) 
-    {
+                                   CellMessage message) {
         throw new RuntimeException("Not Implemented");
     }
     
@@ -505,6 +506,30 @@ public class CellMO extends WonderlandMO {
         // just call setupCell, since there is nothing to do differently
         // if this is a change
         setupCell(setup);
+    }
+
+    /**
+     * Return the priorty of the cell. A cells priority dictates the order
+     * in which it is loaded by a client. Priortity 0 cells are loaded first, 
+     * followed by subsequent priority levels.
+     * 
+     * The default priority is 5
+     * 
+     * @return
+     */
+    public short getPriority() {
+        return priority;
+    }
+
+    /**
+     * Set the cell priority
+     * 
+     * The default priority is 5
+     * 
+     * @param priority
+     */
+    public void setPriority(short priority) {
+        this.priority = priority;
     }
     
 }

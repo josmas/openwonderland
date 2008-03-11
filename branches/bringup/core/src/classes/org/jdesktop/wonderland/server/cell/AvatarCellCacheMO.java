@@ -155,9 +155,9 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         long startTime = System.nanoTime();
         
         try {
-            // get the current user's bounds
+            // getTranslation the current user's bounds
             AvatarMO user = avatarRef.get(AvatarMO.class);
-            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().get(null));
+            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().getTranslation(null));
             
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer("Revalidating CellCache for   " + 
@@ -175,11 +175,6 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             Collection<CellRef> oldCells = new ArrayList(currentCells.values());
         
             CellHierarchyMessage msg;
-         
-            // TODO now visCells is a list of cellID's refactor so we don't have to
-            // get the cells from sgs if they are already visible. The main issue
-            // here is handling the cell version check
-        
             /*
              * Loop through all of the visible cells and:
              * 1. If not already present, create it
@@ -214,6 +209,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     msg = CellManager.newCreateCellMessage(cell);
                     monitor.incMessageBytes(msg.getBytes().length);
                     channel.send(userID, msg);
+                    //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
                     cell.addUserToCellChannel(userID);
                     
                     // update performance monitoring
@@ -225,6 +221,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                                 msg = CellManager.newCellMoveMessage(cellMirror);
                                 monitor.incMessageBytes(msg.getBytes().length);
                                 channel.send(userID, msg);
+                                //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
                                 break;
                             case CONTENT:
                                 msg = CellManager.newContentUpdateCellMessage(cellRef.get());
@@ -270,6 +267,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 
                 monitor.incMessageBytes(msg.getBytes().length);
                 channel.send(userID, msg);
+                //System.out.println("SENDING "+msg.getClass().getName()+" "+msg.getBytes().length);
 
                 // the cell is no longer visible on this client, so remove
                 // our current reference to it.  This client will no longer

@@ -60,7 +60,8 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         long userNum = System.currentTimeMillis();
         
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
-        LoginParameters loginParams = new LoginParameters("foo"+userNum, "test".toCharArray());
+//        LoginParameters loginParams = new LoginParameters("foo"+userNum, "test".toCharArray());
+        LoginParameters loginParams = new LoginParameters("test", "test".toCharArray());
         
         // create a session
         session = new BoundsTestClientSession(server, 
@@ -257,7 +258,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         private void drawCell(Cell cell, Graphics2D g) {
             drawBounds(cell.getCachedVWBounds(), g);
             
-            Vector3f cellPos = cell.getLocalToVWorld().get(null);
+            Vector3f cellPos = cell.getLocalToVWorld().getTranslation(null);
             g.drawString(cell.getName(), cellPos.x*scale, cellPos.z*scale);
         }
         

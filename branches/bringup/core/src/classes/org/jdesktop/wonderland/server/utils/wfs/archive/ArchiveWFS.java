@@ -134,7 +134,7 @@ public class ArchiveWFS extends WFS {
         this.aliases           = WFSAliases.decode(ais);
         
         /* Create the top level directory consisting of the base WFS directory */
-        this.directory = new WFSArchiveCellDirectory(this.manifest, wfsdir, wfsdir);
+        this.directory = new WFSArchiveCellDirectory(url, this.manifest, wfsdir, wfsdir);
     }
     
     /**

@@ -21,7 +21,7 @@
 package org.jdesktop.wonderland.server.utils.wfs;
 
 import java.io.FileNotFoundException;
-import org.jdesktop.wonderland.server.setup.CellMOSetup;
+import org.jdesktop.wonderland.server.setup.WfsCellMOSetup;
 
 /**
  * The WFSCell interface represents a single cell in a WFS, whether it be
@@ -37,7 +37,7 @@ public interface WFSCell {
      * @throw FileNotFoundException If the file cannot be read
      * @throw InvalidWFSCellException If the cell in the file is invalid
      */
-    public <T extends CellMOSetup> T decode() throws FileNotFoundException, InvalidWFSCellException;
+    public <T extends WfsCellMOSetup> T decode() throws FileNotFoundException, InvalidWFSCellException;
     
     /**
      * Returns the canonical name for this cell
