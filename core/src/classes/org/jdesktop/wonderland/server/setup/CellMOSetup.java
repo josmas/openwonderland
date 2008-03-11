@@ -28,7 +28,7 @@ import java.io.Serializable;
  */
 public interface CellMOSetup extends Serializable {
     /**
-     * Returns the Cell GLO class name corresponding with this properties class,
+     * Returns the Cell MO class name corresponding with this properties class,
      * should be overridden by subclasses
      */
     public String getCellGLOClassName();

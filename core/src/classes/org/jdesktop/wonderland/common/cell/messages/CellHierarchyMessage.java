@@ -18,6 +18,10 @@
 package org.jdesktop.wonderland.common.cell.messages;
 
 import com.jme.bounding.BoundingVolume;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
@@ -31,8 +35,8 @@ import org.jdesktop.wonderland.common.messages.Message;
 @ExperimentalAPI
 public class CellHierarchyMessage extends Message {
     
-    private ActionType msgType;
-    private CellID cellID;
+    protected ActionType msgType;
+    protected CellID cellID;
     private CellID parentID;
     private BoundingVolume localBounds;
     private BoundingVolume computedBounds;
@@ -48,7 +52,7 @@ public class CellHierarchyMessage extends Message {
      * SET_AVATAR - client informs server which avatar to use for a cell cache
      * LOAD_CLIENT_AVATAR - server informs client to load its avatar
      */
-    public enum ActionType { LOAD_CELL, MOVE_CELL, UNLOAD_CELL, CHANGE_PARENT, SET_WORLD_ROOT,
+    public enum ActionType { LOAD_CELL, UNLOAD_CELL, MOVE_CELL, CHANGE_PARENT, SET_WORLD_ROOT,
         DELETE_CELL, UPDATE_CELL_CONTENT, SET_AVATAR, LOAD_CLIENT_AVATAR};
     
     /**
@@ -77,6 +81,9 @@ public class CellHierarchyMessage extends Message {
     
     private CellHierarchyMessage(ActionType msgType) {
         this.msgType = msgType;
+    }
+    
+    public CellHierarchyMessage() {
     }
     
     /**
@@ -161,5 +168,14 @@ public class CellHierarchyMessage extends Message {
         return ret;
        
     }
-
+    
+    public void packObject(ObjectOutputStream out) throws IOException {
+        out.writeInt(msgType.ordinal());
+        cellID.put(out);
+    }
+    
+    public void unpackObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        msgType = ActionType.values()[in.readInt()];
+        cellID = CellID.value(in);
+    }
 }

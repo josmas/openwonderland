@@ -47,6 +47,7 @@ public class CellMirrorImpl implements CellMirror {
     private CellTransform transform;
     private int transformVersion;
     private int contentsVersion;
+    private short priority;
     private Class cellClass;
     
     private CellMirrorImpl parent;
@@ -58,6 +59,7 @@ public class CellMirrorImpl implements CellMirror {
         localBounds = cell.getLocalBounds();
         transform = cell.getTransform();
         cellClass = cell.getClass();
+        this.priority = cell.getPriority();
     }
     
     /**
@@ -68,6 +70,7 @@ public class CellMirrorImpl implements CellMirror {
         this.cellID = mirror.getCellID();
         this.transformVersion = mirror.getTransformVersion();
         this.contentsVersion = mirror.getContentsVersion();
+        this.priority = mirror.getPriority();
         this.localBounds = mirror.getLocalBounds();
         this.transform = mirror.getTransform();
     }
@@ -296,6 +299,13 @@ public class CellMirrorImpl implements CellMirror {
      */
     public int getContentsVersion() {
         return contentsVersion;
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    public short getPriority() {
+        return priority;
     }
     
 }

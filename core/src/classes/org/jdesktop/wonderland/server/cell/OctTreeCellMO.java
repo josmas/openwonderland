@@ -153,15 +153,15 @@ public class OctTreeCellMO extends GroupCellMO implements CellContainerInterface
                         try {
                             AppContext.getDataManager().markForUpdate(tmp);
                             Vector3f parentLoc = new Vector3f();
-                            tmp.getTransform().get(parentLoc);
+                            tmp.getTransform().getTranslation(parentLoc);
                             
                             // Adjust childs transform
                             Vector3f childLoc = new Vector3f();
                             CellTransform childTransform = insertChild.getTransform();
-                            childTransform.get(childLoc);
+                            childTransform.getTranslation(childLoc);
                             
                             childLoc.subtract(parentLoc,childLoc);                            
-                            childTransform.set(childLoc);
+                            childTransform.setTranslation(childLoc);
                             insertChild.setTransform(childTransform);
                             
                             tmp.addChild(insertChild);

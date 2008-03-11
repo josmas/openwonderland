@@ -25,6 +25,7 @@ import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +34,7 @@ import org.jdesktop.wonderland.server.utils.wfs.WFS;
 import org.jdesktop.wonderland.server.utils.wfs.WFSCell;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
 import org.jdesktop.wonderland.server.setup.InvalidCellMOSetupException;
+import org.jdesktop.wonderland.server.setup.WfsCellMOSetup;
 
 /**
  * The WFSCell class represents an XML file on disk corresponding to the
@@ -55,9 +57,12 @@ public class WFSArchiveCell implements ExceptionListener, WFSCell {
     /* The canonical, unique path name of the cell file in the WFS */
     private String canonicalName;
     
+    private URL jarURL;
+    
     /** Creates a new instance of WFSCell */
-    public WFSArchiveCell(ArchiveManifest manifest, String canonicalName, String cell) {
+    public WFSArchiveCell(URL jarURL, ArchiveManifest manifest, String canonicalName, String cell) {
         this.manifest = manifest;
+        this.jarURL = jarURL;
         
         /* Parse out the name of the cell, assuming it has the proper suffix */
         try {
@@ -111,7 +116,7 @@ public class WFSArchiveCell implements ExceptionListener, WFSCell {
      * @throw FileNotFoundException If the file cannot be read
      * @throw InvalidWFSCellException If the cell in the file is invalid
      */
-    public <T extends CellMOSetup> T decode() throws FileNotFoundException, InvalidWFSCellException {
+    public <T extends WfsCellMOSetup> T decode() throws FileNotFoundException, InvalidWFSCellException {
         T setup = null;
         
         /*
@@ -138,6 +143,9 @@ public class WFSArchiveCell implements ExceptionListener, WFSCell {
         
         /* Invoke the validate method to make sure all of the properties are consistent */
         try {
+            logger.severe("Incomplete implemention - wfsURL is not correct for archive wfs file");
+            // TODO - the url needs refactoring into the form jar:///...
+            setup.setWfsURL(jarURL);
             setup.validate();
             return setup;
         } catch (InvalidCellMOSetupException icgse) {

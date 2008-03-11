@@ -35,15 +35,18 @@ public class BasicCellMOSetup<T extends CellSetup>
     /** the setup object to send to the cell */
     private T cellSetup;
 
-    /** the class of cell GLO */
-    private String cellGLOClassName;
+    /** the class of cell MO */
+    private String cellMOClassName;
 
     /* the location of the cell */
     private CellTransform cellTransform;
 
     /* the bounds of the cell */
-    private String boundsType = "SPHERE";
+    
+    private BoundsType boundsType = BoundsType.SPHERE;
     private float boundsRadius = 4.0f;
+    
+    private short priority;
     
     public BasicCellMOSetup() {
         this (null, null, null, null);
@@ -71,11 +74,11 @@ public class BasicCellMOSetup<T extends CellSetup>
     }
 
     public String getCellGLOClassName() {
-        return cellGLOClassName;
+        return cellMOClassName;
     }
 
     public void setCellGLOClassName(String cellGLOClassName) {
-        this.cellGLOClassName = cellGLOClassName;
+        this.cellMOClassName = cellGLOClassName;
     }
 
     public CellTransform getCellTransform() {
@@ -86,12 +89,19 @@ public class BasicCellMOSetup<T extends CellSetup>
         this.cellTransform = cellTransform;
     }
     
-    public String getBoundsType() {
+    public BoundsType getBoundsType() {
         return boundsType;
     }
 
-    public void setBoundsType(String boundsType) {
+    public void setBoundsType(BoundsType boundsType) {
         this.boundsType = boundsType;
+    }
+    
+    public void setBoundsType(String boundsType) {
+        if (boundsType.equals("SPHERE"))
+            this.boundsType = BoundsType.SPHERE;
+        else if (boundsType.equals("BOX"))
+            this.boundsType = BoundsType.BOX;
     }
 
     public float getBoundsRadius() {
@@ -107,8 +117,16 @@ public class BasicCellMOSetup<T extends CellSetup>
     }
     
     public double[] getOrigin() {
-        Vector3f v3f = cellTransform.get(null);
+        Vector3f v3f = cellTransform.getTranslation(null);
         return new double[] { v3f.x, v3f.y, v3f.z };
+    }
+
+    public short getPriority() {
+        return priority;
+    }
+
+    public void setPriority(short priority) {
+        this.priority = priority;
     }
     
 }

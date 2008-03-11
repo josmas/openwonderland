@@ -26,6 +26,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.utils.wfs.InvalidWFSCellException;
@@ -33,6 +34,7 @@ import org.jdesktop.wonderland.server.utils.wfs.WFS;
 import org.jdesktop.wonderland.server.utils.wfs.WFSCell;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
 import org.jdesktop.wonderland.server.setup.InvalidCellMOSetupException;
+import org.jdesktop.wonderland.server.setup.WfsCellMOSetup;
 
 /**
  * The WFSCell class represents an XML file on disk corresponding to the
@@ -113,7 +115,7 @@ public class WFSFileCell implements ExceptionListener, WFSCell {
      * @throw FileNotFoundException If the file cannot be read
      * @throw InvalidWFSCellException If the cell in the file is invalid
      */
-    public <T extends CellMOSetup> T decode() 
+    public <T extends WfsCellMOSetup> T decode() 
         throws FileNotFoundException, InvalidWFSCellException
     {
         T setup = null;
@@ -139,8 +141,12 @@ public class WFSFileCell implements ExceptionListener, WFSCell {
         
         /* Invoke the validate method to make sure all of the properties are consistent */
         try {
+            setup.setWfsURL(this.getFile().toURI().toURL());
             setup.validate();
             return setup;
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(WFSFileCell.class.getName()).log(Level.SEVERE, null, ex);
+            throw new InvalidWFSCellException(ex);
         } catch (InvalidCellMOSetupException icgse) {
             throw new InvalidWFSCellException(icgse);
         }

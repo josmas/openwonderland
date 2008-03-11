@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.common.cell;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
@@ -69,6 +72,15 @@ public class CellID implements Serializable {
         return new CellID(id);
     }
 
+    public void put(ObjectOutputStream buffer) throws IOException {
+        buffer.writeLong(id);
+    }
+    
+    public static CellID value(ObjectInputStream buffer) throws IOException {
+        long id = buffer.readLong();
+        return new CellID(id);
+    }
+    
     public static CellID value(String string) {
         return new CellID(Long.parseLong(string));
     }

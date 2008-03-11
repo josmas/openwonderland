@@ -27,8 +27,10 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author jkaplan
  */
 public interface CellLocation {
-    public String getBoundsType();
-    public void setBoundsType(String boundsType);
+    public enum BoundsType { BOX, SPHERE };
+    
+    public BoundsType getBoundsType();
+    public void setBoundsType(BoundsType boundsType);
    
     public float getBoundsRadius();
     public void setBoundsRadius(float boundsRadius);
