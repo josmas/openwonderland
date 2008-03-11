@@ -124,6 +124,8 @@ public class Cell {
      * @return
      */
     public CellTransform getTransform() {
+        if (localTransform==null)
+            return null;
         return (CellTransform) localTransform.clone();
     }
     
@@ -132,9 +134,13 @@ public class Cell {
      * @param localTransform
      */
     public void setTransform(CellTransform localTransform) {
-        this.localTransform = (CellTransform) localTransform.clone();
-        if (parent!=null) {
-            local2VW = local2VW.mul(parent.getLocalToVWorld());
+        if (localTransform==null) {
+            this.localTransform=null;
+        } else {
+            this.localTransform = (CellTransform) localTransform.clone();
+            if (parent!=null) {
+                local2VW = local2VW.mul(parent.getLocalToVWorld());
+            }
         }
         
         for(Cell child : getChildren())
@@ -143,12 +149,17 @@ public class Cell {
     
     /**
      * Return the local to Virtual World transform for this cell.
-     * @return
+     * @return cells local to VWorld transform
      */
     public CellTransform getLocalToVWorld() {
         return computeLocal2VWorld(this);
     }
     
+    
+    /**
+     * Set the localToVWorld transform for this cell
+     * @param localToVWorld
+     */
     void setLocalToVWorld(CellTransform localToVWorld) {
         local2VW = (CellTransform) localToVWorld.clone();
         localBounds.clone(cachedVWBounds);
@@ -265,10 +276,20 @@ public class Cell {
         this.name = name;
     }
 
+    /**
+     * Get the local bounds for this cell. Local bounds are in the cells
+     * coordinate system
+     * 
+     * @return local bounds for this cell
+     */
     public BoundingVolume getLocalBounds() {
         return localBounds.clone(null);
     }
 
+    /**
+     * Set the local bounds for this cell
+     * @param localBounds
+     */
     public void setLocalBounds(BoundingVolume localBounds) {
         this.localBounds = localBounds;
     }
