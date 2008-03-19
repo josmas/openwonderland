@@ -19,16 +19,8 @@
  */
 package org.jdesktop.wonderland.common.messages;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
 
 /**
  * The base type of a message in the Wonderland system. 
@@ -83,145 +75,10 @@ public abstract class Message implements Serializable {
     }
     
     /**
-     * Turn this message into a byte stream.  By default, this uses
-     * Java Serialization to compress the message.  Other message types
-     * can use custom versions of this method to make this more efficient.
-     * <p>
-     * A message is written in two steps.  First, the messageID is written to
-     * the stream, followed by the rest of the message contents.  This is to
-     * give the maximum chance that the message id can be read, even in the
-     * face of other errors.
-     * 
-     * @return this message as a byte array
-     * @throws MessageException if there is an error turning this message into
-     * a byte array.
+     * Used by message input stream to set the message id
+     * @param messageID the id to set
      */
-    public byte[] getBytes() {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-       
-            // write the message id
-//            oos.writeObject(getMessageID());
-            getMessageID().packObject(oos);
-            
-            if (this instanceof CellHierarchyUnloadMessage) {
-                oos.writeByte(CELL_HIERARCHY_UNLOAD_MESSAGE);
-                ((CellHierarchyUnloadMessage)this).packObject(oos);
-            } else if (this instanceof CellHierarchyMoveMessage) {
-                oos.writeByte(CELL_HIERARCHY_MOVE_MESSAGE);
-                ((CellHierarchyMoveMessage)this).packObject(oos);
-            } else {
-                oos.writeByte(SERIALIZED_MESSAGE);
-
-                // write the other state
-                oos.writeObject(this);
-            }
-            oos.close();
-        
-            return baos.toByteArray();
-        } catch (IOException ioe) {
-            throw new MessageException(ioe);
-        }
-    }
-    
-    /**
-     * Extract a message from bytes.  Identical to calling
-     * <code>extract(data, 0, data.length, clazz)</code>
-     * 
-     * @param data the byte representation of the message
-     * @param clazz the clazz the type of message to extract
-     * @return the message after extraction
-     * @throws ExtractMessageException if the message cannot be extracted
-     */
-    public static <T extends Message> T extract(byte[] data, Class<T> clazz) {
-        return extract(data, 0, data.length, clazz);
-    }
-    
-    /**
-     * Extract a message from bytes.
-     * @param data the byte representation of the message
-     * @param offset the starting offset of the data
-     * @param length the length of the data to read
-     * @param clazz the clazz the type of message to extract
-     * @return the message after extraction
-     * @throws ExtractMessageException if the message cannot be extracted
-     */
-    public static <T extends Message> T extract(byte[] data, int offset,
-                                                int length, Class<T> clazz) 
-    {
-        return (T) extract(data, offset, length);
-    }
-    
-    /**
-     * Extract a message from bytes.  Identical to calling 
-     * <code>extract(data, 0, data.length)</code>
-     * 
-     * @param data the data to extract
-     * @return the message after extraction
-     * @throws ExtractMessageException if the message cannot be extracted
-     */
-    public static Message extract(byte[] data) {
-        return extract(data, 0, data.length);
-    }
-    
-    /**
-     * Extract a message from bytes. 
-     * <p>
-     * A message is read in two steps.  First, the MessageID is read from
-     * the stream, followed by the rest of the message contents.  This is to
-     * give the maximum chance that the message id can be read, even in the
-     * face of other errors. If the MessageID can be extracted, an
-     * ExtractMessageException will be thrown.
-     * 
-     * @param data the data to extract
-     * @param offset the starting offset of the data
-     * @param length the length of the data to read
-     * @return the message after extraction
-     * @throws ExtractMessageException if the message cannot be extracted
-     */
-    public static Message extract(byte[] data, int offset, int length) {
-        MessageID messageID = null;
-        
-        try {
-            ByteArrayInputStream bais = 
-                    new ByteArrayInputStream(data, offset, length);
-            ObjectInputStream ois = new ObjectInputStream(bais);
-            
-            // first, read the message ID
-            //messageID = (MessageID) ois.readObject();
-            messageID = new MessageID();
-            messageID.unpackObject(ois);
-            
-            byte type = ois.readByte();
-            
-            Message m;
-            
-            // now read the rest of the message
-            switch(type) {
-                case SERIALIZED_MESSAGE :
-                    m = (Message) ois.readObject();
-                    break;
-                case CELL_HIERARCHY_UNLOAD_MESSAGE :
-                    m = new CellHierarchyUnloadMessage();
-                    ((CellHierarchyUnloadMessage)m).unpackObject(ois);
-                    break;
-                case CELL_HIERARCHY_MOVE_MESSAGE :
-                    m = new CellHierarchyMoveMessage();
-                    ((CellHierarchyMoveMessage)m).unpackObject(ois);
-                    break;
-                default :
-                    throw new RuntimeException("Unrecognized message type "+type);
-            }
-            
-            
-            // set the message's id
-            m.messageID = messageID;
-            return m;
-        } catch (IOException ioe) {
-            throw new ExtractMessageException(messageID, ioe);
-        } catch (ClassNotFoundException cnfe) {
-            throw new ExtractMessageException(messageID, cnfe);
-        }
+    void setMessageID(MessageID messageID) {
+        this.messageID = messageID;
     }
 }

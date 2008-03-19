@@ -18,14 +18,9 @@
 
 package org.jdesktop.wonderland.server.cell;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSessionId;
-import com.sun.sgs.app.ManagedObject;
-import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.AvatarClientType;
@@ -39,7 +34,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
-import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Handler for the avatar
@@ -56,28 +51,31 @@ class AvatarClientHandler implements ClientHandler, Serializable {
         return CLIENT_TYPE;
     }
 
-    public void registered(WonderlandClientChannel channel) {
+    public void registered(WonderlandClientSender sender) {
         // ignore
     }
     
-    public void clientAttached(WonderlandClientChannel channel,
-                               ClientSessionId sessionId) {
+    public void clientAttached(WonderlandClientSender sender,
+                               ClientSession session)
+    {
         logger.fine("AvatarClientHandler.clientAttached");
     }
 
-    public void clientDetached(WonderlandClientChannel channel,
-                               ClientSessionId sessionId) {
+    public void clientDetached(WonderlandClientSender sender,
+                               ClientSession session)
+    {
         logger.fine("AvatarClientHandler.clientDettached");
     }
     
-    public void messageReceived(WonderlandClientChannel channel,
-                                ClientSessionId sessionId, 
-                                Message message) {
+    public void messageReceived(WonderlandClientSender sender,
+                                ClientSession session, 
+                                Message message) 
+    {
         if (message instanceof AvatarMessage) {
-            messageReceived(channel, sessionId, (AvatarMessage) message);
+            messageReceived(sender, session, (AvatarMessage) message);
         } else {
-            channel.send(new ErrorMessage(message.getMessageID(),
-                         "Unexpected message type: " + message.getClass()));
+            sender.send(session, new ErrorMessage(message.getMessageID(),
+                        "Unexpected message type: " + message.getClass()));
         }
     }
   
@@ -87,9 +85,10 @@ class AvatarClientHandler implements ClientHandler, Serializable {
      * @param sessionId
      * @param message
      */
-    private void messageReceived(WonderlandClientChannel channel,
-                                ClientSessionId sessionId, 
-                                AvatarMessage message) {
+    private void messageReceived(WonderlandClientSender sender,
+                                ClientSession session, 
+                                AvatarMessage message) 
+    {
         switch(message.getActionType()) {
             case MOVE_REQUEST :
                 AvatarMO avatar = (AvatarMO) CellManager.getCell(message.getCellID());
@@ -100,17 +99,17 @@ class AvatarClientHandler implements ClientHandler, Serializable {
                 logger.warning("AvatarClientHandler.messageReceived MOVED - not implemnted");
                 break;
             case CREATE :
-                AvatarCreateResponseMessage response = createAvatar(sessionId, message);
-                channel.send(sessionId, response);
+                AvatarCreateResponseMessage response = createAvatar(session, message);
+                sender.send(session, response);
                 break;
         }
     }
     
-    private AvatarCreateResponseMessage createAvatar(ClientSessionId sessionId, AvatarMessage msg) {
-        UserMO user = WonderlandContext.getUserManager().getUser(sessionId);
+    private AvatarCreateResponseMessage createAvatar(ClientSession session, AvatarMessage msg) {
+        UserMO user = WonderlandContext.getUserManager().getUser(session);
         AvatarMO avatar = user.getAvatar(msg.getAvatarID());
         if (avatar == null) {
-            user.getReference().getForUpdate(UserMO.class); // Mark for update
+            user.getReference().getForUpdate(); // Mark for update
             avatar = new AvatarMO(user);
             user.putAvatar(msg.getAvatarID(), avatar);
         }
@@ -131,8 +130,7 @@ class AvatarClientHandler implements ClientHandler, Serializable {
      * Get the channel used for sending to all clients of this type
      * @return the channel to send to all clients
      */
-    public static WonderlandClientChannel getChannel() {
-        return WonderlandContext.getCommsManager().getChannel(CLIENT_TYPE);
+    public static WonderlandClientSender getSender() {
+        return WonderlandContext.getCommsManager().getSender(CLIENT_TYPE);
     }
-    
 }

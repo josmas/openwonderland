@@ -18,8 +18,7 @@
 
 package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.app.ClientSessionId;
-import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellCacheClientType;
@@ -30,7 +29,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
-import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Handler for the cell cache
@@ -48,37 +47,38 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
         return CLIENT_TYPE;
     }
 
-    public void registered(WonderlandClientChannel channel) {
+    public void registered(WonderlandClientSender sender) {
         // ignore
     }
     
-    public void clientAttached(WonderlandClientChannel channel,
-                               ClientSessionId sessionId)    {
+    public void clientAttached(WonderlandClientSender sender,
+                               ClientSession session)   
+    {
         // Nothing to do, setup is done when we get the SET_AVATAR
         // message
     }
 
-    public void clientDetached(WonderlandClientChannel channel,
-                               ClientSessionId sessionId) 
+    public void clientDetached(WonderlandClientSender sender,
+                               ClientSession session) 
     {
-        UserMO user = WonderlandContext.getUserManager().getUser(sessionId);
+        UserMO user = WonderlandContext.getUserManager().getUser(session);
         AvatarMO avatar = user.getAvatar(avatarID);
         if (avatar == null) {
             logger.severe("clientDetached has null avatar for session");
             return;
         }
-        avatar.getCellCache().logout(sessionId);
+        avatar.getCellCache().logout(session);
     }
     
-    public void messageReceived(WonderlandClientChannel channel,
-                                ClientSessionId sessionId, 
+    public void messageReceived(WonderlandClientSender sender,
+                                ClientSession session, 
                                 Message message)
     {
         if (message instanceof CellHierarchyMessage) {
-            messageReceived(channel, sessionId, (CellHierarchyMessage) message);
+            messageReceived(sender, session, (CellHierarchyMessage) message);
         } else {
-            channel.send(sessionId, new ErrorMessage(message.getMessageID(),
-                         "Unexpected message type: " + message.getClass()));
+            sender.send(session, new ErrorMessage(message.getMessageID(),
+                        "Unexpected message type: " + message.getClass()));
         }
     }
   
@@ -88,24 +88,29 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
      * @param message the cell message
      * @param sender the message sender to send responses to
      */
-    public void messageReceived(WonderlandClientChannel channel,
-                                ClientSessionId sessionId,
-                                CellHierarchyMessage message) {        
+    public void messageReceived(WonderlandClientSender sender,
+                                ClientSession session,
+                                CellHierarchyMessage message)
+    {        
         switch(message.getActionType()) {
             case SET_AVATAR :
                 avatarID = message.getAvatarID();
-                UserMO user = WonderlandContext.getUserManager().getUser(sessionId);
+                UserMO user = WonderlandContext.getUserManager().getUser(session);
                 AvatarMO avatar = user.getAvatar(avatarID);
                 if (avatar == null) {
                     logger.severe("Unable to locate avatar");
                     return;
                 }
 
-                avatar.getCellCache().login(channel, sessionId);
+                avatar.getCellCache().login(sender, session);
                 
                 break;
             default :
                 logger.severe("Unexpected message in CellCacheClietnHandler "+message.getActionType());
+                sender.send(session, new ErrorMessage(message.getMessageID(),
+                        "Unexpected message in CellCacheClientHandler: " +
+                        message.getActionType()));
+                break;
         }
     }
     
@@ -113,7 +118,7 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
      * Get the channel used for sending to all clients of this type
      * @return the channel to send to all clients
      */
-    public static WonderlandClientChannel getChannel() {
-        return WonderlandContext.getCommsManager().getChannel(CLIENT_TYPE);
+    public static WonderlandClientSender getSender() {
+        return WonderlandContext.getCommsManager().getSender(CLIENT_TYPE);
     }
 }

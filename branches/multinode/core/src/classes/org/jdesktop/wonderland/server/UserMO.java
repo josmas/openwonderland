@@ -47,9 +47,9 @@ public class UserMO implements ManagedObject, Serializable {
     private String fullname;
     private ArrayList<String> groups = null;
     
-    private Set<ClientSession> activeSessions = null;
+    private Set<ManagedReference<ClientSession>> activeSessions = null;
     private Map<String, Serializable> extendedData = null;
-    private Map<String, ManagedReference> avatars = new HashMap();
+    private Map<String, ManagedReference<AvatarMO>> avatars = new HashMap();
     
     protected static Logger logger = Logger.getLogger(UserMO.class.getName());
 
@@ -121,12 +121,12 @@ public class UserMO implements ManagedObject, Serializable {
      * @return
      */
     public AvatarMO getAvatar(String avatarName) {
-        ManagedReference avatarRef = avatars.get(avatarName);
+        ManagedReference<AvatarMO> avatarRef = avatars.get(avatarName);
         if (avatarRef == null) {
             return null;
         }
         
-        return avatarRef.get(AvatarMO.class);
+        return avatarRef.get();
     }
     
     /**
@@ -145,11 +145,14 @@ public class UserMO implements ManagedObject, Serializable {
      * @param protocol
      */
     void login(ClientSession session) {
+        DataManager dm = AppContext.getDataManager();
+                
         if (activeSessions==null) {
-            activeSessions = new HashSet();
+            activeSessions = new HashSet<ManagedReference<ClientSession>>();
         }
+        
         logger.info("User Login " + username);
-        activeSessions.add(session);
+        activeSessions.add(dm.createReference(session));
     }
     
     /**
@@ -158,7 +161,8 @@ public class UserMO implements ManagedObject, Serializable {
      * @param protocol
      */
     void logout(ClientSession session) {
-        activeSessions.remove(session);
+        DataManager dm = AppContext.getDataManager();        
+        activeSessions.remove(dm.createReference(session));
     }
     
     /**

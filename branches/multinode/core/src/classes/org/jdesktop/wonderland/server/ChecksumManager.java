@@ -46,7 +46,7 @@ public class ChecksumManager implements ManagedObject, Serializable {
     private static final String BINDING_NAME="CHECKSUM_MANAGER";
     
     private static ChecksumManager getChecksumManagerMO() {
-        return AppContext.getDataManager().getBinding(BINDING_NAME, ChecksumManager.class);
+        return (ChecksumManager) AppContext.getDataManager().getBinding(BINDING_NAME);
     }
     
     /**

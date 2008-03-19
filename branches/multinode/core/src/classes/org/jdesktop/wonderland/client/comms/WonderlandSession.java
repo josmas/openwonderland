@@ -157,20 +157,4 @@ public interface WonderlandSession {
      * @param listener the listener to remove
      */
     public void removeSessionStatusListener(SessionStatusListener listener);
-    
-    /**
-     * Add a listener that will be notified when a new channel is joined.
-     * When a new channel is joined, each ChannelJoinedListener is notifed
-     * in the order in which they were added.  The first listener that
-     * responds with a non-null ClientChannelListener will be used to handle
-     * messages on the given channel.
-     * 
-     * @param listener the listener to register
-     */
-    public void addChannelJoinedListener(ChannelJoinedListener listener);
-    
-    /**
-     * Remove a ChannelJoinedListener
-     */
-    public void removeChannelJoinedListener(ChannelJoinedListener listener);
 }

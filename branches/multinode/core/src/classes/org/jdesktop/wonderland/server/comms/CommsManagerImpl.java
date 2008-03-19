@@ -21,7 +21,6 @@
 package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 import java.util.Collections;
@@ -77,8 +76,8 @@ class CommsManagerImpl
         return Collections.unmodifiableSet(new HashSet(protocols.values()));
     }
 
-    public CommunicationsProtocol getProtocol(ClientSessionId sessionId) {
-        return ProtocolSessionListener.getProtocol(sessionId);
+    public CommunicationsProtocol getProtocol(ClientSession session) {
+        return ProtocolSessionListener.getProtocol(session);
     }
     
     public Set<ClientSession> getClients(CommunicationsProtocol protocol) {
@@ -101,7 +100,7 @@ class CommsManagerImpl
         return WonderlandSessionListener.getClientHandlers();
     }
     
-    public WonderlandClientChannel getChannel(ClientType clientType) {
-        return WonderlandSessionListener.getChannel(clientType);
+    public WonderlandClientSender getSender(ClientType clientType) {
+        return WonderlandSessionListener.getSender(clientType);
     }
 }

@@ -35,8 +35,8 @@ import org.jdesktop.wonderland.server.UserMO;
 @ExperimentalAPI
 public class AvatarMO extends MoveableCellMO {
     
-    private ManagedReference avatarCellCacheRef;
-    private ManagedReference userRef;
+    private ManagedReference<AvatarCellCacheMO> avatarCellCacheRef;
+    private ManagedReference<UserMO> userRef;
 
     public AvatarMO(UserMO user) {
         this.userRef = AppContext.getDataManager().createReference(user);
@@ -46,7 +46,7 @@ public class AvatarMO extends MoveableCellMO {
     }
     
     public UserMO getUser() {
-        return userRef.get(UserMO.class);
+        return userRef.get();
     }
     
     /**
@@ -55,11 +55,11 @@ public class AvatarMO extends MoveableCellMO {
      */
     AvatarCellCacheMO getCellCache() {
         if (avatarCellCacheRef==null) {
-            AvatarCellCacheMO cache = new AvatarCellCacheMO(AppContext.getDataManager().createReference(this));
+            AvatarCellCacheMO cache = new AvatarCellCacheMO(this);
             avatarCellCacheRef = AppContext.getDataManager().createReference(cache);
         }
         
-        return avatarCellCacheRef.getForUpdate(AvatarCellCacheMO.class);
+        return avatarCellCacheRef.getForUpdate();
     }
     
     class AvatarMoveListener implements CellMoveListener, Serializable {

@@ -21,7 +21,9 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
-import com.sun.sgs.app.ClientSessionId;
+import com.sun.sgs.app.ChannelManager;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedReference;
 import java.util.ArrayList;
@@ -34,11 +36,9 @@ import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
-import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.WonderlandMO;
-import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
@@ -50,8 +50,8 @@ import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 @ExperimentalAPI
 public class CellMO extends WonderlandMO {
 
-    private ManagedReference parentRef=null;
-    private ArrayList<ManagedReference> childCellRefs = null;
+    private ManagedReference<CellMO> parentRef=null;
+    private ArrayList<ManagedReference<CellMO>> childCellRefs = null;
     private CellTransform transform = null;
     private CellTransform localToVWorld = null;
     private CellID cellID;
@@ -61,7 +61,7 @@ public class CellMO extends WonderlandMO {
     
     private boolean live = false;
     
-    private Channel cellChannel = null;
+    private ManagedReference<Channel> cellChannelRef = null;
     private String channelName =null;
     
     private long transformVersion = Long.MIN_VALUE;
@@ -165,7 +165,7 @@ public class CellMO extends WonderlandMO {
      */
     public void addChild(CellMO child) throws MultipleParentException {
         if (childCellRefs==null)
-            childCellRefs = new ArrayList<ManagedReference>();
+            childCellRefs = new ArrayList<ManagedReference<CellMO>>();
         
         child.setParent(AppContext.getDataManager().createReference(this));
         
@@ -220,11 +220,11 @@ public class CellMO extends WonderlandMO {
      * Return an Iterator over the children references for this cell. 
      * @return a collection of references to the children of this cell.
      */
-    public Collection<ManagedReference> getAllChildrenRefs() {
+    public Collection<ManagedReference<CellMO>> getAllChildrenRefs() {
         if (childCellRefs==null)
-            return new ArrayList<ManagedReference>();
+            return new ArrayList<ManagedReference<CellMO>>();
         
-        return (Collection<ManagedReference>) childCellRefs.clone();
+        return (Collection<ManagedReference<CellMO>>) childCellRefs.clone();
     }
         
     /**
@@ -234,7 +234,7 @@ public class CellMO extends WonderlandMO {
     public CellMO getParent() {
         if (parentRef==null)
             return null;
-        return parentRef.get(CellMO.class);                
+        return parentRef.get();                
     }
     
     /**
@@ -366,8 +366,8 @@ public class CellMO extends WonderlandMO {
             BoundsHandler.get().removeBounds(this);
         }
         
-        for(ManagedReference ref : getAllChildrenRefs()) {
-            CellMO child = ref.get(CellMO.class);
+        for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
+            CellMO child = ref.get();
             child.setLive(live);
         }
     }
@@ -396,15 +396,17 @@ public class CellMO extends WonderlandMO {
      * channelName based on the cellID.
      */
     protected void openCellChannel() {
-        channelName = WonderlandChannelNames.CELL_PREFIX+"."+cellID.toString();
-        cellChannel = AppContext.getChannelManager().createChannel(channelName, null, Delivery.RELIABLE); 
+        ChannelManager cm = AppContext.getChannelManager();
+        Channel cellChannel = cm.createChannel(Delivery.RELIABLE);
         
+        DataManager dm = AppContext.getDataManager();
+        cellChannelRef = dm.createReference(cellChannel);
     }
     
-   /**
+    /**
      * Cells that have a channel should overload this method to actually open the
-    * channel. The convenience method openCellChannel can be used to open the channel
-    * with a default channel name.
+     * channel. The convenience method openCellChannel can be used to open the channel
+     * with a default channel name.
      */
     protected void openChannel() {
     }
@@ -414,22 +416,22 @@ public class CellMO extends WonderlandMO {
      * Add user to all the cells channels, if there is no channel simply return
      * @param userID
      */
-    public void addUserToCellChannel(ClientSessionId userID) {
-        if (cellChannel==null)
+    public void addUserToCellChannel(ClientSession session) {
+        if (cellChannelRef == null)
             return;
             
-        cellChannel.join(userID.getClientSession(), null);
+        cellChannelRef.get().join(session);
     }
     
     /**
      * Remove user from all cell channels
      * @param userID
      */
-    public void removeUserFromCellChannel(ClientSessionId userID) {
-        if (cellChannel==null)
+    public void removeUserFromCellChannel(ClientSession session) {
+        if (cellChannelRef == null)
             return;
             
-        cellChannel.leave(userID.getClientSession());        
+        cellChannelRef.get().leave(session);        
     }
     
     /**
@@ -442,15 +444,15 @@ public class CellMO extends WonderlandMO {
     
     /**
      * Handle messages sent to this cell.
-     * @param channel a channel that can be used to send messages back to 
-     * the client that originated this message.  Messages will automatically
-     * be sent to the correct WonderlandClient.
-     * @param sessionId the sessionId that sent the message
+     * @param sender a sender that can be used to send messages back to 
+     * the client that originated this message.
+     * @param session the session that sent the message
      * @param message the message to handle
      */
-    protected void messageReceived(WonderlandClientChannel channel,
-                                   ClientSessionId sessionId, 
-                                   CellMessage message) {
+    protected void messageReceived(WonderlandClientSender sender,
+                                   ClientSession session, 
+                                   CellMessage message)
+    {
         throw new RuntimeException("Not Implemented");
     }
     

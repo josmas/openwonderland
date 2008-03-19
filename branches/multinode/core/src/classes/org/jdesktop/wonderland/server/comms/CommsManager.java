@@ -20,7 +20,6 @@
 package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionId;
 import java.util.Set;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.ClientType;
@@ -62,11 +61,11 @@ public interface CommsManager {
     
     /**
      * Get the communication protocol used by the given client session
-     * @param sessionId the ID of the client session to check
+     * @param session the client session to check
      * @return the protocol in use by the given client, or null if
      * the given client is not connected
      */
-    public CommunicationsProtocol getProtocol(ClientSessionId sessionId);
+    public CommunicationsProtocol getProtocol(ClientSession session);
     
     /**
      * Get all sessions that are connected using the given protocol
@@ -121,14 +120,14 @@ public interface CommsManager {
     public Set<ClientHandler> getClientHandlers();
     
     /**
-     * Get a channel that can be used to send messages to all clients
-     * of a given ClientType.  This channel can also be used to query
+     * Get a sender that can be used to send messages to all clients
+     * of a given ClientType.  This sender can also be used to query
      * all the session connected via the given session type.
      * 
      * @param clientType the type of client
-     * @return a channel for sending to all clients of the given type
+     * @return a sender for sending to all clients of the given type
      * @throws IllegalStateException if no handler is registered for the given
      * type
      */
-    public WonderlandClientChannel getChannel(ClientType clientType);
+    public WonderlandClientSender getSender(ClientType clientType);
 }

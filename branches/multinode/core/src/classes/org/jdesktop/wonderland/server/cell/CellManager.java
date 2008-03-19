@@ -35,7 +35,6 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
-import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 
@@ -48,7 +47,7 @@ public class CellManager implements ManagedObject, Serializable {
 
     // Used to generate unique cell ids
     private long cellCounter=0;
-    private ManagedReference rootCellRef;
+    private ManagedReference<CellMO> rootCellRef;
     private CellID rootCellID;
     
     private static final String BINDING_NAME=CellManager.class.getName();
@@ -107,7 +106,7 @@ public class CellManager implements ManagedObject, Serializable {
      * @return the master cell cache
      */
     public static CellManager getCellManager() {
-        return AppContext.getDataManager().getBinding(BINDING_NAME, CellManager.class);                
+        return (CellManager) AppContext.getDataManager().getBinding(BINDING_NAME);                
     }
     
 
@@ -118,7 +117,7 @@ public class CellManager implements ManagedObject, Serializable {
      * @return the cell with the given ID
      */
     public static CellMO getCell(CellID cellID) {
-        return AppContext.getDataManager().getBinding("CELL_"+cellID.toString(), CellMO.class);        
+        return (CellMO) AppContext.getDataManager().getBinding("CELL_"+cellID.toString());        
     }
     
     /**
@@ -127,7 +126,7 @@ public class CellManager implements ManagedObject, Serializable {
      * will be thrown.
      */
     public void addCell(CellMO cell) throws MultipleParentException {
-        rootCellRef.getForUpdate(CellMO.class).addChild(cell);
+        rootCellRef.getForUpdate().addChild(cell);
     }
     
     /**
@@ -184,12 +183,12 @@ public class CellManager implements ManagedObject, Serializable {
             c1.setName("c1");
             c1.setLocalBounds(bounds);
 
-            CellMO c2 = new MoveableCellMO();
+            MoveableCellMO c2 = new MoveableCellMO();
             c2.setTransform(new CellTransform(null, new Vector3f(10,10,10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
 
-            CellMO c3 = new MoveableCellMO();
+            MoveableCellMO c3 = new MoveableCellMO();
             c3.setTransform(new CellTransform(null, new Vector3f(5,5,5)));
             c3.setName("c3");
             c3.setLocalBounds(new BoundingSphere(2, new Vector3f()));
@@ -344,13 +343,13 @@ public class CellManager implements ManagedObject, Serializable {
 //    abstract void cellChildrenChanged(CellMO parent, CellMO child, boolean childAdded);
 
     static class TestTask implements Task, Serializable {
-            private ManagedReference cellRef;
+            private ManagedReference<MoveableCellMO> cellRef;
             private Vector3f pos;
             private Vector3f pos2;
             private int dir = 2;
-            private ManagedReference cell2Ref;
+            private ManagedReference<MoveableCellMO> cell2Ref;
             
-            public TestTask(CellMO cell, CellMO c2) {
+            public TestTask(MoveableCellMO cell, MoveableCellMO c2) {
                 this.cellRef = AppContext.getDataManager().createReference(cell);
                 this.cell2Ref = AppContext.getDataManager().createReference(c2);
                 pos = cell.getTransform().getTranslation(null);
@@ -363,8 +362,8 @@ public class CellManager implements ManagedObject, Serializable {
                 pos2.y += dir;
                 if (pos.x > 40 || pos.x<2)
                     dir = -dir;
-                cellRef.get(MoveableCellMO.class).setTransform(new CellTransform(null, pos));
-                cell2Ref.get(MoveableCellMO.class).setTransform(new CellTransform(null, pos2));
+                cellRef.get().setTransform(new CellTransform(null, pos));
+                cell2Ref.get().setTransform(new CellTransform(null, pos2));
             }
     
     }

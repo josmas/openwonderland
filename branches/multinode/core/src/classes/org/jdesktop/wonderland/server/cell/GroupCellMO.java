@@ -84,9 +84,9 @@ public class GroupCellMO extends CellMO implements CellContainerInterface {
         }
         
         // Try our children first
-        Iterator<ManagedReference> it = getAllChildrenRefs().iterator();
+        Iterator<ManagedReference<CellMO>> it = getAllChildrenRefs().iterator();
         while(it.hasNext() && parent==null) {
-            CellMO child = it.next().get(CellMO.class);
+            CellMO child = it.next().get();
             if (child instanceof CellContainerInterface)
                 parent = ((CellContainerInterface)child).insertCellInHierarchy(insertChild, childVWBounds);
         }

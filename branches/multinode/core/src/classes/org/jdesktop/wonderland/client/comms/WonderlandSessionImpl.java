@@ -19,17 +19,13 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
-import com.sun.sgs.client.ClientChannel;
-import com.sun.sgs.client.ClientChannelListener;
-import com.sun.sgs.client.SessionId;
 import com.sun.sgs.client.simple.SimpleClient;
 import com.sun.sgs.client.simple.SimpleClientListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +39,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 import org.jdesktop.wonderland.common.comms.SessionInternalClientType;
-import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
 import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
@@ -53,6 +48,9 @@ import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageException;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.messages.MessageInputStream;
+import org.jdesktop.wonderland.common.messages.MessageInputStream.ReceivedMessage;
+import org.jdesktop.wonderland.common.messages.MessageOutputStream;
 import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -78,10 +76,6 @@ public class WonderlandSessionImpl implements WonderlandSession {
     private static final ClientType INTERNAL_CLIENT_TYPE = 
             SessionInternalClientType.SESSION_INTERNAL_CLIENT_TYPE;
     
-    /** the prefix for client-specific channels */
-    private static final String CLIENT_CHANNEL_PREFIX =
-            WonderlandChannelNames.WONDERLAND_PREFIX + ".Client.";
-    
     /** the current status */
     private Status status;
     
@@ -96,10 +90,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
    
     /** listeners to notify when our status changes */
     private List<SessionStatusListener> sessionStatusListeners;
-    
-    /** listeners to notify when we join a channel */
-    private List<ChannelJoinedListener> channelJoinedListeners;
-   
+ 
     /** attached clients */
     private Map<ClientType, ClientRecord> clients;
     private Map<Short, ClientRecord> clientsByID;
@@ -117,9 +108,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // initialize listeners
         sessionStatusListeners =
                 new CopyOnWriteArrayList<SessionStatusListener>();
-        channelJoinedListeners = 
-                new CopyOnWriteArrayList<ChannelJoinedListener>();
-    
+      
         // initialize list of clients
         clients = Collections.synchronizedMap(
                 new HashMap<ClientType, ClientRecord>());
@@ -135,11 +124,6 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         // the internal client is always attached
         internal.attached(this);
-        
-        // add the internal listener, which handles joining the client-specific
-        // channels
-        ChannelJoinedListener cjl = new SessionInternalChannelJoinedListener();
-        addChannelJoinedListener(cjl);
     }
     
     public WonderlandServerInfo getServerInfo() {
@@ -361,19 +345,14 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         // send the message to the server
         try {
-            // prepend the client id onto the message
-            byte[] messageBytes = message.getBytes();
-            int len = messageBytes.length + 2;
-            
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
-            DataOutputStream out = new DataOutputStream(baos);
-            
-            out.writeShort(record.getClientID());
-            out.write(messageBytes);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            MessageOutputStream out = new MessageOutputStream(baos);
+                    
+            out.writeMessage(message, record.getClientID());
             out.close();
             
             // send the combined message
-            simpleClient.send(baos.toByteArray());
+            simpleClient.send(ByteBuffer.wrap(baos.toByteArray()));
         } catch (IOException ioe) {
             throw new MessageException(ioe);
         }
@@ -386,58 +365,41 @@ public class WonderlandSessionImpl implements WonderlandSession {
     public void removeSessionStatusListener(SessionStatusListener listener) {
         sessionStatusListeners.remove(listener);
     }
-    
-    public void addChannelJoinedListener(ChannelJoinedListener listener) {
-        channelJoinedListeners.add(listener);
-    }
-    
-    public void removeChannelJoinedListener(ChannelJoinedListener listener) {
-        channelJoinedListeners.remove(listener);
-    }
-    
-    /**
-     * Fire when a new channel is joined
-     * @param channel the channel that was joined
-     */
-    protected ClientChannelListener fireChannelJoined(ClientChannel channel) {
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.finest(getName() + " join channel " + channel.getName());
-        }
-        
-        // go through the list of chanel joined listeners
-        // and find the first one to respond
-        for (ChannelJoinedListener listener : channelJoinedListeners) {
-            ClientChannelListener ccl = listener.joinedChannel(this, channel);
-            if (ccl != null) {
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.finest("Listener for channel " + channel.getName() + 
-                                  " is " + ccl);
-                }
-                
-                return ccl;
-            }
-        }
-        
-        // no listener found
-        logger.warning(getName() + "no channel listener for " + 
-                       channel.getName());
-        return null;
-    }
-    
+   
     /**
      * Fire when a message is received over the session channel
      * @param data the message that was received
      */
-    protected void fireSessionMessageReceived(byte[] data) { 
-        // get the client ID this is addressed to
+    protected void fireSessionMessageReceived(ByteBuffer data) { 
+        Message message;
         short clientID;
         
         try {
-            DataInputStream in = new DataInputStream(
-                    new ByteArrayInputStream(data));
-            clientID = in.readShort();
-        } catch (IOException ioe) {
-            throw new RuntimeException("Unable to read clientID from data!");
+            // read the message
+            MessageInputStream in = new MessageInputStream(data);
+            ReceivedMessage recv = in.readMessage();
+            
+            // all set, just unpack the received message
+            message = recv.getMessage();
+            clientID = recv.getClientID();
+        } catch (ExtractMessageException eme) {
+            logger.log(Level.WARNING, "Error extracting message from server",
+                       eme);
+
+            // if possible, send an error reply to the client
+            if (eme.getMessageID() != null) {
+                message = new ErrorMessage(eme.getMessageID(),
+                                           eme.getMessage(),
+                                           eme.getCause());
+                clientID = eme.getClientID();
+            } else {
+                return;
+            }
+        } catch (Exception ex) {
+            // what to do?
+            logger.log(Level.WARNING, "Error extracting message from server",
+                       ex);
+            return;
         }
         
         // handle it with the selected client
@@ -452,7 +414,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
                           record.getClient().getClientType());
         }
         
-        record.receivedMessage(data, 2, data.length - 2);
+        record.handleMessage(message);
     }
       
     /**
@@ -670,14 +632,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         /**
          * {@inheritDoc}
          */
-        public ClientChannelListener joinedChannel(ClientChannel channel) {
-           return fireChannelJoined(channel);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public void receivedMessage(byte[] data) {
+        public void receivedMessage(ByteBuffer data) {
             fireSessionMessageReceived(data);
         }
 
@@ -820,7 +775,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /**
      * The record for an attached client
      */
-    protected class ClientRecord implements ClientChannelListener {
+    protected class ClientRecord {
         /** the client that attached */
         private WonderlandClient client;
         
@@ -859,53 +814,6 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
         
         /**
-         * Called when we receieve a message on this client's channel.
-         * This method just calls 
-         * <code>receivedMessage(data, 0, data.length)</code>
-         * @param channel the channel the data was received on
-         * @param sessionId the id of the session this channel is associated
-         * with
-         * @param data the data of the message
-         */
-        public void receivedMessage(ClientChannel channel, SessionId sessionId, 
-                                    byte[] data) 
-        {
-            receivedMessage(data, 0, data.length);
-        }
-        
-        /**
-         * Called when we receieve a message on this client's channel or
-         * over the session channel.
-         * Deserialize the message and pass it on to the client.  If the
-         * message is a response to a message we sent earlier, notify
-         * any pending response listeners
-         * @param data the data of the message
-         * @param offset the offset in the byte buffer of the start of the data
-         * @param len the length of the data
-         */
-        public void receivedMessage(byte[] data, int offset, int len) {
-            try {
-                // extract the message and pass it off to the client
-                handleMessage(Message.extract(data, offset, len));
-            } catch (ExtractMessageException eme) {
-                logger.log(Level.WARNING, "Error extracting message from server",
-                        eme);
-
-                // if possible, send a reply to the client
-                if (eme.getMessageID() != null) {
-                    // send a fake error message
-                    handleMessage(new ErrorMessage(eme.getMessageID(),
-                                                   eme.getMessage(),
-                                                   eme.getCause()));
-                }
-            } catch (Exception ex) {
-                // what to do?
-                logger.log(Level.WARNING, "Error extracting message from server",
-                        ex);
-            }
-        }
-
-        /**
          * Handle a message
          * @param message the message to handle
          */
@@ -918,21 +826,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
             // send to the client
             getClient().messageReceived(message);
         }
-        
-        /**
-         * Notification that we have left the channel associated with this
-         * client.  Notify the client that it is now disconnected.
-         * @param channel the channel that we left
-         */
-        public void leftChannel(ClientChannel channel) {
-            logger.fine(getName() + " left channel " + channel.getName());
-            
-            getClient().detached();
-            
-            // remove the client record
-            removeClientRecord(client);
-        }
-        
+          
         @Override
         public String toString() {
             return getClient().toString();
@@ -953,44 +847,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
             logger.warning("Unhandled message: " + message);
         }   
     }
-    
-    /**
-     * Handle joining internal channels
-     */
-    class SessionInternalChannelJoinedListener implements ChannelJoinedListener {
-
-        /**
-         * This listener looks for channels named Wonderland.Client.Type, where
-         * Type is the client type of the channel.  When the channel is
-         * found, this will return the ClientRecord, which acts as the
-         * ClientChannelListener for the client
-         * 
-         * @param session the session that joined the channel
-         * @param channel the channel that was joined
-         * @return the ClientRecord for the given client, or null if
-         * no client exists for the given type
-         */
-        public ClientChannelListener joinedChannel(WonderlandSession session, 
-                                                   ClientChannel channel)
-        {
-            ClientChannelListener listener = null;
-            
-            // check the channel name to see if it is in the right form
-            String channelName = channel.getName();
-            
-            if (channelName.startsWith(CLIENT_CHANNEL_PREFIX)) {
-                String clientTypeName = 
-                        channelName.substring(CLIENT_CHANNEL_PREFIX.length());
-                ClientType clientType = new ClientType(clientTypeName);
-                
-                // look up the given client type
-                listener = getClientRecord(clientType);
-            }
-            
-            return listener;
-        }
-    }
-    
+     
     /**
      * Listen for responses to the attach() message.
      */

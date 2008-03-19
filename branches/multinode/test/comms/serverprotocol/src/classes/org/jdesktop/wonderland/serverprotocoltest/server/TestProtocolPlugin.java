@@ -22,8 +22,11 @@ package org.jdesktop.wonderland.serverprotocoltest.server;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
+import com.sun.sgs.app.DataManager;
+import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 import org.jdesktop.wonderland.server.ServerPlugin;
@@ -87,21 +90,26 @@ public class TestProtocolPlugin implements ServerPlugin {
         private static final Logger logger =
                 Logger.getLogger(TestProtocolSessionListener.class.getName());
         
-        private ClientSession session;
+        private ManagedReference<ClientSession> sessionRef;
 
         private TestProtocolSessionListener(ClientSession session) {
             logger.info("New session for " + session.getName());
             
-            this.session = session;
+            DataManager dm = AppContext.getDataManager();
+            sessionRef = dm.createReference(session);
         }
             
-        public void receivedMessage(byte[] data) {
-            logger.info("Received " + data.length + " bytes from " +
-                        session.getName() + ".");
+        public void receivedMessage(ByteBuffer data) {
+            logger.info("Received " + data.remaining() + " bytes from " +
+                        getSession().getName() + ".");
         }
 
         public void disconnected(boolean forced) {
-            logger.info("Session " + session.getName() + " disconnected.");
+            logger.info("Session " + getSession().getName() + " disconnected.");
         } 
+        
+        private ClientSession getSession() {
+            return sessionRef.get();
+        }
     }
 }

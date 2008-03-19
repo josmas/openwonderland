@@ -18,13 +18,9 @@
 package org.jdesktop.wonderland.common.cell.messages;
 
 import com.jme.bounding.BoundingVolume;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.messages.PackHelper;
 
 /**
  *
@@ -53,17 +49,5 @@ public class CellHierarchyMoveMessage extends CellHierarchyMessage {
     
     public CellHierarchyMoveMessage() {
         msgType = ActionType.MOVE_CELL;
-    }
-    
-    public void packObject(ObjectOutputStream out) throws IOException {
-        cellID.put(out);
-        PackHelper.writeBoundingVolume(out, localBounds);
-        PackHelper.writeCellTransform(out, cellTransform);
-    }
-    
-    public void unpackObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        cellID = CellID.value(in);
-        localBounds = PackHelper.readBoundingVolume(in);
-        cellTransform = PackHelper.readCellTransform(in);
     }
 }

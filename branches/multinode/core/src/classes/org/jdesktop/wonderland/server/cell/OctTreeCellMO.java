@@ -136,14 +136,14 @@ public class OctTreeCellMO extends GroupCellMO implements CellContainerInterface
             return null;
         }   
 
-        ManagedReference ref;
+        ManagedReference<CellMO> ref;
         
-        Iterator<ManagedReference> it = getAllChildrenRefs().iterator();
+        Iterator<ManagedReference<CellMO>> it = getAllChildrenRefs().iterator();
         
         while(it.hasNext() && parent==null) {
             ref = it.next();
             if (ref!=null) {
-                CellMO tmp = ref.get(CellMO.class);
+                CellMO tmp = ref.get();
                 if (Math3DUtils.encloses(tmp.getCachedVWBounds(), childVWBounds)) {
                     if (tmp instanceof CellContainerInterface) {
                         parent = ((CellContainerInterface)tmp).insertCellInHierarchy(insertChild, childVWBounds);

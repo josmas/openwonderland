@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 public class MoveableCellMO extends CellMO {
 
-    private ArrayList<ManagedReference> listeners = null;
+    private ArrayList<ManagedReference<CellMoveListener>> listeners = null;
     private CopyOnWriteArrayList<ManagedReference> caches = new CopyOnWriteArrayList<ManagedReference>();
     
     @Override
@@ -40,8 +40,8 @@ public class MoveableCellMO extends CellMO {
         
         // Notify listeners
         if (listeners!=null) {
-            for(ManagedReference listenerRef : listeners)
-                listenerRef.getForUpdate(CellMoveListener.class).cellMoved(this, transform);
+            for(ManagedReference<CellMoveListener> listenerRef : listeners)
+                listenerRef.getForUpdate().cellMoved(this, transform);
         }
     }
     

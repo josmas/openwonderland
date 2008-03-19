@@ -143,7 +143,7 @@ public class WFSWriter {
         }
         
         // write children
-        Collection<ManagedReference> children = cell.getAllChildrenRefs();
+        Collection<ManagedReference<CellMO>> children = cell.getAllChildrenRefs();
         if (!children.isEmpty()) {
             int childCount = 0;
             
@@ -151,9 +151,9 @@ public class WFSWriter {
             File childDir = new File(directory, cellName + "-wld");
             childDir.mkdir();
             
-            for (ManagedReference ref : children) {
+            for (ManagedReference<CellMO> ref : children) {
                 // write each child
-                writeCell(ref.get(CellMO.class), childDir, childCount++);
+                writeCell(ref.get(), childDir, childCount++);
             }
         }
     }

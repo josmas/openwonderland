@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.server.comms;
 
-import com.sun.sgs.app.ClientSessionId;
+import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -38,39 +38,39 @@ public interface ClientHandler {
     
     /**
      * Called when the handler is registered with the CommsManager
-     * @param channel the WonderlandClientChannel that can be used to
+     * @param sender the WonderlandClientSender that can be used to
      * send to all clients of the given type
      */
-    public void registered(WonderlandClientChannel channel);
+    public void registered(WonderlandClientSender sender);
     
     /**
      * Handle when a new session attaches to this handler.  A session 
      * attaches when a client calls <code>WonderlandSession.attach()</code>
      * to attach a new session.
-     * @param channel the channel that can be used to send to clients
+     * @param sender the sender that can be used to send to clients
      * of this handler
-     * @param sessionId the id of the session that attached
+     * @param session the session that attached
      */
-    public void clientAttached(WonderlandClientChannel channel,
-                               ClientSessionId sessionId);
+    public void clientAttached(WonderlandClientSender sender,
+                               ClientSession session);
     
     /**
      * Handle a message from a client
-     * @param channel the channel that can be used to send to clients of
+     * @param sender the sender that can be used to send to clients of
      * this handler
-     * @param sessionId the sessionId that sent the message
+     * @param session the session that sent the message
      * @param message the message that was generated
      */
-    public void messageReceived(WonderlandClientChannel channel,
-                                ClientSessionId sessionId,
+    public void messageReceived(WonderlandClientSender sender,
+                                ClientSession session,
                                 Message message);
     
     /**
      * Handle when a session detaches from this handler
-     * @param channel the channel that can be used to send to clients
+     * @param sender the sender that can be used to send to clients
      * of this handler
-     * @param sessionId the id of the session that attached
+     * @param session the session that attached
      */
-    public void clientDetached(WonderlandClientChannel channel,
-                               ClientSessionId sessionId);
+    public void clientDetached(WonderlandClientSender sender,
+                               ClientSession session);
 }

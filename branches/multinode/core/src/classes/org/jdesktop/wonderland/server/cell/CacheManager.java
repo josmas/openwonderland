@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.InternalAPI;
 @InternalAPI
 public class CacheManager implements ManagedObject, Serializable {
 
-    private ArrayList<ManagedReference> caches = new ArrayList();
+    private ArrayList<ManagedReference<AvatarCellCacheMO>> caches = new ArrayList();
     
     private static final String BINDING_NAME="CacheManager";
     
@@ -64,7 +64,7 @@ public class CacheManager implements ManagedObject, Serializable {
      * @param cache
      */
     public static void addCache(AvatarCellCacheMO cache) {
-        CacheManager mgr = AppContext.getDataManager().getBinding(BINDING_NAME, CacheManager.class);
+        CacheManager mgr = (CacheManager) AppContext.getDataManager().getBinding(BINDING_NAME);
         AppContext.getDataManager().markForUpdate(mgr);
         
         mgr.addCacheImpl(cache);
@@ -75,22 +75,21 @@ public class CacheManager implements ManagedObject, Serializable {
      * @param cache
      */
     public static void removeCache(AvatarCellCacheMO cache) {
-        CacheManager mgr = AppContext.getDataManager().getBinding(BINDING_NAME, CacheManager.class);
+        CacheManager mgr = (CacheManager) AppContext.getDataManager().getBinding(BINDING_NAME);
         AppContext.getDataManager().markForUpdate(mgr);
         
         mgr.removeCacheImpl(cache);
     }
 
     private void revalidate() {
-        for(ManagedReference cacheRef : caches)
-            cacheRef.getForUpdate(AvatarCellCacheMO.class).revalidate();
+        for(ManagedReference<AvatarCellCacheMO> cacheRef : caches)
+            cacheRef.getForUpdate().revalidate();
     }
     
     static class CacheRevalidateTask implements Task, Serializable {
-            public void run() throws Exception {
-                CacheManager mgr = AppContext.getDataManager().getBinding(BINDING_NAME, CacheManager.class);
-                mgr.revalidate();
-            }
-        
+        public void run() throws Exception {
+            CacheManager mgr = (CacheManager) AppContext.getDataManager().getBinding(BINDING_NAME);
+            mgr.revalidate();
+        }
     }
 }

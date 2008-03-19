@@ -33,7 +33,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -67,8 +66,8 @@ public class WFSCellMO extends CellMO
         new HashMap<String, Long>();
     
     /* A hashtable of canonical file names and their referring Cell GLOs */
-    private HashMap<String, ManagedReference> gloReferenceMap =
-        new HashMap<String, ManagedReference>();
+    private HashMap<String, ManagedReference<CellMO>> gloReferenceMap =
+        new HashMap<String, ManagedReference<CellMO>>();
     
     /* The root URL of this wonderland file system */
     private URL root;
@@ -112,8 +111,8 @@ public class WFSCellMO extends CellMO
             new LinkedList<WFSCellDirectory>();
         
         /* Make a copy of the current cells marked for deletion */
-        HashMap<String, ManagedReference> deletedCells =
-            (HashMap<String, ManagedReference>) this.gloReferenceMap.clone();
+        HashMap<String, ManagedReference<CellMO>> deletedCells =
+            (HashMap<String, ManagedReference<CellMO>>) this.gloReferenceMap.clone();
         
         /* First enumerate all of the cells in the current directory */
         WFS wfs = null;
@@ -152,13 +151,13 @@ public class WFSCellMO extends CellMO
          * hierarchy on the server, remove the references from gloReferenceMap
          * and fileModifiedMap.
          */
-        Set<Map.Entry<String, ManagedReference>> entries =
+        Set<Map.Entry<String, ManagedReference<CellMO>>> entries =
             deletedCells.entrySet();
-        Iterator<Map.Entry<String, ManagedReference>> iterator =
+        Iterator<Map.Entry<String, ManagedReference<CellMO>>> iterator =
             entries.iterator();
         
-        for (Map.Entry<String, ManagedReference> entry : entries) {
-            CellMO glo = entry.getValue().getForUpdate(CellMO.class);
+        for (Map.Entry<String, ManagedReference<CellMO>> entry : entries) {
+            CellMO glo = entry.getValue().getForUpdate();
             
             logger.log(Level.INFO, "WFS Reload: cell id=" + glo.getCellID() +
                 " has been deleted");
@@ -207,7 +206,7 @@ public class WFSCellMO extends CellMO
          * class
          */
         if (this.gloReferenceMap.containsKey(dir.getCanonicalParent()) == true) {
-            return this.gloReferenceMap.get(dir.getCanonicalParent()).get(CellMO.class);
+            return this.gloReferenceMap.get(dir.getCanonicalParent()).get();
         }
         return this;
     }
@@ -250,7 +249,7 @@ public class WFSCellMO extends CellMO
      * cells to check.
      */
     private void loadCells(WFSCellDirectory dir,
-        HashMap<String, ManagedReference> deletedCells,
+        HashMap<String, ManagedReference<CellMO>> deletedCells,
         LinkedList<WFSCellDirectory> children) {
         
         WFSCell[] cells = dir.getCells();
@@ -302,7 +301,7 @@ public class WFSCellMO extends CellMO
                  * of modified dates
                  */
                 CellMO glo =
-                    this.gloReferenceMap.get(canonical).getForUpdate(CellMO.class);
+                    this.gloReferenceMap.get(canonical).getForUpdate();
                 deletedCells.remove(canonical);
                 this.fileModifiedMap.put(canonical, modified);
                 

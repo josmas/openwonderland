@@ -19,18 +19,12 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import com.sun.sgs.client.ClientChannel;
-import com.sun.sgs.client.ClientChannelListener;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.client.comms.AttachFailureException;
 import org.jdesktop.wonderland.client.comms.BaseClient;
-import org.jdesktop.wonderland.client.comms.ChannelJoinedListener;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellClientType;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ClientType;
-import org.jdesktop.wonderland.common.comms.WonderlandChannelNames;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -40,13 +34,6 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 @ExperimentalAPI
 public class CellClient extends BaseClient {
-    /** the prefix for cell channels */
-    private static final String CELL_CHANNEL_PREFIX =
-            WonderlandChannelNames.CELL_PREFIX + ".";
-    
-    /** a channel joined listener */
-    private ChannelJoinedListener listener = new CellChannelJoinedListener();
-    
     /**
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
@@ -99,50 +86,5 @@ public class CellClient extends BaseClient {
      */
     public void handleMessage(Message message) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void attach(WonderlandSession session) 
-            throws AttachFailureException 
-    {
-        // register a channel listener
-        session.addChannelJoinedListener(listener);
-        
-        // now attach to the session
-        try {
-            super.attach(session);
-        } catch (AttachFailureException afe) {
-            // unregister the listener and re-throw the exception
-            session.removeChannelJoinedListener(listener);
-            throw afe;
-        } catch (RuntimeException re) {
-            // unregister the listener and re-throw the exception
-            session.removeChannelJoinedListener(listener);
-            throw re; 
-        }
-    }
-
-    @Override
-    public void detached() {
-        // unregister the listener
-        getSession().removeChannelJoinedListener(listener);
-    }
-    
-    /**
-     * Map cell channels to the cell they match
-     */
-    class CellChannelJoinedListener implements ChannelJoinedListener {
-        public ClientChannelListener joinedChannel(WonderlandSession session, 
-                                                   ClientChannel channel)
-        {
-            String channelName = channel.getName();
-            if (channelName.startsWith(CELL_CHANNEL_PREFIX)) {
-                String id = channelName.substring(CELL_CHANNEL_PREFIX.length());
-                
-                // TODO: get cell, associate cell channel with cell 
-            }
-            
-            return null;
-        }
     }
 }

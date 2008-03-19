@@ -32,6 +32,11 @@
                     <type>java</type>
                     <location>comms/serverprotocol/src/classes</location>
                 </source-folder>
+                <source-folder>
+                    <label>comms/serialization/src/classes</label>
+                    <type>java</type>
+                    <location>comms/serialization/src/classes</location>
+                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
@@ -67,6 +72,10 @@
                         <label>comms/serverprotocol/src/classes</label>
                         <location>comms/serverprotocol/src/classes</location>
                     </source-folder>
+                    <source-folder style="packages">
+                        <label>comms/serialization/src/classes</label>
+                        <location>comms/serialization/src/classes</location>
+                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -86,7 +95,8 @@
                 <package-root>comms/clientlistener/src/classes</package-root>
                 <package-root>comms/serverlistener/src/classes</package-root>
                 <package-root>comms/serverprotocol/src/classes</package-root>
-                <classpath mode="compile">../core/build/current/debug/lib/wonderland-server.jar:../core/build/current/debug/lib/wonderland-client.jar:../core/build/current/debug/lib/wonderland-utils.jar:../core/build/current/debug/lib/wonderland-common.jar:../core/ext/jme/jme/jme.jar:../core/ext/sgs/sgs-0.9.4-r3093/lib/sgs.jar:../core/ext/sgs/sgs-client-0.9.4-r3093/lib/sgs-client.jar:../core/ext/voicelib/voicelib.jar:../build-tools/import/junit-4.4.jar</classpath>
+                <package-root>comms/serialization/src/classes</package-root>
+                <classpath mode="compile">../core/build/current/debug/lib/wonderland-server.jar:../core/build/current/debug/lib/wonderland-client.jar:../core/build/current/debug/lib/wonderland-utils.jar:../core/build/current/debug/lib/wonderland-common.jar:../core/ext/jme/jme/jme.jar:../core/ext/voicelib/voicelib.jar:../build-tools/import/junit-4.4.jar:../core/ext/sgs/sgs-0.9.6.internal-r3995M/lib/sgs.jar:../core/ext/sgs/sgs-client-0.9.6.internal-r3995M/lib/sgs-client.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
