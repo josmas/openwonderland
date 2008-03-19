@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="jar" name="server-manager">
+    <property name="modules.dir" location="../../../.."/>
+    <property name="current.dir" location="."/>
+
+    <!-- Use my-build.properties to override default values in build.properties -->
+    <property file="my.build.properties"/>
+
+    <!-- set the project name -->
+    <property name="project.name" value="${ant.project.name}"/>
+
+    <!-- import the common build attributes -->
+    <import file="${modules.dir}/build-tools/import/module-common.xml"/>
+    
+    <!-- the name of the client jar file -->
+    <property name="module.client.jar" value="server-manager-client.jar"/>
+    
+    <!-- all files that should be built as part of the client jar file -->
+    <patternset id="module.client.classes">
+        <include name="org/jdesktop/wonderland/servermanager/client/**"/>
+        <include name="org/jdesktop/wonderland/servermanager/common/**"/>
+    </patternset>
+   
+    <!-- the name of the server jar file -->
+    <property name="module.server.jar" value="server-manager-server.jar"/>
+    
+    <!-- all files that should be built as part of the server jar file -->
+    <patternset id="module.server.classes">
+        <include name="org/jdesktop/wonderland/servermanager/server/**"/>
+        <include name="org/jdesktop/wonderland/servermanager/common/**"/>
+    </patternset>
+    
+    <!-- extra classes for compiling the server -->
+    <!-- <path refid="extra-server.classpath"/> -->
+    
+    <!-- copy targets so NetBeans will recognize them -->
+    <target name="compile" depends="compile-client, compile-server"/>
+    <target name="jar" depends="jar-client, jar-server"/>
+    <target name="clean" depends="clean-all"/>
+    
+    <!-- You can override default methods to add functions at various
+         points.  See module-common.xml for more information:
+         
+         -pre-init: before init
+         -post-init: after init
+         -pre-compile-client: before compiling client
+         -post-compile-client: after compiling client
+         -pre-compile-server: before compiling server
+         -post-compile-server: after compiling server
+         -pre-jar-client: before jar client
+         -post-jar-client: after jar client
+         -pre-jar-server: before jar server
+         -post-jar-server: after jar server
+         -pre-clean: before clean
+         -post-clean: after clean
+    -->
+    
+    <target name="-post-jar-server">
+        <copy todir="${module.client.dir}">
+            <fileset dir="lib">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+    </target>
+</project>

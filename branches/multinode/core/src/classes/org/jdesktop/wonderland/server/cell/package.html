@@ -1,0 +1,41 @@
+<!-- 
+    Document   : package
+    Created on : Jan 2, 2008, 9:58:09 AM
+    Author     : paulby
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Wonderland Cell System</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+      Cells provide spatialised geometry, behavior and network support for world content.
+  <p>
+      Each Cell in the world has a local bounds defined by the developer. The local bounds
+      must encapsulate all the geometry for that cell, if the geometry changes size
+      or position then it may be necessary to update the bounds of the cell. The developer is 
+      responsible for ensuring that the local bounds always encapsulates the geometry.
+      Cell bounds are defined in Cell local coordinates. The local bounds do not have
+      to encapsulate the bounds of the cells children.
+  </p>
+  <p>
+      The bounds of a cell can overlap the bounds of it's sibling cells.
+  </p>
+  
+  <p>
+      getComputedWorldBounds returns a bounds object that encapsulates this
+      cell and all it's child cell bounds. The computedWorldBounds is only updated
+      periodically so there may be some lag in these bounds encapsulating children 
+      that have changing bounds. The timing of updates is not strongly defined
+      at this time in order to allow exploration of various optimisations in 
+      the future.
+  </p>
+     
+  <p>
+      getCacheVWBounds returns the cell bounds in Virtual World coordinates. This
+      call is only valid for live cells.
+  </p>
+  
+  </body>
+</html>
