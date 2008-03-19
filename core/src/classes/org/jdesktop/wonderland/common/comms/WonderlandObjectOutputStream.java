@@ -50,30 +50,27 @@ public class WonderlandObjectOutputStream extends ObjectOutputStream {
     private HashMap<Integer, WeakReference<ObjectStreamClass>> idToDesc = new HashMap();
     private HashMap<WeakReference<ObjectStreamClass>, Integer> descToId = new HashMap();
     
-    // We need to synchronize our internal data transmission with those of the
-    // user, so pending requests are only sent when the user sends new data.
-    // This prevents us corrupting the stream
-    private ArrayList<Integer> pendingRemoves = new ArrayList();
-    
     private int nextID = firstID;
 
     public WonderlandObjectOutputStream(OutputStream out) throws IOException {
         super(out);
         refQueue = new ReferenceQueue();
-        new RefQueueManager().start();
     }
 
     @Override
     protected void writeClassDescriptor(ObjectStreamClass desc) throws IOException {
         // First send any pending remove messages
-        synchronized(pendingRemoves) {
-            for(int id : pendingRemoves) {
-                WeakReference ref = idToDesc.remove(id);
-                descToId.remove(ref);
-                writeInt(REMOVE_DESCRIPTOR);
-                writeInt(id);
-            }
-            pendingRemoves.clear();
+        WeakReference ref = (WeakReference) refQueue.poll();
+        while (ref != null) {
+            int id = descToId.remove(ref);
+            idToDesc.remove(id);
+                
+            writeInt(REMOVE_DESCRIPTOR);
+            writeInt(id);
+            
+            System.err.println("****** GC'ed ref "+id);
+            
+            ref = (WeakReference) refQueue.poll();
         }
         
         // Now send the users class descriptor
@@ -87,42 +84,5 @@ public class WonderlandObjectOutputStream extends ObjectOutputStream {
             super.writeClassDescriptor(desc);
         }
         writeInt(idObj);
-    }
-    
-    /**
-     * Queue removal request for given id. This id and it's assocaited
-     * object will be removed from this object and the associated InputStream
-     * 
-     * @param id
-     * @throws java.io.IOException
-     */
-    private void removeClassDescriptor(int id) throws IOException {
-        synchronized(pendingRemoves) {
-            pendingRemoves.add(id);
-        }
-    }
-    
-    /**
-     * Manage the reference queue, remove any gc'ed objects from our maps and
-     * notify associated InputStream on removal
-     */
-    class RefQueueManager extends Thread {
-        @Override
-        public void run() {
-            while(true) {
-                try {
-                    WeakReference ref = (WeakReference) refQueue.remove();
-                    int id = descToId.get(ref);
-                    System.err.println("****** GC'ed ref "+id);
-                    removeClassDescriptor(id);
-                    
-                } catch (IOException ex) {
-                    Logger.getLogger(WonderlandObjectOutputStream.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(WonderlandObjectOutputStream.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
-            }
-        }
     }
 }
