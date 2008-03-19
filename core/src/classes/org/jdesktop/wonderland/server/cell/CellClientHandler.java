@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.app.ClientSessionId;
+import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellClientType;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
-import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Handles CellMessages sent by the Wonderland client
@@ -39,33 +39,33 @@ class CellClientHandler implements ClientHandler, Serializable {
         return CellClientType.CLIENT_TYPE;
     }
 
-    public void registered(WonderlandClientChannel channel) {
+    public void registered(WonderlandClientSender sender) {
         // ignore
     }
     
-    public void clientAttached(WonderlandClientChannel channel,
-                               ClientSessionId sessionId) 
+    public void clientAttached(WonderlandClientSender sender,
+                               ClientSession session) 
     {
         // ignore
     }
 
-    public void clientDetached(WonderlandClientChannel chanel,
-                               ClientSessionId sessionId) 
+    public void clientDetached(WonderlandClientSender sender,
+                               ClientSession session) 
     {
         // ignore
     }
     
-    public void messageReceived(WonderlandClientChannel channel,
-                                ClientSessionId sessionId, 
+    public void messageReceived(WonderlandClientSender sender,
+                                ClientSession session, 
                                 Message message) 
     {
         if (message instanceof CellMessage) {
-            messageReceived(channel, sessionId, (CellMessage) message);
+            messageReceived(sender, session, (CellMessage) message);
         } else {
             Message error = new ErrorMessage(message.getMessageID(),
                     "Unexpected message type: " + message.getClass());
             
-            channel.send(sessionId, error);
+            sender.send(session, error);
         }
     }
   
@@ -77,8 +77,8 @@ class CellClientHandler implements ClientHandler, Serializable {
      * @param message the cell message
      
      */
-    public void messageReceived(WonderlandClientChannel channel,
-                                ClientSessionId sessionId,
+    public void messageReceived(WonderlandClientSender sender,
+                                ClientSession session,
                                 CellMessage message) 
     {
         // get the CellManager
@@ -89,12 +89,12 @@ class CellClientHandler implements ClientHandler, Serializable {
         
         // if there was no cell, handle the error
         if (cell == null) {
-            channel.send(sessionId, new ErrorMessage(message.getMessageID(),
-                            "Unknown cell id: " + message.getCellID()));
+            sender.send(session, new ErrorMessage(message.getMessageID(),
+                               "Unknown cell id: " + message.getCellID()));
             return;
         }
         
         // dispatch the message
-        cell.messageReceived(channel, sessionId, message);
+        cell.messageReceived(sender, session, message);
     }
 }

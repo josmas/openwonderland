@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.serverlistenertest.server;
 
-import com.sun.sgs.app.ClientSessionId;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.serverlistenertest.common.TestClientType;
 import org.jdesktop.wonderland.serverlistenertest.common.TestMessageOne;
 import org.jdesktop.wonderland.serverlistenertest.common.TestMessageTwo;
@@ -53,27 +53,27 @@ public class TestListenerPlugin implements ServerPlugin {
     abstract static class TestClientHandler implements ClientHandler {
         public abstract String getName();
         
-        public void registered(WonderlandClientChannel channel) {
-            logger.info(getName() + " registered: " + channel.getName());
+        public void registered(WonderlandClientSender sender) {
+            logger.info(getName() + " registered");
         }
         
-        public void clientAttached(WonderlandClientChannel channel,
-                                   ClientSessionId sessionId) {
-            logger.info(getName() + " client attached: " + sessionId);
+        public void clientAttached(WonderlandClientSender sender,
+                                   ClientSession session) {
+            logger.info(getName() + " client attached: " + session);
         }
         
-        public void messageReceived(WonderlandClientChannel channel,
-                                    ClientSessionId sessionId,
+        public void messageReceived(WonderlandClientSender sender,
+                                    ClientSession session,
                                     Message message)
         {
             logger.info(getName() + " received message " + message +
-                        " from session " + sessionId);
+                        " from session " + session);
         }
         
-        public void clientDetached(WonderlandClientChannel channel,
-                                   ClientSessionId sessionId) 
+        public void clientDetached(WonderlandClientSender sender,
+                                   ClientSession session) 
         {
-            logger.info(getName() + " client detached: " + sessionId);
+            logger.info(getName() + " client detached: " + session);
         }
     }
     
@@ -87,14 +87,14 @@ public class TestListenerPlugin implements ServerPlugin {
         }
         
         @Override
-        public void messageReceived(WonderlandClientChannel channel,
-                                    ClientSessionId sessionId,
+        public void messageReceived(WonderlandClientSender sender,
+                                    ClientSession session,
                                     Message message)
         {
             assert message instanceof TestMessageOne :
                    logger.getName() + " received bad message: " + message;
             
-            super.messageReceived(channel, sessionId, message);
+            super.messageReceived(sender, session, message);
         }
     }
     
@@ -110,15 +110,15 @@ public class TestListenerPlugin implements ServerPlugin {
         }
         
         @Override
-        public void messageReceived(WonderlandClientChannel channel,
-                                    ClientSessionId sessionId, 
+        public void messageReceived(WonderlandClientSender sender,
+                                    ClientSession session, 
                                     Message message)
         {
             assert message instanceof TestMessageTwo :
                    getName() + " received bad message: " + message;
             
             logger.info(getName() + " received message " + message +
-                        " from session " + sessionId + 
+                        " from session " + session + 
                         " count " + count++);
         }
     }
@@ -133,14 +133,14 @@ public class TestListenerPlugin implements ServerPlugin {
         }
         
         @Override
-        public void messageReceived(WonderlandClientChannel channel,
-                                    ClientSessionId sessionId, 
+        public void messageReceived(WonderlandClientSender sender,
+                                    ClientSession session, 
                                     Message message)
         {
             assert !(message instanceof TestMessageOne) : 
                    getName() + " received bad message: " + message;
             
-            super.messageReceived(channel, sessionId, message);
+            super.messageReceived(sender, session, message);
         }
     }
 }

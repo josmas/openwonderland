@@ -168,14 +168,4 @@ public class CellHierarchyMessage extends Message {
         return ret;
        
     }
-    
-    public void packObject(ObjectOutputStream out) throws IOException {
-        out.writeInt(msgType.ordinal());
-        cellID.put(out);
-    }
-    
-    public void unpackObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        msgType = ActionType.values()[in.readInt()];
-        cellID = CellID.value(in);
-    }
 }

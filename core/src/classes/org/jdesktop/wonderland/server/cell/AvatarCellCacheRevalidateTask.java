@@ -29,14 +29,14 @@ import java.io.Serializable;
  */
 public class AvatarCellCacheRevalidateTask implements Task, Serializable {
 
-    private ManagedReference cellCacheRef;
+    private ManagedReference<AvatarCellCacheMO> cellCacheRef;
     
     public AvatarCellCacheRevalidateTask(AvatarCellCacheMO cellCache) {
         cellCacheRef = AppContext.getDataManager().createReference(cellCache);
     }
     
     public void run() throws Exception {
-        cellCacheRef.get(AvatarCellCacheMO.class).revalidate();
+        cellCacheRef.get().revalidate();
     }
 
 }

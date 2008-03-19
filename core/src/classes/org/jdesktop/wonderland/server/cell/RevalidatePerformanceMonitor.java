@@ -79,9 +79,6 @@ public class RevalidatePerformanceMonitor {
     private int  oldCellCount;
     private long oldCellTime;
     
-    private int  messageCount;
-    private long messageBytes;
-    
     private boolean exception = false;
     
     private final Map<Class,CellClassStats> boundsClassStats =
@@ -249,12 +246,7 @@ public class RevalidatePerformanceMonitor {
     public void updateTotals() {
         record(this);
     }
-  
-    public String getMessageStats() {
-        return "Messages: " + messageCount + " size: " + messageBytes + 
-               " error: " + exception;
-    }
-    
+   
     public String getRevalidateStats() {
         StringBuffer stats = new StringBuffer();
         stats.append("Total Cell Count " + boundsCellCount);
@@ -319,11 +311,6 @@ public class RevalidatePerformanceMonitor {
     public void incOldCellTime(long incNanoSeconds) {
         oldCellCount += 1;
         oldCellTime += incNanoSeconds;
-    }
-    
-    public void incMessageBytes(long incBytes) {
-        messageCount += 1;
-        messageBytes += incBytes;
     }
     
     /**

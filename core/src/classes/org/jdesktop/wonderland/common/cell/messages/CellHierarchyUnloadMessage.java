@@ -44,12 +44,4 @@ public class CellHierarchyUnloadMessage extends CellHierarchyMessage {
     public CellHierarchyUnloadMessage() {
         msgType = ActionType.UNLOAD_CELL;
     }
-    
-    public void packObject(ObjectOutputStream out) throws IOException {
-        cellID.put(out);
-    }
-    
-    public void unpackObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        cellID = CellID.value(in);
-    }
 }

@@ -81,6 +81,7 @@ public class ClientMain {
         testReattach(session);
         
         logger.info("Tests complete");
+        session.disconnect();
     }
     
     public void testMessages(WonderlandSession session)

@@ -23,8 +23,6 @@ import com.sun.sgs.auth.Identity;
 import com.sun.sgs.auth.IdentityAuthenticator;
 import com.sun.sgs.auth.IdentityCredentials;
 import com.sun.sgs.impl.auth.NamePasswordCredentials;
-import com.sun.sgs.kernel.KernelAppContext;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
@@ -59,8 +57,6 @@ public class LobbyAuth implements IdentityAuthenticator {
     // logger
     private static final Logger logger =
             Logger.getLogger(LobbyAuth.class.getName());
-    
-    private KernelAppContext context;
    
     // properties to use
     private static final String PROP_BASE = 
@@ -88,10 +84,6 @@ public class LobbyAuth implements IdentityAuthenticator {
 
     public String[] getSupportedCredentialTypes() {
         return new String[] { "NameAndPasswordCredentials" };
-    }
-
-    public void assignContext(KernelAppContext context) {
-        this.context = context;
     }
     
     public Identity authenticateIdentity(IdentityCredentials credentials) 

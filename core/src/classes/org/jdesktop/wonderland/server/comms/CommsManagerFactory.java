@@ -43,7 +43,6 @@ public class CommsManagerFactory {
      * @return the comms manager
      */
     public static CommsManager getCommsManager() {
-        return AppContext.getDataManager().getBinding(BINDING_NAME, 
-                                                      CommsManager.class);
+        return (CommsManager) AppContext.getDataManager().getBinding(BINDING_NAME);
     }
 }

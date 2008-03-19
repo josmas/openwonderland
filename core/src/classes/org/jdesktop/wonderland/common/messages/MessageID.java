@@ -103,15 +103,7 @@ public class MessageID implements Externalizable {
         
         id = new String(idBytes, ENCODING);
     }
-    
-    public void packObject(ObjectOutputStream out) throws IOException {
-        out.writeLong(Long.parseLong(id));
-    }
-    
-    public void unpackObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        id = String.valueOf(in.readLong());
-    }
-    
+
     /**
      * Compare two message ids based on the underlying ID string
      * @param o the other object to compare

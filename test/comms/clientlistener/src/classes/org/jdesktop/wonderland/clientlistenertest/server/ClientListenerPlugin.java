@@ -20,8 +20,10 @@
 package org.jdesktop.wonderland.clientlistenertest.server;
 
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSessionId;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -35,7 +37,7 @@ import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Sample plugin that doesn't do anything
@@ -57,51 +59,53 @@ public class ClientListenerPlugin implements ServerPlugin {
             return TestClientType.CLIENT_ONE_TYPE;
         }
 
-        public void registered(WonderlandClientChannel channel) {
+        public void registered(WonderlandClientSender sender) {
         }
 
-        public void clientAttached(WonderlandClientChannel channel,
-                                   ClientSessionId sessionId) 
+        public void clientAttached(WonderlandClientSender sender,
+                                   ClientSession session) 
         {
-            logger.info("Session connected: " + sessionId);
+            logger.info("Session connected: " + session);
             
             // send message over session channel
-            channel.send(sessionId, new TestMessageOne("TestOne"));
+            sender.send(session, new TestMessageOne("Attach: TestOne (private)"));
             
             // send message over all-clients channel
-            channel.send(new TestMessageTwo("TestTwo"));
+            sender.send(new TestMessageTwo("Attach: TestTwo"));
             
             // now schedule a task to send more messages
-            AppContext.getTaskManager().scheduleTask(new SendTask(channel, 
-                                                                  sessionId));
+            AppContext.getTaskManager().scheduleTask(new SendTask(sender, 
+                                                                  session));
         }
 
-        public void messageReceived(WonderlandClientChannel channel,
-                                    ClientSessionId sessionId, 
+        public void messageReceived(WonderlandClientSender sender,
+                                    ClientSession session, 
                                     Message message)
         {
             // ignore
         }
 
-        public void clientDetached(WonderlandClientChannel channel,
-                                   ClientSessionId sessionId) {
+        public void clientDetached(WonderlandClientSender sender,
+                                   ClientSession session) {
             // ignore
         }
         
         static class SendTask implements Task, Serializable {
-            private WonderlandClientChannel channel;
-            private ClientSessionId sessionId;
+            private WonderlandClientSender sender;
+            private ManagedReference<ClientSession> sessionRef;
             
-            public SendTask(WonderlandClientChannel channel, 
-                            ClientSessionId sessionId) 
+            public SendTask(WonderlandClientSender sender, 
+                            ClientSession session) 
             {
-                this.channel = channel;
-                this.sessionId = sessionId;
+                this.sender = sender;
+                
+                DataManager dm = AppContext.getDataManager();
+                sessionRef = dm.createReference(session);
             }
 
             public void run() throws Exception {
-                channel.send(new TestMessageOne("TestOneFromTask"));
-                channel.send(sessionId, new TestMessageThree("TestThree", 42));
+                sender.send(new TestMessageOne("Task: TestOne"));
+                sender.send(sessionRef.get(), new TestMessageThree("Task: TestThree (private)", 42));
             }   
         }
     }

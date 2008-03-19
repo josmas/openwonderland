@@ -18,22 +18,18 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingSphere;
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ChannelManager;
-import com.sun.sgs.app.ClientSessionId;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.ObjectNotFoundException;
 import com.sun.sgs.app.PeriodicTaskHandle;
-import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -45,7 +41,7 @@ import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.bounds.BoundsManager;
-import org.jdesktop.wonderland.server.comms.WonderlandClientChannel;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Container for the cell cache for an avatar.
@@ -62,15 +58,13 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     
     private final static Logger logger = Logger.getLogger(AvatarCellCacheMO.class.getName());
     
-//    private Channel cacheChannel;
-//    private CellRef rootCellRef;
-    
-    private ManagedReference avatarRef;
+    private ManagedReference<AvatarMO> avatarRef;
     private String username;
-    private ClientSessionId userID;
-    private WonderlandClientChannel channel;
+   
+    private WonderlandClientSender sender;
+    private ManagedReference<ClientSession> sessionRef;
+    
     private CellID rootCellID;
-    private CellCacheClientHandler cacheHandler;
      
     /**
      * List of currently visible cells (ManagedReference of CellGLO)
@@ -84,48 +78,40 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     /**
      * Creates a new instance of AvatarCellCacheMO
      */
-    public AvatarCellCacheMO(ManagedReference avatarRef) {
-        this.avatarRef = avatarRef;
-        DataManager dataMgr = AppContext.getDataManager();
+    public AvatarCellCacheMO(AvatarMO avatar) {
         logger.config("Creating AvatarCellCache");
-        username = avatarRef.get(AvatarMO.class).getUser().getUsername()+"_"+avatarRef.get(AvatarMO.class).getCellID().toString();
-        ChannelManager chanMgr = AppContext.getChannelManager();
         
-        dataMgr.setBinding(username+"_CELL_CACHE", this);
+        username = avatar.getUser().getUsername() + "_" + 
+                   avatar.getCellID().toString();
         rootCellID = WonderlandContext.getCellManager().getRootCellID();
         
-        AvatarMO avatar = avatarRef.get(AvatarMO.class);
-    }
-    
-    /**
-     * Notify CellCache that user has logged out
-     */
-    void logout(ClientSessionId userID) {
-        logger.warning("DEBUG - logout");
-        currentCells.clear();
-        if (USE_CACHE_MANAGER) {
-            CacheManager.removeCache(this);
-        } else {
-            task.cancel();
-        }
+        DataManager dm = AppContext.getDataManager();
+        avatarRef = dm.createReference(avatar);
+        dm.setBinding(username + "_CELL_CACHE", this);
     }
     
     /**
      * Notify CellCache that user has logged in
      */
-    void login(WonderlandClientChannel channel, ClientSessionId userID) {
-        this.userID = userID;
-        this.channel = channel;
+    void login(WonderlandClientSender sender, ClientSession session) {
+        this.sender = sender;
         
-        logger.info("AvatarCellCacheMO.login() CELL CACHE LOGIN FOR USER "+userID);
+        DataManager dm = AppContext.getDataManager();
+        sessionRef = dm.createReference(session);
+        
+        logger.info("AvatarCellCacheMO.login() CELL CACHE LOGIN FOR USER "
+                    + session.getName() + " AS " + username);
                 
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
         CellMO rootCell = CellManager.getCell(rootCellID);
+        
         msg = CellManager.newCreateCellMessage(rootCell);
-        channel.send(userID, msg);
+        sender.send(session, msg);
+        
         msg = CellManager.newRootCellMessage(rootCell);
-        channel.send(userID, msg);
+        sender.send(session, msg);
+        
         currentCells.put(rootCellID, new CellRef(rootCell));
         
         if (USE_CACHE_MANAGER) {
@@ -138,6 +124,19 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     }
     
     /**
+     * Notify CellCache that user has logged out
+     */
+    void logout(ClientSession session) {
+        logger.warning("DEBUG - logout");
+        currentCells.clear();
+        if (USE_CACHE_MANAGER) {
+            CacheManager.removeCache(this);
+        } else {
+            task.cancel();
+        }
+    }
+     
+    /**
      * Revalidate cell cache. This first finds the new list of visible cells
      * and if the cell does not exist in the current list of visible cells, then
      * creates the cell on the client. If the visible cell exists, check to see
@@ -146,7 +145,8 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      */
     void revalidate() {
         // make sure the user is still logged on
-        if (userID == null || userID.getClientSession() == null) {
+        ClientSession session = getSession();
+        if (session == null) {
             return;
         }
         
@@ -156,13 +156,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         
         try {
             // getTranslation the current user's bounds
-            AvatarMO user = avatarRef.get(AvatarMO.class);
+            AvatarMO user = avatarRef.get();
             BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().getTranslation(null));
             
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer("Revalidating CellCache for   " + 
-                              userID.getClientSession().getName() + "  " + 
-                              proximityBounds);
+                              session.getName() + "  " + proximityBounds);
             }
 
             // find the visible cells
@@ -207,10 +206,10 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     }
                     
                     msg = CellManager.newCreateCellMessage(cell);
-                    monitor.incMessageBytes(msg.getBytes().length);
-                    channel.send(userID, msg);
+                    sender.send(session, msg);
+                    
                     //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
-                    cell.addUserToCellChannel(userID);
+                    cell.addUserToCellChannel(session);
                     
                     // update performance monitoring
                     monitor.incNewCellTime(System.nanoTime() - cellStartTime);
@@ -219,14 +218,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                         switch (update) {
                             case TRANSFORM:
                                 msg = CellManager.newCellMoveMessage(cellMirror);
-                                monitor.incMessageBytes(msg.getBytes().length);
-                                channel.send(userID, msg);
+                                sender.send(session, msg);
                                 //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
                                 break;
                             case CONTENT:
                                 msg = CellManager.newContentUpdateCellMessage(cellRef.get());
-                                monitor.incMessageBytes(msg.getBytes().length);
-                                channel.send(userID, msg);
+                                sender.send(session, msg);
                                 break;
                         }
                     }
@@ -259,14 +256,13 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
 
                     // get suceeded, so cell is just inactive
                     msg = CellManager.newUnloadCellMessage(cell);
-                    cell.removeUserFromCellChannel(userID);
+                    cell.removeUserFromCellChannel(session);
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
                     msg = CellManager.newDeleteCellMessage(ref.getCellID());
                 }
                 
-                monitor.incMessageBytes(msg.getBytes().length);
-                channel.send(userID, msg);
+                sender.send(session, msg);
                 //System.out.println("SENDING "+msg.getClass().getName()+" "+msg.getBytes().length);
 
                 // the cell is no longer visible on this client, so remove
@@ -320,6 +316,13 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     }
     
     /**
+     * Utility to get the session
+     */
+    protected ClientSession getSession() {
+        return sessionRef.get();
+    }
+    
+    /**
      * Information about a cell in our cache.  This object contains our record
      * of the given cell, including a reference to the cell and the cell's
      * id.  CellRef object are compared by cellID, so two CellRefs with the
@@ -336,7 +339,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         private CellID id;
         
         // a reference to the cell itself
-        private ManagedReference cellRef;
+        private ManagedReference<CellMO> cellRef;
         
         private int transformVersion=Integer.MIN_VALUE;
         private int contentsVersion=Integer.MIN_VALUE;
@@ -370,11 +373,11 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         }
         
         public CellMO get() {
-            return cellRef.get(CellMO.class);
+            return cellRef.get();
         }
         
         public CellMO getForUpdate() {
-            return cellRef.getForUpdate(CellMO.class);
+            return cellRef.getForUpdate();
         }
         
         public Collection<UpdateType> getUpdateTypes() {

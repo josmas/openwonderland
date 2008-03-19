@@ -21,15 +21,14 @@ package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionId;
 import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +41,9 @@ import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.messages.MessageInputStream;
+import org.jdesktop.wonderland.common.messages.MessageInputStream.ReceivedMessage;
+import org.jdesktop.wonderland.common.messages.MessageOutputStream;
 import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -70,7 +72,7 @@ public class ProtocolSessionListener
             Logger.getLogger(ProtocolSessionListener.class.getName());
     
     /** the session associated with this listener */
-    private ClientSession session;
+    private ManagedReference<ClientSession> sessionRef;
     
     /** the protocol in use by this client */
     private CommunicationsProtocol protocol;
@@ -84,7 +86,8 @@ public class ProtocolSessionListener
      * @param session the session connected to this listener
      */
     public ProtocolSessionListener(ClientSession session) {
-        this.session = session;
+        DataManager dm = AppContext.getDataManager();
+        sessionRef = dm.createReference(session);
     }
     
     /**
@@ -103,8 +106,8 @@ public class ProtocolSessionListener
      * simply forward the data to the delegate session
      * @param data the message data
      */
-    public void receivedMessage(byte[] data) {
-        
+    public void receivedMessage(ByteBuffer data) {
+       
         // if there is a wrapped session, simply forward the data to it
         if (wrapped != null) {
             wrapped.receivedMessage(data);
@@ -115,7 +118,9 @@ public class ProtocolSessionListener
         try {
             // the message contains a client identifier in the first
             // 2 bytes, so ignore those
-            Message m = Message.extract(data, 2, data.length - 2);
+            MessageInputStream in = new MessageInputStream(data);
+            ReceivedMessage recv = in.readMessage();
+            Message m = recv.getMessage();
             
             // check the message type
             if (!(m instanceof ProtocolSelectionMessage)) {
@@ -139,6 +144,8 @@ public class ProtocolSessionListener
                              "version " + cp.getVersion());
             }
             
+            
+            ClientSession session = getSession();
             logger.info("Session " + session.getName() + " connected with " +
                         "protocol " + cp.getName());
             
@@ -157,6 +164,8 @@ public class ProtocolSessionListener
             sendToSession(new OKMessage(psm.getMessageID()));
         } catch (ExtractMessageException eme) {
             sendError(eme.getMessageID(), null, eme);
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading message", ioe);
         }
     }
 
@@ -170,13 +179,19 @@ public class ProtocolSessionListener
             
             // TODO: is this the right thing to do, or should we only
             // do this automatically from the Wonderland protocol?
-            WonderlandContext.getUserManager().logout(session);
+            WonderlandContext.getUserManager().logout(getSession());
         }
         
         // record client disconnect
         if (protocol != null) {
-            recordDisconnect(protocol, session);
+            recordDisconnect(protocol, getSession());
         }
+        
+        // XXX acording to the Darkstar docs, this is our responsibility,
+        // but it throws an exception if we remove the session here.  Hopefully
+        // Darkstar cleans this up for us
+        // DataManager dm = AppContext.getDataManager();
+        // dm.removeObject(getSession());
     }
     
     /**
@@ -192,13 +207,13 @@ public class ProtocolSessionListener
     
     /**
      * Get the protocol in use by the given client
-     * @param sessionId the id of the client to get
+     * @param session the session to get protocol information for
      * @return the protocol used by that client, or null if the client
      * is not registered
      */
-    public static CommunicationsProtocol getProtocol(ClientSessionId sessionId)
+    public static CommunicationsProtocol getProtocol(ClientSession session)
     {
-        return getProtocolClientMap().get(sessionId);
+        return getProtocolClientMap().get(session);
     }
     
     /**
@@ -206,7 +221,7 @@ public class ProtocolSessionListener
      * @return the session connected to this listener
      */
     protected ClientSession getSession() {
-        return session;
+        return sessionRef.get();
     }
     
     /**
@@ -235,18 +250,14 @@ public class ProtocolSessionListener
      * @param message the message to send
      */
     protected void sendToSession(Message message) {
-        byte[] messageData = message.getBytes();
-        int len = messageData.length + 2;
-        
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
-        DataOutputStream out = new DataOutputStream(baos);
-        
         try {
-            out.writeShort(SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
-            out.write(messageData);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            MessageOutputStream out = new MessageOutputStream(baos);
+            out.writeMessage(message, 
+                             SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
             out.close();
-            
-            session.send(baos.toByteArray());
+        
+            getSession().send(ByteBuffer.wrap(baos.toByteArray()));
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Unable to send message " + message, ioe);
         }
@@ -290,8 +301,7 @@ public class ProtocolSessionListener
      * @return the ProtocolClientMap
      */
     protected static ProtocolClientMap getProtocolClientMap() {
-        return AppContext.getDataManager().getBinding(ProtocolClientMap.DS_KEY, 
-                                                      ProtocolClientMap.class);
+        return (ProtocolClientMap) AppContext.getDataManager().getBinding(ProtocolClientMap.DS_KEY);
     }
     
     /**
@@ -304,12 +314,12 @@ public class ProtocolSessionListener
         private static final String DS_KEY = ProtocolClientMap.class.getName();
         
         /** mapping from protocol to clients */
-        private Map<CommunicationsProtocol, ManagedReference> clientMap = 
-                new HashMap<CommunicationsProtocol, ManagedReference>();
+        private Map<CommunicationsProtocol, ManagedReference<ProtocolClientSet>> clientMap = 
+                new HashMap<CommunicationsProtocol, ManagedReference<ProtocolClientSet>>();
         
         /** mapping from clients to protocols */
-        private Map<ClientSessionId, CommunicationsProtocol> protocolMap =
-                new HashMap<ClientSessionId, CommunicationsProtocol>();
+        private Map<ManagedReference<ClientSession>, CommunicationsProtocol> protocolMap =
+                new HashMap<ManagedReference<ClientSession>, CommunicationsProtocol>();
         
         /**
          * Add a session to a communications protocol
@@ -317,21 +327,25 @@ public class ProtocolSessionListener
          * @param session the client session associated with the given protocol
          */
         public void add(CommunicationsProtocol protocol, ClientSession session) {
+            DataManager dm = AppContext.getDataManager();
+                                
             // Add a reference to this client in the set of clients for
             // the given protocol.  If the set does not exist, then
             // create it.
-            ManagedReference ref = clientMap.get(protocol);
+            ManagedReference<ProtocolClientSet> ref = clientMap.get(protocol);
             if (ref == null) {
                 ProtocolClientSet sessions = new ProtocolClientSet();
-                ref = AppContext.getDataManager().createReference(sessions);
+                ref = dm.createReference(sessions);
                 clientMap.put(protocol, ref);
             }
             
-            ProtocolClientSet sessions = ref.getForUpdate(ProtocolClientSet.class);
-            sessions.add(session);
+            ManagedReference<ClientSession> sessionRef = dm.createReference(session);
+            
+            ProtocolClientSet sessions = ref.getForUpdate();
+            sessions.add(sessionRef);
         
             // add a reference to the protocol from this client's session
-            protocolMap.put(session.getSessionId(), protocol);
+            protocolMap.put(sessionRef, protocol);
         }
         
         /**
@@ -340,13 +354,16 @@ public class ProtocolSessionListener
          * @param session the client session associated with the given protocol
          */
         public void remove(CommunicationsProtocol protocol, ClientSession session) {
+            DataManager dm = AppContext.getDataManager();
+            ManagedReference sessionRef = dm.createReference(session);
+            
             // Remove the reference to thei client in the set of client for
             // the given protocol.  If the set is empty, remove the set
             // altogether.
-            ManagedReference ref = clientMap.get(protocol);
+            ManagedReference<ProtocolClientSet> ref = clientMap.get(protocol);
             if (ref != null) {
-                ProtocolClientSet sessions = ref.getForUpdate(ProtocolClientSet.class);
-                sessions.remove(session);
+                ProtocolClientSet sessions = ref.getForUpdate();
+                sessions.remove(sessionRef);
                 
                 if (sessions.isEmpty()) {
                     clientMap.remove(protocol);
@@ -354,7 +371,7 @@ public class ProtocolSessionListener
             }
             
             // remove the reference to the protcol from this client's session
-            protocolMap.remove(session.getSessionId());
+            protocolMap.remove(sessionRef);
         }
         
         /**
@@ -365,27 +382,36 @@ public class ProtocolSessionListener
          * the protocol
          */
         public Set<ClientSession> get(CommunicationsProtocol protocol) {
-            ManagedReference ref = clientMap.get(protocol);
+            ManagedReference<ProtocolClientSet> ref = clientMap.get(protocol);
             if (ref == null) {
                 return Collections.emptySet();
             }
+            ProtocolClientSet clients = ref.get();
             
-            // return a copy of the set
-            return new HashSet(ref.get(ProtocolClientSet.class));
+            // return the sessions
+            Set<ClientSession> out = new HashSet<ClientSession>();
+            for (ManagedReference<ClientSession> clientRef : clients) {
+                out.add(clientRef.get());
+            }
+            
+            return out;
         }
         
         /**
          * Get the protocol associated with the given session
-         * @param sessionId the id of the session to get
+         * @param session the session to get
          * @return the protocol in use by that session, or null if the
          * sessionId does not exist
          */
-        public CommunicationsProtocol get(ClientSessionId sessionId) {
-            return protocolMap.get(sessionId);
+        public CommunicationsProtocol get(ClientSession session) {
+            DataManager dm = AppContext.getDataManager();
+            ManagedReference sessionRef = dm.createReference(session);
+            
+            return protocolMap.get(sessionRef);
         }
     }
     
-    static class ProtocolClientSet extends HashSet<ClientSession>
+    static class ProtocolClientSet extends HashSet<ManagedReference<ClientSession>>
             implements ManagedObject, Serializable
     {
     }

@@ -20,26 +20,15 @@
 package org.jdesktop.wonderland.client.tools;
 
 import org.jdesktop.wonderland.client.cell.*;
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.sun.sgs.client.ClientChannel;
-import com.sun.sgs.client.ClientChannelListener;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.client.comms.AttachFailureException;
 import org.jdesktop.wonderland.client.comms.BaseClient;
-import org.jdesktop.wonderland.client.comms.ChannelJoinedListener;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.AvatarClientType;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellSetup;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ClientType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
@@ -50,10 +39,6 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 @ExperimentalAPI
 public class AvatarClient extends BaseClient {
-    
-    /** a channel joined listener */
-    private ChannelJoinedListener listener = new AvatarClientChannelJoinedListener();
-    
     private static final Logger logger = Logger.getLogger(AvatarClient.class.getName());
     
     private ArrayList<AvatarMessageListener> listeners = new ArrayList();
@@ -134,48 +119,11 @@ public class AvatarClient extends BaseClient {
     }
 
     @Override
-    public void attach(WonderlandSession session) 
-            throws AttachFailureException 
-    {
-        // register a channel listener
-        session.addChannelJoinedListener(listener);
-        
-        // now attach to the session
-        try {
-            super.attach(session);
-        } catch (AttachFailureException afe) {
-            // unregister the listener and re-throw the exception
-            session.removeChannelJoinedListener(listener);
-            throw afe;
-        } catch (RuntimeException re) {
-            // unregister the listener and re-throw the exception
-            session.removeChannelJoinedListener(listener);
-            throw re; 
-        }
-    }
-
-    @Override
-    public void detached() {
-        // unregister the listener
-        getSession().removeChannelJoinedListener(listener);
-        
+    public void detached() { 
         // remove any action listeners
         listeners.clear();
     }
     
-    /**
-     * Map cell channels to the cell they match
-     */
-    class AvatarClientChannelJoinedListener implements ChannelJoinedListener {
-        public ClientChannelListener joinedChannel(WonderlandSession session, 
-                                                   ClientChannel channel)
-        {
-            logger.warning("AvatarClient channel join "+session);
-            
-            return null;
-        }
-    }
-   
     /**
      * Listener interface for cell cache action messages
      */

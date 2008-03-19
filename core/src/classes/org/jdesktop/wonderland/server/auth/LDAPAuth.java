@@ -23,7 +23,6 @@ import com.sun.sgs.auth.Identity;
 import com.sun.sgs.auth.IdentityAuthenticator;
 import com.sun.sgs.auth.IdentityCredentials;
 import com.sun.sgs.impl.auth.NamePasswordCredentials;
-import com.sun.sgs.kernel.KernelAppContext;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -81,7 +80,6 @@ public class LDAPAuth implements IdentityAuthenticator {
     private static final Logger logger =
             Logger.getLogger(LDAPAuth.class.getName());
     
-    private KernelAppContext context;
     private Hashtable ldapEnv;
    
     // properties to use
@@ -145,10 +143,6 @@ public class LDAPAuth implements IdentityAuthenticator {
 
     public String[] getSupportedCredentialTypes() {
         return new String[] { "NameAndPasswordCredentials" };
-    }
-
-    public void assignContext(KernelAppContext context) {
-        this.context = context;
     }
     
     public Identity authenticateIdentity(IdentityCredentials credentials) 

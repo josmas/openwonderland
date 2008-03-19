@@ -20,6 +20,7 @@
 
 package org.jdesktop.wonderland.common.messages;
 
+import java.io.IOException;
 import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
@@ -28,29 +29,37 @@ import org.jdesktop.wonderland.ExperimentalAPI;
  * @author jkaplan
  */
 @ExperimentalAPI
-public class ExtractMessageException extends MessageException {
+public class ExtractMessageException extends IOException {
     /** the extracted message id */
     private MessageID messageID;
     
+    /** the extracted client id */
+    private short clientID;
+    
     /**
      * Creates a new instance of <code>ExtractMessageException</code> with the
-     * given extracted message ID.
+     * given extracted message ID and client ID.
      * @param messageID the extracted message id
+     * @param clientID the extracted client id
      */
-    public ExtractMessageException(MessageID messageID) {
-        this (messageID, null);
+    public ExtractMessageException(MessageID messageID, short clientID) {
+        this (messageID, clientID, null);
     }
 
     /**
      * Constructs an instance of <code>ExtractMessageException</code> with the 
-     * specified cause and messageID.
-     * @param messageID the extracted messageID
-     * @param cause the cause of this error.
+     * specified cause, message ID and client ID.
+     * @param messageID the extracted message id
+     * @param clientID the extracted client id
+     * @param cause the cause of this error
      */
-    public ExtractMessageException(MessageID messageID, Throwable cause) {
-        super (cause);
+    public ExtractMessageException(MessageID messageID, short clientID,
+                                   Throwable cause)
+    {
+        initCause(cause);
         
         this.messageID = messageID;
+        this.clientID = clientID;
     }
 
     /**
@@ -59,5 +68,13 @@ public class ExtractMessageException extends MessageException {
      */
     public MessageID getMessageID() {
         return messageID;
+    }
+    
+    /**
+     * Get the clientID of the message that could not be extracted
+     * @return the clientID
+     */
+    public short getClientID() {
+        return clientID;
     }
 }
