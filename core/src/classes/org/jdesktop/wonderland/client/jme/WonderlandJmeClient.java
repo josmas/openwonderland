@@ -63,6 +63,9 @@ import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
 import org.jdesktop.wonderland.client.datamgr.Repository;
 import org.jdesktop.wonderland.client.jme.WonderlandJmeClient.PendingModuleAction.Action;
+import org.jdesktop.wonderland.client.jme.graphviewer.GraphViewer;
+import org.jdesktop.wonderland.client.jme.graphviewer.GraphViewerFactory;
+import org.jdesktop.wonderland.client.jme.graphviewer.GraphViewerFrame;
 import org.jdesktop.wonderland.common.AssetType;
 
 /**
@@ -105,6 +108,7 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
                             modules.add(module);
                             renderInfo.getRoot().updateGeometricState(renderInfo.getTimer().getTime(), true);
                             renderInfo.getRoot().updateRenderState();
+                            GraphViewerFactory.getGraphViewer().addGraphRoot(module.getRootNode());
                             break;
                         case REMOVE :
                             modules.remove(module);
@@ -113,6 +117,7 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
                             // Not sure we need to do both of these for remove
                             renderInfo.getRoot().updateGeometricState(renderInfo.getTimer().getTime(), true);
                             renderInfo.getRoot().updateRenderState();
+                            GraphViewerFactory.getGraphViewer().removeGraphRoot(module.getRootNode());
                             break;
                         default :
                             throw new RuntimeException("Unknown Pending Action Type");
@@ -202,7 +207,9 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
     protected void initGame() {
         display.setTitle("Wonderland Client Test");
         
-        renderInfo.setRoot(new Node("Root"));
+        Node rootNode = new Node("Root");
+        
+        renderInfo.setRoot(rootNode);
         /** Create a ZBuffer to display pixels closest to the camera above farther ones.  */
         ZBufferState buf = display.getRenderer().createZBufferState();
         buf.setEnabled(true);
@@ -233,6 +240,11 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         
         moduleManager.addModule(new PortalModule(), true);
         
+        
+        GraphViewerFrame frame = new GraphViewerFrame();
+        frame.setVisible(true);
+              
+            
         // update the scene graph for rendering
         renderInfo.getRoot().updateGeometricState(0.0f, true);
         renderInfo.getRoot().updateRenderState();
@@ -249,6 +261,7 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
             module.init(renderInfo);
             module.setActive(true, renderInfo);
             modules.add(module);
+            GraphViewerFactory.getGraphViewer().addGraphRoot(module.getRootNode());
         }
     }
 
@@ -260,6 +273,7 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         } else {
             module.setActive(false, renderInfo);
             modules.remove(module);
+            GraphViewerFactory.getGraphViewer().removeGraphRoot(module.getRootNode());
         }
     }
     
@@ -360,7 +374,7 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         
         public void init(RenderInfo info) {
             skybox = new Skybox("skybox", 10, 10, 10);
-
+            
             Texture north = TextureManager.loadTexture(
                 getClass().getResource(
                 "/org/jdesktop/wonderland/client/resources/jme/north.jpg"),
@@ -428,6 +442,14 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
                 info.getRoot().detachChild(skybox);        
         }
      
+        /**
+         * @{inheritDoc}
+         * @return
+         */
+        @Override
+        public Node getRootNode() {
+            return skybox;
+        }
     }
     
     class AvatarModule extends RenderModule {
@@ -498,6 +520,14 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
                 info.getRoot().detachChild(avatarRoot);
         }
         
+        /**
+         * @{inheritDoc}
+         * @return
+         */
+        @Override
+        public Node getRootNode() {
+            return avatarRoot;
+        }
     }
     
     class ChaseCameraModule extends RenderModule {

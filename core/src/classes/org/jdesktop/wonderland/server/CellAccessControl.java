@@ -13,8 +13,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.1 $
- * $Date: 2007/08/03 17:22:52 $
+ * $Revision$
+ * $Date$
  * $State: Exp $
  */
 

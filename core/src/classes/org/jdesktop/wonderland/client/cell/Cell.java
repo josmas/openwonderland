@@ -20,10 +20,14 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.client.ClientChannel;
+import com.sun.sgs.client.ClientChannelListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import org.jdesktop.wonderland.client.comms.ChannelJoinedListener;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -43,9 +47,39 @@ public class Cell {
     private CellTransform local2VW = new CellTransform(null, null);
     private CellID cellID;
     private String name=null;
+    private String channelName;
+    protected ClientChannel channel=null;
+    protected WonderlandSession session;
     
-    public Cell(CellID cellID) {
+    
+    public Cell(CellID cellID, 
+                String channelName_,
+                WonderlandSession session) {
         this.cellID = cellID;
+        this.channelName = channelName_;
+        this.session = session;
+        
+//        session.addChannelJoinedListener(new ChannelJoinedListener() {
+//
+//            public ClientChannelListener joinedChannel(WonderlandSession session, ClientChannel channel) {
+//                if (channel.getName().equals(channelName)) {
+//                    createClientChannelListener(channel);
+//                }
+//                return null;
+//            }
+//        
+//        });
+    }
+    
+    /**
+     * Subclasses should override this to create the ClientChannelListener for
+     * the cells channel. 
+     * 
+     * @param channel
+     * @return
+     */
+    protected ClientChannelListener createClientChannelListener(ClientChannel channel) {
+        return null;
     }
     
     /**
@@ -292,6 +326,16 @@ public class Cell {
      */
     public void setLocalBounds(BoundingVolume localBounds) {
         this.localBounds = localBounds;
+    }
+
+    /**
+     * Get the name of the channel for this cell, or null if this cell does
+     * not have it's own channel
+     * 
+     * @return Name of channel or null
+     */
+    public String getChannelName() {
+        return channelName;
     }
 
 

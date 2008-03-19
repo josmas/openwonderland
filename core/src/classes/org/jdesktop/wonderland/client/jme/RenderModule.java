@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.scene.Node;
+
 /**
  *
  * @author paulby
@@ -48,4 +50,12 @@ public abstract class RenderModule {
     public abstract void update(RenderInfo info, float interpolation);
     
     public abstract void render(RenderInfo info, float interpolation);
+    
+    /**
+     * Return the root Node for this module. Used by the scene graph viewer
+     * @return
+     */
+    public Node getRootNode() {
+        return null;
+    }
 }

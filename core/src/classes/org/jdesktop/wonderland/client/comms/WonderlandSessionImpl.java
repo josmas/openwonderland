@@ -13,8 +13,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3 $
- * $Date: 2007/10/23 18:27:41 $
+ * $Revision$
+ * $Date$
  * $State: Exp $
  */
 package org.jdesktop.wonderland.client.comms;
@@ -912,7 +912,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         protected void handleMessage(Message message) {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest(getName() + " client " + this + 
-                              " received message " + message);
+                              " received message " + message+"   forwarding to client "+getClient());
             }
             
             // send to the client

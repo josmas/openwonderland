@@ -13,8 +13,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.4 $
- * $Date: 2007/11/07 15:46:52 $
+ * $Revision$
+ * $Date$
  * $State: Exp $
  */
 
@@ -307,7 +307,7 @@ public class WFSCellMO extends CellMO
                 this.fileModifiedMap.put(canonical, modified);
                 
 		// Notify the cell that it's content has changed
-                ((MoveableCellMO)glo).contentChanged();
+                ((EntityCellMO)glo).setContentChanged();
                 
                 logger.log(Level.INFO, "WFS Reload: cell id=" +
                     glo.getCellID() +

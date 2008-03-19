@@ -184,17 +184,17 @@ public class CellManager implements ManagedObject, Serializable {
             c1.setName("c1");
             c1.setLocalBounds(bounds);
 
-            CellMO c2 = new MoveableCellMO();
+            CellMO c2 = new EntityCellMO();
             c2.setTransform(new CellTransform(null, new Vector3f(10,10,10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
 
-            CellMO c3 = new MoveableCellMO();
+            CellMO c3 = new EntityCellMO();
             c3.setTransform(new CellTransform(null, new Vector3f(5,5,5)));
             c3.setName("c3");
             c3.setLocalBounds(new BoundingSphere(2, new Vector3f()));
 
-            CellMO c4 = new MoveableCellMO();
+            CellMO c4 = new EntityCellMO();
             c4.setTransform(new CellTransform(null, new Vector3f(0,0,0)));
             c4.setName("c4");
             c4.setLocalBounds(new BoundingSphere(0.5f, new Vector3f()));
@@ -363,8 +363,8 @@ public class CellManager implements ManagedObject, Serializable {
                 pos2.y += dir;
                 if (pos.x > 40 || pos.x<2)
                     dir = -dir;
-                cellRef.get(MoveableCellMO.class).setTransform(new CellTransform(null, pos));
-                cell2Ref.get(MoveableCellMO.class).setTransform(new CellTransform(null, pos2));
+                cellRef.get(EntityCellMO.class).setTransform(new CellTransform(null, pos));
+                cell2Ref.get(EntityCellMO.class).setTransform(new CellTransform(null, pos2));
             }
     
     }

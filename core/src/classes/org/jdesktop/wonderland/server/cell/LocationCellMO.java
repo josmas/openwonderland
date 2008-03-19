@@ -31,7 +31,7 @@ import com.jme.math.Vector3f;
  * 
  * @author paulby
  */
-public class LocationCellMO extends MoveableCellMO {
+public class LocationCellMO extends EntityCellMO {
 
     private Vector3f locationVW;
     private Quaternion orienationVW;

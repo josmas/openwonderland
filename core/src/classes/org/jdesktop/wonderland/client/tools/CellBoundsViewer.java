@@ -26,9 +26,11 @@ import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
+import org.jdesktop.wonderland.client.cell.EntityCell;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.tools.AvatarClient.AvatarMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
@@ -298,10 +300,11 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 CellID parentCellID, 
                 String channelName, 
                 CellTransform cellTransform, 
-                CellSetup setup) {
+                CellSetup setup,
+                WonderlandSession session) {
 
             try {
-                Cell cell = new Cell(cellID);
+                Cell cell = new EntityCell(cellID, channelName, session);
                 cell.setLocalBounds(localBounds);
                 cell.setTransform(cellTransform);
                 Cell parent = cells.get(parentCellID);
@@ -356,8 +359,8 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             repaint();
         }
 
-        public void loadClientAvatar(CellID cellID, String className, BoundingVolume localBounds, CellID parentCellID, String channelName, CellTransform cellTransform, CellSetup setup) {
-            loadCell(cellID, className, localBounds, parentCellID, channelName, cellTransform, setup);
+        public void loadClientAvatar(CellID cellID, String className, BoundingVolume localBounds, CellID parentCellID, String channelName, CellTransform cellTransform, CellSetup setup, WonderlandSession session) {
+            loadCell(cellID, className, localBounds, parentCellID, channelName, cellTransform, setup, session);
             System.out.println("CellBoundsViewer.loadClientAvatar GOT LOCAL AVATAR "+cellID);
         }
         

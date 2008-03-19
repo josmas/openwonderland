@@ -1,9 +1,9 @@
 /**
  * Project Wonderland
  *
- * $RCSfile: LogControl.java,v $
+ * $Id$
  *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +13,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3 $
- * $Date: 2007/10/23 18:27:41 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $Author$
  */
 package org.jdesktop.wonderland.client.tools;
 
@@ -90,7 +90,7 @@ public class BoundsMultiClient
     public void loadCell(CellID cellID, String className, 
                          BoundingVolume localBounds, CellID parentCellID, 
                          String channelName, CellTransform cellTransform,
-                         CellSetup setup)
+                         CellSetup setup, WonderlandSession session)
     {
     }
 
@@ -109,8 +109,7 @@ public class BoundsMultiClient
     public void loadClientAvatar(CellID cellID, String className, 
                                  BoundingVolume localBounds, CellID parentCellID, 
                                  String channelName, CellTransform cellTransform, 
-                                 CellSetup setup)
-    {
+                                 CellSetup setup, WonderlandSession session) {
     }
     
     public void sessionStatusChanged(WonderlandSession session, 

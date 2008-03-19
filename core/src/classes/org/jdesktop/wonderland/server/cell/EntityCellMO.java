@@ -21,18 +21,19 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellMoveMessage;
 
 /**
  * For cells that are expected to move frequently
  * 
  * @author paulby
  */
-public class MoveableCellMO extends CellMO {
+@ExperimentalAPI
+public class EntityCellMO extends CellMO {
 
     private ArrayList<ManagedReference> listeners = null;
-    private CopyOnWriteArrayList<ManagedReference> caches = new CopyOnWriteArrayList<ManagedReference>();
     
     @Override
     public void setTransform(CellTransform transform) {
@@ -43,6 +44,9 @@ public class MoveableCellMO extends CellMO {
             for(ManagedReference listenerRef : listeners)
                 listenerRef.getForUpdate(CellMoveListener.class).cellMoved(this, transform);
         }
+        
+//        if (cellChannel!=null)
+//            cellChannel.send(new CellMoveMessage(transform).getBytes());
     }
     
     
@@ -53,15 +57,16 @@ public class MoveableCellMO extends CellMO {
      * 
      * @param listener
      */
-//    public void addCellMoveListener(CellMoveListener listener) {
-//        if (listeners==null)
-//            listeners = new ArrayList<ManagedReference>();
-//        
-//        listeners.add(AppContext.getDataManager().createReference(listener));
-//    }
+    public void addCellMoveListener(CellMoveListener listener) {
+        if (listeners==null)
+            listeners = new ArrayList<ManagedReference>();
+        
+        listeners.add(AppContext.getDataManager().createReference(listener));
+    }
     
     /**
      * Remove the CellMoveListener
+     * 
      * @param listener
      */
     public void removeCellMoveListener(CellMoveListener listener) {
@@ -70,7 +75,16 @@ public class MoveableCellMO extends CellMO {
     }
        
     public interface CellMoveListener extends ManagedObject {
-        public void cellMoved(MoveableCellMO cell, CellTransform transform);
+        public void cellMoved(EntityCellMO cell, CellTransform transform);
     }
 
+    /**
+     * @{inheritDoc}
+     */
+    @Override
+    protected void openChannel() {
+        // Moveable Cells always have a channel. CellTransform updates (moves)
+        // are sent on this channel.
+        openCellChannel();
+    }
 }

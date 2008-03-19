@@ -53,6 +53,14 @@ public class ModuleManager {
         }
     }
     
+    /**
+     * Return the current set of modules
+     * @return
+     */
+    public synchronized Collection<RenderModule> getModules() {
+        return modules.keySet();
+    }
+    
     synchronized void setState(RenderModule module, boolean active) {
         ModuleState currentState = modules.get(module);
         
