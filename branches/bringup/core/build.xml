@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$
-     $Revision:: $:
-     $Date    :: $:
-     $Author  :: $:
+     $Revision$
+     $Date$
+     $Author$
 -->
 <project basedir="." default="jar" name="wonderland-core">
 
