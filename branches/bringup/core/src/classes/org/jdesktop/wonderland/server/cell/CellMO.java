@@ -1,7 +1,9 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * $Id$
+ *
+ * Copyright (c) 2004, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,7 +15,7 @@
  *
  * $Revision$
  * $Date$
- * $State$
+ * $Author$
  */
 package org.jdesktop.wonderland.server.cell;
 
@@ -61,8 +63,8 @@ public class CellMO extends WonderlandMO {
     
     private boolean live = false;
     
-    private Channel cellChannel = null;
-    private String channelName =null;
+    protected Channel cellChannel = null;
+    protected String channelName =null;
     
     private long transformVersion = Long.MIN_VALUE;
     
@@ -92,7 +94,7 @@ public class CellMO extends WonderlandMO {
     }
     
     /**
-     * Set the bounds of the cell in cell local coordinates
+     * Set the bounds of the cell, in cell local coordinates
      * @param bounds
      */
     public void setLocalBounds(BoundingVolume bounds) {
@@ -282,9 +284,10 @@ public class CellMO extends WonderlandMO {
         }
     }
     
-    public long getTransformVersion() {
-        return transformVersion;
-    }
+    // Not required in cell apis
+//    public long getTransformVersion() {
+//        return transformVersion;
+//    }
     
     /**
      * Return the cells transform
@@ -298,8 +301,8 @@ public class CellMO extends WonderlandMO {
     /**
      * Notify the client that the contents of the cell have changed
      */
-    public void contentChanged() {
-        logger.severe("MoveableCellMO.contentChanged NOT IMPLEMENTED");
+    public void setContentChanged() {
+        logger.severe("CellMO.contentChanged NOT IMPLEMENTED");
     }
     
     /**
@@ -353,6 +356,7 @@ public class CellMO extends WonderlandMO {
         this.live = live;
         if (live) {
             try {
+//                openChannel();
                 BoundsHandler.get().createBounds(this);
                 if (getParent()!=null) { // Root cell has a null parent
 //                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());

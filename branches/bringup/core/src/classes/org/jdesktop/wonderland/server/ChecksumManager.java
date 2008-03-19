@@ -13,8 +13,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.8 $
- * $Date: 2007/10/26 17:47:16 $
+ * $Revision$
+ * $Date$
  * $State: Exp $
  */
 package org.jdesktop.wonderland.server;

@@ -45,6 +45,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
 import org.jdesktop.wonderland.client.datamgr.Repository;
+import org.jdesktop.wonderland.client.jme.graphviewer.GraphViewerFactory;
+import org.jdesktop.wonderland.client.jme.graphviewer.GraphViewerFrame;
 import org.jdesktop.wonderland.client.utils.jme.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.utils.jme.traverser.TreeScan;
 import org.jdesktop.wonderland.common.AssetType;
@@ -69,7 +71,7 @@ public class CellModule extends RenderModule {
             model = Loaders.loadJMEBinary(url, new Vector3f());
 //            model = Loaders.loadJMEBinary(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.jme"), new Vector3f());
 //            model = loadStaticCollada(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mpk20.dae"), new Vector3f());
-//            model = loadStaticCollada(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mannikin.dae"), new Vector3f());
+//            model = loadStaticCollada(new URL("file:///Users/paulby/src/java.net/wonderland/branches/bringup/core/mannikin.dae"), new Vector3f());
 
 //            fixTextureKeys(model);
             model.setModelBound(new BoundingSphere());
@@ -85,6 +87,15 @@ public class CellModule extends RenderModule {
         } 
     }
     
+    /**
+     * @{inheritDoc}
+     * @return
+     */
+    @Override
+    public Node getRootNode() {
+        return model;
+    }
+    
     private void printTextureKeys(Node node) {
         TreeScan.findNode(node, new ProcessNodeInterface() {
 
@@ -97,8 +108,6 @@ public class CellModule extends RenderModule {
                     if (t==null)
                         return true;
                     TextureKey key = t.getTextureKey();
-                    System.out.println("key "+key.getLocation());
-                    
                 }
                 
                 return true;

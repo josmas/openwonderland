@@ -1,9 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile: AssetType.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -15,23 +13,24 @@
  *
  * $Revision$
  * $Date$
- * $State: Exp $
+ * $State$
  */
-package org.jdesktop.wonderland.common;
+package org.jdesktop.wonderland.client.jme.graphviewer;
+
+import com.jme.scene.SceneElement;
+import javax.swing.JPanel;
 
 /**
  *
- * Asset types
- *
  * @author paulby
  */
-public enum AssetType {
+public interface NodeViewer {
+
+    public JPanel getNodeViewerPanel();
     
-    // IMPORTANT names must be <=10 characters
-    
-    IMAGE,
-    MODEL,
-    FILE,
-    OTHER           // For user defined assets
-    
+    /**
+     * Set the current node being displayed in the node viewer
+     * @param node
+     */
+    public void setNode(SceneElement node);
 }
