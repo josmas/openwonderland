@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.server.UserMO;
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarMO extends MoveableCellMO {
+public class AvatarMO extends EntityCellMO {
     
     private ManagedReference<AvatarCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
@@ -64,7 +64,7 @@ public class AvatarMO extends MoveableCellMO {
     
     class AvatarMoveListener implements CellMoveListener, Serializable {
 
-        public void cellMoved(MoveableCellMO cell, CellTransform transform) {
+        public void cellMoved(EntityCellMO cell, CellTransform transform) {
             System.out.println("AvatarMO.cellMoved");
         }
         

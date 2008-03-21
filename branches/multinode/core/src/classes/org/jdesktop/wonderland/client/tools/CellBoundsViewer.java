@@ -19,13 +19,18 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
+import org.jdesktop.wonderland.client.cell.EntityCell;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -66,6 +71,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         // create a session
         session = new BoundsTestClientSession(server, 
                 boundsPanel);
+        ClientContext.registerCellCache(boundsPanel, session);
         
         localAvatar = session.getLocalAvatar();
                 
@@ -199,14 +205,15 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     }//GEN-LAST:event_forwardBActionPerformed
     
     
-    class BoundsPanel extends JPanel implements CellCacheClient.CellCacheMessageListener {
-        private HashMap<CellID, Cell> cells = new HashMap<CellID, Cell>();
+    class BoundsPanel extends JPanel implements CellCacheClient.CellCacheMessageListener, CellCache {
         private Vector3f center = new Vector3f();  // Temporary variable
         private Vector3f extent = new Vector3f();   // Temporary variable
         private float scale = 20f;
         private float panelTranslationX = 0f;
         private float panelTranslationY = 0f;
-        private Cell rootCell;
+        
+        // BoundsPanel actually wraps the cacheImpl
+        private CellCacheBasicImpl cacheImpl = new CellCacheBasicImpl();
         
         private Point mousePress = null;
         
@@ -249,10 +256,8 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             g.clearRect(0, 0, getWidth(), getHeight());
             g.translate(panelTranslationX, panelTranslationY);
             
-            synchronized(cells) {
-                for(Cell c : cells.values())
+                for(Cell c : cacheImpl.getCells())
                     drawCell(c, g);
-            }
         }
         
         private void drawCell(Cell cell, Graphics2D g) {
@@ -299,60 +304,39 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 String channelName, 
                 CellTransform cellTransform, 
                 CellSetup setup) {
-
-            try {
-                Cell cell = new Cell(cellID);
-                cell.setLocalBounds(localBounds);
-                cell.setTransform(cellTransform);
-                Cell parent = cells.get(parentCellID);
-                if (parent!=null) {
-                    parent.addChild(cell);                    
-                }
-                CellTransform l2vw = cell.getLocalToVWorld();
-                BoundingVolume vwBounds = localBounds.clone(null);
-                l2vw.transform(vwBounds);
-                cell.setCachedVWBounds(vwBounds);
-                
-                synchronized(cells) {
-                    cells.put(cellID, cell);
-                }
-            } catch (MultipleParentException ex) {
-                Logger.getLogger(CellBoundsViewer.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            cacheImpl.loadCell(cellID, 
+                               className, 
+                               localBounds, 
+                               parentCellID, 
+                               channelName, 
+                               cellTransform, 
+                               setup);
         }
 
         public void unloadCell(CellID cellID) {
-            synchronized(cells) {
-                cells.remove(cellID);
-            }
+            cacheImpl.unloadCell(cellID);
             repaint();
         }
 
         public void deleteCell(CellID cellID) {
-            synchronized(cells) {
-                cells.remove(cellID);
-            }
+            cacheImpl.deleteCell(cellID);
             repaint();
         }
 
         public void setRootCell(CellID cellID) {
-            synchronized(cells) {
-                rootCell = cells.get(cellID);
-            }
+            cacheImpl.setRootCell(cellID);
         }
 
+        /**
+         * The cell has moved. If it's an entity cell the transform has already
+         * been updated, so just process the cache update. If its not an
+         * entity cell then update the transform and cache.
+         * 
+         * @param cellID
+         * @param cellTransform
+         */
         public void moveCell(CellID cellID, CellTransform cellTransform) {
-            synchronized(cells) {
-                Cell cell = cells.get(cellID);
-            
-                cell.setTransform(cellTransform);
 
-                CellTransform l2vw = cell.getLocalToVWorld();
-                BoundingVolume vwBounds = cell.getLocalBounds();
-                l2vw.transform(vwBounds);
-                cell.setCachedVWBounds(vwBounds);
-            }
-            
             repaint();
         }
 
@@ -360,7 +344,17 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             loadCell(cellID, className, localBounds, parentCellID, channelName, cellTransform, setup);
             System.out.println("CellBoundsViewer.loadClientAvatar GOT LOCAL AVATAR "+cellID);
         }
+
+/*************************************************
+ * CellCache implementation
+ *************************************************/
+        public Cell getCell(CellID cellId) {
+            return cacheImpl.getCell(cellId);
+        }
         
+/*************************************************
+ * End CellCache implementation
+ *************************************************/
     }
     
     /**

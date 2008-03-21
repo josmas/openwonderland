@@ -178,22 +178,22 @@ public class CellManager implements ManagedObject, Serializable {
         try {
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
 
-            CellMO c1 = new SimpleTerrainCellMO();
+            CellMO c1 = new EntityCellMO();
             c1.setTransform(new CellTransform(null, new Vector3f(1,1,1)));
             c1.setName("c1");
             c1.setLocalBounds(bounds);
 
-            MoveableCellMO c2 = new MoveableCellMO();
+            EntityCellMO c2 = new EntityCellMO();
             c2.setTransform(new CellTransform(null, new Vector3f(10,10,10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
 
-            MoveableCellMO c3 = new MoveableCellMO();
+            EntityCellMO c3 = new EntityCellMO();
             c3.setTransform(new CellTransform(null, new Vector3f(5,5,5)));
             c3.setName("c3");
             c3.setLocalBounds(new BoundingSphere(2, new Vector3f()));
 
-            CellMO c4 = new MoveableCellMO();
+            CellMO c4 = new EntityCellMO();
             c4.setTransform(new CellTransform(null, new Vector3f(0,0,0)));
             c4.setName("c4");
             c4.setLocalBounds(new BoundingSphere(0.5f, new Vector3f()));
@@ -343,13 +343,13 @@ public class CellManager implements ManagedObject, Serializable {
 //    abstract void cellChildrenChanged(CellMO parent, CellMO child, boolean childAdded);
 
     static class TestTask implements Task, Serializable {
-            private ManagedReference<MoveableCellMO> cellRef;
+            private ManagedReference<EntityCellMO> cellRef;
             private Vector3f pos;
             private Vector3f pos2;
             private int dir = 2;
-            private ManagedReference<MoveableCellMO> cell2Ref;
+            private ManagedReference<EntityCellMO> cell2Ref;
             
-            public TestTask(MoveableCellMO cell, MoveableCellMO c2) {
+            public TestTask(EntityCellMO cell, EntityCellMO c2) {
                 this.cellRef = AppContext.getDataManager().createReference(cell);
                 this.cell2Ref = AppContext.getDataManager().createReference(c2);
                 pos = cell.getTransform().getTranslation(null);

@@ -25,7 +25,11 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
@@ -41,7 +45,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author jkaplan
  */
 public class BoundsMultiClient
-        implements CellCacheClient.CellCacheMessageListener,
+        implements 
                    SessionStatusListener
 {
     /** a logger */
@@ -61,8 +65,10 @@ public class BoundsMultiClient
         this.name = login.getUserName();
         
         // login
+        CellCacheBasicImpl cellCache = new CellCacheBasicImpl();
         BoundsTestClientSession session =
-                new BoundsTestClientSession(server, this);
+                new BoundsTestClientSession(server, cellCache);
+        ClientContext.registerCellCache(cellCache, session);
         session.addSessionStatusListener(this);
         session.login(login);
         
@@ -87,32 +93,6 @@ public class BoundsMultiClient
         return name;
     }
     
-    public void loadCell(CellID cellID, String className, 
-                         BoundingVolume localBounds, CellID parentCellID, 
-                         String channelName, CellTransform cellTransform,
-                         CellSetup setup)
-    {
-    }
-
-    public void unloadCell(CellID cellID) {
-    }
-
-    public void deleteCell(CellID cellID) {
-    }
-
-    public void setRootCell(CellID cellID) {
-    }
-
-    public void moveCell(CellID cellID, CellTransform cellTransform) {
-    }
-    
-    public void loadClientAvatar(CellID cellID, String className, 
-                                 BoundingVolume localBounds, CellID parentCellID, 
-                                 String channelName, CellTransform cellTransform, 
-                                 CellSetup setup)
-    {
-    }
-    
     public void sessionStatusChanged(WonderlandSession session, 
                                      Status status)
     {
@@ -130,14 +110,14 @@ public class BoundsMultiClient
         // wait for the thread to end
         mover.join();
     }
-    
+        
     public static void main(String[] args) {
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         
         System.out.println("args "+args[0]);
         int buildNumber = Integer.parseInt(args[0]);
         
-        int count = 10;
+        int count = 5;
         
         BoundsMultiClient[] bmc = new BoundsMultiClient[count];
         
@@ -237,5 +217,6 @@ public class BoundsMultiClient
             location.y = Math.abs(location.y++) % 50;
         }
     }
+
     
 }

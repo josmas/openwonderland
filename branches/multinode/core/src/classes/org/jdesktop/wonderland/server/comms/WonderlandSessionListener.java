@@ -375,6 +375,7 @@ public class WonderlandSessionListener
      * @param clientID the id of the client to detach
      */
     protected void handleDetach(short clientID) {
+//        logger.warning("DETACHING "+clientID+"  session "+getSession());
         ClientHandler handler = getHandler(Short.valueOf(clientID));
         if (handler == null) {
             logger.fine("Detach unknown client ID " + clientID);
@@ -388,7 +389,10 @@ public class WonderlandSessionListener
         
         // remove this client from the sender
         WonderlandClientSenderImpl sender = senders.remove(clientID);
-        sender.removeSession(getSession());
+        if (sender==null)
+            logger.warning("NULL Sender, is this expected ?");
+        else
+            sender.removeSession(getSession());
         
         // remove the handler from the map
         removeHandler(Short.valueOf(clientID));

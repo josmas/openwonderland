@@ -28,6 +28,7 @@ import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
@@ -54,15 +55,15 @@ public class CellMO extends WonderlandMO {
     private ArrayList<ManagedReference<CellMO>> childCellRefs = null;
     private CellTransform transform = null;
     private CellTransform localToVWorld = null;
-    private CellID cellID;
+    protected CellID cellID;
     private BoundingVolume localBounds;
     
     private String name=null;
     
     private boolean live = false;
     
-    private ManagedReference<Channel> cellChannelRef = null;
-    private String channelName =null;
+    protected ManagedReference<Channel> cellChannelRef = null;
+    protected String channelName =null;
     
     private long transformVersion = Long.MIN_VALUE;
     
@@ -70,12 +71,16 @@ public class CellMO extends WonderlandMO {
     
     private short priority;
     
+    // ManagedReferences of ClientSessions
+    protected HashSet<ManagedReference<ClientSession>> clientSessionRefs = null;
+    
     /**
      * Create a CellMO with a localBounds of an empty sphere and a transform of
      * null
      */
     public CellMO() {
         this(new BoundingSphere(),null);
+        
     }
     
     /**
@@ -352,6 +357,7 @@ public class CellMO extends WonderlandMO {
     void setLive(boolean live) {
         this.live = live;
         if (live) {
+            openChannel();
             try {
                 BoundsHandler.get().createBounds(this);
                 if (getParent()!=null) { // Root cell has a null parent
@@ -362,6 +368,7 @@ public class CellMO extends WonderlandMO {
                 Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
+            closeChannel();
             BoundsHandler.get().removeChild(getParent(), this);
             BoundsHandler.get().removeBounds(this);
         }
@@ -395,7 +402,7 @@ public class CellMO extends WonderlandMO {
      * Convenience method to open the channel for this cell. Creates a
      * channelName based on the cellID.
      */
-    protected void openCellChannel() {
+    protected void defaultOpenChannel() {
         ChannelManager cm = AppContext.getChannelManager();
         Channel cellChannel = cm.createChannel(Delivery.RELIABLE);
         
@@ -406,14 +413,20 @@ public class CellMO extends WonderlandMO {
     /**
      * Cells that have a channel should overload this method to actually open the
      * channel. The convenience method openCellChannel can be used to open the channel
-     * with a default channel name.
+     * with a default channel name. Called when the cell is made live.
      */
     protected void openChannel() {
     }
     
+    /**
+     * Close the cells channel. Called when the cell is no longer live.
+     */
+    protected void closeChannel() {
+        
+    }
     
     /**
-     * Add user to all the cells channels, if there is no channel simply return
+     * Add user to the cells channel, if there is no channel simply return
      * @param userID
      */
     public void addUserToCellChannel(ClientSession session) {
@@ -424,7 +437,7 @@ public class CellMO extends WonderlandMO {
     }
     
     /**
-     * Remove user from all cell channels
+     * Remove user from the cells channel
      * @param userID
      */
     public void removeUserFromCellChannel(ClientSession session) {
