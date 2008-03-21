@@ -1,6 +1,8 @@
 /**
  * Project Wonderland
  *
+ * $Id$
+ * 
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
@@ -13,26 +15,34 @@
  *
  * $Revision$
  * $Date$
- * $State$
  */
 package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import org.jdesktop.wonderland.common.cell.CellClientType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * For cells that are expected to move frequently
  * 
+ * TODO - Should MoveListener notifications be scheduled in their
+ * own task ? Also do we need a listener that allows veto of a move request, don't
+ * think so instead I suggest we would subclass to add veto capability
  * @author paulby
  */
-public class MoveableCellMO extends CellMO {
+public class EntityCellMO extends CellMO {
 
     private ArrayList<ManagedReference<CellMoveListener>> listeners = null;
-    private CopyOnWriteArrayList<ManagedReference> caches = new CopyOnWriteArrayList<ManagedReference>();
     
     @Override
     public void setTransform(CellTransform transform) {
@@ -43,8 +53,23 @@ public class MoveableCellMO extends CellMO {
             for(ManagedReference<CellMoveListener> listenerRef : listeners)
                 listenerRef.getForUpdate().cellMoved(this, transform);
         }
+
+        if (isLive() && cellChannelRef!=null) {
+            
+            WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(CellClientType.CLIENT_TYPE);
+            sender.send(cellChannelRef.get(), EntityMessage.newMovedMessage(cellID, transform));
+        }
     }
     
+    @Override
+    protected void openChannel() {
+        defaultOpenChannel();
+    }
+    
+    @Override
+    public String getClientCellClassName() {
+        return "org.jdesktop.wonderland.client.cell.EntityCell";
+    }
     
     /**
      * Add a CellMoveListener. This listener is notified when the setTransform 
@@ -70,7 +95,7 @@ public class MoveableCellMO extends CellMO {
     }
        
     public interface CellMoveListener extends ManagedObject {
-        public void cellMoved(MoveableCellMO cell, CellTransform transform);
+        public void cellMoved(EntityCellMO cell, CellTransform transform);
     }
 
 }

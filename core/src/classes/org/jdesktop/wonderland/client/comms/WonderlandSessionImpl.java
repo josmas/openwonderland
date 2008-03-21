@@ -411,7 +411,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest(getName() + " received session message for handler " + 
-                          record.getClient().getClientType());
+                          record.getClient().getClientType()+"  message type "+message.getClass().getName());
         }
         
         record.handleMessage(message);

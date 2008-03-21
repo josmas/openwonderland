@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
 import org.jdesktop.wonderland.client.cell.CellCacheClient.CellCacheMessageListener;
+import org.jdesktop.wonderland.client.cell.CellClient;
 import org.jdesktop.wonderland.client.comms.AttachFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
@@ -47,6 +48,7 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
     private CellCacheClient cellCacheClient;
     private AvatarClient avatarClient;
     private LocalAvatar localAvatar;
+    private CellClient cellClient;
     
     public BoundsTestClientSession(WonderlandServerInfo serverInfo, 
             CellCacheMessageListener messageListener) {
@@ -55,6 +57,7 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
         
         avatarClient = new AvatarClient();
         localAvatar = new LocalAvatar(avatarClient);
+        cellClient = new CellClient();
         avatarClient.addListener(localAvatar);
 
         cellCacheClient = new CellCacheClient();
@@ -98,6 +101,7 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
             // Now attach to the cellCache and inform it what avatar to associate with
             cellCacheClient.attach(this);
             cellCacheClient.send(CellHierarchyMessage.newSetAvatarMessage(AVATAR_ID));
+            cellClient.attach(this);
         } catch (InterruptedException ex) {
             Logger.getLogger(BoundsTestClientSession.class.getName()).log(Level.SEVERE, null, ex);
         } catch (AttachFailureException afe) {

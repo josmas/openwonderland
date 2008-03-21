@@ -19,7 +19,10 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.BaseClient;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellClientType;
@@ -34,6 +37,18 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 @ExperimentalAPI
 public class CellClient extends BaseClient {
+    private static CellClient cellClient = null;
+    private static Logger logger = Logger.getLogger(CellClient.class.getName());
+    
+    public CellClient() {
+        super();
+        cellClient = this;
+    }
+    
+    public static CellClient getCellClient() {
+        return cellClient;
+    }
+    
     /**
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
@@ -85,6 +100,28 @@ public class CellClient extends BaseClient {
      * @param message the message to handle
      */
     public void handleMessage(Message message) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("Handling Message "+message.getClass().getName());
+        }
+        
+        CellMessage cellMessage = (CellMessage)message;
+        CellCache cellCache = ClientContext.getCellCache(getSession());
+        
+        if (cellCache==null) {
+            logger.severe("Unable to deliver CellMessage, CellCache is null");
+            return;
+        }
+        
+        Cell cell = cellCache.getCell(cellMessage.getCellID());
+        if (cell==null) {
+            logger.warning("Unable to deliver CellMessage, cell not available on this client");
+            return;
+        }
+        if (!(cell instanceof ChannelCell)) {
+            logger.severe("Attempting to deliver message to cell that does not implement ChannelCell");
+            throw new RuntimeException("Illegal message target");
+        }
+        
+        ((ChannelCell)cell).handleMessage(cellMessage);
     }
 }

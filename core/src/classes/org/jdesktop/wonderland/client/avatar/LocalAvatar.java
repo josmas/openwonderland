@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.avatar;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.client.cell.EntityCell;
 import org.jdesktop.wonderland.client.tools.AvatarClient;
 import org.jdesktop.wonderland.client.tools.AvatarClient.AvatarMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;

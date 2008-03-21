@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile:$
+ * $Id$
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -15,7 +15,6 @@
  *
  * $Revision:$
  * $Date:$
- * $State:$
  */
 package org.jdesktop.wonderland.client.cell;
 
@@ -145,6 +144,11 @@ public class Cell {
         
         for(Cell child : getChildren())
             transformTreeUpdate(this, child);
+        
+        CellTransform l2vw = getLocalToVWorld();
+        BoundingVolume vwBounds = getLocalBounds();
+        l2vw.transform(vwBounds);
+        setCachedVWBounds(vwBounds);
     }
     
     /**
