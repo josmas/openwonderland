@@ -116,7 +116,6 @@ public class CellCacheClient extends BaseClient {
                                 msg.getCellClassName(),
                                 msg.getLocalBounds(),
                                 msg.getParentID(),
-                                msg.getCellChannelName(),
                                 msg.getCellTransform(),
                                 msg.getSetupData());
                 }
@@ -170,7 +169,6 @@ public class CellCacheClient extends BaseClient {
          * @param className
          * @param computedWorldBounds
          * @param parentCellID
-         * @param channelName
          * @param cellTransform
          * @param setup
          */
@@ -178,7 +176,6 @@ public class CellCacheClient extends BaseClient {
                                String className, 
                                BoundingVolume localBounds,
                                CellID parentCellID,
-                               String channelName,
                                CellTransform cellTransform,
                                CellSetup setup);
         /**
@@ -187,7 +184,6 @@ public class CellCacheClient extends BaseClient {
          * @param className
          * @param localBounds
          * @param parentCellID
-         * @param channelName
          * @param cellTransform
          * @param setup
          */
@@ -195,7 +191,6 @@ public class CellCacheClient extends BaseClient {
 //                               String className, 
 //                               BoundingVolume localBounds,
 //                               CellID parentCellID,
-//                               String channelName,
 //                               CellTransform cellTransform,
 //                               CellSetup setup);
         /**

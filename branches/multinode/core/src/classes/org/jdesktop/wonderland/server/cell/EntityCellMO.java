@@ -44,6 +44,9 @@ public class EntityCellMO extends CellMO {
 
     private ArrayList<ManagedReference<CellMoveListener>> listeners = null;
     
+    // cache the sender for sending to CellClients
+    private WonderlandClientSender cellSender;
+    
     @Override
     public void setTransform(CellTransform transform) {
         super.setTransform(transform);
@@ -54,16 +57,18 @@ public class EntityCellMO extends CellMO {
                 listenerRef.getForUpdate().cellMoved(this, transform);
         }
 
-        if (isLive() && cellChannelRef!=null) {
-            
-            WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(CellClientType.CLIENT_TYPE);
-            sender.send(cellChannelRef.get(), EntityMessage.newMovedMessage(cellID, transform));
+        if (isLive() && getCellChannel() != null) {
+            cellSender.send(getCellChannel(), EntityMessage.newMovedMessage(cellID, transform));
         }
     }
     
     @Override
     protected void openChannel() {
         defaultOpenChannel();
+        
+        // cache the sender for sending to cell clients.  This saves a
+        // Darkstar lookup for every cell we want to send to.
+        cellSender = WonderlandContext.getCommsManager().getSender(CellClientType.CLIENT_TYPE);
     }
     
     @Override

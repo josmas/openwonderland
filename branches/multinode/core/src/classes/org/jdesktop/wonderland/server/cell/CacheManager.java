@@ -34,6 +34,8 @@ import org.jdesktop.wonderland.InternalAPI;
 @InternalAPI
 public class CacheManager implements ManagedObject, Serializable {
 
+    public static final boolean USE_CACHE_MANAGER = false;
+    
     private ArrayList<ManagedReference<AvatarCellCacheMO>> caches = new ArrayList();
     
     private static final String BINDING_NAME="CacheManager";
@@ -48,7 +50,9 @@ public class CacheManager implements ManagedObject, Serializable {
      * Initialize the CacheManager, called by WonderlandContext during startup
      */
     public static void initialize() {
-        new CacheManager();
+        if (USE_CACHE_MANAGER) {
+            new CacheManager();
+        }
     }
         
     private void addCacheImpl(AvatarCellCacheMO cache) {
