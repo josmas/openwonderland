@@ -30,6 +30,18 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public class RevalidatePerformanceMonitor {
+    // frequency to print totals
+    private static final String PRINT_TOTALS_FREQUENCY_DEFAULT = "1000";
+    private static final String PRINT_TOTALS_PROP = 
+            RevalidatePerformanceMonitor.class.getName() + ".printTotals";
+    private static int printTotalsFreq;
+    
+    // frequency to sample individual transactions
+    private static final String PRINT_INDIVIDUAL_FREQUENCY_DEFAULT = "-1";
+    private static final String PRINT_INDIVIDUAL_PROP =
+            RevalidatePerformanceMonitor.class.getName() + ".printIndividual";
+    private static int printIndividualFreq;
+    
     // totals
     private static int  totalCount;
     private static long totalTime;
@@ -63,6 +75,8 @@ public class RevalidatePerformanceMonitor {
     private static int  changeMaxCount;
     private static long changeMaxTime;
     
+    private static int  messageTotalCount;
+    
     // individual values
     private long userTotalTime;
     
@@ -78,6 +92,8 @@ public class RevalidatePerformanceMonitor {
     private long updateCellTime;
     private int  oldCellCount;
     private long oldCellTime;
+    
+    private int msgCount;
     
     private boolean exception = false;
     
@@ -96,6 +112,13 @@ public class RevalidatePerformanceMonitor {
     }
       
     public synchronized static void resetTotals() {
+        // read frequencies from system property
+        printTotalsFreq = Integer.parseInt(System.getProperty(PRINT_TOTALS_PROP,
+                                           PRINT_TOTALS_FREQUENCY_DEFAULT));
+        printIndividualFreq = Integer.parseInt(System.getProperty(PRINT_INDIVIDUAL_PROP,
+                                               PRINT_INDIVIDUAL_FREQUENCY_DEFAULT));
+        
+        // reset counters
         totalCount        = 0;
         totalTime         = 0;
         totalException    = 0;
@@ -123,10 +146,15 @@ public class RevalidatePerformanceMonitor {
         changeMinTime     = Long.MAX_VALUE;
         changeMaxCount    = 0;
         changeMaxTime     = 0;
+        messageTotalCount = 0;
     }
     
     public synchronized static boolean printTotals() {
-        return totalCount >= 1000;
+        return (printTotalsFreq > 0) && (totalCount >= printTotalsFreq);
+    }
+    
+    public synchronized static boolean printSingle() {
+        return (printIndividualFreq > 0) && ((totalCount % printIndividualFreq) == 0);
     }
     
     public synchronized static String getTotals() {
@@ -165,6 +193,9 @@ public class RevalidatePerformanceMonitor {
         stats.append(" / " + scale(oldTotalTime / oldTotalCount) + "\n");
         stats.append("        Max    : " + changeMaxCount);
         stats.append(" / " + scale(changeMaxTime) + "\n");
+        
+        stats.append("  Messages Sent  : \n");
+        stats.append("        Average: " + (messageTotalCount / totalCount));
         
         return stats.toString();
     }
@@ -241,6 +272,8 @@ public class RevalidatePerformanceMonitor {
         if (changeTime < changeMinTime) {
             changeMinTime = changeTime;
         }
+        
+        messageTotalCount += monitor.msgCount;
     }
     
     public void updateTotals() {
@@ -282,6 +315,8 @@ public class RevalidatePerformanceMonitor {
             stats.append("  Remove cells: " + oldCellCount + " / " + scale(oldCellTime));
             stats.append(" Average: " + scale(oldCellTime / oldCellCount) + "\n");
         }
+        
+        stats.append("  Messages sent: " + msgCount);
         
         return stats.toString();
     }
@@ -332,6 +367,10 @@ public class RevalidatePerformanceMonitor {
         
         CellClassStats stats = getBoundsClassStats(c);
         stats.incCount.incrementAndGet();
+    }
+    
+    public void incMessageCount() {
+        msgCount++;
     }
     
     private final CellClassStats getBoundsClassStats(Class c) {
