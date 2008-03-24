@@ -205,6 +205,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     
                     msg = CellManager.newCreateCellMessage(cell);
                     sender.send(session, msg);
+                    monitor.incMessageCount();
                     
                     //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
                     cell.addUserToCellChannel(session);
@@ -217,11 +218,13 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                             case TRANSFORM:
                                 msg = CellManager.newCellMoveMessage(cellMirror);
                                 sender.send(session, msg);
+                                monitor.incMessageCount();
                                 //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
                                 break;
                             case CONTENT:
                                 msg = CellManager.newContentUpdateCellMessage(cellRef.get());
                                 sender.send(session, msg);
+                                monitor.incMessageCount();
                                 break;
                         }
                     }
@@ -261,6 +264,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 }
                 
                 sender.send(session, msg);
+                monitor.incMessageCount();
                 //System.out.println("SENDING "+msg.getClass().getName()+" "+msg.getBytes().length);
 
                 // the cell is no longer visible on this client, so remove
@@ -291,6 +295,9 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             // logger.info(monitor.getMessageStats());
             
             // print stats
+            if (RevalidatePerformanceMonitor.printSingle()) {
+                logger.info(monitor.getRevalidateStats());
+            }
             if (RevalidatePerformanceMonitor.printTotals()) {
                 logger.info(RevalidatePerformanceMonitor.getTotals());
                 RevalidatePerformanceMonitor.resetTotals();
