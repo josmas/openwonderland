@@ -384,7 +384,6 @@ public class CellManager implements ManagedObject, Serializable {
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
-            cell.getCellChannelName(),
             cell.getTransform(),
             cell.getSetupData()
             );
@@ -406,7 +405,6 @@ public class CellManager implements ManagedObject, Serializable {
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
-            cell.getCellChannelName(),
             cell.getTransform(),
             cell.getSetupData()
             );
@@ -429,7 +427,6 @@ public class CellManager implements ManagedObject, Serializable {
             cellID,
             null,
             null,
-            null,
             null
             );
     }
@@ -441,7 +438,6 @@ public class CellManager implements ManagedObject, Serializable {
             null,
             null,
             cell.getCellID(),
-            null,
             null,
             null,
             null
@@ -457,7 +453,6 @@ public class CellManager implements ManagedObject, Serializable {
             null,
             childCell.getCellID(),
             parentCell.getCellID(),
-            null,
             null,
             null
             
@@ -489,7 +484,6 @@ public class CellManager implements ManagedObject, Serializable {
             cellGLO.getLocalBounds(),
             cellGLO.getCellID(),
             parentID,
-            cellGLO.getCellChannelName(),
             cellGLO.getTransform(),
             cellGLO.getSetupData()
             

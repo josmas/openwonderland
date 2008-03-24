@@ -41,7 +41,6 @@ public class CellHierarchyMessage extends Message {
     private BoundingVolume localBounds;
     private BoundingVolume computedBounds;
     private String cellClassName;
-    private String cellChannelName;
     private CellTransform cellTransform;
     private CellSetup setupData;
     private String avatarID;
@@ -66,7 +65,6 @@ public class CellHierarchyMessage extends Message {
                                  BoundingVolume localBounds, 
                                 CellID cellID, 
                                 CellID parentID,
-                                String cellChannelName,
                                 CellTransform cellTransform,
                                 CellSetup setupData) {
         this.msgType = msgType;
@@ -74,7 +72,6 @@ public class CellHierarchyMessage extends Message {
         this.cellID = cellID;
         this.parentID = parentID;
         this.localBounds = localBounds;
-        this.cellChannelName = cellChannelName;
         this.cellTransform = cellTransform;
         this.setupData = setupData;
     }
@@ -112,10 +109,6 @@ public class CellHierarchyMessage extends Message {
     
     public String getCellClassName() {
         return cellClassName;
-    }
-
-    public String getCellChannelName() {
-        return cellChannelName;
     }
 
     public CellTransform getCellTransform() {

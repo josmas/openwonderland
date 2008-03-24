@@ -301,14 +301,12 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 String className, 
                 BoundingVolume localBounds, 
                 CellID parentCellID, 
-                String channelName, 
                 CellTransform cellTransform, 
                 CellSetup setup) {
             cacheImpl.loadCell(cellID, 
                                className, 
                                localBounds, 
                                parentCellID, 
-                               channelName, 
                                cellTransform, 
                                setup);
         }
@@ -340,8 +338,8 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             repaint();
         }
 
-        public void loadClientAvatar(CellID cellID, String className, BoundingVolume localBounds, CellID parentCellID, String channelName, CellTransform cellTransform, CellSetup setup) {
-            loadCell(cellID, className, localBounds, parentCellID, channelName, cellTransform, setup);
+        public void loadClientAvatar(CellID cellID, String className, BoundingVolume localBounds, CellID parentCellID, CellTransform cellTransform, CellSetup setup) {
+            loadCell(cellID, className, localBounds, parentCellID, cellTransform, setup);
             System.out.println("CellBoundsViewer.loadClientAvatar GOT LOCAL AVATAR "+cellID);
         }
 

@@ -71,8 +71,6 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
      */
     private Map<CellID, CellRef> currentCells = new HashMap<CellID, CellRef>();
     
-    private static final boolean USE_CACHE_MANAGER = false;
-    
     private PeriodicTaskHandle task = null;
     
     /**
@@ -114,7 +112,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         
         currentCells.put(rootCellID, new CellRef(rootCell));
         
-        if (USE_CACHE_MANAGER) {
+        if (CacheManager.USE_CACHE_MANAGER) {
             CacheManager.addCache(this);            
         } else {
             // Periodically revalidate the cache
@@ -129,7 +127,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     void logout(ClientSession session) {
         logger.warning("DEBUG - logout");
         currentCells.clear();
-        if (USE_CACHE_MANAGER) {
+        if (CacheManager.USE_CACHE_MANAGER) {
             CacheManager.removeCache(this);
         } else {
             task.cancel();

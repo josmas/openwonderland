@@ -48,7 +48,6 @@ public class CellCacheBasicImpl implements CellCache, CellCacheClient.CellCacheM
                          String className, 
                          BoundingVolume localBounds, 
                          CellID parentCellID, 
-                         String channelName, 
                          CellTransform cellTransform, 
                          CellSetup setup) {
         Cell cell = instantiateCell(className, cellId);

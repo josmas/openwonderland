@@ -62,8 +62,7 @@ public class CellMO extends WonderlandMO {
     
     private boolean live = false;
     
-    protected ManagedReference<Channel> cellChannelRef = null;
-    protected String channelName =null;
+    private ManagedReference<Channel> cellChannelRef = null;
     
     private long transformVersion = Long.MIN_VALUE;
     
@@ -446,13 +445,9 @@ public class CellMO extends WonderlandMO {
             
         cellChannelRef.get().leave(session);        
     }
-    
-    /**
-     * Return the name of this cells channel, or null if this cell has no channel
-     * @return the name of the cell's channel
-     */
-    public String getCellChannelName() {
-        return channelName;
+     
+    public Channel getCellChannel() {
+        return cellChannelRef.get();
     }
     
     /**
