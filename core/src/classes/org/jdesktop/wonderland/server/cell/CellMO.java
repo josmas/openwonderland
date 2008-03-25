@@ -54,9 +54,13 @@ public class CellMO extends WonderlandMO {
     private ManagedReference<CellMO> parentRef=null;
     private ArrayList<ManagedReference<CellMO>> childCellRefs = null;
     private CellTransform transform = null;
-    private CellTransform localToVWorld = null;
     protected CellID cellID;
     private BoundingVolume localBounds;
+    
+    // a check if there is a bounds change that has not been committed.  If
+    // there are uncommitted bounds changes, certain operations (like 
+    // getting the computed VW bounds) are not valid
+    private transient boolean boundsChanged = false;
     
     private String name=null;
     
@@ -101,9 +105,10 @@ public class CellMO extends WonderlandMO {
      */
     public void setLocalBounds(BoundingVolume bounds) {
         localBounds = bounds.clone(null);
+        boundsChanged = true;
         
         if (live) {
-            BoundsHandler.get().setLocalBounds(cellID, bounds);
+            BoundsHandler.get().cellBoundsChanged(cellID, bounds);
         }
     }
     
@@ -124,7 +129,11 @@ public class CellMO extends WonderlandMO {
      */
     BoundingVolume getCachedVWBounds() {
         if (!live)
-            throw new RuntimeException("Cell is not live");
+            throw new IllegalStateException("Cell is not live");
+        
+        if (boundsChanged)
+            throw new IllegalStateException("LocalBounds have been changed, "
+                    + "cached bounds not valid until the transaction commits");
         
         return BoundsHandler.get().getCachedVWBounds(cellID);
     }
@@ -144,18 +153,33 @@ public class CellMO extends WonderlandMO {
      */
     public BoundingVolume getComputedWorldBounds() {
         if (!live)
-            throw new RuntimeException("Cell is not live");
+            throw new IllegalStateException("Cell is not live");
+        
+        if (boundsChanged)
+            throw new IllegalStateException("LocalBounds have been changed, "
+                    + "cached bounds not valid until the transaction commits");
         
         return BoundsHandler.get().getComputedWorldBounds(cellID);   
     }
-    
+   
     /**
-     * Set the computed world bounds of this cell
+     * Get the local to VWorld transform of this cells origin. This call
+     * can only be made on live cells, an IllegalStateException will be thrown
+     * if the cell is not live.
      * 
-     * @param bounds
+     * TODO - should we create our own exception type ?
+     * 
+     * @return
      */
-    void setComputedWorldBounds(BoundingVolume bounds) {
-        BoundsHandler.get().setComputedWorldBounds(cellID, bounds);
+    CellTransform getLocalToVWorld() {
+        if (!live)
+            throw new IllegalStateException("Unsupported Operation");
+        
+        if (boundsChanged)
+            throw new IllegalStateException("LocalBounds have been changed, "
+                    + "cached bounds not valid until the transaction commits");
+        
+        return BoundsHandler.get().getLocalToVWorld(cellID);
     }
     
     /**
@@ -177,7 +201,6 @@ public class CellMO extends WonderlandMO {
         
         if (live) {
            child.setLive(true);
-           BoundsHandler.get().cellChildrenChanged(cellID, child.getCellID(), true);
         }
     }
     
@@ -196,7 +219,6 @@ public class CellMO extends WonderlandMO {
                 child.setParent(null);
                 if (live) {
                     child.setLive(false);
-                    BoundsHandler.get().cellChildrenChanged(cellID, child.getCellID(), false);
                 }
                 return true;
             } catch (MultipleParentException ex) {
@@ -282,12 +304,7 @@ public class CellMO extends WonderlandMO {
         
         if (live) {
             BoundsHandler.get().cellTransformChanged(cellID, transform);
-            transformVersion++;
         }
-    }
-    
-    public long getTransformVersion() {
-        return transformVersion;
     }
     
     /**
@@ -305,32 +322,7 @@ public class CellMO extends WonderlandMO {
     public void contentChanged() {
         logger.severe("MoveableCellMO.contentChanged NOT IMPLEMENTED");
     }
-    
-    /**
-     * Set the local to VWorld transform of this cells origin
-     * @param transform
-     */
-    void setLocalToVWorld(CellTransform transform) {
-        this.localToVWorld = transform;
-        BoundsHandler.get().setLocalToVworld(cellID, transform);
-    }
-    
-    /**
-     * Get the local to VWorld transform of this cells origin. This call
-     * can only be made on live cells, a RuntimeException will be thrown
-     * if the cell is not live.
-     * 
-     * TODO - should we create our own exception type ?
-     * 
-     * @return
-     */
-    CellTransform getLocalToVWorld() {
-        if (!live)
-            throw new RuntimeException("Unsupported Operation");
-        
-        return localToVWorld;
-    }
-    
+       
     /**
      * Return the cellID for this cell
      * 
@@ -357,18 +349,14 @@ public class CellMO extends WonderlandMO {
         this.live = live;
         if (live) {
             openChannel();
-            try {
-                BoundsHandler.get().createBounds(this);
-                if (getParent()!=null) { // Root cell has a null parent
+            BoundsHandler.get().createBounds(this);
+            if (getParent()!=null) { // Root cell has a null parent
 //                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
-                    BoundsHandler.get().addChild(getParent(), this);
-                }
-            } catch (MultipleParentException ex) {
-                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                BoundsHandler.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
             }
         } else {
             closeChannel();
-            BoundsHandler.get().removeChild(getParent(), this);
+            BoundsHandler.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
             BoundsHandler.get().removeBounds(this);
         }
         

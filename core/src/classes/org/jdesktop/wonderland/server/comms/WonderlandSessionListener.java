@@ -30,7 +30,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -554,18 +553,15 @@ public class WonderlandSessionListener
         }
 
         public void send(ClientSession session, Message message) {
-            send(Collections.singleton(session), message);
+            session.send(serializeMessage(message, clientID));
         }
 
         public void send(Set<ClientSession> sessions, Message message) 
         {
-            // create a temporary channel to send to
-            ChannelManager cm = AppContext.getChannelManager();
-            Channel channel = cm.createChannel(Delivery.RELIABLE);
-            channel.join(sessions);
-            
-            // send the message to the channel
-            send(channel, message);
+            // send to each individual session
+            for (ClientSession session : sessions) {
+                send(session, message);
+            }
         }
 
         public void send(Channel channel, Message message) {

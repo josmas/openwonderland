@@ -23,7 +23,6 @@ import org.jdesktop.wonderland.PrivateAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.bounds.ServiceBoundsHandler;
 
 /**
@@ -46,6 +45,14 @@ public abstract class BoundsHandler {
         return handler;
     }
     
+      /**
+     * Return the local bounds of the specified cell
+     * 
+     * @param cellID
+     * @return
+     */
+    public abstract BoundingVolume getLocalBounds(CellID cellID);
+
     /**
      * Return the bounds of the cell in virtual world coordinates. This bounds
      * does not necessarily encapsulate all the child bounds.
@@ -64,36 +71,11 @@ public abstract class BoundsHandler {
     public abstract BoundingVolume getComputedWorldBounds(CellID cellID);
 
     /**
-     * Return the local bounds of the specified cell
-     * 
+     * Get the local to VWorld transform of this cells origin.
      * @param cellID
      * @return
      */
-    public abstract BoundingVolume getLocalBounds(CellID cellID);
-
-    /**
-     * Set the local bounds of the specified cell
-     * 
-     * @param cellID
-     * @param bounds
-     */
-    public abstract void setLocalBounds(CellID cellID, BoundingVolume bounds);
-
-    public abstract void setComputedWorldBounds(CellID cellID, BoundingVolume bounds);
-
-    public abstract void setLocalToVworld(CellID cellID, CellTransform transform);
-
-    /**
-     * Construct the graph by adding the child to the parent cell
-     * This call does not recompute the internal transform or bounds data
-     * 
-     * @param parent
-     * @param child
-     * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
-     */
-    public abstract void addChild(CellMO parent, CellMO child) throws MultipleParentException ;
-    
-    public abstract void removeChild(CellMO parent, CellMO child);
+    public abstract CellTransform getLocalToVWorld(CellID cellID);
     
     /**
      * Instruct the handler to start managing a cell
@@ -107,6 +89,13 @@ public abstract class BoundsHandler {
      */
     public abstract void removeBounds(CellMO cell);
     
+    /**
+     * Notify handler that the transform of this cell has changed. This will
+     * cause recomputation of the transform data.
+     * 
+     * @param parent the parent cell
+     * @param child the child cell
+     */
     public abstract void cellTransformChanged(CellID cellID, CellTransform transform);
     
     /**
@@ -152,5 +141,11 @@ public abstract class BoundsHandler {
         throw new RuntimeException("Not Implemented");
     }
  
+    /**
+     * Return the CellMirror corresponding to the given CellID.  The cell
+     * must have been previously added to the tree using {@code createBounds()}.
+     * @param cellID
+     * @return
+     */
     public abstract CellMirror getCellMirror(CellID cellID);
 }

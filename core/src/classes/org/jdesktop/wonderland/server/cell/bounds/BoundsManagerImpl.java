@@ -61,13 +61,11 @@ public class BoundsManagerImpl implements BoundsManager {
         return service.getVisibleCells(rootCell, bounds, perfMonitor);
     }
 
-    public void childrenChanged(CellID parent, CellID child, boolean childAdded) {
-        service.childrenChanged(parent, child, childAdded);
+    public void cellChildrenChanged(CellID parent, CellID child, boolean childAdded) {
+        service.cellChildrenChanged(parent, child, childAdded);
     }
 
     public void cellContentsChanged(CellID cellID) {
         service.cellContentsChanged(cellID);
     }
-
-
 }
