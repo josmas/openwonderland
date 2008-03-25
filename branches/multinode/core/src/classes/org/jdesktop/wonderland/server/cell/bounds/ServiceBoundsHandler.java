@@ -69,40 +69,16 @@ public class ServiceBoundsHandler extends BoundsHandler {
         return get(cellID).getComputedWorldBounds();        
     }
     
-    /**
-     * Set the computed world bounds of this cell
-     * 
-     * @param bounds
-     */
-    public void setComputedWorldBounds(CellID cellID, BoundingVolume bounds) {
-        get(cellID).setComputedWorldBounds(bounds);
-    }
-
     @Override
     public BoundingVolume getLocalBounds(CellID cellID) {
         return get(cellID).getLocalBounds();
     }
 
     @Override
-    public void setLocalBounds(CellID cellID, BoundingVolume bounds) {
-        get(cellID).setLocalBounds(bounds);
+    public CellTransform getLocalToVWorld(CellID cellID) {
+        return get(cellID).getLocalToVWorld();
     }
-
-    @Override
-    public void setLocalToVworld(CellID cellID, CellTransform transform) {
-        get(cellID).setLocalToVWorld(transform);
-    }
-
-    @Override
-    public void addChild(CellMO parent, CellMO child) throws MultipleParentException {
-        get(parent.getCellID()).addChild(get(child.getCellID()));
-    }
-
-    @Override
-    public void removeChild(CellMO parent, CellMO child) {
-        get(parent.getCellID()).removeChild(get(child.getCellID()));
-    }
-
+    
     @Override
     public void createBounds(CellMO cell) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
@@ -135,7 +111,7 @@ public class ServiceBoundsHandler extends BoundsHandler {
 
     @Override
     public void cellChildrenChanged(CellID parent, CellID child, boolean childAdded) {
-        AppContext.getManager(BoundsManager.class).childrenChanged(parent, child, childAdded);
+        AppContext.getManager(BoundsManager.class).cellChildrenChanged(parent, child, childAdded);
     }
 
     @Override

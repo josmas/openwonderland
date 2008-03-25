@@ -19,15 +19,21 @@ package org.jdesktop.wonderland.server.cell.bounds;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import com.sun.sgs.impl.util.TransactionContext;
+import com.sun.sgs.impl.util.TransactionContextFactory;
 import com.sun.sgs.kernel.ComponentRegistry;
-import com.sun.sgs.service.Service;
+import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -41,8 +47,27 @@ import org.jdesktop.wonderland.server.cell.CellMirror;
  * @author paulby
  */
 public class BoundsServiceImpl implements BoundsService {
+    // logger
+    private static final Logger logger =
+            Logger.getLogger(BoundsServiceImpl.class.getName());
+    
+    // our name
+    private static final String NAME = BoundsServiceImpl.class.getName();
+    
+    // Darkstar structures
+    private Properties properties;
+    private ComponentRegistry systemRegistry;
+    private TransactionProxy proxy;
+    
+    // lock for reading and writing the bounds data
+    private ReadWriteLock boundsLock;
+    
+    // the actual bounds data
     private Map<CellID, CellMirrorImpl> bounds;
     
+    // manages the context of the current transaction
+    private TransactionContextFactory<BoundsTransactionContext> ctxFactory;
+   
     /**
      * SGS 0.9.5 constructor
      * @param properties
@@ -53,7 +78,19 @@ public class BoundsServiceImpl implements BoundsService {
                              ComponentRegistry systemRegistry,
                              TransactionProxy proxy)
     {
+        this.properties = properties;
+        this.systemRegistry = systemRegistry;
+        this.proxy = proxy;
+        
         bounds = new HashMap<CellID, CellMirrorImpl>();
+        boundsLock = new ReentrantReadWriteLock();
+        
+        ctxFactory = new TransactionContextFactory<BoundsTransactionContext>(proxy, NAME) {
+            @Override
+            protected BoundsTransactionContext createContext(Transaction txn) {
+                return new BoundsTransactionContext(txn);
+            }
+        };
     }
     
     /**
@@ -64,13 +101,36 @@ public class BoundsServiceImpl implements BoundsService {
     public BoundsServiceImpl(Properties properties, 
                              ComponentRegistry systemRegistry)
     {
+        this.properties = properties;
+        this.systemRegistry = systemRegistry;
+        
         bounds = new HashMap<CellID, CellMirrorImpl>();
+        boundsLock = new ReentrantReadWriteLock();
+    }
+    
+    /**
+     * SGS 0.9.4 configure method
+     * @param systemRegistry
+     * @param proxy
+     */
+    public void configure(ComponentRegistry systemRegistry, 
+                          TransactionProxy proxy) 
+    {
+        this.systemRegistry = systemRegistry;
+        this.proxy = proxy;
+        
+        ctxFactory = new TransactionContextFactory<BoundsTransactionContext>(proxy, NAME) {
+            @Override
+            protected BoundsTransactionContext createContext(Transaction txn) {
+                return new BoundsTransactionContext(txn);
+            }
+        };
     }
     
     public String getName() {
         return BoundsServiceImpl.class.getName();
     }
-
+    
     public void ready() throws Exception {
         // ignore
     }
@@ -81,63 +141,174 @@ public class BoundsServiceImpl implements BoundsService {
     }
     
     public CellMirrorImpl getCellMirrorImpl(CellID cellID) {
-        return bounds.get(cellID);
+        boundsLock.readLock().lock();
+        
+        try {
+            return bounds.get(cellID);
+        } finally {
+            boundsLock.readLock().unlock();
+        }
+    }
+   
+    /**
+     * Return a collection of child cells whose bounds intersect
+     * with the supplied bounds
+     * 
+     * @param rootCell from which to start search
+     * @param bounds bounds within which visible cells are contained
+     * @param perfMonitor performance measurement service
+     * @return
+     */
+    public Collection<CellMirror> getVisibleCells(CellID rootCell, 
+                                                  BoundingVolume bounds, 
+                                                  RevalidatePerformanceMonitor perfMonitor) 
+    {
+        boundsLock.readLock().lock();
+        try {
+            ArrayList<CellMirror> result = new ArrayList();
+            getCellMirrorImpl(rootCell).getVisibleCells(result, bounds, perfMonitor);
+            return result;
+        } finally {
+            boundsLock.readLock().unlock();
+        }
     }
     
-    public void putCellMirrorImpl(CellMirrorImpl cellBounds) {
-        bounds.put(cellBounds.getCellID(), cellBounds);
+    public void putCellMirrorImpl(final CellMirrorImpl cellBounds) {
+        scheduleChange(new Change(cellBounds.getCellID()) {
+            public void run() {
+                logger.finest("Add cell " + getCellID());
+                bounds.put(getCellID(), cellBounds);
+            }
+        });
     }
-
-    public void cellTransformChanged(CellID cellID, CellTransform transform) {
-        CellMirrorImpl cellBounds = getCellMirrorImpl(cellID);
-        cellBounds.setTransform(transform);
-        cellTransformChanged(cellBounds);
-    }
-
-    public void cellBoundsChanged(CellID cellID, BoundingVolume bounds) {
-        CellMirrorImpl cellBounds = getCellMirrorImpl(cellID);
-        cellBounds.setLocalBounds(bounds);
-        cellLocalBoundsChanged(cellBounds);
-    }
-
+    
     public void removeCellMirrorImpl(CellID cellID) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    void cellLocalBoundsChanged(CellMirrorImpl cell) {
-        // Synchronize to make changes atomic
-        synchronized(bounds) {        
-            // Compute and setTranslation computedWorldBounds
-            BoundingVolume b = cell.getCachedVWBounds();
-            Iterator<CellMirrorImpl> it = cell.getAllChildren();
-            while(it.hasNext()) {
-                b.mergeLocal(it.next().getComputedWorldBounds());
+    public void cellTransformChanged(CellID cellID, 
+                                     final CellTransform transform) 
+    {
+        scheduleChange(new Change(cellID) {
+            public void run() {                
+                CellMirrorImpl cellBounds = bounds.get(getCellID());
+                if (cellBounds != null) {
+                    logger.finest("Transform changed " + getCellID());
+                
+                    cellBounds.setTransform(transform);
+                    cellTransformChanged(cellBounds);
+                } else {
+                    logger.warning("Unknown cell " + getCellID());
+                }
             }
-            cell.setComputedWorldBounds(b);
-
-            // Ensure this cells bounds are fully enclosed by parents
-            checkParentBounds(cell.getParent(), cell);    
-        }
+        });
     }
 
-    void cellTransformChanged(CellMirrorImpl cell) {
-        synchronized(bounds) {
-            if (cell.getParent()==null) {
-                // Special case for root cell
-                BoundingVolume b = cell.getLocalBounds();
-                CellTransform t = cell.getTransform();
-                t.transform(b);
-                cell.setComputedWorldBounds(b);
-                cell.setLocalToVWorld(t);
-            } else {
-                // Change the bounds and localToVWorld on all children
-                transformTreeUpdate(cell.getParent(), cell);
-
-//                checkForReparent(cell.getParent(), cell);
-
-                //Ensure this cells bounds are fully enclosed by parents
-                checkParentBounds(cell.getParent(), cell);   
+    public void cellBoundsChanged(CellID cellID,
+                                  final BoundingVolume localBounds) 
+    {
+        scheduleChange(new Change(cellID) {
+            public void run() {
+                CellMirrorImpl cellBounds = bounds.get(getCellID());
+                if (cellBounds != null) {
+                    logger.finest("Bounds changed " + getCellID());
+                                        
+                    cellBounds.setLocalBounds(localBounds);
+                    cellLocalBoundsChanged(cellBounds);
+                } else {
+                    logger.warning("Unknown cell " + getCellID());
+                }
             }
+        });
+    }
+  
+    /**
+     * Notify the system that a child graph has changed, either because a child
+     * graph has been added or removed
+     * 
+     * @param parentID
+     * @param childID
+     * @param childAdded
+     */
+    public void cellChildrenChanged(final CellID parentID, 
+                                    final CellID childID, 
+                                    final boolean childAdded)
+    {
+        logger.finest("Schedule add " + childID + " to " + parentID);
+        
+        scheduleChange(new Change(parentID) {
+            public void run() {
+                CellMirrorImpl parent = bounds.get(getCellID());
+                CellMirrorImpl child = bounds.get(childID);
+                if (parent == null) {
+                    logger.warning("Unknown parent " + getCellID());
+                    return;
+                } else if (child == null) {
+                    logger.warning("Unknown child " + childID);
+                    return;
+                }
+                
+                if (childAdded) {
+                    logger.finest("Child " + childID + " added to " + getCellID());
+                    parent.addChild(child);
+                    transformTreeUpdate(parent, child);
+                } else {
+                    logger.finest("Child " + childID + " removed from " + getCellID());
+                    parent.removeChild(child);
+                    cellLocalBoundsChanged(parent);
+                }
+            }
+        });
+    }
+
+    public void cellContentsChanged(CellID cellID) {
+        scheduleChange(new Change(cellID) {
+            public void run() {
+                CellMirrorImpl cellBounds = bounds.get(getCellID());
+                if (cellBounds != null) {
+                    logger.finest("Contents changed " + getCellID());
+                    cellBounds.contentsChanged();
+                } else {
+                    logger.warning("Unknown cell " + getCellID());
+                }
+            }
+        });
+    }
+    
+    private void scheduleChange(Change change) {
+        // get the current transaction state
+        ctxFactory.joinTransaction().addChange(change);
+    }
+    
+    private void cellLocalBoundsChanged(CellMirrorImpl cell) {
+        // Compute and setTranslation computedWorldBounds
+        BoundingVolume b = cell.getCachedVWBounds();
+        Iterator<CellMirrorImpl> it = cell.getAllChildren();
+        while (it.hasNext()) {
+            b.mergeLocal(it.next().getComputedWorldBounds());
+        }
+        cell.setComputedWorldBounds(b);
+
+        // Ensure this cells bounds are fully enclosed by parents
+        checkParentBounds(cell.getParent(), cell);    
+    }
+
+    private void cellTransformChanged(CellMirrorImpl cell) {
+        if (cell.getParent() == null) {
+            // Special case for root cell
+            BoundingVolume b = cell.getLocalBounds();
+            CellTransform t = cell.getTransform();
+            t.transform(b);
+            cell.setComputedWorldBounds(b);
+            cell.setLocalToVWorld(t);
+        } else {
+            // Change the bounds and localToVWorld on all children
+            transformTreeUpdate(cell.getParent(), cell);
+
+            //checkForReparent(cell.getParent(), cell);
+
+            //Ensure this cells bounds are fully enclosed by parents
+            checkParentBounds(cell.getParent(), cell);
         }
     }
 
@@ -214,48 +385,63 @@ public class BoundsServiceImpl implements BoundsService {
         parent.setComputedWorldBounds(parentBounds);
         checkParentBounds(parent.getParent(), parent);
     }
-
+    
     /**
-     * Return an iterator over the setTranslation of visible cells, specifically child cells whose bounds interesect
-     * with the supplied bounds
-     * 
-     * @param rootCell from which to start search
-     * @param bounds bounds within which visible cells are contained
-     * @param perfMonitor performance measurement service
-     * @return
+     * A change to apply to the bounds.  This change will be applied when
+     * the current transaction commits.  The run() method of subclasses
+     * should perform any actual changes.  When run() is called, the write 
+     * lock is guaranteed to already be held for the bounds map.
      */
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
-        ArrayList<CellMirror> result = new ArrayList();
+    private static abstract class Change implements Runnable {
+        private CellID cellID;
+    
+        public Change(CellID cellID) {
+            this.cellID = cellID;
+        }
         
-        getCellMirrorImpl(rootCell).getVisibleCells(result, bounds, perfMonitor);
-        
-        return result;
-    }
-
-    /**
-     * Notify the system that a child graph has changed, either because a child
-     * graph has been added or removed
-     * 
-     * @param parentID
-     * @param childID
-     * @param childAdded
-     */
-    public void childrenChanged(CellID parentID, CellID childID, boolean childAdded) {
-        synchronized(bounds) {
-            if (childAdded) {
-                transformTreeUpdate(getCellMirrorImpl(parentID), getCellMirrorImpl(childID));
-            } else {
-                cellLocalBoundsChanged(getCellMirrorImpl(parentID));
-            }
+        protected CellID getCellID() {
+            return cellID;
         }
     }
-
-    public void cellContentsChanged(CellID cellID) {
-        getCellMirrorImpl(cellID).contentsChanged();
-    }
     
-    public void configure(com.sun.sgs.kernel.ComponentRegistry a,com.sun.sgs.service.TransactionProxy b) {
+    /**
+     * Transaction state
+     */
+    private class BoundsTransactionContext extends TransactionContext {
+        private List<Change> changes;
         
-    }
+        public BoundsTransactionContext(Transaction txn) {
+            super (txn);
+            
+            changes = new ArrayList();
+        }
+        
+        public void addChange(Change change) {
+            changes.add(change);
+        }
+        
+        @Override
+        public void abort(boolean retryable) {
+            changes.clear();
+        }
 
+        @Override
+        public void commit() {
+            // acquire the write lock to the bounds
+            boundsLock.writeLock().lock();
+            try {
+                // process each change
+                for (Change change : changes) {
+                    change.run();
+                }
+                
+                // done with all changes
+                changes.clear();
+            } finally {
+                boundsLock.writeLock().unlock();
+            }
+            
+            isCommitted = true;
+        }
+    }
 }

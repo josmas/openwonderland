@@ -151,13 +151,13 @@ public class CellMirrorImpl implements CellMirror {
     }
     
     /**
-     * Add a child object. Throws a MultipleParentException if this object
+     * Add a child object. Throws a IllegalStateException if this object
      * aleady has a parent
      * 
      * @param child
-     * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
+     * @throws IllegalStateException
      */
-    public void addChild(CellMirrorImpl child) throws MultipleParentException {
+    public void addChild(CellMirrorImpl child) {
         if (children==null)
             children = new ArrayList<CellMirrorImpl>();
         
@@ -170,18 +170,12 @@ public class CellMirrorImpl implements CellMirror {
      * @param child
      */
     public void removeChild(CellMirrorImpl child) {
-            if (children == null) {
-                return;
-            }
-            if (children.remove(child)) {
-                try {
-                    child.setParent(null);
-                } catch (MultipleParentException ex) {
-                    // Should never get here, setting a null parent does not
-                    // throw this exception
-                    Logger.getLogger(CellMirrorImpl.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+        if (children == null) {
+            return;
+        }
+        if (children.remove(child)) {
+            child.setParent(null);
+        }
     }
     
     /**
@@ -200,15 +194,16 @@ public class CellMirrorImpl implements CellMirror {
     }
     
     /**
-     * Set the parent of this object, throws a MultipleParentExcetion if this
+     * Set the parent of this object, throws an IllegalStateException if this
      * object already has a parent
      * 
      * @param parent
      * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
      */
-    void setParent(CellMirrorImpl newParent) throws MultipleParentException {
-        if (newParent!=null && parent!=null)
-            throw new MultipleParentException();
+    void setParent(CellMirrorImpl newParent) {
+        if (newParent != null && parent != null)
+            throw new IllegalStateException("Cell " + cellID + " already has " +
+                                            " parent " + parent.cellID);
         
         this.parent = newParent;
     }
