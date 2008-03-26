@@ -63,4 +63,10 @@ public interface CellMirror {
      * @return
      */
     public short getPriority();
+    
+    /**
+     * Returns true if this is a mirror for an Entity cell.
+     * @return
+     */
+    public boolean isEntity();
 }

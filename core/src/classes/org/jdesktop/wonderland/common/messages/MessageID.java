@@ -30,7 +30,10 @@ import org.jdesktop.wonderland.ExperimentalAPI;
 /**
  * A unique identifier for a message.  Unique MessageIDs can be generated using
  * the MessageIDGenerator included as part of this class.  Custom 
- * MessageIDGenerators can be used as well as the default generator.
+ * MessageIDGenerators can be used as well as the default generator. In multinode
+ * darkstar each machine in the server cluster will need to generate unique message
+ * ID's, a custom MessageIDGenerator will be usedm the first 32 bits will be the
+ * server ID, the last 32 bits the message ID.
  * @author jkaplan
  */
 @ExperimentalAPI
@@ -38,24 +41,21 @@ public class MessageID implements Externalizable {
     /** the default message id generator */
     private static MessageIDGenerator idGen = new DefaultMessageIDGenerator();
     
-    /** the encoding to use for the id */
-    private static final String ENCODING = "US-ASCII";
-            
     /** the unique identifying string for this message */
-    private String id;
+    private long id;
     
     /**
      * No-arg constructor required for externalizable
      */
     public MessageID() {
-        this (null);
+        this (Long.MIN_VALUE);
     }
     
     /** 
      * Create a messageID from the given String.  To generate a brand new,
      * unique messageID, use the generateMessageID() method instead.
      */
-    public MessageID(String id) {
+    public MessageID(long id) {
         this.id = id;
     }
 
@@ -85,9 +85,7 @@ public class MessageID implements Externalizable {
      * @throws IOException if there is an error writing
      */
     public void writeExternal(ObjectOutput out) throws IOException {
-        byte[] idBytes = id.getBytes(ENCODING);
-        out.writeInt(idBytes.length);
-        out.write(idBytes);
+        out.writeLong(id);
         out.flush();
     }
 
@@ -97,11 +95,7 @@ public class MessageID implements Externalizable {
      * @throws IOException if there is an error reading
      */
     public void readExternal(ObjectInput in) throws IOException {
-        int idLen = in.readInt();
-        byte[] idBytes = new byte[idLen];
-        in.read(idBytes);
-        
-        id = new String(idBytes, ENCODING);
+        id = in.readLong();
     }
 
     /**
@@ -118,18 +112,16 @@ public class MessageID implements Externalizable {
         
         MessageID m = (MessageID) o;
         
-        if (id == null) {
-            return (m.id == null);
+        if (id == Long.MIN_VALUE) {
+            return (m.id == Long.MIN_VALUE);
         } else {
-            return id.equals(m.id);
+            return id==(m.id);
         }
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + (this.id != null ? this.id.hashCode() : 0);
-        return hash;
+        return (int)id;
     }
  
     @Override
@@ -158,13 +150,13 @@ public class MessageID implements Externalizable {
             implements MessageIDGenerator 
     {
         /** the current id */
-        private static long id;
+        private static long id=Long.MIN_VALUE;
         
         /**
          * {@inheritDoc}
          */
         public synchronized MessageID generateID() {
-            return new MessageID(String.valueOf(++id));
+            return new MessageID(++id);
         }
     }
 }

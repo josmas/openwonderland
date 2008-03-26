@@ -35,11 +35,12 @@ import java.util.HashMap;
  * @author paulby
  */public class WonderlandObjectInputStream extends ObjectInputStream {
 
-    private HashMap<Integer, ObjectStreamClass> idToDesc = new HashMap();
-    private HashMap<ObjectStreamClass, Integer> descToId = new HashMap();
+    private HashMap<Integer, String> idToDesc = new HashMap();
+//    private HashMap<ObjectStreamClass, Integer> descToId = new HashMap();
 
     public WonderlandObjectInputStream(InputStream in) throws IOException {
         super(in);
+        WonderlandObjectOutputStream.populateIdToDesc(idToDesc);
     }
 
     @Override
@@ -51,22 +52,27 @@ import java.util.HashMap;
         while (id == WonderlandObjectOutputStream.REMOVE_DESCRIPTOR) {
             System.err.println("Processing REMOVE");
             id = readInt();
-            ret = idToDesc.remove(id);
-            descToId.remove(ret);
+            ret = ObjectStreamClass.lookup(Class.forName(idToDesc.remove(id)));
+//            descToId.remove(ret);
             id = readInt();
+            idToDesc.remove(id);
         }
         
         if (id == WonderlandObjectOutputStream.NEW_DESCRIPTOR) {
-            ret = super.readClassDescriptor();
+            String className = readUTF();
+//            System.err.println("WonderlandInputStream reading NEW_DESC "+className);
+            ret = ObjectStreamClass.lookup(Class.forName(className));
+//            ret = super.readClassDescriptor();
             id = readInt();
-            idToDesc.put(id, ret);
-            descToId.put(ret, id);
+            idToDesc.put(id, className);
+//            descToId.put(ret, id);
         } else {
-            ret = idToDesc.get(id);
+            ret = ObjectStreamClass.lookup(Class.forName(idToDesc.get(id)));
         }
         if (ret == null) {
             throw new IOException("Unknown class ID " + id);
         }
+        
         return ret;
     }
 }

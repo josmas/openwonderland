@@ -359,7 +359,7 @@ public class CellManager implements ManagedObject, Serializable {
 
             public void run() throws Exception {
                 pos.x += dir;
-                pos2.y += dir;
+                pos2.z += dir;
                 if (pos.x > 40 || pos.x<2)
                     dir = -dir;
                 cellRef.get().setTransform(new CellTransform(null, pos));

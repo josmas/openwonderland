@@ -79,6 +79,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheClient.CellCacheM
     }
 
     public void moveCell(CellID cellId, CellTransform cellTransform) {
+        logger.warning("MOVE CELL");
         Cell cell = cells.get(cellId);
         if (cell==null) {
             // TODO this is probably ok, need to check
@@ -109,6 +110,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheClient.CellCacheM
         }
         
         return cell;
+    }
+
+    public void notifyEntityMoved(EntityCell entity, boolean fromServer) {
     }
 
 }

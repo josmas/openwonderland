@@ -49,6 +49,7 @@ public class CellMirrorImpl implements CellMirror {
     private int contentsVersion;
     private short priority;
     private Class cellClass;
+    private boolean isEntity;
     
     private CellMirrorImpl parent;
     private ArrayList<CellMirrorImpl> children = null;
@@ -60,6 +61,8 @@ public class CellMirrorImpl implements CellMirror {
         transform = cell.getTransform();
         cellClass = cell.getClass();
         this.priority = cell.getPriority();
+        isEntity = (cell instanceof EntityCellMO);
+            
     }
     
     /**
@@ -73,6 +76,7 @@ public class CellMirrorImpl implements CellMirror {
         this.priority = mirror.getPriority();
         this.localBounds = mirror.getLocalBounds();
         this.transform = mirror.getTransform();
+        this.isEntity = mirror.isEntity();
     }
     
     /**
@@ -301,6 +305,13 @@ public class CellMirrorImpl implements CellMirror {
      */
     public short getPriority() {
         return priority;
+    }
+    
+    /**
+     * @{inheritDoc}
+     */
+    public boolean isEntity() {
+        return isEntity;
     }
     
 }

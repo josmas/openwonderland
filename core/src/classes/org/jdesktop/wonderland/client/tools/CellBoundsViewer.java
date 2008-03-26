@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheClient;
 import org.jdesktop.wonderland.client.cell.EntityCell;
+import org.jdesktop.wonderland.client.cell.EntityManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -61,6 +62,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         initComponents();
         boundsPanel = new BoundsPanel();
         centerPanel.add(boundsPanel, BorderLayout.CENTER);
+        this.setSize(640,480);
         
         long userNum = System.currentTimeMillis();
         
@@ -205,7 +207,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     }//GEN-LAST:event_forwardBActionPerformed
     
     
-    class BoundsPanel extends JPanel implements CellCacheClient.CellCacheMessageListener, CellCache {
+    class BoundsPanel extends JPanel implements CellCacheClient.CellCacheMessageListener, CellCache, EntityManager.EntityListener {
         private Vector3f center = new Vector3f();  // Temporary variable
         private Vector3f extent = new Vector3f();   // Temporary variable
         private float scale = 20f;
@@ -218,6 +220,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         private Point mousePress = null;
         
         public BoundsPanel() {
+            EntityManager.getEntityManager().addEntityListener(this);
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseDragged(MouseEvent e) {
@@ -334,7 +337,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
          * @param cellTransform
          */
         public void moveCell(CellID cellID, CellTransform cellTransform) {
-
+            cacheImpl.moveCell(cellID, cellTransform);
             repaint();
         }
 
@@ -343,16 +346,26 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             System.out.println("CellBoundsViewer.loadClientAvatar GOT LOCAL AVATAR "+cellID);
         }
 
-/*************************************************
- * CellCache implementation
- *************************************************/
+        /*************************************************
+         * CellCache implementation
+         *************************************************/
         public Cell getCell(CellID cellId) {
             return cacheImpl.getCell(cellId);
         }
+
         
-/*************************************************
- * End CellCache implementation
- *************************************************/
+        /*************************************************
+         * End CellCache implementation
+         *************************************************/
+        
+        /**
+         * ${inheritDoc}
+         * @param cell
+         * @param fromServer
+         */
+        public void entityMoved(EntityCell cell, boolean fromServer) {
+            repaint();
+        }
     }
     
     /**

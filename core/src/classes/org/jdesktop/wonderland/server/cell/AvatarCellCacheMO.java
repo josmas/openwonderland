@@ -216,10 +216,10 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
                         switch (update) {
                             case TRANSFORM:
-                                msg = CellManager.newCellMoveMessage(cellMirror);
-                                sender.send(session, msg);
-                                monitor.incMessageCount();
-                                //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
+                                if (!cellMirror.isEntity()) {
+                                    msg = CellManager.newCellMoveMessage(cellMirror);
+                                    sender.send(session, msg);
+                                }
                                 break;
                             case CONTENT:
                                 msg = CellManager.newContentUpdateCellMessage(cellRef.get());
