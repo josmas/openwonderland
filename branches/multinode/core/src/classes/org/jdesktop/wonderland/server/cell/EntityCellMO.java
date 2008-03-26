@@ -58,7 +58,8 @@ public class EntityCellMO extends CellMO {
         }
 
         if (isLive() && getCellChannel() != null) {
-            cellSender.send(getCellChannel(), EntityMessage.newMovedMessage(cellID, transform));
+            cellSender.send(getCellChannel(), 
+                            EntityMessage.newMovedMessage(cellID, transform));
         }
     }
     

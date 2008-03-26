@@ -52,7 +52,9 @@ import com.jme.scene.state.ZBufferState;
 import com.jme.system.DisplaySystem;
 import com.jme.system.JmeException;
 import com.jme.util.TextureManager;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -236,6 +238,15 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         // update the scene graph for rendering
         renderInfo.getRoot().updateGeometricState(0.0f, true);
         renderInfo.getRoot().updateRenderState();
+        
+        try {
+        InputStream in = new FileInputStream("/Users/paulby/src/java.net/jme/trunk/jme/src/jmetest/data/texture/Decal.PNG");
+        
+        TextureManager.loadImage("png", in, false);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
         
         isRunning = true;
     }

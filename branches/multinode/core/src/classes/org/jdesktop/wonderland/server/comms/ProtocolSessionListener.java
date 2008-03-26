@@ -41,9 +41,9 @@ import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.common.messages.MessageInputStream;
-import org.jdesktop.wonderland.common.messages.MessageInputStream.ReceivedMessage;
-import org.jdesktop.wonderland.common.messages.MessageOutputStream;
+import org.jdesktop.wonderland.common.messages.MessagePacker;
+import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
+import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -118,8 +118,7 @@ public class ProtocolSessionListener
         try {
             // the message contains a client identifier in the first
             // 2 bytes, so ignore those
-            MessageInputStream in = new MessageInputStream(data);
-            ReceivedMessage recv = in.readMessage();
+            ReceivedMessage recv = MessagePacker.unpack(data);
             Message m = recv.getMessage();
             
             // check the message type
@@ -162,11 +161,9 @@ public class ProtocolSessionListener
             
             // send an OK message
             sendToSession(new OKMessage(psm.getMessageID()));
-        } catch (ExtractMessageException eme) {
+        } catch (PackerException eme) {
             sendError(eme.getMessageID(), null, eme);
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error reading message", ioe);
-        }
+        } 
     }
 
     /**
@@ -250,15 +247,11 @@ public class ProtocolSessionListener
      * @param message the message to send
      */
     protected void sendToSession(Message message) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            MessageOutputStream out = new MessageOutputStream(baos);
-            out.writeMessage(message, 
-                             SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
-            out.close();
+        try {            
+            ByteBuffer buf = MessagePacker.pack(message, SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
         
-            getSession().send(ByteBuffer.wrap(baos.toByteArray()));
-        } catch (IOException ioe) {
+            getSession().send(buf);
+        } catch (PackerException ioe) {
             logger.log(Level.WARNING, "Unable to send message " + message, ioe);
         }
     }

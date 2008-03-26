@@ -48,9 +48,9 @@ import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageException;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.common.messages.MessageInputStream;
-import org.jdesktop.wonderland.common.messages.MessageInputStream.ReceivedMessage;
-import org.jdesktop.wonderland.common.messages.MessageOutputStream;
+import org.jdesktop.wonderland.common.messages.MessagePacker;
+import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
+import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -345,16 +345,12 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         // send the message to the server
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            MessageOutputStream out = new MessageOutputStream(baos);
-                    
-            out.writeMessage(message, record.getClientID());
-            out.close();
-            
             // send the combined message
-            simpleClient.send(ByteBuffer.wrap(baos.toByteArray()));
+            simpleClient.send(MessagePacker.pack(message, record.getClientID()));
         } catch (IOException ioe) {
             throw new MessageException(ioe);
+        } catch (PackerException e) {
+            throw new MessageException(e);
         }
     }
    
@@ -376,13 +372,12 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         try {
             // read the message
-            MessageInputStream in = new MessageInputStream(data);
-            ReceivedMessage recv = in.readMessage();
+            ReceivedMessage recv = MessagePacker.unpack(data);
             
             // all set, just unpack the received message
             message = recv.getMessage();
             clientID = recv.getClientID();
-        } catch (ExtractMessageException eme) {
+        } catch (PackerException eme) {
             logger.log(Level.WARNING, "Error extracting message from server",
                        eme);
 

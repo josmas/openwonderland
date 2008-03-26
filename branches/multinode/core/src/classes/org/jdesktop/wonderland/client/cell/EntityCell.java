@@ -52,6 +52,7 @@ public class EntityCell extends Cell implements ChannelCell {
     public void localMoveRequest(CellTransform transform) {
         // TODO Need listener for move failure, both within this class and
         // potentially for external developers
+        EntityManager.getEntityManager().notifyEntityMoved(this, false);
     }
     
     /**
@@ -61,6 +62,7 @@ public class EntityCell extends Cell implements ChannelCell {
      */
     protected void serverMoveRequest(CellTransform transform) {
         setTransform(transform);
+        EntityManager.getEntityManager().notifyEntityMoved(this, true);
         notifyServerCellMoveListeners(transform);
     }
     

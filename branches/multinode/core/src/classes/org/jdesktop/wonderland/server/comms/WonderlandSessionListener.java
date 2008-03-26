@@ -47,9 +47,9 @@ import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.common.messages.MessageInputStream;
-import org.jdesktop.wonderland.common.messages.MessageInputStream.ReceivedMessage;
-import org.jdesktop.wonderland.common.messages.MessageOutputStream;
+import org.jdesktop.wonderland.common.messages.MessagePacker;
+import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
+import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 
 /**
  * This is the default session listener is used by Wonderland clients.
@@ -138,10 +138,8 @@ public class WonderlandSessionListener
      */
     public void receivedMessage(ByteBuffer data) {
         try {
-            MessageInputStream in = new MessageInputStream(data);
-            
             // extract the message and client id
-            ReceivedMessage recv = in.readMessage();
+            ReceivedMessage recv = MessagePacker.unpack(data);
             Message m = recv.getMessage();
             short clientID = recv.getClientID();
             
@@ -168,7 +166,7 @@ public class WonderlandSessionListener
             // call the handler
             handler.messageReceived(sender, getSession(), m);
             
-        } catch (ExtractMessageException eme) {
+        } catch (PackerException eme) {
             logger.log(Level.WARNING, "Error extracting message from client", 
                        eme);
             
@@ -176,9 +174,6 @@ public class WonderlandSessionListener
             if (eme.getMessageID() != null) {
                 sendError(eme.getMessageID(), eme.getClientID(), eme);
             }
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error extracting message from client",
-                       ioe);
         }
     }
 
@@ -465,13 +460,8 @@ public class WonderlandSessionListener
     private static ByteBuffer serializeMessage(Message message, short clientID)
     {
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            MessageOutputStream out = new MessageOutputStream(baos);
-            out.writeMessage(message, clientID);
-            out.close();
-            
-            return ByteBuffer.wrap(baos.toByteArray());    
-        } catch (IOException ioe) {
+            return MessagePacker.pack(message, clientID);
+        } catch (PackerException ioe) {
             throw new IllegalArgumentException("Error serializing " + message,
                                                ioe);
         }    

@@ -19,16 +19,20 @@
  */
 package org.jdesktop.wonderland.common.comms;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**
  * A specialized ObjectOutputStream that assumes that exactly the same
@@ -47,42 +51,72 @@ public class WonderlandObjectOutputStream extends ObjectOutputStream {
     
     private ReferenceQueue refQueue;
     
-    private HashMap<Integer, WeakReference<ObjectStreamClass>> idToDesc = new HashMap();
-    private HashMap<WeakReference<ObjectStreamClass>, Integer> descToId = new HashMap();
+//    private HashMap<Integer, WeakReference<ObjectStreamClass>> idToDesc = new HashMap();
+    private HashMap<String, Integer> descToId = new HashMap();
     
-    private int nextID = firstID;
+    
+    private static Class[] coreClass = new Class[] {
+        EntityMessage.class,
+        EntityMessage.ActionType.class,
+        CellMessage.class,
+        MessageID.class,
+        Enum.class,
+        Vector3f.class,
+        Quaternion.class,
+        Message.class,
+        CellID.class,
+        
+    };
+    
+    private int nextID = firstID+coreClass.length;
 
     public WonderlandObjectOutputStream(OutputStream out) throws IOException {
         super(out);
         refQueue = new ReferenceQueue();
+        populateDescToId(descToId);
     }
 
     @Override
     protected void writeClassDescriptor(ObjectStreamClass desc) throws IOException {
         // First send any pending remove messages
-        WeakReference ref = (WeakReference) refQueue.poll();
-        while (ref != null) {
-            int id = descToId.remove(ref);
-            idToDesc.remove(id);
-                
-            writeInt(REMOVE_DESCRIPTOR);
-            writeInt(id);
-            
-            System.err.println("****** GC'ed ref "+id);
-            
-            ref = (WeakReference) refQueue.poll();
-        }
+//        WeakReference ref = (WeakReference) refQueue.poll();
+//        while (ref != null) {
+//            int id = descToId.remove(ref);
+////            idToDesc.remove(id);
+//                
+//            writeInt(REMOVE_DESCRIPTOR);
+//            writeInt(id);
+//            
+//            ref = (WeakReference) refQueue.poll();
+//        }
         
         // Now send the users class descriptor
-        Integer idObj = descToId.get(desc);
+        Integer idObj = descToId.get(desc.getName());
         if (idObj == null) {
+//            System.err.println("First classDescriptor for "+desc.getName()+"  "+descToId.size());
             idObj = new Integer(nextID++);
-            WeakReference descRef = new WeakReference(desc, refQueue); 
-            idToDesc.put(idObj, descRef);
-            descToId.put(descRef, idObj);
+//            WeakReference<String> descRef = new WeakReference(desc.getName(), refQueue); 
+//            idToDesc.put(idObj, descRef);
+            descToId.put(desc.getName(), idObj);
             writeInt(NEW_DESCRIPTOR);
-            super.writeClassDescriptor(desc);
+//            super.writeClassDescriptor(desc);
+            writeUTF(desc.forClass().getName());
         }
         writeInt(idObj);
+    }
+    
+    static void populateDescToId(HashMap<String, Integer> map) {
+        int id = firstID;
+        for(Class clazz : coreClass) {
+            map.put(clazz.getName(), id++);
+        }
+    }
+    
+    static void populateIdToDesc(HashMap<Integer, String> map) {
+        int id = firstID;
+        for(Class clazz : coreClass) {
+            map.put(id++, clazz.getName());
+        }
+        
     }
 }

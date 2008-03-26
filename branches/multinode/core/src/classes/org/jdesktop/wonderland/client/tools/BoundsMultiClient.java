@@ -38,8 +38,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
  * @author jkaplan
  */
 public class BoundsMultiClient
-        implements 
-                   SessionStatusListener
+        implements SessionStatusListener
 {
     /** a logger */
     private static final Logger logger = 
@@ -107,7 +106,6 @@ public class BoundsMultiClient
     public static void main(String[] args) {
         WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
         
-        System.out.println("args "+args[0]);
         int buildNumber = Integer.parseInt(args[0]);
         
         int count = 5;
