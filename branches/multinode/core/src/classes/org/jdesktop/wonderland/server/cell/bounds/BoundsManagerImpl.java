@@ -37,11 +37,11 @@ public class BoundsManagerImpl implements BoundsManager {
         this.service = service;
     }
 
-    public CellMirrorImpl getCellMirrorImpl(CellID cellID) {
+    public CellDescriptionImpl getCellMirrorImpl(CellID cellID) {
         return service.getCellMirrorImpl(cellID);
     }
     
-    public void putCellMirrorImpl(CellMirrorImpl cellBounds) {
+    public void putCellMirrorImpl(CellDescriptionImpl cellBounds) {
         service.putCellMirrorImpl(cellBounds);
     }
     

@@ -34,8 +34,8 @@ public interface BoundsManager {
 
     public void cellTransformChanged(CellID cellID, CellTransform transform);
     public void cellBoundsChanged(CellID cellID, BoundingVolume bounds);
-    public CellMirrorImpl getCellMirrorImpl(CellID cellID);
-    public void putCellMirrorImpl(CellMirrorImpl cellBounds);
+    public CellDescriptionImpl getCellMirrorImpl(CellID cellID);
+    public void putCellMirrorImpl(CellDescriptionImpl cellBounds);
     public void removeCellMirrorImpl(CellID cellID);
     public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor);
     public void cellChildrenChanged(CellID parent, CellID child, boolean childAdded);

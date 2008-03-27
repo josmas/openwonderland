@@ -22,10 +22,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.comms.SessionInternalClientType;
 import org.jdesktop.wonderland.common.comms.WonderlandObjectInputStream;
 import org.jdesktop.wonderland.common.comms.WonderlandObjectOutputStream;
@@ -38,6 +42,37 @@ import org.jdesktop.wonderland.common.comms.WonderlandObjectOutputStream;
  * @author paulby
  */
 public class MessagePacker {
+    
+    // TODO - would it be more performant to have a pool of streams and
+    // have each call to the serialization pack/unpack use a pre created
+    // stream from the pool.
+    
+    private static MessageMonitor messageMonitor = null;
+    
+    private static HashMap<Class, Short> packClassIds;
+    
+    private static short NOT_PACKED = Short.MIN_VALUE;
+    
+    private static Logger logger = Logger.getLogger(MessagePacker.class.getName());
+    
+    static {
+        short id = Short.MIN_VALUE+1;
+        packClassIds = new HashMap();
+        packClassIds.put(CellID.class, id++);
+    }
+
+    /**
+     * Return the id used to identify the class obj in the packed messages
+     * 
+     * @param aThis
+     * @return
+     */
+    public static short getPackClassId(Object obj) {
+        Short ret = packClassIds.get(obj.getClass());
+        if (ret==null)
+            return NOT_PACKED;
+        return ret;
+    }
 
     /**
      * Pack the given message into a ByteBuffer ready
@@ -46,26 +81,24 @@ public class MessagePacker {
      * @return
      */
     public static ByteBuffer pack(Message message, short clientID) throws PackerException {
-        return serializationPack(message, clientID);
-    }
-    
-    private static ByteBuffer serializationPack(Message message, short clientID) throws PackerException {
-        WonderlandObjectOutputStream out = null;
+        ObjectOutputStream out = null;
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             out = new WonderlandObjectOutputStream(baos);
-            // first write the message ID
-            out.writeObject(message.getMessageID());
 
-            // now write the client ID
-            out.writeShort(clientID);
+            serializationPack(message, clientID, out);
 
-            // finally, write the serialized message
-            out.writeObject(message);
             out.close();
-
-            byte[] buf = baos.toByteArray();
-            return ByteBuffer.wrap(buf);
+            ByteBuffer buf = ByteBuffer.wrap(baos.toByteArray());
+            if (messageMonitor != null) {
+                messageMonitor.sending(message, buf.capacity());
+            }
+            
+            // TODO Remove - this is should be in messageMonitor
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Packed " + message.getClass().getName() + "   size " + buf.capacity());
+            }
+            return buf;
         } catch (IOException ex) {
             Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -78,6 +111,23 @@ public class MessagePacker {
         throw new PackerException();
     }
     
+    private static void serializationPack(Message message, short clientID, ObjectOutputStream out) throws PackerException {
+        try {
+            // first write the message ID
+            out.writeObject(message.getMessageID());
+
+            // now write the client ID
+            out.writeShort(clientID);
+
+            // finally, write the serialized message
+            out.writeObject(message);
+
+        } catch (IOException ex) {
+            Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
+            throw new PackerException();
+        } 
+    }
+    
     /**
      * Give a ByteBuffer unpack it's data and return
      * the message it represents
@@ -85,14 +135,31 @@ public class MessagePacker {
      * @return
      */
     public static ReceivedMessage unpack(ByteBuffer buf) throws PackerException {
-        return serializationUnpack(buf);
-    }
-        
-    private static ReceivedMessage serializationUnpack(ByteBuffer buf) {            
-        
-        WonderlandObjectInputStream in = null;
+        ObjectInputStream in = null;
         try {
             in = new WonderlandObjectInputStream(getInputStream(buf));
+            ReceivedMessage msg = serializationUnpack(buf, in);
+
+            in.close();
+            if (messageMonitor != null) {
+                messageMonitor.received(msg.getMessage(), buf.capacity());
+            }
+            return msg;
+        } catch (IOException ex) {
+            Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ex) {
+                Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        throw new PackerException();
+    }
+        
+    private static ReceivedMessage serializationUnpack(ByteBuffer buf, ObjectInputStream in) {            
+        
+        try {
             
             // first read the message ID
             MessageID messageID = (MessageID) in.readObject();
@@ -110,12 +177,6 @@ public class MessagePacker {
             Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException ex) {
-                Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
         return null;
     }
@@ -142,6 +203,14 @@ public class MessagePacker {
          }
          
          return bais;
+    }
+    
+    /**
+     * Set the message monitor.
+     * @param monitor
+     */
+    public static void setMessageMonitor(MessageMonitor monitor) {
+        messageMonitor = monitor;
     }
     
     /**
@@ -178,10 +247,13 @@ public class MessagePacker {
         }
     }
     
+    /**
+     * Thrown when there is a problem packing or unpacking a Message
+     */
     public static class PackerException extends Exception {
         
         /**
-         * Returnt the message id for the message that failed, if known. Otherwise
+         * Return the message id for the message that failed, if known. Otherwise
          * return null
          * @return messageID, or null
          */

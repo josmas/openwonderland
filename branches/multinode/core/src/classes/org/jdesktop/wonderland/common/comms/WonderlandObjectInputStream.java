@@ -26,21 +26,23 @@ import java.io.ObjectStreamClass;
 import java.util.HashMap;
 
 /**
- * A specialized ObjectInputStream that assumes that exactly the same
- * classes are available on either end of the stream. With this assumption this
- * stream can significantly reduce the size of serialized objects by only
- * sending the large header once for a given class. For subsequent transmission
- * of an object of a given class an id is sent.
+ * A specialized ObjectInputStream that reduces the size of serialized core
+ * wonderland objects. For known classes this stream reads an (int) id instead
+ * of the large serialization class header. For unknown classes it reads
+ * the class name in the stream, which again is usually much smaller than 
+ * the serialization header. 
  * 
  * @author paulby
  */public class WonderlandObjectInputStream extends ObjectInputStream {
 
-    private HashMap<Integer, String> idToDesc = new HashMap();
-//    private HashMap<ObjectStreamClass, Integer> descToId = new HashMap();
+    private static HashMap<Integer, String> idToDesc = new HashMap();
 
+    static {
+        WonderlandObjectOutputStream.populateIdToDesc(idToDesc);        
+    }
+    
     public WonderlandObjectInputStream(InputStream in) throws IOException {
         super(in);
-        WonderlandObjectOutputStream.populateIdToDesc(idToDesc);
     }
 
     @Override
@@ -48,24 +50,10 @@ import java.util.HashMap;
         ObjectStreamClass ret;
         int id = readInt();
 
-        // Process any pending removes
-        while (id == WonderlandObjectOutputStream.REMOVE_DESCRIPTOR) {
-            System.err.println("Processing REMOVE");
-            id = readInt();
-            ret = ObjectStreamClass.lookup(Class.forName(idToDesc.remove(id)));
-//            descToId.remove(ret);
-            id = readInt();
-            idToDesc.remove(id);
-        }
-        
-        if (id == WonderlandObjectOutputStream.NEW_DESCRIPTOR) {
+        if (id == WonderlandObjectOutputStream.UNKNOWN_DESCRIPTOR) {
             String className = readUTF();
 //            System.err.println("WonderlandInputStream reading NEW_DESC "+className);
             ret = ObjectStreamClass.lookup(Class.forName(className));
-//            ret = super.readClassDescriptor();
-            id = readInt();
-            idToDesc.put(id, className);
-//            descToId.put(ret, id);
         } else {
             ret = ObjectStreamClass.lookup(Class.forName(idToDesc.get(id)));
         }
