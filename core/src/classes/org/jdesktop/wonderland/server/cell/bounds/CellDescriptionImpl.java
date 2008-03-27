@@ -1,6 +1,8 @@
 /**
  * Project Wonderland
  *
+ * $Id$
+ * 
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
@@ -13,7 +15,6 @@
  *
  * $Revision$
  * $Date$
- * $State$
  */
 package org.jdesktop.wonderland.server.cell.bounds;
 
@@ -26,11 +27,10 @@ import java.util.Iterator;
 import org.jdesktop.wonderland.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 
 /**
- * A partial mirror of a CellMO. Used for performing time processing that
+ * A partial mirror of a CellMO. Used for performing processing that
  * requires tree walking while avoiding the need to access all the objects
  * from the sgs db. This mirror is constructed from data in the CellMO, so the
  * mirror does not need to be persisted.
@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
  * @author paulby
  */
 @InternalAPI
-public class CellMirrorImpl implements CellMirror {
+public class CellDescriptionImpl implements CellMirror {
 
     private BoundingVolume computedWorldBounds;
     private BoundingVolume localBounds;
@@ -51,11 +51,11 @@ public class CellMirrorImpl implements CellMirror {
     private Class cellClass;
     private boolean isEntity;
     
-    private CellMirrorImpl parent;
-    private ArrayList<CellMirrorImpl> children = null;
-    private static Logger logger = Logger.getLogger(CellMirrorImpl.class.getName());
+    private CellDescriptionImpl parent;
+    private ArrayList<CellDescriptionImpl> children = null;
+    private static Logger logger = Logger.getLogger(CellDescriptionImpl.class.getName());
     
-    CellMirrorImpl(CellMO cell) {
+    CellDescriptionImpl(CellMO cell) {
         cellID = cell.getCellID();
         localBounds = cell.getLocalBounds();
         transform = cell.getTransform();
@@ -69,7 +69,7 @@ public class CellMirrorImpl implements CellMirror {
      * Create new CellMirror from the provided mirror
      * @param mirror
      */
-    CellMirrorImpl(CellMirror mirror) {
+    CellDescriptionImpl(CellMirror mirror) {
         this.cellID = mirror.getCellID();
         this.transformVersion = mirror.getTransformVersion();
         this.contentsVersion = mirror.getContentsVersion();
@@ -77,6 +77,7 @@ public class CellMirrorImpl implements CellMirror {
         this.localBounds = mirror.getLocalBounds();
         this.transform = mirror.getTransform();
         this.isEntity = mirror.isEntity();
+        this.cellClass = mirror.getCellClass();
     }
     
     /**
@@ -161,9 +162,9 @@ public class CellMirrorImpl implements CellMirror {
      * @param child
      * @throws IllegalStateException
      */
-    public void addChild(CellMirrorImpl child) {
+    public void addChild(CellDescriptionImpl child) {
         if (children==null)
-            children = new ArrayList<CellMirrorImpl>();
+            children = new ArrayList<CellDescriptionImpl>();
         
         children.add(child);
         child.setParent(this);
@@ -173,7 +174,7 @@ public class CellMirrorImpl implements CellMirror {
      * Remove the specified
      * @param child
      */
-    public void removeChild(CellMirrorImpl child) {
+    public void removeChild(CellDescriptionImpl child) {
         if (children == null) {
             return;
         }
@@ -187,9 +188,9 @@ public class CellMirrorImpl implements CellMirror {
      * 
      * @return
      */
-    public Iterator<CellMirrorImpl> getAllChildren() {
+    public Iterator<CellDescriptionImpl> getAllChildren() {
         if (children==null)
-            return new ArrayList<CellMirrorImpl>().iterator();
+            return new ArrayList<CellDescriptionImpl>().iterator();
         return children.iterator();
     }
 
@@ -204,7 +205,7 @@ public class CellMirrorImpl implements CellMirror {
      * @param parent
      * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
      */
-    void setParent(CellMirrorImpl newParent) {
+    void setParent(CellDescriptionImpl newParent) {
         if (newParent != null && parent != null)
             throw new IllegalStateException("Cell " + cellID + " already has " +
                                             " parent " + parent.cellID);
@@ -213,10 +214,10 @@ public class CellMirrorImpl implements CellMirror {
     }
     
     /**
-     * Return the parent CellMirrorImpl
+     * Return the parent CellDescriptionImpl
      * @return
      */
-    public CellMirrorImpl getParent() {
+    public CellDescriptionImpl getParent() {
         return parent;
     }
 
@@ -264,14 +265,14 @@ public class CellMirrorImpl implements CellMirror {
                 logger.finest("Intersect " + cellID + " " + tmpComputedWorldBounds);
             }
             
-            list.add(new CellMirrorImpl(this));
+            list.add(new CellDescriptionImpl(this));
             if (children!=null) {
                 /*
                  * Recursively call getVisibleCells() to find the visible
                  * cells amongst the children. 
                  */
                 
-                for(CellMirrorImpl c : children) {
+                for(CellDescriptionImpl c : children) {
                     t = System.nanoTime();
                     monitor.incBoundsGetTime(c.getClass(), System.nanoTime()-t);
                     c.getVisibleCells(list, bounds, monitor);
@@ -313,5 +314,13 @@ public class CellMirrorImpl implements CellMirror {
     public boolean isEntity() {
         return isEntity;
     }
+
+    /**
+     * @{inheritDoc}
+     */
+    public Class getCellClass() {
+        return cellClass;
+    }
+    
     
 }

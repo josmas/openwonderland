@@ -102,12 +102,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
-        CellMO rootCell = CellManager.getCell(rootCellID);
+        CellMO rootCell = CellDescription.getCell(rootCellID);
         
-        msg = CellManager.newCreateCellMessage(rootCell);
+        msg = CellDescription.newCreateCellMessage(rootCell);
         sender.send(session, msg);
         
-        msg = CellManager.newRootCellMessage(rootCell);
+        msg = CellDescription.newRootCellMessage(rootCell);
         sender.send(session, msg);
         
         currentCells.put(rootCellID, new CellRef(rootCell));
@@ -193,7 +193,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 CellRef cellRef = currentCells.get(cellID);           
                 if (cellRef == null) {
                     // the cell is new -- add it and send a message
-                    CellMO cell = CellManager.getCell(cellID);
+                    CellMO cell = CellDescription.getCell(cellID);
                     cellRef = new CellRef(cell, cellMirror);
                     currentCells.put(cellID, cellRef);
                     markForUpdate();
@@ -203,7 +203,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                                      "   cellcache for user " + username);
                     }
                     
-                    msg = CellManager.newCreateCellMessage(cell);
+                    msg = CellDescription.newCreateCellMessage(cell);
                     sender.send(session, msg);
                     monitor.incMessageCount();
                     
@@ -217,12 +217,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                         switch (update) {
                             case TRANSFORM:
                                 if (!cellMirror.isEntity()) {
-                                    msg = CellManager.newCellMoveMessage(cellMirror);
+                                    msg = CellDescription.newCellMoveMessage(cellMirror);
                                     sender.send(session, msg);
                                 }
                                 break;
                             case CONTENT:
-                                msg = CellManager.newContentUpdateCellMessage(cellRef.get());
+                                msg = CellDescription.newContentUpdateCellMessage(cellRef.get());
                                 sender.send(session, msg);
                                 monitor.incMessageCount();
                                 break;
@@ -256,11 +256,11 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     CellMO cell = ref.get();
 
                     // get suceeded, so cell is just inactive
-                    msg = CellManager.newUnloadCellMessage(cell);
+                    msg = CellDescription.newUnloadCellMessage(cell);
                     cell.removeUserFromCellChannel(session);
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
-                    msg = CellManager.newDeleteCellMessage(ref.getCellID());
+                    msg = CellDescription.newDeleteCellMessage(ref.getCellID());
                 }
                 
                 sender.send(session, msg);

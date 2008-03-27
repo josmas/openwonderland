@@ -1,6 +1,8 @@
 /**
  * Project Wonderland
  *
+ * $Id$
+ *
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
@@ -13,21 +15,20 @@
  *
  * $Revision$
  * $Date$
- * $State$
  */
-package org.jdesktop.wonderland.server;
 
-import com.sun.sgs.app.ManagedObject;
-import java.io.Serializable;
+package org.jdesktop.wonderland.common.messages;
 
 /**
- * The root class for all world objects. Provides and optional channel.
- * 
- * In most cases world object will be subclasses of CellMO which adds 
- * spatial context
+ *
+ * Interface for a subsystem that monitors the messages sent and received
+ * from a session.
  * 
  * @author paulby
  */
-public class WonderlandMO implements ManagedObject, Serializable {
+public interface MessageMonitor {
 
+    public void sending(Message msg, int size);
+    
+    public void received(Message msg, int size);
 }

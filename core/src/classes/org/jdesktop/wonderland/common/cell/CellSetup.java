@@ -18,11 +18,13 @@
 package org.jdesktop.wonderland.common.cell;
 
 import java.io.Serializable;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Interface for all cell setup data
  *
  * @author paulby
  */
+@ExperimentalAPI
 public interface CellSetup extends Serializable {
 }

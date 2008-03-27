@@ -18,14 +18,17 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- * A mirror of a cell from the Bounds service
+ * A light weight mirror of a cell. Used to provide in memory access to
+ * some portion of cell data without requiring a Darkstar database access.
  * 
  * @author paulby
  */
+@InternalAPI
 public interface CellMirror {
     
     /**
@@ -69,4 +72,10 @@ public interface CellMirror {
      * @return
      */
     public boolean isEntity();
+    
+    /**
+     * Return the class of the cell represented by this mirror
+     * @return
+     */
+    public Class getCellClass();
 }

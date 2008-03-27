@@ -41,7 +41,7 @@ import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.CellMirror;
 
 /**
- * Current implementation synchronizes updates to the CellMirrorImpl graph, in the
+ * Current implementation synchronizes updates to the CellDescriptionImpl graph, in the
  * future this will be updated so only updates to a common subgraph are synchronized.
  * Plan is to introduce high level graph nodes which are the sychronization points.
  * @author paulby
@@ -63,7 +63,7 @@ public class BoundsServiceImpl implements BoundsService {
     private ReadWriteLock boundsLock;
     
     // the actual bounds data
-    private Map<CellID, CellMirrorImpl> bounds;
+    private Map<CellID, CellDescriptionImpl> bounds;
     
     // manages the context of the current transaction
     private TransactionContextFactory<BoundsTransactionContext> ctxFactory;
@@ -82,7 +82,7 @@ public class BoundsServiceImpl implements BoundsService {
         this.systemRegistry = systemRegistry;
         this.proxy = proxy;
         
-        bounds = new HashMap<CellID, CellMirrorImpl>();
+        bounds = new HashMap<CellID, CellDescriptionImpl>();
         boundsLock = new ReentrantReadWriteLock();
         
         ctxFactory = new TransactionContextFactory<BoundsTransactionContext>(proxy, NAME) {
@@ -104,7 +104,7 @@ public class BoundsServiceImpl implements BoundsService {
         this.properties = properties;
         this.systemRegistry = systemRegistry;
         
-        bounds = new HashMap<CellID, CellMirrorImpl>();
+        bounds = new HashMap<CellID, CellDescriptionImpl>();
         boundsLock = new ReentrantReadWriteLock();
     }
     
@@ -140,7 +140,7 @@ public class BoundsServiceImpl implements BoundsService {
         return true;
     }
     
-    public CellMirrorImpl getCellMirrorImpl(CellID cellID) {
+    public CellDescriptionImpl getCellMirrorImpl(CellID cellID) {
         boundsLock.readLock().lock();
         
         try {
@@ -173,7 +173,7 @@ public class BoundsServiceImpl implements BoundsService {
         }
     }
     
-    public void putCellMirrorImpl(final CellMirrorImpl cellBounds) {
+    public void putCellMirrorImpl(final CellDescriptionImpl cellBounds) {
         scheduleChange(new Change(cellBounds.getCellID()) {
             public void run() {
                 logger.finest("Add cell " + getCellID());
@@ -191,7 +191,7 @@ public class BoundsServiceImpl implements BoundsService {
     {
         scheduleChange(new Change(cellID) {
             public void run() {                
-                CellMirrorImpl cellBounds = bounds.get(getCellID());
+                CellDescriptionImpl cellBounds = bounds.get(getCellID());
                 if (cellBounds != null) {
                     logger.finest("Transform changed " + getCellID());
                 
@@ -209,7 +209,7 @@ public class BoundsServiceImpl implements BoundsService {
     {
         scheduleChange(new Change(cellID) {
             public void run() {
-                CellMirrorImpl cellBounds = bounds.get(getCellID());
+                CellDescriptionImpl cellBounds = bounds.get(getCellID());
                 if (cellBounds != null) {
                     logger.finest("Bounds changed " + getCellID());
                                         
@@ -238,8 +238,8 @@ public class BoundsServiceImpl implements BoundsService {
         
         scheduleChange(new Change(parentID) {
             public void run() {
-                CellMirrorImpl parent = bounds.get(getCellID());
-                CellMirrorImpl child = bounds.get(childID);
+                CellDescriptionImpl parent = bounds.get(getCellID());
+                CellDescriptionImpl child = bounds.get(childID);
                 if (parent == null) {
                     logger.warning("Unknown parent " + getCellID());
                     return;
@@ -264,7 +264,7 @@ public class BoundsServiceImpl implements BoundsService {
     public void cellContentsChanged(CellID cellID) {
         scheduleChange(new Change(cellID) {
             public void run() {
-                CellMirrorImpl cellBounds = bounds.get(getCellID());
+                CellDescriptionImpl cellBounds = bounds.get(getCellID());
                 if (cellBounds != null) {
                     logger.finest("Contents changed " + getCellID());
                     cellBounds.contentsChanged();
@@ -280,10 +280,10 @@ public class BoundsServiceImpl implements BoundsService {
         ctxFactory.joinTransaction().addChange(change);
     }
     
-    private void cellLocalBoundsChanged(CellMirrorImpl cell) {
+    private void cellLocalBoundsChanged(CellDescriptionImpl cell) {
         // Compute and setTranslation computedWorldBounds
         BoundingVolume b = cell.getCachedVWBounds();
-        Iterator<CellMirrorImpl> it = cell.getAllChildren();
+        Iterator<CellDescriptionImpl> it = cell.getAllChildren();
         while (it.hasNext()) {
             b.mergeLocal(it.next().getComputedWorldBounds());
         }
@@ -293,7 +293,7 @@ public class BoundsServiceImpl implements BoundsService {
         checkParentBounds(cell.getParent(), cell);    
     }
 
-    private void cellTransformChanged(CellMirrorImpl cell) {
+    private void cellTransformChanged(CellDescriptionImpl cell) {
         if (cell.getParent() == null) {
             // Special case for root cell
             BoundingVolume b = cell.getLocalBounds();
@@ -320,7 +320,7 @@ public class BoundsServiceImpl implements BoundsService {
      * @param child
      * @return the combined bounds of the child and all it's children
      */
-    private BoundingVolume transformTreeUpdate(CellMirrorImpl parent, CellMirrorImpl child) {
+    private BoundingVolume transformTreeUpdate(CellDescriptionImpl parent, CellDescriptionImpl child) {
         CellTransform parentL2VW = parent.getLocalToVWorld();
         
         CellTransform childTransform = child.getTransform();
@@ -334,7 +334,7 @@ public class BoundsServiceImpl implements BoundsService {
         
         BoundingVolume ret = child.getCachedVWBounds();
         
-        Iterator<CellMirrorImpl> it = child.getAllChildren();
+        Iterator<CellDescriptionImpl> it = child.getAllChildren();
         while(it.hasNext()) {
             ret.mergeLocal(transformTreeUpdate(child, it.next()));
         }
@@ -357,7 +357,7 @@ public class BoundsServiceImpl implements BoundsService {
      * @param parent
      * @param child
      */
-    private void checkForReparent(CellMirrorImpl parent, CellMirrorImpl child) {
+    private void checkForReparent(CellDescriptionImpl parent, CellDescriptionImpl child) {
         Vector3f center = child.getCachedVWBounds().getCenter();
         if (!parent.getCachedVWBounds().contains(center)) {
             System.out.println("WARNING child outside parents preferred bounds");
@@ -371,7 +371,7 @@ public class BoundsServiceImpl implements BoundsService {
      * @param parent
      * @param childComputedWorldBounds
      */
-    private void checkParentBounds(CellMirrorImpl parent, CellMirrorImpl child) {
+    private void checkParentBounds(CellDescriptionImpl parent, CellDescriptionImpl child) {
         BoundingVolume childComputedWorldBounds = child.getComputedWorldBounds();
         BoundingVolume parentBounds = parent.getComputedWorldBounds();
 

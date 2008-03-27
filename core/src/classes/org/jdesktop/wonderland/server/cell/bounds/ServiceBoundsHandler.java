@@ -39,7 +39,7 @@ public class ServiceBoundsHandler extends BoundsHandler {
     public ServiceBoundsHandler() {
     }
     
-    private CellMirrorImpl get(CellID cellID) {
+    private CellDescriptionImpl get(CellID cellID) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
         return mgr.getCellMirrorImpl(cellID);
     }
@@ -82,7 +82,7 @@ public class ServiceBoundsHandler extends BoundsHandler {
     @Override
     public void createBounds(CellMO cell) {
         BoundsManager mgr = AppContext.getManager(BoundsManager.class);
-        mgr.putCellMirrorImpl(new CellMirrorImpl(cell));
+        mgr.putCellMirrorImpl(new CellDescriptionImpl(cell));
     }
 
     @Override

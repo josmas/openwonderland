@@ -17,29 +17,31 @@
  */
 package org.jdesktop.wonderland.common.cell;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
+import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.InternalAPI;
 
 /**
- * Basic CellID
- * 
- * 
+ * CellID provides a unique id for cells from a specific wonderland world 
+ * instance.
+ *  
  * @author paulby
  */
+@ExperimentalAPI
 public class CellID implements Serializable {
     
-    long id;
-    private String str;
+    private long id;
+    private transient String str=null;
     
+    public static final CellID ROOT_CELL = new CellID(Long.MIN_VALUE+1);
+        
     /**
-     * Creates a new instance of CellID
+     * Creates a new instance of CellID. Users should never call this, CellIDs
+     * are only created by 
      */
+    @InternalAPI
     public CellID(long id) {
         this.id = id;
-        str = Long.toString(id);
     }
     
     @Override
@@ -57,39 +59,10 @@ public class CellID implements Serializable {
     
     @Override
     public String toString() {
-        return str;
-    }
-    
-    /**
-     *  Pack cellID into buffer for network
-     */
-    public void put(ByteBuffer buffer) {
-        buffer.putLong(id);
-    }
-    
-    public static CellID value(ByteBuffer buffer) {
-        long id = buffer.getLong();
-        return new CellID(id);
-    }
+        if (str==null)
+            str = Long.toString(id);
 
-    public void put(ObjectOutputStream buffer) throws IOException {
-        buffer.writeLong(id);
-    }
-    
-    public static CellID value(ObjectInputStream buffer) throws IOException {
-        long id = buffer.readLong();
-        return new CellID(id);
-    }
-    
-    public static CellID value(String string) {
-        return new CellID(Long.parseLong(string));
-    }
-    
-    /**
-     *  Size of packed object in bytes
-     */
-    public int getSize() {
-        return Long.SIZE/8;
+        return str;
     }
 
 }
