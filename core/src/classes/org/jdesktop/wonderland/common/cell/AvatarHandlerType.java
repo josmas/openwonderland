@@ -19,18 +19,18 @@
  */
 package org.jdesktop.wonderland.common.cell;
 
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 
 /**
- * The ClientType of the AvatarClient
+ * The HandlerType of the AvatarClient
  * @author paulby
  */
-public class AvatarClientType extends ClientType {
+public class AvatarHandlerType extends HandlerType {
     /** the client type for the cell client */
-    public static final ClientType CLIENT_TYPE =
-            new AvatarClientType("__AvatarClient");
+    public static final HandlerType CLIENT_TYPE =
+            new AvatarHandlerType("__AvatarClient");
     
-    private AvatarClientType(String type) {
+    private AvatarHandlerType(String type) {
         super (type);
     }
 }

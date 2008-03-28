@@ -25,7 +25,7 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
  *
  * @author paulby
  */
-public class CellCacheBasicImpl implements CellCache, CellCacheClient.CellCacheMessageListener {
+public class CellCacheBasicImpl implements CellCache, CellCacheHandler.CellCacheMessageListener {
 
     private Map<CellID, Cell> cells = Collections.synchronizedMap(new HashMap());
     private Set<Cell> rootCells = Collections.synchronizedSet(new HashSet());

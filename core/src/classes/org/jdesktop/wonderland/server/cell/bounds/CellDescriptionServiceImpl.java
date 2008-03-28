@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
-import org.jdesktop.wonderland.server.cell.CellMirror;
+import org.jdesktop.wonderland.server.cell.CellDescription;
 
 /**
  * Current implementation synchronizes updates to the CellDescriptionImpl graph, in the
@@ -46,13 +46,13 @@ import org.jdesktop.wonderland.server.cell.CellMirror;
  * Plan is to introduce high level graph nodes which are the sychronization points.
  * @author paulby
  */
-public class BoundsServiceImpl implements BoundsService {
+public class CellDescriptionServiceImpl implements CellDescriptionService {
     // logger
     private static final Logger logger =
-            Logger.getLogger(BoundsServiceImpl.class.getName());
+            Logger.getLogger(CellDescriptionServiceImpl.class.getName());
     
     // our name
-    private static final String NAME = BoundsServiceImpl.class.getName();
+    private static final String NAME = CellDescriptionServiceImpl.class.getName();
     
     // Darkstar structures
     private Properties properties;
@@ -74,7 +74,7 @@ public class BoundsServiceImpl implements BoundsService {
      * @param systemRegistry
      * @param proxy
      */
-    public BoundsServiceImpl(Properties properties, 
+    public CellDescriptionServiceImpl(Properties properties, 
                              ComponentRegistry systemRegistry,
                              TransactionProxy proxy)
     {
@@ -98,7 +98,7 @@ public class BoundsServiceImpl implements BoundsService {
      * @param properties
      * @param systemRegistry
      */
-    public BoundsServiceImpl(Properties properties, 
+    public CellDescriptionServiceImpl(Properties properties, 
                              ComponentRegistry systemRegistry)
     {
         this.properties = properties;
@@ -128,7 +128,7 @@ public class BoundsServiceImpl implements BoundsService {
     }
     
     public String getName() {
-        return BoundsServiceImpl.class.getName();
+        return CellDescriptionServiceImpl.class.getName();
     }
     
     public void ready() throws Exception {
@@ -159,13 +159,13 @@ public class BoundsServiceImpl implements BoundsService {
      * @param perfMonitor performance measurement service
      * @return
      */
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, 
+    public Collection<CellDescription> getVisibleCells(CellID rootCell, 
                                                   BoundingVolume bounds, 
                                                   RevalidatePerformanceMonitor perfMonitor) 
     {
         boundsLock.readLock().lock();
         try {
-            ArrayList<CellMirror> result = new ArrayList();
+            ArrayList<CellDescription> result = new ArrayList();
             getCellMirrorImpl(rootCell).getVisibleCells(result, bounds, perfMonitor);
             return result;
         } finally {

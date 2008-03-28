@@ -22,7 +22,7 @@ package org.jdesktop.wonderland.server.comms;
 import com.sun.sgs.app.ClientSession;
 import java.util.Set;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 
 /**
  * Manage communications protocols.
@@ -107,11 +107,11 @@ public interface CommsManager {
     public void unregisterClientHandler(ClientHandler handler);
     
      /**
-     * Get a ClientHandler by the ClientType it handles
+     * Get a ClientHandler by the HandlerType it handles
      * @param clientType the type of the handler to search for
      * @return the handler registered for the given type
      */
-    public ClientHandler getClientHandler(ClientType clientType);
+    public ClientHandler getClientHandler(HandlerType clientType);
     
     /**
      * Get all registered client handler
@@ -121,7 +121,7 @@ public interface CommsManager {
     
     /**
      * Get a sender that can be used to send messages to all clients
-     * of a given ClientType.  This sender can also be used to query
+     * of a given HandlerType.  This sender can also be used to query
      * all the session connected via the given session type.
      * 
      * @param clientType the type of client
@@ -129,5 +129,5 @@ public interface CommsManager {
      * @throws IllegalStateException if no handler is registered for the given
      * type
      */
-    public WonderlandClientSender getSender(ClientType clientType);
+    public WonderlandClientSender getSender(HandlerType clientType);
 }

@@ -180,4 +180,13 @@ public class UserMO implements ManagedObject, Serializable {
     public ManagedReference getReference() {
         return AppContext.getDataManager().createReference(this);
     }
+    
+    /**
+     * Get the user secutiry context associated with this user, or null
+     * if there is no security context
+     * @return
+     */
+    public UserSecurityContextMO getUserSecurityContext() {
+        return null;
+    }
 }

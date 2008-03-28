@@ -336,14 +336,17 @@ public class AssetManager {
      * Make the directory in which this file will go.
      *
      * Removes the trailing filename from File and creates the directory
+     * 
      */
-    private void makeDirectory(File file) {
+    private synchronized void makeDirectory(File file) throws IOException {
+        // Method synchronized to avoid problems where lots of calls can cause
+        // a failure of the canWrite() check
         String f = file.getAbsolutePath();
         File dir = new File(f.substring(0, f.lastIndexOf(File.separator)));
         dir.mkdirs();
         if (!dir.canWrite()) {
             logger.severe("Unable to create cache dir "+dir.getAbsolutePath());
-            System.exit(1);
+            throw new IOException("Failed to Create cache dir "+dir.getAbsolutePath());
         }
     }
     

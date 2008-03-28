@@ -18,8 +18,9 @@
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.server.utils.wfs;
 
+import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
@@ -176,7 +177,8 @@ public class WFSCellMO extends CellMO
         
         /* Revalidate the entire world */
         if (init == false) {
-            WonderlandContext.getCellManager().revalidate();
+            throw new RuntimeException("NOT IMPLEMENTED");
+//            WonderlandContext.getCellManager().revalidate();
         }
     }
     

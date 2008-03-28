@@ -1,7 +1,7 @@
 /**
  * Project Looking Glass
  *
- * $RCSfile: CellLocation.java,v $
+ * $Id$
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -13,9 +13,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2 $
- * $Date: 2007/10/17 17:11:13 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
  */
 
 package org.jdesktop.wonderland.server.setup;
@@ -35,14 +34,6 @@ public interface CellLocation {
     public float getBoundsRadius();
     public void setBoundsRadius(float boundsRadius);
     
-//    public float[] getOrigin();
-//    public void setOrigin(float[] origin);
-//    
-//    public float[] getRotation();
-//    public void setRotation(float[] rotation);
-//    
-//    public float getScale();
-//    public void setScale(float scale);
     public CellTransform getCellTransform();
     public void setCellTransform(CellTransform transform);
 }

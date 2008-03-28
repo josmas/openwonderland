@@ -23,17 +23,17 @@ import org.jdesktop.wonderland.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
-import org.jdesktop.wonderland.server.cell.CellMirror;
+import org.jdesktop.wonderland.server.cell.CellDescription;
 
 /**
  *
  * @author paulby
  */
 @InternalAPI
-public class BoundsManagerImpl implements BoundsManager {
-    private BoundsService service;
+public class CellDescriptionManagerImpl implements CellDescriptionManager {
+    private CellDescriptionService service;
     
-    public BoundsManagerImpl(BoundsService service) {
+    public CellDescriptionManagerImpl(CellDescriptionService service) {
         this.service = service;
     }
 
@@ -57,7 +57,7 @@ public class BoundsManagerImpl implements BoundsManager {
         service.cellBoundsChanged(cellID, bounds);
     }
 
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
+    public Collection<CellDescription> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
         return service.getVisibleCells(rootCell, bounds, perfMonitor);
     }
 

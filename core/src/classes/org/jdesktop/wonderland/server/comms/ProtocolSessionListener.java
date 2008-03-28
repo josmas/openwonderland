@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.comms.SessionInternalClientType;
+import org.jdesktop.wonderland.common.comms.SessionInternalHandlerType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -248,7 +248,7 @@ public class ProtocolSessionListener
      */
     protected void sendToSession(Message message) {
         try {            
-            ByteBuffer buf = MessagePacker.pack(message, SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
+            ByteBuffer buf = MessagePacker.pack(message, SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_ID);
         
             getSession().send(buf);
         } catch (PackerException ioe) {

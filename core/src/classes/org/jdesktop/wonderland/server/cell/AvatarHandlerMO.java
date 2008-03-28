@@ -23,12 +23,12 @@ import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.AvatarClientType;
+import org.jdesktop.wonderland.common.cell.AvatarHandlerType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.AvatarCreateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.UserMO;
@@ -40,14 +40,14 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * Handler for the avatar
  * @author paulby
  */
-class AvatarClientHandler implements ClientHandler, Serializable {
+class AvatarHandlerMO implements ClientHandler, Serializable {
     
-    private static final Logger logger = Logger.getLogger(AvatarClientHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(AvatarHandlerMO.class.getName());
     
-    protected static final ClientType CLIENT_TYPE =
-            AvatarClientType.CLIENT_TYPE;
+    protected static final HandlerType CLIENT_TYPE =
+            AvatarHandlerType.CLIENT_TYPE;
     
-    public ClientType getClientType() {
+    public HandlerType getClientType() {
         return CLIENT_TYPE;
     }
 
@@ -91,9 +91,9 @@ class AvatarClientHandler implements ClientHandler, Serializable {
     {
         switch(message.getActionType()) {
             case MOVE_REQUEST :
-                AvatarMO avatar = (AvatarMO) CellDescription.getCell(message.getCellID());
+                AvatarMO avatar = (AvatarMO) CellManager.getCell(message.getCellID());
                 AppContext.getDataManager().markForUpdate(avatar);
-                avatar.setTransform(new CellTransform(message.getOrientation(), message.getLocation()));
+                avatar.setTransform(new CellTransform(message.getRotation(), message.getLocation()));
                 break;
             case MOVED :
                 logger.warning("AvatarClientHandler.messageReceived MOVED - not implemnted");
@@ -120,7 +120,7 @@ class AvatarClientHandler implements ClientHandler, Serializable {
                 WonderlandContext.getCellManager().addCell(avatar);
 
         } catch (MultipleParentException ex) {
-            Logger.getLogger(AvatarClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AvatarHandlerMO.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return new AvatarCreateResponseMessage(msg.getMessageID(), avatar.getCellID());

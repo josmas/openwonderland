@@ -22,9 +22,9 @@ package org.jdesktop.wonderland.server.cell;
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellCacheClientType;
+import org.jdesktop.wonderland.common.cell.CellCacheHandlerType;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.UserMO;
@@ -41,10 +41,10 @@ class CellCacheClientHandler implements ClientHandler, Serializable {
     private  String avatarID=null;
     private static final Logger logger = Logger.getLogger(CellCacheClientHandler.class.getName());
     
-    protected static final ClientType CLIENT_TYPE =
-            CellCacheClientType.CLIENT_TYPE;
+    protected static final HandlerType CLIENT_TYPE =
+            CellCacheHandlerType.CLIENT_TYPE;
     
-    public ClientType getClientType() {
+    public HandlerType getClientType() {
         return CLIENT_TYPE;
     }
 

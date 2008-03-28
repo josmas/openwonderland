@@ -20,27 +20,34 @@ package org.jdesktop.wonderland.server.cell.bounds;
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import java.util.Collection;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.InternalAPI;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- *
+ * An implementation of BoundsManager based on a darkstar service.
+ * 
  * @author paulby
  */
-public class ServiceBoundsHandler extends BoundsHandler {
+@InternalAPI
+public class ServiceCellDescriptionManager extends BoundsManager {
 
     /**
-     * Create Handler for specified cell
+     * Create the Manager.
      * @param cell
      */
-    public ServiceBoundsHandler() {
+    public ServiceCellDescriptionManager() {
     }
     
+    /**
+     * Return the description of the specified cell
+     * @param cellID
+     * @return
+     */
     private CellDescriptionImpl get(CellID cellID) {
-        BoundsManager mgr = AppContext.getManager(BoundsManager.class);
+        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
         return mgr.getCellMirrorImpl(cellID);
     }
     
@@ -81,47 +88,47 @@ public class ServiceBoundsHandler extends BoundsHandler {
     
     @Override
     public void createBounds(CellMO cell) {
-        BoundsManager mgr = AppContext.getManager(BoundsManager.class);
+        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
         mgr.putCellMirrorImpl(new CellDescriptionImpl(cell));
     }
 
     @Override
     public void removeBounds(CellMO cell) {
-        BoundsManager mgr = AppContext.getManager(BoundsManager.class);
+        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
         mgr.removeCellMirrorImpl(cell.getCellID());
     }
 
     @Override
     public void cellTransformChanged(CellID cellID, CellTransform transform) {
-        BoundsManager mgr = AppContext.getManager(BoundsManager.class);
+        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
         mgr.cellTransformChanged(cellID, transform);
     }
 
     @Override
     public void cellBoundsChanged(CellID cellID, BoundingVolume bounds) {
-        BoundsManager mgr = AppContext.getManager(BoundsManager.class);
+        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
         mgr.cellBoundsChanged(cellID, bounds);
     }
 
     @Override
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
-        BoundsManager mgr = AppContext.getManager(BoundsManager.class);
+    public Collection<CellDescription> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
+        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
         return mgr.getVisibleCells(rootCell, bounds, perfMonitor);
     }
 
     @Override
     public void cellChildrenChanged(CellID parent, CellID child, boolean childAdded) {
-        AppContext.getManager(BoundsManager.class).cellChildrenChanged(parent, child, childAdded);
+        AppContext.getManager(CellDescriptionManager.class).cellChildrenChanged(parent, child, childAdded);
     }
 
     @Override
     public void cellContentsChanged(CellID cellID) {
-        AppContext.getManager(BoundsManager.class).cellContentsChanged(cellID);
+        AppContext.getManager(CellDescriptionManager.class).cellContentsChanged(cellID);
     }
 
     @Override
-    public CellMirror getCellMirror(CellID cellID) {
-        BoundsManager mgr = AppContext.getManager(BoundsManager.class);
+    public CellDescription getCellMirror(CellID cellID) {
+        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
         return mgr.getCellMirrorImpl(cellID);
     }
 }

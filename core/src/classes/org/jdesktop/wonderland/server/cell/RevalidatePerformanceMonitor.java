@@ -1,6 +1,8 @@
 /**
  * Project Wonderland
  *
+ * $Id$
+ * 
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
@@ -13,7 +15,6 @@
  *
  * $Revision$
  * $Date$
- * $State$
  */
 package org.jdesktop.wonderland.server.cell;
 
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Collect performance metrics on the times it takes to revalidate the
- * user's cell cache
+ * a cell cache
  * @author paulby
  */
 

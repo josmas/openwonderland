@@ -82,7 +82,7 @@ public class SimpleTerrainCellMO extends CellMO
         setupCell(setup);
     }
 
-    public CellMOSetup getCellGLOSetup() {
+    public CellMOSetup getCellMOSetup() {
         return new BasicCellMOSetup<ModelCellSetup>(getLocalBounds(),
             getTransform(), getClass().getName(), getSetupData());
     }

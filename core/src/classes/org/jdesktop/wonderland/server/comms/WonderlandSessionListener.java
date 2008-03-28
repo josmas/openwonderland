@@ -38,8 +38,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.ClientType;
-import org.jdesktop.wonderland.common.comms.SessionInternalClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.SessionInternalHandlerType;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.DetachClientMessage;
@@ -77,7 +77,7 @@ public class WonderlandSessionListener
     
     /** client ID of the internal session handler */
     private static final short SESSION_INTERNAL_CLIENT_ID =
-            SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID;
+            SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_ID;
     
     /** the session associated with this listener */
     private ManagedReference<ClientSession> sessionRef;
@@ -109,7 +109,7 @@ public class WonderlandSessionListener
                 
         // add internal handler
         ClientHandlerRef internalRef = getHandlerStore().getHandlerRef(
-                    SessionInternalClientType.SESSION_INTERNAL_CLIENT_TYPE);
+                    SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_TYPE);
         ((SessionInternalHandler) internalRef.get()).setListener(this);
         handlers.put(SESSION_INTERNAL_CLIENT_ID, internalRef);
     }
@@ -235,7 +235,7 @@ public class WonderlandSessionListener
      * @return the handler for the given type, or null if no handler
      * is registered for the given type
      */
-    public static ClientHandler getClientHandler(ClientType clientType) {
+    public static ClientHandler getClientHandler(HandlerType clientType) {
         ClientHandlerRef ref = getHandlerStore().getHandlerRef(clientType);
         if (ref == null) {
             return null;
@@ -254,15 +254,15 @@ public class WonderlandSessionListener
     
     /**
      * Get a sender that can be used to send messages to all clients
-     * of a given ClientType
-     * @see org.jdesktop.wonderland.server.comms.CommsManager#getSender(ClientType)
+     * of a given HandlerType
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#getSender(HandlerType)
      * 
      * @param type the type of client to get a channel to
      * @return a sender for sending to all clients of the given type
      * @throws IllegalStateException if no handler is registered for the given
      * type
      */
-    public static WonderlandClientSender getSender(ClientType type) {
+    public static WonderlandClientSender getSender(HandlerType type) {
         WonderlandClientSender sender = getHandlerStore().getSender(type);
         if (sender == null) {
             throw new IllegalStateException("No handler registered for " + type);
@@ -314,7 +314,7 @@ public class WonderlandSessionListener
      * @param messageID the ID of the message to respond to
      * @param type the type of client to attach
      */
-    protected void handleAttach(MessageID messageID, ClientType type) {
+    protected void handleAttach(MessageID messageID, HandlerType type) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Session " + getSession().getName() + " attach " +
                         "client type " + type);
@@ -489,7 +489,7 @@ public class WonderlandSessionListener
             implements WonderlandClientSender, Serializable
     {
         /** the client type */
-        private ClientType type;
+        private HandlerType type;
         
         /** the set of sessions */
         private ManagedReference<ClientSessionSet> sessionsRef;
@@ -507,7 +507,7 @@ public class WonderlandSessionListener
          * @param sessions the set of sessions associated with this sender
          * @param channel the channel to wrap
          */
-        public WonderlandClientSenderImpl(ClientType type, short clientID,
+        public WonderlandClientSenderImpl(HandlerType type, short clientID,
                                           ClientSessionSet sessions,
                                           Channel channel) 
         {
@@ -520,7 +520,7 @@ public class WonderlandSessionListener
             channelRef     = dm.createReference(channel);
         }
         
-        public ClientType getClientType() {
+        public HandlerType getClientType() {
             return type;
         }
 
@@ -606,8 +606,8 @@ public class WonderlandSessionListener
             this.listener = listener;
         }
         
-        public ClientType getClientType() {
-            return SessionInternalClientType.SESSION_INTERNAL_CLIENT_TYPE;
+        public HandlerType getClientType() {
+            return SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_TYPE;
         }
 
         public void registered(WonderlandClientSender sender) {
@@ -641,15 +641,15 @@ public class WonderlandSessionListener
     }
     
     /**
-     * Store all registered handlers, mapped by ClientType
+     * Store all registered handlers, mapped by HandlerType
      */
     static class HandlerStore implements ManagedObject, Serializable {
         /** the key in the data store */
         private static final String DS_KEY = HandlerStore.class.getName();
         
-        /** the handlers, mapped by ClientType */
-        private Map<ClientType, HandlerRecord> handlers = 
-                new HashMap<ClientType, HandlerRecord>();
+        /** the handlers, mapped by HandlerType */
+        private Map<HandlerType, HandlerRecord> handlers = 
+                new HashMap<HandlerType, HandlerRecord>();
         
         /** The next client ID to assign */
         private short clientID = 0;
@@ -680,7 +680,7 @@ public class WonderlandSessionListener
             short assignID = this.clientID++;
             if (handler instanceof SessionInternalHandler) {
                 // special case -- force ID of internal handler
-                assignID = SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID;
+                assignID = SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_ID;
             }
             
             // create a ClientSessionSet and channel
@@ -742,7 +742,7 @@ public class WonderlandSessionListener
          * @return a handler for the given type, or null if none is
          * registered
          */
-        public ClientHandlerRef getHandlerRef(ClientType type) {
+        public ClientHandlerRef getHandlerRef(HandlerType type) {
             HandlerRecord record = handlers.get(type);
             if (record == null) {
                 return null;
@@ -757,7 +757,7 @@ public class WonderlandSessionListener
          * @return a sender for the given type, or null if the type is
          * not registered
          */
-        public WonderlandClientSenderImpl getSender(ClientType type) {
+        public WonderlandClientSenderImpl getSender(HandlerType type) {
             HandlerRecord record = handlers.get(type);
             if (record == null) {
                 return null;

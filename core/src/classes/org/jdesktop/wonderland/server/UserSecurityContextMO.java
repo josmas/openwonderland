@@ -1,6 +1,8 @@
 /**
  * Project Wonderland
  *
+ * $Id$
+ * 
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
@@ -13,16 +15,17 @@
  *
  * $Revision$
  * $Date$
- * $State$
  */
-package org.jdesktop.wonderland.server.cell.bounds;
+package org.jdesktop.wonderland.server;
 
-import com.sun.sgs.service.Service;
+import com.sun.sgs.app.ManagedObject;
+import java.io.Serializable;
 
 /**
- *
+ * The security information for a user.
+ * 
  * @author paulby
  */
-public interface BoundsService extends BoundsManager, Service {
-    
+public class UserSecurityContextMO implements ManagedObject, Serializable {
+
 }

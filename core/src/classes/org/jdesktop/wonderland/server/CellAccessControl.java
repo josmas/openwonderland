@@ -20,8 +20,7 @@
 
 package org.jdesktop.wonderland.server;
 
-import org.jdesktop.wonderland.server.cell.AvatarMO;
-import org.jdesktop.wonderland.server.cell.CellMirror;
+import org.jdesktop.wonderland.server.cell.CellDescription;
 
 /**
  *  Provides access control support for cells and users
@@ -39,7 +38,7 @@ public class CellAccessControl {
     /**
      * Returns true if this user can view this cell.
      */
-    public static boolean canView(AvatarMO user, CellMirror cellMirror) {
+    public static boolean canView(UserSecurityContextMO user, CellDescription cellMirror) {
         return true;
     }
     

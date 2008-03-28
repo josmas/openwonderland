@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author jkaplan
  */
 @ExperimentalAPI
-public abstract class BaseClient implements WonderlandClient {
+public abstract class BaseHandler implements WonderlandClient {
     /** the current status */
     private Status status = Status.DETACHED;
     

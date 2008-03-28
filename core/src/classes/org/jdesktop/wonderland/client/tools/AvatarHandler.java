@@ -25,21 +25,22 @@ import com.jme.math.Vector3f;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.client.comms.BaseClient;
+import org.jdesktop.wonderland.client.comms.BaseHandler;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.common.cell.AvatarClientType;
+import org.jdesktop.wonderland.common.cell.AvatarHandlerType;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * The AvatarClient handles avatar communication
+ * The AvatarHandler handles avatar communication
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarClient extends BaseClient {
-    private static final Logger logger = Logger.getLogger(AvatarClient.class.getName());
+public class AvatarHandler extends BaseHandler {
+    private static final Logger logger = Logger.getLogger(AvatarHandler.class.getName());
     
     private ArrayList<AvatarMessageListener> listeners = new ArrayList();
     
@@ -47,8 +48,8 @@ public class AvatarClient extends BaseClient {
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
      */
-    public ClientType getClientType() {
-        return AvatarClientType.CLIENT_TYPE;
+    public HandlerType getClientType() {
+        return AvatarHandlerType.CLIENT_TYPE;
     }
 
     /**
@@ -110,7 +111,7 @@ public class AvatarClient extends BaseClient {
         switch(msg.getActionType()) {
             case MOVED :
                 for(AvatarMessageListener l : listeners) {
-                    l.avatarMoved(msg.getLocation(), msg.getOrientation());
+                    l.avatarMoved(new CellTransform(msg.getRotation(), msg.getLocation()));
                 }
                 break;
             default :
@@ -134,7 +135,7 @@ public class AvatarClient extends BaseClient {
          * @param location
          * @param velocity
          */
-        public void avatarMoved(Vector3f location, Quaternion orientation);
+        public void avatarMoved(CellTransform transform);
         
         /**
          * Just an example

@@ -24,14 +24,14 @@ package org.jdesktop.wonderland.common.comms;
  * messages
  * @author jkaplan
  */
-public class SessionInternalClientType extends ClientType {
-    public static final ClientType SESSION_INTERNAL_CLIENT_TYPE =
-            new SessionInternalClientType();
+public class SessionInternalHandlerType extends HandlerType {
+    public static final HandlerType SESSION_INTERNAL_CLIENT_TYPE =
+            new SessionInternalHandlerType();
 
     /** the id used by the session internal client */
     public static final short SESSION_INTERNAL_CLIENT_ID = -1;
     
-    public SessionInternalClientType() {
+    public SessionInternalHandlerType() {
         super ("__WonderlandSessionInternalClient");
     }
 }

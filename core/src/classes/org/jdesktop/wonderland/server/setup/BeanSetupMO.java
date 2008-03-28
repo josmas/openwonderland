@@ -51,5 +51,5 @@ public interface BeanSetupMO {
      * Write the cell's current state to a JavaBean.
      * @return a JavaBean representing the current state
      */
-    public CellMOSetup getCellGLOSetup();
+    public CellMOSetup getCellMOSetup();
 }
