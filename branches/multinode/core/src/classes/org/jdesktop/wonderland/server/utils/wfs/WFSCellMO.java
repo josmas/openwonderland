@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -183,12 +184,12 @@ public class WFSCellMO extends CellMO
     }
     
     @Override
-    public String getClientCellClassName() {
+    public String getClientCellClassName(ClientCapabilities capabilities) {
         return "org.jdesktop.lg3d.wonderland.darkstar.client.cell.WorldRootCell";
     }
     
     @Override
-    public CellSetup getSetupData() {
+    public CellSetup getClientSetupData(ClientCapabilities capabilities) {
         return null;
     }
     

@@ -31,10 +31,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -67,9 +69,7 @@ public class CellMO implements ManagedObject, Serializable {
     
     private boolean live = false;
     
-    private ManagedReference<Channel> cellChannelRef = null;
-    
-    private long transformVersion = Long.MIN_VALUE;
+    protected ManagedReference<Channel> cellChannelRef = null;
     
     protected static Logger logger = Logger.getLogger(CellMO.class.getName());
     
@@ -244,14 +244,17 @@ public class CellMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Return an Iterator over the children references for this cell. 
+     * Return the collection of children references for this cell. 
+     * If this cell has no children an empty collection is returned.
+     * Users of this call should not make changes to the collection directly
+     * 
      * @return a collection of references to the children of this cell.
      */
     public Collection<ManagedReference<CellMO>> getAllChildrenRefs() {
         if (childCellRefs==null)
             return new ArrayList<ManagedReference<CellMO>>();
         
-        return (Collection<ManagedReference<CellMO>>) childCellRefs.clone();
+        return childCellRefs;
     }
         
     /**
@@ -321,7 +324,7 @@ public class CellMO implements ManagedObject, Serializable {
      * Notify the client that the contents of the cell have changed
      */
     public void contentChanged() {
-        logger.severe("MoveableCellMO.contentChanged NOT IMPLEMENTED");
+        logger.severe("CellMO.contentChanged NOT IMPLEMENTED");
     }
        
     /**
@@ -400,7 +403,7 @@ public class CellMO implements ManagedObject, Serializable {
     
     /**
      * Cells that have a channel should overload this method to actually open the
-     * channel. The convenience method openCellChannel can be used to open the channel
+     * channel. The convenience method defaultOpenChannel can be used to open the channel
      * with a default channel name. Called when the cell is made live.
      */
     protected void openChannel() {
@@ -414,10 +417,49 @@ public class CellMO implements ManagedObject, Serializable {
     }
     
     /**
+     * Add a client session with the specified capabilities to this cell. 
+     * Called by the ViewCellCacheMO as part of makeing a cell active
+     * 
+     * @param session
+     * @param capabilities
+     * @return
+     */
+    protected CellSessionProperties addSession(ClientSession session, 
+                                            ClientCapabilities capabilities) {
+        addUserToCellChannel(session);
+        
+        return new CellSessionProperties();
+    }
+    
+    /**
+     * Called to notify the cell that some aspect of the client sessions capabilities
+     * have changed. This call is made from the ViewCellCacheOperations exectue
+     * method returned by addSession.
+     * 
+     * @param session
+     * @param capabilities
+     * @return
+     */
+    protected CellSessionProperties changeSession(ClientSession session, 
+                                               ClientCapabilities capabilities) {
+        return new CellSessionProperties();
+        
+    }
+    
+    /**
+     * Remove this cell from the specified session
+     * 
+     * @param session
+     */
+    protected void removeSession(ClientSession session) {
+        removeUserFromCellChannel(session);
+    }
+
+    /**
      * Add user to the cells channel, if there is no channel simply return
      * @param userID
      */
-    public void addUserToCellChannel(ClientSession session) {
+    private void addUserToCellChannel(ClientSession session) {
         if (cellChannelRef == null)
             return;
             
@@ -428,17 +470,13 @@ public class CellMO implements ManagedObject, Serializable {
      * Remove user from the cells channel
      * @param userID
      */
-    public void removeUserFromCellChannel(ClientSession session) {
+    private void removeUserFromCellChannel(ClientSession session) {
         if (cellChannelRef == null)
             return;
             
         cellChannelRef.get().leave(session);        
     }
      
-    public Channel getCellChannel() {
-        return cellChannelRef.get();
-    }
-    
     /**
      * Handle messages sent to this cell.
      * @param sender a sender that can be used to send messages back to 
@@ -457,7 +495,7 @@ public class CellMO implements ManagedObject, Serializable {
      * Returns the fully qualified name of the class that represents
      * this cell on the client
      */
-    public String getClientCellClassName() {
+    protected String getClientCellClassName(ClientCapabilities capabilities) {
 //        throw new RuntimeException("Not Implemented");
         return "dummy";
     }
@@ -466,25 +504,8 @@ public class CellMO implements ManagedObject, Serializable {
      * Get the setupdata for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    public CellSetup getSetupData() {
+    protected CellSetup getClientSetupData(ClientCapabilities capabilities) {
         return null;
-    }
-    
-    /**
-     * Returns a list of Cells that intersect with the supplied bounds. The
-     * bounds are referenced in world coordinates; Returns a list of references to visible cells.
-     *
-     * This call can only be made on live Cells
-     * 
-     * @param bounds The viewing bounds, in world coordinates
-     * @param monitor The performance monitor
-     * @return A list of visible cells
-     */
-    public Collection<CellDescription> getVisibleCells(BoundingVolume bounds, RevalidatePerformanceMonitor monitor) {
-        if (!live)
-            throw new RuntimeException("Cell is not live");
-        
-        return BoundsManager.get().getVisibleCells(cellID, bounds, monitor);
     }
     
     /**
@@ -510,7 +531,8 @@ public class CellMO implements ManagedObject, Serializable {
     /**
      * Return the priorty of the cell. A cells priority dictates the order
      * in which it is loaded by a client. Priortity 0 cells are loaded first, 
-     * followed by subsequent priority levels.
+     * followed by subsequent priority levels. Priority is only a hint to the 
+     * client, it has no effect on the server
      * 
      * The default priority is 5
      * 

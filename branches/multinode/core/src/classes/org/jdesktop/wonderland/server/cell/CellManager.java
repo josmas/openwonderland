@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
@@ -346,7 +347,7 @@ public class CellManager implements ManagedObject, Serializable {
     /**
      * Return a new Create cell message
      */
-    public static CellHierarchyMessage newCreateCellMessage(CellMO cell) {
+    public static CellHierarchyMessage newCreateCellMessage(CellMO cell, ClientCapabilities capabilities) {
         CellID parent=null;
         
         CellMO p = cell.getParent();
@@ -355,19 +356,19 @@ public class CellManager implements ManagedObject, Serializable {
         }
         
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
-            cell.getClientCellClassName(),
+            cell.getClientCellClassName(capabilities),
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
             cell.getTransform(),
-            cell.getSetupData()
+            cell.getClientSetupData(capabilities)
             );
     }
     
     /**
      * Return a new LoadLocalAvatar cell message
      */
-    public static CellHierarchyMessage newLoadLocalAvatarMessage(AvatarMO cell) {
+    public static CellHierarchyMessage newLoadLocalAvatarMessage(AvatarMO cell, ClientCapabilities capabilities) {
         CellID parent=null;
         
         CellMO p = cell.getParent();
@@ -376,12 +377,12 @@ public class CellManager implements ManagedObject, Serializable {
         }
         
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CLIENT_AVATAR,
-            cell.getClientCellClassName(),
+            cell.getClientCellClassName(capabilities),
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
             cell.getTransform(),
-            cell.getSetupData()
+            cell.getClientSetupData(capabilities)
             );
     }
     
@@ -448,7 +449,7 @@ public class CellManager implements ManagedObject, Serializable {
      * Return a new cell update message. Indicates that the content of the cell
      * has changed.
      */
-    public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellGLO) {
+    public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellGLO, ClientCapabilities capabilities) {
         CellID parentID = null;
         if (cellGLO.getParent() != null) {
             parentID = cellGLO.getParent().getCellID();
@@ -456,12 +457,12 @@ public class CellManager implements ManagedObject, Serializable {
         
         /* Return a new CellHiearchyMessage class, with populated data fields */
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UPDATE_CELL_CONTENT,
-            cellGLO.getClientCellClassName(),
+            cellGLO.getClientCellClassName(capabilities),
             cellGLO.getLocalBounds(),
             cellGLO.getCellID(),
             parentID,
             cellGLO.getTransform(),
-            cellGLO.getSetupData()
+            cellGLO.getClientSetupData(capabilities)
             
             
             

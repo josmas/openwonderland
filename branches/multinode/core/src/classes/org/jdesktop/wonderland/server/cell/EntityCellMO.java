@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellHandlerType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -57,8 +58,8 @@ public class EntityCellMO extends CellMO {
                 listenerRef.getForUpdate().cellMoved(this, transform);
         }
 
-        if (isLive() && getCellChannel() != null) {
-            cellSender.send(getCellChannel(), 
+        if (isLive() && cellChannelRef != null) {
+            cellSender.send(cellChannelRef.get(), 
                             EntityMessage.newMovedMessage(cellID, transform));
         }
     }
@@ -73,7 +74,7 @@ public class EntityCellMO extends CellMO {
     }
     
     @Override
-    public String getClientCellClassName() {
+    public String getClientCellClassName(ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.EntityCell";
     }
     

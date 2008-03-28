@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import org.jdesktop.wonderland.InternalAPI;
 
 /**
- * Temporary approach. In the final version AvatarCellCaches will be updated
+ * Temporary approach. In the final version ViewCellCaches will be updated
  * by their own task, but at the moment that is causing excessive data contention.
  * 
  * @author paulby
