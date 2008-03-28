@@ -161,7 +161,7 @@ public class WFSWriter {
     protected String getCellName(CellMO cell, int count) {
         // if this is a model cell, get the model name
 //        if (cell instanceof AnimatedCellGLO) {
-//            AnimatedCellSetup setup = ((AnimatedCellGLO) cell).getSetupData();
+//            AnimatedCellSetup setup = ((AnimatedCellGLO) cell).getClientSetupData();
 //            
 //            if (setup.getModelFiles() != null && 
 //                setup.getModelFiles().length > 0) 

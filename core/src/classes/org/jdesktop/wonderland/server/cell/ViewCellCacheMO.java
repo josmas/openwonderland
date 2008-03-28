@@ -30,12 +30,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
@@ -68,6 +71,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private ManagedReference<ClientSession> sessionRef;
     
     private CellID rootCellID;
+    
+    private ClientCapabilities capabilities = null;
      
     /**
      * List of currently visible cells (ManagedReference of CellGLO)
@@ -112,7 +117,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         CellHierarchyMessage msg;
         CellMO rootCell = CellManager.getCell(rootCellID);
         
-        msg = CellManager.newCreateCellMessage(rootCell);
+        msg = CellManager.newCreateCellMessage(rootCell, capabilities);
         sender.send(session, msg);
         
         msg = CellManager.newRootCellMessage(rootCell);
@@ -162,8 +167,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         
         try {
             // getTranslation the current user's bounds
-            View user = viewRef.get();
-            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().getTranslation(null));
+            View view = viewRef.get();
+            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(view.getTransform().getTranslation(null));
             
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer("Revalidating CellCache for   " + 
@@ -211,28 +216,35 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                                      "   cellcache for user " + username);
                     }
                     
-                    msg = CellManager.newCreateCellMessage(cell);
+                    //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
+                    CellSessionProperties prop = cell.addSession(session, capabilities);
+                    cellRef.setCellSessionProperties(prop);
+                    
+                    msg = CellManager.newCreateCellMessage(cell, capabilities);
                     sender.send(session, msg);
                     monitor.incMessageCount();
-                    
-                    //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
-                    cell.addUserToCellChannel(session);
-                    
+                                        
                     // update performance monitoring
                     monitor.incNewCellTime(System.nanoTime() - cellStartTime);
                 } else if (cellRef.hasUpdates(cellMirror)) {
                     for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
                         switch (update) {
                             case TRANSFORM:
+                                // Entity cells manage their own movement over
+                                // their cell channel, so this only deals with
+                                // non entity cels.
                                 if (!cellMirror.isEntity()) {
                                     msg = CellManager.newCellMoveMessage(cellMirror);
                                     sender.send(session, msg);
                                 }
                                 break;
                             case CONTENT:
-                                msg = CellManager.newContentUpdateCellMessage(cellRef.get());
+                                msg = CellManager.newContentUpdateCellMessage(cellRef.get(), capabilities);
                                 sender.send(session, msg);
                                 monitor.incMessageCount();
+                                break;
+                            case VIEW_CACHE_OPERATION :
+                                cellRef.getCellSessionProperties().getViewCacheOperation().execute(view.getTransform());
                                 break;
                         }
                     }
@@ -265,7 +277,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
                     // get suceeded, so cell is just inactive
                     msg = CellManager.newUnloadCellMessage(cell);
-                    cell.removeUserFromCellChannel(session);
+                    cell.removeSession(session);
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
                     msg = CellManager.newDeleteCellMessage(ref.getCellID());
@@ -312,20 +324,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             }
         }
     }
- 
-    /**
-     * The Users avatar has either entered or exited the cell
-     */
-    void avatarEnteredExitedCell(boolean enter, CellID cellID) {
-        
-    }
-    
+     
     /**
      * Utility method to mark ourself for update
      */
-    protected void markForUpdate() {
-        DataManager dm = AppContext.getDataManager();
-        dm.markForUpdate(this);
+    private void markForUpdate() {
+        AppContext.getDataManager().markForUpdate(this);
     }
     
     /**
@@ -344,7 +348,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private static class CellRef implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        enum UpdateType { TRANSFORM, CONTENT };
+        enum UpdateType { TRANSFORM, CONTENT, VIEW_CACHE_OPERATION };
         
         private Set<UpdateType> updateTypes=null;
         
@@ -356,6 +360,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         
         private int transformVersion=Integer.MIN_VALUE;
         private int contentsVersion=Integer.MIN_VALUE;
+        
+        private CellSessionProperties cellSessionProperties;
         
         public CellRef(CellMO cell) {
             this (cell, BoundsManager.get().getCellMirror(cell.getCellID()));
@@ -437,6 +443,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 addUpdateType(UpdateType.CONTENT);
                 ret = true;
             }
+            if (cellSessionProperties!=null && cellSessionProperties.getViewCacheOperation()!=null) {
+                addUpdateType(UpdateType.VIEW_CACHE_OPERATION);
+                ret = true;
+            }
             
             return ret;
         }
@@ -454,6 +464,15 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         public int hashCode() {
             return id.hashCode();
         }
+        
+        public CellSessionProperties getCellSessionProperties() {
+            return cellSessionProperties;
+        }
+
+        public void setCellSessionProperties(CellSessionProperties cellSessionProperties) {
+            this.cellSessionProperties = cellSessionProperties;
+        }
+
     }
 
 }
