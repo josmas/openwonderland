@@ -36,9 +36,9 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.comms.ProtocolVersion;
-import org.jdesktop.wonderland.common.comms.SessionInternalClientType;
+import org.jdesktop.wonderland.common.comms.SessionInternalHandlerType;
 import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
@@ -73,8 +73,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
     
     /** the default client type, used for handling data over the session
         channel */
-    private static final ClientType INTERNAL_CLIENT_TYPE = 
-            SessionInternalClientType.SESSION_INTERNAL_CLIENT_TYPE;
+    private static final HandlerType INTERNAL_CLIENT_TYPE = 
+            SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_TYPE;
     
     /** the current status */
     private Status status;
@@ -92,7 +92,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
     private List<SessionStatusListener> sessionStatusListeners;
  
     /** attached clients */
-    private Map<ClientType, ClientRecord> clients;
+    private Map<HandlerType, ClientRecord> clients;
     private Map<Short, ClientRecord> clientsByID;
     
     /**
@@ -111,16 +111,16 @@ public class WonderlandSessionImpl implements WonderlandSession {
       
         // initialize list of clients
         clients = Collections.synchronizedMap(
-                new HashMap<ClientType, ClientRecord>());
+                new HashMap<HandlerType, ClientRecord>());
         clientsByID = Collections.synchronizedMap(
                 new HashMap<Short, ClientRecord>());
         
         // add the internal client, which handles traffic over the session
         // channel
-        SessionInternalClient internal = new SessionInternalClient();
+        SessionInternalHandler internal = new SessionInternalHandler();
         ClientRecord internalRecord = addClientRecord(internal);
         setClientID(internalRecord, 
-                    SessionInternalClientType.SESSION_INTERNAL_CLIENT_ID);
+                    SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_ID);
         
         // the internal client is always attached
         internal.attached(this);
@@ -271,11 +271,11 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
     }
 
-    public WonderlandClient getClient(ClientType type) {
+    public WonderlandClient getClient(HandlerType type) {
         return getClient(type, WonderlandClient.class);
     }
     
-    public <T extends WonderlandClient> T getClient(ClientType type, 
+    public <T extends WonderlandClient> T getClient(HandlerType type, 
                                                     Class<T> clazz) 
     {
         ClientRecord record = getClientRecord(type);
@@ -444,8 +444,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * Get the default client for handling traffic over the session channel
      * @return the default client
      */
-    protected SessionInternalClient getInternalClient() {
-        return (SessionInternalClient) getClient(INTERNAL_CLIENT_TYPE);
+    protected SessionInternalHandler getInternalClient() {
+        return (SessionInternalHandler) getClient(INTERNAL_CLIENT_TYPE);
     }
     
     /**
@@ -500,7 +500,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * @return the ClientRecord for the given client, or null if the given
      * client is not attached to this session
      */
-    protected ClientRecord getClientRecord(ClientType type) {
+    protected ClientRecord getClientRecord(HandlerType type) {
         return clients.get(type);
     }
     
@@ -831,8 +831,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /**
      * Handle traffic over the session channel
      */
-    protected static class SessionInternalClient extends BaseClient {
-        public ClientType getClientType() {
+    protected static class SessionInternalHandler extends BaseHandler {
+        public HandlerType getClientType() {
             // only used internally
             return INTERNAL_CLIENT_TYPE;
         }

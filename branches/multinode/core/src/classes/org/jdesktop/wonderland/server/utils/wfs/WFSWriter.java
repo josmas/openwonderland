@@ -71,7 +71,7 @@ public class WFSWriter {
 
         // write ourself
         if (cell instanceof BeanSetupMO) {
-            CellMOSetup setup = ((BeanSetupMO) cell).getCellGLOSetup();
+            CellMOSetup setup = ((BeanSetupMO) cell).getCellMOSetup();
 
             if (!(cell instanceof SimpleTerrainCellMO)) {
                 // origin of cells is currently relative to 50,0,50 -- make sure

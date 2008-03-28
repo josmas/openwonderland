@@ -109,7 +109,7 @@ public class CellMO implements ManagedObject, Serializable {
         boundsChanged = true;
         
         if (live) {
-            BoundsHandler.get().cellBoundsChanged(cellID, bounds);
+            BoundsManager.get().cellBoundsChanged(cellID, bounds);
         }
     }
     
@@ -136,7 +136,7 @@ public class CellMO implements ManagedObject, Serializable {
             throw new IllegalStateException("LocalBounds have been changed, "
                     + "cached bounds not valid until the transaction commits");
         
-        return BoundsHandler.get().getCachedVWBounds(cellID);
+        return BoundsManager.get().getCachedVWBounds(cellID);
     }
 
     /**
@@ -160,7 +160,7 @@ public class CellMO implements ManagedObject, Serializable {
             throw new IllegalStateException("LocalBounds have been changed, "
                     + "cached bounds not valid until the transaction commits");
         
-        return BoundsHandler.get().getComputedWorldBounds(cellID);   
+        return BoundsManager.get().getComputedWorldBounds(cellID);   
     }
    
     /**
@@ -180,7 +180,7 @@ public class CellMO implements ManagedObject, Serializable {
             throw new IllegalStateException("LocalBounds have been changed, "
                     + "cached bounds not valid until the transaction commits");
         
-        return BoundsHandler.get().getLocalToVWorld(cellID);
+        return BoundsManager.get().getLocalToVWorld(cellID);
     }
     
     /**
@@ -304,7 +304,7 @@ public class CellMO implements ManagedObject, Serializable {
         this.transform = (CellTransform) transform.clone();  
         
         if (live) {
-            BoundsHandler.get().cellTransformChanged(cellID, transform);
+            BoundsManager.get().cellTransformChanged(cellID, transform);
         }
     }
     
@@ -350,15 +350,15 @@ public class CellMO implements ManagedObject, Serializable {
         this.live = live;
         if (live) {
             openChannel();
-            BoundsHandler.get().createBounds(this);
+            BoundsManager.get().createBounds(this);
             if (getParent()!=null) { // Root cell has a null parent
 //                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
-                BoundsHandler.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
+                BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
             }
         } else {
             closeChannel();
-            BoundsHandler.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
-            BoundsHandler.get().removeBounds(this);
+            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
+            BoundsManager.get().removeBounds(this);
         }
         
         for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
@@ -480,11 +480,11 @@ public class CellMO implements ManagedObject, Serializable {
      * @param monitor The performance monitor
      * @return A list of visible cells
      */
-    public Collection<CellMirror> getVisibleCells(BoundingVolume bounds, RevalidatePerformanceMonitor monitor) {
+    public Collection<CellDescription> getVisibleCells(BoundingVolume bounds, RevalidatePerformanceMonitor monitor) {
         if (!live)
             throw new RuntimeException("Cell is not live");
         
-        return BoundsHandler.get().getVisibleCells(cellID, bounds, monitor);
+        return BoundsManager.get().getVisibleCells(cellID, bounds, monitor);
     }
     
     /**

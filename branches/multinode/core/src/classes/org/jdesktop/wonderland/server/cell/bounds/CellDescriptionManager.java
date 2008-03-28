@@ -23,21 +23,21 @@ import org.jdesktop.wonderland.PrivateAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
-import org.jdesktop.wonderland.server.cell.CellMirror;
+import org.jdesktop.wonderland.server.cell.CellDescription;
 
 /**
  *
  * @author paulby
  */
 @PrivateAPI
-public interface BoundsManager {
+public interface CellDescriptionManager {
 
     public void cellTransformChanged(CellID cellID, CellTransform transform);
     public void cellBoundsChanged(CellID cellID, BoundingVolume bounds);
     public CellDescriptionImpl getCellMirrorImpl(CellID cellID);
     public void putCellMirrorImpl(CellDescriptionImpl cellBounds);
     public void removeCellMirrorImpl(CellID cellID);
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor);
+    public Collection<CellDescription> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor);
     public void cellChildrenChanged(CellID parent, CellID child, boolean childAdded);
     public void cellContentsChanged(CellID cellID);
 }

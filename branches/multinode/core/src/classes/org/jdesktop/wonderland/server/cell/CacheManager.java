@@ -36,7 +36,7 @@ public class CacheManager implements ManagedObject, Serializable {
 
     public static final boolean USE_CACHE_MANAGER = false;
     
-    private ArrayList<ManagedReference<AvatarCellCacheMO>> caches = new ArrayList();
+    private ArrayList<ManagedReference<ViewCellCacheMO>> caches = new ArrayList();
     
     private static final String BINDING_NAME="CacheManager";
     
@@ -55,11 +55,11 @@ public class CacheManager implements ManagedObject, Serializable {
         }
     }
         
-    private void addCacheImpl(AvatarCellCacheMO cache) {
+    private void addCacheImpl(ViewCellCacheMO cache) {
         caches.add(AppContext.getDataManager().createReference(cache));
     }
     
-    private void removeCacheImpl(AvatarCellCacheMO cache) {
+    private void removeCacheImpl(ViewCellCacheMO cache) {
         caches.remove(AppContext.getDataManager().createReference(cache));
     }
     
@@ -67,7 +67,7 @@ public class CacheManager implements ManagedObject, Serializable {
      * Add an avatar cache, called when avatar logs in.
      * @param cache
      */
-    public static void addCache(AvatarCellCacheMO cache) {
+    public static void addCache(ViewCellCacheMO cache) {
         CacheManager mgr = (CacheManager) AppContext.getDataManager().getBinding(BINDING_NAME);
         AppContext.getDataManager().markForUpdate(mgr);
         
@@ -78,7 +78,7 @@ public class CacheManager implements ManagedObject, Serializable {
      * Remove an avatar cache, called when avatar logs out.
      * @param cache
      */
-    public static void removeCache(AvatarCellCacheMO cache) {
+    public static void removeCache(ViewCellCacheMO cache) {
         CacheManager mgr = (CacheManager) AppContext.getDataManager().getBinding(BINDING_NAME);
         AppContext.getDataManager().markForUpdate(mgr);
         
@@ -86,7 +86,7 @@ public class CacheManager implements ManagedObject, Serializable {
     }
 
     private void revalidate() {
-        for(ManagedReference<AvatarCellCacheMO> cacheRef : caches)
+        for(ManagedReference<ViewCellCacheMO> cacheRef : caches)
             cacheRef.getForUpdate().revalidate();
     }
     

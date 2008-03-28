@@ -23,15 +23,15 @@ import com.sun.sgs.app.Task;
 import java.io.Serializable;
 
 /**
- * Task that calls revalidate() on an AvatarCellCacheMO
+ * Task that calls revalidate() on an ViewCellCacheMO
  * 
  * @author paulby
  */
-public class AvatarCellCacheRevalidateTask implements Task, Serializable {
+public class ViewCellCacheRevalidateTask implements Task, Serializable {
 
-    private ManagedReference<AvatarCellCacheMO> cellCacheRef;
+    private ManagedReference<ViewCellCacheMO> cellCacheRef;
     
-    public AvatarCellCacheRevalidateTask(AvatarCellCacheMO cellCache) {
+    public ViewCellCacheRevalidateTask(ViewCellCacheMO cellCache) {
         cellCacheRef = AppContext.getDataManager().createReference(cellCache);
     }
     

@@ -23,15 +23,15 @@ import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.client.comms.BaseClient;
+import org.jdesktop.wonderland.client.comms.BaseHandler;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.common.cell.CellCacheClientType;
+import org.jdesktop.wonderland.common.cell.CellCacheHandlerType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -40,8 +40,8 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author jkaplan
  */
 @ExperimentalAPI
-public class CellCacheClient extends BaseClient {
-    private static final Logger logger = Logger.getLogger(CellCacheClient.class.getName());
+public class CellCacheHandler extends BaseHandler {
+    private static final Logger logger = Logger.getLogger(CellCacheHandler.class.getName());
     
     private ArrayList<CellCacheMessageListener> listeners = new ArrayList();
     
@@ -49,8 +49,8 @@ public class CellCacheClient extends BaseClient {
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
      */
-    public ClientType getClientType() {
-        return CellCacheClientType.CLIENT_TYPE;
+    public HandlerType getClientType() {
+        return CellCacheHandlerType.CLIENT_TYPE;
     }
 
     /**

@@ -17,8 +17,9 @@
  * $Date: 2007/10/14 19:10:50 $
  * $State: Exp $ 
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.server.utils.wfs;
 
+import org.jdesktop.wonderland.server.cell.*;
 import java.util.Iterator;
 import sun.misc.Service;
 

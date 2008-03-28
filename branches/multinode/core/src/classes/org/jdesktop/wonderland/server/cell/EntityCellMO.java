@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import org.jdesktop.wonderland.common.cell.CellClientType;
+import org.jdesktop.wonderland.common.cell.CellHandlerType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -69,7 +69,7 @@ public class EntityCellMO extends CellMO {
         
         // cache the sender for sending to cell clients.  This saves a
         // Darkstar lookup for every cell we want to send to.
-        cellSender = WonderlandContext.getCommsManager().getSender(CellClientType.CLIENT_TYPE);
+        cellSender = WonderlandContext.getCommsManager().getSender(CellHandlerType.CLIENT_TYPE);
     }
     
     @Override

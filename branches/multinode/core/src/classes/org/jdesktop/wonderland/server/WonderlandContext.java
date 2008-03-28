@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.server;
 
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.server.cell.CacheManager;
-import org.jdesktop.wonderland.server.cell.CellDescription;
+import org.jdesktop.wonderland.server.cell.CellManager;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
 
@@ -38,7 +38,7 @@ public class WonderlandContext {
     static void intialize() {
         // initialize the comms manager
         CommsManagerFactory.initialize();
-        CellDescription.initialize();
+        CellManager.initialize();
         UserManager.initialize();
         ChecksumManagerMO.initialize();
         CacheManager.initialize();
@@ -48,8 +48,8 @@ public class WonderlandContext {
      * Return the cell manager singleton.
      * @return  the master cell cache
      */
-    public static CellDescription getCellManager() {
-        return CellDescription.getCellManager();
+    public static CellManager getCellManager() {
+        return CellManager.getCellManager();
     }
 
     /**

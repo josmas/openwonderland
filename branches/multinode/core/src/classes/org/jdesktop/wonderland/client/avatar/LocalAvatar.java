@@ -21,9 +21,10 @@ package org.jdesktop.wonderland.client.avatar;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.EntityCell;
-import org.jdesktop.wonderland.client.tools.AvatarClient;
-import org.jdesktop.wonderland.client.tools.AvatarClient.AvatarMessageListener;
+import org.jdesktop.wonderland.client.tools.AvatarHandler;
+import org.jdesktop.wonderland.client.tools.AvatarHandler.AvatarMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
 
 /**
@@ -35,9 +36,9 @@ import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
 public class LocalAvatar implements AvatarMessageListener {
 
     private CellID avatarCellID;
-    private AvatarClient avatarClient;
+    private AvatarHandler avatarClient;
     
-    public LocalAvatar(AvatarClient avatarClient) {
+    public LocalAvatar(AvatarHandler avatarClient) {
         this.avatarClient = avatarClient;
     }
     
@@ -53,7 +54,7 @@ public class LocalAvatar implements AvatarMessageListener {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void avatarMoved(Vector3f location, Quaternion orientation) {
+    public void avatarMoved(CellTransform transform) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

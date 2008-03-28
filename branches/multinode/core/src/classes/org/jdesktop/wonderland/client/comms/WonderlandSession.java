@@ -22,7 +22,7 @@ package org.jdesktop.wonderland.client.comms;
 import com.sun.sgs.client.simple.SimpleClient;
 import java.util.Collection;
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -85,7 +85,7 @@ public interface WonderlandSession {
      * this session, it will interact with the server associated with
      * this session.  
      * <p>
-     * Only one client of any given ClientType may be
+     * Only one client of any given HandlerType may be
      * connected to the server at any time.  Attempting to attach a second
      * client of the same type will result in an AttachFailureException.
      * <p>
@@ -100,15 +100,15 @@ public interface WonderlandSession {
     public void attach(WonderlandClient client) throws AttachFailureException;
     
     /**
-     * Get the attched WonderlandClient for the given ClientType.
+     * Get the attched WonderlandClient for the given HandlerType.
      * @param type the client type to get
      * @return the attached client for the given type, or null if no
      * client of the given type is attached
      */
-    public WonderlandClient getClient(ClientType type);
+    public WonderlandClient getClient(HandlerType type);
     
     /**
-     * Get the attched WonderlandClient for the given ClientType.
+     * Get the attched WonderlandClient for the given HandlerType.
      * @param type the client type to get
      * @param clazz the class of client to return
      * @return the attached client for the given type, or null if no
@@ -116,7 +116,7 @@ public interface WonderlandSession {
      * @throws ClassCastException if the client for the given client type
      * is not assignable to the given type
      */
-    public <T extends WonderlandClient> T getClient(ClientType type,
+    public <T extends WonderlandClient> T getClient(HandlerType type,
                                                     Class<T> clazz);
     
     /**

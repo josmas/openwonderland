@@ -55,7 +55,7 @@ public class AvatarMessage extends CellMessage {
         this.location = locationVW;
     }
 
-    public Quaternion getOrientation() {
+    public Quaternion getRotation() {
         return orientation;
     }
 

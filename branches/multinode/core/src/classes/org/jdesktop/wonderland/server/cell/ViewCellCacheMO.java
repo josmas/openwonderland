@@ -38,9 +38,10 @@ import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.server.CellAccessControl;
+import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.cell.bounds.BoundsManager;
+import org.jdesktop.wonderland.server.cell.bounds.CellDescriptionManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -54,11 +55,13 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author paulby
  */
-public class AvatarCellCacheMO implements ManagedObject, Serializable {
+public class ViewCellCacheMO implements ManagedObject, Serializable {
     
-    private final static Logger logger = Logger.getLogger(AvatarCellCacheMO.class.getName());
+    private final static Logger logger = Logger.getLogger(ViewCellCacheMO.class.getName());
     
-    private ManagedReference<AvatarMO> avatarRef;
+    private ManagedReference<View> viewRef;
+    private ManagedReference<UserSecurityContextMO> securityContextRef;
+    
     private String username;
    
     private WonderlandClientSender sender;
@@ -74,18 +77,23 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
     private PeriodicTaskHandle task = null;
     
     /**
-     * Creates a new instance of AvatarCellCacheMO
+     * Creates a new instance of ViewCellCacheMO
      */
-    public AvatarCellCacheMO(AvatarMO avatar) {
-        logger.config("Creating AvatarCellCache");
+    public ViewCellCacheMO(View view) {
+        logger.config("Creating ViewCellCache");
         
-        username = avatar.getUser().getUsername() + "_" + 
-                   avatar.getCellID().toString();
+        username = view.getUser().getUsername();
         rootCellID = WonderlandContext.getCellManager().getRootCellID();
         
         DataManager dm = AppContext.getDataManager();
-        avatarRef = dm.createReference(avatar);
+        viewRef = dm.createReference(view);
         dm.setBinding(username + "_CELL_CACHE", this);
+        
+        UserSecurityContextMO securityContextMO = view.getUser().getUserSecurityContext();
+        if (securityContextMO!=null)
+            securityContextRef = dm.createReference(securityContextMO);
+        else
+            securityContextRef = null;
     }
     
     /**
@@ -102,12 +110,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
-        CellMO rootCell = CellDescription.getCell(rootCellID);
+        CellMO rootCell = CellManager.getCell(rootCellID);
         
-        msg = CellDescription.newCreateCellMessage(rootCell);
+        msg = CellManager.newCreateCellMessage(rootCell);
         sender.send(session, msg);
         
-        msg = CellDescription.newRootCellMessage(rootCell);
+        msg = CellManager.newRootCellMessage(rootCell);
         sender.send(session, msg);
         
         currentCells.put(rootCellID, new CellRef(rootCell));
@@ -117,7 +125,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         } else {
             // Periodically revalidate the cache
              task = AppContext.getTaskManager().schedulePeriodicTask(
-                    new AvatarCellCacheRevalidateTask(this), 100, 500); 
+                    new ViewCellCacheRevalidateTask(this), 100, 500); 
         }
     }
     
@@ -154,7 +162,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         
         try {
             // getTranslation the current user's bounds
-            AvatarMO user = avatarRef.get();
+            View user = viewRef.get();
             BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(user.getTransform().getTranslation(null));
             
             if (logger.isLoggable(Level.FINER)) {
@@ -163,8 +171,8 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             }
 
             // find the visible cells
-            BoundsManager boundsMgr = AppContext.getManager(BoundsManager.class);
-            Collection<CellMirror> visCells = 
+            CellDescriptionManager boundsMgr = AppContext.getManager(CellDescriptionManager.class);
+            Collection<CellDescription> visCells = 
                     boundsMgr.getVisibleCells(rootCellID, proximityBounds, monitor);
             monitor.setVisibleCellCount(visCells.size());
             
@@ -178,12 +186,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
              * 2. If already present, check to see if has been modified
              * These two steps only happen if we are given access to view the cell
              */
-            for(CellMirror cellMirror : visCells) {
+            for(CellDescription cellMirror : visCells) {
                 long cellStartTime = System.nanoTime();
                 CellID cellID = cellMirror.getCellID();
             
                 // check this client's access to the cell
-                if (!CellAccessControl.canView(user, cellMirror)) {
+                if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellMirror)) {
                     // the user doesn't have access to this cell -- just skip
                     // it and go on                
                     continue;
@@ -193,7 +201,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 CellRef cellRef = currentCells.get(cellID);           
                 if (cellRef == null) {
                     // the cell is new -- add it and send a message
-                    CellMO cell = CellDescription.getCell(cellID);
+                    CellMO cell = CellManager.getCell(cellID);
                     cellRef = new CellRef(cell, cellMirror);
                     currentCells.put(cellID, cellRef);
                     markForUpdate();
@@ -203,7 +211,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                                      "   cellcache for user " + username);
                     }
                     
-                    msg = CellDescription.newCreateCellMessage(cell);
+                    msg = CellManager.newCreateCellMessage(cell);
                     sender.send(session, msg);
                     monitor.incMessageCount();
                     
@@ -217,12 +225,12 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                         switch (update) {
                             case TRANSFORM:
                                 if (!cellMirror.isEntity()) {
-                                    msg = CellDescription.newCellMoveMessage(cellMirror);
+                                    msg = CellManager.newCellMoveMessage(cellMirror);
                                     sender.send(session, msg);
                                 }
                                 break;
                             case CONTENT:
-                                msg = CellDescription.newContentUpdateCellMessage(cellRef.get());
+                                msg = CellManager.newContentUpdateCellMessage(cellRef.get());
                                 sender.send(session, msg);
                                 monitor.incMessageCount();
                                 break;
@@ -256,11 +264,11 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                     CellMO cell = ref.get();
 
                     // get suceeded, so cell is just inactive
-                    msg = CellDescription.newUnloadCellMessage(cell);
+                    msg = CellManager.newUnloadCellMessage(cell);
                     cell.removeUserFromCellChannel(session);
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
-                    msg = CellDescription.newDeleteCellMessage(ref.getCellID());
+                    msg = CellManager.newDeleteCellMessage(ref.getCellID());
                 }
                 
                 sender.send(session, msg);
@@ -350,14 +358,14 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
         private int contentsVersion=Integer.MIN_VALUE;
         
         public CellRef(CellMO cell) {
-            this (cell, BoundsHandler.get().getCellMirror(cell.getCellID()));
+            this (cell, BoundsManager.get().getCellMirror(cell.getCellID()));
         }
         
-        public CellRef(CellMO cell, CellMirror cellMirror) {
+        public CellRef(CellMO cell, CellDescription cellMirror) {
             this (cell.getCellID(), cell, cellMirror);
         }
         
-        private CellRef(CellID id, CellMO cell, CellMirror cellMirror) {
+        private CellRef(CellID id, CellMO cell, CellDescription cellMirror) {
             this.id = id;
             
             // create a reference to the given CellMO
@@ -396,7 +404,7 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
                 updateTypes.add(updateType);
         }
         
-        public void clearUpdateTypes(CellMirror cellMirror) {
+        public void clearUpdateTypes(CellDescription cellMirror) {
             transformVersion = cellMirror.getTransformVersion();
             contentsVersion = cellMirror.getContentsVersion();
       
@@ -419,13 +427,13 @@ public class AvatarCellCacheMO implements ManagedObject, Serializable {
             this.contentsVersion = contentsVersion;
         }
 
-        public boolean hasUpdates(CellMirror cellMirror) {
+        public boolean hasUpdates(CellDescription cellDescription) {
             boolean ret = false;
-            if (cellMirror.getTransformVersion()!=transformVersion) {
+            if (cellDescription.getTransformVersion()!=transformVersion) {
                 addUpdateType(UpdateType.TRANSFORM);
                 ret = true;
             }
-            if (cellMirror.getContentsVersion()!=contentsVersion) {
+            if (cellDescription.getContentsVersion()!=contentsVersion) {
                 addUpdateType(UpdateType.CONTENT);
                 ret = true;
             }

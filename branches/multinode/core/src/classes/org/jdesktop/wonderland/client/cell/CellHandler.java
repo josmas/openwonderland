@@ -23,11 +23,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.comms.BaseClient;
+import org.jdesktop.wonderland.client.comms.BaseHandler;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.common.cell.CellClientType;
+import org.jdesktop.wonderland.common.cell.CellHandlerType;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -36,25 +36,25 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author jkaplan
  */
 @ExperimentalAPI
-public class CellClient extends BaseClient {
-    private static CellClient cellClient = null;
-    private static Logger logger = Logger.getLogger(CellClient.class.getName());
+public class CellHandler extends BaseHandler {
+    private static CellHandler cellClient = null;
+    private static Logger logger = Logger.getLogger(CellHandler.class.getName());
     
-    public CellClient() {
+    public CellHandler() {
         super();
         cellClient = this;
     }
     
-    public static CellClient getCellClient() {
+    public static CellHandler getCellClient() {
         return cellClient;
     }
     
     /**
      * Get the type of client
-     * @return CellClientType.CELL_CLIENT_TYPE
+     * @return CellHandlerType.CELL_CLIENT_TYPE
      */
-    public ClientType getClientType() {
-        return CellClientType.CLIENT_TYPE;
+    public HandlerType getClientType() {
+        return CellHandlerType.CLIENT_TYPE;
     }
 
     /**

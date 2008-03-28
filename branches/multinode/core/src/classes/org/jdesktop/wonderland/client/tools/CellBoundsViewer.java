@@ -29,13 +29,13 @@ import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
-import org.jdesktop.wonderland.client.cell.CellCacheClient;
+import org.jdesktop.wonderland.client.cell.CellCacheHandler;
 import org.jdesktop.wonderland.client.cell.EntityCell;
 import org.jdesktop.wonderland.client.cell.EntityManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.client.tools.AvatarClient.AvatarMessageListener;
+import org.jdesktop.wonderland.client.tools.AvatarHandler.AvatarMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -207,7 +207,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     }//GEN-LAST:event_forwardBActionPerformed
     
     
-    class BoundsPanel extends JPanel implements CellCacheClient.CellCacheMessageListener, CellCache, EntityManager.EntityListener {
+    class BoundsPanel extends JPanel implements CellCacheHandler.CellCacheMessageListener, CellCache, EntityManager.EntityListener {
         private Vector3f center = new Vector3f();  // Temporary variable
         private Vector3f extent = new Vector3f();   // Temporary variable
         private float scale = 20f;

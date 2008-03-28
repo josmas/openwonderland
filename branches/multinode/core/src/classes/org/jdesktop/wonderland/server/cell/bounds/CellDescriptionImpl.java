@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
  * @author paulby
  */
 @InternalAPI
-public class CellDescriptionImpl implements CellMirror {
+public class CellDescriptionImpl implements CellDescription {
 
     private BoundingVolume computedWorldBounds;
     private BoundingVolume localBounds;
@@ -66,10 +66,10 @@ public class CellDescriptionImpl implements CellMirror {
     }
     
     /**
-     * Create new CellMirror from the provided mirror
+     * Create new CellDescription from the provided mirror
      * @param mirror
      */
-    CellDescriptionImpl(CellMirror mirror) {
+    CellDescriptionImpl(CellDescription mirror) {
         this.cellID = mirror.getCellID();
         this.transformVersion = mirror.getTransformVersion();
         this.contentsVersion = mirror.getContentsVersion();
@@ -231,8 +231,8 @@ public class CellDescriptionImpl implements CellMirror {
      * @param monitor The performance monitor
      * @return A list of visible cells
      */
-    ArrayList<CellMirror> getVisibleCells(
-                ArrayList<CellMirror> list, 
+    ArrayList<CellDescription> getVisibleCells(
+                ArrayList<CellDescription> list, 
                 BoundingVolume bounds,
                 RevalidatePerformanceMonitor monitor) {
         

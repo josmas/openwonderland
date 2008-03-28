@@ -33,9 +33,9 @@ import org.jdesktop.wonderland.server.UserMO;
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarMO extends EntityCellMO {
+public class AvatarMO extends EntityCellMO implements View {
     
-    private ManagedReference<AvatarCellCacheMO> avatarCellCacheRef;
+    private ManagedReference<ViewCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
 
     public AvatarMO(UserMO user) {
@@ -53,9 +53,9 @@ public class AvatarMO extends EntityCellMO {
      * Return the avatar cell cache managed object for this avatar
      * @return
      */
-    AvatarCellCacheMO getCellCache() {
+    ViewCellCacheMO getCellCache() {
         if (avatarCellCacheRef==null) {
-            AvatarCellCacheMO cache = new AvatarCellCacheMO(this);
+            ViewCellCacheMO cache = new ViewCellCacheMO(this);
             avatarCellCacheRef = AppContext.getDataManager().createReference(cache);
         }
         

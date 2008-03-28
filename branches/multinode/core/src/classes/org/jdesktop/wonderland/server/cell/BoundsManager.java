@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.PrivateAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.server.cell.bounds.ServiceBoundsHandler;
+import org.jdesktop.wonderland.server.cell.bounds.ServiceCellDescriptionManager;
 
 /**
  * Provides an abstraction for the cell bounds computation engine allowing
@@ -32,16 +32,16 @@ import org.jdesktop.wonderland.server.cell.bounds.ServiceBoundsHandler;
  * @author paulby
  */
 @PrivateAPI
-public abstract class BoundsHandler {
+public abstract class BoundsManager {
 
-    private static final BoundsHandler handler = new ServiceBoundsHandler();
+    private static final BoundsManager handler = new ServiceCellDescriptionManager();
     
     /**
      * Return the singleton bounds handler
      * 
      * @return
      */
-    public static BoundsHandler get() {
+    public static BoundsManager get() {
         return handler;
     }
     
@@ -125,7 +125,7 @@ public abstract class BoundsHandler {
      */
     public abstract void cellContentsChanged(CellID cellID);
     
-    public abstract Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor);
+    public abstract Collection<CellDescription> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor);
  
     /**
      * 
@@ -137,15 +137,15 @@ public abstract class BoundsHandler {
      * returns only cells of cellClass.
      * @return
      */
-    public Collection<CellMirror> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor, Class cellClass, boolean reportSubclasses) {
+    public Collection<CellDescription> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor, Class cellClass, boolean reportSubclasses) {
         throw new RuntimeException("Not Implemented");
     }
  
     /**
-     * Return the CellMirror corresponding to the given CellID.  The cell
+     * Return the CellDescription corresponding to the given CellID.  The cell
      * must have been previously added to the tree using {@code createBounds()}.
      * @param cellID
      * @return
      */
-    public abstract CellMirror getCellMirror(CellID cellID);
+    public abstract CellDescription getCellMirror(CellID cellID);
 }
