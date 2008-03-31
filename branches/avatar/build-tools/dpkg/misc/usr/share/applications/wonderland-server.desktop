@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Project Wonderland Server
+GenericName=Project Wonderland
+Comment=Run Project Wonderland (Darkstar) Server
+Exec=/usr/share/lg3d-wonderland/bin/wonderland-server.sh
+Icon=wonderland.png
+Terminal=true
+Type=Application
+Categories=Application;Graphics;
