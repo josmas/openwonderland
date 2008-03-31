@@ -59,8 +59,9 @@ public class WFSAliases {
     
     /**
      * Returns the aliases as a string, where each line represents a single entry
-     * of the form: <aliases>.<location>
+     * of the form: {@literal <aliases>.<location>}
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         Iterator<Map.Entry<String, String>> i = this.aliases.entrySet().iterator();
