@@ -25,12 +25,12 @@ import org.jdesktop.wonderland.common.comms.HandlerType;
  * The HandlerType of the CellClient
  * @author jkaplan
  */
-public class CellHandlerType extends HandlerType {
+public class CellChannelHandlerType extends HandlerType {
     /** the client type for the cell client */
     public static final HandlerType CLIENT_TYPE =
-            new CellHandlerType("__CellClient");
+            new CellChannelHandlerType("__CellClient");
     
-    private CellHandlerType(String type) {
+    private CellChannelHandlerType(String type) {
         super (type);
     }
 }

@@ -23,11 +23,11 @@ import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.AvatarHandlerType;
+import org.jdesktop.wonderland.common.cell.ViewHandlerType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.AvatarCreateResponseMessage;
-import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
+import org.jdesktop.wonderland.common.cell.messages.ViewMessage;
 import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -40,12 +40,12 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * Handler for the avatar
  * @author paulby
  */
-class AvatarHandlerMO implements ClientHandler, Serializable {
+class ViewHandlerMO implements ClientHandler, Serializable {
     
-    private static final Logger logger = Logger.getLogger(AvatarHandlerMO.class.getName());
+    private static final Logger logger = Logger.getLogger(ViewHandlerMO.class.getName());
     
     protected static final HandlerType CLIENT_TYPE =
-            AvatarHandlerType.CLIENT_TYPE;
+            ViewHandlerType.CLIENT_TYPE;
     
     public HandlerType getClientType() {
         return CLIENT_TYPE;
@@ -71,8 +71,8 @@ class AvatarHandlerMO implements ClientHandler, Serializable {
                                 ClientSession session, 
                                 Message message) 
     {
-        if (message instanceof AvatarMessage) {
-            messageReceived(sender, session, (AvatarMessage) message);
+        if (message instanceof ViewMessage) {
+            messageReceived(sender, session, (ViewMessage) message);
         } else {
             sender.send(session, new ErrorMessage(message.getMessageID(),
                         "Unexpected message type: " + message.getClass()));
@@ -80,14 +80,14 @@ class AvatarHandlerMO implements ClientHandler, Serializable {
     }
   
     /**
-     * Handle reception of AvatarMessage
+     * Handle reception of ViewMessage
      * @param channel
      * @param sessionId
      * @param message
      */
     private void messageReceived(WonderlandClientSender sender,
                                 ClientSession session, 
-                                AvatarMessage message) 
+                                ViewMessage message) 
     {
         switch(message.getActionType()) {
             case MOVE_REQUEST :
@@ -105,7 +105,7 @@ class AvatarHandlerMO implements ClientHandler, Serializable {
         }
     }
     
-    private AvatarCreateResponseMessage createAvatar(ClientSession session, AvatarMessage msg) {
+    private AvatarCreateResponseMessage createAvatar(ClientSession session, ViewMessage msg) {
         UserMO user = WonderlandContext.getUserManager().getUser(session);
         AvatarMO avatar = user.getAvatar(msg.getAvatarID());
         if (avatar == null) {
@@ -120,7 +120,7 @@ class AvatarHandlerMO implements ClientHandler, Serializable {
                 WonderlandContext.getCellManager().addCell(avatar);
 
         } catch (MultipleParentException ex) {
-            Logger.getLogger(AvatarHandlerMO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ViewHandlerMO.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return new AvatarCreateResponseMessage(msg.getMessageID(), avatar.getCellID());

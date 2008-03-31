@@ -26,14 +26,14 @@ import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCacheHandler;
 import org.jdesktop.wonderland.client.cell.CellCacheHandler.CellCacheMessageListener;
-import org.jdesktop.wonderland.client.cell.CellHandler;
+import org.jdesktop.wonderland.client.cell.CellChannelHandler;
 import org.jdesktop.wonderland.client.comms.AttachFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.common.cell.messages.AvatarCreateResponseMessage;
-import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
+import org.jdesktop.wonderland.common.cell.messages.ViewMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 
 /**
@@ -46,18 +46,18 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
     
     /** the cell client */
     private CellCacheHandler cellCacheClient;
-    private AvatarHandler avatarClient;
+    private ViewHandler avatarClient;
     private LocalAvatar localAvatar;
-    private CellHandler cellClient;
+    private CellChannelHandler cellClient;
     
     public BoundsTestClientSession(WonderlandServerInfo serverInfo, 
             CellCacheMessageListener messageListener) {
         super (serverInfo);
         
         
-        avatarClient = new AvatarHandler();
+        avatarClient = new ViewHandler();
         localAvatar = new LocalAvatar(avatarClient);
-        cellClient = new CellHandler();
+        cellClient = new CellChannelHandler();
         avatarClient.addListener(localAvatar);
 
         cellCacheClient = new CellCacheHandler();
@@ -94,7 +94,8 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
         try {
             avatarClient.attach(this);
             AvatarCreateResponseMessage response = (AvatarCreateResponseMessage) 
-                    avatarClient.sendAndWait(AvatarMessage.newCreateMessage(AVATAR_ID));
+            avatarClient.sendAndWait(ViewMessage.newCreateMessage(AVATAR_ID));
+            
             localAvatar.setAvatarCellID(response.getAvatarCellID());
             System.out.println("CREATED AVATAR "+response.getAvatarCellID());
             

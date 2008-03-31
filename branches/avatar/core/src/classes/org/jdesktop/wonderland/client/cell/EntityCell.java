@@ -31,14 +31,14 @@ import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
  * @author paulby
  */
 public class EntityCell extends Cell implements ChannelCell {
-    private CellHandler cellClient;
+    private CellChannelHandler cellClient;
     
     private static Logger logger = Logger.getLogger(EntityCell.class.getName());
     private ArrayList<CellMoveListener> serverMoveListeners = null;
     
     public EntityCell(CellID cellID) {
         super(cellID);
-        cellClient = CellHandler.getCellClient();
+        cellClient = CellChannelHandler.getCellClient();
     }
     
     /**
