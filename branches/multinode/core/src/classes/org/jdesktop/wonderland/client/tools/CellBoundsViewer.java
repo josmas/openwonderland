@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.client.cell.EntityManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.client.tools.AvatarHandler.AvatarMessageListener;
+import org.jdesktop.wonderland.client.tools.ViewHandler.ViewMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;

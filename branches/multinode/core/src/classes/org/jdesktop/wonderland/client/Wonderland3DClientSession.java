@@ -20,7 +20,7 @@
 package org.jdesktop.wonderland.client;
 
 import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.client.cell.CellHandler;
+import org.jdesktop.wonderland.client.cell.CellChannelHandler;
 import org.jdesktop.wonderland.client.comms.AttachFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
@@ -36,19 +36,19 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 public class Wonderland3DClientSession extends WonderlandSessionImpl {
     
     /** the cell client */
-    private CellHandler cellClient;
+    private CellChannelHandler cellClient;
     
     public Wonderland3DClientSession(WonderlandServerInfo serverInfo) {
         super (serverInfo);
         
-        cellClient = new CellHandler();
+        cellClient = new CellChannelHandler();
     }
     
     /** 
-     * Get the CellHandler for sending cell messages 
+     * Get the CellChannelHandler for sending cell messages 
      * @return the cell client
      */
-    public CellHandler getCellClient() {
+    public CellChannelHandler getCellClient() {
         return cellClient;
     }
 

@@ -25,12 +25,12 @@ import org.jdesktop.wonderland.common.comms.HandlerType;
  * The HandlerType of the AvatarClient
  * @author paulby
  */
-public class AvatarHandlerType extends HandlerType {
+public class ViewHandlerType extends HandlerType {
     /** the client type for the cell client */
     public static final HandlerType CLIENT_TYPE =
-            new AvatarHandlerType("__AvatarClient");
+            new ViewHandlerType("__AvatarClient");
     
-    private AvatarHandlerType(String type) {
+    private ViewHandlerType(String type) {
         super (type);
     }
 }

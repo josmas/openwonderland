@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
-import org.jdesktop.wonderland.common.cell.CellHandlerType;
+import org.jdesktop.wonderland.common.cell.CellChannelHandlerType;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
@@ -33,10 +33,10 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * Handles CellMessages sent by the Wonderland client
  * @author jkaplan
  */
-class CellHandlerMO implements ClientHandler, Serializable {
+class CellChannelHandlerMO implements ClientHandler, Serializable {
     
     public HandlerType getClientType() {
-        return CellHandlerType.CLIENT_TYPE;
+        return CellChannelHandlerType.CLIENT_TYPE;
     }
 
     public void registered(WonderlandClientSender sender) {
