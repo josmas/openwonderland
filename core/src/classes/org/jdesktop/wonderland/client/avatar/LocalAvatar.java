@@ -21,11 +21,11 @@ package org.jdesktop.wonderland.client.avatar;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.EntityCell;
-import org.jdesktop.wonderland.client.tools.AvatarHandler;
-import org.jdesktop.wonderland.client.tools.AvatarHandler.AvatarMessageListener;
+import org.jdesktop.wonderland.client.tools.ViewHandler;
+import org.jdesktop.wonderland.client.tools.ViewHandler.ViewMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
+import org.jdesktop.wonderland.common.cell.messages.ViewMessage;
 
 /**
  * The Avatar that is local to this client. Local means it's controlled
@@ -33,12 +33,12 @@ import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
  * 
  * @author paulby
  */
-public class LocalAvatar implements AvatarMessageListener {
+public class LocalAvatar implements ViewMessageListener {
 
     private CellID avatarCellID;
-    private AvatarHandler avatarClient;
+    private ViewHandler avatarClient;
     
-    public LocalAvatar(AvatarHandler avatarClient) {
+    public LocalAvatar(ViewHandler avatarClient) {
         this.avatarClient = avatarClient;
     }
     
@@ -47,14 +47,14 @@ public class LocalAvatar implements AvatarMessageListener {
     }
     
     public void localMoveRequest(Vector3f location, Quaternion orientation) {
-        avatarClient.send(AvatarMessage.newMoveRequestMessage(avatarCellID, location, orientation));
+        avatarClient.send(ViewMessage.newMoveRequestMessage(avatarCellID, location, orientation));
     }
     
     public void avatarGesture(int gesture) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void avatarMoved(CellTransform transform) {
+    public void viewMoved(CellTransform transform) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

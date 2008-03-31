@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile: LogControl.java,v $
+ * $Id$
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -13,43 +13,40 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3 $
- * $Date: 2007/10/23 18:27:41 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
  */
 package org.jdesktop.wonderland.client.tools;
 
 import org.jdesktop.wonderland.client.cell.*;
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.BaseHandler;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.common.cell.AvatarHandlerType;
+import org.jdesktop.wonderland.common.cell.ViewHandlerType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.messages.AvatarMessage;
+import org.jdesktop.wonderland.common.cell.messages.ViewMessage;
 import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * The AvatarHandler handles avatar communication
+ * The ViewHandler handles view setup and communication
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarHandler extends BaseHandler {
-    private static final Logger logger = Logger.getLogger(AvatarHandler.class.getName());
+public class ViewHandler extends BaseHandler {
+    private static final Logger logger = Logger.getLogger(ViewHandler.class.getName());
     
-    private ArrayList<AvatarMessageListener> listeners = new ArrayList();
+    private ArrayList<ViewMessageListener> listeners = new ArrayList();
     
     /**
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
      */
     public HandlerType getClientType() {
-        return AvatarHandlerType.CLIENT_TYPE;
+        return ViewHandlerType.CLIENT_TYPE;
     }
 
     /**
@@ -57,22 +54,22 @@ public class AvatarHandler extends BaseHandler {
      * not once the system is running
      * @param listener
      */
-    public void addListener(AvatarMessageListener listener) {
+    public void addListener(ViewMessageListener listener) {
         listeners.add(listener);
     }
     
     /**
-     * Send a cell message to a specific cell on the server
+     * Send a message to the associated server view object
      * @see org.jdesktop.wonderland.client.comms.WonderlandSession#send(WonderlandClient, Message)
      * 
      * @param message the cell message to send
      */
-    public void send(AvatarMessage message) {
+    public void send(ViewMessage message) {
         super.send(message);
     }
     
     /**
-     * Send a cell messag to a specific cell on the server with the given
+     * Send a message to the associated server view object with the given
      * listener.
      * @see org.jdesktop.wonderland.client.comms.WonderlandSession#send(WonderlandClient, Message, ResponseListener)
      * 
@@ -80,7 +77,7 @@ public class AvatarHandler extends BaseHandler {
      * @param listener the response listener to notify when a response
      * is received.
      */
-    public void send(AvatarMessage message, ResponseListener listener) {
+    public void send(ViewMessage message, ResponseListener listener) {
         super.send(message, listener);
     }
     
@@ -93,7 +90,7 @@ public class AvatarHandler extends BaseHandler {
      * @throws InterruptedException if there is a problem sending a message
      * to the given cell
      */
-    public ResponseMessage sendAndWait(AvatarMessage message)
+    public ResponseMessage sendAndWait(ViewMessage message)
         throws InterruptedException
     {
         return super.sendAndWait(message);
@@ -104,14 +101,14 @@ public class AvatarHandler extends BaseHandler {
      * @param message the message to handle
      */
     public void handleMessage(Message message) {
-        if (!(message instanceof AvatarMessage))
+        if (!(message instanceof ViewMessage))
             throw new RuntimeException("Unexpected message type "+message.getClass().getName());
         
-        AvatarMessage msg = (AvatarMessage)message;
+        ViewMessage msg = (ViewMessage)message;
         switch(msg.getActionType()) {
             case MOVED :
-                for(AvatarMessageListener l : listeners) {
-                    l.avatarMoved(new CellTransform(msg.getRotation(), msg.getLocation()));
+                for(ViewMessageListener l : listeners) {
+                    l.viewMoved(new CellTransform(msg.getRotation(), msg.getLocation()));
                 }
                 break;
             default :
@@ -126,21 +123,14 @@ public class AvatarHandler extends BaseHandler {
     }
     
     /**
-     * Listener interface for cell cache action messages
+     * Listener interface for view move information.
+     * Views associated with avatars do not use this mechanism, instead
+     * the information is sent directly to the AvatarCell
      */
-    public static interface AvatarMessageListener {
+    public static interface ViewMessageListener {
         /**
-         * The avatar has moved (in world coordinates)
-         * 
-         * @param location
-         * @param velocity
+         * The view has moved (in world coordinates)
          */
-        public void avatarMoved(CellTransform transform);
-        
-        /**
-         * Just an example
-         * @param gesture
-         */
-        public void avatarGesture(int gesture);
+        public void viewMoved(CellTransform transform);
     }
 }
