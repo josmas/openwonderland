@@ -25,7 +25,7 @@ import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.BaseHandler;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.common.cell.CellHandlerType;
+import org.jdesktop.wonderland.common.cell.CellChannelHandlerType;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -36,25 +36,25 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author jkaplan
  */
 @ExperimentalAPI
-public class CellHandler extends BaseHandler {
-    private static CellHandler cellClient = null;
-    private static Logger logger = Logger.getLogger(CellHandler.class.getName());
+public class CellChannelHandler extends BaseHandler {
+    private static CellChannelHandler cellClient = null;
+    private static Logger logger = Logger.getLogger(CellChannelHandler.class.getName());
     
-    public CellHandler() {
+    public CellChannelHandler() {
         super();
         cellClient = this;
     }
     
-    public static CellHandler getCellClient() {
+    public static CellChannelHandler getCellClient() {
         return cellClient;
     }
     
     /**
      * Get the type of client
-     * @return CellHandlerType.CELL_CLIENT_TYPE
+     * @return CellChannelHandlerType.CELL_CLIENT_TYPE
      */
     public HandlerType getClientType() {
-        return CellHandlerType.CLIENT_TYPE;
+        return CellChannelHandlerType.CLIENT_TYPE;
     }
 
     /**

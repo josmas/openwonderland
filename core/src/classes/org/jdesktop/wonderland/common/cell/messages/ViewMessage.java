@@ -26,23 +26,23 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * 
  * @author paulby
  */
-public class AvatarMessage extends CellMessage {
+public class ViewMessage extends CellMessage {
 
     private Vector3f location;
     private Quaternion orientation;
     private String avatarID;
 
     /**
-     * CREATE - ask the server to get or create our avatar
-     * MOVE_REQUEST - client asking the server to move avatar
-     * MOVED - server informing clients avatar has moved
+     * CREATE - ask the server to get or create our view
+     * MOVE_REQUEST - client asking the server to move view
+     * MOVED - server informing clients view has moved
      * 
      */
     public enum ActionType { CREATE, MOVED, MOVE_REQUEST };
     
     private ActionType actionType;
     
-    private AvatarMessage(CellID cellID, ActionType actionType) {
+    private ViewMessage(CellID cellID, ActionType actionType) {
         super(cellID);
         this.actionType = actionType;
     }
@@ -75,22 +75,22 @@ public class AvatarMessage extends CellMessage {
         this.avatarID = avatarID;
     }
     
-    public static AvatarMessage newMovedMessage(CellID avatarCellID, Vector3f location, Quaternion orientation) {
-        AvatarMessage ret = new AvatarMessage(avatarCellID, ActionType.MOVED);
+    public static ViewMessage newMovedMessage(CellID avatarCellID, Vector3f location, Quaternion orientation) {
+        ViewMessage ret = new ViewMessage(avatarCellID, ActionType.MOVED);
         ret.setLocation(location);
         ret.setOrientation(orientation);
         return ret;
     }
     
-    public static AvatarMessage newMoveRequestMessage(CellID avatarCellID, Vector3f location, Quaternion orientation) {
-        AvatarMessage ret = new AvatarMessage(avatarCellID, ActionType.MOVE_REQUEST);
+    public static ViewMessage newMoveRequestMessage(CellID avatarCellID, Vector3f location, Quaternion orientation) {
+        ViewMessage ret = new ViewMessage(avatarCellID, ActionType.MOVE_REQUEST);
         ret.setLocation(location);
         ret.setOrientation(orientation);
         return ret;
     }
     
-    public static AvatarMessage newCreateMessage(String avatarID) {
-        AvatarMessage ret = new AvatarMessage(null, ActionType.CREATE);
+    public static ViewMessage newCreateMessage(String avatarID) {
+        ViewMessage ret = new ViewMessage(null, ActionType.CREATE);
         ret.setAvatarID(avatarID);
         return ret;
     }
