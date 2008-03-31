@@ -239,14 +239,15 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
         renderInfo.getRoot().updateGeometricState(0.0f, true);
         renderInfo.getRoot().updateRenderState();
         
-        try {
-        InputStream in = new FileInputStream("/Users/paulby/src/java.net/jme/trunk/jme/src/jmetest/data/texture/Decal.PNG");
-        
-        TextureManager.loadImage("png", in, false);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
+        // Test case for problematic image format
+//        try {
+//        InputStream in = new FileInputStream("/Users/paulby/src/java.net/jme/trunk/jme/src/jmetest/data/texture/Decal.PNG");
+//        
+//        TextureManager.loadImage("png", in, false);
+//        } catch(Exception e) {
+//            e.printStackTrace();
+//            System.exit(1);
+//        }
         
         isRunning = true;
     }
