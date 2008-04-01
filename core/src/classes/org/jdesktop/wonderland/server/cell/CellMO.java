@@ -346,7 +346,7 @@ public class CellMO implements ManagedObject, Serializable {
     
     /**
      * Set the live state of this cell. Live cells are connected to the
-     * world root, non-live cells are not
+     * world root and are present in the world, non-live cells are not
      * @param live
      */
     void setLive(boolean live) {

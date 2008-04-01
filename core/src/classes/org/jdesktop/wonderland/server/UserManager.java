@@ -31,9 +31,6 @@ import org.jdesktop.wonderland.ExperimentalAPI;
 /**
  * Manages the entire set of users logged into the system.
  *
- * In the future this should provide a spacial hierarchy of users
- * avatars so we can search for users who are close to each other.
- *
  * @author paulby
  */
 @ExperimentalAPI
@@ -55,7 +52,7 @@ public class UserManager implements ManagedObject, Serializable {
     private UserManager() {
     }
     
-    public static void initialize() {
+    static void initialize() {
         UserManager mgr = new UserManager();
         AppContext.getDataManager().setBinding(BINDING_NAME, mgr);
     }

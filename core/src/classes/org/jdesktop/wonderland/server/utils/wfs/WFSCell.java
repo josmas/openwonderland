@@ -34,8 +34,8 @@ public interface WFSCell {
      * Returns the instance of a subclass of the CellProperties class that is
      * decoded from the XML file representation.
      *
-     * @throw FileNotFoundException If the file cannot be read
-     * @throw InvalidWFSCellException If the cell in the file is invalid
+     * @throws FileNotFoundException If the file cannot be read
+     * @throws InvalidWFSCellException If the cell in the file is invalid
      */
     public <T extends WfsCellMOSetup> T decode() throws FileNotFoundException, InvalidWFSCellException;
     

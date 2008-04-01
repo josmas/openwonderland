@@ -16,7 +16,7 @@
  * $Revision$
  * $Date$
  */
-package org.jdesktop.wonderland.client.tools;
+package org.jdesktop.wonderland.client.comms;
 
 import org.jdesktop.wonderland.client.cell.*;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class ViewHandler extends BaseHandler {
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
      */
-    public HandlerType getClientType() {
+    public HandlerType getHandlerType() {
         return ViewHandlerType.CLIENT_TYPE;
     }
 

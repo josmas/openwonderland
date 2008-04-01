@@ -56,11 +56,11 @@ import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
  * Clients can select this listener by specifiying "wonderland_client" in
  * the protocol selection message.
  * <p>
- * The WonderlandSessionListener supports an extensible set of listeners.
- * Listeners can be registered to listen for specific message types.  These
- * messages will be reported for all sessions connected to the listener.
- * Note that listeners are not dynamic: listeners must be registered before
- * the first session is created.  Listeners added after a session is created
+ * The WonderlandSessionListener supports an extensible set of handlers.
+ * Hanlders can be registered to service for specific message types.  These
+ * messages will be reported for all sessions connected to the handler.
+ * Note that handlers are not dynamic: handlers must be registered before
+ * the first session is created.  Handlers added after a session is created
  * will not be used in this session.
  * <p>
  * Other convenience methods exist to send messages to all clients.

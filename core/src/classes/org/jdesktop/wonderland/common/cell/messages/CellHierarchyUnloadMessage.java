@@ -17,14 +17,14 @@
  */
 package org.jdesktop.wonderland.common.cell.messages;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- *
+ * Message informing a client to unload a cell from memory. Data associated with
+ * unloaded cells remains in the asset manager disk cache. Use DELETE_CELL to
+ * delete related assets.
+ * 
  * @author paulby
  */
 @ExperimentalAPI

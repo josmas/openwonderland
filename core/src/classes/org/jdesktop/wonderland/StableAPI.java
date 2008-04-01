@@ -26,6 +26,7 @@ package org.jdesktop.wonderland;
  * 
  * @author paulby
  */
+@StableAPI
 public @interface StableAPI {
 
 }

@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="NeoOffice 2.2  (Unix)">
+	<META NAME="CREATED" CONTENT="20080401;10510100">
+	<META NAME="CHANGED" CONTENT="20080401;13173200">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P>The Wonderland virtual world platform provides an open, extensible
+framework on which users can develop and deploy entire virtual worlds
+or applications that can run within an existing Wonderland virtual
+world.</P>
+<P><BR><BR>
+</P>
+<P STYLE="margin-top: 0.17in"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>View</FONT></FONT></P>
+<P>A View provides a view into the virtual world, having properties
+of at least location and look direction. Avatars and Cameras are
+examples of a view. The view allows the client application to
+establish a view into the virtual world. In many cases this view
+associated with an avatar, in which case the avatar, through the cell
+system, will control the view. However on smaller devices, or simpler
+interfaces, the client may choose not to have a local avatar in which
+case the view can be controlled through the View Handler.</P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>Handlers</FONT></FONT></P>
+<P>The Handlers provide a high level communication infrastructure for
+Wonderland subsystems. Any subsystem which can provide a stand alone
+service to the user will use the Handler mechanism to encapsulate all
+communication. This allows client applications to easily select the
+Wonderland subsystems that are appropriate for the users current mode
+of operation or client device capabilities. For the example the IM,
+Audio chat and Cells are all subsystems that are optional, and each
+provides it's own handler. The client side implementation of a
+specific Handler is a singleton and they must be correctly
+initialised (by calling attach in the session login) before use.</P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>Cell</FONT></FONT></P>
+<P>The cell system provides the structure of the virtual world. Each
+cell is a volume in the 3D world described as either a bounding box
+or sphere, arranged in a tree. The tree provides a spatial
+organization and requires that the bounds of any child cell is fully
+enclosed within the bounds of the parent cell. Cells can provide
+either/both content and a communication channel to the client.
+Depending on the client capabilities (as specified in the {@see
+org.jdesktop.wonderland.common.cell.ClientCapabilities} class) each
+cell can provide it's own client side representation by specifying
+the client side class used to represent the cell (see {@see
+org.jdesktop.wonderland.server.cell.CellMO#getClientCellClassName(ClientCapabilities)}),
+the same mechanism also provides for multiple communication channels
+allowing, for example, support for clients with varying network
+bandwidth capabilities. The security system in Wonderland can be used
+to provide varying level of access to any cell (and it's children) to
+a particular user.</P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>Cell
+Cache</FONT></FONT></P>
+<P>Every View in the virtual world has a Cell Cache. The Cache is
+responsible for determining which cells are available to a user.
+There is a server portion of the cell cache, and if the client
+supports it, a client portion. The server Cell Cache ( {@see
+org.jdesktop.wonderland.server.cell.CellCacheMO} ) is responsible for
+determining which cells are potentially visible to a client use a
+combination of locality to the view and security policy. The client
+is notified as cells are moved into and out of the potentially
+visible set. The client Cell Cache then computes which state each
+cell should be in as the view moves and takes the appropriate
+rendering action.</P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>Wonderland
+Session</FONT></FONT></P>
+<P>Each client application connected to the wonderland server is
+represented by a Session on both the client and the server. The
+session handles the login and also provides a single point for
+accessing all the handler required for that session. A single user
+can have multiple concurrent sessions.</P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>User</FONT></FONT></P>
+<P>Wonderland representation of a real person. Users have a unique
+username and a real world name. They also have a security context
+which provides the point of control for the security features within
+Wonderland.<!-- Document   : package
+    Created on : Apr 1, 2008, 10:50:42 AM
+    Author     : paulby
+--></P>
+</BODY>
+</HTML>

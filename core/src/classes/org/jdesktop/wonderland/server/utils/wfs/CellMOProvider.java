@@ -62,7 +62,7 @@ public abstract class CellMOProvider {
      * abstract name (e.g. "SampleCellGLO") and not a fully-qualified
      * class name.
      * @param args the arguments to use while loading the cell
-     * @returns an instantiated cell with the given type name, or null
+     * @return an instantiated cell with the given type name, or null
      * if the given cell type is not supported
      * @throws LoadCellMOException if there is an error loading the cell
      */
@@ -161,7 +161,7 @@ public abstract class CellMOProvider {
     
     /**
      * Test if a given constructor accepts the given list of arguments
-     * @param constructor the constructor to test
+     * @param ctor the constructor to test
      * @param args the arguments
      * @return true if this constructor could be called with the given
      * arguments, or false if not

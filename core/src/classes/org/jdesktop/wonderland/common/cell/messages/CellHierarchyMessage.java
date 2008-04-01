@@ -29,7 +29,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- *
+ * Superclass for messages that change the cell hierarchy in the cell cache
+ * 
  * @author paulby
  */
 @ExperimentalAPI

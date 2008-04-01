@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile: LogControl.java,v $
+ * $Id$
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -13,9 +13,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3 $
- * $Date: 2007/10/23 18:27:41 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
  */
 package org.jdesktop.wonderland.client;
 
@@ -29,13 +28,13 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 
 /**
  * An extension of WonderlandSession that attaches all the relevant
- * clients needed for the standard 3D client.
+ * handlers needed for the standard 3D client.
  * @author jkaplan
  */
 @ExperimentalAPI
 public class Wonderland3DClientSession extends WonderlandSessionImpl {
     
-    /** the cell client */
+    /** the cell channel handler */
     private CellChannelHandler cellClient;
     
     public Wonderland3DClientSession(WonderlandServerInfo serverInfo) {
@@ -48,7 +47,7 @@ public class Wonderland3DClientSession extends WonderlandSessionImpl {
      * Get the CellChannelHandler for sending cell messages 
      * @return the cell client
      */
-    public CellChannelHandler getCellClient() {
+    public CellChannelHandler getCellChannelHandler() {
         return cellClient;
     }
 

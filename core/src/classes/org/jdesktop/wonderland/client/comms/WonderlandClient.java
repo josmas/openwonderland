@@ -41,7 +41,7 @@ public interface WonderlandClient {
      * Get the type this client represents.
      * @return the type of client
      */
-    public HandlerType getClientType();
+    public HandlerType getHandlerType();
     
     /**
      * Get the session this client is attached to

@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * A basic WonderlandClient that can be extended to develop real clients.
+ * A basic Wonderland Handler that can be extended to develop real handlers.
  * @author jkaplan
  */
 @ExperimentalAPI
@@ -228,6 +228,6 @@ public abstract class BaseHandler implements WonderlandClient {
     
     @Override
     public String toString() {
-        return getClientType().toString();
+        return getHandlerType().toString();
     }
 }

@@ -9,7 +9,8 @@ import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * A response listener super type that lets 
+ * A response listener super type that lets users register a listener for
+ * a response message.
  * @author kaplanj
  */
 @ExperimentalAPI
