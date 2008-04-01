@@ -88,8 +88,10 @@ public class CellManager implements ManagedObject, Serializable {
     }
     
     /**
-     * Initialize the master cell cache
+     * Initialize the master cell cache. This is an implementation detail and
+     * should not be called by users of this class.
      */
+    @InternalAPI
     public static void initialize() {
         new CellManager();
         

@@ -42,7 +42,7 @@ public interface WFSCellDirectory {
      *
      * @param cellName The name of the cell
      * @param canonicalParent The canonical name for the parent of the new directory
-     * @throw NoSuchWFSDirectory Thrown if the cell does not have a child directory
+     * @throws NoSuchWFSDirectory Thrown if the cell does not have a child directory
      */
     public WFSCellDirectory getCellDirectory(String cellName, String canonicalParent) throws NoSuchWFSDirectory;
     

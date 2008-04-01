@@ -75,9 +75,9 @@ public class WFSVersion {
      * instantiates an instance of the WFSVersion class
      * <p>
      * @param is The input stream of the version XML file
-     * @throw FileNotFoundException If the input file does not exist
-     * @throw ClassCastException If the input file does not map to WFSAlises
-     * @throw ArrayIndexOutOfBoundsException If the file contains no objects
+     * @throws FileNotFoundException If the input file does not exist
+     * @throws ClassCastException If the input file does not map to WFSAlises
+     * @throws ArrayIndexOutOfBoundsException If the file contains no objects
      */
     public static WFSVersion decode(InputStream is) {
         XMLDecoder d       = new XMLDecoder(new BufferedInputStream(is));
@@ -92,8 +92,8 @@ public class WFSVersion {
      * XMLVersion class to that file.
      * <p>
      * @param file The output XML file to encode
-     * @throw FileNotFoundException If the file cannot be created
-     * @throw SecurityException If the file is not permitted to be created
+     * @throws FileNotFoundException If the file cannot be created
+     * @throws SecurityException If the file is not permitted to be created
      *
      */
     public void encode(File file) throws FileNotFoundException {

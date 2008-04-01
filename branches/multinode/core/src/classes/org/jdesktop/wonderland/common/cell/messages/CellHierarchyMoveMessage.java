@@ -23,7 +23,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- *
+ * A message indicating a cell has moved.
+ * 
  * @author paulby
  */
 @ExperimentalAPI

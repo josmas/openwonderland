@@ -32,7 +32,8 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * Client that received cell information
+ * Handler for Cell Channels. All data to/from cells is handled via this
+ * class.
  * @author jkaplan
  */
 @ExperimentalAPI
@@ -45,7 +46,7 @@ public class CellChannelHandler extends BaseHandler {
         cellClient = this;
     }
     
-    public static CellChannelHandler getCellClient() {
+    public static CellChannelHandler getCellChannelHandler() {
         return cellClient;
     }
     
@@ -53,7 +54,7 @@ public class CellChannelHandler extends BaseHandler {
      * Get the type of client
      * @return CellChannelHandlerType.CELL_CLIENT_TYPE
      */
-    public HandlerType getClientType() {
+    public HandlerType getHandlerType() {
         return CellChannelHandlerType.CLIENT_TYPE;
     }
 

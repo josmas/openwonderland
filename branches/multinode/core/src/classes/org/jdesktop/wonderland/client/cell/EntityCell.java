@@ -38,7 +38,7 @@ public class EntityCell extends Cell implements ChannelCell {
     
     public EntityCell(CellID cellID) {
         super(cellID);
-        cellClient = CellChannelHandler.getCellClient();
+        cellClient = CellChannelHandler.getCellChannelHandler();
     }
     
     /**

@@ -19,10 +19,12 @@
  */
 package org.jdesktop.wonderland.client.tools;
 
+import org.jdesktop.wonderland.client.comms.ViewHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.*;
 import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.InternalAPI;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCacheHandler;
 import org.jdesktop.wonderland.client.cell.CellCacheHandler.CellCacheMessageListener;
@@ -38,10 +40,10 @@ import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 
 /**
  * An extension of WonderlandSession that attaches all the relevant
- * clients needed for the standard 3D client.
+ * handlers needed for the examples in this package.
  * @author jkaplan
  */
-@ExperimentalAPI
+@InternalAPI
 public class BoundsTestClientSession extends WonderlandSessionImpl {
     
     /** the cell client */

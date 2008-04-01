@@ -23,7 +23,7 @@ import java.io.Serializable;
 import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
- * The type of a Wonderland client.
+ * The type of a Wonderland handler.
  * @author jkaplan
  */
 @ExperimentalAPI

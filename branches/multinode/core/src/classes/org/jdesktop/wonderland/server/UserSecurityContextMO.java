@@ -20,12 +20,15 @@ package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * The security information for a user.
+ * TODO Add methods
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class UserSecurityContextMO implements ManagedObject, Serializable {
 
 }

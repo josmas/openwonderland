@@ -26,7 +26,9 @@ import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
 
 /**
- *
+ * Provides a single point of access to all the major Wonderland subsystems on
+ * a server.
+ * 
  * @author paulby
  */
 @ExperimentalAPI

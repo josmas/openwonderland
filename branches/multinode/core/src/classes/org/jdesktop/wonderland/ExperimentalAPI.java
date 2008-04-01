@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile: MasterCellCacheGLO.java,v $
+ * $Id$
  *
  * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -13,9 +13,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.14 $
- * $Date: 2007/11/07 15:46:52 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
  */
 package org.jdesktop.wonderland;
 
@@ -26,6 +25,7 @@ package org.jdesktop.wonderland;
  * 
  * @author paulby
  */
+@StableAPI
 public @interface ExperimentalAPI {
 
 }

@@ -221,9 +221,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // check if there is already a client registered (or registering) for
         // this client type
         synchronized (clients) {
-            if (getClientRecord(client.getClientType()) != null) {
+            if (getClientRecord(client.getHandlerType()) != null) {
                 throw new AttachFailureException("Duplicate attach for " +
-                        "client type " + client.getClientType());
+                        "client type " + client.getHandlerType());
             }
             
             // Add a client record.  Adding a client record at this early
@@ -235,7 +235,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
         
         // send a request to the server to attach the given client type
-        Message attachMessage = new AttachClientMessage(client.getClientType());
+        Message attachMessage = new AttachClientMessage(client.getHandlerType());
         
         // Create a listener to handle the response.  We cannot do this
         // using just sendAndWait() because the response has to be
@@ -340,7 +340,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         ClientRecord record = getClientRecord(client);
         if (record == null) {
             throw new IllegalStateException(
-                    "Client " + client.getClientType() + " not attached.");
+                    "Client " + client.getHandlerType() + " not attached.");
         }
         
         // send the message to the server
@@ -406,7 +406,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest(getName() + " received session message for handler " + 
-                          record.getClient().getClientType()+"  message type "+message.getClass().getName());
+                          record.getClient().getHandlerType()+"  message type "+message.getClass().getName());
         }
         
         record.handleMessage(message);
@@ -456,7 +456,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
     protected ClientRecord addClientRecord(WonderlandClient client) {
         logger.fine(getName() + " adding record for client " + client);
         ClientRecord record = new ClientRecord(client);
-        clients.put(client.getClientType(), record);
+        clients.put(client.getHandlerType(), record);
         return record;
     }
     
@@ -482,7 +482,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * client is not attached to this session
      */
     protected ClientRecord getClientRecord(WonderlandClient client) {
-        ClientRecord record = clients.get(client.getClientType());
+        ClientRecord record = clients.get(client.getHandlerType());
         
         // If the record exists, also make sure it matches the current client.
         // If a different client is registered with the given client type, 
@@ -526,7 +526,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         ClientRecord record = getClientRecord(client);
         if (record != null) {
             synchronized (clients) {
-                clients.remove(client.getClientType());
+                clients.remove(client.getHandlerType());
                 clientsByID.remove(Short.valueOf(record.getClientID()));
             }
         }
@@ -832,7 +832,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * Handle traffic over the session channel
      */
     protected static class SessionInternalHandler extends BaseHandler {
-        public HandlerType getClientType() {
+        public HandlerType getHandlerType() {
             // only used internally
             return INTERNAL_CLIENT_TYPE;
         }

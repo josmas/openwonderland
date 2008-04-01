@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * Client that handles Cell cache information
+ * Handler for Cell cache information
  * @author jkaplan
  */
 @ExperimentalAPI
@@ -49,7 +49,7 @@ public class CellCacheHandler extends BaseHandler {
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
      */
-    public HandlerType getClientType() {
+    public HandlerType getHandlerType() {
         return CellCacheHandlerType.CLIENT_TYPE;
     }
 
@@ -73,9 +73,7 @@ public class CellCacheHandler extends BaseHandler {
     }
     
     /**
-     * Send a cell message to a specific cell on the server with the given
-     * listener.
-     * @see org.jdesktop.wonderland.client.comms.WonderlandSession#send(WonderlandClient, Message, ResponseListener)
+     * Send a message to the server CellCacheHandler
      * 
      * @param message the message to send
      * @param listener the response listener to notify when a response
@@ -86,15 +84,14 @@ public class CellCacheHandler extends BaseHandler {
     }
     
     /**
-     * Send a cell message to a specific cell on the server and wait for a 
+     * Send a message to the server and wait for a 
      * response.
-     * @see org.jdesktop.wonderland.client.comms.WonderlandSession#sendAndWait(WonderlandClient, Message)
      * 
      * @param message the message to send
      * @throws InterruptedException if there is a problem sending a message
      * to the given cell
      */
-    public ResponseMessage sendAndWait(CellMessage message)
+    public ResponseMessage sendAndWait(CellHierarchyMessage message)
         throws InterruptedException
     {
         return super.sendAndWait(message);
