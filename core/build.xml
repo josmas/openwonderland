@@ -418,16 +418,20 @@
 
         <javadoc destdir="${release.javadoc.dir}/all"
             sourcepath="${javasrc.dir}"
-            packagenames="org.jdesktop.*">
+            packagenames="org.jdesktop.*"
+            overview="${javasrc.dir}/org/jdesktop/wonderland/doc-files/overview.html">
             <classpath>
-                <pathelement location="${sgs.lib.dir}/sgs.jar"/>
-                <pathelement location="${sgs.lib.dir}/sgs-client.jar"/>
+		<pathelement path="${wonderland-server.classpath}"/>
+		<pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
             </classpath>
             
             <doctitle><![CDATA[<h1>Project Wonderland</h1>]]></doctitle>
             <bottom><![CDATA[<i>Project Wonderland - http://wonderland.dev.java.net</i>]]></bottom>
             <link offline="true" href="http://java.sun.com/javase/6/docs/api" packageListLoc="${javadoc.packagelist.dir}/1.5.0"/>
-            <link offline="true" href="http://download.java.net/media/java3d/javadoc/1.5.0/" packageListLoc="${javadoc.packagelist.dir}/j3dapi"/>
+            <link offline="true" href="http://www.jmonkeyengine.com/doc/" packageListLoc="${javadoc.packagelist.dir}/jmonkeyengine"/>
+            <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-server"/>
+            <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-client"/>
         </javadoc>
     </target>
 
@@ -437,11 +441,13 @@
 
         <javadoc destdir="${release.javadoc.dir}/api"
             sourcepath="${javasrc.dir}"
-            packagenames="org.jdesktop.*">
+            packagenames="org.jdesktop.*"
+            overview="${javasrc.dir}/org/jdesktop/wonderland/doc-files/overview.html">
                 
             <classpath>
-                <pathelement location="${sgs.lib.dir}/sgs.jar"/>
-                <pathelement location="${sgs.lib.dir}/sgs-client.jar"/>
+		<pathelement path="${wonderland-server.classpath}"/>
+		<pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
             </classpath>
             
             <doclet name="org.jdesktop.wonderland.utils.doclet.WonderlandDoclet"
@@ -452,7 +458,9 @@
             <doctitle><![CDATA[<h1>Project Wonderland</h1>]]></doctitle>
             <bottom><![CDATA[<i>Project Wonderland - http://wonderland.dev.java.net</i>]]></bottom>
             <link offline="true" href="http://java.sun.com/javase/6/docs/api" packageListLoc="${javadoc.packagelist.dir}/1.5.0"/>
-            <link offline="true" href="http://download.java.net/media/java3d/javadoc/1.5.0/" packageListLoc="${javadoc.packagelist.dir}/j3dapi"/>
+            <link offline="true" href="http://www.jmonkeyengine.com/doc/" packageListLoc="${javadoc.packagelist.dir}/jmonkeyengine"/>
+            <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-server"/>
+            <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-client"/>
         </javadoc>
     </target>
     
@@ -460,6 +468,10 @@
         <property name="wonderland.doclet.dir" location="${top.dir}/utils/wonderland-doclet"/>
         
         <ant antfile="${wonderland.doclet.dir}/build.xml" target="dist" inheritall="false" dir="${wonderland.doclet.dir}"/>
+    </target>
+    
+    <target name="run-server" description="Run the Wonderland Server">
+        <antcall target="run-sgs"/>
     </target>
     
     <import file="${build-import.dir}/build-package.xml"/>
