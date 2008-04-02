@@ -159,6 +159,7 @@ public class CellCacheHandler extends BaseHandler {
     /**
      * Listener interface for cell cache action messages
      */
+    @ExperimentalAPI
     public static interface CellCacheMessageListener {
         /**
          * Load the cell and prepare it for use

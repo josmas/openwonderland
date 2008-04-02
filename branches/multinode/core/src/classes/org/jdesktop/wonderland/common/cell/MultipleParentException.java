@@ -18,12 +18,15 @@
 
 package org.jdesktop.wonderland.common.cell;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
+
 /**
  * Exception indicating that the user has attempted to add a cell to 
  * multiple parents.
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class MultipleParentException extends Exception {
 
 }

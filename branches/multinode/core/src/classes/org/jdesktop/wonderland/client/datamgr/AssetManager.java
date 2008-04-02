@@ -40,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.datamgr.TrackingInputStream.ProgressListener;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
@@ -51,6 +52,7 @@ import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class AssetManager {
     
     private Logger logger = Logger.getLogger(AssetManager.class.getName());
@@ -508,6 +510,7 @@ public class AssetManager {
     /**
      * Used to recieve notification when an asset load has been completed.
      */
+    @ExperimentalAPI
     public interface AssetReadyListener {
         /**
          * Called when the asset is ready for use

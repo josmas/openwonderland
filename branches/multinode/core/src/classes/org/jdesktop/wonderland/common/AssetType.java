@@ -19,12 +19,15 @@
  */
 package org.jdesktop.wonderland.common;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
+
 /**
  *
  * Asset types
  *
  * @author paulby
  */
+@ExperimentalAPI
 public enum AssetType {
     
     // IMPORTANT names must be <=10 characters

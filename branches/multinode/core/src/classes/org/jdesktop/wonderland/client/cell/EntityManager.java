@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.client.cell;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Global services for client entities. The manager will only
@@ -28,6 +29,7 @@ import java.util.Set;
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class EntityManager {
 
     private static EntityManager entityManager = null;
@@ -70,6 +72,7 @@ public class EntityManager {
         entityListeners.remove(listener);
     }
     
+    @ExperimentalAPI
     public interface EntityListener {
         /**
          * Notification that an entity has moved. 
