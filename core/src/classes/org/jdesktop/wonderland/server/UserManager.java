@@ -26,7 +26,7 @@ import com.sun.sgs.app.NameNotBoundException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Manages the entire set of users logged into the system.
@@ -220,6 +220,8 @@ public class UserManager implements ManagedObject, Serializable {
     
     /**
      *  Return total number of users currently logged in
+     * 
+     *  @return total number of users currently logged in
      **/
     public int getUserCount() {
         return sessionToUser.size();
@@ -227,6 +229,9 @@ public class UserManager implements ManagedObject, Serializable {
     
     /**
      *  Get the maximum number of users allowed on the server
+     * 
+     *  @return the maximum number of concurrent users this world will
+     * allow to log in.
      */
     public int getUserLimit() {
         return userLimit;
@@ -234,6 +239,9 @@ public class UserManager implements ManagedObject, Serializable {
 
     /**
      *  Set the maximum number of users allowed on the server
+     * 
+     * @param userLimit the maximum number of concurrent users this world will
+     * allow to log in.
      */
     public void setUserLimit(int userLimit) {
         this.userLimit = userLimit;

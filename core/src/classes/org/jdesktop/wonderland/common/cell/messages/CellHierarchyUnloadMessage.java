@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.common.cell.messages;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**

@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.client.comms;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;

@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.common.cell;
 
 import java.io.Serializable;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Interface for all cell setup data

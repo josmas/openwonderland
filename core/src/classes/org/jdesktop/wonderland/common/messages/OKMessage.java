@@ -20,7 +20,7 @@
 
 package org.jdesktop.wonderland.common.messages;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Report to a clien that a message was processed successfully

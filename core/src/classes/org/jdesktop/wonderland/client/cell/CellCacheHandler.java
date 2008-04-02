@@ -22,7 +22,7 @@ package org.jdesktop.wonderland.client.cell;
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.BaseHandler;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellCacheHandlerType;
@@ -123,11 +123,6 @@ public class CellCacheHandler extends BaseHandler {
                             msg.getCellTransform());
                 }
                  break;
-            case SET_WORLD_ROOT :
-                for(CellCacheMessageListener l : listeners) {
-                    l.setRootCell(msg.getCellID());
-                }
-                break;
             case UNLOAD_CELL :
                 for(CellCacheMessageListener l : listeners) {
                     l.unloadCell(msg.getCellID());
@@ -204,8 +199,6 @@ public class CellCacheHandler extends BaseHandler {
          */
         public void deleteCell(CellID cellID);
         
-        public void setRootCell(CellID cellID);
-       
         public void moveCell(CellID cellID,
                              CellTransform cellTransform);
     }

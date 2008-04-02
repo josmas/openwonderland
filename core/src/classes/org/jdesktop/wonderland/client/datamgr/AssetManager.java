@@ -40,9 +40,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.datamgr.TrackingInputStream.ProgressListener;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 
 /**

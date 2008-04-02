@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellSetup;
@@ -47,12 +47,12 @@ import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
 /**
- * Server side representation of a cell
+ * Superclass for all server side representation of a cell
  * 
  * @author paulby
  */
 @ExperimentalAPI
-public class CellMO implements ManagedObject, Serializable {
+public abstract class CellMO implements ManagedObject, Serializable {
 
     private ManagedReference<CellMO> parentRef=null;
     private ArrayList<ManagedReference<CellMO>> childCellRefs = null;
@@ -495,10 +495,7 @@ public class CellMO implements ManagedObject, Serializable {
      * Returns the fully qualified name of the class that represents
      * this cell on the client
      */
-    protected String getClientCellClassName(ClientCapabilities capabilities) {
-//        throw new RuntimeException("Not Implemented");
-        return "dummy";
-    }
+    protected abstract String getClientCellClassName(ClientCapabilities capabilities);
     
     /**
      * Get the setupdata for this cell. Subclasses should overload to

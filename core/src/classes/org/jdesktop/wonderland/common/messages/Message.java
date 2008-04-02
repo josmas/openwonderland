@@ -20,7 +20,7 @@
 package org.jdesktop.wonderland.common.messages;
 
 import java.io.Serializable;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The base type of a message in the Wonderland system. 

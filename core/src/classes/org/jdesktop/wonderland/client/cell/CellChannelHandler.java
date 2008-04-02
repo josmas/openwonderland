@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.client.cell;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.BaseHandler;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
@@ -69,7 +69,7 @@ public class CellChannelHandler extends BaseHandler {
     }
     
     /**
-     * Send a cell messag to a specific cell on the server with the given
+     * Send a cell message to a specific cell on the server with the given
      * listener.
      * @see org.jdesktop.wonderland.client.comms.WonderlandSession#send(WonderlandClient, Message, ResponseListener)
      * 

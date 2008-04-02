@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.client.cell;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Global services for client entities. The manager will only

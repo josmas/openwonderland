@@ -21,10 +21,10 @@ package org.jdesktop.wonderland.client.datamgr;
 
 import java.io.File;
 import java.util.ArrayList;
-import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.datamgr.AssetManager.AssetReadyListener;
 import org.jdesktop.wonderland.client.datamgr.AssetManager.Checksum;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An asset in the system

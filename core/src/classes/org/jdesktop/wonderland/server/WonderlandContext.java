@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.server;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.server.cell.CacheManager;
 import org.jdesktop.wonderland.server.cell.CellManager;
 import org.jdesktop.wonderland.server.comms.CommsManager;

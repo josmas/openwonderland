@@ -21,7 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.io.Serializable;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The transform for a cell.
@@ -99,8 +99,8 @@ public class CellTransform implements Serializable {
      * Populates translation with the translation of this CellTransform, if translation
      * is null, a new Vector3f will be created and returned
      * 
-     * @param translation
-     * @return
+     * @param translation object to return (to avoid gc)
+     * @return the translation for this transform
      */
     public Vector3f getTranslation(Vector3f translation) {
         if (translation==null)
@@ -112,7 +112,7 @@ public class CellTransform implements Serializable {
     
     /**
      * Set the translation.
-     * @param translation
+     * @param translation set the translation for this transform
      */
     public void setTranslation(Vector3f translation) {
         this.translation = translation;
@@ -121,8 +121,12 @@ public class CellTransform implements Serializable {
     }
 
     /**
-     * Get the rotation portion of this transform
-     * @return
+     * Get the rotation portion of this transform. Populates the rotation 
+     * paramter with the current rotation and returns it, if rotation is null
+     * a new Quaternion is returned.
+     * 
+     * @param rotation object to return (to avoid gc)
+     * @return the rotation quaternion for this transform
      */
     public Quaternion getRotation(Quaternion rotation) {
         if (rotation==null)
@@ -135,7 +139,7 @@ public class CellTransform implements Serializable {
 
     /**
      * Set the rotation portion of this transform
-     * @param rotation
+     * @param rotation set the rotation for this transform
      */
     public void setRotation(Quaternion rotation) {
         this.rotation = new Quaternion(rotation);

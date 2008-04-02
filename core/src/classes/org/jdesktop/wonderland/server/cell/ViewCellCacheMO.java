@@ -120,9 +120,6 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         msg = CellManager.newCreateCellMessage(rootCell, capabilities);
         sender.send(session, msg);
         
-        msg = CellManager.newRootCellMessage(rootCell);
-        sender.send(session, msg);
-        
         currentCells.put(rootCellID, new CellRef(rootCell));
         
         if (CacheManager.USE_CACHE_MANAGER) {
@@ -244,7 +241,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                                 monitor.incMessageCount();
                                 break;
                             case VIEW_CACHE_OPERATION :
-                                cellRef.getCellSessionProperties().getViewCacheOperation().execute(view.getTransform());
+                                cellRef.getCellSessionProperties().getViewCacheOperation().cacheRevalidate(view.getTransform());
                                 break;
                         }
                     }

@@ -5,7 +5,7 @@
 
 package org.jdesktop.wonderland.common.messages;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A runtime exception when there is a problem serializing or deserializing

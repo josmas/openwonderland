@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.server.cell.bounds;
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import java.util.Collection;
-import org.jdesktop.wonderland.InternalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;

@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.server.cell.bounds;
 
 import com.jme.bounding.BoundingVolume;
 import java.util.Collection;
-import org.jdesktop.wonderland.PrivateAPI;
+import org.jdesktop.wonderland.common.PrivateAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;

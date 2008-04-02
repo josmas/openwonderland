@@ -17,7 +17,7 @@
  * $Date: 2007/11/07 15:46:52 $
  * $State: Exp $
  */
-package org.jdesktop.wonderland;
+package org.jdesktop.wonderland.common;
 
 /**
  * Indicates the API is for internal use within the project.

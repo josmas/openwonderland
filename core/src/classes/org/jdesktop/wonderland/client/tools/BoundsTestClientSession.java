@@ -23,8 +23,8 @@ import org.jdesktop.wonderland.client.comms.ViewHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.*;
-import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.InternalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCacheHandler;
 import org.jdesktop.wonderland.client.cell.CellCacheHandler.CellCacheMessageListener;
@@ -93,7 +93,7 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
         String AVATAR_ID = "DEFAULT";
         
         // if login succeeds, attach the various clients
-        try {
+        try { 
             avatarClient.attach(this);
             AvatarCreateResponseMessage response = (AvatarCreateResponseMessage) 
             avatarClient.sendAndWait(ViewMessage.newCreateMessage(AVATAR_ID));

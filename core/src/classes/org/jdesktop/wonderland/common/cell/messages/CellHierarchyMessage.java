@@ -18,11 +18,7 @@
 package org.jdesktop.wonderland.common.cell.messages;
 
 import com.jme.bounding.BoundingVolume;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -33,7 +29,7 @@ import org.jdesktop.wonderland.common.messages.Message;
  * 
  * @author paulby
  */
-@ExperimentalAPI
+@InternalAPI
 public class CellHierarchyMessage extends Message {
     
     protected ActionType msgType;
@@ -52,7 +48,7 @@ public class CellHierarchyMessage extends Message {
      * SET_AVATAR - client informs server which avatar to use for a cell cache
      * LOAD_CLIENT_AVATAR - server informs client to load its avatar
      */
-    public enum ActionType { LOAD_CELL, UNLOAD_CELL, MOVE_CELL, CHANGE_PARENT, SET_WORLD_ROOT,
+    public enum ActionType { LOAD_CELL, UNLOAD_CELL, MOVE_CELL, CHANGE_PARENT,
         DELETE_CELL, UPDATE_CELL_CONTENT, SET_AVATAR, LOAD_CLIENT_AVATAR};
     
     /**
@@ -63,7 +59,7 @@ public class CellHierarchyMessage extends Message {
      */
     public CellHierarchyMessage(ActionType msgType, 
                                 String cellClassName, 
-                                 BoundingVolume localBounds, 
+                                BoundingVolume localBounds, 
                                 CellID cellID, 
                                 CellID parentID,
                                 CellTransform cellTransform,
@@ -135,20 +131,20 @@ public class CellHierarchyMessage extends Message {
     /**
      * FOR TESTING
      * TODO REMOVE
-     * @return
+     * @return local2VW
      */
-    public CellTransform getCellLocal2VW() {
-        return cellLocal2VW;
-    }
+//    public CellTransform getCellLocal2VW() {
+//        return cellLocal2VW;
+//    }
 
     /**
      * FOR TESTING
      * TODO REMOVE
-     * @return
+     * @param cellLocal2VW local2VW to set
      */
-    public void setCellLocal2VW(CellTransform cellLocal2VW) {
-        this.cellLocal2VW = cellLocal2VW;
-    }
+//    public void setCellLocal2VW(CellTransform cellLocal2VW) {
+//        this.cellLocal2VW = cellLocal2VW;
+//    }
 
 
     public static CellHierarchyMessage newSetAvatarMessage(String avatarID) {

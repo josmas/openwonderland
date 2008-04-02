@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.common.messages;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Indicates a message that is a response to a previously sent request

@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
 import java.util.Set;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.HandlerType;
 
 /**

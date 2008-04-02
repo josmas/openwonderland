@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.*;
 import java.util.ArrayList;
 import java.util.Iterator;
-import org.jdesktop.wonderland.InternalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;

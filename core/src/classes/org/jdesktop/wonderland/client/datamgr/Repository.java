@@ -20,7 +20,7 @@
 package org.jdesktop.wonderland.client.datamgr;
 
 import java.net.URL;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Class representing the Repository(s) that serve an asset

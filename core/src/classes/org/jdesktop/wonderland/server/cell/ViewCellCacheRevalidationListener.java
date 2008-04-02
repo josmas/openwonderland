@@ -18,7 +18,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -28,11 +28,11 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author paulby
  */
 @ExperimentalAPI
-public interface ViewCellCacheOperation {
+public interface ViewCellCacheRevalidationListener {
     
     /**
      * Called by the ViewCellCache during each revalidation if
      * this cell is active
      */
-    public void execute(CellTransform viewTransform);
+    public void cacheRevalidate(CellTransform viewTransform);
 }
