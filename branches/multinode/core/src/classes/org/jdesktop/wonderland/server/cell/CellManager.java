@@ -28,8 +28,8 @@ import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.InternalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -65,7 +65,7 @@ public class CellManager implements ManagedObject, Serializable {
     }
     
     private void createRootCell() {
-        CellMO root = new CellMO();
+        CellMO root = new RootCellMO();
         rootCellID = root.getCellID();
         BoundingSphere rootBounds = new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f());
         root.setLocalBounds(rootBounds);
@@ -80,7 +80,8 @@ public class CellManager implements ManagedObject, Serializable {
     }
     
     /**
-     * Return the root cell id, used by AvatarCellCacheMO
+     * Return the root cell id, used by ViewCellCacheMO. Currently we only use
+     * a single root on the server, but the client can support multiple roots.
      * @return
      */
     CellID getRootCellID() {
@@ -403,19 +404,6 @@ public class CellManager implements ManagedObject, Serializable {
             null,
             null,
             cellID,
-            null,
-            null,
-            null
-            );
-    }
-    /**
-     * Return a new set world root cell message
-     */
-    public static CellHierarchyMessage newRootCellMessage(CellMO cell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.SET_WORLD_ROOT,
-            null,
-            null,
-            cell.getCellID(),
             null,
             null,
             null

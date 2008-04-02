@@ -16,7 +16,7 @@
  * $Revision$
  * $Date$
  */
-package org.jdesktop.wonderland;
+package org.jdesktop.wonderland.common;
 
 /**
  * Indicates this is an Experimental API. Experimental API's are guarnteed not

@@ -18,7 +18,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.UserMO;
 

@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Exception when attaching a new client to a Wonderland session fails.

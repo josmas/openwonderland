@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A factory for creating new instances of WonderlandSession.  This factory

@@ -25,7 +25,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A unique identifier for a message.  Unique MessageIDs can be generated using

@@ -18,8 +18,8 @@
 package org.jdesktop.wonderland.common.cell;
 
 import java.io.Serializable;
-import org.jdesktop.wonderland.ExperimentalAPI;
-import org.jdesktop.wonderland.InternalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * CellID provides a unique id for cells from a specific wonderland world 
@@ -33,8 +33,6 @@ public class CellID implements Serializable {
     private long id;
     private transient String str=null;
     
-    public static final CellID ROOT_CELL = new CellID(Long.MIN_VALUE+1);
-        
     /**
      * Creates a new instance of CellID. Users should never call this, CellIDs
      * are only created by 

@@ -20,7 +20,7 @@
 package org.jdesktop.wonderland.server.cell;
 
 import java.io.Serializable;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The properties of the cell for a particular combination of session
@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.ExperimentalAPI;
 @ExperimentalAPI
 public class CellSessionProperties implements Serializable {
 
-    private ViewCellCacheOperation viewCacheOperation=null;
+    private ViewCellCacheRevalidationListener viewCacheOperation=null;
     
     public CellSessionProperties() {
     }
@@ -40,7 +40,7 @@ public class CellSessionProperties implements Serializable {
      * Returns the ViewCacheOperation, or null
      * @return
      */
-    public ViewCellCacheOperation getViewCacheOperation() {
+    public ViewCellCacheRevalidationListener getViewCacheOperation() {
         return viewCacheOperation;
     }
 
@@ -50,7 +50,7 @@ public class CellSessionProperties implements Serializable {
      * 
      * @param viewCacheOperation
      */
-    public void setViewCacheOperation(ViewCellCacheOperation viewCacheOperation) {
+    public void setViewCacheOperation(ViewCellCacheRevalidationListener viewCacheOperation) {
         this.viewCacheOperation = viewCacheOperation;
     }
     

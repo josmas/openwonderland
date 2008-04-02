@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.server;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Server plugins can implement this interface to add new functionality to

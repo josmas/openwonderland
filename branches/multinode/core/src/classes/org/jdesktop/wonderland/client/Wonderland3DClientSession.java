@@ -18,7 +18,7 @@
  */
 package org.jdesktop.wonderland.client;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.cell.CellChannelHandler;
 import org.jdesktop.wonderland.client.comms.AttachFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;

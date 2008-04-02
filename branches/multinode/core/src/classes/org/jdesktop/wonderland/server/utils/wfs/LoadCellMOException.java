@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.server.utils.wfs;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An exception when loading a cell MO using a CellGLOProvider

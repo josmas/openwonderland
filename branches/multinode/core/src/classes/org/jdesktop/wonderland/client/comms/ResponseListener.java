@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**

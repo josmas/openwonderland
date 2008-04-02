@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.common.cell;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Exception indicating that the user has attempted to add a cell to 

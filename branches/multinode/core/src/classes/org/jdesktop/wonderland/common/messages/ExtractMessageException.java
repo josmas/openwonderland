@@ -21,7 +21,7 @@
 package org.jdesktop.wonderland.common.messages;
 
 import java.io.IOException;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An exception extracting a message.  This exception includes the messageID

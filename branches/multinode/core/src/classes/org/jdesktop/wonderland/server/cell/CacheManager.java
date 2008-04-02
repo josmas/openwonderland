@@ -23,7 +23,7 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.ArrayList;
-import org.jdesktop.wonderland.InternalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * Temporary approach. In the final version ViewCellCaches will be updated

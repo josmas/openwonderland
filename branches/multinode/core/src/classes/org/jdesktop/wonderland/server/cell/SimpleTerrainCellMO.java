@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.setup.ModelCellSetup;

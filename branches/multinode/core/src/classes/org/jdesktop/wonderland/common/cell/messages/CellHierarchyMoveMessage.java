@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.common.cell.messages;
 
 import com.jme.bounding.BoundingVolume;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 

@@ -23,13 +23,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
 /**
- * The client side representation of a cell.
+ * The client side representation of a cell. Cells are created via the 
+ * CellCache and should not be instantiated directly by the user on the client.
  * 
  * @author paulby
  */
@@ -45,7 +46,7 @@ public class Cell {
     private CellID cellID;
     private String name=null;
     
-    public Cell(CellID cellID) {
+    Cell(CellID cellID) {
         this.cellID = cellID;
     }
     

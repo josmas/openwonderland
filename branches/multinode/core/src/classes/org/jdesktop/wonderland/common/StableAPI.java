@@ -17,15 +17,16 @@
  * $Date: 2007/11/07 15:46:52 $
  * $State: Exp $
  */
-package org.jdesktop.wonderland;
+package org.jdesktop.wonderland.common;
 
 /**
- * Indicates the API is for private use between system components. The API may
- * change.
+ * Indicates this is a stable API which is guaranteed not to change in an 
+ * incompatible way between major releases. Incompatible changes are possible 
+ * (but will not be done lightly) between major releases.
  * 
  * @author paulby
  */
 @StableAPI
-public @interface PrivateAPI {
+public @interface StableAPI {
 
 }

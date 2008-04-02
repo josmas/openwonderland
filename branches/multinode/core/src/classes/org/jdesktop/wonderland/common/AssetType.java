@@ -19,8 +19,6 @@
  */
 package org.jdesktop.wonderland.common;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
-
 /**
  *
  * Asset types

@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The security information for a user.

@@ -19,7 +19,7 @@
 package org.jdesktop.wonderland.client.cell;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**

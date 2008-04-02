@@ -19,9 +19,9 @@
 package org.jdesktop.wonderland.client;
 
 import java.util.HashMap;
-import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  *

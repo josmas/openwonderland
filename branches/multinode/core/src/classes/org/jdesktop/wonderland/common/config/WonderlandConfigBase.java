@@ -20,7 +20,7 @@
 package org.jdesktop.wonderland.common.config;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Represents Wonderland configuration options common to the entire system (server/client)

@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.client.comms;
 
 import com.sun.sgs.client.simple.SimpleClient;
 import java.util.Collection;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;

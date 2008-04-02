@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.common.comms;
 
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A version of a protocol defines what other versions of the same protcol

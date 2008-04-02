@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.client.comms;
 import org.jdesktop.wonderland.client.cell.*;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.BaseHandler;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.ViewHandlerType;

@@ -63,6 +63,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheHandler.CellCache
         }
 
         cells.put(cellId, cell);
+        if (cell instanceof RootCell) {
+            rootCells.add(cell);
+        }
     }
 
     public void unloadCell(CellID cellId) {
@@ -104,7 +107,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheHandler.CellCache
                 Constructor constructor = clazz.getConstructor(CellID.class);
                 cell = (Cell) constructor.newInstance(cellId);
             } catch(Exception e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Problem instantiating cell "+className, e);
                 return null;
             }
         }

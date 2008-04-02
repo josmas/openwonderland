@@ -17,22 +17,18 @@
  *  $Date$
  */
 
-package org.jdesktop.wonderland.common.cell;
+package org.jdesktop.wonderland.client.cell;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- * Used to described the capabilites of a client
+ * Client side class for world root cells.
  * 
  * @author paulby
  */
-@ExperimentalAPI
-public abstract class Capability {
+public class RootCell extends Cell {
 
-    @ExperimentalAPI
-    public static class High3DCapability extends Capability { 
-        public High3DCapability() {
-        }
+    public RootCell(CellID cellID) {
+        super(cellID);
     }
 }

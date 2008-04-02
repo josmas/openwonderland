@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.HandlerType;
 import org.jdesktop.wonderland.common.comms.SessionInternalHandlerType;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;

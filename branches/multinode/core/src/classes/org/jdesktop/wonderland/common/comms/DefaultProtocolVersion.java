@@ -20,7 +20,7 @@
 package org.jdesktop.wonderland.common.comms;
 
 import java.io.Serializable;
-import org.jdesktop.wonderland.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A default implementation of ProtocolVersion.  Two ProtocolVersions
