@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -32,6 +33,7 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class Cell {
     private BoundingVolume cachedVWBounds;
     private BoundingVolume computedWorldBounds;

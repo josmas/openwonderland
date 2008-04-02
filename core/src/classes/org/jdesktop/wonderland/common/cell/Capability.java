@@ -19,13 +19,17 @@
 
 package org.jdesktop.wonderland.common.cell;
 
+import org.jdesktop.wonderland.ExperimentalAPI;
+
 /**
  * Used to described the capabilites of a client
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public abstract class Capability {
 
+    @ExperimentalAPI
     public static class High3DCapability extends Capability { 
         public High3DCapability() {
         }

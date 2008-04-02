@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
 
@@ -30,6 +31,7 @@ import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class EntityCell extends Cell implements ChannelCell {
     private CellChannelHandler cellClient;
     
@@ -103,10 +105,12 @@ public class EntityCell extends Cell implements ChannelCell {
         }
     }
     
+    @ExperimentalAPI
     public interface CellMoveListener {
         public void cellMoved(CellTransform transform);
     }
     
+    @ExperimentalAPI
     public interface CellMoveRefusedListener {
         /**
          * Notification from the server that the requested move was

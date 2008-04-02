@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.common.cell;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Encapsulates the capabilities of a client. For example
@@ -30,6 +31,7 @@ import java.util.HashSet;
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class ClientCapabilities implements Serializable {
 
     private HashSet<Capability> capabilities;

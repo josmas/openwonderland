@@ -20,11 +20,13 @@
 package org.jdesktop.wonderland.client.datamgr;
 
 import java.net.URL;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * Class representing the Repository(s) that serve an asset
  * @author paulby
  */
+@ExperimentalAPI
 public class Repository {
     
     private URL originalRepository;

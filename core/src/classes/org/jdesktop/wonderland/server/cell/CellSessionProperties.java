@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.server.cell;
 
 import java.io.Serializable;
+import org.jdesktop.wonderland.ExperimentalAPI;
 
 /**
  * The properties of the cell for a particular combination of session
@@ -27,6 +28,7 @@ import java.io.Serializable;
  * 
  * @author paulby
  */
+@ExperimentalAPI
 public class CellSessionProperties implements Serializable {
 
     private ViewCellCacheOperation viewCacheOperation=null;
