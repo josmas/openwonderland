@@ -204,17 +204,6 @@
        </java>
     </target>
     
-    <target name="run-api" depends="jar" description="Run manager UI">
-        <java classname="org.jdesktop.wonderland.client.APIVersion" fork="true">
-            <jvmarg value="-Dsgs.port=${sgs.port}"/>
-            <jvmarg value="-Dsgs.server=${sgs.server}"/>
-           
-            <classpath>
-		<pathelement path="${wonderland-client.classpath}"/>
-	    </classpath>
-       </java>
-    </target>
-    
     <target name="run-bridgemonitor" depends="jar" description="Run BridgeMonitor">
         <java classname="bridgemonitor.BridgeMonitorUI" fork="true">
             <classpath>
@@ -382,17 +371,6 @@
         </java>
     </target>
     
-    <target name="run-texture-prep" depends="jar" description="Prepare textures">
-        <java classname="org.jdesktop.jai.tools.Thumbnail" fork="true">
-            <arg value="-w 512"/>
-            <arg value="../lg3d-wonderland-art/orginal_models/welcome_slides/slide0.gif"/>
-            <arg value="slide512-0.png"/>
-            <classpath>
-		<pathelement path="${wonderland-client.classpath}"/>
-	    </classpath>
-        </java>
-    </target>
-    
     <target name="clean" depends="clean-modules" description="Clean all build products.">
         <delete dir="${build.platform.dir}"/>
         <delete dir="${release.dir}"/>
@@ -419,7 +397,8 @@
         <javadoc destdir="${release.javadoc.dir}/all"
             sourcepath="${javasrc.dir}"
             packagenames="org.jdesktop.*"
-            overview="${javasrc.dir}/org/jdesktop/wonderland/doc-files/overview.html">
+            windowtitle="Wonderland Platform"
+            overview="${top.dir}/core/doc/overview.html">
             <classpath>
 		<pathelement path="${wonderland-server.classpath}"/>
 		<pathelement path="${wonderland-client.classpath}"/>
@@ -442,7 +421,8 @@
         <javadoc destdir="${release.javadoc.dir}/api"
             sourcepath="${javasrc.dir}"
             packagenames="org.jdesktop.*"
-            overview="${javasrc.dir}/org/jdesktop/wonderland/doc-files/overview.html">
+            windowtitle="Wonderland API"
+            overview="${top.dir}/core/doc/overview.html">
                 
             <classpath>
 		<pathelement path="${wonderland-server.classpath}"/>
