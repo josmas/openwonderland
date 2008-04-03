@@ -25,11 +25,11 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  *
  * @author paulby
  */
-public class AvatarCreateResponseMessage extends ResponseMessage {
+public class ViewCreateResponseMessage extends ResponseMessage {
 
     private CellID avatarCellID;
     
-    public AvatarCreateResponseMessage(MessageID messageID, CellID avatarCellID) {
+    public ViewCreateResponseMessage(MessageID messageID, CellID avatarCellID) {
         super (messageID);
         this.avatarCellID = avatarCellID;
     }

@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 /**
  * Implementation of CommsManager
@@ -84,23 +84,23 @@ class CommsManagerImpl
         return ProtocolSessionListener.getClients(protocol);
     }
 
-    public void registerClientHandler(ClientHandler handler) {
+    public void registerClientHandler(ClientConnectionHandler handler) {
         WonderlandSessionListener.registerClientHandler(handler);
     }
   
-    public void unregisterClientHandler(ClientHandler handler) {
+    public void unregisterClientHandler(ClientConnectionHandler handler) {
         WonderlandSessionListener.unregisterClientHandler(handler);
     }
 
-    public ClientHandler getClientHandler(HandlerType clientType) {
+    public ClientConnectionHandler getClientHandler(ConnectionType clientType) {
         return WonderlandSessionListener.getClientHandler(clientType);
     }
 
-    public Set<ClientHandler> getClientHandlers() {
+    public Set<ClientConnectionHandler> getClientHandlers() {
         return WonderlandSessionListener.getClientHandlers();
     }
     
-    public WonderlandClientSender getSender(HandlerType clientType) {
+    public WonderlandClientSender getSender(ConnectionType clientType) {
         return WonderlandSessionListener.getSender(clientType);
     }
 }

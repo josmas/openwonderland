@@ -23,12 +23,12 @@ import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ClientSession;
 import java.util.Set;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  * A sender that sends messages to clients connected with
- * the given HandlerType.  The list of clients available with
+ * the given ConnectionType.  The list of clients available with
  * the given type is maintained by the WonderlandSessionListener in response 
  * to attach and detach requests.  
  * <p>
@@ -45,7 +45,7 @@ public interface WonderlandClientSender {
      * Get the client type this channel sends to
      * @return the client type
      */
-    public HandlerType getClientType();
+    public ConnectionType getClientType();
     
     /**
      * Get all sessions associated with this sender.  This will return a 
@@ -67,7 +67,7 @@ public interface WonderlandClientSender {
     /**
      * Send a message to all session connected via this sender's client type.  
      * The message will be handled on each remote client by the WonderlandClient 
-     * attached with the HandlerType of this sender.
+     * attached with the ConnectionType of this sender.
      * @param message the message to send
      * @throws IllegalStateException if the handler for this client type
      * has been unregistered
@@ -77,7 +77,7 @@ public interface WonderlandClientSender {
     /**
      * Send a message to a single session connected via this sender.  The
      * message will be handled by the WonderlandClient attached with the
-     * HandlerType of this channel.
+     * ConnectionType of this channel.
      * <p>
      * Note that this method does not check whether the given session has
      * attached the client that this channel sends to.  If the session does not
@@ -94,7 +94,7 @@ public interface WonderlandClientSender {
     /**
      * Send a message to a set of sessions connected via this sender.  The
      * message will be handled on each remote client by the WonderlandClient 
-     * attached with the HandlerType of this channel.
+     * attached with the ConnectionType of this channel.
      * <p>
      * Note that this method does not check whether the given sessions have
      * attached the client that this channel sends to.  If the sessions do not
@@ -111,7 +111,7 @@ public interface WonderlandClientSender {
     /**
      * Send a message to all sessions joined to the given channel.  The
      * message will be handled on each remote client by the WonderlandClient 
-     * attached with the HandlerType of this channel. 
+     * attached with the ConnectionType of this channel. 
      * <p>
      * Note that this method does not check whether the given sessions have
      * attached the client that this channel sends to.  If the sessions do not

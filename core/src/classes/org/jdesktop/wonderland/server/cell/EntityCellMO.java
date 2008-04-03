@@ -22,26 +22,27 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import java.nio.ByteBuffer;
+import com.sun.sgs.app.Task;
+import com.sun.sgs.app.TaskManager;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import org.jdesktop.wonderland.common.cell.CellChannelHandlerType;
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
+import org.jdesktop.wonderland.common.cell.messages.EntityMessageResponse;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * For cells that are expected to move frequently
  * 
- * TODO - Should MoveListener notifications be scheduled in their
- * own task ? Also do we need a listener that allows veto of a move request, don't
+ * TODO - Do we need a listener that allows veto of a move request, don't
  * think so instead I suggest we would subclass to add veto capability
+ * 
  * @author paulby
  */
-public class EntityCellMO extends CellMO {
+public class EntityCellMO extends CellMO implements ChannelCellMO {
 
     private ArrayList<ManagedReference<CellMoveListener>> listeners = null;
     
@@ -54,8 +55,7 @@ public class EntityCellMO extends CellMO {
         
         // Notify listeners
         if (listeners!=null) {
-            for(ManagedReference<CellMoveListener> listenerRef : listeners)
-                listenerRef.getForUpdate().cellMoved(this, transform);
+            notifyMoveListeners(transform);
         }
 
         if (isLive() && cellChannelRef != null) {
@@ -64,18 +64,49 @@ public class EntityCellMO extends CellMO {
         }
     }
     
-    @Override
-    protected void openChannel() {
+    /**
+     * {@inheritDoc}
+     */
+    public void openChannel() {
         defaultOpenChannel();
         
         // cache the sender for sending to cell clients.  This saves a
         // Darkstar lookup for every cell we want to send to.
-        cellSender = WonderlandContext.getCommsManager().getSender(CellChannelHandlerType.CLIENT_TYPE);
+        cellSender = WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void closeChannel() {
+        defaultCloseChannel();
+        cellSender=null;
+    }  
     
     @Override
     public String getClientCellClassName(ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.EntityCell";
+    }
+    
+    public void messageReceived(WonderlandClientSender sender, 
+                                ClientSession session,
+                                CellMessage message ) {
+        if (!(message instanceof EntityMessage)) {
+            logger.severe("Incorrect message type "+message.getClass().getName());
+        }
+        
+        EntityMessage ent = (EntityMessage)message;
+        switch(ent.getActionType()) {
+            case MOVE_REQUEST :
+                setTransform(new CellTransform(ent.getRotation(), ent.getTranslation()));
+                
+                // Only need to send a response if the move can not be completed as requested
+                sender.send(EntityMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));
+                break;
+            case MOVED :
+                logger.severe("Server should never receive MOVED messages");
+                break;
+        }
     }
     
     /**
@@ -85,12 +116,12 @@ public class EntityCellMO extends CellMO {
      * 
      * @param listener
      */
-//    public void addCellMoveListener(CellMoveListener listener) {
-//        if (listeners==null)
-//            listeners = new ArrayList<ManagedReference>();
-//        
-//        listeners.add(AppContext.getDataManager().createReference(listener));
-//    }
+    public void addCellMoveListener(CellMoveListener listener) {
+        if (listeners==null)
+            listeners = new ArrayList<ManagedReference<CellMoveListener>>();
+        
+        listeners.add(AppContext.getDataManager().createReference(listener));
+    }
     
     /**
      * Remove the CellMoveListener
@@ -100,9 +131,34 @@ public class EntityCellMO extends CellMO {
         if (listeners!=null)
             listeners.remove(AppContext.getDataManager().createReference(listener));
     }
+
+    /**
+     * Notify Listeners that this Entity has moved. Each listener is notified
+     * in a separate task.
+     * @param transform
+     */
+    private void notifyMoveListeners(final CellTransform transform) {
+        TaskManager tm = AppContext.getTaskManager();
+        
+        for(final ManagedReference<CellMoveListener> listenerRef : listeners) {
+            tm.scheduleTask(new Task() {
+
+                public void run() throws Exception {
+                    listenerRef.get().cellMoved(EntityCellMO.this, transform);
+                }
+
+            });
+            
+        }
+    }
        
+    /**
+     * Listener inteface for cell movement
+     */
     public interface CellMoveListener extends ManagedObject {
         public void cellMoved(EntityCellMO cell, CellTransform transform);
     }
+
+
 
 }

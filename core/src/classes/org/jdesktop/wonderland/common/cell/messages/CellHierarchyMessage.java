@@ -45,11 +45,11 @@ public class CellHierarchyMessage extends Message {
     private CellTransform cellLocal2VW;      // FOR TESTING - TODO REMOVE
 
     /**
-     * SET_AVATAR - client informs server which avatar to use for a cell cache
+     * SET_VIEW - client informs server which avatar to use for a cell cache
      * LOAD_CLIENT_AVATAR - server informs client to load its avatar
      */
     public enum ActionType { LOAD_CELL, UNLOAD_CELL, MOVE_CELL, CHANGE_PARENT,
-        DELETE_CELL, UPDATE_CELL_CONTENT, SET_AVATAR, LOAD_CLIENT_AVATAR};
+        DELETE_CELL, UPDATE_CELL_CONTENT, SET_VIEW, LOAD_CLIENT_AVATAR};
     
     /**
      * Creates a new instance of CellHierarchyMessage 
@@ -116,15 +116,15 @@ public class CellHierarchyMessage extends Message {
         return setupData;
     }
 
-    private void setAvatarID(String avatarID) {
+    private void setViewID(String avatarID) {
         this.avatarID = avatarID;
     }
     
     /**
-     * The Avatar to which this cache is tied.
+     * The View to which this cache is tied.
      * @return
      */
-    public String getAvatarID() {
+    public String getViewID() {
         return avatarID;
     }
 
@@ -148,8 +148,8 @@ public class CellHierarchyMessage extends Message {
 
 
     public static CellHierarchyMessage newSetAvatarMessage(String avatarID) {
-        CellHierarchyMessage ret = new CellHierarchyMessage(ActionType.SET_AVATAR);
-        ret.setAvatarID(avatarID);
+        CellHierarchyMessage ret = new CellHierarchyMessage(ActionType.SET_VIEW);
+        ret.setViewID(avatarID);
         return ret;
     }
     

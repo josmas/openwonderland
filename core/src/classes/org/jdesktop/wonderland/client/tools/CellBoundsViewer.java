@@ -29,13 +29,12 @@ import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
-import org.jdesktop.wonderland.client.cell.CellCacheHandler;
+import org.jdesktop.wonderland.client.cell.CellCacheConnection;
 import org.jdesktop.wonderland.client.cell.EntityCell;
 import org.jdesktop.wonderland.client.cell.EntityManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.client.comms.ViewHandler.ViewMessageListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -207,7 +206,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     }//GEN-LAST:event_forwardBActionPerformed
     
     
-    class BoundsPanel extends JPanel implements CellCacheHandler.CellCacheMessageListener, CellCache, EntityManager.EntityListener {
+    class BoundsPanel extends JPanel implements CellCacheConnection.CellCacheMessageListener, CellCache, EntityManager.EntityListener {
         private Vector3f center = new Vector3f();  // Temporary variable
         private Vector3f extent = new Vector3f();   // Temporary variable
         private float scale = 20f;
@@ -324,10 +323,6 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             repaint();
         }
 
-        public void setRootCell(CellID cellID) {
-            cacheImpl.setRootCell(cellID);
-        }
-
         /**
          * The cell has moved. If it's an entity cell the transform has already
          * been updated, so just process the cache update. If its not an
@@ -339,11 +334,6 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         public void moveCell(CellID cellID, CellTransform cellTransform) {
             cacheImpl.moveCell(cellID, cellTransform);
             repaint();
-        }
-
-        public void loadClientAvatar(CellID cellID, String className, BoundingVolume localBounds, CellID parentCellID, CellTransform cellTransform, CellSetup setup) {
-            loadCell(cellID, className, localBounds, parentCellID, cellTransform, setup);
-            System.out.println("CellBoundsViewer.loadClientAvatar GOT LOCAL AVATAR "+cellID);
         }
 
         /*************************************************

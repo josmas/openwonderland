@@ -22,7 +22,7 @@ package org.jdesktop.wonderland.server.comms;
 import com.sun.sgs.app.ClientSession;
 import java.util.Set;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 /**
  * Manage communications protocols.
@@ -98,30 +98,30 @@ public interface CommsManager {
      * @param handler the handler to handle messages from the given client
      * type
      */
-    public void registerClientHandler(ClientHandler handler);
+    public void registerClientHandler(ClientConnectionHandler handler);
     
     /**
      * Unregister a client handler for the given type
      * @param handler the handler to unregister
      */
-    public void unregisterClientHandler(ClientHandler handler);
+    public void unregisterClientHandler(ClientConnectionHandler handler);
     
      /**
-     * Get a ClientHandler by the HandlerType it handles
+     * Get a ClientConnectionHandler by the ConnectionType it handles
      * @param clientType the type of the handler to search for
      * @return the handler registered for the given type
      */
-    public ClientHandler getClientHandler(HandlerType clientType);
+    public ClientConnectionHandler getClientHandler(ConnectionType clientType);
     
     /**
      * Get all registered client handler
      * @return all available handlers
      */
-    public Set<ClientHandler> getClientHandlers();
+    public Set<ClientConnectionHandler> getClientHandlers();
     
     /**
      * Get a sender that can be used to send messages to all clients
-     * of a given HandlerType.  This sender can also be used to query
+     * of a given ConnectionType.  This sender can also be used to query
      * all the session connected via the given session type.
      * 
      * @param clientType the type of client
@@ -129,5 +129,5 @@ public interface CommsManager {
      * @throws IllegalStateException if no handler is registered for the given
      * type
      */
-    public WonderlandClientSender getSender(HandlerType clientType);
+    public WonderlandClientSender getSender(ConnectionType clientType);
 }

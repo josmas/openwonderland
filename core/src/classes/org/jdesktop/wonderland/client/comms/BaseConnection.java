@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author jkaplan
  */
 @ExperimentalAPI
-public abstract class BaseHandler implements WonderlandClient {
+public abstract class BaseConnection implements WonderlandClient {
     /** the current status */
     private Status status = Status.DETACHED;
     
@@ -62,13 +62,13 @@ public abstract class BaseHandler implements WonderlandClient {
 
     /**
      * Attach this client to the given session
-     * @param session the session to attach to
-     * @throws AttachFailureException if there is a problem attaching
+     * @param session the session to connect to
+     * @throws ConnectionFailureException if there is a problem attaching
      */
     public void attach(WonderlandSession session) 
-            throws AttachFailureException
+            throws ConnectionFailureException
     {
-        session.attach(this);
+        session.connect(this);
     }
     
     public synchronized void attached(WonderlandSession session) {
@@ -81,7 +81,7 @@ public abstract class BaseHandler implements WonderlandClient {
      * Detach from the current session
      */
     public void detach() {
-        getSession().detach(this);
+        getSession().disconnect(this);
     }
     
     public void detached() {

@@ -40,9 +40,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
@@ -352,14 +350,16 @@ public abstract class CellMO implements ManagedObject, Serializable {
     void setLive(boolean live) {
         this.live = live;
         if (live) {
-            openChannel();
+            if (this instanceof ChannelCellMO)
+                ((ChannelCellMO)this).openChannel();
             BoundsManager.get().createBounds(this);
             if (getParent()!=null) { // Root cell has a null parent
 //                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
                 BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
             }
         } else {
-            closeChannel();
+            if (this instanceof ChannelCellMO)
+                ((ChannelCellMO)this).closeChannel();
             BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
             BoundsManager.get().removeBounds(this);
         }
@@ -402,18 +402,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Cells that have a channel should overload this method to actually open the
-     * channel. The convenience method defaultOpenChannel can be used to open the channel
-     * with a default channel name. Called when the cell is made live.
+     * Convenience method to close the cells channel
      */
-    protected void openChannel() {
-    }
-    
-    /**
-     * Close the cells channel. Called when the cell is no longer live.
-     */
-    protected void closeChannel() {
-        
+    protected void defaultCloseChannel() {
+        // TODO no destroy channel in DS....    
     }
     
     /**
@@ -477,20 +469,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         cellChannelRef.get().leave(session);        
     }
      
-    /**
-     * Handle messages sent to this cell.
-     * @param sender a sender that can be used to send messages back to 
-     * the client that originated this message.
-     * @param session the session that sent the message
-     * @param message the message to handle
-     */
-    protected void messageReceived(WonderlandClientSender sender,
-                                   ClientSession session, 
-                                   CellMessage message)
-    {
-        throw new RuntimeException("Not Implemented");
-    }
-    
     /**
      * Returns the fully qualified name of the class that represents
      * this cell on the client

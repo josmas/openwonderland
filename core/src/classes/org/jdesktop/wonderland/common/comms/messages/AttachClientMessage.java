@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.common.comms.messages;
 
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -27,13 +27,13 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class AttachClientMessage extends Message {
     /** the client type to attach */
-    private HandlerType type;
+    private ConnectionType type;
     
     /** 
      * Create a new AttachClientMessage
      * @param type the type of client to attach
      */
-    public AttachClientMessage(HandlerType type) {
+    public AttachClientMessage(ConnectionType type) {
         this.type = type;
     }
     
@@ -41,7 +41,7 @@ public class AttachClientMessage extends Message {
      * Get the client type
      * @return the client type
      */
-    public HandlerType getClientType() {
+    public ConnectionType getClientType() {
         return type;
     }
 }

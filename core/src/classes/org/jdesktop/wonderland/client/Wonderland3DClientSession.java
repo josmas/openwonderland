@@ -19,8 +19,8 @@
 package org.jdesktop.wonderland.client;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.client.cell.CellChannelHandler;
-import org.jdesktop.wonderland.client.comms.AttachFailureException;
+import org.jdesktop.wonderland.client.cell.CellChannelConnection;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -35,29 +35,29 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 public class Wonderland3DClientSession extends WonderlandSessionImpl {
     
     /** the cell channel handler */
-    private CellChannelHandler cellClient;
+    private CellChannelConnection cellClient;
     
     public Wonderland3DClientSession(WonderlandServerInfo serverInfo) {
         super (serverInfo);
         
-        cellClient = new CellChannelHandler();
+        cellClient = new CellChannelConnection();
     }
     
     /** 
-     * Get the CellChannelHandler for sending cell messages 
+     * Get the CellChannelConnection for sending cell messages 
      * @return the cell client
      */
-    public CellChannelHandler getCellChannelHandler() {
+    public CellChannelConnection getCellChannelHandler() {
         return cellClient;
     }
 
     /**
-     * Override the login message to attach clients after the login
-     * succeeds.  If a client fails to attach, the login will be aborted and
+     * Override the login message to connect clients after the login
+     * succeeds.  If a client fails to connect, the login will be aborted and
      * a LoginFailureException will be thrown
      * @param loginParams the parameters to login with
      * @throws LoginFailureException if the login fails or any of the clients
-     * fail to attach
+     * fail to connect
      */
     @Override
     public void login(LoginParameters loginParams) 
@@ -66,12 +66,12 @@ public class Wonderland3DClientSession extends WonderlandSessionImpl {
         // this will wait for login to succeed
         super.login(loginParams);
         
-        // if login succeeds, attach the various clients
+        // if login succeeds, connect the various clients
         try {
             cellClient.attach(this);
-        } catch (AttachFailureException afe) {
-            // a client failed to attach -- logout
-            disconnect();
+        } catch (ConnectionFailureException afe) {
+            // a client failed to connect -- logout
+            logout();
             
             // throw a login exception
             throw new LoginFailureException("Failed to attach client" , afe);

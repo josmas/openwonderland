@@ -20,12 +20,11 @@ package org.jdesktop.wonderland.client.avatar;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.client.cell.EntityCell;
-import org.jdesktop.wonderland.client.comms.ViewHandler;
-import org.jdesktop.wonderland.client.comms.ViewHandler.ViewMessageListener;
+import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.messages.ViewMessage;
+import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
 
 /**
  * The Avatar that is local to this client. Local means it's controlled
@@ -33,29 +32,42 @@ import org.jdesktop.wonderland.common.cell.messages.ViewMessage;
  * 
  * @author paulby
  */
-public class LocalAvatar implements ViewMessageListener {
+public class LocalAvatar implements ClientView {
 
-    private CellID avatarCellID;
-    private ViewHandler avatarClient;
+    // The viewID will determine which view we get from the user on the server
+    private String viewID = "DEFAULT";
+    private ViewCell viewCell = null;
+    private WonderlandSession session;
     
-    public LocalAvatar(ViewHandler avatarClient) {
-        this.avatarClient = avatarClient;
-    }
-    
-    public void setAvatarCellID(CellID cellID) {
-        this.avatarCellID = cellID;
-    }
-    
-    public void localMoveRequest(Vector3f location, Quaternion orientation) {
-        avatarClient.send(ViewMessage.newMoveRequestMessage(avatarCellID, location, orientation));
-    }
-    
-    public void avatarGesture(int gesture) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public LocalAvatar(WonderlandSession session) {
+        this.session = session;
     }
 
-    public void viewMoved(CellTransform transform) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /**
+     * A request from this client to move the avatar. This request is sent to 
+     * the server, and if approved will be applied to the world
+     * 
+     * @param location
+     * @param rotation
+     */
+    public void localMoveRequest(Vector3f location, Quaternion rotation) {
+        System.out.println("********************** LocalAvatar.localMoveRequest");
+        if (viewCell!=null) {
+            viewCell.localMoveRequest(new CellTransform(rotation, location));
+        }
+    }
+    
+    public String getViewID() {
+        return viewID;
+    }
+
+    public void serverInitialized(ViewCreateResponseMessage msg) {
+        // Nothing to do
+    }
+
+    public void viewCellConfigured(CellID cellID) {
+        System.out.println("******************* viewCellConfigured");
+        viewCell = (ViewCell) ClientContext.getCellCache(session).getCell(cellID);
     }
 
     

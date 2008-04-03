@@ -96,15 +96,12 @@ public class CellManager implements ManagedObject, Serializable {
     public static void initialize() {
         new CellManager();
         
-        // register the cell message listener
+        // register the cell channel message listener
         CommsManager cm = WonderlandContext.getCommsManager();
-        cm.registerClientHandler(new CellChannelHandlerMO());
+        cm.registerClientHandler(new CellChannelConnectionHandler());
         
         // Register the cell cache message handler
-        cm.registerClientHandler(new CellCacheClientHandler());
-        
-        // Register the avatar message handler
-        cm.registerClientHandler(new ViewHandlerMO());
+        cm.registerClientHandler(new CellCacheConnectionHandler());        
     }
     
     /**

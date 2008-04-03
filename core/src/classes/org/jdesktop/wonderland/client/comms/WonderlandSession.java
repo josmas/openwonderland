@@ -22,9 +22,8 @@ package org.jdesktop.wonderland.client.comms;
 import com.sun.sgs.client.simple.SimpleClient;
 import java.util.Collection;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * The WonderlandSession is the base class for communicating with a given
@@ -76,39 +75,45 @@ public interface WonderlandSession {
         throws LoginFailureException;
     
     /**
-     * Disconnect from the server.
+     * Logout from the server.
      */
-    public void disconnect();
+    public void logout();
     
     /**
-     * Attach a new client to this session.  When a client is attached to
+     * Connect a new client to this session.  When a client is connected to
      * this session, it will interact with the server associated with
      * this session.  
      * <p>
-     * Only one client of any given HandlerType may be
-     * connected to the server at any time.  Attempting to attach a second
-     * client of the same type will result in an AttachFailureException.
+     * Only one client of any given ConnectionType may be
+     * connected to the server at any time.  Attempting to connect a second
+     * client of the same type will result in an ConnectionFailureException.
      * <p>
      * Clients may only be attached when a session is in the CONNECTED state.
-     * If the session is in any other state, an AttachFailureException will
+     * If the session is in any other state, an ConnectionFailureException will
      * be thrown.  When a session disconnects, all clients are detached,
      * and must be re-attached to start working again.
      * 
-     * @param client the client to attach
-     * @throws AttachFailureException of the attachment fails
+     * @param client the client to connect
+     * @throws ConnectionFailureException of the attachment fails
      */
-    public void attach(WonderlandClient client) throws AttachFailureException;
+    public void connect(WonderlandClient client) throws ConnectionFailureException;
     
     /**
-     * Get the attched WonderlandClient for the given HandlerType.
+     * Disconnect a previously attached client from this session.
+     * @param client the client to logout
+     */
+    public void disconnect(WonderlandClient client);
+    
+    /**
+     * Get the attched WonderlandClient for the given ConnectionType.
      * @param type the client type to get
      * @return the attached client for the given type, or null if no
      * client of the given type is attached
      */
-    public WonderlandClient getClient(HandlerType type);
+    public WonderlandClient getClient(ConnectionType type);
     
     /**
-     * Get the attched WonderlandClient for the given HandlerType.
+     * Get the attched WonderlandClient for the given ConnectionType.
      * @param type the client type to get
      * @param clazz the class of client to return
      * @return the attached client for the given type, or null if no
@@ -116,7 +121,7 @@ public interface WonderlandSession {
      * @throws ClassCastException if the client for the given client type
      * is not assignable to the given type
      */
-    public <T extends WonderlandClient> T getClient(HandlerType type,
+    public <T extends WonderlandClient> T getClient(ConnectionType type,
                                                     Class<T> clazz);
     
     /**
@@ -124,12 +129,6 @@ public interface WonderlandSession {
      * @return the clients attached to this session
      */
     public Collection<WonderlandClient> getClients();
-    
-    /**
-     * Detach a previously attached client from this session.
-     * @param client the client to detach
-     */
-    public void detach(WonderlandClient client);
     
     /**
      * Send a message to the server over the session channel on behalf of the 

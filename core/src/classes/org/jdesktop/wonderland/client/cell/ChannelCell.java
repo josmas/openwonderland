@@ -32,5 +32,7 @@ public interface ChannelCell {
     public void handleMessage(CellMessage message);
     
     // TODO various send methods required, cell to server, cell to cell, cell to channel
-    public void send(CellMessage message);
+    // Not sure these need to be defined in this interface, implementors should have
+    // the choice of which send messages to implement and expose (if any) in a cell.
+//    public void send(CellMessage message);
 }

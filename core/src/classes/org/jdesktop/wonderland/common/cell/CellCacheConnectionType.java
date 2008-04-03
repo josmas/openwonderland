@@ -19,18 +19,18 @@
  */
 package org.jdesktop.wonderland.common.cell;
 
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 /**
- * The HandlerType of the CellCacheClient
+ * The ConnectionType of the CellCacheClient
  * @author jkaplan
  */
-public class CellCacheHandlerType extends HandlerType {
+public class CellCacheConnectionType extends ConnectionType {
     /** the client type for the cell client */
-    public static final HandlerType CLIENT_TYPE =
-            new CellCacheHandlerType("__CellCacheClient");
+    public static final ConnectionType CLIENT_TYPE =
+            new CellCacheConnectionType("__CellCacheClient");
     
-    private CellCacheHandlerType(String type) {
+    private CellCacheConnectionType(String type) {
         super (type);
     }
 }

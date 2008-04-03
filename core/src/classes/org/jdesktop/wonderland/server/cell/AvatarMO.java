@@ -25,6 +25,7 @@ import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.server.UserMO;
 
 /**
@@ -45,15 +46,22 @@ public class AvatarMO extends EntityCellMO implements View {
         setLocalBounds(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()));
     }
     
+    @Override
+    public String getClientCellClassName(ClientCapabilities capabilities) {
+        return "org.jdesktop.wonderland.client.avatar.AvatarCell";
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public UserMO getUser() {
         return userRef.get();
     }
     
     /**
-     * Return the avatar cell cache managed object for this avatar
-     * @return
+     * {@inheritDoc}
      */
-    ViewCellCacheMO getCellCache() {
+    public ViewCellCacheMO getCellCache() {
         if (avatarCellCacheRef==null) {
             ViewCellCacheMO cache = new ViewCellCacheMO(this);
             avatarCellCacheRef = AppContext.getDataManager().createReference(cache);

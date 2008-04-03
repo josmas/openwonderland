@@ -21,17 +21,22 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.avatar.ClientView;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.client.comms.BaseHandler;
+import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.common.cell.CellCacheHandlerType;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -40,17 +45,24 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author jkaplan
  */
 @ExperimentalAPI
-public class CellCacheHandler extends BaseHandler {
-    private static final Logger logger = Logger.getLogger(CellCacheHandler.class.getName());
+public class CellCacheConnection extends BaseConnection {
+    private static final Logger logger = Logger.getLogger(CellCacheConnection.class.getName());
     
     private ArrayList<CellCacheMessageListener> listeners = new ArrayList();
+    
+    private ClientView clientView;
+    private CellID viewCellID = null;
+    
+    public CellCacheConnection(ClientView clientView) {
+        this.clientView = clientView;
+    }
     
     /**
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
      */
-    public HandlerType getHandlerType() {
-        return CellCacheHandlerType.CLIENT_TYPE;
+    public ConnectionType getHandlerType() {
+        return CellCacheConnectionType.CLIENT_TYPE;
     }
 
     /**
@@ -62,39 +74,17 @@ public class CellCacheHandler extends BaseHandler {
         listeners.add(listener);
     }
     
-    /**
-     * Send a cell message to a specific cell on the server
-     * @see org.jdesktop.wonderland.client.comms.WonderlandSession#send(WonderlandClient, Message)
-     * 
-     * @param message the cell message to send
-     */
-    public void send(CellHierarchyMessage message) {
-        super.send(message);
-    }
-    
-    /**
-     * Send a message to the server CellCacheHandler
-     * 
-     * @param message the message to send
-     * @param listener the response listener to notify when a response
-     * is received.
-     */
-    public void send(CellHierarchyMessage message, ResponseListener listener) {
-        super.send(message, listener);
-    }
-    
-    /**
-     * Send a message to the server and wait for a 
-     * response.
-     * 
-     * @param message the message to send
-     * @throws InterruptedException if there is a problem sending a message
-     * to the given cell
-     */
-    public ResponseMessage sendAndWait(CellHierarchyMessage message)
-        throws InterruptedException
-    {
-        return super.sendAndWait(message);
+    private ViewCreateResponseMessage registerView(String viewID) {
+        try {
+            ViewCreateResponseMessage response = 
+                    (ViewCreateResponseMessage)sendAndWait(
+                            CellHierarchyMessage.newSetAvatarMessage(viewID));
+
+            return response;
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CellCacheConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
     
     /**
@@ -116,6 +106,11 @@ public class CellCacheHandler extends BaseHandler {
                                 msg.getCellTransform(),
                                 msg.getSetupData());
                 }
+                if (viewCellID!=null && viewCellID.equals(msg.getCellID())) {
+                    clientView.viewCellConfigured(viewCellID);
+                    // We only need notification once
+                    viewCellID = null;
+                }
                 break;
             case MOVE_CELL :
                 for(CellCacheMessageListener l : listeners) {
@@ -128,23 +123,25 @@ public class CellCacheHandler extends BaseHandler {
                     l.unloadCell(msg.getCellID());
                 }
                 break;
-                
-//            case LOAD_CLIENT_AVATAR :
-//                for(CellCacheMessageListener l : listeners) {
-//                    l.loadClientAvatar(msg.getCellID(),
-//                                msg.getCellClassName(),
-//                                msg.getLocalBounds(),
-//                                msg.getParentID(),
-//                                msg.getCellChannelName(),
-//                                msg.getCellTransform(),
-//                                msg.getSetupData());
-//                }
-//                
             default :
                 logger.warning("Message type not implemented "+msg.getActionType());
         }
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void attach(WonderlandSession session) throws ConnectionFailureException {
+        super.attach(session);
+        ViewCreateResponseMessage msg = registerView(clientView.getViewID());
+        clientView.serverInitialized(msg);
+        viewCellID = msg.getAvatarCellID();
+    }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void detached() {
         // remove any action listeners
@@ -172,21 +169,6 @@ public class CellCacheHandler extends BaseHandler {
                                CellTransform cellTransform,
                                CellSetup setup);
         /**
-         * Load the avatar for this client
-         * @param cellID
-         * @param className
-         * @param localBounds
-         * @param parentCellID
-         * @param cellTransform
-         * @param setup
-         */
-//        public void loadClientAvatar(CellID cellID, 
-//                               String className, 
-//                               BoundingVolume localBounds,
-//                               CellID parentCellID,
-//                               CellTransform cellTransform,
-//                               CellSetup setup);
-        /**
          * Unload the cell. This removes the cell from memory but will leave
          * cell data cached on the client
          * @param cellID
@@ -201,6 +183,7 @@ public class CellCacheHandler extends BaseHandler {
         
         public void moveCell(CellID cellID,
                              CellTransform cellTransform);
+        
     }
     
 }

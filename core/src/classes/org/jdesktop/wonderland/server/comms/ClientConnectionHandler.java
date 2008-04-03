@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -29,12 +29,12 @@ import org.jdesktop.wonderland.common.messages.Message;
  * @author jkaplan
  */
 @ExperimentalAPI
-public interface ClientHandler {
+public interface ClientConnectionHandler {
     /**
      * Get the type of client this handler deals with
      * @return the client types this handler can be used for
      */
-    public HandlerType getClientType();
+    public ConnectionType getClientType();
     
     /**
      * Called when the handler is registered with the CommsManager

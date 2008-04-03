@@ -19,24 +19,17 @@
  */
 package org.jdesktop.wonderland.client.tools;
 
-import org.jdesktop.wonderland.client.comms.ViewHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.*;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
-import org.jdesktop.wonderland.client.cell.CellCacheHandler;
-import org.jdesktop.wonderland.client.cell.CellCacheHandler.CellCacheMessageListener;
-import org.jdesktop.wonderland.client.cell.CellChannelHandler;
-import org.jdesktop.wonderland.client.comms.AttachFailureException;
+import org.jdesktop.wonderland.client.cell.CellCacheConnection;
+import org.jdesktop.wonderland.client.cell.CellCacheConnection.CellCacheMessageListener;
+import org.jdesktop.wonderland.client.cell.CellChannelConnection;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
-import org.jdesktop.wonderland.common.cell.messages.AvatarCreateResponseMessage;
-import org.jdesktop.wonderland.common.cell.messages.ViewMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 
 /**
  * An extension of WonderlandSession that attaches all the relevant
@@ -47,24 +40,21 @@ import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 public class BoundsTestClientSession extends WonderlandSessionImpl {
     
     /** the cell client */
-    private CellCacheHandler cellCacheClient;
-    private ViewHandler avatarClient;
+    private CellCacheConnection cellCacheConnection;
     private LocalAvatar localAvatar;
-    private CellChannelHandler cellClient;
+    private CellChannelConnection cellChannelConnection;
     
     public BoundsTestClientSession(WonderlandServerInfo serverInfo, 
             CellCacheMessageListener messageListener) {
         super (serverInfo);
         
         
-        avatarClient = new ViewHandler();
-        localAvatar = new LocalAvatar(avatarClient);
-        cellClient = new CellChannelHandler();
-        avatarClient.addListener(localAvatar);
-
-        cellCacheClient = new CellCacheHandler();
-        cellCacheClient.addListener(messageListener);
+        localAvatar = new LocalAvatar(this);
+ 
+        cellCacheConnection = new CellCacheConnection(localAvatar);
+        cellCacheConnection.addListener(messageListener);
         
+        cellChannelConnection = new CellChannelConnection();
     }
     
     /**
@@ -76,12 +66,12 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
     }
     
     /**
-     * Override the login message to attach clients after the login
-     * succeeds.  If a client fails to attach, the login will be aborted and
+     * Override the login message to connect clients after the login
+     * succeeds.  If a client fails to connect, the login will be aborted and
      * a LoginFailureException will be thrown
      * @param loginParameters the parameters to login with
      * @throws LoginFailureException if the login fails or any of the clients
-     * fail to attach
+     * fail to connect
      */
     @Override
     public void login(LoginParameters loginParams) 
@@ -90,26 +80,15 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
         // this will wait for login to succeed
         super.login(loginParams);
         
-        String AVATAR_ID = "DEFAULT";
-        
-        // if login succeeds, attach the various clients
+        // if login succeeds, connect the various clients
         try { 
-            avatarClient.attach(this);
-            AvatarCreateResponseMessage response = (AvatarCreateResponseMessage) 
-            avatarClient.sendAndWait(ViewMessage.newCreateMessage(AVATAR_ID));
-            
-            localAvatar.setAvatarCellID(response.getAvatarCellID());
-            System.out.println("CREATED AVATAR "+response.getAvatarCellID());
-            
-            // Now attach to the cellCache and inform it what avatar to associate with
-            cellCacheClient.attach(this);
-            cellCacheClient.send(CellHierarchyMessage.newSetAvatarMessage(AVATAR_ID));
-            cellClient.attach(this);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(BoundsTestClientSession.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (AttachFailureException afe) {
-            // a client failed to attach -- logout
-            disconnect();
+            // Now connect to the cellCache. The view will be determined via the
+            // localAvatar object.
+            cellCacheConnection.attach(this);
+            cellChannelConnection.attach(this);
+        } catch (ConnectionFailureException afe) {
+            // a client failed to connect -- logout
+            logout();
             
             // throw a login exception
             throw new LoginFailureException("Failed to attach client" , afe);

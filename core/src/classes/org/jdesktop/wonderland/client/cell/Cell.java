@@ -135,7 +135,7 @@ public class Cell {
      * Set the transform for this cell
      * @param localTransform
      */
-    public void setTransform(CellTransform localTransform) {
+    void setTransform(CellTransform localTransform) {
         if (localTransform==null) {
             this.localTransform=null;
         } else {

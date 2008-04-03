@@ -38,8 +38,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.HandlerType;
-import org.jdesktop.wonderland.common.comms.SessionInternalHandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.common.comms.SessionInternalConnectionType;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.DetachClientMessage;
@@ -77,7 +77,7 @@ public class WonderlandSessionListener
     
     /** client ID of the internal session handler */
     private static final short SESSION_INTERNAL_CLIENT_ID =
-            SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_ID;
+            SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_ID;
     
     /** the session associated with this listener */
     private ManagedReference<ClientSession> sessionRef;
@@ -109,8 +109,8 @@ public class WonderlandSessionListener
                 
         // add internal handler
         ClientHandlerRef internalRef = getHandlerStore().getHandlerRef(
-                    SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_TYPE);
-        ((SessionInternalHandler) internalRef.get()).setListener(this);
+                    SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_TYPE);
+        ((SessionInternalConnectionHandler) internalRef.get()).setListener(this);
         handlers.put(SESSION_INTERNAL_CLIENT_ID, internalRef);
     }
         
@@ -126,7 +126,7 @@ public class WonderlandSessionListener
         dm.setBinding(HandlerStore.DS_KEY, new HandlerStore());
     
         // register the internal handler
-        SessionInternalHandler internal = new SessionInternalHandler();
+        SessionInternalConnectionHandler internal = new SessionInternalConnectionHandler();
         registerClientHandler(internal);
     }
     
@@ -144,7 +144,7 @@ public class WonderlandSessionListener
             short clientID = recv.getClientID();
             
             // find the handler
-            ClientHandler handler = getHandler(clientID);
+            ClientConnectionHandler handler = getHandler(clientID);
             if (handler == null) {
                 logger.fine("Session " + getSession().getName() + 
                             " unknown handler ID: " + clientID);
@@ -200,11 +200,11 @@ public class WonderlandSessionListener
     /**
      * Register a handler that will handle connections from a particular
      * WonderlandClient type.
-     * @see org.jdesktop.wonderland.server.comms.CommsManager#registerClientHandler(ClientHandler)
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#registerClientHandler(ClientConnectionHandler)
      *
      * @param handler the handler to register
      */
-    public static void registerClientHandler(ClientHandler handler) {
+    public static void registerClientHandler(ClientConnectionHandler handler) {
         logger.fine("Register client handler for type " + 
                     handler.getClientType());
         
@@ -222,7 +222,7 @@ public class WonderlandSessionListener
      * Unregister a client handler that was previously registered
      * @param handler the handler to unregister
      */
-    public static void unregisterClientHandler(ClientHandler handler) {
+    public static void unregisterClientHandler(ClientConnectionHandler handler) {
         logger.fine("Unregister client handler for type " + 
                     handler.getClientType());
     
@@ -235,7 +235,7 @@ public class WonderlandSessionListener
      * @return the handler for the given type, or null if no handler
      * is registered for the given type
      */
-    public static ClientHandler getClientHandler(HandlerType clientType) {
+    public static ClientConnectionHandler getClientHandler(ConnectionType clientType) {
         ClientHandlerRef ref = getHandlerStore().getHandlerRef(clientType);
         if (ref == null) {
             return null;
@@ -248,21 +248,21 @@ public class WonderlandSessionListener
      * Get all client handlers
      * @return the set of all client handlers
      */
-    public static Set<ClientHandler> getClientHandlers() {
+    public static Set<ClientConnectionHandler> getClientHandlers() {
         return getHandlerStore().getHandlers();
     }
     
     /**
      * Get a sender that can be used to send messages to all clients
-     * of a given HandlerType
-     * @see org.jdesktop.wonderland.server.comms.CommsManager#getSender(HandlerType)
+     * of a given ConnectionType
+     * @see org.jdesktop.wonderland.server.comms.CommsManager#getSender(ConnectionType)
      * 
      * @param type the type of client to get a channel to
      * @return a sender for sending to all clients of the given type
      * @throws IllegalStateException if no handler is registered for the given
      * type
      */
-    public static WonderlandClientSender getSender(HandlerType type) {
+    public static WonderlandClientSender getSender(ConnectionType type) {
         WonderlandClientSender sender = getHandlerStore().getSender(type);
         if (sender == null) {
             throw new IllegalStateException("No handler registered for " + type);
@@ -285,7 +285,7 @@ public class WonderlandSessionListener
      * @return the handler for the given ID, or null if there is no 
      * handler for the given ID
      */
-    protected ClientHandler getHandler(Short clientID) {
+    protected ClientConnectionHandler getHandler(Short clientID) {
         ClientHandlerRef ref = handlers.get(clientID);
         if (ref == null) {
             return null;
@@ -300,7 +300,7 @@ public class WonderlandSessionListener
      * @return the removed handler for the given ID, or null if there is no 
      * handler for the given ID
      */
-    protected ClientHandler removeHandler(Short clientID) {
+    protected ClientConnectionHandler removeHandler(Short clientID) {
         ClientHandlerRef ref = handlers.remove(clientID);
         if (ref == null) {
             return null;
@@ -314,7 +314,7 @@ public class WonderlandSessionListener
      * @param messageID the ID of the message to respond to
      * @param type the type of client to attach
      */
-    protected void handleAttach(MessageID messageID, HandlerType type) {
+    protected void handleAttach(MessageID messageID, ConnectionType type) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Session " + getSession().getName() + " attach " +
                         "client type " + type);
@@ -370,7 +370,7 @@ public class WonderlandSessionListener
      */
     protected void handleDetach(short clientID) {
 //        logger.warning("DETACHING "+clientID+"  session "+getSession());
-        ClientHandler handler = getHandler(Short.valueOf(clientID));
+        ClientConnectionHandler handler = getHandler(Short.valueOf(clientID));
         if (handler == null) {
             logger.fine("Detach unknown client ID " + clientID);
             return;
@@ -489,7 +489,7 @@ public class WonderlandSessionListener
             implements WonderlandClientSender, Serializable
     {
         /** the client type */
-        private HandlerType type;
+        private ConnectionType type;
         
         /** the set of sessions */
         private ManagedReference<ClientSessionSet> sessionsRef;
@@ -507,7 +507,7 @@ public class WonderlandSessionListener
          * @param sessions the set of sessions associated with this sender
          * @param channel the channel to wrap
          */
-        public WonderlandClientSenderImpl(HandlerType type, short clientID,
+        public WonderlandClientSenderImpl(ConnectionType type, short clientID,
                                           ClientSessionSet sessions,
                                           Channel channel) 
         {
@@ -520,7 +520,7 @@ public class WonderlandSessionListener
             channelRef     = dm.createReference(channel);
         }
         
-        public HandlerType getClientType() {
+        public ConnectionType getClientType() {
             return type;
         }
 
@@ -594,7 +594,7 @@ public class WonderlandSessionListener
     /**
      * Handle internal messages from the WonderlandSession object
      */
-    static class SessionInternalHandler implements ClientHandler, Serializable {
+    static class SessionInternalConnectionHandler implements ClientConnectionHandler, Serializable {
         /** the listener to call back to */
         private WonderlandSessionListener listener;
         
@@ -606,8 +606,8 @@ public class WonderlandSessionListener
             this.listener = listener;
         }
         
-        public HandlerType getClientType() {
-            return SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_TYPE;
+        public ConnectionType getClientType() {
+            return SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_TYPE;
         }
 
         public void registered(WonderlandClientSender sender) {
@@ -641,15 +641,15 @@ public class WonderlandSessionListener
     }
     
     /**
-     * Store all registered handlers, mapped by HandlerType
+     * Store all registered handlers, mapped by ConnectionType
      */
     static class HandlerStore implements ManagedObject, Serializable {
         /** the key in the data store */
         private static final String DS_KEY = HandlerStore.class.getName();
         
-        /** the handlers, mapped by HandlerType */
-        private Map<HandlerType, HandlerRecord> handlers = 
-                new HashMap<HandlerType, HandlerRecord>();
+        /** the handlers, mapped by ConnectionType */
+        private Map<ConnectionType, HandlerRecord> handlers = 
+                new HashMap<ConnectionType, HandlerRecord>();
         
         /** The next client ID to assign */
         private short clientID = 0;
@@ -659,7 +659,7 @@ public class WonderlandSessionListener
          * @param handler the handler to register
          * @return the clientID that will be used for this handler
          */
-        public short register(ClientHandler handler) {
+        public short register(ClientConnectionHandler handler) {
             
             // check for duplicates
             if (handlers.containsKey(handler.getClientType())) {
@@ -678,9 +678,9 @@ public class WonderlandSessionListener
             
             // figure out the client ID to assign to this handler
             short assignID = this.clientID++;
-            if (handler instanceof SessionInternalHandler) {
+            if (handler instanceof SessionInternalConnectionHandler) {
                 // special case -- force ID of internal handler
-                assignID = SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_ID;
+                assignID = SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_ID;
             }
             
             // create a ClientSessionSet and channel
@@ -705,7 +705,7 @@ public class WonderlandSessionListener
          * Unregister a handler
          * @param handler the handler to unregister
          */
-        public void unregister(ClientHandler handler) {
+        public void unregister(ClientConnectionHandler handler) {
             HandlerRecord record = handlers.remove(handler.getClientType());
   
             // remove the channel and session store
@@ -724,8 +724,8 @@ public class WonderlandSessionListener
          * Get all registered handlers
          * @return the set of all registered handlers
          */
-        public Set<ClientHandler> getHandlers() {
-            Set<ClientHandler> out = new HashSet<ClientHandler>(handlers.size());
+        public Set<ClientConnectionHandler> getHandlers() {
+            Set<ClientConnectionHandler> out = new HashSet<ClientConnectionHandler>(handlers.size());
             
             synchronized (handlers) {
                 for (HandlerRecord record : handlers.values()) {
@@ -742,7 +742,7 @@ public class WonderlandSessionListener
          * @return a handler for the given type, or null if none is
          * registered
          */
-        public ClientHandlerRef getHandlerRef(HandlerType type) {
+        public ClientHandlerRef getHandlerRef(ConnectionType type) {
             HandlerRecord record = handlers.get(type);
             if (record == null) {
                 return null;
@@ -757,7 +757,7 @@ public class WonderlandSessionListener
          * @return a sender for the given type, or null if the type is
          * not registered
          */
-        public WonderlandClientSenderImpl getSender(HandlerType type) {
+        public WonderlandClientSenderImpl getSender(ConnectionType type) {
             HandlerRecord record = handlers.get(type);
             if (record == null) {
                 return null;
@@ -780,13 +780,13 @@ public class WonderlandSessionListener
      * A reference to a regular client handler
      */
     static class ClientHandlerRef implements Serializable {
-        private ClientHandler handler;
+        private ClientConnectionHandler handler;
        
-        public ClientHandlerRef(ClientHandler handler) {
+        public ClientHandlerRef(ClientConnectionHandler handler) {
             this.handler = handler;
         }
         
-        public ClientHandler get() {
+        public ClientConnectionHandler get() {
             return handler;
         }
         
@@ -801,9 +801,9 @@ public class WonderlandSessionListener
     static class ManagedClientHandlerRef extends ClientHandlerRef 
             implements Serializable 
     {
-        private ManagedReference<ClientHandler> ref;
+        private ManagedReference<ClientConnectionHandler> ref;
         
-        public ManagedClientHandlerRef(ClientHandler handler) {
+        public ManagedClientHandlerRef(ClientConnectionHandler handler) {
             super (null);
             
             DataManager dm = AppContext.getDataManager();
@@ -811,13 +811,13 @@ public class WonderlandSessionListener
         }
         
         @Override
-        public ClientHandler get() {
+        public ClientConnectionHandler get() {
             return ref.get();
         }
         
         @Override
         public void clear() {
-            ClientHandler handler = get();
+            ClientConnectionHandler handler = get();
             AppContext.getDataManager().removeObject((ManagedObject) handler);
         }
     }
