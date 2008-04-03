@@ -29,8 +29,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 public class EntityMessage extends CellMessage {
 
-    private Vector3f location;
-    private Quaternion orientation;
+    private Vector3f translation;
+    private Quaternion rotation;
 
     /**
      * MOVE_REQUEST - client asking the server to move entity
@@ -47,19 +47,19 @@ public class EntityMessage extends CellMessage {
     }
     
     public Vector3f getTranslation() {
-        return location;
+        return translation;
     }
 
-    private void setLocation(Vector3f locationVW) {
-        this.location = locationVW;
+    private void setTranslation(Vector3f locationVW) {
+        this.translation = locationVW;
     }
 
     public Quaternion getRotation() {
-        return orientation;
+        return rotation;
     }
 
-    public void setOrientation(Quaternion orientation) {
-        this.orientation = orientation;
+    public void setRotation(Quaternion orientation) {
+        this.rotation = orientation;
     }
 
     public ActionType getActionType() {
@@ -68,15 +68,22 @@ public class EntityMessage extends CellMessage {
     
     public static EntityMessage newMovedMessage(CellID cellID, CellTransform transform) {
         EntityMessage ret = new EntityMessage(cellID, ActionType.MOVED);
-        ret.setLocation(transform.getTranslation(null));
-        ret.setOrientation(transform.getRotation(null));
+        ret.setTranslation(transform.getTranslation(null));
+        ret.setRotation(transform.getRotation(null));
         return ret;
     }
     
-    public static EntityMessage newMoveRequestMessage(CellID cellID, Vector3f location, Quaternion orientation) {
+     public static EntityMessage newMovedMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
+        EntityMessage ret = new EntityMessage(cellID, ActionType.MOVED);
+        ret.setTranslation(translation);
+        ret.setRotation(rotation);
+        return ret;
+    }
+     
+    public static EntityMessage newMoveRequestMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
         EntityMessage ret = new EntityMessage(cellID, ActionType.MOVE_REQUEST);
-        ret.setLocation(location);
-        ret.setOrientation(orientation);
+        ret.setTranslation(translation);
+        ret.setRotation(rotation);
         return ret;
     }
     

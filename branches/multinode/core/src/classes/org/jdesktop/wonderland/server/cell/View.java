@@ -42,4 +42,12 @@ public interface View {
      * @return
      */
     public UserMO getUser();
+    
+    /**
+     * Return the cell cache managed object for this view, or null if there
+     * is no associated cache.
+     * 
+     * @return the cell cache for this view, or null
+     */
+    public ViewCellCacheMO getCellCache();
 }

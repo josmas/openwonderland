@@ -5,7 +5,7 @@
 	<TITLE></TITLE>
 	<META NAME="GENERATOR" CONTENT="NeoOffice 2.2  (Unix)">
 	<META NAME="CREATED" CONTENT="20080401;10510100">
-	<META NAME="CHANGED" CONTENT="20080401;14234000">
+	<META NAME="CHANGED" CONTENT="20080403;11222600">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <P>The Wonderland virtual world platform provides an open, extensible
@@ -27,17 +27,18 @@ associated with an avatar, in which case the avatar, through the cell
 system, will control the view. However on smaller devices, or simpler
 interfaces, the client may choose not to have a local avatar in which
 case the view can be controlled through the View Handler.</P>
-<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>Handlers</FONT></FONT></P>
-<P>The Handlers provide a high level communication infrastructure for
-Wonderland subsystems. Any subsystem which can provide a stand alone
-service to the user will use the Handler mechanism to encapsulate all
-communication. This allows client applications to easily select the
-Wonderland subsystems that are appropriate for the users current mode
-of operation or client device capabilities. For the example the IM,
-Audio chat and Cells are all subsystems that are optional, and each
-provides it's own handler. The client side implementation of a
-specific Handler is a singleton and they must be correctly
-initialised (by calling attach in the session login) before use.</P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>Connections</FONT></FONT></P>
+<P>The Connections provide a high level communication infrastructure
+for Wonderland subsystems. Any subsystem which can provide a stand
+alone service to the user will use the Connection mechanism to
+encapsulate all communication. This allows client applications to
+easily select the Wonderland subsystems that are appropriate for the
+users current mode of operation or client device capabilities. For
+the example the IM, Audio chat and Cells are all subsystems that are
+optional, and each provides it's own connection. The client side
+implementation of a specific Connetion is a singleton and they must
+be correctly initialised (by calling attach in the session login)
+before use.</P>
 <P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>Cell</FONT></FONT></P>
 <P>The cell system provides the structure of the virtual world. Each
 cell is a volume in the 3D world described as either a bounding box

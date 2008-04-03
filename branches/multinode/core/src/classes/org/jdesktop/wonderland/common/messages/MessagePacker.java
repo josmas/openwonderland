@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.comms.SessionInternalHandlerType;
+import org.jdesktop.wonderland.common.comms.SessionInternalConnectionType;
 import org.jdesktop.wonderland.common.comms.WonderlandObjectInputStream;
 import org.jdesktop.wonderland.common.comms.WonderlandObjectOutputStream;
 

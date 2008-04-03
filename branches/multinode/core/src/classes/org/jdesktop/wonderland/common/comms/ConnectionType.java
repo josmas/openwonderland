@@ -27,14 +27,14 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author jkaplan
  */
 @ExperimentalAPI
-public class HandlerType implements Serializable {
+public class ConnectionType implements Serializable {
     private String type;
     
     /**
      * Create a new client type with the given type name
      * @param type the name of the type
      */
-    public HandlerType(String type) {
+    public ConnectionType(String type) {
         this.type = type;
     }
 
@@ -45,11 +45,11 @@ public class HandlerType implements Serializable {
         }
         
         // all client types are comparable to each other
-        if (!(obj instanceof HandlerType)) {
+        if (!(obj instanceof ConnectionType)) {
             return false;
         }
         
-        final HandlerType other = (HandlerType) obj;
+        final ConnectionType other = (ConnectionType) obj;
         if (this.type != other.type && 
                 (this.type == null || !this.type.equals(other.type)))
         {

@@ -19,18 +19,20 @@
  */
 package org.jdesktop.wonderland.common.cell;
 
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 /**
- * The HandlerType of the AvatarClient
- * @author paulby
+ * The ConnectionType of the CellClient
+ * @author jkaplan
  */
-public class ViewHandlerType extends HandlerType {
+@InternalAPI
+public class CellChannelConnectionType extends ConnectionType {
     /** the client type for the cell client */
-    public static final HandlerType CLIENT_TYPE =
-            new ViewHandlerType("__AvatarClient");
+    public static final ConnectionType CLIENT_TYPE =
+            new CellChannelConnectionType("__CellClient");
     
-    private ViewHandlerType(String type) {
+    private CellChannelConnectionType(String type) {
         super (type);
     }
 }

@@ -155,6 +155,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         // make sure the user is still logged on
         ClientSession session = getSession();
         if (session == null) {
+            logger.warning("Null session, have not seen a logout");
             return;
         }
         
@@ -333,7 +334,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      * Utility to get the session
      */
     protected ClientSession getSession() {
-        return sessionRef.get();
+        try {
+            return sessionRef.get();
+        } catch(ObjectNotFoundException e) {
+            return null;
+        }
     }
     
     /**

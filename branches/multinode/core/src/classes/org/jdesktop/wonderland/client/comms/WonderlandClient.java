@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.client.comms;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -41,7 +41,7 @@ public interface WonderlandClient {
      * Get the type this client represents.
      * @return the type of client
      */
-    public HandlerType getHandlerType();
+    public ConnectionType getHandlerType();
     
     /**
      * Get the session this client is attached to

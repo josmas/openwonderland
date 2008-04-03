@@ -21,13 +21,13 @@ package org.jdesktop.wonderland.client.cell;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.comms.BaseHandler;
+import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
-import org.jdesktop.wonderland.common.cell.CellChannelHandlerType;
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -36,26 +36,26 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * class.
  * @author jkaplan
  */
-@ExperimentalAPI
-public class CellChannelHandler extends BaseHandler {
-    private static CellChannelHandler cellClient = null;
-    private static Logger logger = Logger.getLogger(CellChannelHandler.class.getName());
+@InternalAPI
+public class CellChannelConnection extends BaseConnection {
+    private static CellChannelConnection cellClient = null;
+    private static Logger logger = Logger.getLogger(CellChannelConnection.class.getName());
     
-    public CellChannelHandler() {
+    public CellChannelConnection() {
         super();
         cellClient = this;
     }
     
-    public static CellChannelHandler getCellChannelHandler() {
+    public static CellChannelConnection getCellChannelHandler() {
         return cellClient;
     }
     
     /**
      * Get the type of client
-     * @return CellChannelHandlerType.CELL_CLIENT_TYPE
+     * @return CellChannelConnectionType.CELL_CLIENT_TYPE
      */
-    public HandlerType getHandlerType() {
-        return CellChannelHandlerType.CLIENT_TYPE;
+    public ConnectionType getHandlerType() {
+        return CellChannelConnectionType.CLIENT_TYPE;
     }
 
     /**

@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * A cell that can move
@@ -33,14 +35,14 @@ import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
  */
 @ExperimentalAPI
 public class EntityCell extends Cell implements ChannelCell {
-    private CellChannelHandler cellClient;
+    private CellChannelConnection cellChannelConnection;
     
     private static Logger logger = Logger.getLogger(EntityCell.class.getName());
     private ArrayList<CellMoveListener> serverMoveListeners = null;
     
     public EntityCell(CellID cellID) {
         super(cellID);
-        cellClient = CellChannelHandler.getCellChannelHandler();
+        cellChannelConnection = CellChannelConnection.getCellChannelHandler();
     }
     
     /**
@@ -54,7 +56,24 @@ public class EntityCell extends Cell implements ChannelCell {
     public void localMoveRequest(CellTransform transform) {
         // TODO Need listener for move failure, both within this class and
         // potentially for external developers
-        EntityManager.getEntityManager().notifyEntityMoved(this, false);
+        EntityManager.getEntityManager().notifyEntityMoved(this, false);        
+        
+        // TODO at the moment this request does not apply a local change, rather
+        // it relies on the MOVED message sent by the server as a result of this
+        // request to actually move the local entity. Obviously needs updating
+        // so a local change is applied.
+        
+        // TODO throttle sends, we should only send so many times a second.
+        cellChannelConnection.send(
+                EntityMessage.newMoveRequestMessage(getCellID(), 
+                                                    transform.getTranslation(null), 
+                                                    transform.getRotation(null)),
+                new ResponseListener() {
+
+                    public void responseReceived(ResponseMessage response) {
+                        logger.warning("Not Implemented - Entity Move request got response from server");
+                    }
+                });
     }
     
     /**
@@ -140,11 +159,4 @@ public class EntityCell extends Cell implements ChannelCell {
         }
     }
 
-    /**
-     * @{inheritDoc}
-     */
-    public void send(CellMessage message) {
-        ChannelCellAdapter.send(message);
-    }
-    
 }

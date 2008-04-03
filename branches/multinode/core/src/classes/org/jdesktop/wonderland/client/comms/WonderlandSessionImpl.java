@@ -36,9 +36,9 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.comms.HandlerType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.comms.ProtocolVersion;
-import org.jdesktop.wonderland.common.comms.SessionInternalHandlerType;
+import org.jdesktop.wonderland.common.comms.SessionInternalConnectionType;
 import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
@@ -73,8 +73,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
     
     /** the default client type, used for handling data over the session
         channel */
-    private static final HandlerType INTERNAL_CLIENT_TYPE = 
-            SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_TYPE;
+    private static final ConnectionType INTERNAL_CLIENT_TYPE = 
+            SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_TYPE;
     
     /** the current status */
     private Status status;
@@ -92,7 +92,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
     private List<SessionStatusListener> sessionStatusListeners;
  
     /** attached clients */
-    private Map<HandlerType, ClientRecord> clients;
+    private Map<ConnectionType, ClientRecord> clients;
     private Map<Short, ClientRecord> clientsByID;
     
     /**
@@ -111,7 +111,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
       
         // initialize list of clients
         clients = Collections.synchronizedMap(
-                new HashMap<HandlerType, ClientRecord>());
+                new HashMap<ConnectionType, ClientRecord>());
         clientsByID = Collections.synchronizedMap(
                 new HashMap<Short, ClientRecord>());
         
@@ -120,7 +120,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         SessionInternalHandler internal = new SessionInternalHandler();
         ClientRecord internalRecord = addClientRecord(internal);
         setClientID(internalRecord, 
-                    SessionInternalHandlerType.SESSION_INTERNAL_CLIENT_ID);
+                    SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_ID);
         
         // the internal client is always attached
         internal.attached(this);
@@ -202,18 +202,18 @@ public class WonderlandSessionImpl implements WonderlandSession {
                     loginParams.getUserName());
     }
     
-    public void disconnect() {
+    public void logout() {
         getSimpleClient().logout(true);
     }
     
-    public void attach(final WonderlandClient client) 
-            throws AttachFailureException 
+    public void connect(final WonderlandClient client) 
+            throws ConnectionFailureException 
     {
         logger.fine(getName() + " attach client " + client);
         
         // check our status to make sure we are connected
         if (getStatus() != Status.CONNECTED) {
-            throw new AttachFailureException("Session not connected");
+            throw new ConnectionFailureException("Session not connected");
         }
         
         final ClientRecord record;
@@ -222,19 +222,19 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // this client type
         synchronized (clients) {
             if (getClientRecord(client.getHandlerType()) != null) {
-                throw new AttachFailureException("Duplicate attach for " +
+                throw new ConnectionFailureException("Duplicate attach for " +
                         "client type " + client.getHandlerType());
             }
             
             // Add a client record.  Adding a client record at this early
             // guarantees that there will only be one registration for the
-            // given type in progress at any time. If the attach fails
+            // given type in progress at any time. If the connect fails
             // for any reason, we have to make sure to clean this record
             // up before we exit
             record = addClientRecord(client);
         }
         
-        // send a request to the server to attach the given client type
+        // send a request to the server to connect the given client type
         Message attachMessage = new AttachClientMessage(client.getHandlerType());
         
         // Create a listener to handle the response.  We cannot do this
@@ -244,7 +244,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // properly.
         AttachResponseListener listener = new AttachResponseListener(record);
         
-        // whether or not the attach attempt succeeded
+        // whether or not the connect attempt succeeded
         boolean success = false;
         
         try {
@@ -262,20 +262,20 @@ public class WonderlandSessionImpl implements WonderlandSession {
             logger.fine(getName() + " attached succeeded for " + client);
 
         } catch (InterruptedException ie) {
-            throw new AttachFailureException("Interrupted", ie);
+            throw new ConnectionFailureException("Interrupted", ie);
         } finally {
-            // clean up the client record if the attach failed
+            // clean up the client record if the connect failed
             if (!success) {
                 removeClientRecord(client);
             }
         }
     }
 
-    public WonderlandClient getClient(HandlerType type) {
+    public WonderlandClient getClient(ConnectionType type) {
         return getClient(type, WonderlandClient.class);
     }
     
-    public <T extends WonderlandClient> T getClient(HandlerType type, 
+    public <T extends WonderlandClient> T getClient(ConnectionType type, 
                                                     Class<T> clazz) 
     {
         ClientRecord record = getClientRecord(type);
@@ -299,7 +299,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         return out;
     }
 
-    public void detach(WonderlandClient client) {
+    public void disconnect(WonderlandClient client) {
         logger.fine(getName() + " detach " + client);
         
         // get the client record
@@ -500,7 +500,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * @return the ClientRecord for the given client, or null if the given
      * client is not attached to this session
      */
-    protected ClientRecord getClientRecord(HandlerType type) {
+    protected ClientRecord getClientRecord(ConnectionType type) {
         return clients.get(type);
     }
     
@@ -831,8 +831,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /**
      * Handle traffic over the session channel
      */
-    protected static class SessionInternalHandler extends BaseHandler {
-        public HandlerType getHandlerType() {
+    protected static class SessionInternalHandler extends BaseConnection {
+        public ConnectionType getHandlerType() {
             // only used internally
             return INTERNAL_CLIENT_TYPE;
         }
@@ -844,7 +844,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
     }
      
     /**
-     * Listen for responses to the attach() message.
+     * Listen for responses to the connect() message.
      */
     class AttachResponseListener extends WaitResponseListener {
         /** the record to update on success */
@@ -854,7 +854,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         private boolean success = false;
         
         /** the exception if we failed */
-        private AttachFailureException exception;
+        private ConnectionFailureException exception;
         
         public AttachResponseListener(ClientRecord record) {
             this.record = record;
@@ -876,11 +876,11 @@ public class WonderlandSessionImpl implements WonderlandSession {
             } else if (response instanceof ErrorMessage) {
                 // error -- throw an exception
                 ErrorMessage e = (ErrorMessage) response;
-                setException(new AttachFailureException(e.getErrorMessage(),
+                setException(new ConnectionFailureException(e.getErrorMessage(),
                                                         e.getErrorCause()));
             } else {
                 // bad situation
-                setException(new AttachFailureException("Unexpected response " +
+                setException(new ConnectionFailureException("Unexpected response " +
                                                         "type: " + response));
             }
             
@@ -895,11 +895,11 @@ public class WonderlandSessionImpl implements WonderlandSession {
             this.success = success;
         }
         
-        public synchronized AttachFailureException getException() {
+        public synchronized ConnectionFailureException getException() {
             return exception;
         }
         
-        public synchronized void setException(AttachFailureException exception) {
+        public synchronized void setException(ConnectionFailureException exception) {
             this.exception = exception;
         }
     }
