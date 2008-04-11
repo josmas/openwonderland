@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -59,7 +59,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author paulby
  */
-@ExperimentalAPI
+@InternalAPI
 public class ViewCellCacheMO implements ManagedObject, Serializable {
     
     private final static Logger logger = Logger.getLogger(ViewCellCacheMO.class.getName());
