@@ -23,7 +23,7 @@ package org.jdesktop.wonderland.common.messages;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * Report to a clien that a message was processed successfully
+ * Report to a client that a message was processed successfully
  * @author jkaplan
  */
 @ExperimentalAPI

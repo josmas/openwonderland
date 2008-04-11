@@ -17,11 +17,13 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.avatar.ViewCell;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -55,6 +57,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          CellTransform cellTransform, 
                          CellSetup setup) {
         Cell cell = instantiateCell(className, cellId);
+        if (cell==null)
+            return;     // Instantiation failed, error has already been logged
+        
         cell.setLocalBounds(localBounds);
         cell.setTransform(cellTransform);
         Cell parent = cells.get(parentCellID);
@@ -90,7 +95,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             return;
         }
 
-        if (!(cell instanceof EntityCell)) {
+        if (!(cell instanceof MovableCell)) {
             cell.setTransform(cellTransform);
         }
     }
@@ -114,4 +119,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         viewCell = (ViewCell)cells.get(viewCellID);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public WonderlandSession getSession() {
+        throw new NotImplementedException();
+    }
 }

@@ -19,14 +19,14 @@
 
 package org.jdesktop.wonderland.client.avatar;
 
-import org.jdesktop.wonderland.client.cell.EntityCell;
+import org.jdesktop.wonderland.client.cell.MovableCell;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  *
  * @author paulby
  */
-public class ViewCell extends EntityCell {
+public class ViewCell extends MovableCell {
 
     public ViewCell(CellID cellID) {
         super(cellID);

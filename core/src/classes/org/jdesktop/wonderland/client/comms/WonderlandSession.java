@@ -96,24 +96,24 @@ public interface WonderlandSession {
      * @param client the client to connect
      * @throws ConnectionFailureException of the attachment fails
      */
-    public void connect(WonderlandClient client) throws ConnectionFailureException;
+    public void connect(ClientConnection client) throws ConnectionFailureException;
     
     /**
      * Disconnect a previously attached client from this session.
      * @param client the client to logout
      */
-    public void disconnect(WonderlandClient client);
+    public void disconnect(ClientConnection client);
     
     /**
-     * Get the attched WonderlandClient for the given ConnectionType.
+     * Get the attched ClientConnection for the given ConnectionType.
      * @param type the client type to get
      * @return the attached client for the given type, or null if no
      * client of the given type is attached
      */
-    public WonderlandClient getClient(ConnectionType type);
+    public ClientConnection getConnection(ConnectionType type);
     
     /**
-     * Get the attched WonderlandClient for the given ConnectionType.
+     * Get the attched ClientConnection for the given ConnectionType.
      * @param type the client type to get
      * @param clazz the class of client to return
      * @return the attached client for the given type, or null if no
@@ -121,14 +121,14 @@ public interface WonderlandSession {
      * @throws ClassCastException if the client for the given client type
      * is not assignable to the given type
      */
-    public <T extends WonderlandClient> T getClient(ConnectionType type,
+    public <T extends ClientConnection> T getConnection(ConnectionType type,
                                                     Class<T> clazz);
     
     /**
      * Get all clients attached to this session
      * @return the clients attached to this session
      */
-    public Collection<WonderlandClient> getClients();
+    public Collection<ClientConnection> getConnections();
     
     /**
      * Send a message to the server over the session channel on behalf of the 
@@ -141,7 +141,7 @@ public interface WonderlandSession {
      * @throws IllegalStateException if the client is not attached to this
      * session or the session is not connected
      */
-    public void send(WonderlandClient client, Message message);
+    public void send(ClientConnection client, Message message);
     
     /**
      * Add a listener that will be notified when the status of this

@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.server;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * Server plugins can implement this interface to add new functionality to
@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * 
  * @author jkaplan
  */
-@ExperimentalAPI
+@InternalAPI
 public interface ServerPlugin {
     /** intialize this plugin */
     public void initialize();

@@ -20,12 +20,12 @@
 package org.jdesktop.wonderland.common.config;
 
 import java.io.Serializable;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * Represents Wonderland configuration options common to the entire system (server/client)
  */
-@ExperimentalAPI
+@InternalAPI
 public class WonderlandConfig extends WonderlandConfigBase implements Serializable {
 
     private final static String baseUrl;

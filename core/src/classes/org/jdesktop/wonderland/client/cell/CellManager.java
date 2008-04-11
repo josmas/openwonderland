@@ -24,62 +24,62 @@ import java.util.Set;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * Global services for client entities. The manager will only
- * report information on currently loaded EntityCells.
+ * Global services for client cells. The manager will only
+ * report information on currently loaded Cells.
  * 
  * @author paulby
  */
 @ExperimentalAPI
-public class EntityManager {
+public class CellManager {
 
-    private static EntityManager entityManager = null;
+    private static CellManager cellManager = null;
     
-    private Set<EntityListener> entityListeners=Collections.synchronizedSet(new LinkedHashSet());            
+    private Set<CellMoveListener> moveListeners=Collections.synchronizedSet(new LinkedHashSet());            
 ;
     
-    private EntityManager() {
+    private CellManager() {
     }
     
-    public static EntityManager getEntityManager() {
-        if (entityManager==null)
-            entityManager = new EntityManager();
-        return entityManager;
+    public static CellManager getCellManager() {
+        if (cellManager==null)
+            cellManager = new CellManager();
+        return cellManager;
     } 
     
     /**
-     * Called by the EntityCell to notify the system that it has moved.
+     * Called by the MovableCell to notify the system that it has moved.
      * @param cell
      * @param fromServer
      */
-    void notifyEntityMoved(EntityCell cell, boolean fromServer) {
-        for(EntityListener listener : entityListeners)
-            listener.entityMoved(cell, fromServer);
+    void notifyCellMoved(MovableCell cell, boolean fromServer) {
+        for(CellMoveListener listener : moveListeners)
+            listener.cellMoved(cell, fromServer);
     }
     
     /**
      * Add a listener that will be notified of entity cell movement
      * @param listener
      */
-    public synchronized void addEntityListener(EntityListener listener) {
-        entityListeners.add(listener);
+    public synchronized void addCellMoveListener(CellMoveListener listener) {
+        moveListeners.add(listener);
     }
     
     /**
      * Remove the specified entity cell listener
      * @param listener
      */
-    public synchronized void removeEntityListener(EntityListener listener) {
-        entityListeners.remove(listener);
+    public synchronized void removeCellMoveListener(CellMoveListener listener) {
+        moveListeners.remove(listener);
     }
     
     @ExperimentalAPI
-    public interface EntityListener {
+    public interface CellMoveListener {
         /**
-         * Notification that an entity has moved. 
-         * @param cell the entity cell that moved
+         * Notification that an MovableCell has moved. 
+         * @param cell the cell that moved
          * @param fromServer, if true then the move came from the server, otherwise
          * the move originated on this client
          */
-        public void entityMoved(EntityCell cell, boolean fromServer);
+        public void cellMoved(MovableCell cell, boolean fromServer);
     }
 }

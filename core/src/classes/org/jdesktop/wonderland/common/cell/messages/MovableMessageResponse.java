@@ -19,18 +19,19 @@ package org.jdesktop.wonderland.common.cell.messages;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * Message from the server indicating that a move request was modified. This
- * occurs if the server determines the entity is not permitted to move to the
+ * occurs if the server determines the cell is not permitted to move to the
  * desired position.
  * 
  * @author paulby
  */
-public class EntityMessageResponse extends ResponseMessage {
+@InternalAPI
+public class MovableMessageResponse extends ResponseMessage {
 
     private Vector3f translation;
     private Quaternion rotation;
@@ -44,7 +45,7 @@ public class EntityMessageResponse extends ResponseMessage {
     
     private ActionType actionType;
     
-    private EntityMessageResponse(MessageID messageID, ActionType actionType) {
+    private MovableMessageResponse(MessageID messageID, ActionType actionType) {
         super(messageID);
         this.actionType = actionType;
     }
@@ -69,8 +70,8 @@ public class EntityMessageResponse extends ResponseMessage {
         return actionType;
     }
     
-    public static EntityMessageResponse newMoveModifiedMessage(MessageID msgID, Vector3f translation, Quaternion rotation) {
-        EntityMessageResponse ret = new EntityMessageResponse(msgID, ActionType.MOVE_MODIFIED);
+    public static MovableMessageResponse newMoveModifiedMessage(MessageID msgID, Vector3f translation, Quaternion rotation) {
+        MovableMessageResponse ret = new MovableMessageResponse(msgID, ActionType.MOVE_MODIFIED);
         ret.setLocation(translation);
         ret.setRotation(rotation);
         return ret;

@@ -22,7 +22,7 @@ package org.jdesktop.wonderland.client.cell;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.ClientContext3D;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
@@ -54,7 +54,7 @@ public class CellChannelConnection extends BaseConnection {
      * Get the type of client
      * @return CellChannelConnectionType.CELL_CLIENT_TYPE
      */
-    public ConnectionType getHandlerType() {
+    public ConnectionType getConnectionType() {
         return CellChannelConnectionType.CLIENT_TYPE;
     }
 
@@ -104,9 +104,10 @@ public class CellChannelConnection extends BaseConnection {
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("Handling Message "+message.getClass().getName());
         }
+            logger.warning("Handling Message "+message.getClass().getName());
         
         CellMessage cellMessage = (CellMessage)message;
-        CellCache cellCache = ClientContext.getCellCache(getSession());
+        CellCache cellCache = ClientContext3D.getCellCache(getSession());
         
         if (cellCache==null) {
             logger.severe("Unable to deliver CellMessage, CellCache is null");

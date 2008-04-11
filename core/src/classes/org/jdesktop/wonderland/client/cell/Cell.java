@@ -20,13 +20,16 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -45,6 +48,7 @@ public class Cell {
     private CellTransform local2VW = new CellTransform(null, null);
     private CellID cellID;
     private String name=null;
+    private CellStatus currentStatus;
     
     Cell(CellID cellID) {
         this.cellID = cellID;
@@ -67,16 +71,16 @@ public class Cell {
     }
     
     /**
-     * Return the set of children for this cell, or an empty set if there
+     * Return the list of children for this cell, or an empty list if there
      * are no children
      * @return
      */
-    public Collection<Cell> getChildren() {
+    public List<Cell> getChildren() {
         if (children==null)
             return new ArrayList<Cell>(0);
         
         synchronized(children) {
-            return (Collection<Cell>) children.clone();
+            return (List<Cell>) children.clone();
         }
     }
     
@@ -240,10 +244,10 @@ public class Cell {
     }
 
     /**
-     * TODO should not be public
+     * Set the VW Bounds for this cell
      * @param cachedVWBounds
      */
-    public void setCachedVWBounds(BoundingVolume cachedVWBounds) {
+    private void setCachedVWBounds(BoundingVolume cachedVWBounds) {
         this.cachedVWBounds = cachedVWBounds;
     }
     
@@ -301,5 +305,49 @@ public class Cell {
         this.localBounds = localBounds;
     }
 
-
+    /**
+     * Return the cell cache which instantiated and owns this cell.
+     */
+    public CellCache getCellCache() {
+        throw new NotImplementedException();
+    }
+    
+    /**
+     * Returns the status of this cell
+     * Cell states
+     *
+     * DISK - Cell is on disk with no memory footprint
+     * BOUNDS - Cell object is in memory with bounds initialized, NO geometry is loaded
+     * INACTIVE - All cell data is in memory
+     * ACTIVE - Cell is within the avatars proximity bounds
+     * VISIBLE - Cell is in the view frustum
+     *
+     * @return returns CellStatus
+     */
+    public CellStatus getStatus() {
+        return this.currentStatus;
+    }
+    
+    /**
+     * Set the status of this cell
+     *
+     *
+     * Cell states
+     *
+     * DISK - Cell is on disk with no memory footprint
+     * BOUNDS - Cell object is in memory with bounds initialized, NO geometry is loaded
+     * INACTIVE - All cell data is in memory
+     * ACTIVE - Cell is within the avatars proximity bounds
+     * VISIBLE - Cell is in the view frustum
+     *
+     * @param status the cell status
+     * @return true if the status was changed, false if the new and previous status are the same
+     */
+    public boolean setStatus(CellStatus status) {
+        if (currentStatus==status)
+            return false;
+        currentStatus = status;
+        
+        return true;
+    }
 }

@@ -49,7 +49,7 @@ public class CellDescriptionImpl implements CellDescription {
     private int contentsVersion;
     private short priority;
     private Class cellClass;
-    private boolean isEntity;
+    private boolean isMovable;
     
     private CellDescriptionImpl parent;
     private ArrayList<CellDescriptionImpl> children = null;
@@ -61,7 +61,7 @@ public class CellDescriptionImpl implements CellDescription {
         transform = cell.getTransform();
         cellClass = cell.getClass();
         this.priority = cell.getPriority();
-        isEntity = (cell instanceof EntityCellMO);
+        isMovable = (cell instanceof MovableCellMO);
             
     }
     
@@ -76,7 +76,7 @@ public class CellDescriptionImpl implements CellDescription {
         this.priority = mirror.getPriority();
         this.localBounds = mirror.getLocalBounds();
         this.transform = mirror.getTransform();
-        this.isEntity = mirror.isEntity();
+        this.isMovable = mirror.isMovableCell();
         this.cellClass = mirror.getCellClass();
     }
     
@@ -311,8 +311,8 @@ public class CellDescriptionImpl implements CellDescription {
     /**
      * @{inheritDoc}
      */
-    public boolean isEntity() {
-        return isEntity;
+    public boolean isMovableCell() {
+        return isMovable;
     }
 
     /**

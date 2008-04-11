@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
+import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -54,13 +55,12 @@ public class SimpleTerrainCellMO extends CellMO
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
     }
     
-    @Override
-    public String getClientCellClassName(ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.lg3d.wonderland.darkstar.client.cell.SimpleTerrainCell";
     }
 
     @Override
-    public ModelCellSetup getClientSetupData(ClientCapabilities capabilities) {
+    public ModelCellSetup getClientSetupData(ClientSession clientSession, ClientCapabilities capabilities) {
 	String checksum = ChecksumManagerMO.getChecksum(filename);
 	return new ModelCellSetup(baseUrl, filename, checksum);
     }
@@ -85,7 +85,7 @@ public class SimpleTerrainCellMO extends CellMO
 
     public CellMOSetup getCellMOSetup() {
         return new BasicCellMOSetup<ModelCellSetup>(getLocalBounds(),
-            getTransform(), getClass().getName(), getClientSetupData(null));
+            getTransform(), getClass().getName(), getClientSetupData(null, null));
     }
 
 }

@@ -18,6 +18,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -35,4 +36,10 @@ public interface CellCache {
      */
     public Cell getCell(CellID cellId);
     
+    /**
+     * Return the session with which this cell cache is associated. 
+     * 
+     * @return
+     */
+    public WonderlandSession getSession();
 }

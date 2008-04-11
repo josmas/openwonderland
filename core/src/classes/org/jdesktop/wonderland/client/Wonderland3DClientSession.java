@@ -18,7 +18,7 @@
  */
 package org.jdesktop.wonderland.client;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.cell.CellChannelConnection;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
  * handlers needed for the standard 3D client.
  * @author jkaplan
  */
-@ExperimentalAPI
+@InternalAPI
 public class Wonderland3DClientSession extends WonderlandSessionImpl {
     
     /** the cell channel handler */

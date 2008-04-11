@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.client;
 
 import java.util.logging.LogManager;
+import org.jdesktop.wonderland.common.InternalAPI;
 import java.io.InputStream;
 import java.io.IOException;
 
@@ -30,6 +31,7 @@ import java.io.IOException;
  *
  * @author paulby
  */
+@InternalAPI
 public class LogControl {
     
     /** Creates a new instance of LogControl */

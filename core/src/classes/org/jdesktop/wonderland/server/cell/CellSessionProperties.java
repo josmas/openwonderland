@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellSetup;
 
 /**
  * The properties of the cell for a particular combination of session
@@ -31,27 +32,41 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public class CellSessionProperties implements Serializable {
 
-    private ViewCellCacheRevalidationListener viewCacheOperation=null;
+    private ViewCellCacheRevalidationListener viewCacheOperation;
+    private String clientCellClassName;
+    private CellSetup clientCellSetup;
     
-    public CellSessionProperties() {
+    public CellSessionProperties(ViewCellCacheRevalidationListener viewCacheOperation,
+            String clientCellClassName,
+            CellSetup clientCellSetup) {
+        this.viewCacheOperation = viewCacheOperation;
+        this.clientCellClassName = clientCellClassName;
+        this.clientCellSetup = clientCellSetup;
     }
 
     /**
      * Returns the ViewCacheOperation, or null
      * @return
      */
-    public ViewCellCacheRevalidationListener getViewCacheOperation() {
+    public ViewCellCacheRevalidationListener getViewCellCacheRevalidationListener() {
         return viewCacheOperation;
     }
 
     /**
-     * Set the ViewCacheOperation. This object can be session and capability
-     * specific.
-     * 
-     * @param viewCacheOperation
+     * Return the name of the class name of this cell that will instantiated
+     * on the client for this session
+     * @return
      */
-    public void setViewCacheOperation(ViewCellCacheRevalidationListener viewCacheOperation) {
-        this.viewCacheOperation = viewCacheOperation;
+    public String getClientCellClassName() {
+        return clientCellClassName;
+    }
+
+    /**
+     * Return the setup data that will be sent to the client for this session
+     * @return
+     */
+    public CellSetup getClientCellSetup() {
+        return clientCellSetup;
     }
     
 }

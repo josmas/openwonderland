@@ -19,29 +19,31 @@ package org.jdesktop.wonderland.common.cell.messages;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- * Messages to/from Entity Cells
+ * Messages to/from MovableCells
  * 
  * @author paulby
  */
-public class EntityMessage extends CellMessage {
+@InternalAPI
+public class MovableMessage extends CellMessage {
 
     private Vector3f translation;
     private Quaternion rotation;
 
     /**
-     * MOVE_REQUEST - client asking the server to move entity
-     * MOVED - server informing clients entity has moved
+     * MOVE_REQUEST - client asking the server to move cell
+     * MOVED - server informing clients cell has moved
      * 
      */
     public enum ActionType { MOVED, MOVE_REQUEST };
     
     private ActionType actionType;
     
-    private EntityMessage(CellID cellID, ActionType actionType) {
+    private MovableMessage(CellID cellID, ActionType actionType) {
         super(cellID);
         this.actionType = actionType;
     }
@@ -66,22 +68,22 @@ public class EntityMessage extends CellMessage {
         return actionType;
     }
     
-    public static EntityMessage newMovedMessage(CellID cellID, CellTransform transform) {
-        EntityMessage ret = new EntityMessage(cellID, ActionType.MOVED);
+    public static MovableMessage newMovedMessage(CellID cellID, CellTransform transform) {
+        MovableMessage ret = new MovableMessage(cellID, ActionType.MOVED);
         ret.setTranslation(transform.getTranslation(null));
         ret.setRotation(transform.getRotation(null));
         return ret;
     }
     
-     public static EntityMessage newMovedMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
-        EntityMessage ret = new EntityMessage(cellID, ActionType.MOVED);
+     public static MovableMessage newMovedMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
+        MovableMessage ret = new MovableMessage(cellID, ActionType.MOVED);
         ret.setTranslation(translation);
         ret.setRotation(rotation);
         return ret;
     }
      
-    public static EntityMessage newMoveRequestMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
-        EntityMessage ret = new EntityMessage(cellID, ActionType.MOVE_REQUEST);
+    public static MovableMessage newMoveRequestMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
+        MovableMessage ret = new MovableMessage(cellID, ActionType.MOVE_REQUEST);
         ret.setTranslation(translation);
         ret.setRotation(rotation);
         return ret;

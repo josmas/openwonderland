@@ -20,12 +20,12 @@
 package org.jdesktop.wonderland.common.config;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * Represents Wonderland configuration options common to the entire system (server/client)
  */
-@ExperimentalAPI
+@InternalAPI
 public abstract class WonderlandConfigBase implements WonderlandConfigInterface {
 
     protected static Logger logger = Logger.getLogger("wonderland.config");
