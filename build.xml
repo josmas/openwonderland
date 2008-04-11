@@ -11,6 +11,10 @@
     <ant dir="core" target="javadoc"/>
 </target>
 
+<target name="scrub" description="Clean all rebuildable stuff.">
+    <ant dir="core" target="scrub"/>
+</target>
+
 <target name="release" depends="jar-all, javadoc" description="Build release">
 </target>
 
@@ -18,7 +22,6 @@
   <copy todir="/export/home/lg3dadmin/lg3d/packages/api-update">
     <fileset dir="core/release/linux-i686/debug/javadoc"/>
   </copy>
-
 </target>
 
 </project>
