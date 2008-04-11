@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * 
  * @author paulby
  */
-@InternalAPI
+@ExperimentalAPI
 public interface CellDescription {
     
     /**
