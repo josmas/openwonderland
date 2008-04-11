@@ -389,24 +389,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         this.name = name;
     }
     
-    /**
-     * Convenience method to open the channel for this cell. Creates a
-     * channelName based on the cellID.
-     */
-    protected void defaultOpenChannel() {
-        ChannelManager cm = AppContext.getChannelManager();
-        Channel cellChannel = cm.createChannel(Delivery.RELIABLE);
-        
-        DataManager dm = AppContext.getDataManager();
-        cellChannelRef = dm.createReference(cellChannel);
-    }
-    
-    /**
-     * Convenience method to close the cells channel
-     */
-    protected void defaultCloseChannel() {
-        // TODO no destroy channel in DS....    
-    }
     
     /**
      * Add a client session with the specified capabilities to this cell. 
@@ -420,7 +402,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
                                             ClientCapabilities capabilities) {
         addUserToCellChannel(session);
         
-        return new CellSessionProperties();
+        return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
+                getClientCellClassName(session, capabilities),
+                getClientSetupData(session, capabilities));
     }
     
     /**
@@ -434,7 +418,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     protected CellSessionProperties changeSession(ClientSession session, 
                                                ClientCapabilities capabilities) {
-        return new CellSessionProperties();
+        return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
+                getClientCellClassName(session, capabilities),
+                getClientSetupData(session, capabilities));
         
     }
     
@@ -473,15 +459,24 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Returns the fully qualified name of the class that represents
      * this cell on the client
      */
-    protected abstract String getClientCellClassName(ClientCapabilities capabilities);
+    protected abstract String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities);
     
     /**
      * Get the setupdata for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    protected CellSetup getClientSetupData(ClientCapabilities capabilities) {
+    protected CellSetup getClientSetupData(ClientSession clientSession, ClientCapabilities capabilities) {
         return null;
     }
+    
+    /**
+     * Returns the ViewCacheOperation, or null
+     * @return
+     */
+    protected ViewCellCacheRevalidationListener getViewCellCacheRevalidationListener() {
+        return null;
+    }
+    
     
     /**
      * Set up the cell from the given properties

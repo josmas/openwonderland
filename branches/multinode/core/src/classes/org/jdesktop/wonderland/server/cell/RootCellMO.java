@@ -19,6 +19,7 @@
 
 package org.jdesktop.wonderland.server.cell;
 
+import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 
 /**
@@ -32,7 +33,7 @@ public class RootCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    protected String getClientCellClassName(ClientCapabilities capabilities) {
+    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.RootCell";
     }
 }

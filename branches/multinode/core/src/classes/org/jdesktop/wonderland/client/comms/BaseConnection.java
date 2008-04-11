@@ -27,15 +27,15 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * A basic Wonderland Handler that can be extended to develop real handlers.
+ * A basic Wonderland Connection that can be extended to develop real connections.
  * @author jkaplan
  */
 @ExperimentalAPI
-public abstract class BaseConnection implements WonderlandClient {
+public abstract class BaseConnection implements ClientConnection {
     /** the current status */
     private Status status = Status.DETACHED;
     
-    /** the session we are attached to, or null if we are not attached to
+    /** the session we are connected to, or null if we are not connected to
      * any sessions. */
     private WonderlandSession session;
     
@@ -71,7 +71,7 @@ public abstract class BaseConnection implements WonderlandClient {
         session.connect(this);
     }
     
-    public synchronized void attached(WonderlandSession session) {
+    public synchronized void connected(WonderlandSession session) {
         this.session = session;
         
         setStatus(Status.ATTACHED);
@@ -84,7 +84,7 @@ public abstract class BaseConnection implements WonderlandClient {
         getSession().disconnect(this);
     }
     
-    public void detached() {
+    public void disconnected() {
         setStatus(status.DETACHED);
     }
     
@@ -125,7 +125,7 @@ public abstract class BaseConnection implements WonderlandClient {
      * @throws MessageException if there is an error getting the bytes
      * for the message
      * @throws IllegalStateException if this client is not in the 
-     * ATTACHED state or the session this client is attached to is not
+     * ATTACHED state or the session this client is connected to is not
      * in the CONNECTED state
      */
     protected void send(Message message) {
@@ -135,7 +135,7 @@ public abstract class BaseConnection implements WonderlandClient {
      /**
      * Send a message to the server over the session channel and provide a
      * listener.  The message is sent on behalf of this client.
-     * The client must be successfully attached to this session in order
+     * The client must be successfully connected to this session in order
      * for the send to work.
      * <p>
      * The given listener will be notified when a response is received. If
@@ -152,7 +152,7 @@ public abstract class BaseConnection implements WonderlandClient {
      * @throws MessageException if there is an error getting the bytes
      * for the message
      * @throws IllegalStateException if this client is not in the 
-     * ATTACHED state or the session this client is attached to is not
+     * ATTACHED state or the session this client is connected to is not
      * in the CONNECTED state 
      */
     protected void send(Message message, ResponseListener listener) 
@@ -185,7 +185,7 @@ public abstract class BaseConnection implements WonderlandClient {
      * @throws MessageException if there is an error getting the bytes
      * for the message
      * @throws IllegalStateException if this client is not in the 
-     * ATTACHED state or the session this client is attached to is not
+     * ATTACHED state or the session this client is connected to is not
      * in the CONNECTED state 
      */
     protected ResponseMessage sendAndWait(Message message)
@@ -228,6 +228,6 @@ public abstract class BaseConnection implements WonderlandClient {
     
     @Override
     public String toString() {
-        return getHandlerType().toString();
+        return getConnectionType().toString();
     }
 }

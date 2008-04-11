@@ -19,7 +19,11 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.Channel;
+import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.DataManager;
+import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
@@ -29,8 +33,8 @@ import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
-import org.jdesktop.wonderland.common.cell.messages.EntityMessageResponse;
+import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
+import org.jdesktop.wonderland.common.cell.messages.MovableMessageResponse;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -42,7 +46,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * 
  * @author paulby
  */
-public class EntityCellMO extends CellMO implements ChannelCellMO {
+public class MovableCellMO extends CellMO implements ChannelCellMO {
 
     private ArrayList<ManagedReference<CellMoveListener>> listeners = null;
     
@@ -60,7 +64,7 @@ public class EntityCellMO extends CellMO implements ChannelCellMO {
 
         if (isLive() && cellChannelRef != null) {
             cellSender.send(cellChannelRef.get(), 
-                            EntityMessage.newMovedMessage(cellID, transform));
+                            MovableMessage.newMovedMessage(cellID, transform));
         }
     }
     
@@ -68,7 +72,11 @@ public class EntityCellMO extends CellMO implements ChannelCellMO {
      * {@inheritDoc}
      */
     public void openChannel() {
-        defaultOpenChannel();
+        ChannelManager cm = AppContext.getChannelManager();
+        Channel cellChannel = cm.createChannel(Delivery.RELIABLE);
+        
+        DataManager dm = AppContext.getDataManager();
+        cellChannelRef = dm.createReference(cellChannel);
         
         // cache the sender for sending to cell clients.  This saves a
         // Darkstar lookup for every cell we want to send to.
@@ -79,29 +87,31 @@ public class EntityCellMO extends CellMO implements ChannelCellMO {
      * {@inheritDoc}
      */
     public void closeChannel() {
-        defaultCloseChannel();
+        DataManager dm = AppContext.getDataManager();
+        Channel channel = cellChannelRef.get();
+        dm.removeObject(channel);
+        
         cellSender=null;
     }  
     
-    @Override
-    public String getClientCellClassName(ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.cell.EntityCell";
+    @Override protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
+        return "org.jdesktop.wonderland.client.cell.MovableCell";
     }
     
     public void messageReceived(WonderlandClientSender sender, 
                                 ClientSession session,
                                 CellMessage message ) {
-        if (!(message instanceof EntityMessage)) {
+        if (!(message instanceof MovableMessage)) {
             logger.severe("Incorrect message type "+message.getClass().getName());
         }
         
-        EntityMessage ent = (EntityMessage)message;
+        MovableMessage ent = (MovableMessage)message;
         switch(ent.getActionType()) {
             case MOVE_REQUEST :
                 setTransform(new CellTransform(ent.getRotation(), ent.getTranslation()));
                 
                 // Only need to send a response if the move can not be completed as requested
-                sender.send(EntityMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));
+                //sender.send(session, MovableMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));
                 break;
             case MOVED :
                 logger.severe("Server should never receive MOVED messages");
@@ -144,7 +154,7 @@ public class EntityCellMO extends CellMO implements ChannelCellMO {
             tm.scheduleTask(new Task() {
 
                 public void run() throws Exception {
-                    listenerRef.get().cellMoved(EntityCellMO.this, transform);
+                    listenerRef.get().cellMoved(MovableCellMO.this, transform);
                 }
 
             });
@@ -156,7 +166,7 @@ public class EntityCellMO extends CellMO implements ChannelCellMO {
      * Listener inteface for cell movement
      */
     public interface CellMoveListener extends ManagedObject {
-        public void cellMoved(EntityCellMO cell, CellTransform transform);
+        public void cellMoved(MovableCellMO cell, CellTransform transform);
     }
 
 

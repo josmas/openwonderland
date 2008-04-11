@@ -30,16 +30,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
@@ -58,6 +59,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author paulby
  */
+@ExperimentalAPI
 public class ViewCellCacheMO implements ManagedObject, Serializable {
     
     private final static Logger logger = Logger.getLogger(ViewCellCacheMO.class.getName());
@@ -115,9 +117,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
-        CellMO rootCell = CellManager.getCell(rootCellID);
+        CellMO rootCell = CellManagerMO.getCell(rootCellID);
         
-        msg = CellManager.newCreateCellMessage(rootCell, capabilities);
+        msg = newCreateCellMessage(rootCell, capabilities);
         sender.send(session, msg);
         
         currentCells.put(rootCellID, new CellRef(rootCell));
@@ -204,7 +206,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 CellRef cellRef = currentCells.get(cellID);           
                 if (cellRef == null) {
                     // the cell is new -- add it and send a message
-                    CellMO cell = CellManager.getCell(cellID);
+                    CellMO cell = CellManagerMO.getCell(cellID);
                     cellRef = new CellRef(cell, cellMirror);
                     currentCells.put(cellID, cellRef);
                     markForUpdate();
@@ -218,7 +220,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                     CellSessionProperties prop = cell.addSession(session, capabilities);
                     cellRef.setCellSessionProperties(prop);
                     
-                    msg = CellManager.newCreateCellMessage(cell, capabilities);
+                    msg = newCreateCellMessage(cell, capabilities);
                     sender.send(session, msg);
                     monitor.incMessageCount();
                                         
@@ -228,21 +230,21 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                     for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
                         switch (update) {
                             case TRANSFORM:
-                                // Entity cells manage their own movement over
+                                // MovableCells manage their own movement over
                                 // their cell channel, so this only deals with
-                                // non entity cels.
-                                if (!cellMirror.isEntity()) {
-                                    msg = CellManager.newCellMoveMessage(cellMirror);
+                                // non movable cells.
+                                if (!cellMirror.isMovableCell()) {
+                                    msg = newCellMoveMessage(cellMirror);
                                     sender.send(session, msg);
                                 }
                                 break;
                             case CONTENT:
-                                msg = CellManager.newContentUpdateCellMessage(cellRef.get(), capabilities);
+                                msg = newContentUpdateCellMessage(cellRef.get(), capabilities);
                                 sender.send(session, msg);
                                 monitor.incMessageCount();
                                 break;
                             case VIEW_CACHE_OPERATION :
-                                cellRef.getCellSessionProperties().getViewCacheOperation().cacheRevalidate(view.getTransform());
+                                cellRef.getCellSessionProperties().getViewCellCacheRevalidationListener().cacheRevalidate(view.getTransform());
                                 break;
                         }
                     }
@@ -274,11 +276,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                     CellMO cell = ref.get();
 
                     // get suceeded, so cell is just inactive
-                    msg = CellManager.newUnloadCellMessage(cell);
+                    msg = newUnloadCellMessage(cell);
                     cell.removeSession(session);
                 } catch (ObjectNotFoundException onfe) {
                     // get failed, cell is deleted
-                    msg = CellManager.newDeleteCellMessage(ref.getCellID());
+                    msg = newDeleteCellMessage(ref.getCellID());
                 }
                 
                 sender.send(session, msg);
@@ -445,7 +447,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 addUpdateType(UpdateType.CONTENT);
                 ret = true;
             }
-            if (cellSessionProperties!=null && cellSessionProperties.getViewCacheOperation()!=null) {
+            if (cellSessionProperties!=null && cellSessionProperties.getViewCellCacheRevalidationListener()!=null) {
                 addUpdateType(UpdateType.VIEW_CACHE_OPERATION);
                 ret = true;
             }
@@ -477,5 +479,119 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
     }
 
+    /**
+     * Return a new Create cell message
+     */
+    public static CellHierarchyMessage newCreateCellMessage(CellMO cell, ClientCapabilities capabilities) {
+        CellID parent=null;
+        
+        CellMO p = cell.getParent();
+        if (p!=null) {
+            parent = p.getCellID();
+        }
+        
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
+            cell.getClientCellClassName(null,capabilities),
+            cell.getLocalBounds(),
+            cell.getCellID(),
+            parent,
+            cell.getTransform(),
+            cell.getClientSetupData(null, capabilities)
+            
+            
+            
+            );
+    }
+    
+    /**
+     * Return a new LoadLocalAvatar cell message
+     */
+    public static CellHierarchyMessage newLoadLocalAvatarMessage(AvatarMO cell, ClientCapabilities capabilities) {
+        CellID parent=null;
+        
+        CellMO p = cell.getParent();
+        if (p!=null) {
+            parent = p.getCellID();
+        }
+        
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CLIENT_AVATAR,
+            cell.getClientCellClassName(null,capabilities),
+            cell.getLocalBounds(),
+            cell.getCellID(),
+            parent,
+            cell.getTransform(),
+            cell.getClientSetupData(null, capabilities)
+            
+            
+            
+            );
+    }
+    
+    /**
+     * Return a new Cell inactive message
+     */
+    public static CellHierarchyUnloadMessage newUnloadCellMessage(CellMO cell) {
+        return new CellHierarchyUnloadMessage(cell.getCellID());
+    }
+    
+    /**
+     * Return a new Delete cell message
+     */
+    public static CellHierarchyMessage newDeleteCellMessage(CellID cellID) {
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.DELETE_CELL,
+            null,
+            null,
+            cellID,
+            null,
+            null,
+            null
+            );
+    }
+    
+    /**
+     * Return a new Delete cell message
+     */
+    public static CellHierarchyMessage newChangeParentCellMessage(CellMO childCell, CellMO parentCell) {
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CHANGE_PARENT,
+            null,
+            null,
+            childCell.getCellID(),
+            parentCell.getCellID(),
+            null,
+            null
+            
+            );
+    }
+    
+    /**
+     * Return a new cell move message
+     */
+    public static CellHierarchyMessage newCellMoveMessage(CellDescription cell) {
+        return new CellHierarchyMoveMessage(cell.getLocalBounds(),
+            cell.getCellID(),
+            cell.getTransform()
+            );
+    }
+    
+    /**
+     * Return a new cell update message. Indicates that the content of the cell
+     * has changed.
+     */
+    public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellGLO, ClientCapabilities capabilities) {
+        CellID parentID = null;
+        if (cellGLO.getParent() != null) {
+            parentID = cellGLO.getParent().getCellID();
+        }
+        
+        /* Return a new CellHiearchyMessage class, with populated data fields */
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UPDATE_CELL_CONTENT,
+            cellGLO.getClientCellClassName(null,capabilities),
+            cellGLO.getLocalBounds(),
+            cellGLO.getCellID(),
+            parentID,
+            cellGLO.getTransform(),
+            cellGLO.getClientSetupData(null, capabilities)    
+            );
+    }
 }
 

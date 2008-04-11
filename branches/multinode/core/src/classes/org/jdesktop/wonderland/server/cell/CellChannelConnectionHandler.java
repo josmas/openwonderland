@@ -81,8 +81,8 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
                                 ClientSession session,
                                 CellMessage message) 
     {
-        // get the CellManager
-        CellManager mcc = WonderlandContext.getCellManager();
+        // get the CellManagerMO
+        CellManagerMO mcc = WonderlandContext.getCellManager();
         
         // find the appropriate cell
         CellMO cell = mcc.getCell(message.getCellID());

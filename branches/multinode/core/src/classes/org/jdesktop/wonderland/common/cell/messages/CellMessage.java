@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- * Message sent by a client to a particular cell.
+ * Message sent to a particular cell.
  * @author jkaplan
  */
 @ExperimentalAPI

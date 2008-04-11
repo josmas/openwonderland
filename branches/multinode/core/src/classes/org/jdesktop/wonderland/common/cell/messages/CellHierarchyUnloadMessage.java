@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.common.cell.messages;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * 
  * @author paulby
  */
-@ExperimentalAPI
+@InternalAPI
 public class CellHierarchyUnloadMessage extends CellHierarchyMessage {
     
     /**

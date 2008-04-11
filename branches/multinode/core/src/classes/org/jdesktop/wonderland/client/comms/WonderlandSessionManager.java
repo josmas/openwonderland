@@ -26,30 +26,31 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * A factory for creating new instances of WonderlandSession.  This factory
+ * A manager for creating new instances of WonderlandSession.  This class
  * also provides methods to manage session lifecycle listeners.
  * @author jkaplan
  */
 @ExperimentalAPI
-public class WonderlandSessionFactory {
+public class WonderlandSessionManager {
     /** sessions we have created, mapped my serverInfo */
-    private static Map<WonderlandServerInfo, WonderlandSession> sessions =
+    private Map<WonderlandServerInfo, WonderlandSession> sessions =
         new HashMap<WonderlandServerInfo, WonderlandSession>();
     
     /** client lifecycle listeners */
-    private static Set<SessionLifecycleListener> lifecycleListeners =
+    private Set<SessionLifecycleListener> lifecycleListeners =
             new CopyOnWriteArraySet<SessionLifecycleListener>();
+    
     
     /**
      * Get the WonderlandSession to connect to server identified by the given
      * server info object.  
      * @param serverInfo the server to connect to
      */
-    public static WonderlandSession getSession(WonderlandServerInfo serverInfo) {
+    public WonderlandSession getSession(WonderlandServerInfo serverInfo) {
         WonderlandSession session;
         boolean newSession = false;
         
-        synchronized (WonderlandSessionFactory.class) {
+        synchronized (WonderlandSessionManager.class) {
             session = sessions.get(serverInfo);
             
             // see if we need to create a new session
@@ -73,7 +74,7 @@ public class WonderlandSessionFactory {
      * clients that are created or change status
      * @param listener the listener to add
      */
-    public static void addLifecycleListener(SessionLifecycleListener listener) {
+    public void addLifecycleListener(SessionLifecycleListener listener) {
         lifecycleListeners.add(listener);
     }
     
@@ -81,7 +82,7 @@ public class WonderlandSessionFactory {
      * Remove a lifecycle listener.
      * @param listener the listener to remove
      */
-    public static void removeLifecycleListener(SessionLifecycleListener listener) {
+    public void removeLifecycleListener(SessionLifecycleListener listener) {
         lifecycleListeners.remove(listener);
     }
     
@@ -89,7 +90,7 @@ public class WonderlandSessionFactory {
      * Notify any registered lifecycle listeners that a new session was created
      * @param session the client that was created
      */
-    protected static void fireNewSession(WonderlandSession session) {
+    private void fireNewSession(WonderlandSession session) {
         for (SessionLifecycleListener listener : lifecycleListeners) {
             listener.sessionCreated(session);
         }

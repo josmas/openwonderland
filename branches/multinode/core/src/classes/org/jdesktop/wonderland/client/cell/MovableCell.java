@@ -25,7 +25,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
+import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
+import org.jdesktop.wonderland.common.cell.messages.MovableMessageResponse;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
@@ -34,13 +35,15 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author paulby
  */
 @ExperimentalAPI
-public class EntityCell extends Cell implements ChannelCell {
+public class MovableCell extends Cell implements ChannelCell {
     private CellChannelConnection cellChannelConnection;
     
-    private static Logger logger = Logger.getLogger(EntityCell.class.getName());
+    private static Logger logger = Logger.getLogger(MovableCell.class.getName());
     private ArrayList<CellMoveListener> serverMoveListeners = null;
     
-    public EntityCell(CellID cellID) {
+    public enum CellMoveSource { LOCAL, REMOTE }; // Do we need BOTH as well ?
+    
+    public MovableCell(CellID cellID) {
         super(cellID);
         cellChannelConnection = CellChannelConnection.getCellChannelHandler();
     }
@@ -48,32 +51,58 @@ public class EntityCell extends Cell implements ChannelCell {
     /**
      * A request from this client to move the cell. The cell we be moved locally
      * and the requested change sent to the server. If the server denies the move
-     * the cell will be moved to a server provided location. The server will
-     * notify all other clients using this cell of the new location.
+     * the cell will be moved to a server provided location and the listener
+     * will be called. The server will
+     * notify all other clients of the new location.
      * 
-     * @param transform
+     * @param transform the requrested transform
+     * @param listener the listener that will be notified in the event the
+     * system modifies this move (due to collision etc).
      */
-    public void localMoveRequest(CellTransform transform) {
-        // TODO Need listener for move failure, both within this class and
-        // potentially for external developers
-        EntityManager.getEntityManager().notifyEntityMoved(this, false);        
+    public void localMoveRequest(CellTransform transform, 
+                                 final CellMoveModifiedListener listener) {
+    
+        CellManager.getCellManager().notifyCellMoved(this, false);        
         
         // TODO at the moment this request does not apply a local change, rather
         // it relies on the MOVED message sent by the server as a result of this
-        // request to actually move the local entity. Obviously needs updating
+        // request to actually move the local cell. Obviously needs updating
         // so a local change is applied.
         
         // TODO throttle sends, we should only send so many times a second.
+        if (listener!=null) {
         cellChannelConnection.send(
-                EntityMessage.newMoveRequestMessage(getCellID(), 
+                MovableMessage.newMoveRequestMessage(getCellID(), 
                                                     transform.getTranslation(null), 
                                                     transform.getRotation(null)),
                 new ResponseListener() {
 
                     public void responseReceived(ResponseMessage response) {
-                        logger.warning("Not Implemented - Entity Move request got response from server");
+                        MovableMessageResponse msg = (MovableMessageResponse)response;
+                        CellTransform requestedTransform = null;
+                        CellTransform actualTransform = new CellTransform(msg.getRotation(), msg.getTranslation());
+                        int reason = 1;
+                        listener.moveModified(requestedTransform, reason, actualTransform);
                     }
                 });
+        } else {
+            cellChannelConnection.send(
+                MovableMessage.newMoveRequestMessage(getCellID(), 
+                                                    transform.getTranslation(null), 
+                                                    transform.getRotation(null)));
+        }
+    }
+    
+    /**
+     * A request from this client to move the cell. The cell we be moved locally
+     * and the requested change sent to the server. If the server denies the move
+     * the cell will be moved to a server provided location. The server will
+     * notify all other clients of the new location.
+     * 
+     * @param transform
+     */
+    public void localMoveRequest(CellTransform transform) {
+        localMoveRequest(transform, null);
     }
     
     /**
@@ -83,8 +112,8 @@ public class EntityCell extends Cell implements ChannelCell {
      */
     protected void serverMoveRequest(CellTransform transform) {
         setTransform(transform);
-        EntityManager.getEntityManager().notifyEntityMoved(this, true);
-        notifyServerCellMoveListeners(transform);
+        CellManager.getCellManager().notifyCellMoved(this, true);
+        notifyServerCellMoveListeners(transform, CellMoveSource.REMOTE);
     }
     
     
@@ -115,40 +144,47 @@ public class EntityCell extends Cell implements ChannelCell {
      * 
      * @param transform
      */
-    private void notifyServerCellMoveListeners(CellTransform transform) {
+    private void notifyServerCellMoveListeners(CellTransform transform, CellMoveSource source) {
         if (serverMoveListeners==null)
             return;
         
         for(CellMoveListener listener : serverMoveListeners) {
-            listener.cellMoved(transform);
+            listener.cellMoved(transform, source);
         }
     }
     
     @ExperimentalAPI
     public interface CellMoveListener {
-        public void cellMoved(CellTransform transform);
+        /**
+         * Notification that the cell has moved. Source indicates the source of 
+         * the move, local is from this client, remote is from the server.
+         * 
+         * @param transform
+         * @param source
+         */
+        public void cellMoved(CellTransform transform, CellMoveSource source);
     }
     
     @ExperimentalAPI
-    public interface CellMoveRefusedListener {
+    public interface CellMoveModifiedListener {
         /**
          * Notification from the server that the requested move was
-         * not possible. The cell should be positioned with the actualTransform
+         * not possible and a modified move took place instead. The cell should be positioned with the actualTransform
          * transform.
          * 
          * @param requestedTransform
          * @param reason
          * @param actualTransform
          */
-        public void moveRefused(CellTransform requestedTransform, int reason, CellTransform actualTransform);
+        public void moveModified(CellTransform requestedTransform, int reason, CellTransform actualTransform);
     }
 
     /**
      * @{inheritDoc}
      */
     public void handleMessage(CellMessage message) {
-        if (message instanceof EntityMessage) {
-            EntityMessage msg = (EntityMessage)message;
+        if (message instanceof MovableMessage) {
+            MovableMessage msg = (MovableMessage)message;
             switch(msg.getActionType()) {
                 case MOVED :
                     serverMoveRequest(new CellTransform(msg.getRotation(), msg.getTranslation()));

@@ -24,21 +24,23 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.ClientContext3D;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.EntityCell;
-import org.jdesktop.wonderland.client.cell.EntityManager;
+import org.jdesktop.wonderland.client.cell.MovableCell;
+import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -72,7 +74,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         // create a session
         session = new BoundsTestClientSession(server, 
                 boundsPanel);
-        ClientContext.registerCellCache(boundsPanel, session);
+        ClientContext3D.registerCellCache(boundsPanel, session);
         
         localAvatar = session.getLocalAvatar();
                 
@@ -206,7 +208,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     }//GEN-LAST:event_forwardBActionPerformed
     
     
-    class BoundsPanel extends JPanel implements CellCacheConnection.CellCacheMessageListener, CellCache, EntityManager.EntityListener {
+    class BoundsPanel extends JPanel implements CellCacheConnection.CellCacheMessageListener, CellCache, CellManager.CellMoveListener {
         private Vector3f center = new Vector3f();  // Temporary variable
         private Vector3f extent = new Vector3f();   // Temporary variable
         private float scale = 20f;
@@ -219,7 +221,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         private Point mousePress = null;
         
         public BoundsPanel() {
-            EntityManager.getEntityManager().addEntityListener(this);
+            CellManager.getCellManager().addCellMoveListener(this);
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseDragged(MouseEvent e) {
@@ -324,9 +326,9 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         }
 
         /**
-         * The cell has moved. If it's an entity cell the transform has already
-         * been updated, so just process the cache update. If its not an
-         * entity cell then update the transform and cache.
+         * The cell has moved. If it's an movable cell the transform has already
+         * been updated, so just process the cache update. If its not a
+         * movable cell then update the transform and cache.
          * 
          * @param cellID
          * @param cellTransform
@@ -334,6 +336,10 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         public void moveCell(CellID cellID, CellTransform cellTransform) {
             cacheImpl.moveCell(cellID, cellTransform);
             repaint();
+        }
+        
+        public WonderlandSession getSession() {
+            throw new NotImplementedException();
         }
 
         /*************************************************
@@ -353,7 +359,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
          * @param cell
          * @param fromServer
          */
-        public void entityMoved(EntityCell cell, boolean fromServer) {
+        public void cellMoved(MovableCell cell, boolean fromServer) {
             repaint();
         }
     }

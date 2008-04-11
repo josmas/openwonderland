@@ -20,13 +20,13 @@
 
 package org.jdesktop.wonderland.common.cell.setup;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 
 /**
  *
  */
-@ExperimentalAPI
+@InternalAPI
 public class ModelCellSetup implements CellSetup {
     private String baseURL;
     private String modelFile;

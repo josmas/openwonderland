@@ -19,8 +19,7 @@
  */
 package org.jdesktop.wonderland.client;
 
-import org.jdesktop.wonderland.server.*;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * Client plugins can implement this interface to add new functionality to
@@ -31,7 +30,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * 
  * @author kaplanj
  */
-@ExperimentalAPI
+@InternalAPI
 public interface ClientPlugin {
     /** intialize this plugin */
     public void initialize();

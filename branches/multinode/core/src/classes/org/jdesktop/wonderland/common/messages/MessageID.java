@@ -22,10 +22,9 @@ package org.jdesktop.wonderland.common.messages;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * A unique identifier for a message.  Unique MessageIDs can be generated using
@@ -145,7 +144,7 @@ public class MessageID implements Externalizable {
      * The default MessageIDGenerator uses a static long to generate message
      * ids.
      */
-    @ExperimentalAPI
+    @InternalAPI
     public static class DefaultMessageIDGenerator 
             implements MessageIDGenerator 
     {

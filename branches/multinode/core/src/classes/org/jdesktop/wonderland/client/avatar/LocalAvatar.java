@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.avatar;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.ClientContext3D;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -67,7 +67,7 @@ public class LocalAvatar implements ClientView {
 
     public void viewCellConfigured(CellID cellID) {
         System.out.println("******************* viewCellConfigured");
-        viewCell = (ViewCell) ClientContext.getCellCache(session).getCell(cellID);
+        viewCell = (ViewCell) ClientContext3D.getCellCache(session).getCell(cellID);
     }
 
     

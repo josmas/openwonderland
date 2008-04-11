@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.cell;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -34,7 +35,7 @@ import org.jdesktop.wonderland.server.UserMO;
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarMO extends EntityCellMO implements View {
+public class AvatarMO extends MovableCellMO implements View {
     
     private ManagedReference<ViewCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
@@ -46,8 +47,8 @@ public class AvatarMO extends EntityCellMO implements View {
         setLocalBounds(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()));
     }
     
-    @Override
-    public String getClientCellClassName(ClientCapabilities capabilities) {
+    @Override 
+    protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.avatar.AvatarCell";
     }
     
@@ -72,7 +73,7 @@ public class AvatarMO extends EntityCellMO implements View {
     
     class AvatarMoveListener implements CellMoveListener, Serializable {
 
-        public void cellMoved(EntityCellMO cell, CellTransform transform) {
+        public void cellMoved(MovableCellMO cell, CellTransform transform) {
             System.out.println("AvatarMO.cellMoved");
         }
         

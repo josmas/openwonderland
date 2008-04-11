@@ -61,7 +61,7 @@ public class CellCacheConnection extends BaseConnection {
      * Get the type of client
      * @return CellClientType.CELL_CLIENT_TYPE
      */
-    public ConnectionType getHandlerType() {
+    public ConnectionType getConnectionType() {
         return CellCacheConnectionType.CLIENT_TYPE;
     }
 
@@ -136,14 +136,14 @@ public class CellCacheConnection extends BaseConnection {
         super.attach(session);
         ViewCreateResponseMessage msg = registerView(clientView.getViewID());
         clientView.serverInitialized(msg);
-        viewCellID = msg.getAvatarCellID();
+        viewCellID = msg.getViewCellID();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void detached() {
+    public void disconnected() {
         // remove any action listeners
         listeners.clear();
     }

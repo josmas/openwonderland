@@ -26,6 +26,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -39,13 +40,14 @@ import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
  * @author paulby
  */
 @ExperimentalAPI
-public class CellManager implements ManagedObject, Serializable {
+public class CellManagerMO implements ManagedObject, Serializable {
 
     // Used to generate unique cell ids
     private long cellCounter=0;
@@ -53,13 +55,13 @@ public class CellManager implements ManagedObject, Serializable {
     private ManagedReference<CellMO> rootCellRef;
     private CellID rootCellID;
     
-    private static final String BINDING_NAME=CellManager.class.getName();
+    private static final String BINDING_NAME=CellManagerMO.class.getName();
     
     
     /**
-     * Creates a new instance of CellManager
+     * Creates a new instance of CellManagerMO
      */
-    CellManager() {
+    CellManagerMO() {
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
         createRootCell();
     }
@@ -94,7 +96,7 @@ public class CellManager implements ManagedObject, Serializable {
      */
     @InternalAPI
     public static void initialize() {
-        new CellManager();
+        new CellManagerMO();
         
         // register the cell channel message listener
         CommsManager cm = WonderlandContext.getCommsManager();
@@ -108,8 +110,8 @@ public class CellManager implements ManagedObject, Serializable {
      * Return singleton master cell cache
      * @return the master cell cache
      */
-    public static CellManager getCellManager() {
-        return (CellManager) AppContext.getDataManager().getBinding(BINDING_NAME);                
+    public static CellManagerMO getCellManager() {
+        return (CellManagerMO) AppContext.getDataManager().getBinding(BINDING_NAME);                
     }
     
 
@@ -133,6 +135,14 @@ public class CellManager implements ManagedObject, Serializable {
     }
     
     /**
+     * Return the collection of descriptors of the root cells for the world.
+     * @return
+     */
+    public Collection<CellDescription> getRootCells() {
+        throw new NotImplementedException();
+    }
+    
+    /**
      *  Traverse all trees and return the CellDescription for the cells which are within
      * the specified bounds and are of the given Class 
      * 
@@ -144,8 +154,8 @@ public class CellManager implements ManagedObject, Serializable {
      * cells in range
      */
     @InternalAPI
-    public CellDescription[] getCells(BoundingVolume b, Class<?>... cellClasses) {
-        return new CellDescription[0];
+    public Collection<CellDescription> getCells(BoundingVolume b, Class<?>... cellClasses) {
+        throw new NotImplementedException();
     }
 
     /**
@@ -167,7 +177,7 @@ public class CellManager implements ManagedObject, Serializable {
                     cell.setLocalBounds(gridBounds);
                     addCell(cell);
                 } catch (MultipleParentException ex) {
-                    Logger.getLogger(CellManager.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -184,22 +194,22 @@ public class CellManager implements ManagedObject, Serializable {
         try {
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
 
-            CellMO c1 = new EntityCellMO();
+            CellMO c1 = new MovableCellMO();
             c1.setTransform(new CellTransform(null, new Vector3f(1,1,1)));
             c1.setName("c1");
             c1.setLocalBounds(bounds);
 
-            EntityCellMO c2 = new EntityCellMO();
+            MovableCellMO c2 = new MovableCellMO();
             c2.setTransform(new CellTransform(null, new Vector3f(10,10,10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
 
-            EntityCellMO c3 = new EntityCellMO();
+            MovableCellMO c3 = new MovableCellMO();
             c3.setTransform(new CellTransform(null, new Vector3f(5,5,5)));
             c3.setName("c3");
             c3.setLocalBounds(new BoundingSphere(2, new Vector3f()));
 
-            CellMO c4 = new EntityCellMO();
+            CellMO c4 = new MovableCellMO();
             c4.setTransform(new CellTransform(null, new Vector3f(0,0,0)));
             c4.setName("c4");
             c4.setLocalBounds(new BoundingSphere(0.5f, new Vector3f()));
@@ -248,7 +258,7 @@ public class CellManager implements ManagedObject, Serializable {
 //            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
             
         } catch (Exception ex) {
-            Logger.getLogger(CellManager.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -319,13 +329,13 @@ public class CellManager implements ManagedObject, Serializable {
 //    abstract void cellChildrenChanged(CellMO parent, CellMO child, boolean childAdded);
 
     static class TestTask implements Task, Serializable {
-            private ManagedReference<EntityCellMO> cellRef;
+            private ManagedReference<MovableCellMO> cellRef;
             private Vector3f pos;
             private Vector3f pos2;
             private int dir = 2;
-            private ManagedReference<EntityCellMO> cell2Ref;
+            private ManagedReference<MovableCellMO> cell2Ref;
             
-            public TestTask(EntityCellMO cell, EntityCellMO c2) {
+            public TestTask(MovableCellMO cell, MovableCellMO c2) {
                 this.cellRef = AppContext.getDataManager().createReference(cell);
                 this.cell2Ref = AppContext.getDataManager().createReference(c2);
                 pos = cell.getTransform().getTranslation(null);
@@ -344,115 +354,5 @@ public class CellManager implements ManagedObject, Serializable {
     
     }
     
-    /**
-     * Return a new Create cell message
-     */
-    public static CellHierarchyMessage newCreateCellMessage(CellMO cell, ClientCapabilities capabilities) {
-        CellID parent=null;
-        
-        CellMO p = cell.getParent();
-        if (p!=null) {
-            parent = p.getCellID();
-        }
-        
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
-            cell.getClientCellClassName(capabilities),
-            cell.getLocalBounds(),
-            cell.getCellID(),
-            parent,
-            cell.getTransform(),
-            cell.getClientSetupData(capabilities)
-            );
-    }
-    
-    /**
-     * Return a new LoadLocalAvatar cell message
-     */
-    public static CellHierarchyMessage newLoadLocalAvatarMessage(AvatarMO cell, ClientCapabilities capabilities) {
-        CellID parent=null;
-        
-        CellMO p = cell.getParent();
-        if (p!=null) {
-            parent = p.getCellID();
-        }
-        
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CLIENT_AVATAR,
-            cell.getClientCellClassName(capabilities),
-            cell.getLocalBounds(),
-            cell.getCellID(),
-            parent,
-            cell.getTransform(),
-            cell.getClientSetupData(capabilities)
-            );
-    }
-    
-    /**
-     * Return a new Cell inactive message
-     */
-    public static CellHierarchyUnloadMessage newUnloadCellMessage(CellMO cell) {
-        return new CellHierarchyUnloadMessage(cell.getCellID());
-    }
-    
-    /**
-     * Return a new Delete cell message
-     */
-    public static CellHierarchyMessage newDeleteCellMessage(CellID cellID) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.DELETE_CELL,
-            null,
-            null,
-            cellID,
-            null,
-            null,
-            null
-            );
-    }
-    
-    /**
-     * Return a new Delete cell message
-     */
-    public static CellHierarchyMessage newChangeParentCellMessage(CellMO childCell, CellMO parentCell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CHANGE_PARENT,
-            null,
-            null,
-            childCell.getCellID(),
-            parentCell.getCellID(),
-            null,
-            null
-            
-            );
-    }
-    
-    /**
-     * Return a new cell move message
-     */
-    public static CellHierarchyMessage newCellMoveMessage(CellDescription cell) {
-        return new CellHierarchyMoveMessage(cell.getLocalBounds(),
-            cell.getCellID(),
-            cell.getTransform()
-            );
-    }
-    
-    /**
-     * Return a new cell update message. Indicates that the content of the cell
-     * has changed.
-     */
-    public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellGLO, ClientCapabilities capabilities) {
-        CellID parentID = null;
-        if (cellGLO.getParent() != null) {
-            parentID = cellGLO.getParent().getCellID();
-        }
-        
-        /* Return a new CellHiearchyMessage class, with populated data fields */
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UPDATE_CELL_CONTENT,
-            cellGLO.getClientCellClassName(capabilities),
-            cellGLO.getLocalBounds(),
-            cellGLO.getCellID(),
-            parentID,
-            cellGLO.getTransform(),
-            cellGLO.getClientSetupData(capabilities)
-            
-            
-            
-            );
-    }
+
 }

@@ -68,10 +68,10 @@ public interface CellDescription {
     public short getPriority();
     
     /**
-     * Returns true if this is a mirror for an Entity cell.
+     * Returns true if this is a mirror for a MovableCell.
      * @return
      */
-    public boolean isEntity();
+    public boolean isMovableCell();
     
     /**
      * Return the class of the cell represented by this mirror

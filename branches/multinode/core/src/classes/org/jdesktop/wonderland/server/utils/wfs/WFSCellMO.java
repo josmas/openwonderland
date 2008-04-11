@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
@@ -183,13 +184,12 @@ public class WFSCellMO extends CellMO
         }
     }
     
-    @Override
-    public String getClientCellClassName(ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
         return "org.jdesktop.lg3d.wonderland.darkstar.client.cell.WorldRootCell";
     }
     
     @Override
-    public CellSetup getClientSetupData(ClientCapabilities capabilities) {
+    public CellSetup getClientSetupData(ClientSession clientSession,ClientCapabilities capabilities) {
         return null;
     }
     
@@ -309,7 +309,7 @@ public class WFSCellMO extends CellMO
                 this.fileModifiedMap.put(canonical, modified);
                 
 		// Notify the cell that it's content has changed
-                ((EntityCellMO)glo).contentChanged();
+                ((MovableCellMO)glo).contentChanged();
                 
                 logger.log(Level.INFO, "WFS Reload: cell id=" +
                     glo.getCellID() +

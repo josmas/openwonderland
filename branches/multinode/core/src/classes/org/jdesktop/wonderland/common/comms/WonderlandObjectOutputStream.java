@@ -27,7 +27,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.EntityMessage;
+import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
 
@@ -48,8 +48,8 @@ public class WonderlandObjectOutputStream extends ObjectOutputStream {
     private static HashMap<String, Integer> descToId = new HashMap();
         
     private static Class[] coreClass = new Class[] {
-        EntityMessage.class,
-        EntityMessage.ActionType.class,
+        MovableMessage.class,
+        MovableMessage.ActionType.class,
         CellMessage.class,
         MessageID.class,
         Enum.class,

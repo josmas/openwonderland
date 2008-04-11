@@ -24,7 +24,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.ClientContext3D;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
@@ -60,7 +60,7 @@ public class BoundsMultiClient
         CellCacheBasicImpl cellCache = new CellCacheBasicImpl();
         BoundsTestClientSession session =
                 new BoundsTestClientSession(server, cellCache);
-        ClientContext.registerCellCache(cellCache, session);
+        ClientContext3D.registerCellCache(cellCache, session);
         session.addSessionStatusListener(this);
         session.login(login);
         
@@ -108,7 +108,7 @@ public class BoundsMultiClient
         
         int buildNumber = Integer.parseInt(args[0]);
         
-        int count = 5;
+        int count = 1;
         
         BoundsMultiClient[] bmc = new BoundsMultiClient[count];
         

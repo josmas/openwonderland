@@ -17,25 +17,34 @@
  */
 package org.jdesktop.wonderland.common.cell.messages;
 
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- *
+ * A response message for view creation. This message is always sent when an
+ * attempt is made to create a view.
+ * 
  * @author paulby
  */
+@InternalAPI
 public class ViewCreateResponseMessage extends ResponseMessage {
 
-    private CellID avatarCellID;
+    private CellID viewCellID;
     
-    public ViewCreateResponseMessage(MessageID messageID, CellID avatarCellID) {
+    /**
+     * TODO - this should not assume avatarCellID
+     * @param messageID the id of the message to which we are responding
+     * @param viewCellID the id of the view cell
+     */
+    public ViewCreateResponseMessage(MessageID messageID, CellID viewCellID) {
         super (messageID);
-        this.avatarCellID = avatarCellID;
+        this.viewCellID = viewCellID;
     }
 
-    public CellID getAvatarCellID() {
-        return avatarCellID;
+    public CellID getViewCellID() {
+        return viewCellID;
     }
     
     
