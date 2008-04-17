@@ -13,14 +13,13 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.4 $
- * $Date: 2007/11/07 15:46:52 $
+ * $Revision: 132 $
+ * $Date: 2008-03-19 19:14:35 -0400 (Wed, 19 Mar 2008) $
  * $State: Exp $
  */
 
-package org.jdesktop.wonderland.server.utils.wfs;
+package org.jdesktop.wonderland.wfs.cell;
 
-import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
@@ -38,15 +37,16 @@ import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.MovableCellMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
-import org.jdesktop.wonderland.server.utils.wfs.InvalidWFSCellException;
-import org.jdesktop.wonderland.server.utils.wfs.InvalidWFSException;
-import org.jdesktop.wonderland.server.utils.wfs.NoSuchWFSDirectory;
-import org.jdesktop.wonderland.server.utils.wfs.WFS;
-import org.jdesktop.wonderland.server.utils.wfs.WFSCell;
-import org.jdesktop.wonderland.server.utils.wfs.WFSCellDirectory;
+import org.jdesktop.wonderland.wfs.InvalidWFSCellException;
+import org.jdesktop.wonderland.wfs.InvalidWFSException;
+import org.jdesktop.wonderland.wfs.WFS;
+import org.jdesktop.wonderland.wfs.WFSCell;
+import org.jdesktop.wonderland.wfs.WFSCellDirectory;
+import org.jdesktop.wonderland.wfs.WFSFactory;
 
 /**
  * The WFSCellGLO class is a cell that represents a portion of the world which
@@ -118,9 +118,9 @@ public class WFSCellMO extends CellMO
             (HashMap<String, ManagedReference<CellMO>>) this.gloReferenceMap.clone();
         
         /* First enumerate all of the cells in the current directory */
-        WFS wfs = null;
+            WFS wfs = null;
         try {
-            wfs = WFS.createWFS(this.root);
+            wfs = WFSFactory.open(this.root);
         } catch (java.io.FileNotFoundException excp) {
             logger.log(Level.SEVERE, "WFS Root File System Not Found: " + this.root, excp);
             return;
@@ -133,7 +133,7 @@ public class WFSCellMO extends CellMO
         }
         
         /* Find the top level directory, add it to the list to search and go! */
-        WFSCellDirectory dir = wfs.getCellDirectory();
+        WFSCellDirectory dir = wfs.getRootDirectory();
         children.addFirst(dir);
         
         /*
@@ -180,12 +180,12 @@ public class WFSCellMO extends CellMO
         /* Revalidate the entire world */
         if (init == false) {
             throw new RuntimeException("NOT IMPLEMENTED");
-//            WonderlandContext.getCellManager().revalidate();
+            //WonderlandContext.getCellManager().revalidate();
         }
     }
     
     @Override protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
-        return "org.jdesktop.lg3d.wonderland.darkstar.client.cell.WorldRootCell";
+        return "org.jdesktop.wonderland.client.cell.RootCell";
     }
     
     @Override
@@ -202,14 +202,18 @@ public class WFSCellMO extends CellMO
      * cell GLO class does not exist, return this root WFSCellGLO class. This
      * class returns a read-only copy of the cell GLO class.
      */
-    private CellMO getParentCellGLO(WFSCellDirectory dir) {
+    private CellMO getParentCellMO(WFSCellDirectory dir) {
         /*
          * Try to fetch the parent from the cache of cells and their canonical
-         * names. If it does not exist, then we assume the parent is the WFSCellGLO
+         * names. If it does not exist, then we assume the parent is the WFSCellMO
          * class
          */
-        if (this.gloReferenceMap.containsKey(dir.getCanonicalParent()) == true) {
-            return this.gloReferenceMap.get(dir.getCanonicalParent()).get();
+        WFSCell parent = dir.getAssociatedCell();
+        if (parent != null) {
+            ManagedReference<CellMO> moRef = this.gloReferenceMap.get(parent.getCanonicalName());
+            if (moRef != null) {
+                return moRef.get();
+            }
         }
         return this;
     }
@@ -256,7 +260,7 @@ public class WFSCellMO extends CellMO
         LinkedList<WFSCellDirectory> children) {
         
         WFSCell[] cells = dir.getCells();
-        CellMO parent = this.getParentCellGLO(dir);
+        CellMO parent = this.getParentCellMO(dir);
         
         /*
          * Loop through each of the cells in the given array to compare its
@@ -268,7 +272,7 @@ public class WFSCellMO extends CellMO
             
             logger.log(Level.INFO, "WFS Reload: Looking at cell: " + canonical +
                 ", modified: " + modified + ", parent:" +
-                dir.getCanonicalParent());
+                dir.getPathName());
             
             /*
              * Check to see if the cell exists, if so, then check whether it
@@ -282,19 +286,21 @@ public class WFSCellMO extends CellMO
                         "updated so we remove from deleted cell list " +
                         "and continue");
                     deletedCells.remove(canonical);
-                    
+
                     /*
                      * We still want to see whether any of its children has changed,
                      * so look to see if it has a '-wld' associated directory and
                      * add it to the list
                      */
-                    try {
-                        WFSCellDirectory child =
-                            dir.getCellDirectory(cell.getCellName(), canonical);
+                    WFSCellDirectory child = cell.getCellDirectory();
+                    if (child != null) {
                         children.addLast(child);
-                    } catch (NoSuchWFSDirectory excp) {
-                        // Not really an error, just continue silently.
                     }
+                    
+                    /* 
+                     * There is nothing more to do for this cell.  Move on
+                     * to the next one
+                     */
                     continue;
                 }
                 
@@ -320,7 +326,7 @@ public class WFSCellMO extends CellMO
                  * class, and set in the cell GLO class
                  */
                 try {
-                    CellMOSetup setup = cell.decode();
+                    CellMOSetup setup = cell.getCellSetup();
                     ((BeanSetupMO) glo).reconfigureCell(setup);
                 } catch (java.io.FileNotFoundException excp) {
                     logger.log(Level.WARNING, "Cannot decode file: " +
@@ -339,12 +345,9 @@ public class WFSCellMO extends CellMO
                  * so look to see if it has a '-wld' associated directory and
                  * add it to the list
                  */
-                try {
-                    WFSCellDirectory child =
-                        dir.getCellDirectory(cell.getCellName(), canonical);
+                WFSCellDirectory child = cell.getCellDirectory();
+                if (child != null) {
                     children.addLast(child);
-                } catch (NoSuchWFSDirectory excp) {
-                    // Not really an error, just continue silently.
                 }
                 continue;
             }
@@ -355,26 +358,33 @@ public class WFSCellMO extends CellMO
              * brand new.
              */
             try {
-                /* Load the cell from disk, catching exceptions below */
-                CellMOSetup setup = cell.decode();
-                CellMO cellGLO =
-                    CellMOFactory.loadCellGLO(setup.getCellGLOClassName());
+               /* Load the cell from disk, catching exceptions below */
+                CellMOSetup setup = cell.getCellSetup();
+                CellMO cellMO =
+                    CellMOFactory.loadCellMO(setup.getCellMOClassName());
+                
+                if (cellMO == null) {
+                    logger.warning("Unable to load cell MO: " +
+                                   setup.getCellMOClassName());
+                    // skip this cell and move on
+                    continue;
+                }
                 
                 /* Call the cell's setup method */
                 try {
-                    ((BeanSetupMO) cellGLO).setupCell(setup);
+                    ((BeanSetupMO) cellMO).setupCell(setup);
                 } catch (ClassCastException cce) {
                     logger.log(Level.WARNING, "Error setting up new cell " +
-                            cellGLO.getName() + " of type " + 
-                            cellGLO.getClass() + ", it does not implement " +
+                            cellMO.getName() + " of type " + 
+                            cellMO.getClass() + ", it does not implement " +
                             "BeanSetupGLO.", cce);
                 }
                 
                 ManagedReference ref =
-                    AppContext.getDataManager().createReference(cellGLO);
+                    AppContext.getDataManager().createReference(cellMO);
                 
                 /* Add the reference to the scene graph and hash maps */
-                parent.addChild(cellGLO);
+                parent.addChild(cellMO);
                 this.fileModifiedMap.put(canonical, modified);
                 this.gloReferenceMap.put(canonical, ref);
                 deletedCells.remove(canonical);
@@ -383,17 +393,14 @@ public class WFSCellMO extends CellMO
                  * Since the cell has been successfully loaded, then look to see
                  * if it has a '-wld' associated directory and add it to the list
                  */
-                try {
-                    WFSCellDirectory child =
-                        dir.getCellDirectory(cell.getCellName(), canonical);
+                WFSCellDirectory child = cell.getCellDirectory();
+                if (child != null) {
                     children.addLast(child);
-                } catch (NoSuchWFSDirectory excp) {
-                    // Not really an error, just continue silently.
                 }
                 
                 /* Write messages to the log for good measure */
                 logger.log(Level.INFO, "WFS Reload: New Properties: cell id=" +
-                    cellGLO.getCellID() + ", " + setup.toString());
+                    cellMO.getCellID() + ", " + setup.toString());
             } catch (MultipleParentException ex) {
                 logger.log(Level.SEVERE, null, ex);
             } catch (java.io.FileNotFoundException excp) {

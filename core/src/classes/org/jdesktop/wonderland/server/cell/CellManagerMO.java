@@ -26,6 +26,8 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,13 +35,11 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.wfs.WFS;
+import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -189,6 +189,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * For testing.....
      */
     public void loadWorld() {
+       // buildWFSWorld();
+        
 //        createStaticGrid();
         
         try {
@@ -261,31 +263,46 @@ public class CellManagerMO implements ManagedObject, Serializable {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    /**
+
+        /**
      * Builds a world defined by a wonderland file system (e.g. on disk). The
      * world's root directory must be setTranslation in the system property 
      * wonderland.wfs.root
      */
-//    private void buildWFSWorld() {
-//        /* Fetch the world root URI, if null, then log an error */
-//        URL root = WonderlandServerConfig.getDefault().getWorldRoot();
-//        if (root == null) {
-//            WFS.getLogger().log(Level.SEVERE, "World Root attribute not setTranslation in server config file.");
-//            return;
-//        }
-//
-//        /* Attempt to create a new GLO based upon the WFS root, if not log an error */
-//        WFSCellMO glo = new WFSCellMO(root);
-//        try {
-//            AppContext.getDataManager().setBinding(glo.getBindingName(), glo);
-//            this.addCell(glo);
-//        } catch (java.lang.Exception excp) {
-//            WFS.getLogger().log(Level.SEVERE, "Unable to load WFS into world: " + root.toString());
-//            WFS.getLogger().log(Level.SEVERE, excp.toString());
-//        }
-//    }
+    private void buildWFSWorld() {
+        /* Fetch the world root URI, if null, then log an error */
+        //URL root = WonderlandServerConfig.getDefault().getWorldRoot();
+        URL root = null;
+        try {
+            root = new URL("file:src/worlds/default-wfs");
+        } catch (MalformedURLException excp) {
+            WFS.getLogger().log(Level.SEVERE, "Invalid WFS URL");
+        }
+        
+        if (root == null) {
+            WFS.getLogger().log(Level.SEVERE, "World Root attribute not setTranslation in server config file.");
+            return;
+        }
 
+        /*
+         * Attempt to create a new MO based upon the WFS root. We need to setup
+         * some basic properties about the cell by hand (e.g. transform, name).
+         */
+        WFSCellMO mo = new WFSCellMO(root);
+        mo.setTransform(new CellTransform(null, null, null));
+        mo.setName("root");
+        mo.setLocalBounds(new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f()));
+        
+        try {
+            AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
+            this.addCell(mo);
+        } catch (java.lang.Exception excp) {
+            WFS.getLogger().log(Level.SEVERE, "Unable to load WFS into world: " + root.toString());
+            WFS.getLogger().log(Level.SEVERE, excp.toString());
+            excp.printStackTrace();
+        }
+    }
+    
     /**
      * Creates a bounding box with the specified dimensions,centered at 0,0,0
      */

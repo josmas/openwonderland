@@ -17,7 +17,7 @@
  * $Date: 2007/07/20 21:32:06 $
  * $State: Exp $ 
  */
-package org.jdesktop.wonderland.server.utils.wfs;
+package org.jdesktop.wonderland.wfs.cell;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 

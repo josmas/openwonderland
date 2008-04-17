@@ -78,4 +78,13 @@ public class ModelCellSetup implements CellSetup {
         return (checksum == null) ?
                     (getChecksum() == null) : checksum.equals(getChecksum());
     }
+    
+    /**
+     * Returns a string representation of this class for human-readable
+     * viewing.
+     */
+    @Override
+    public String toString() {
+        return "(ModelCellSetup) file: " + this.modelFile;
+    }
 }

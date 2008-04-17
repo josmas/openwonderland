@@ -17,7 +17,7 @@
  * $Date: 2007/10/14 19:10:50 $
  * $State: Exp $
  */
-package org.jdesktop.wonderland.server.utils.wfs;
+package org.jdesktop.wonderland.wfs.cell;
 
 import org.jdesktop.wonderland.server.cell.*;
 import java.lang.reflect.Constructor;
@@ -66,8 +66,7 @@ public abstract class CellMOProvider {
      * if the given cell type is not supported
      * @throws LoadCellMOException if there is an error loading the cell
      */
-    public abstract CellMO loadCellGLO(String typeName, 
-                                                  Object... args)
+    public abstract CellMO loadCellMO(String typeName, Object... args)
         throws LoadCellMOException;
 
     /**
