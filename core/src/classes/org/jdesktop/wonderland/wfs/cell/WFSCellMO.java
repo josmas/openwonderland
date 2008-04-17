@@ -185,7 +185,7 @@ public class WFSCellMO extends CellMO
     }
     
     @Override protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.cell.RootCell";
+        return "org.jdesktop.wonderland.client.extracells.WFSCell";
     }
     
     @Override

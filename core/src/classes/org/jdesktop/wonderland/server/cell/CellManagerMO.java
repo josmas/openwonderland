@@ -189,10 +189,10 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * For testing.....
      */
     public void loadWorld() {
-       // buildWFSWorld();
+        //buildWFSWorld();
         
 //        createStaticGrid();
-        
+       
         try {
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
 
@@ -264,7 +264,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
         }
     }
 
-        /**
+    /**
      * Builds a world defined by a wonderland file system (e.g. on disk). The
      * world's root directory must be setTranslation in the system property 
      * wonderland.wfs.root
@@ -274,7 +274,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
         //URL root = WonderlandServerConfig.getDefault().getWorldRoot();
         URL root = null;
         try {
-            root = new URL("file:src/worlds/default-wfs");
+            root = new URL("file:src/worlds/test-wfs");
         } catch (MalformedURLException excp) {
             WFS.getLogger().log(Level.SEVERE, "Invalid WFS URL");
         }
