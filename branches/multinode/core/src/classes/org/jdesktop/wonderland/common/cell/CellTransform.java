@@ -33,7 +33,19 @@ public class CellTransform implements Serializable {
 
     private Quaternion rotation;
     private Vector3f translation;
-    private static final Vector3f scale = new Vector3f(1,1,1);
+    private Vector3f scale = new Vector3f(1,1,1);
+    
+     /**
+     * Constructor that takes translation, rotation, and scaling. Any/all of
+     * the three arguments may be null.
+     */
+    public CellTransform(Quaternion rotate, Vector3f translate, Vector3f scale) {
+        this(rotate, translate);
+        this.scale = scale;
+        if (this.scale == null) {
+            this.scale = new Vector3f();
+        }
+    }
     
     /**
      * Create a cell transform. Either (or both) values may be null
@@ -143,5 +155,33 @@ public class CellTransform implements Serializable {
      */
     public void setRotation(Quaternion rotation) {
         this.rotation = new Quaternion(rotation);
+    }
+    
+        /**
+     * Returns the scaling vector as an array of doubles to scale each axis.
+     * Sets the value of the scale into the argument (if given). If a null
+     * argument is passed, then this method creates and returns a new Vector3f
+     * object.
+     * 
+     * @param scale Populate this object with the scale if non-null
+     * @return The scaling factors
+     */
+    public Vector3f getScaling(Vector3f scale) {
+        if (scale == null) {
+            scale = new Vector3f(this.scale);
+        }
+        else {
+            scale.set(this.scale);
+        }
+        return scale;
+    }
+    
+    /**
+     * Sets the scaling vector for this cell transform
+     * 
+     * @param scale The new scaling factor
+     */
+    public void setScaling(Vector3f scale) {
+        this.scale = new Vector3f(scale);
     }
 }

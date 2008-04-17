@@ -17,7 +17,7 @@
  * $Date: 2007/10/14 19:10:50 $
  * $State: Exp $ 
  */
-package org.jdesktop.wonderland.server.utils.wfs;
+package org.jdesktop.wonderland.wfs.cell;
 
 import org.jdesktop.wonderland.server.cell.*;
 import java.util.Iterator;
@@ -48,7 +48,7 @@ public class CellMOFactory {
      * @throws LoadCellMOException if there is an error loading the
      * given cell type with the given arguments
      */
-    public static CellMO loadCellGLO(String typeName, Object... args) 
+    public static CellMO loadCellMO(String typeName, Object... args) 
         throws LoadCellMOException
     {       
         CellMO res = null;
@@ -57,7 +57,7 @@ public class CellMOFactory {
         for (Iterator<CellMOProvider> i = Service.providers(CellMOProvider.class); 
              i.hasNext();)
         {
-            res = i.next().loadCellGLO(typeName, args);
+            res = i.next().loadCellMO(typeName, args);
             if (res != null) {
                 break;
             }
@@ -66,7 +66,7 @@ public class CellMOFactory {
         // no luck -- try instantiating as a class
         try {
             Class clazz = Class.forName(typeName);
-            res = new DefaultCellGLOProvider().loadCellGLO(typeName, args);
+            res = new DefaultCellMOProvider().loadCellMO(typeName, args);
         } catch (ClassNotFoundException cnfe) {
             // ignore -- it wasn't a class name after all
         }
@@ -76,9 +76,9 @@ public class CellMOFactory {
     }
     
     // default provider
-    static class DefaultCellGLOProvider extends CellMOProvider {
+    static class DefaultCellMOProvider extends CellMOProvider {
         @SuppressWarnings("unchecked")
-        public CellMO loadCellGLO(String typeName, Object... args) 
+        public CellMO loadCellMO(String typeName, Object... args) 
                 throws LoadCellMOException 
         {
             // assume type name is a fully-qualified class name

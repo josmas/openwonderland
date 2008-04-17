@@ -19,7 +19,7 @@
  */
 
 
-package org.jdesktop.wonderland.server.utils.wfs;
+package org.jdesktop.wonderland.wfs;
 
 import com.sun.sgs.app.ManagedReference;
 import java.beans.ExceptionListener;
@@ -30,10 +30,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.SimpleTerrainCellMO;
-import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
 

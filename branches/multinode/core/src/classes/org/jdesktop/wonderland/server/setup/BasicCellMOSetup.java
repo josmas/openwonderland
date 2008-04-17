@@ -20,10 +20,7 @@
 
 package org.jdesktop.wonderland.server.setup;
 
-import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.CellSetup;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -38,31 +35,19 @@ public class BasicCellMOSetup<T extends CellSetup>
     /** the class of cell MO */
     private String cellMOClassName;
 
-    /* the location of the cell */
-    private CellTransform cellTransform;
+   /* the location of the cell */
+    private double[] origin   = new double[] { 0.0, 0.0, 0.0 };
+    private double[] rotation = new double[] { 0.0, 1.0, 0.0, 0.0 };
+    private double   scale    = 1.0;
 
     /* the bounds of the cell */
-    
-    private BoundsType boundsType = BoundsType.SPHERE;
-    private float boundsRadius = 4.0f;
+    private BoundsType boundsType   = BoundsType.SPHERE;
+    private double     boundsRadius = 4.0f;
     
     private short priority;
     
+    /** Default constructor */
     public BasicCellMOSetup() {
-        this (null, null, null, null);
-    }
-    
-    public BasicCellMOSetup(BoundingVolume bounds, CellTransform transform, 
-                             String cellGLOClassName, T cellSetup)
-    {
-        setCellGLOClassName(cellGLOClassName);
-        setCellSetup(cellSetup);
-        this.cellTransform = transform;
-        
-        if (bounds != null) {
-            setBoundsType(BasicCellMOHelper.getBoundsType(bounds));
-            setBoundsRadius(BasicCellMOHelper.getBoundsRadius(bounds));
-        }
     }
     
     public T getCellSetup() {
@@ -73,20 +58,36 @@ public class BasicCellMOSetup<T extends CellSetup>
         this.cellSetup = cellSetup;
     }
 
-    public String getCellGLOClassName() {
+    public String getCellMOClassName() {
         return cellMOClassName;
     }
 
-    public void setCellGLOClassName(String cellGLOClassName) {
-        this.cellMOClassName = cellGLOClassName;
-    }
-
-    public CellTransform getCellTransform() {
-        return cellTransform;
+    public void setCellMOClassName(String cellMOClassName) {
+        this.cellMOClassName = cellMOClassName;
     }
     
-    public void setCellTransform(CellTransform cellTransform) {
-        this.cellTransform = cellTransform;
+   public double[] getOrigin() {
+        return origin;
+    }
+    
+    public void setOrigin(double[] origin) {
+        this.origin = origin;
+    }
+    
+    public double[] getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(double[] rotation) {
+        this.rotation = rotation;
+    }
+
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
     }
     
     public BoundsType getBoundsType() {
@@ -104,11 +105,11 @@ public class BasicCellMOSetup<T extends CellSetup>
             this.boundsType = BoundsType.BOX;
     }
 
-    public float getBoundsRadius() {
+    public double getBoundsRadius() {
         return boundsRadius;
     }
 
-    public void setBoundsRadius(float boundsRadius) {
+    public void setBoundsRadius(double boundsRadius) {
         this.boundsRadius = boundsRadius;
     }
 
@@ -116,11 +117,6 @@ public class BasicCellMOSetup<T extends CellSetup>
         // do nothing
     }
     
-    public double[] getOrigin() {
-        Vector3f v3f = cellTransform.getTranslation(null);
-        return new double[] { v3f.x, v3f.y, v3f.z };
-    }
-
     public short getPriority() {
         return priority;
     }
@@ -129,4 +125,16 @@ public class BasicCellMOSetup<T extends CellSetup>
         this.priority = priority;
     }
     
+    /**
+     * Returns a string representation of the setup data for human-readable
+     * viewing.
+     */
+    @Override
+    public String toString() {
+        return "class: " + this.cellMOClassName + ", origin: " +
+                this.origin.toString() +
+                ", scale: " + this.scale + ", bounds: " +
+                this.boundsType + " (" + this.boundsRadius + ") " +
+                this.cellSetup.toString();
+    }
 }

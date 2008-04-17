@@ -31,7 +31,7 @@ public interface CellMOSetup extends Serializable {
      * Returns the Cell MO class name corresponding with this properties class,
      * should be overridden by subclasses
      */
-    public String getCellGLOClassName();
+    public String getCellMOClassName();
 
     /**
      * Validate the setup, throw an exception if there is a problem validating
