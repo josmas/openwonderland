@@ -50,7 +50,7 @@ public class Cell {
     private String name=null;
     private CellStatus currentStatus;
     
-    Cell(CellID cellID) {
+    public Cell(CellID cellID) {
         this.cellID = cellID;
     }
     

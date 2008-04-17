@@ -58,7 +58,7 @@ public class SimpleTerrainCellMO extends CellMO
     }
     
     @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.cell.SimpleTerrainCell";
+        return "org.jdesktop.wonderland.client.extracells.SimpleTerrainCell";
     }
 
     @Override
