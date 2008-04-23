@@ -50,11 +50,24 @@ public class BoundsMultiClient
     /** the mover thread */
     private MoverThread mover;
     
+    
+    private static int groupSize = 3;  // Number of users in each group
+    private static int numGroups = 5;  // Total number of groups
+    private static int percentageIdle = 0; // Not implemented
+    private static int startedClients = 0; // Number of clients currently started
+    private static float groupSeparation = 7f;  // Distance between each group
+    
     public BoundsMultiClient(WonderlandServerInfo server, 
                              LoginParameters login) 
         throws Exception
     {
         this.name = login.getUserName();
+        
+        int group = startedClients/groupSize;
+        
+        System.err.println("USER "+startedClients+" group "+group);
+        
+        startedClients++;
         
         // login
         CellCacheBasicImpl cellCache = new CellCacheBasicImpl();
@@ -69,14 +82,16 @@ public class BoundsMultiClient
         LocalAvatar avatar = session.getLocalAvatar();
         
         // pick a direction to move
-        int dir = (int) Math.random() * 10;
-        if (dir < 2) {
-            mover = new RandomMover(avatar);
-        } else if (dir < 6) {
-            mover = new XMover(avatar);
-        } else {
-            mover = new YMover(avatar);
-        }
+//        int dir = (int) Math.random() * 10;
+//        dir = 5;
+//        if (dir < 2) {
+//            mover = new RandomMover(avatar);
+//        } else if (dir < 6) {
+//            mover = new XMover(avatar);
+//        } else {
+//            mover = new YMover(avatar);
+//        }
+        mover = new GroupMover(new Vector3f(group*groupSeparation, 0, 10), avatar);
         
         mover.start();
     }
@@ -108,7 +123,7 @@ public class BoundsMultiClient
         
         int buildNumber = Integer.parseInt(args[0]);
         
-        int count = 1;
+        int count = groupSize * numGroups;
         
         BoundsMultiClient[] bmc = new BoundsMultiClient[count];
         
@@ -118,7 +133,7 @@ public class BoundsMultiClient
             
             try {
                 bmc[i] = new BoundsMultiClient(server, login);
-                Thread.sleep(500);
+                Thread.sleep(1500);
             } catch (Exception ex) {
                 logger.log(Level.WARNING, "Error logging in", ex);
             }
@@ -188,13 +203,15 @@ public class BoundsMultiClient
     }
     
     class XMover extends MoverThread {
+        private int dir = 1;
         public XMover(LocalAvatar avatar) {
             super (avatar);
         }
         
         @Override
         protected void nextPosition() {
-            location.x = Math.abs(location.x--) % 50;
+            location.x += dir;
+            dir *= -1;
         }
     }
     
@@ -206,6 +223,28 @@ public class BoundsMultiClient
         @Override
         protected void nextPosition() {
             location.y = Math.abs(location.y++) % 50;
+        }
+    }
+    
+    class GroupMover extends MoverThread {
+        private Vector3f groupCenter;
+        private int dir = 1;
+        
+        public GroupMover(Vector3f groupCenter, LocalAvatar avatar) {
+            super(avatar);
+            this.groupCenter = groupCenter;
+        }
+
+        @Override
+        protected void nextPosition() {
+            location.x += dir;
+            dir *= -1;
+        }
+        
+        @Override
+        protected void randomPosition() {
+            // Not so random
+            location.set(groupCenter);
         }
     }
 
