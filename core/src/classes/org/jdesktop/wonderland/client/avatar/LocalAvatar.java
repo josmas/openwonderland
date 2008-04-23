@@ -51,7 +51,7 @@ public class LocalAvatar implements ClientView {
      * @param rotation
      */
     public void localMoveRequest(Vector3f location, Quaternion rotation) {
-        System.out.println("********************** LocalAvatar.localMoveRequest");
+//        System.out.println("********************** LocalAvatar.localMoveRequest");
         if (viewCell!=null) {
             viewCell.localMoveRequest(new CellTransform(rotation, location));
         }
@@ -66,7 +66,7 @@ public class LocalAvatar implements ClientView {
     }
 
     public void viewCellConfigured(CellID cellID) {
-        System.out.println("******************* viewCellConfigured");
+//        System.out.println("******************* viewCellConfigured");
         viewCell = (ViewCell) ClientContext3D.getCellCache(session).getCell(cellID);
     }
 
