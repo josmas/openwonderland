@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
+import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
@@ -77,11 +78,14 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private ClientCapabilities capabilities = null;
      
     /**
-     * List of currently visible cells (ManagedReference of CellGLO)
+     * List of currently active cells
      */
     private Map<CellID, CellRef> currentCells = new HashMap<CellID, CellRef>();
     
     private PeriodicTaskHandle task = null;
+    
+    // Combine all client messages for a single revalidation into a single message
+    private static final boolean AGGREGATE_MESSAGES = true;
     
     /**
      * Creates a new instance of ViewCellCacheMO
@@ -156,10 +160,15 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     void revalidate() {
         // make sure the user is still logged on
         ClientSession session = getSession();
+        MessageList messageList = null;
+        
         if (session == null) {
             logger.warning("Null session, have not seen a logout");
             return;
         }
+        
+        if (AGGREGATE_MESSAGES)
+            messageList = new MessageList();
         
         // create a performance monitor
         RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
@@ -221,7 +230,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                     cellRef.setCellSessionProperties(prop);
                     
                     msg = newCreateCellMessage(cell, capabilities);
-                    sender.send(session, msg);
+                    if (AGGREGATE_MESSAGES)
+                        messageList.addMessage(msg);
+                    else
+                       sender.send(session, msg);
                     monitor.incMessageCount();
                                         
                     // update performance monitoring
@@ -283,7 +295,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                     msg = newDeleteCellMessage(ref.getCellID());
                 }
                 
-                sender.send(session, msg);
+                if (AGGREGATE_MESSAGES)
+                    messageList.addMessage(msg);
+                else
+                    sender.send(session, msg);
                 monitor.incMessageCount();
                 //System.out.println("SENDING "+msg.getClass().getName()+" "+msg.getBytes().length);
 
@@ -299,6 +314,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 
                 // update the monitor
                 monitor.incOldCellTime(System.nanoTime() - cellStartTime);
+            }
+            
+            if (AGGREGATE_MESSAGES && messageList.size()>0) {
+                sender.send(session, messageList);
             }
         } catch(RuntimeException e) {
             monitor.setException(true);

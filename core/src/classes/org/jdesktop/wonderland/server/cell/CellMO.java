@@ -76,22 +76,26 @@ public abstract class CellMO implements ManagedObject, Serializable {
     // ManagedReferences of ClientSessions
     protected HashSet<ManagedReference<ClientSession>> clientSessionRefs = null;
     
-    /**
-     * Create a CellMO with a localBounds of an empty sphere and a transform of
-     * null
-     */
-    public CellMO() {
-        this(new BoundingSphere(),null);
-        
-    }
+//    /**
+//     * Create a CellMO with a localBounds of an empty sphere and a transform of
+//     * null
+//     */
+//    public CellMO() {
+//        this(new BoundingSphere(),null);
+//        
+//    }
     
     /**
      * Create a CellMO with the specified localBounds and transform.
+     * If either parameter is null an IllegalArgumentException will be thrown.
      * @param localBounds the bounds of the new cell, must not be null
-     * @param transform the transform for this cell
+     * @param transform the transform for this cell, must not be null
      */
     public CellMO(BoundingVolume localBounds, CellTransform transform) {
-        assert(localBounds!=null);
+        if (localBounds==null)
+            throw new IllegalArgumentException("localBounds must not be null");
+        if (transform==null)
+            throw new IllegalArgumentException("transform must not be null");
         
         cellID = WonderlandContext.getCellManager().createCellID(this);
         this.transform = transform;
@@ -146,7 +150,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * immediately reflected in this bounds.
      * 
      * This call is only valid for live
-     * cells
+     * cells, for non live cells an IllegalStateException will be thrown.
      * 
      * @return the bounds in world coordinates
      */
@@ -513,13 +517,17 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
 
     /**
-     * Set the cell priority
+     * Set the cell priority. The priority must be >=0 otherwise an 
+     * IllegalArgumentException will be thrown.
      * 
      * The default priority is 5
      * 
      * @param priority
      */
     public void setPriority(short priority) {
+        if (priority<0)
+            throw new IllegalArgumentException("priorty must be >= 0");
+        
         this.priority = priority;
     }
     

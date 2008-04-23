@@ -168,35 +168,45 @@ public class RevalidatePerformanceMonitor {
         stats.append("  Total cells at: \n");
         stats.append("        Min    : " + boundsMinCount);
         stats.append(" / " + scale(boundsMinTime) + "\n");
-        stats.append("        Average: " + (boundsTotalCount / totalCount));
-        stats.append(" / " + scale(boundsTotalTime / totalCount) + "\n");
+        if (totalCount!=0) {
+            stats.append("        Average: " + (boundsTotalCount / totalCount));
+            stats.append(" / " + scale(boundsTotalTime / totalCount) + "\n");
+        }
         stats.append("        Max    : " + boundsMaxCount);
         stats.append(" / " + scale(boundsMaxTime) + "\n");
         
         stats.append("  Visible cells  : \n");
         stats.append("        Min    : " + visibleMinCount);
         stats.append(" / " + scale(visibleMinTime) + "\n");
-        stats.append("        Average: " + (visibleTotalCount / totalCount));
-        stats.append(" / " + scale(visibleTotalTime / totalCount) + "\n");
+        if (totalCount!=0) {
+            stats.append("        Average: " + (visibleTotalCount / totalCount));
+            stats.append(" / " + scale(visibleTotalTime / totalCount) + "\n");
+        }
         stats.append("        Max    : " + visibleMaxCount);
         stats.append(" / " + scale(visibleMaxTime) + "\n");
         
         stats.append("  Changed cells  : \n");
         stats.append("        Min    : " + changeMinCount);
         stats.append(" / " + scale(changeMinTime) + "\n");
-        stats.append("        Average: " + (changeTotalCount / totalCount));
-        stats.append(" / " + scale(changeTotalTime / changeTotalCount) + "\n"); 
-        stats.append("          Added  : " + (newTotalCount / totalCount));
-        stats.append(" / " + scale(newTotalTime / newTotalCount) + "\n");
-        stats.append("          Updated: " + (updateTotalCount / totalCount));
-        stats.append(" / " + scale(updateTotalTime / updateTotalCount) + "\n");
-        stats.append("          Removed: " + (oldTotalCount / totalCount));
-        stats.append(" / " + scale(oldTotalTime / oldTotalCount) + "\n");
-        stats.append("        Max    : " + changeMaxCount);
-        stats.append(" / " + scale(changeMaxTime) + "\n");
+        if (totalCount!=0 &&
+                newTotalCount!=0 &&
+                oldTotalCount!=0) {
+            stats.append("        Average: " + (changeTotalCount / totalCount));
+            stats.append(" / " + scale(changeTotalTime / changeTotalCount) + "\n"); 
+            stats.append("          Added  : " + (newTotalCount / totalCount));
+            stats.append(" / " + scale(newTotalTime / newTotalCount) + "\n");
+            stats.append("          Updated: " + (updateTotalCount / totalCount));
+            stats.append(" / " + scale(updateTotalTime / updateTotalCount) + "\n");
+            stats.append("          Removed: " + (oldTotalCount / totalCount));
+            stats.append(" / " + scale(oldTotalTime / oldTotalCount) + "\n");
+            stats.append("        Max    : " + changeMaxCount);
+            stats.append(" / " + scale(changeMaxTime) + "\n");
+        }
         
-        stats.append("  Messages Sent  : \n");
-        stats.append("        Average: " + (messageTotalCount / totalCount));
+        if (totalCount!=0) {
+            stats.append("  Messages Sent  : \n");
+            stats.append("        Average: " + (messageTotalCount / totalCount));
+        }
         
         return stats.toString();
     }

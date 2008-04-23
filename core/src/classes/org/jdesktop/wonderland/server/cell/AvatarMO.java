@@ -41,10 +41,10 @@ public class AvatarMO extends MovableCellMO implements View {
     private ManagedReference<UserMO> userRef;
 
     public AvatarMO(UserMO user) {
+        super(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()),
+              new CellTransform(null, new Vector3f())  );
         this.userRef = AppContext.getDataManager().createReference(user);
 //        addCellMoveListener(new AvatarMoveListener());
-        setTransform(new CellTransform(null, new Vector3f()));
-        setLocalBounds(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()));
     }
     
     @Override 
