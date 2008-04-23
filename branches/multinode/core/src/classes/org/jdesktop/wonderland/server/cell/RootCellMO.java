@@ -19,7 +19,9 @@
 
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 
 /**
@@ -29,6 +31,10 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
  */
 public class RootCellMO extends CellMO {
 
+    public RootCellMO(BoundingVolume bounds, CellTransform transform) {
+        super(bounds, transform);
+    }
+    
     /**
      * {@inheritDoc}
      */

@@ -67,11 +67,11 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
     
     private void createRootCell() {
-        CellMO root = new RootCellMO();
-        rootCellID = root.getCellID();
         BoundingSphere rootBounds = new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f());
-        root.setLocalBounds(rootBounds);
         CellTransform orig = new CellTransform(null, null);
+        CellMO root = new RootCellMO(rootBounds, orig);
+        rootCellID = root.getCellID();
+        root.setLocalBounds(rootBounds);
         root.setTransform(orig);
         root.setName("root");
         root.setLive(true);       
@@ -136,6 +136,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
     
     /**
      * Return the collection of descriptors of the root cells for the world.
+     * 
+     * TODO - NOT IMPLEMENTED, always returns an empty set.
+     * 
      * @return
      */
     public Collection<CellDescription> getRootCells() {
@@ -196,25 +199,24 @@ public class CellManagerMO implements ManagedObject, Serializable {
         try {
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
 
-            CellMO c1 = new MovableCellMO();
-            c1.setTransform(new CellTransform(null, new Vector3f(1,1,1)));
+            CellMO c1 = new MovableCellMO(bounds, 
+                                new CellTransform(null, new Vector3f(1,1,1)));
             c1.setName("c1");
-            c1.setLocalBounds(bounds);
 
-            MovableCellMO c2 = new MovableCellMO();
-            c2.setTransform(new CellTransform(null, new Vector3f(10,10,10)));
+            MovableCellMO c2 = new MovableCellMO(bounds, 
+                                new CellTransform(null, new Vector3f(10,10,10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
 
-            MovableCellMO c3 = new MovableCellMO();
-            c3.setTransform(new CellTransform(null, new Vector3f(5,5,5)));
+            MovableCellMO c3 = new MovableCellMO(
+                                new BoundingSphere(2, new Vector3f()), 
+                                new CellTransform(null, new Vector3f(5,5,5)));
             c3.setName("c3");
-            c3.setLocalBounds(new BoundingSphere(2, new Vector3f()));
 
-            CellMO c4 = new MovableCellMO();
-            c4.setTransform(new CellTransform(null, new Vector3f(0,0,0)));
+            CellMO c4 = new MovableCellMO(
+                                new BoundingSphere(0.5f, new Vector3f()), 
+                                new CellTransform(null, new Vector3f(0,0,0)));
             c4.setName("c4");
-            c4.setLocalBounds(new BoundingSphere(0.5f, new Vector3f()));
             
             c3.addChild(c4);
             

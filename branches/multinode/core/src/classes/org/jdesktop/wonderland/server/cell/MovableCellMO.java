@@ -18,6 +18,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ChannelManager;
@@ -52,6 +53,10 @@ public class MovableCellMO extends CellMO implements ChannelCellMO {
     
     // cache the sender for sending to CellClients
     private WonderlandClientSender cellSender;
+    
+    public MovableCellMO(BoundingVolume bounds, CellTransform transform) {
+        super(bounds, transform);
+    }
     
     @Override
     public void setTransform(CellTransform transform) {

@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.avatar.ClientView;
@@ -38,6 +39,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
@@ -92,6 +94,13 @@ public class CellCacheConnection extends BaseConnection {
      * @param message the message to handle
      */
     public void handleMessage(Message message) {
+        if (message instanceof MessageList) {
+            List<Message> list = ((MessageList)message).getMessages();
+            for(Message m : list)
+                handleMessage(m);
+            return;
+        }
+        
         if (!(message instanceof CellHierarchyMessage))
             throw new RuntimeException("Unexpected message type "+message.getClass().getName());
         

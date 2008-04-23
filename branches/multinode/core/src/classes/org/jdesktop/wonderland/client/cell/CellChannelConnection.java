@@ -104,7 +104,6 @@ public class CellChannelConnection extends BaseConnection {
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("Handling Message "+message.getClass().getName());
         }
-            logger.warning("Handling Message "+message.getClass().getName());
         
         CellMessage cellMessage = (CellMessage)message;
         CellCache cellCache = ClientContext3D.getCellCache(getSession());

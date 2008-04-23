@@ -24,17 +24,11 @@
   </p>
   
   <p>
-      getComputedWorldBounds returns a bounds object that encapsulates this
-      cell and all it's child cell bounds. The computedWorldBounds is only updated
-      periodically so there may be some lag in these bounds encapsulating children 
-      that have changing bounds. The timing of updates is not strongly defined
-      at this time in order to allow exploration of various optimisations in 
-      the future.
-  </p>
-     
-  <p>
-      getCacheVWBounds returns the cell bounds in Virtual World coordinates. This
-      call is only valid for live cells.
+      Cells include the concept of liveness. A live cell is one that is 
+      attached (possibly indirectly) to a RootCellMO. Some CellMO method calls
+      only return valid results for live cells, for non live cells they throw
+      IllegalStateException. The RootCellMO is created and managed by
+      CellManagerMO.
   </p>
   
   </body>
