@@ -5,7 +5,7 @@
 	<TITLE></TITLE>
 	<META NAME="GENERATOR" CONTENT="NeoOffice 2.2  (Unix)">
 	<META NAME="CREATED" CONTENT="20080401;10510100">
-	<META NAME="CHANGED" CONTENT="20080411;16430400">
+	<META NAME="CHANGED" CONTENT="20080423;14511500">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <P>The Wonderland virtual world platform provides an open, extensible
@@ -56,16 +56,17 @@ allowing, for example, support for clients with varying network
 bandwidth capabilities. The security system in Wonderland can be used
 to provide varying level of access to any cell (and it's children) to
 a particular user. Cells are broken into two main groups, static
-cells which do not change and {@see
-org.jdesktop.wonderland.client.cell.MovableCell} which contain
-dynamic content (to be specific the static cells can be updated but
-this is a heavyweight operation and may briefly cause a pause in
-client rendering). MovableCell implements {@see
-org.jdesktop.wonderland.client.cell.ChannelCell} thus providing a
-communication Channel over which messages are sent/received to keep
-the cell state (loosely) synchronized. It is the developers
-responsibility to manage the state of MovableCells and determine what
-data needs to be shared.</P>
+cells which do not change and dynamic cells which change in some way
+and are synchronized throughout the system (to be specific the static
+cells can be updated but this is a heavyweight operation and may
+briefly cause a pause in client rendering). Dynamic cells implement
+{@see org.jdesktop.wonderland.client.cell.ChannelCell} thus providing
+a communication Channel over which messages are sent/received to keep
+the cell state (loosely) synchronized.  It is the developers
+responsibility to manage the state of dynamic cells and determine
+what data needs to be shared. MovableCell is one example of a cell
+which is dynamic{@see
+org.jdesktop.wonderland.client.cell.MovableCell}.</P>
 <P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4>Cell
 Cache</FONT></FONT></P>
 <P>The cell cache is completely internal to the Wonderland platform,
