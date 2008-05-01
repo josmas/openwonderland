@@ -174,10 +174,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
         for(int x=0; x<gridWidth; x++) {
             for(int z=0; z<gridDepth; z++) {
                 try {
-                    CellMO cell = new SimpleTerrainCellMO();
-                    cell.setTransform(new CellTransform(null, new Vector3f(x * boundsDim*2, 0, z * boundsDim*2)));
+                    CellMO cell = new SimpleTerrainCellMO(new Vector3f(x * boundsDim*2, 0, z * boundsDim*2), boundsDim );
                     cell.setName("grid_" + x + "_" + z);
-                    cell.setLocalBounds(gridBounds);
                     addCell(cell);
                 } catch (MultipleParentException ex) {
                     Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);

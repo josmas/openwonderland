@@ -44,8 +44,8 @@ public class SimpleTerrainCellMO extends CellMO
     private String filename;
     private String baseUrl;
     	
-    public SimpleTerrainCellMO() {
-    }
+//    public SimpleTerrainCellMO() {
+//    }
     
     public SimpleTerrainCellMO(int row, int column, String filename, float size) {
         this(new Vector3f(row*size+size/2, 0, column*size+size/2), size);
