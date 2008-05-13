@@ -25,11 +25,16 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.ObjectNotFoundException;
 import com.sun.sgs.app.PeriodicTaskHandle;
+import com.sun.sgs.app.Task;
+import com.sun.sgs.app.TaskManager;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -37,6 +42,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
@@ -44,7 +50,6 @@ import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
 import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
-import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.bounds.CellDescriptionManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -80,11 +85,14 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * List of currently active cells
      */
-    private Map<CellID, CellRef> currentCells = new HashMap<CellID, CellRef>();
+    private ManagedReference<Map<CellID, CellRef>> currentCellsRef;
     
     private PeriodicTaskHandle task = null;
     
-    // Combine all client messages for a single revalidation into a single message
+    // handle revalidates
+    private RevalidateScheduler scheduler;
+    
+    // whether or not to aggregate messages
     private static final boolean AGGREGATE_MESSAGES = true;
     
     /**
@@ -126,8 +134,14 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         msg = newCreateCellMessage(rootCell, capabilities);
         sender.send(session, msg);
         
+        Map<CellID, CellRef> currentCells = new ManagedHashMap<CellID, CellRef>();
         currentCells.put(rootCellID, new CellRef(rootCell));
+        currentCellsRef = dm.createReference(currentCells);
         
+        // set up the revalidate scheduler
+        scheduler = new ImmediateRevalidateScheduler(sender, session);
+        
+        // schedule a task for revalidating
         if (CacheManager.USE_CACHE_MANAGER) {
             CacheManager.addCache(this);            
         } else {
@@ -142,7 +156,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     void logout(ClientSession session) {
         logger.warning("DEBUG - logout");
-        currentCells.clear();
+        
+        DataManager dm = AppContext.getDataManager();
+        dm.removeObject(getCurrentCells());
+        
         if (CacheManager.USE_CACHE_MANAGER) {
             CacheManager.removeCache(this);
         } else {
@@ -159,16 +176,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     void revalidate() {
         // make sure the user is still logged on
-        ClientSession session = getSession();
-        MessageList messageList = null;
-        
+        ClientSession session = getSession();        
         if (session == null) {
             logger.warning("Null session, have not seen a logout");
             return;
         }
-        
-        if (AGGREGATE_MESSAGES)
-            messageList = new MessageList();
         
         // create a performance monitor
         RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
@@ -191,8 +203,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             monitor.setVisibleCellCount(visCells.size());
             
             // copy the existing cells into the list of known cells 
-            Collection<CellRef> oldCells = new ArrayList(currentCells.values());
+            Collection<CellRef> oldCells = new ArrayList(getCurrentCells().values());
         
+            // notify the schduler
+            scheduler.startRevalidate();
+            
             CellHierarchyMessage msg;
             /*
              * Loop through all of the visible cells and:
@@ -212,53 +227,27 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 }
 
                 // find the cell in our current list of cells
-                CellRef cellRef = currentCells.get(cellID);           
+                CellRef cellRef = getCurrentCells().get(cellID);           
                 if (cellRef == null) {
-                    // the cell is new -- add it and send a message
-                    CellMO cell = CellManagerMO.getCell(cellID);
-                    cellRef = new CellRef(cell, cellMirror);
-                    currentCells.put(cellID, cellRef);
-                    markForUpdate();
+                    // schedule the add operation
+                    CellAddOp op = new CellAddOp(cellRef, cellMirror,
+                                                 currentCellsRef, sessionRef,
+                                                 capabilities);
+                    scheduler.schedule(op);
                     
-                    if (logger.isLoggable(Level.FINER)) {
-                        logger.finer("Entering cell " + cell +
-                                     "   cellcache for user " + username);
-                    }
-                    
-                    //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
-                    CellSessionProperties prop = cell.addSession(session, capabilities);
-                    cellRef.setCellSessionProperties(prop);
-                    
-                    msg = newCreateCellMessage(cell, capabilities);
-                    if (AGGREGATE_MESSAGES)
-                        messageList.addMessage(msg);
-                    else
-                       sender.send(session, msg);
-                    monitor.incMessageCount();
+                    // monitor.incMessageCount();
                                         
                     // update performance monitoring
                     monitor.incNewCellTime(System.nanoTime() - cellStartTime);
                 } else if (cellRef.hasUpdates(cellMirror)) {
                     for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
-                        switch (update) {
-                            case TRANSFORM:
-                                // MovableCells manage their own movement over
-                                // their cell channel, so this only deals with
-                                // non movable cells.
-                                if (!cellMirror.isMovableCell()) {
-                                    msg = newCellMoveMessage(cellMirror);
-                                    sender.send(session, msg);
-                                }
-                                break;
-                            case CONTENT:
-                                msg = newContentUpdateCellMessage(cellRef.get(), capabilities);
-                                sender.send(session, msg);
-                                monitor.incMessageCount();
-                                break;
-                            case VIEW_CACHE_OPERATION :
-                                cellRef.getCellSessionProperties().getViewCellCacheRevalidationListener().cacheRevalidate(view.getTransform());
-                                break;
-                        }
+                        
+                        // schedule the update operation
+                        CellUpdateOp op = new CellUpdateOp(update, view.getTransform(),
+                                                           cellRef, cellMirror,
+                                                           currentCellsRef, sessionRef,
+                                                           capabilities);
+                        scheduler.schedule(op);
                     }
                     cellRef.clearUpdateTypes(cellMirror);
                 
@@ -282,43 +271,18 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                                  " cellcache for user "+username);
                 }
                 
-                // the cell may be inactive or removed.  Try to get the cell,
-                // and catch the exception if it no longer exists.
-                try {
-                    CellMO cell = ref.get();
-
-                    // get suceeded, so cell is just inactive
-                    msg = newUnloadCellMessage(cell);
-                    cell.removeSession(session);
-                } catch (ObjectNotFoundException onfe) {
-                    // get failed, cell is deleted
-                    msg = newDeleteCellMessage(ref.getCellID());
-                }
-                
-                if (AGGREGATE_MESSAGES)
-                    messageList.addMessage(msg);
-                else
-                    sender.send(session, msg);
-                monitor.incMessageCount();
-                //System.out.println("SENDING "+msg.getClass().getName()+" "+msg.getBytes().length);
-
-                // the cell is no longer visible on this client, so remove
-                // our current reference to it.  This client will no longer
-                // receive any updates about the given cell, including future
-                // deletes.  This implies that the client must clear out
-                // its cache of inactive cells periodically, as some of them
-                // may have been deleted.
-                // TODO periodically clean out client cell cache
-                currentCells.remove(ref.getCellID());
-                markForUpdate();
+                // schedule the add operation
+                CellRemoveOp op = new CellRemoveOp(ref, null,
+                                                   currentCellsRef, sessionRef,
+                                                   capabilities);
+                scheduler.schedule(op);
+                //markForUpdate();
                 
                 // update the monitor
                 monitor.incOldCellTime(System.nanoTime() - cellStartTime);
             }
             
-            if (AGGREGATE_MESSAGES && messageList.size()>0) {
-                sender.send(session, messageList);
-            }
+            scheduler.endRevalidate();
         } catch(RuntimeException e) {
             monitor.setException(true);
             
@@ -359,6 +323,366 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             return sessionRef.get();
         } catch(ObjectNotFoundException e) {
             return null;
+        }
+    }
+    
+    /**
+     * Utility to get the list of managed cells
+     */
+    protected Map<CellID, CellRef> getCurrentCells() {
+        return currentCellsRef.get();
+    }
+    
+    private static class ManagedHashMap<K, V> extends HashMap<K, V> implements ManagedObject {}
+    private static class ManagedLinkedList<E> extends LinkedList<E> implements ManagedObject {}
+            
+    /**
+     * Superclass of operations to modify the list of cached cells.  Operations
+     * include adding, removing or updating the list of cells.
+     */
+    private static abstract class CellOp 
+            implements Serializable, Runnable 
+    {
+        protected CellRef cellRef;
+        protected CellDescription desc;
+        protected ManagedReference<Map<CellID, CellRef>> cellsRef;
+        protected ManagedReference<ClientSession> sessionRef;
+        protected ClientCapabilities capabilities;
+        
+        // optional message list.  If the list is not null, messages will
+        // be added to the list instead of sent immediately.  This is
+        // set by the RevalidateScheduler prior to calling run()
+        private MessageList messageList;
+        
+        // optional sender.  If the sender is not null, messages will be
+        // sent immediately.  This is set by the RevalidateScheduler
+        // prior to calling run.
+        private WonderlandClientSender sender;
+    
+        public CellOp(CellRef cellRef,
+                      CellDescription desc,
+                      ManagedReference<Map<CellID, CellRef>> cellsRef,
+                      ManagedReference<ClientSession> sessionRef, 
+                      ClientCapabilities capabilities) 
+        {
+            this.cellRef = cellRef;
+            this.desc = desc;
+            this.cellsRef = cellsRef;
+            this.sessionRef = sessionRef;
+            this.capabilities = capabilities;
+        }
+        
+        public void setMessageList(MessageList messageList) {
+            this.messageList = messageList;
+        }
+        
+        public void setClientSender(WonderlandClientSender sender) {
+            this.sender = sender;
+        }
+        
+        protected void sendMessage(CellHierarchyMessage message) {
+            if (messageList != null) {
+                // if there is a message list, use it to aggregate messages
+                messageList.addMessage(message);
+            } else {
+                // no list, send immediately
+                sender.send(sessionRef.get(), message);
+            }
+        }
+    }
+    
+    /**
+     * Operation to add a cell to the set of cached cells
+     */
+    private static class CellAddOp extends CellOp {
+        public CellAddOp(CellRef cellRef,
+                         CellDescription desc,
+                         ManagedReference<Map<CellID, CellRef>> cellsRef,
+                         ManagedReference<ClientSession> sessionRef, 
+                         ClientCapabilities capabilities)
+        {
+            super (cellRef, desc, cellsRef, sessionRef, capabilities);
+        }
+        
+        public void run() {
+            // the cell is new -- add it and send a message
+            CellMO cell = CellManagerMO.getCell(desc.getCellID());
+            cellRef = new CellRef(cell, desc);
+            cellsRef.getForUpdate().put(desc.getCellID(), cellRef);
+                          
+            //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
+            CellSessionProperties prop = cell.addSession(sessionRef.get(), capabilities);
+            cellRef.setCellSessionProperties(prop);
+                    
+            sendMessage(newCreateCellMessage(cell, capabilities));
+        }
+    }
+    
+    /**
+     * Operation to update the list of cached cells
+     */
+    private static class CellUpdateOp extends CellOp {
+        private CellRef.UpdateType update;
+        private CellTransform transform;
+        
+        public CellUpdateOp(CellRef.UpdateType update,
+                            CellTransform transform,
+                            CellRef cellRef,
+                            CellDescription desc,
+                            ManagedReference<Map<CellID, CellRef>> cellsRef,
+                            ManagedReference<ClientSession> sessionRef, 
+                            ClientCapabilities capabilities)
+        {
+            super (cellRef, desc, cellsRef, sessionRef, capabilities);
+        
+            this.update = update;
+            this.transform = transform;
+        }
+        
+        public void run() {
+            CellHierarchyMessage msg;
+            
+            switch (update) {
+                case TRANSFORM:
+                    // MovableCells manage their own movement over
+                    // their cell channel, so this only deals with
+                    // non movable cells.
+                    if (!desc.isMovableCell()) {
+                        sendMessage(newCellMoveMessage(desc));
+                    }
+                    break;
+                case CONTENT:
+                    sendMessage(newContentUpdateCellMessage(cellRef.get(), capabilities));
+                    break;
+                case VIEW_CACHE_OPERATION:
+                    cellRef.getCellSessionProperties().getViewCellCacheRevalidationListener().cacheRevalidate(transform);
+                    break;
+            }
+        }
+    }
+    
+    /**
+     * Operation to remove a cell from the list of cached cells
+     */
+    private static class CellRemoveOp extends CellOp {
+        public CellRemoveOp(CellRef cellRef,
+                         CellDescription desc,
+                         ManagedReference<Map<CellID, CellRef>> cellsRef,
+                         ManagedReference<ClientSession> sessionRef, 
+                         ClientCapabilities capabilities)
+        {
+            super (cellRef, desc, cellsRef, sessionRef, capabilities);
+        }
+        
+        public void run() {
+            CellHierarchyMessage msg;
+                    
+            // the cell may be inactive or removed.  Try to get the cell,
+            // and catch the exception if it no longer exists.
+            try {
+                CellMO cell = cellRef.get();
+
+                // get suceeded, so cell is just inactive
+                msg = newUnloadCellMessage(cell);
+                cell.removeSession(sessionRef.get());
+            } catch (ObjectNotFoundException onfe) {
+                // get failed, cell is deleted
+                msg = newDeleteCellMessage(cellRef.getCellID());
+            }
+
+            sendMessage(msg);
+            //System.out.println("SENDING "+msg.getClass().getName()+" "+msg.getBytes().length);
+
+            // the cell is no longer visible on this client, so remove
+            // our current reference to it.  This client will no longer
+            // receive any updates about the given cell, including future
+            // deletes.  This implies that the client must clear out
+            // its cache of inactive cells periodically, as some of them
+            // may have been deleted.
+            // TODO periodically clean out client cell cache
+            cellsRef.getForUpdate().remove(cellRef.getCellID());
+        }
+    }
+    
+    /**
+     * A revalidate scheduler defines how the various revalidate operations
+     * are managed.  Some schedulers will perform the operations immediately,
+     * while others will try to batch them up in a single task.
+     */
+    private interface RevalidateScheduler {
+        public void startRevalidate();
+        public void schedule(CellOp op);
+        public void endRevalidate();
+    }
+    
+    /**
+     * Do nothing.  This will break the system, but is good for testing by
+     * ignoring the updates.
+     */
+    private class NoopRevalidateScheduler
+            implements RevalidateScheduler, Serializable
+    {
+        public void startRevalidate() {}
+        public void schedule(CellOp op) {}
+        public void endRevalidate() {}
+    }
+    
+    /**
+     * Perform all revalidate operations immediately in this task.
+     */
+    private class ImmediateRevalidateScheduler 
+            implements RevalidateScheduler, Serializable 
+    {
+        // the sender to send to
+        private WonderlandClientSender sender;
+        
+        // a reference to the client session
+        private ManagedReference<ClientSession> sessionRef;
+        
+        // the message list
+        private MessageList messageList;
+        
+        
+        public ImmediateRevalidateScheduler(WonderlandClientSender sender,
+                                            ClientSession session)
+        {
+            this.sender = sender;
+            
+            DataManager dm = AppContext.getDataManager();
+            sessionRef = dm.createReference(session);
+        }
+        
+        public void startRevalidate() {
+            if (AGGREGATE_MESSAGES) {
+                messageList = new MessageList();
+            }
+        }
+        
+        public void schedule(CellOp op) {
+            if (AGGREGATE_MESSAGES) {
+                op.setMessageList(messageList);
+            } else {
+                op.setClientSender(sender);
+            }
+            
+            op.run();
+        }
+        
+        public void endRevalidate() {
+            if (AGGREGATE_MESSAGES) {                
+                sender.send(sessionRef.get(), messageList);
+            }
+        }
+    }
+    
+    /**
+     * Write revalidate requests to a shared list of operations to run.
+     * Schedule a task to read the list and perform some number of operations.
+     * The count variable in the constructor controls how many operations
+     * each task should consume before scheduling another task to complete
+     * the remaining operations.
+     */
+    private class SharedListRevalidateScheduler 
+            implements RevalidateScheduler, Serializable 
+    {
+        // the sender to send to
+        private WonderlandClientSender sender;
+        
+        // a reference to the client session
+        private ManagedReference<ClientSession> sessionRef;
+        
+        // the number of tasks to consume during each run
+        private int count;
+        
+        // a reference to the shared list of operations
+        private ManagedReference<List<CellOp>> opsRef;
+        
+        public SharedListRevalidateScheduler(WonderlandClientSender sender,
+                                             ClientSession session,
+                                             int count)
+        {
+            this.sender = sender;
+            this.count = count;
+            
+            // create managed references
+            DataManager dm = AppContext.getDataManager();
+            List<CellOp> opsList = new ManagedLinkedList<CellOp>();
+            opsRef = dm.createReference(opsList);
+            sessionRef = dm.createReference(session);
+        }
+        
+        public void startRevalidate() {    
+        }
+        
+        public void schedule(CellOp op) {
+            opsRef.getForUpdate().add(op);
+        }
+
+        public void endRevalidate() {            
+            // schedule tasks to handle up to count operations
+            if (opsRef.get().size() > 0) {
+                TaskManager tm = AppContext.getTaskManager();
+                tm.scheduleTask(new SharedListRevalidateTask(sender, sessionRef,
+                                                             count, opsRef));
+            }
+        }
+    }
+    
+    /**
+     * A task to dequeue the next operations from the shared list and
+     * execute them.
+     */
+    private static class SharedListRevalidateTask
+            implements Task, Serializable
+    {
+        private WonderlandClientSender sender;
+        private ManagedReference<ClientSession> sessionRef;
+        private ManagedReference<List<CellOp>> opsRef;
+        private int count;
+        private MessageList messageList;
+        
+        public SharedListRevalidateTask(WonderlandClientSender sender,
+                                        ManagedReference<ClientSession> sessionRef,
+                                        int count, 
+                                        ManagedReference<List<CellOp>> opsRef)
+        {
+            this.sender = sender;
+            this.sessionRef = sessionRef;
+            this.count = count;
+            this.opsRef = opsRef;
+        }
+
+        public void run() throws Exception {
+            List<CellOp> ops = opsRef.get();
+            
+            if (AGGREGATE_MESSAGES) {
+                messageList = new MessageList();
+            }
+            
+            int num = Math.min(ops.size(), count);
+            for (int i = 0; i < num; i++) {
+                CellOp op = ops.remove(0);
+                
+                if (AGGREGATE_MESSAGES) {
+                    op.setMessageList(messageList);
+                } else {
+                    op.setClientSender(sender);
+                }
+                
+                op.run();
+            }
+            
+            // send all messages
+            if (AGGREGATE_MESSAGES) {
+                sender.send(sessionRef.get(), messageList);
+            }
+            
+            // schedule a task to handle more
+            if (num > 0) {
+                TaskManager tm = AppContext.getTaskManager();
+                tm.scheduleTask(new SharedListRevalidateTask(sender, sessionRef,
+                                                             count, opsRef));
+            }
         }
     }
     
@@ -497,7 +821,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         }
 
     }
-
+    
     /**
      * Return a new Create cell message
      */

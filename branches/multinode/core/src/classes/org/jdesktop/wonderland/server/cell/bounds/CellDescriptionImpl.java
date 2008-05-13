@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.server.cell.bounds;
 
 import com.jme.bounding.BoundingVolume;
+import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.*;
@@ -38,7 +39,7 @@ import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
  * @author paulby
  */
 @InternalAPI
-public class CellDescriptionImpl implements CellDescription {
+public class CellDescriptionImpl implements CellDescription, Serializable {
 
     private BoundingVolume computedWorldBounds;
     private BoundingVolume localBounds;
