@@ -7,8 +7,6 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,8 +20,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -37,6 +33,33 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     private static Logger logger = Logger.getLogger(CellCacheBasicImpl.class.getName());
     
     private ViewCell viewCell = null;
+
+    
+    /** the session this cache is associated with */
+    private WonderlandSession session;
+    
+    /** the connection for sending cell cache information */
+    private CellCacheConnection cellCacheConnection;
+    
+    /** the connection for sending cell information */
+    private CellChannelConnection cellChannelConnection;
+    
+    /**
+     * Create a new cache implementation
+     * @param session the WonderlandSession the cache is associated with
+     * @param cellCacheConnection the connection for sending cell cache
+     * information
+     * @param cellChannelConnection the connectiong for sending cell channel
+     * messages
+     */
+    public CellCacheBasicImpl(WonderlandSession session,
+                              CellCacheConnection cellCacheConnection,
+                              CellChannelConnection cellChannelConnection)
+    {
+        this.session = session;
+        this.cellCacheConnection = cellCacheConnection;
+        this.cellChannelConnection = cellChannelConnection;
+    }
     
     public Cell getCell(CellID cellId) {
         return cells.get(cellId);
@@ -72,8 +95,15 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
         cells.put(cellId, cell);
+        
+        // record the set of root cells
         if (cell instanceof RootCell) {
             rootCells.add(cell);
+        }
+        
+        // if the cell has a channel, notify it of the CellChannelConnection
+        if (cell instanceof ChannelCell) {
+            ((ChannelCell) cell).setCellChannelConnection(cellChannelConnection);
         }
     }
 
@@ -123,6 +153,6 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * {@inheritDoc}
      */
     public WonderlandSession getSession() {
-        throw new NotImplementedException();
+        return session;
     }
 }

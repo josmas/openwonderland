@@ -402,8 +402,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // handle it with the selected client
         ClientRecord record = getClientRecord(clientID);
         if (record == null) {
-            throw new IllegalStateException("Message to unknown client: " +
-                                            clientID);
+            throw new IllegalStateException("Message " + message + 
+                                            "to unknown client: " + clientID);
         }
         
         if (logger.isLoggable(Level.FINEST)) {
@@ -634,7 +634,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
                 public void receivedMessage(ClientChannel channel, 
                                             ByteBuffer data) 
                 {
-                    logger.fine("Received message on channel " + channel.getName());
+                    logger.finest("Received " + data.remaining() + 
+                                  " bytes on channel " + channel.getName());
                     fireSessionMessageReceived(data);
                 }
 

@@ -688,7 +688,9 @@ public class WonderlandSessionListener
             ChannelManager cm = AppContext.getChannelManager();
             
             ClientSessionSet sessions = new ClientSessionSet();
-            Channel channel = cm.createChannel(String.valueOf(assignID), 
+            String channelName = handler.getClientType().toString() + 
+                                 "(" + String.valueOf(assignID) + ")";
+            Channel channel = cm.createChannel(channelName, 
                                                null,
                                                Delivery.RELIABLE);
                     

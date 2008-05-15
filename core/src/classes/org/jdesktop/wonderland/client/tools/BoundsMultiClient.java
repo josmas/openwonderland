@@ -70,10 +70,8 @@ public class BoundsMultiClient
         startedClients++;
         
         // login
-        CellCacheBasicImpl cellCache = new CellCacheBasicImpl();
-        BoundsTestClientSession session =
-                new BoundsTestClientSession(server, cellCache);
-        ClientContext3D.registerCellCache(cellCache, session);
+        BoundsTestClientSession session = new BoundsTestClientSession(server);
+        ClientContext3D.registerCellCache(session.getCellCache(), session);
         session.addSessionStatusListener(this);
         session.login(login);
         

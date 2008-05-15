@@ -59,9 +59,9 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     
     /** Creates new form CellBoundsViewer */
     public CellBoundsViewer(String[] args) {
-        BoundsPanel boundsPanel;
         initComponents();
-        boundsPanel = new BoundsPanel();
+        
+        final BoundsPanel boundsPanel = new BoundsPanel();
         centerPanel.add(boundsPanel, BorderLayout.CENTER);
         this.setSize(640,480);
         
@@ -72,9 +72,16 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         LoginParameters loginParams = new LoginParameters("test", "test".toCharArray());
         
         // create a session
-        session = new BoundsTestClientSession(server, 
-                boundsPanel);
+        session = new BoundsTestClientSession(server) {
+            @Override
+            protected CellCache createCellCache() {
+                getCellCacheConnection().addListener(boundsPanel);
+                return boundsPanel;
+            }
+        };
         ClientContext3D.registerCellCache(boundsPanel, session);
+        
+        boundsPanel.setSession(session);
         
         localAvatar = session.getLocalAvatar();
                 
@@ -216,7 +223,8 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         private float panelTranslationY = 0f;
         
         // BoundsPanel actually wraps the cacheImpl
-        private CellCacheBasicImpl cacheImpl = new CellCacheBasicImpl();
+        private CellCacheBasicImpl cacheImpl;
+        private BoundsTestClientSession session;
         
         private Point mousePress = null;
         
@@ -252,6 +260,19 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 }
                 
             });
+        }
+        
+        public WonderlandSession getSession() {
+            return session;
+        }
+        
+        public void setSession(BoundsTestClientSession session) {
+            this.session = session;
+            
+            // setup internal cache
+            cacheImpl = new CellCacheBasicImpl(session, 
+                                               session.getCellCacheConnection(), 
+                                               session.getCellChannelConnection());
         }
         
         @Override
@@ -338,10 +359,6 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             repaint();
         }
         
-        public WonderlandSession getSession() {
-            throw new NotImplementedException();
-        }
-
         /*************************************************
          * CellCache implementation
          *************************************************/
