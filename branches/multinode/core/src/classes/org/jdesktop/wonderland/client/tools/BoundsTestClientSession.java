@@ -19,11 +19,11 @@
  */
 package org.jdesktop.wonderland.client.tools;
 
-import org.jdesktop.wonderland.client.*;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
+import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.CellCacheConnection.CellCacheMessageListener;
 import org.jdesktop.wonderland.client.cell.CellChannelConnection;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
@@ -43,18 +43,19 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
     private CellCacheConnection cellCacheConnection;
     private LocalAvatar localAvatar;
     private CellChannelConnection cellChannelConnection;
+    private CellCache cellCache;
     
-    public BoundsTestClientSession(WonderlandServerInfo serverInfo, 
-            CellCacheMessageListener messageListener) {
+    public BoundsTestClientSession(WonderlandServerInfo serverInfo) {
         super (serverInfo);
         
         
         localAvatar = new LocalAvatar(this);
  
-        cellCacheConnection = new CellCacheConnection(localAvatar);
-        cellCacheConnection.addListener(messageListener);
-        
+        cellCacheConnection = new CellCacheConnection(localAvatar);        
         cellChannelConnection = new CellChannelConnection();
+    
+        // create the cell cache
+        cellCache = createCellCache();
     }
     
     /**
@@ -63,6 +64,30 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
      */
     public LocalAvatar getLocalAvatar() {
         return localAvatar;
+    }
+    
+    /**
+     * Return the cell cache for this session
+     * @return the cell cache
+     */
+    public CellCache getCellCache() {
+        return cellCache;
+    }
+    
+    /**
+     * Get the cell cache connection
+     * @return the cell cache connection
+     */
+    public CellCacheConnection getCellCacheConnection() {
+        return cellCacheConnection;
+    }
+    
+    /**
+     * Get the cell channel connection
+     * @return the cell channel connection
+     */
+    public CellChannelConnection getCellChannelConnection() {
+        return cellChannelConnection;
     }
     
     /**
@@ -81,11 +106,16 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
         super.login(loginParams);
         
         // if login succeeds, connect the various clients
-        try { 
+        try {
+            // first connect the cell channel connection, so we can receive
+            // cell messages.  We need to do this before attaching the
+            // cell cache connection, since the cell cache connection
+            // will create a view and immediately start joining us to cells
+            cellChannelConnection.attach(this);
+
             // Now connect to the cellCache. The view will be determined via the
             // localAvatar object.
             cellCacheConnection.attach(this);
-            cellChannelConnection.attach(this);
         } catch (ConnectionFailureException afe) {
             // a client failed to connect -- logout
             logout();
@@ -93,5 +123,19 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
             // throw a login exception
             throw new LoginFailureException("Failed to attach client" , afe);
         }
+    }
+    
+    /**
+     * Create the cell cache.  Called in the constructor after all connections
+     * have already been created.
+     * @return the newly created cell cache
+     */
+    protected CellCache createCellCache() {
+        // create the cell cache and arrange for it to get messages
+        // whenever a new cell is created
+        CellCacheBasicImpl cacheImpl = 
+                new CellCacheBasicImpl(this, cellCacheConnection, cellChannelConnection);
+        cellCacheConnection.addListener(cacheImpl);
+        return cacheImpl;
     }
 }

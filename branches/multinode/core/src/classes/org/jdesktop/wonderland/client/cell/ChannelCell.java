@@ -29,6 +29,17 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 @ExperimentalAPI
 public interface ChannelCell {
 
+    /**
+     * Notification of the CellChannelConnection to use when sending
+     * data to the server for this cell.  This method will be called 
+     * automatically at cell creation time.
+     */
+    public void setCellChannelConnection(CellChannelConnection connection);
+    
+    /**
+     * Handle a cell message sent to this cell
+     * @param message
+     */
     public void handleMessage(CellMessage message);
     
     // TODO various send methods required, cell to server, cell to cell, cell to channel

@@ -38,16 +38,10 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 @InternalAPI
 public class CellChannelConnection extends BaseConnection {
-    private static CellChannelConnection cellClient = null;
     private static Logger logger = Logger.getLogger(CellChannelConnection.class.getName());
     
     public CellChannelConnection() {
         super();
-        cellClient = this;
-    }
-    
-    public static CellChannelConnection getCellChannelHandler() {
-        return cellClient;
     }
     
     /**

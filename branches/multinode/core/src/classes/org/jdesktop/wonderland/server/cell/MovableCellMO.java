@@ -77,7 +77,7 @@ public class MovableCellMO extends CellMO implements ChannelCellMO {
      */
     public void openChannel() {
         ChannelManager cm = AppContext.getChannelManager();
-        Channel cellChannel = cm.createChannel(getCellID().toString(), 
+        Channel cellChannel = cm.createChannel("Cell " + getCellID().toString(), 
                                                null,
                                                Delivery.RELIABLE);
         

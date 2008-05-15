@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -45,7 +46,6 @@ public class MovableCell extends Cell implements ChannelCell {
     
     public MovableCell(CellID cellID) {
         super(cellID);
-        cellChannelConnection = CellChannelConnection.getCellChannelHandler();
     }
     
     /**
@@ -64,6 +64,15 @@ public class MovableCell extends Cell implements ChannelCell {
     
         CellManager.getCellManager().notifyCellMoved(this, false);        
         
+        // make sure we are connected to the server
+        if (cellChannelConnection == null || 
+                cellChannelConnection.getStatus() != ClientConnection.Status.ATTACHED)
+        {
+            logger.warning("Cell channel not connected when moving cell " +
+                           getCellID());
+            return;
+        }
+        
         // TODO at the moment this request does not apply a local change, rather
         // it relies on the MOVED message sent by the server as a result of this
         // request to actually move the local cell. Obviously needs updating
@@ -71,7 +80,7 @@ public class MovableCell extends Cell implements ChannelCell {
         
         // TODO throttle sends, we should only send so many times a second.
         if (listener!=null) {
-        cellChannelConnection.send(
+            cellChannelConnection.send(
                 MovableMessage.newMoveRequestMessage(getCellID(), 
                                                     transform.getTranslation(null), 
                                                     transform.getRotation(null)),
@@ -195,4 +204,10 @@ public class MovableCell extends Cell implements ChannelCell {
         }
     }
 
+    /**
+     * @{inheritDoc}
+     */
+    public void setCellChannelConnection(CellChannelConnection connection) {
+        this.cellChannelConnection = connection;
+    }
 }
