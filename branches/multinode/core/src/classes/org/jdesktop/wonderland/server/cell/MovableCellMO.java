@@ -35,7 +35,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
-import org.jdesktop.wonderland.common.cell.messages.MovableMessageResponse;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -78,7 +77,9 @@ public class MovableCellMO extends CellMO implements ChannelCellMO {
      */
     public void openChannel() {
         ChannelManager cm = AppContext.getChannelManager();
-        Channel cellChannel = cm.createChannel(Delivery.RELIABLE);
+        Channel cellChannel = cm.createChannel(getCellID().toString(), 
+                                               null,
+                                               Delivery.RELIABLE);
         
         DataManager dm = AppContext.getDataManager();
         cellChannelRef = dm.createReference(cellChannel);
