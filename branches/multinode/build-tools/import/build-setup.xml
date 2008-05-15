@@ -72,7 +72,7 @@
 
     <property name="sgs.javaext.dir" location="${javaext.dir}/sgs"/>
 <!--    <property name="sgs.version" value="0.9.5.1-r3730"/>-->
-    <property name="sgs.version" value="0.9.6.internal-r4002M"/>
+    <property name="sgs.version" value="0.9.6-r4193"/>
     <property name="sgs.server.dir" location="${sgs.javaext.dir}/sgs-${sgs.version}"/>
     <property name="sgs.bdb.dir" location="${sgs.javaext.dir}/bdb-4.5.20"/>
 
