@@ -19,6 +19,8 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
+import com.sun.sgs.client.ClientChannel;
+import com.sun.sgs.client.ClientChannelListener;
 import com.sun.sgs.client.simple.SimpleClient;
 import com.sun.sgs.client.simple.SimpleClientListener;
 import java.io.ByteArrayInputStream;
@@ -624,6 +626,24 @@ public class WonderlandSessionImpl implements WonderlandSession {
             }
         }
 
+        public ClientChannelListener joinedChannel(ClientChannel channel) {
+            logger.fine("Client joined channel " + channel.getName());
+            
+            return new ClientChannelListener() {
+
+                public void receivedMessage(ClientChannel channel, 
+                                            ByteBuffer data) 
+                {
+                    logger.fine("Received message on channel " + channel.getName());
+                    fireSessionMessageReceived(data);
+                }
+
+                public void leftChannel(ClientChannel channel) {
+                    logger.fine("Left channel " + channel.getName());
+                }
+            };
+        }
+        
         /**
          * {@inheritDoc}
          */

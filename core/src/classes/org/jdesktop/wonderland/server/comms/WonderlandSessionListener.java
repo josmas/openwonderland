@@ -555,7 +555,7 @@ public class WonderlandSessionListener
         }
 
         public void send(Channel channel, Message message) {
-            channel.send(serializeMessage(message, clientID));
+            channel.send(null, serializeMessage(message, clientID));
         }
         
         /**
@@ -688,7 +688,9 @@ public class WonderlandSessionListener
             ChannelManager cm = AppContext.getChannelManager();
             
             ClientSessionSet sessions = new ClientSessionSet();
-            Channel channel = cm.createChannel(Delivery.RELIABLE);
+            Channel channel = cm.createChannel(String.valueOf(assignID), 
+                                               null,
+                                               Delivery.RELIABLE);
                     
             // add to the map
             HandlerRecord record = new HandlerRecord();
