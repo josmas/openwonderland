@@ -88,7 +88,6 @@ public class MessagePacker {
 
             serializationPack(message, clientID, out);
 
-            out.close();
             ByteBuffer buf = ByteBuffer.wrap(baos.toByteArray());
             if (messageMonitor != null) {
                 messageMonitor.sending(message, buf.capacity());
@@ -103,7 +102,8 @@ public class MessagePacker {
             Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                out.close();
+                if (out!=null)
+                    out.close();
             } catch (IOException ex) {
                 Logger.getLogger(MessagePacker.class.getName()).log(Level.SEVERE, null, ex);
             }
