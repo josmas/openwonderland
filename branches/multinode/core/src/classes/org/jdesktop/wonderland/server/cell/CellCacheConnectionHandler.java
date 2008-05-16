@@ -21,7 +21,6 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
@@ -104,12 +103,11 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
                 ViewCreateResponseMessage response = createAvatar(sender, 
                                                                     session, 
                                                                     message);
-                logger.severe("CREATE AVATAR");
                 sender.send(session, response);
                 
                 break;
             default :
-                logger.severe("Unexpected message in CellCacheClietnHandler "+message.getActionType());
+                logger.severe("Unexpected message in CellCacheClientHandler "+message.getActionType());
                 sender.send(session, new ErrorMessage(message.getMessageID(),
                         "Unexpected message in CellCacheClientHandler: " +
                         message.getActionType()));
@@ -125,7 +123,8 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
         if (avatar == null) {
             user.getReference().getForUpdate(); // Mark for update
             avatar = new AvatarMO(user);
-            user.putAvatar(msg.getViewID(), avatar);
+            viewID = msg.getViewID();
+            user.putAvatar(viewID, avatar);
         }
 
         try {
