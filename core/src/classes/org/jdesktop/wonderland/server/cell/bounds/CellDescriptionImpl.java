@@ -24,7 +24,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -39,8 +41,9 @@ import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
  * @author paulby
  */
 @InternalAPI
-public class CellDescriptionImpl implements CellDescription, Serializable {
-
+public class CellDescriptionImpl 
+        implements CellDescription, Serializable, Cloneable 
+{
     private BoundingVolume computedWorldBounds;
     private BoundingVolume localBounds;
     private CellTransform localToVWorld;
@@ -52,25 +55,24 @@ public class CellDescriptionImpl implements CellDescription, Serializable {
     private Class cellClass;
     private boolean isMovable;
     
-    private CellDescriptionImpl parent;
-    private ArrayList<CellDescriptionImpl> children = null;
+    private CellRef parent;
+    private List<CellRef> children = null;
     private static Logger logger = Logger.getLogger(CellDescriptionImpl.class.getName());
     
-    CellDescriptionImpl(CellMO cell) {
+    public CellDescriptionImpl(CellMO cell) {
         cellID = cell.getCellID();
         localBounds = cell.getLocalBounds();
         transform = cell.getTransform();
         cellClass = cell.getClass();
         this.priority = cell.getPriority();
-        isMovable = (cell instanceof MovableCellMO);
-            
+        isMovable = (cell instanceof MovableCellMO); 
     }
     
     /**
      * Create new CellDescription from the provided mirror
      * @param mirror
      */
-    CellDescriptionImpl(CellDescription mirror) {
+    protected CellDescriptionImpl(CellDescription mirror) {
         this.cellID = mirror.getCellID();
         this.transformVersion = mirror.getTransformVersion();
         this.contentsVersion = mirror.getContentsVersion();
@@ -165,9 +167,9 @@ public class CellDescriptionImpl implements CellDescription, Serializable {
      */
     public void addChild(CellDescriptionImpl child) {
         if (children==null)
-            children = new ArrayList<CellDescriptionImpl>();
+            children = new ArrayList<CellRef>();
         
-        children.add(child);
+        children.add(createReference(child));
         child.setParent(this);
     }
     
@@ -191,11 +193,27 @@ public class CellDescriptionImpl implements CellDescription, Serializable {
      */
     public Iterator<CellDescriptionImpl> getAllChildren() {
         if (children==null)
-            return new ArrayList<CellDescriptionImpl>().iterator();
-        return children.iterator();
+            return Collections.EMPTY_LIST.iterator();
+        
+        // create an iterator that resolves references as the walk happens
+        return new Iterator<CellDescriptionImpl>() {
+            private Iterator<CellRef> src = children.iterator();
+            
+            public boolean hasNext() {
+                return src.hasNext();
+            }
+
+            public CellDescriptionImpl next() {
+                return src.next().get();
+            }
+
+            public void remove() {
+                src.remove();
+            }
+        };
     }
 
-    void contentsChanged() {
+    public void contentsChanged() {
         contentsVersion++;
     }
     
@@ -209,9 +227,9 @@ public class CellDescriptionImpl implements CellDescription, Serializable {
     void setParent(CellDescriptionImpl newParent) {
         if (newParent != null && parent != null)
             throw new IllegalStateException("Cell " + cellID + " already has " +
-                                            " parent " + parent.cellID);
+                                            " parent " + parent.get().getCellID());
         
-        this.parent = newParent;
+        this.parent = createReference(newParent);
     }
     
     /**
@@ -219,7 +237,11 @@ public class CellDescriptionImpl implements CellDescription, Serializable {
      * @return
      */
     public CellDescriptionImpl getParent() {
-        return parent;
+        if (parent == null) {
+            return null;
+        } else {
+            return parent.get();
+        }
     }
 
     /**
@@ -232,7 +254,7 @@ public class CellDescriptionImpl implements CellDescription, Serializable {
      * @param monitor The performance monitor
      * @return A list of visible cells
      */
-    ArrayList<CellDescription> getVisibleCells(
+    public ArrayList<CellDescription> getVisibleCells(
                 ArrayList<CellDescription> list, 
                 BoundingVolume bounds,
                 RevalidatePerformanceMonitor monitor) {
@@ -266,17 +288,17 @@ public class CellDescriptionImpl implements CellDescription, Serializable {
                 logger.finest("Intersect " + cellID + " " + tmpComputedWorldBounds);
             }
             
-            list.add(new CellDescriptionImpl(this));
+            list.add(this.clone());
             if (children!=null) {
                 /*
                  * Recursively call getVisibleCells() to find the visible
                  * cells amongst the children. 
                  */
                 
-                for(CellDescriptionImpl c : children) {
+                for(CellRef ref : children) {
                     t = System.nanoTime();
-                    monitor.incBoundsGetTime(c.getClass(), System.nanoTime()-t);
-                    c.getVisibleCells(list, bounds, monitor);
+                    monitor.incBoundsGetTime(ref.get().getClass(), System.nanoTime()-t);
+                    ref.get().getVisibleCells(list, bounds, monitor);
                 }
             }
         } else {
@@ -322,6 +344,30 @@ public class CellDescriptionImpl implements CellDescription, Serializable {
     public Class getCellClass() {
         return cellClass;
     }
+
+    @Override
+    public CellDescriptionImpl clone() {
+        return new CellDescriptionImpl(this);
+    }
     
+    /**
+     * Create a reference to the given cell.  Override to use references
+     * of different types.
+     * @param cell the cell description to create a reference to
+     */
+    protected CellRef createReference(final CellDescriptionImpl desc) {
+        return new CellRef() {
+            public CellDescriptionImpl get() {
+                return desc;
+            }
+        };
+    }
     
+    /**
+     * A reference to another cell.  This is designed to be overridden
+     * to allow references that resolve in other ways.
+     */
+    protected interface CellRef {
+        public CellDescriptionImpl get();
+    }
 }

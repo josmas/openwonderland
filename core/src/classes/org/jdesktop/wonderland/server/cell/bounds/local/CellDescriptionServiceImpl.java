@@ -15,8 +15,9 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.cell.bounds;
+package org.jdesktop.wonderland.server.cell.bounds.local;
 
+import org.jdesktop.wonderland.server.cell.bounds.CellDescriptionImpl;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.impl.util.TransactionContext;
@@ -39,6 +40,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.CellDescription;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.bounds.CellDescriptionService;
 
 /**
  * Current implementation synchronizes updates to the CellDescriptionImpl graph, in the
@@ -140,7 +143,7 @@ public class CellDescriptionServiceImpl implements CellDescriptionService {
         return true;
     }
     
-    public CellDescriptionImpl getCellMirrorImpl(CellID cellID) {
+    public CellDescriptionImpl getCellDescription(CellID cellID) {
         boundsLock.readLock().lock();
         
         try {
@@ -166,23 +169,27 @@ public class CellDescriptionServiceImpl implements CellDescriptionService {
         boundsLock.readLock().lock();
         try {
             ArrayList<CellDescription> result = new ArrayList();
-            getCellMirrorImpl(rootCell).getVisibleCells(result, bounds, perfMonitor);
+            getCellDescription(rootCell).getVisibleCells(result, bounds, perfMonitor);
             return result;
         } finally {
             boundsLock.readLock().unlock();
         }
     }
     
-    public void putCellMirrorImpl(final CellDescriptionImpl cellBounds) {
-        scheduleChange(new Change(cellBounds.getCellID()) {
+    public CellDescriptionImpl addCellDescription(final CellMO cell) {
+        final CellDescriptionImpl desc = new CellDescriptionImpl(cell);
+             
+        scheduleChange(new Change(cell.getCellID()) {
             public void run() {
                 logger.finest("Add cell " + getCellID());
-                bounds.put(getCellID(), cellBounds);
+                bounds.put(getCellID(), desc);
             }
         });
+        
+        return desc;
     }
     
-    public void removeCellMirrorImpl(CellID cellID) {
+    public CellDescriptionImpl removeCellDescription(CellID cellID) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     

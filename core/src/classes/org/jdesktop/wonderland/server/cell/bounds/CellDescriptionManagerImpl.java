@@ -22,8 +22,9 @@ import java.util.Collection;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.CellDescription;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
+import org.jdesktop.wonderland.server.cell.CellMO;
 
 /**
  *
@@ -37,28 +38,30 @@ public class CellDescriptionManagerImpl implements CellDescriptionManager {
         this.service = service;
     }
 
-    public CellDescriptionImpl getCellMirrorImpl(CellID cellID) {
-        return service.getCellMirrorImpl(cellID);
+    public CellDescriptionImpl getCellDescription(CellID cellID) {
+        return service.getCellDescription(cellID);
     }
     
-    public void putCellMirrorImpl(CellDescriptionImpl cellBounds) {
-        service.putCellMirrorImpl(cellBounds);
+    public CellDescriptionImpl addCellDescription(CellMO cell) {
+        return service.addCellDescription(cell);
     }
     
-    public void removeCellMirrorImpl(CellID cellID) {
-        service.removeCellMirrorImpl(cellID);
+    public CellDescriptionImpl removeCellDescription(CellID cellID) {
+        return service.removeCellDescription(cellID);
     }
 
+    public Collection<CellDescription> 
+            getVisibleCells(CellID rootCell, BoundingVolume bounds, 
+                            RevalidatePerformanceMonitor perfMonitor) {
+        return service.getVisibleCells(rootCell, bounds, perfMonitor);
+    }
+    
     public void cellTransformChanged(CellID cellID, CellTransform transform) {
         service.cellTransformChanged(cellID, transform);
     }
 
     public void cellBoundsChanged(CellID cellID, BoundingVolume bounds) {
         service.cellBoundsChanged(cellID, bounds);
-    }
-
-    public Collection<CellDescription> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
-        return service.getVisibleCells(rootCell, bounds, perfMonitor);
     }
 
     public void cellChildrenChanged(CellID parent, CellID child, boolean childAdded) {
