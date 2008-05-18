@@ -21,10 +21,12 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import java.util.Collection;
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
-import org.jdesktop.wonderland.server.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.server.cell.BoundsManager;
+import org.jdesktop.wonderland.server.cell.CellDescription;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 
 /**
  * An implementation of BoundsManager based on a darkstar service.
@@ -39,16 +41,6 @@ public class ServiceCellDescriptionManager extends BoundsManager {
      * @param cell
      */
     public ServiceCellDescriptionManager() {
-    }
-    
-    /**
-     * Return the description of the specified cell
-     * @param cellID
-     * @return
-     */
-    private CellDescriptionImpl get(CellID cellID) {
-        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
-        return mgr.getCellMirrorImpl(cellID);
     }
     
     /**
@@ -88,47 +80,57 @@ public class ServiceCellDescriptionManager extends BoundsManager {
     
     @Override
     public void createBounds(CellMO cell) {
-        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
-        mgr.putCellMirrorImpl(new CellDescriptionImpl(cell));
+        getManager().addCellDescription(cell);
     }
 
     @Override
     public void removeBounds(CellMO cell) {
-        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
-        mgr.removeCellMirrorImpl(cell.getCellID());
+        getManager().removeCellDescription(cell.getCellID());
     }
 
     @Override
     public void cellTransformChanged(CellID cellID, CellTransform transform) {
-        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
-        mgr.cellTransformChanged(cellID, transform);
+        getManager().cellTransformChanged(cellID, transform);
     }
 
     @Override
     public void cellBoundsChanged(CellID cellID, BoundingVolume bounds) {
-        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
-        mgr.cellBoundsChanged(cellID, bounds);
+        getManager().cellBoundsChanged(cellID, bounds);
     }
 
     @Override
     public Collection<CellDescription> getVisibleCells(CellID rootCell, BoundingVolume bounds, RevalidatePerformanceMonitor perfMonitor) {
-        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
-        return mgr.getVisibleCells(rootCell, bounds, perfMonitor);
+        return getManager().getVisibleCells(rootCell, bounds, perfMonitor);
     }
 
     @Override
     public void cellChildrenChanged(CellID parent, CellID child, boolean childAdded) {
-        AppContext.getManager(CellDescriptionManager.class).cellChildrenChanged(parent, child, childAdded);
+        getManager().cellChildrenChanged(parent, child, childAdded);
     }
 
     @Override
     public void cellContentsChanged(CellID cellID) {
-        AppContext.getManager(CellDescriptionManager.class).cellContentsChanged(cellID);
+        getManager().cellContentsChanged(cellID);
     }
 
     @Override
     public CellDescription getCellMirror(CellID cellID) {
-        CellDescriptionManager mgr = AppContext.getManager(CellDescriptionManager.class);
-        return mgr.getCellMirrorImpl(cellID);
+        return get(cellID);
+    }
+    
+    /**
+     * Return the description of the specified cell
+     * @param cellID
+     * @return
+     */
+    private CellDescriptionImpl get(CellID cellID) {
+        return getManager().getCellDescription(cellID);
+    }
+    
+    /**
+     * Return the CellDescriptionManager
+     */
+    private CellDescriptionManager getManager() {
+        return AppContext.getManager(CellDescriptionManager.class);
     }
 }
