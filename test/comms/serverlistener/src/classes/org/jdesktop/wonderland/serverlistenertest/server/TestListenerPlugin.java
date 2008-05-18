@@ -23,11 +23,11 @@ import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.comms.ClientHandler;
+import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.serverlistenertest.common.TestClientType;
@@ -50,15 +50,15 @@ public class TestListenerPlugin implements ServerPlugin {
         cm.registerClientHandler(new TestClientThreeHandler());
     }
     
-    abstract static class TestClientHandler implements ClientHandler {
+    abstract static class TestClientHandler implements ClientConnectionHandler {
         public abstract String getName();
         
         public void registered(WonderlandClientSender sender) {
             logger.info(getName() + " registered");
         }
         
-        public void clientAttached(WonderlandClientSender sender,
-                                   ClientSession session) {
+        public void clientConnected(WonderlandClientSender sender,
+                                    ClientSession session) {
             logger.info(getName() + " client attached: " + session);
         }
         
@@ -70,8 +70,8 @@ public class TestListenerPlugin implements ServerPlugin {
                         " from session " + session);
         }
         
-        public void clientDetached(WonderlandClientSender sender,
-                                   ClientSession session) 
+        public void clientDisconnected(WonderlandClientSender sender,
+                                       ClientSession session) 
         {
             logger.info(getName() + " client detached: " + session);
         }
@@ -82,7 +82,7 @@ public class TestListenerPlugin implements ServerPlugin {
     {
         public String getName() { return "TestClientOneHandler"; }
         
-        public ClientType getClientType() { 
+        public ConnectionType getConnectionType() { 
             return TestClientType.CLIENT_ONE_TYPE;
         }
         
@@ -105,7 +105,7 @@ public class TestListenerPlugin implements ServerPlugin {
         
         public String getName() { return "TestClientTwoHandler"; }
         
-        public ClientType getClientType() { 
+        public ConnectionType getConnectionType() { 
             return TestClientType.CLIENT_TWO_TYPE;
         }
         
@@ -128,7 +128,7 @@ public class TestListenerPlugin implements ServerPlugin {
     {
         public String getName() { return "TestClientThreeHandler"; }
         
-        public ClientType getClientType() { 
+        public ConnectionType getConnectionType() { 
             return TestClientType.CLIENT_THREE_TYPE;
         }
         

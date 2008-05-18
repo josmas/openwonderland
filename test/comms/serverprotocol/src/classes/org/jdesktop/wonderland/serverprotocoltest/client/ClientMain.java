@@ -75,7 +75,7 @@ public class ClientMain {
 
         logger.info("Good login suceeded");
     
-        session.disconnect();
+        session.logout();
     }
     
     public void testBadSession(String username, String password) {
@@ -91,7 +91,7 @@ public class ClientMain {
             logger.info("Bad login failed");
         }
     
-        session.disconnect();
+        session.logout();
     }
 
     class GoodSession extends WonderlandSessionImpl {

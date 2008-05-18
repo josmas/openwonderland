@@ -20,13 +20,14 @@
 package org.jdesktop.wonderland.serverlistenertest.client;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.comms.AttachFailureException;
-import org.jdesktop.wonderland.client.comms.BaseClient;
+import org.jdesktop.wonderland.client.comms.BaseConnection;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionFactory;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.serverlistenertest.common.TestClientType;
 import org.jdesktop.wonderland.serverlistenertest.common.TestMessageOne;
@@ -71,7 +72,7 @@ public class ClientMain {
         String password = System.getProperty("sgs.password", "sample");
 
         // create the client & login
-        WonderlandSession session = WonderlandSessionFactory.getSession(serverInfo);
+        WonderlandSession session = new WonderlandSessionImpl(serverInfo);
         session.login(new LoginParameters(username, password.toCharArray()));
 
         logger.info("Login suceeded");
@@ -81,11 +82,11 @@ public class ClientMain {
         testReattach(session);
         
         logger.info("Tests complete");
-        session.disconnect();
+        session.logout();
     }
     
     public void testMessages(WonderlandSession session)
-        throws AttachFailureException
+        throws ConnectionFailureException
     {
         logger.info("Sending test messages");
         
@@ -93,17 +94,17 @@ public class ClientMain {
         t2c = new TestTwoClient();
         t3c = new TestThreeClient();
         
-        t1c.attach(session);
-        t2c.attach(session);
-        t3c.attach(session);
+        t1c.connect(session);
+        t2c.connect(session);
+        t3c.connect(session);
         
         t1c.send(new TestMessageOne("TestOne"));
         t2c.send(new TestMessageTwo("TestTwo"));
         t3c.send(new TestMessageThree("TestThree", 42));
         
-        t1c.detach();
-        t2c.detach();
-        t3c.detach();
+        t1c.disconnect();
+        t2c.disconnect();
+        t3c.disconnect();
     }
     
     // try to send to a detached session
@@ -119,28 +120,28 @@ public class ClientMain {
     }
     
     public void testReattach(WonderlandSession session)
-        throws AttachFailureException
+        throws ConnectionFailureException
     {
         logger.info("Testing reattach");
         
         t2c = new TestTwoClient();
-        t2c.attach(session);
+        t2c.connect(session);
         t2c.send(new TestMessageTwo("TestTwo"));
 
         // re-reattach
         try {
-            t2c.attach(session);
+            t2c.connect(session);
             assert false : "Re-attaching client should fail";
-        } catch (AttachFailureException afe) {
+        } catch (ConnectionFailureException afe) {
             // good
         }
         
         // attach new client of same type
         try {
             TestTwoClient t2c2 = new TestTwoClient();
-            t2c2.attach(session);
+            t2c2.connect(session);
             assert false : "Duplicate client should fail";
-        } catch (AttachFailureException afe) {
+        } catch (ConnectionFailureException afe) {
             // good
         }
     }
@@ -164,9 +165,9 @@ public class ClientMain {
         }
     }
     
-    class TestOneClient extends BaseClient {
+    class TestOneClient extends BaseConnection {
 
-        public ClientType getClientType() {
+        public ConnectionType getConnectionType() {
             return TestClientType.CLIENT_ONE_TYPE;
         }
 
@@ -179,9 +180,9 @@ public class ClientMain {
         }
     }
     
-    class TestTwoClient extends BaseClient {
+    class TestTwoClient extends BaseConnection {
 
-        public ClientType getClientType() {
+        public ConnectionType getConnectionType() {
             return TestClientType.CLIENT_TWO_TYPE;
         }
 
@@ -194,9 +195,9 @@ public class ClientMain {
         }
     }
     
-    class TestThreeClient extends BaseClient {
+    class TestThreeClient extends BaseConnection {
 
-        public ClientType getClientType() {
+        public ConnectionType getConnectionType() {
             return TestClientType.CLIENT_THREE_TYPE;
         }
 

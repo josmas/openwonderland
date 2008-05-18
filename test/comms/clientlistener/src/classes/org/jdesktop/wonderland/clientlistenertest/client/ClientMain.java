@@ -20,18 +20,14 @@
 package org.jdesktop.wonderland.clientlistenertest.client;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.comms.BaseClient;
+import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
-import org.jdesktop.wonderland.client.comms.WonderlandClient;
-import org.jdesktop.wonderland.client.comms.WonderlandClient.Status;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionFactory;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.clientlistenertest.common.TestClientType;
-import org.jdesktop.wonderland.clientlistenertest.common.TestMessageOne;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageThree;
-import org.jdesktop.wonderland.clientlistenertest.common.TestMessageTwo;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -67,13 +63,13 @@ public class ClientMain {
         String password = System.getProperty("sgs.password", "sample");
 
         // create the session & login
-        WonderlandSession session = WonderlandSessionFactory.getSession(serverInfo);
+        WonderlandSession session = new WonderlandSessionImpl(serverInfo);
         session.login(new LoginParameters(username, password.toCharArray()));
            
         logger.info("Login suceeded");
      
         // attach client
-        session.attach(new TestOneClient());
+        session.connect(new TestOneClient());
         
         // wait for end-session message
         waitForFinish();
@@ -109,8 +105,8 @@ public class ClientMain {
         }
     }
     
-    class TestOneClient extends BaseClient {
-        public ClientType getClientType() {
+    class TestOneClient extends BaseConnection {
+        public ConnectionType getConnectionType() {
             return TestClientType.CLIENT_ONE_TYPE;
         }
   
