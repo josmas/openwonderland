@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 class CellChannelConnectionHandler implements ClientConnectionHandler, Serializable {
     
-    public ConnectionType getClientType() {
+    public ConnectionType getConnectionType() {
         return CellChannelConnectionType.CLIENT_TYPE;
     }
 
@@ -43,13 +43,13 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
         // ignore
     }
     
-    public void clientAttached(WonderlandClientSender sender,
+    public void clientConnected(WonderlandClientSender sender,
                                ClientSession session) 
     {
         // ignore
     }
 
-    public void clientDetached(WonderlandClientSender sender,
+    public void clientDisconnected(WonderlandClientSender sender,
                                ClientSession session) 
     {
         // ignore

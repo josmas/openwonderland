@@ -334,7 +334,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
         
         // make sure the client is connected before we send
-        if (client.getStatus() != ClientConnection.Status.ATTACHED) {
+        if (client.getStatus() != ClientConnection.Status.CONNECTED) {
             throw new IllegalStateException("Client not attached");
         }
         

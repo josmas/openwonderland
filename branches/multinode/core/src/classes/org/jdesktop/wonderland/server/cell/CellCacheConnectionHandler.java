@@ -48,7 +48,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
     protected static final ConnectionType CLIENT_TYPE =
             CellCacheConnectionType.CLIENT_TYPE;
     
-    public ConnectionType getClientType() {
+    public ConnectionType getConnectionType() {
         return CLIENT_TYPE;
     }
 
@@ -56,14 +56,14 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
         // ignore
     }
     
-    public void clientAttached(WonderlandClientSender sender,
+    public void clientConnected(WonderlandClientSender sender,
                                ClientSession session)   
     {
         // Nothing to do, setup is done when we get the SET_VIEW
         // message
     }
 
-    public void clientDetached(WonderlandClientSender sender,
+    public void clientDisconnected(WonderlandClientSender sender,
                                ClientSession session) 
     {
         UserMO user = WonderlandContext.getUserManager().getUser(session);

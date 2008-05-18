@@ -141,8 +141,8 @@ public class CellCacheConnection extends BaseConnection {
      * {@inheritDoc}
      */
     @Override
-    public void attach(WonderlandSession session) throws ConnectionFailureException {
-        super.attach(session);
+    public void connect(WonderlandSession session) throws ConnectionFailureException {
+        super.connect(session);
         ViewCreateResponseMessage msg = registerView(clientView.getViewID());
         clientView.serverInitialized(msg);
         viewCellID = msg.getViewCellID();

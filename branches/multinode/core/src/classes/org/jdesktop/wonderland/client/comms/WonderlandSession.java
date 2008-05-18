@@ -88,27 +88,27 @@ public interface WonderlandSession {
      * connected to the server at any time.  Attempting to connect a second
      * client of the same type will result in an ConnectionFailureException.
      * <p>
-     * Clients may only be attached when a session is in the CONNECTED state.
+     * Clients may only be connected when a session is in the DISCONNECTED state.
      * If the session is in any other state, an ConnectionFailureException will
-     * be thrown.  When a session disconnects, all clients are detached,
-     * and must be re-attached to start working again.
+     * be thrown.  When a session disconnects, all clients are disconnected,
+     * and must be re-connected to start working again.
      * 
      * @param client the client to connect
-     * @throws ConnectionFailureException of the attachment fails
+     * @throws ConnectionFailureException of the connection fails
      */
     public void connect(ClientConnection client) throws ConnectionFailureException;
     
     /**
-     * Disconnect a previously attached client from this session.
+     * Disconnect a previously connected client from this session.
      * @param client the client to logout
      */
     public void disconnect(ClientConnection client);
     
     /**
-     * Get the attched ClientConnection for the given ConnectionType.
+     * Get the connected ClientConnection for the given ConnectionType.
      * @param type the client type to get
-     * @return the attached client for the given type, or null if no
-     * client of the given type is attached
+     * @return the connected client for the given type, or null if no
+     * client of the given type is connected
      */
     public ClientConnection getConnection(ConnectionType type);
     
@@ -116,8 +116,8 @@ public interface WonderlandSession {
      * Get the attched ClientConnection for the given ConnectionType.
      * @param type the client type to get
      * @param clazz the class of client to return
-     * @return the attached client for the given type, or null if no
-     * client of the given type is attached
+     * @return the connected client for the given type, or null if no
+     * client of the given type is connected
      * @throws ClassCastException if the client for the given client type
      * is not assignable to the given type
      */
@@ -125,20 +125,20 @@ public interface WonderlandSession {
                                                     Class<T> clazz);
     
     /**
-     * Get all clients attached to this session
-     * @return the clients attached to this session
+     * Get all clients connected to this session
+     * @return the clients connected to this session
      */
     public Collection<ClientConnection> getConnections();
     
     /**
      * Send a message to the server over the session channel on behalf of the 
-     * given client. The client must be successfully attached to this session 
+     * given client. The client must be successfully connected to this session 
      * in order for the send to work.
      * @param client the client that is sending the message
      * @param message the message to send
      * @throws MessageException if there is an error getting the bytes
      * for the message
-     * @throws IllegalStateException if the client is not attached to this
+     * @throws IllegalStateException if the client is not connected to this
      * session or the session is not connected
      */
     public void send(ClientConnection client, Message message);

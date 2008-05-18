@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.common.messages.Message;
  * service. All interaction with a service on a given server are handled
  * by this a ClientConnection.
  * <p>
- * The client starts out in the DETACHED status, meaning it is not associated
+ * The client starts out in the DISCONNECTED status, meaning it is not associated
  * with any WonderlandSession.  Once a client is connected to a session,
  * it is able to communicate with the server.
  * 
@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 @ExperimentalAPI
 public interface ClientConnection {
     /** status of this listener */
-    public enum Status { DETACHED, ATTACHED };
+    public enum Status { DISCONNECTED, CONNECTED };
     
     /**
      * Get the type this client represents.

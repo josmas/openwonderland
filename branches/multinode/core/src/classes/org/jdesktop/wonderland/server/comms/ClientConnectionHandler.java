@@ -31,10 +31,10 @@ import org.jdesktop.wonderland.common.messages.Message;
 @ExperimentalAPI
 public interface ClientConnectionHandler {
     /**
-     * Get the type of client this handler deals with
-     * @return the client types this handler can be used for
+     * Get the type of connection this handler deals with
+     * @return the connection types this handler can be used for
      */
-    public ConnectionType getClientType();
+    public ConnectionType getConnectionType();
     
     /**
      * Called when the handler is registered with the CommsManager
@@ -44,14 +44,13 @@ public interface ClientConnectionHandler {
     public void registered(WonderlandClientSender sender);
     
     /**
-     * Handle when a new session attaches to this handler.  A session 
-     * attaches when a client calls <code>WonderlandSession.attach()</code>
-     * to attach a new session.
+     * Handle when a new session connectes to this handler.  A session 
+     * connects when a client calls <code>WonderlandSession.connect()</code>.
      * @param sender the sender that can be used to send to clients
      * of this handler
-     * @param session the session that attached
+     * @param session the session that connected
      */
-    public void clientAttached(WonderlandClientSender sender,
+    public void clientConnected(WonderlandClientSender sender,
                                ClientSession session);
     
     /**
@@ -66,11 +65,11 @@ public interface ClientConnectionHandler {
                                 Message message);
     
     /**
-     * Handle when a session detaches from this handler
+     * Handle when a session disconnects from this handler
      * @param sender the sender that can be used to send to clients
      * of this handler
-     * @param session the session that attached
+     * @param session the session that disconnected
      */
-    public void clientDetached(WonderlandClientSender sender,
+    public void clientDisconnected(WonderlandClientSender sender,
                                ClientSession session);
 }
