@@ -66,7 +66,7 @@ public class MovableCell extends Cell implements ChannelCell {
         
         // make sure we are connected to the server
         if (cellChannelConnection == null || 
-                cellChannelConnection.getStatus() != ClientConnection.Status.ATTACHED)
+                cellChannelConnection.getStatus() != ClientConnection.Status.CONNECTED)
         {
             logger.warning("Cell channel not connected when moving cell " +
                            getCellID());

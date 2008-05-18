@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 @ExperimentalAPI
 public abstract class BaseConnection implements ClientConnection {
     /** the current status */
-    private Status status = Status.DETACHED;
+    private Status status = Status.DISCONNECTED;
     
     /** the session we are connected to, or null if we are not connected to
      * any sessions. */
@@ -61,11 +61,11 @@ public abstract class BaseConnection implements ClientConnection {
     }
 
     /**
-     * Attach this client to the given session
+     * Connect this client to the given session
      * @param session the session to connect to
-     * @throws ConnectionFailureException if there is a problem attaching
+     * @throws ConnectionFailureException if there is a problem connecting
      */
-    public void attach(WonderlandSession session) 
+    public void connect(WonderlandSession session) 
             throws ConnectionFailureException
     {
         session.connect(this);
@@ -74,18 +74,18 @@ public abstract class BaseConnection implements ClientConnection {
     public synchronized void connected(WonderlandSession session) {
         this.session = session;
         
-        setStatus(Status.ATTACHED);
+        setStatus(Status.CONNECTED);
     }
 
     /**
-     * Detach from the current session
+     * Disconnect from the current session
      */
-    public void detach() {
+    public void disconnect() {
         getSession().disconnect(this);
     }
     
     public void disconnected() {
-        setStatus(status.DETACHED);
+        setStatus(status.DISCONNECTED);
     }
     
     /**
@@ -125,7 +125,7 @@ public abstract class BaseConnection implements ClientConnection {
      * @throws MessageException if there is an error getting the bytes
      * for the message
      * @throws IllegalStateException if this client is not in the 
-     * ATTACHED state or the session this client is connected to is not
+     * CONNECTED state or the session this client is connected to is not
      * in the CONNECTED state
      */
     protected void send(Message message) {
@@ -143,7 +143,7 @@ public abstract class BaseConnection implements ClientConnection {
      * that either a ResponseMessage or an ErrorMessage will be sent in response
      * to this message, otherwise this will cause a memory leak.
      * <p>
-     * Note that listeners are cleared as soon as the given client detaches
+     * Note that listeners are cleared as soon as the given client disconnects
      * from the session, so responses are not guaranteed in this case.
      * 
      * @param message the message to send
@@ -152,13 +152,13 @@ public abstract class BaseConnection implements ClientConnection {
      * @throws MessageException if there is an error getting the bytes
      * for the message
      * @throws IllegalStateException if this client is not in the 
-     * ATTACHED state or the session this client is connected to is not
+     * CONNECTED state or the session this client is connected to is not
      * in the CONNECTED state 
      */
     protected void send(Message message, ResponseListener listener) 
     {
-        if (getStatus() != Status.ATTACHED) {
-            throw new IllegalStateException("Not attached");
+        if (getStatus() != Status.CONNECTED) {
+            throw new IllegalStateException("Not connected");
         }
         
         // if a listener was specified, register it with the client
@@ -185,7 +185,7 @@ public abstract class BaseConnection implements ClientConnection {
      * @throws MessageException if there is an error getting the bytes
      * for the message
      * @throws IllegalStateException if this client is not in the 
-     * ATTACHED state or the session this client is connected to is not
+     * CONNECTED state or the session this client is connected to is not
      * in the CONNECTED state 
      */
     protected ResponseMessage sendAndWait(Message message)

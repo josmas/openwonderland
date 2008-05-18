@@ -111,11 +111,11 @@ public class BoundsTestClientSession extends WonderlandSessionImpl {
             // cell messages.  We need to do this before attaching the
             // cell cache connection, since the cell cache connection
             // will create a view and immediately start joining us to cells
-            cellChannelConnection.attach(this);
+            cellChannelConnection.connect(this);
 
             // Now connect to the cellCache. The view will be determined via the
             // localAvatar object.
-            cellCacheConnection.attach(this);
+            cellCacheConnection.connect(this);
         } catch (ConnectionFailureException afe) {
             // a client failed to connect -- logout
             logout();

@@ -80,8 +80,8 @@ public interface CommsManager {
      * connections and messages from listeners of the given type.  
      * <p>
      * This handler will be notified when a client session, which is connected
-     * via the WonderlandProtocol, attaches a new WonderlandClient using the
-     * <code>WonderlandSession.attach()</code> method.  It will be notified of
+     * via the WonderlandProtocol, connects a new WonderlandClient using the
+     * <code>WonderlandSession.connect()</code> method.  It will be notified of
      * all messages sent using that client type.
      * <p>
      * The Handler will be stored in the Darkstar data store, so it must be 
@@ -89,7 +89,7 @@ public interface CommsManager {
      * only a single copy of the handler will exist, and all messages will
      * be forwarded to this object.  If the handler is not a managed object,
      * a separate copy of the handler will be created in each WonderlandSession
-     * that attaches a client of the given type.  It is recommended that
+     * that connects a client of the given type.  It is recommended that
      * handlers that expect a large number messages be Serializable. 
      * <p>
      * This is identical to calling 

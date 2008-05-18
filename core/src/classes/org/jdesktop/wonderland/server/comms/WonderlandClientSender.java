@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.messages.Message;
  * A sender that sends messages to clients connected with
  * the given ConnectionType.  The list of clients available with
  * the given type is maintained by the WonderlandSessionListener in response 
- * to attach and detach requests.  
+ * to connect and disconnect requests.  
  * <p>
  * Senders that implement WonderlandClientSender are serializable, and 
  * will be valid for as long as a handler is registered for the given
@@ -67,7 +67,7 @@ public interface WonderlandClientSender {
     /**
      * Send a message to all session connected via this sender's client type.  
      * The message will be handled on each remote client by the WonderlandClient 
-     * attached with the ConnectionType of this sender.
+     * connected with the ConnectionType of this sender.
      * @param message the message to send
      * @throws IllegalStateException if the handler for this client type
      * has been unregistered
@@ -76,12 +76,12 @@ public interface WonderlandClientSender {
      
     /**
      * Send a message to a single session connected via this sender.  The
-     * message will be handled by the WonderlandClient attached with the
+     * message will be handled by the WonderlandClient connected with the
      * ConnectionType of this channel.
      * <p>
      * Note that this method does not check whether the given session has
-     * attached the client that this channel sends to.  If the session does not
-     * have an attached client for the given type, the remote client will not
+     * connected the client that this channel sends to.  If the session does not
+     * have an connected client for the given type, the remote client will not
      * be able to process the message.
      * 
      * @param session the session to send to
@@ -94,11 +94,11 @@ public interface WonderlandClientSender {
     /**
      * Send a message to a set of sessions connected via this sender.  The
      * message will be handled on each remote client by the WonderlandClient 
-     * attached with the ConnectionType of this channel.
+     * connected with the ConnectionType of this channel.
      * <p>
      * Note that this method does not check whether the given sessions have
-     * attached the client that this channel sends to.  If the sessions do not
-     * have an attached client for the given type, the remote clients will not
+     * connected the client that this channel sends to.  If the sessions do not
+     * have an connected client for the given type, the remote clients will not
      * be able to process the message.
      * 
      * @param sessions the sessions to send to
@@ -111,11 +111,11 @@ public interface WonderlandClientSender {
     /**
      * Send a message to all sessions joined to the given channel.  The
      * message will be handled on each remote client by the WonderlandClient 
-     * attached with the ConnectionType of this channel. 
+     * connected with the ConnectionType of this channel. 
      * <p>
      * Note that this method does not check whether the given sessions have
-     * attached the client that this channel sends to.  If the sessions do not
-     * have an attached client for the given type, the remote clients will not
+     * connected the client that this channel sends to.  If the sessions do not
+     * have an connected client for the given type, the remote clients will not
      * be able to process the message.
      * 
      * @param sessions the sessions to send to

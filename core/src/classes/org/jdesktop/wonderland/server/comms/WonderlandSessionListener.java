@@ -157,7 +157,7 @@ public class WonderlandSessionListener
                 logger.finest("Session " + getSession().getName() + 
                               " received message " + m + 
                               " for client ID" + clientID + 
-                              " handled by " + handler.getClientType());
+                              " handled by " + handler.getConnectionType());
             }
             
             // get the WonderlandClientSender to pass in
@@ -206,7 +206,7 @@ public class WonderlandSessionListener
      */
     public static void registerClientHandler(ClientConnectionHandler handler) {
         logger.fine("Register client handler for type " + 
-                    handler.getClientType());
+                    handler.getConnectionType());
         
         HandlerStore store = getHandlerStore();
         store.register(handler);
@@ -215,7 +215,7 @@ public class WonderlandSessionListener
         AppContext.getDataManager().markForUpdate(store);
         
         // notify the handler
-        handler.registered(store.getSender(handler.getClientType()));
+        handler.registered(store.getSender(handler.getConnectionType()));
     }
     
     /**
@@ -224,7 +224,7 @@ public class WonderlandSessionListener
      */
     public static void unregisterClientHandler(ClientConnectionHandler handler) {
         logger.fine("Unregister client handler for type " + 
-                    handler.getClientType());
+                    handler.getConnectionType());
     
         getHandlerStore().unregister(handler);
     }
@@ -361,7 +361,7 @@ public class WonderlandSessionListener
         senders.put(clientID, sender);
         
         // notify the handler
-        ref.get().clientAttached(sender, session);
+        ref.get().clientConnected(sender, session);
     }
     
     /**
@@ -378,7 +378,7 @@ public class WonderlandSessionListener
         
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Session " + getSession().getName() + " detach " +
-                        "client type " + handler.getClientType());
+                        "client type " + handler.getConnectionType());
         }
         
         // remove this client from the sender
@@ -392,7 +392,7 @@ public class WonderlandSessionListener
         removeHandler(Short.valueOf(clientID));
         
         // notify the handler
-        handler.clientDetached(sender, getSession());
+        handler.clientDisconnected(sender, getSession());
     }
     
     /**
@@ -606,7 +606,7 @@ public class WonderlandSessionListener
             this.listener = listener;
         }
         
-        public ConnectionType getClientType() {
+        public ConnectionType getConnectionType() {
             return SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_TYPE;
         }
 
@@ -614,13 +614,13 @@ public class WonderlandSessionListener
             // ignore
         }
         
-        public void clientAttached(WonderlandClientSender sender,
+        public void clientConnected(WonderlandClientSender sender,
                                    ClientSession session) 
         {
             // ignore
         }
         
-        public void clientDetached(WonderlandClientSender sender,
+        public void clientDisconnected(WonderlandClientSender sender,
                                    ClientSession session) 
         {
             // ignore
@@ -662,9 +662,9 @@ public class WonderlandSessionListener
         public short register(ClientConnectionHandler handler) {
             
             // check for duplicates
-            if (handlers.containsKey(handler.getClientType())) {
+            if (handlers.containsKey(handler.getConnectionType())) {
                 throw new IllegalStateException("Handler for type " + 
-                        handler.getClientType() + " already registered.");
+                        handler.getConnectionType() + " already registered.");
             }
             
             // decide the correct type of reference depending on if the
@@ -688,7 +688,7 @@ public class WonderlandSessionListener
             ChannelManager cm = AppContext.getChannelManager();
             
             ClientSessionSet sessions = new ClientSessionSet();
-            String channelName = handler.getClientType().toString() + 
+            String channelName = handler.getConnectionType().toString() + 
                                  "(" + String.valueOf(assignID) + ")";
             Channel channel = cm.createChannel(channelName, 
                                                null,
@@ -700,7 +700,7 @@ public class WonderlandSessionListener
             record.channel  = dm.createReference(channel);
             record.sessions = dm.createReference(sessions);
             record.clientID = assignID;
-            handlers.put(handler.getClientType(), record);
+            handlers.put(handler.getConnectionType(), record);
             
             return record.clientID;
         }
@@ -710,7 +710,7 @@ public class WonderlandSessionListener
          * @param handler the handler to unregister
          */
         public void unregister(ClientConnectionHandler handler) {
-            HandlerRecord record = handlers.remove(handler.getClientType());
+            HandlerRecord record = handlers.remove(handler.getConnectionType());
   
             // remove the channel and session store
             DataManager dm = AppContext.getDataManager();

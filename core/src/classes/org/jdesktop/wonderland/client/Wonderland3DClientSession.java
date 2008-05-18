@@ -68,7 +68,7 @@ public class Wonderland3DClientSession extends WonderlandSessionImpl {
         
         // if login succeeds, connect the various clients
         try {
-            cellClient.attach(this);
+            cellClient.connect(this);
         } catch (ConnectionFailureException afe) {
             // a client failed to connect -- logout
             logout();
