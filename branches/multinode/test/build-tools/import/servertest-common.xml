@@ -126,6 +126,8 @@
     </target>
     
     <target name="-do-run-client" depends="jar-client">
+        <mkdir dir="log"/>
+        
         <java classname="${servertest.packagename}.client.ClientMain">
             <jvmarg value="-Dsgs.server=${sgs.server}"/>
             <jvmarg value="-Dsgs.port=${sgs.port}"/>
@@ -150,6 +152,7 @@
     <target name="-do-clean">
         <delete dir="${build.dir}"/>
         <delete dir="data"/>
+        <delete dir="log"/>
     </target>
     
     <import file="${build-import.dir}/run-sgs.xml"/>

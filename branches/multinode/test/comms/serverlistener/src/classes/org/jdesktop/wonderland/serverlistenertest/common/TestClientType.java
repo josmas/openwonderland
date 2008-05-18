@@ -19,13 +19,13 @@
  */
 package org.jdesktop.wonderland.serverlistenertest.common;
 
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 /**
  * Client type for the test client
  * @author jkaplan
  */
-public class TestClientType extends ClientType {
+public class TestClientType extends ConnectionType {
     public static final TestClientType CLIENT_ONE_TYPE = 
             new TestClientType("__TestClientOne");
     public static final TestClientType CLIENT_TWO_TYPE = 

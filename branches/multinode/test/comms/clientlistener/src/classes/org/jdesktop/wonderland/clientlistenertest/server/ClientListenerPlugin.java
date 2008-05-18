@@ -31,11 +31,11 @@ import org.jdesktop.wonderland.clientlistenertest.common.TestClientType;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageOne;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageThree;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageTwo;
-import org.jdesktop.wonderland.common.comms.ClientType;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.comms.ClientHandler;
+import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -53,17 +53,17 @@ public class ClientListenerPlugin implements ServerPlugin {
     }
     
     static class TestClientHandler
-            implements ClientHandler, ManagedObject, Serializable
+            implements ClientConnectionHandler, ManagedObject, Serializable
     {
-        public ClientType getClientType() {
+        public ConnectionType getConnectionType() {
             return TestClientType.CLIENT_ONE_TYPE;
         }
 
         public void registered(WonderlandClientSender sender) {
         }
 
-        public void clientAttached(WonderlandClientSender sender,
-                                   ClientSession session) 
+        public void clientConnected(WonderlandClientSender sender,
+                                    ClientSession session) 
         {
             logger.info("Session connected: " + session);
             
@@ -85,8 +85,8 @@ public class ClientListenerPlugin implements ServerPlugin {
             // ignore
         }
 
-        public void clientDetached(WonderlandClientSender sender,
-                                   ClientSession session) {
+        public void clientDisconnected(WonderlandClientSender sender,
+                                       ClientSession session) {
             // ignore
         }
         
