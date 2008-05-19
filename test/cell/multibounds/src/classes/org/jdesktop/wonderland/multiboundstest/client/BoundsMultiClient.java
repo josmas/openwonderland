@@ -17,16 +17,18 @@
  * $Date: 2007/10/23 18:27:41 $
  * $State: Exp $
  */
-package org.jdesktop.wonderland.client.tools;
+package org.jdesktop.wonderland.multiboundstest.client;
 
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext3D;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
-import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -44,6 +46,34 @@ public class BoundsMultiClient
     private static final Logger logger = 
             Logger.getLogger(BoundsMultiClient.class.getName());
     
+    // properties
+    private Properties props;
+    
+    // standard properties
+    private static final String SERVER_NAME_PROP = "sgs.server";
+    private static final String SERVER_PORT_PROP = "sgs.port";
+    private static final String USER_NAME_PROP   = "multibounds.username";
+    private static final String GROUP_SIZE_PROP  = "multibounds.group.size";
+    private static final String NUM_GROUPS_PROP  = "multibounds.group.num";
+    private static final String SEPARATION_PROP  = "multibounds.group.separation";
+    private static final String IDLE_PROP        = "multibounds.idle";
+    private static final String X_PROP           = "multibounds.x";
+    private static final String Y_PROP           = "multibounds.y";
+    private static final String Z_PROP           = "multibounds.z";
+    
+            
+    // default values
+    private static final String SERVER_NAME_DEFAULT = "localhost";
+    private static final String SERVER_PORT_DEFAULT = "1139";
+    private static final String USER_NAME_DEFAULT   = "test";
+    private static final String GROUP_SIZE_DEFAULT  = "3";
+    private static final String NUM_GROUPS_DEFAULT  = "5";
+    private static final String SEPARATION_DEFAULT  = "7";
+    private static final String IDLE_DEFAULT        = "0";
+    private static final String X_DEFAULT           = "0";
+    private static final String Y_DEFAULT           = "0";
+    private static final String Z_DEFAULT           = "10";
+    
     /** the name of this client */
     private String name;
     
@@ -51,16 +81,18 @@ public class BoundsMultiClient
     private MoverThread mover;
     
     
-    private static int groupSize = 3;  // Number of users in each group
-    private static int numGroups = 5;  // Total number of groups
-    private static int percentageIdle = 0; // Not implemented
+    private static int groupSize;  // Number of users in each group
+    private static int numGroups;  // Total number of groups
+    private static int percentageIdle; // Not implemented
     private static int startedClients = 0; // Number of clients currently started
-    private static float groupSeparation = 7f;  // Distance between each group
+    private static float groupSeparation;  // Distance between each group
     
-    public BoundsMultiClient(WonderlandServerInfo server, 
+    public BoundsMultiClient(Properties props,
+                             WonderlandServerInfo server, 
                              LoginParameters login) 
         throws Exception
     {
+        this.props = props;
         this.name = login.getUserName();
         
         int group = startedClients/groupSize;
@@ -89,7 +121,15 @@ public class BoundsMultiClient
 //        } else {
 //            mover = new YMover(avatar);
 //        }
-        mover = new GroupMover(new Vector3f(group*groupSeparation, 0, 10), avatar);
+        
+        
+        // load initial coordinates
+        float x = Float.parseFloat(props.getProperty(X_PROP, X_DEFAULT));
+        float y = Float.parseFloat(props.getProperty(Y_PROP, Y_DEFAULT));
+        float z = Float.parseFloat(props.getProperty(Z_PROP, Z_DEFAULT));
+       
+        mover = new GroupMover(new Vector3f(x + (group*groupSeparation), y, z), 
+                               avatar);
         
         mover.start();
     }
@@ -117,20 +157,48 @@ public class BoundsMultiClient
     }
         
     public static void main(String[] args) {
-        WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
-        
         int buildNumber = Integer.parseInt(args[0]);
         
+        // load properties
+        Properties props;
+        if (args.length == 2) {
+            props = loadProperties(args[1]);
+        } else {
+            props = loadProperties(null);
+        }
+        
+        String serverName = props.getProperty(SERVER_NAME_PROP,
+                                              SERVER_NAME_DEFAULT);
+        String serverPort = props.getProperty(SERVER_PORT_PROP,
+                                              SERVER_PORT_DEFAULT);
+        String userName   = props.getProperty(USER_NAME_PROP,
+                                              USER_NAME_DEFAULT);
+       
+        // create server login information
+        WonderlandServerInfo server = new WonderlandServerInfo(serverName, 
+                                               Integer.parseInt(serverPort));
+
+        // read setup properties
+        groupSize = Integer.parseInt(props.getProperty(GROUP_SIZE_PROP, 
+                                                       GROUP_SIZE_DEFAULT));
+        numGroups = Integer.parseInt(props.getProperty(NUM_GROUPS_PROP, 
+                                                       NUM_GROUPS_DEFAULT));
+        groupSeparation = Float.parseFloat(props.getProperty(SEPARATION_PROP,
+                                                             SEPARATION_DEFAULT));
+        percentageIdle = Integer.parseInt(props.getProperty(IDLE_PROP,
+                                                            IDLE_DEFAULT));
+                
         int count = groupSize * numGroups;
         
         BoundsMultiClient[] bmc = new BoundsMultiClient[count];
         
         for (int i = 0; i < count; i++) {
             LoginParameters login = 
-                    new LoginParameters("foo" + buildNumber+"_"+i, "test".toCharArray());
+                    new LoginParameters(userName + buildNumber+ "_" + i, 
+                                        "test".toCharArray());
             
             try {
-                bmc[i] = new BoundsMultiClient(server, login);
+                bmc[i] = new BoundsMultiClient(props, server, login);
                 Thread.sleep(1500);
             } catch (Exception ex) {
                 logger.log(Level.WARNING, "Error logging in", ex);
@@ -146,6 +214,23 @@ public class BoundsMultiClient
         }
     }
 
+    private static Properties loadProperties(String fileName) {
+        // start with the system properties
+        Properties props = new Properties(System.getProperties());
+    
+        // load the given file
+        if (fileName != null) {
+            try {
+                props.load(new FileInputStream(fileName));
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error reading properties from " +
+                           fileName, ioe);
+            }
+        }
+        
+        return props;
+    }
+    
     abstract class MoverThread extends Thread {
         protected Vector3f location = new Vector3f();
         private Quaternion orientation = null;

@@ -37,6 +37,11 @@
                     <type>java</type>
                     <location>comms/serialization/src/classes</location>
                 </source-folder>
+                <source-folder>
+                    <label>cell/multibounds/src/classes</label>
+                    <type>java</type>
+                    <location>cell/multibounds/src/classes</location>
+                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
@@ -76,6 +81,10 @@
                         <label>comms/serialization/src/classes</label>
                         <location>comms/serialization/src/classes</location>
                     </source-folder>
+                    <source-folder style="packages">
+                        <label>cell/multibounds/src/classes</label>
+                        <location>cell/multibounds/src/classes</location>
+                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -96,6 +105,7 @@
                 <package-root>comms/serverlistener/src/classes</package-root>
                 <package-root>comms/serverprotocol/src/classes</package-root>
                 <package-root>comms/serialization/src/classes</package-root>
+                <package-root>cell/multibounds/src/classes</package-root>
                 <classpath mode="compile">../core/ext/sgs/sgs-0.9.6-r4193/lib/sgs.jar:../core/ext/sgs/sgs-client-0.9.6-r4193/lib/sgs-client.jar:../core/build/current/debug/lib/wonderland-server.jar:../core/build/current/debug/lib/wonderland-client.jar:../core/build/current/debug/lib/wonderland-utils.jar:../core/build/current/debug/lib/wonderland-common.jar:../core/ext/jme/jme/jme.jar:../core/ext/voicelib/voicelib.jar:../build-tools/import/junit-4.4.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>

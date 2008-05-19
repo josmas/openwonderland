@@ -160,108 +160,14 @@ public class CellManagerMO implements ManagedObject, Serializable {
     public Collection<CellDescription> getCells(BoundingVolume b, Class<?>... cellClasses) {
         throw new NotImplementedException();
     }
-
-    /**
-     * Create a static grid of nodes
-     */
-    private void createStaticGrid() {
-        int gridWidth = 10;
-        int gridDepth = 10;
-        
-        float boundsDim = 5;
-        BoundingBox gridBounds = new BoundingBox(new Vector3f(), boundsDim, boundsDim, boundsDim);
-        
-        for(int x=0; x<gridWidth; x++) {
-            for(int z=0; z<gridDepth; z++) {
-                try {
-                    CellMO cell = new SimpleTerrainCellMO(new Vector3f(x * boundsDim*2, 0, z * boundsDim*2), boundsDim );
-                    cell.setName("grid_" + x + "_" + z);
-                    addCell(cell);
-                } catch (MultipleParentException ex) {
-                    Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-                
-    }
-    
-    
+ 
     /**
      * For testing.....
      */
     public void loadWorld() {
         //buildWFSWorld();
         
-//        createStaticGrid();
-       
-        try {
-            BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
-
-            CellMO c1 = new MovableCellMO(bounds, 
-                                new CellTransform(null, new Vector3f(1,1,1)));
-            c1.setName("c1");
-
-            MovableCellMO c2 = new MovableCellMO(bounds, 
-                                new CellTransform(null, new Vector3f(10,10,10)));
-            c2.setName("c2");
-            c2.setLocalBounds(bounds);
-
-            MovableCellMO c3 = new MovableCellMO(
-                                new BoundingSphere(2, new Vector3f()), 
-                                new CellTransform(null, new Vector3f(5,5,5)));
-            c3.setName("c3");
-
-            CellMO c4 = new MovableCellMO(
-                                new BoundingSphere(0.5f, new Vector3f()), 
-                                new CellTransform(null, new Vector3f(0,0,0)));
-            c4.setName("c4");
-            
-            c3.addChild(c4);
-            
-            c1.addChild(c2);
-            c1.addChild(c3);
-            addCell(c1);
-            
-            Task t = new TestTask(c3, c2);
-            
-            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
-            
-            RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
-            BoundingVolume visBounds = new BoundingSphere(5, new Vector3f());
-            
-//            for(CellID cellID : getCell(getRootCellID()).getVisibleCells(visBounds, monitor)) {
-//                System.out.println(cellID);
-//            }
-            
-            // Octtree test
-//            Matrix4d centerTransform = new Matrix4d();
-//            centerTransform.setIdentity();
-//            float size = 1000;
-//            OctTreeCellMO oct = new OctTreeCellMO(
-//                    createBoundingBox(size, size, size), 
-//                    centerTransform);
-//            addCell(oct);          
-//            
-//            final CellMO test = new CellMO();
-//            test.setLocalBounds(createBoundingBox(50,50,50));
-//            test.setTransform(createTransform(375,375,-375));
-//            
-//            Bounds cellVWBounds = test.getLocalBounds();
-//            Matrix4d m4d = test.getTransform();
-//            cellVWBounds.transform(new Transform3D(m4d));
-//            CellMO parent = oct.insertCellInHierarchy(test, cellVWBounds);
-//            System.out.println("Got parent "+parent);
-//            if (parent==null) {
-//                System.out.println("FAILED TO LOCATE PARENT");
-//            } 
-//            
-//            Task t = new TestTask(test);
-//            
-//            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
-            
-        } catch (Exception ex) {
-            Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        createStaticGrid();       
     }
 
     /**
@@ -344,32 +250,4 @@ public class CellManagerMO implements ManagedObject, Serializable {
 //     * @param childAdded true when a child is added, false when child is removed
 //     */
 //    abstract void cellChildrenChanged(CellMO parent, CellMO child, boolean childAdded);
-
-    static class TestTask implements Task, Serializable {
-            private ManagedReference<MovableCellMO> cellRef;
-            private Vector3f pos;
-            private Vector3f pos2;
-            private int dir = 2;
-            private ManagedReference<MovableCellMO> cell2Ref;
-            
-            public TestTask(MovableCellMO cell, MovableCellMO c2) {
-                this.cellRef = AppContext.getDataManager().createReference(cell);
-                this.cell2Ref = AppContext.getDataManager().createReference(c2);
-                pos = cell.getTransform().getTranslation(null);
-                pos2 = cell.getTransform().getTranslation(null);
-            }
-            
-
-            public void run() throws Exception {
-                pos.x += dir;
-                pos2.z += dir;
-                if (pos.x > 40 || pos.x<2)
-                    dir = -dir;
-                cellRef.get().setTransform(new CellTransform(null, pos));
-                cell2Ref.get().setTransform(new CellTransform(null, pos2));
-            }
-    
-    }
-    
-
 }
