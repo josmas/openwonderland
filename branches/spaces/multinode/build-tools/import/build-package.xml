@@ -1,0 +1,347 @@
+<project basedir="." default="..." name="wonderland.build-package">
+    <dirname property="imported.basedir" file="${ant.file.build-package}"/>
+
+    <property name="release.platform.ant" location="${release.platform.dir}/ant"/>
+    <property name="release.platform.config" location="${release.platform.dir}/config"/>
+    <property name="release.platform.audio" location="${release.platform.dir}/audio/mpk20"/>
+    <property name="release.platform.sgs" location="${release.platform.ext}/darkstar"/>
+    <property name="release.platform.modules" location="${release.platform.dir}/modules"/>
+    
+    <target name="pkg-init" depends="setup-audio,jar,jar-server" unless="pkg-init.done">
+        <mkdir dir="${release.platform.ant}"/>
+        <mkdir dir="${release.platform.lib}"/>
+        <mkdir dir="${release.platform.bin}"/>
+        <mkdir dir="${release.platform.ext}"/>
+        <mkdir dir="${release.platform.javadoc}"/>
+        <mkdir dir="${release.platform.modules}"/>
+        <mkdir dir="${release.pkg.dir}"/>
+        
+        <property name="pkg-init.done" value="true"/>
+    </target>
+
+    <target name="pkg-stage-common-ext">
+
+        <mkdir dir="${release.platform.ext}/jars"/>
+        <copy todir="${release.platform.ext}/jars">
+	    <fileset dir="${common.javaext.dir}">
+		<include name="**/*.jar"/>
+	    </fileset>
+	</copy>
+
+        <copy todir="${release.platform.ext}">
+	    <fileset dir="${common.javaext.dir}">
+		<include name="**/*.txt"/>
+		<exclude name="**/README.txt"/>
+	    </fileset>
+	</copy>
+    </target>
+
+    <target name="pkg-stage-x11" if="platform-supports-x.set">
+
+	<unpack-java-ext pkgname="xremwin" destdir="${release.platform.dir}"/>
+
+	<copy todir="${release.platform.bin}">
+	    <fileset dir="${wonderland.scripts.dir}" includes="ffsetup,runxremwin"/>
+	</copy>
+
+	<copy todir="${release.platform.dir}/data/Wonderland/test/appshare">
+	    <fileset dir="${wonderland.data.dir}/test/appshare"
+		includes="ffcenter.zip,ffright.zip,*.odp"/>
+	</copy>
+        
+        <!-- copy server master client startup script -->
+        <copy todir="${release.platform.bin}"
+              file="${build-packaging.dir}/bin/wonderland-smc.sh"/>
+        
+        <if>
+            <equals arg1="${ostype}" arg2="linux"/>
+            <then>
+            <!-- We use a different version of Xvfb for smc on linux -->
+            <copy todir="${release.platform.bin}"
+                  file="${os.javaext.dir}/bin/Xvfb.xorg"/>
+            </then>
+        </if>
+    </target>
+
+    <target name="pkg-stage-ext" depends="pkg-stage-common-ext">
+	<unpack-java-ext pkgname="j3d" destdir="${release.platform.ext}"/>
+	<unpack-java-ext pkgname="jai" destdir="${release.platform.ext}"/>
+	<unpack-java-ext pkgname="jinput" destdir="${release.platform.ext}"/>
+	<unpack-java-ext pkgname="escher" destdir="${release.platform.ext}"/>
+
+	<!-- MacOSX needs JOGL for java3d -->
+	<switch value="${system.type}">
+	    <case value="macos-x86">
+		<unpack-java-ext pkgname="jogl" destdir="${release.platform.ext}"/>
+	    </case>
+            <case value="macos-ppc">
+		<unpack-java-ext pkgname="jogl" destdir="${release.platform.ext}"/>
+	    </case>
+	    <default>
+	    </default>
+	</switch>
+
+	<unpack-java-ext pkgname="SunGameServer"
+			 srcdir="${zip.javaext.dir}" destdir="${release.platform.ext}"/>
+    </target>
+
+    <target name="pkg-stage-modules" if="use.modules">
+        <copy todir="${release.platform.modules}">
+            <fileset dir="${modules.dir}">
+                <include name="*/dist/**"/>
+            </fileset>
+        </copy>
+    </target>
+    
+    <condition property="script-suffix" value="bat" else="sh">
+	<equals arg1="${ostype}" arg2="win32"/>
+    </condition>
+
+    <target name="pkg-stage-ant">
+        <copy todir="${release.platform.ant}">
+	    <fileset dir="${build-packaging.dir}/ant" excludes="my.run.properties"/>
+	</copy>
+
+	<delete file="${release.platform.dir}/my.run.properties"/>
+        <copy todir="${release.platform.dir}" file="${build-packaging.dir}/ant/my.run.properties">
+	    <filterset>
+		<filter token="VOICE_ENABLED" value="${voicebridge.enabled}"/>
+		<filter token="USE_LOCAL_ART" value="${wonderland.useLocalArt}"/>
+		<filter token="REGISTRAR_TIMEOUT" value="${registrar.timeout}"/>
+	    </filterset>
+	</copy>
+
+        <mkdir dir="${release.platform.ant}/lib"/>
+        <copy todir="${release.platform.ant}/lib">
+	    <fileset dir="${ant.library.dir}">
+		<include name="ant.jar"/>
+		<include name="ant-launcher.jar"/>
+	    </fileset>
+	</copy>
+
+        <copy todir="${release.platform.ant}">
+	    <fileset dir="${ant.home}">
+		<include name="LICENSE*"/>
+	    </fileset>
+	</copy>
+
+        <copy todir="${release.platform.ant}/lib" file="${build-import.dir}/ant-contrib.jar"/>
+        <copy todir="${release.platform.ant}" file="${build-import.dir}/ant-contrib-LICENSE.txt"/>
+
+        <copy todir="${release.platform.ant}" file="${build-import.dir}/platform-setup.xml"/>
+
+	<copy todir="${release.platform.bin}"
+	       file="${build-packaging.dir}/bin/wonderland.${script-suffix}">
+	    <filterset>
+		<filter token="TARGET" value=""/>
+	    </filterset>
+	</copy>
+
+	<for param="target.name" list="server,client,bridge">
+	    <sequential>
+		<copy tofile="${release.platform.bin}/wonderland-@{target.name}.${script-suffix}"
+		       file="${build-packaging.dir}/bin/wonderland.${script-suffix}">
+		    <filterset>
+			<filter token="TARGET" value="run-@{target.name}"/>
+		    </filterset>
+		</copy>
+	    </sequential>
+	</for>
+  
+    </target>
+
+    <target name="pkg-stage-voice">
+	<mkdir dir="${release.platform.ext}/voicelib"/>
+	<copy todir="${release.platform.ext}/voicelib" file="${voicelib.dir}/voicelib.jar"/>
+
+	<unpack-java-ext pkgname="WonderlandAudio" destdir="${release.platform.ext}"
+			 srcdir="${zip.javaext.dir}"/>
+
+	<for param="audio.file" list="${fetch-audio-au.list}">
+	    <sequential>
+		<copy file="${voicebridge.audio.dir}/@{audio.file}"
+		    tofile="${release.platform.audio}/@{audio.file}"/>
+	    </sequential>
+	</for>
+    </target>
+
+    <target name="pkg-stage-art">
+        <if>
+	    <istrue value="${wonderland.useLocalArt}"/>
+	    <then>
+		<mkdir dir="${release.platform.dir}/art"/>
+                <copy todir="${release.platform.dir}/art">
+                    <fileset dir="${wonderland.art.dir}">
+                        <include name="compiled_models/**"/>
+                    </fileset>
+                </copy>
+	    </then>
+	</if>
+    </target>
+
+    <target name="pkg-stage-misc">
+        <copy todir="${release.platform.lib}">
+	    <fileset dir="${build.lib.dir}"/>
+	</copy>
+
+        <!-- logging configuration -->
+        <copy todir="${release.platform.dir}">
+            <fileset dir="${build-packaging.dir}">
+                <include name="logging*.properties"/>
+            </fileset>
+        </copy>
+        
+        <!-- wfs file system -->
+        <copy todir="${release.platform.dir}">
+            <fileset dir="${src.dir}">
+                <include name="worlds/**"/>
+            </fileset>
+        </copy>
+        
+        <copy todir="${release.platform.config}" file="${wonderland.dir}/src/darkstar_config/WonderlandMain.cfg"/>
+        <copy todir="${release.platform.config}">
+	    <fileset dir="${wonderland.config.system-dir}"/>
+	</copy>
+
+        <copy todir="${release.platform.docs}">
+	    <fileset dir="${wonderland.dir}/src/classes">
+		<include name="**/xappsharing.html"/>
+		<include name="**/HelpText_en.html"/>
+	    </fileset>
+	</copy>
+	<copy todir="${release.platform.docs}" file="${build-packaging.dir}/README.html"/>
+    </target>
+
+    <target name="pkg-license">
+        <copy todir="${release.platform.dir}" file="${build-packaging.dir}/Project-Wonderland-Binary-License.txt"/>
+
+	<property name="all-license.file" location="${release.platform.dir}/ALL-LICENSES.txt"/>
+	<delete file="${all-license.file}"/>
+
+	<echo message="Project Wonderland includes software with the following licenses :${line.separator}"
+	      append="true" file="${all-license.file}"/>
+
+	<patternset id="licfile.list">
+	    <include name="**/*LICENSE*"/>
+	    <include name="**/*COPYRIGHT*"/>
+	    <include name="**/*-COPYING*"/>
+	    <exclude name="ALL-LICENSES.txt"/>
+	</patternset>
+
+	<for param="licfile">
+	    <fileset dir="${release.platform.dir}" casesensitive="false">
+		<patternset refid="licfile.list"/>
+	    </fileset>
+	    <sequential>
+		<basename property="licfile.basename" file="@{licfile}"/>
+		<dirname  property="licfile.dirname"  file="@{licfile}"/>
+		<basename property="licfile.basedir"  file="${licfile.dirname}"/>
+
+		<echo message="    - ${licfile.basedir}/${licfile.basename}${line.separator}"
+		      append="true" file="${all-license.file}"/>
+
+		<var name="licfile.basename" unset="true"/>
+		<var name="licfile.dirname"  unset="true"/>
+		<var name="licfile.basedir"  unset="true"/>
+	    </sequential>
+	</for>
+
+	<for param="licfile">
+	    <fileset dir="${release.platform.dir}" casesensitive="false">
+		<patternset refid="licfile.list"/>
+		<exclude name="**/*.pdf"/>
+	    </fileset>
+	    <sequential>
+		<basename property="licfile.basename" file="@{licfile}"/>
+		<dirname  property="licfile.dirname"  file="@{licfile}"/>
+		<basename property="licfile.basedir"  file="${licfile.dirname}"/>
+
+		<concat append="true" destfile="${all-license.file}">
+		    <header trimleading="yes">
+			===============================================================================
+		        ${licfile.basedir}/${licfile.basename}
+			===============================================================================
+		    </header>
+		    <fileset file="@{licfile}"/>
+		</concat>
+
+		<var name="licfile.basename" unset="true"/>
+		<var name="licfile.dirname"  unset="true"/>
+		<var name="licfile.basedir"  unset="true"/>
+	    </sequential>
+	</for>
+
+    </target>
+
+    <target name="pkg-strip">
+	<delete dir="${release.platform.sgs}/doc"/>
+	<delete dir="${release.platform.sgs}/tutorial"/>
+
+	<delete>
+	    <fileset dir="${release.platform.dir}" includes="**/CVS"/>
+	</delete>
+
+	<delete>
+	    <!-- <fileset dir="${release.platform.dir}" includes="**/*-bundle-readme.txt"/> -->
+	    <fileset dir="${release.platform.dir}">
+		<include name="**/*README*"/>
+		<exclude name="**/docs/README.html"/>
+	    </fileset>
+	</delete>
+    </target>
+
+    <target name="pkg-stage"
+	    depends="pkg-init,pkg-stage-ext,pkg-stage-x11,pkg-stage-ant,pkg-stage-misc,pkg-stage-modules,pkg-stage-voice,pkg-stage-art,pkg-license,pkg-strip"
+	    unless="pkg-stage.done">
+	<chmod perm="ugo+x" dir="${release.platform.bin}" includes="*"/>
+	<!-- <chmod perm="ugo+x" dir="${release.platform.ext}/bin" includes="*"/> -->
+
+        <property name="pkg-stage.done" value="true"/>
+    </target>
+
+    <target name="pkg-zip" depends="pkg-stage" description="Create platform independent zip bundle">
+	<!-- On windows use the built-in zip utility since we dont care about file
+	     permissions. On other unix like systems, use the OS zip command since it
+	     preserves file permissions.
+	-->
+	<switch value="${system.type}">
+	    <case value="windows-x86">
+		<zip destfile="${release.pkg.filename}.zip"
+		     basedir="${release.dir}"
+		     includes="${release.pkgname}/**"
+		     excludes="**/*-bundle-readme.txt"/>
+	    </case>
+
+	    <default>
+		<exec executable="zip" dir="${release.dir}">
+		    <arg value="-qr"/>
+		    <arg value="${release.pkg.filename}.zip"/>
+		    <arg value="${release.pkgname}"/>
+		    <arg value="-x"/>
+		    <arg value="*-bundle-readme.txt"/>
+		</exec>
+	    </default>
+	</switch>
+    </target>
+
+    <import file="${imported.basedir}/build-pkg-${system.type}.xml"/>
+
+    <target name="pkg-clean" depends="pkg-platform-clean"
+	    description="Clean packaging related files">
+	<delete dir="${release.pkg.dir}"/>
+    </target>
+
+    <target name="pkg-all" depends="pkg-zip,pkg-platform"/>
+
+    <target name="pkg-copy" if="pkg-copy.basedir">
+	<property name="pkg-copy.dir"
+		  location="${pkg-copy.basedir}+voice/${build.stamp.pkg-copy}"/>
+
+	<mkdir dir="${pkg-copy.dir}"/>
+
+        <copy todir="${pkg-copy.dir}">
+	    <fileset dir="${release.pkg.dir}" includes="${release.pkg.basename}*"/>
+	</copy>
+    </target>
+
+</project>
