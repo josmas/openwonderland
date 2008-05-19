@@ -17,7 +17,7 @@
  * $Date: 2007/10/23 18:27:41 $
  * $State: Exp $
  */
-package org.jdesktop.wonderland.client.tools;
+package org.jdesktop.wonderland.multiboundstest.client;
 
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;

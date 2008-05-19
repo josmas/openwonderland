@@ -4,7 +4,7 @@
  * Created on January 29, 2008, 9:36 AM
  */
 
-package org.jdesktop.wonderland.client.tools;
+package org.jdesktop.wonderland.multiboundstest.client;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -19,8 +19,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -39,8 +40,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -50,6 +49,19 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     
     private static final Logger logger = Logger.getLogger(CellBoundsViewer.class.getName());
     
+    // properties
+    private Properties props;
+    
+    // standard properties
+    private static final String SERVER_NAME_PROP = "sgs.server";
+    private static final String SERVER_PORT_PROP = "sgs.port";
+    private static final String USER_NAME_PROP   = "cellboundsviewer.username";
+    
+    // default values
+    private static final String SERVER_NAME_DEFAULT = "localhost";
+    private static final String SERVER_PORT_DEFAULT = "1139";
+    private static final String USER_NAME_DEFAULT   = "test";
+   
     private BoundsTestClientSession session;
     
     private LocalAvatar localAvatar;
@@ -59,6 +71,21 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     
     /** Creates new form CellBoundsViewer */
     public CellBoundsViewer(String[] args) {
+        // load properties from file
+        if (args.length == 1) {
+            props = loadProperties(args[0]);
+        } else {
+            props = loadProperties(null);
+        }
+   
+        String serverName = props.getProperty(SERVER_NAME_PROP,
+                                              SERVER_NAME_DEFAULT);
+        String serverPort = props.getProperty(SERVER_PORT_PROP,
+                                              SERVER_PORT_DEFAULT);
+        String userName   = props.getProperty(USER_NAME_PROP,
+                                              USER_NAME_DEFAULT);
+        
+        
         initComponents();
         
         final BoundsPanel boundsPanel = new BoundsPanel();
@@ -67,9 +94,11 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         
         long userNum = System.currentTimeMillis();
         
-        WonderlandServerInfo server = new WonderlandServerInfo("localhost", 1139);
-//        LoginParameters loginParams = new LoginParameters("foo"+userNum, "test".toCharArray());
-        LoginParameters loginParams = new LoginParameters("test", "test".toCharArray());
+        WonderlandServerInfo server = new WonderlandServerInfo(serverName,
+                                                  Integer.parseInt(serverPort));
+        
+        LoginParameters loginParams = new LoginParameters(userName, 
+                                                          "test".toCharArray());
         
         // create a session
         session = new BoundsTestClientSession(server) {
@@ -392,6 +421,22 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         });
     }
     
+    private static Properties loadProperties(String fileName) {
+        // start with the system properties
+        Properties props = new Properties(System.getProperties());
+    
+        // load the given file
+        if (fileName != null) {
+            try {
+                props.load(new FileInputStream(fileName));
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error reading properties from " +
+                           fileName, ioe);
+            }
+        }
+        
+        return props;
+    }
    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backwardB;
