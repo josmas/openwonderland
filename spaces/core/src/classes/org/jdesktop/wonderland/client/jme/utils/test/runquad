@@ -1,0 +1,22 @@
+#!/bin/csh -fx
+#
+# runquad - Run the test TestTexturedQuad
+#
+# To use: build wonderland, then run this script
+
+set extdir = ../../../../../../../../../ext
+set jmedir = $extdir/jme
+set jmejardir = $jmedir/jme
+set jmelibdir = $jmedir/lib
+
+echo $jmejardir
+echo $jmelibdir
+
+set clientjardir = $extdir/../build/current/debug/lib
+echo $clientjardir
+
+set cp = "$jmejardir/jme.jar:$jmejardir/jme-gamestates.jar:$jmejardir/jme-awt.jar:$jmejardir/jme-scene.jar:$jmejardir/jme-model.jar:$jmejardir/jme-collada.jar:$jmejardir/jme-xml.jar:$jmejardir/jme-terrain.jar:$jmelibdir/lwjgl.jar:$clientjardir/wonderland-client.jar"
+
+setenv LD_LIBRARY_PATH $jmelibdir
+
+java -cp $cp org.jdesktop.wonderland.client.jme.utils.test.TestTexturedQuad
