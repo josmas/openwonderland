@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ChannelManager;
@@ -30,6 +32,7 @@ import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -76,14 +79,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
     // ManagedReferences of ClientSessions
     protected HashSet<ManagedReference<ClientSession>> clientSessionRefs = null;
     
-//    /**
-//     * Create a CellMO with a localBounds of an empty sphere and a transform of
-//     * null
-//     */
-//    public CellMO() {
-//        this(new BoundingSphere(),null);
-//        
-//    }
+    private HashSet<SpaceInfo> inSpaces = new HashSet();
+    
+    private HashMap<Class, ManagedReference<CellComponentMO>> components = new HashMap();
+    
+    private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
+    private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
     
     /**
      * Create a CellMO with the specified localBounds and transform.
@@ -110,8 +111,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
         localBounds = bounds.clone(null);
         boundsChanged = true;
         
+//        if (live) {
+//            BoundsManager.get().cellBoundsChanged(cellID, bounds);
+//        }
         if (live) {
-            BoundsManager.get().cellBoundsChanged(cellID, bounds);
+            calcVwBounds();
         }
     }
     
@@ -134,11 +138,22 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (!live)
             throw new IllegalStateException("Cell is not live");
         
-        if (boundsChanged)
-            throw new IllegalStateException("LocalBounds have been changed, "
-                    + "cached bounds not valid until the transaction commits");
+//        if (boundsChanged) {
+//            CellTransform t = computeLocalToVWorld(this);
+////            logger.warning("LocalBounds have been changed, "
+////                    + "cached bounds not valid until the transaction commits ");
+//            BoundingVolume ret = getLocalBounds();
+//                    
+//            ret = ret.transform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
+//            return ret;
+//        }
+//        
+//        return BoundsManager.get().getCachedVWBounds(cellID);
         
-        return BoundsManager.get().getCachedVWBounds(cellID);
+        if (vwBounds==null)
+            System.err.println("NULL BOUNDS "+getName());
+        
+        return vwBounds.clone(null);
     }
 
     /**
@@ -154,16 +169,16 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @return the bounds in world coordinates
      */
-    public BoundingVolume getComputedWorldBounds() {
-        if (!live)
-            throw new IllegalStateException("Cell is not live");
-        
-        if (boundsChanged)
-            throw new IllegalStateException("LocalBounds have been changed, "
-                    + "cached bounds not valid until the transaction commits");
-        
-        return BoundsManager.get().getComputedWorldBounds(cellID);   
-    }
+//    public BoundingVolume getComputedWorldBounds() {
+//        if (!live)
+//            throw new IllegalStateException("Cell is not live");
+//        
+//        if (boundsChanged)
+//            throw new IllegalStateException("LocalBounds have been changed, "
+//                    + "cached bounds not valid until the transaction commits");
+//        
+//        return BoundsManager.get().getComputedWorldBounds(cellID);   
+//    }
    
     /**
      * Get the local to VWorld transform of this cells origin. This call
@@ -176,13 +191,25 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     CellTransform getLocalToVWorld() {
         if (!live)
-            throw new IllegalStateException("Unsupported Operation");
+            throw new IllegalStateException("Unsupported Operation, only valid for a live Cell");
         
-        if (boundsChanged)
-            throw new IllegalStateException("LocalBounds have been changed, "
-                    + "cached bounds not valid until the transaction commits");
+//        if (boundsChanged) {
+//            logger.warning("LocalBounds have been changed, "
+//                    + "cached bounds not valid until the transaction commits, so computing on the fly...");
+//            return computeLocalToVWorld(this);
+//        }
+//        
+//        return BoundsManager.get().getLocalToVWorld(cellID);
+        return (CellTransform) local2VWorld.clone();
+    }
+    
+    private CellTransform computeLocalToVWorld(CellMO currentCell) {
+        if (currentCell instanceof RootCellMO)
+            return currentCell.getTransform();
         
-        return BoundsManager.get().getLocalToVWorld(cellID);
+        CellTransform ret = currentCell.computeLocalToVWorld(currentCell.getParent());
+        ret.mul(currentCell.getTransform());
+        return ret;
     }
     
     /**
@@ -303,13 +330,55 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * operation as it changes the computed bounds of this cell and potentially
      * all it's parent cells.
      * 
+     * This method is usually called during cell construction or from
+     * reconfigureCell. If you want a cell that moves regularly around the
+     * world use MovableComponent.
+     * 
      * @param transform
      */
-    public void setTransform(CellTransform transform) {
+    protected void setStaticTransform(CellTransform transform) {
         this.transform = (CellTransform) transform.clone();  
         
+//        if (live) {
+//            BoundsManager.get().cellTransformChanged(cellID, transform);
+//        }
+        
         if (live) {
-            BoundsManager.get().cellTransformChanged(cellID, transform);
+            processTransformChange();
+        }
+    }
+    
+    /**
+     * Notify children that the transform of the parent node has changed
+     * @param parent
+     */
+    private void processTransformChange() {
+        calcLocal2VWorld();
+        calcVwBounds();
+            
+        Collection<ManagedReference<CellMO>> childrenRef = getAllChildrenRefs();
+        for(ManagedReference<CellMO> childRef : childrenRef) {
+            childRef.getForUpdate().processTransformChange();
+        }
+    }
+    
+    /**
+     * Calculate the vw bounds
+     */
+    private void calcVwBounds() {
+        assert(live);
+        vwBounds = localBounds.clone(vwBounds);
+        local2VWorld.transform(vwBounds);        
+    }
+    
+    /**
+     * Calculate the local2VWorld transform
+     */
+    private void calcLocal2VWorld() {
+        assert(live);
+        local2VWorld = (CellTransform) transform.clone();
+        if (parentRef!=null) {
+             local2VWorld.mul(parentRef.get().getTransform());  
         }
     }
     
@@ -352,20 +421,28 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param live
      */
     void setLive(boolean live) {
+        if (this.live==live)
+            return;
+        
         this.live = live;
+        
+        // Notify all components of new live state
+        Collection<ManagedReference<CellComponentMO>> compList = components.values();
+        for(ManagedReference<CellComponentMO> c : compList) {
+            c.get().setLive(live);
+        }
+        
         if (live) {
-            if (this instanceof ChannelCellMO)
-                ((ChannelCellMO)this).openChannel();
-            BoundsManager.get().createBounds(this);
+//            BoundsManager.get().createBounds(this);
             if (getParent()!=null) { // Root cell has a null parent
 //                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
-                BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
+//                BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
             }
+            calcLocal2VWorld();
+            calcVwBounds();
         } else {
-            if (this instanceof ChannelCellMO)
-                ((ChannelCellMO)this).closeChannel();
-            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
-            BoundsManager.get().removeBounds(this);
+//            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
+//            BoundsManager.get().removeBounds(this);
         }
         
         for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
@@ -396,7 +473,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     /**
      * Add a client session with the specified capabilities to this cell. 
-     * Called by the ViewCellCacheMO as part of makeing a cell active
+     * Called by the ViewCellCacheMO as part of makeing a cell active, only 
+     * applicable to cells with a ChannelComponent.
      * 
      * @param session
      * @param capabilities
@@ -404,7 +482,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     protected CellSessionProperties addSession(ClientSession session, 
                                             ClientCapabilities capabilities) {
-        addUserToCellChannel(session);
+        ChannelComponentMO chan = getComponent(ChannelComponentMO.class);
+        if (chan!=null) {
+            chan.addUserToCellChannel(session);
+        }
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(session, capabilities),
@@ -429,36 +510,19 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Remove this cell from the specified session
+     * Remove this cell from the specified session, only applicable to cells
+     * with a ChannelComponent.
      * 
      * @param session
      */
     protected void removeSession(ClientSession session) {
-        removeUserFromCellChannel(session);
+        ChannelComponentMO chan = getComponent(ChannelComponentMO.class);
+        System.out.println("*********** REMOVE FROM SESSION "+getName());
+        if (chan!=null) {
+            chan.removeUserFromCellChannel(session);
+        }
     }
 
-    /**
-     * Add user to the cells channel, if there is no channel simply return
-     * @param userID
-     */
-    private void addUserToCellChannel(ClientSession session) {
-        if (cellChannelRef == null)
-            return;
-            
-        cellChannelRef.get().join(session);
-    }
-    
-    /**
-     * Remove user from the cells channel
-     * @param userID
-     */
-    private void removeUserFromCellChannel(ClientSession session) {
-        if (cellChannelRef == null)
-            return;
-            
-        cellChannelRef.get().leave(session);        
-    }
-     
     /**
      * Returns the fully qualified name of the class that represents
      * this cell on the client
@@ -487,7 +551,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param setup the properties to setup with
      */
     public void setupCell(BasicCellMOSetup<?> setup) {
-        setTransform(BasicCellMOHelper.getCellTransform(setup));
+        setStaticTransform(BasicCellMOHelper.getCellTransform(setup));
         setLocalBounds(BasicCellMOHelper.getCellBounds(setup));
     }
     
@@ -531,5 +595,117 @@ public abstract class CellMO implements ManagedObject, Serializable {
         this.priority = priority;
     }
     
+    /**
+     * If this cell supports the capabilities of cellComponent then
+     * return an instance of cellComponent associated with this cell. Otherwise
+     * return null.
+     * 
+     * @see MovableCellComponent
+     * @param cellComponent
+     * @return
+     */
+    public <T extends CellComponentMO> T getComponent(Class<T> cellComponentClass) {
+        assert(CellComponentMO.class.isAssignableFrom(cellComponentClass));
+        ManagedReference<CellComponentMO> comp = components.get(cellComponentClass);
+        if (comp==null)
+            return null;
+        return (T) comp.get();
+    }
+    
+    /**
+     * Add a component to this cell. Only a single instance of each component
+     * class can be added to a cell. Adding duplicate components will result in
+     * an IllegalArgumentException 
+     * 
+     * @param component
+     */
+    public void addComponent(CellComponentMO component) {
+        ManagedReference<CellComponentMO> previous = components.put(component.getClass(), 
+                AppContext.getDataManager().createReference(component));
+        if (previous!=null)
+            throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
+    }
+    
+    /**
+     * Return the leaf spaces which this cell is in.
+     * A cell is in a space when the origin of the cell is contained
+     * within the bounds of the space, and that space is a leaf space, ie is has 
+     * no child spaces.
+     * 
+     * The returned collection is a shallow clone of the underlying data so 
+     * modifications to the underlying data or return data can take place without
+     * causing ConcurrentModificationExceptions.
+     * 
+     * @return
+     */
+    public Collection<SpaceInfo> inSpaces() {
+        return (Collection<SpaceInfo>) inSpaces.clone();
+    }
+    
+    /**
+     * Return the number of spaces this cell is currently in
+     * 
+     * @return
+     */
+    public int numInSpaces() {
+        return inSpaces.size();
+    }
+    
+    /**
+     * Add this cell to the space.
+     * The space must be live otherwise an IllegalArgumentException will be thrown.
+     * @param space
+     */
+    void addToSpace(SpaceCellMO space) {
+        inSpaces.add(new SpaceInfo(space));
+        space.addCell(this);
+    }
+    
+    void removeFromSpace(SpaceCellMO space) {
+        inSpaces.remove(new SpaceInfo(space));
+        space.removeCell(this);
+    }
+    
+    public static class SpaceInfo implements Serializable {
+        private ManagedReference<SpaceCellMO> space;
+        private BoundingVolume spaceBounds;
+        
+        public SpaceInfo(SpaceCellMO space) {
+            if (!space.isLive())
+                throw new IllegalArgumentException("Space must be Live");
+            
+            this.space = AppContext.getDataManager().createReference(space);
+            spaceBounds = null;
+        }
+        
+        public BoundingVolume getSpaceBounds() {
+            if (spaceBounds==null)
+                spaceBounds = space.get().getCachedVWBounds();
+            return spaceBounds;
+        }
+        
+        /**
+         * Return the managed reference for the space
+         * @return
+         */
+        public ManagedReference<SpaceCellMO> getSpaceRef() {
+            return space;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + (this.space != null ? this.space.hashCode() : 0);
+            return hash;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof SpaceInfo))
+                return false;
+            return ((SpaceInfo)o).space.equals(space);
+        }
+        
+    }
 }
 

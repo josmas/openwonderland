@@ -50,4 +50,10 @@ public interface View {
      * @return the cell cache for this view, or null
      */
     public ViewCellCacheMO getCellCache();
+    
+    /**
+     * Return the cell associated with this view. The cell provides 
+     * @return
+     */
+    public CellMO getCell();
 }

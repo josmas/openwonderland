@@ -51,6 +51,8 @@ import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellListMO.ListInfo;
+import org.jdesktop.wonderland.server.cell.CellMO.SpaceInfo;
 import org.jdesktop.wonderland.server.cell.bounds.CellDescriptionManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -178,9 +180,140 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         // make sure the user is still logged on
         ClientSession session = getSession();        
         if (session == null) {
-            logger.warning("Null session, have not seen a logout");
+            logger.warning("Null session, have not seen a logout - terminating ViewCellCache for user");
+            logout(null);
             return;
         }
+        
+//        revalidateFromGraph(session);
+        revalidateFromSpaces(session);
+    }
+    
+    void revalidateFromSpaces(ClientSession session) {
+        // create a performance monitor
+        RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
+        long startTime = System.nanoTime();
+        
+        try {
+            // getTranslation the current user's bounds
+            View view = viewRef.get();
+            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(view.getTransform().getTranslation(null));
+            CellMO cell = view.getCell();
+            
+            // copy the existing cells into the list of known cells 
+            Collection<CellRef> oldCells = new ArrayList(getCurrentCells().values());
+            
+            // notify the schduler
+            scheduler.startRevalidate();
+            
+            Collection<SpaceInfo> spaces = cell.inSpaces();
+            for(SpaceInfo spaceInfo : spaces) {
+                SpaceCellMO spaceCell = spaceInfo.getSpaceRef().get();
+                Collection<CellListMO> visCellLists = spaceCell.getProximityCellLists();
+                for(CellListMO cellLists : visCellLists) {
+                    // Todo check cellList version
+                    Collection<CellDescription> cellInfoList = cellLists.getCells();
+                    for(CellDescription cellDescription : cellInfoList) {
+                        long cellStartTime = System.nanoTime();
+                        // find the cell in our current list of cells
+                        
+                        // check this client's access to the cell
+                        if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellDescription)) {
+                            // the user doesn't have access to this cell -- just skip
+                            // it and go on                
+                            continue;
+                        }
+                
+                        CellRef cellRef = getCurrentCells().get(cellDescription.getCellID());           
+                        if (cellRef == null) {
+                            // schedule the add operation
+                            CellAddOp op = new CellAddOp(cellRef, cellDescription,
+                                                         currentCellsRef, sessionRef,
+                                                         capabilities);
+                            scheduler.schedule(op);
+
+                            // monitor.incMessageCount();
+
+                            // update performance monitoring
+                            monitor.incNewCellTime(System.nanoTime() - cellStartTime);
+                        
+                        } else if (cellRef.hasUpdates(cellDescription)) {   // TODO - THIS IS NOT FUNCTIONING, cellDescription is not COMPLETE.
+                            for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
+                                // schedule the update operation
+                                CellUpdateOp op = new CellUpdateOp(update, view.getTransform(),
+                                                                   cellRef, cellDescription,
+                                                                   currentCellsRef, sessionRef,
+                                                                   capabilities);
+                                scheduler.schedule(op);
+                            }
+                            cellRef.clearUpdateTypes(cellDescription);
+
+                            // it is still visible, so remove it from the oldCells set
+                            oldCells.remove(cellRef);
+
+                            // update the monitor
+                            monitor.incUpdateCellTime(System.nanoTime() - cellStartTime);
+                        } else {
+                            // t is still visible, so remove it from the oldCells set
+                            oldCells.remove(cellRef);
+                        }
+                    }
+                }
+            }
+            
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("Revalidating CellCache for   " + 
+                              session.getName() + "  " + proximityBounds);
+            }
+            
+            // oldCells contains the set of cells to be removed from client memory
+            for(CellRef ref : oldCells) {
+                long cellStartTime = System.nanoTime();
+                
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.finer("Leaving cell " + ref.getCellID() +
+                                 " cellcache for user "+username);
+                }
+                
+                // schedule the add operation
+                CellRemoveOp op = new CellRemoveOp(ref, null,
+                                                   currentCellsRef, sessionRef,
+                                                   capabilities);
+                scheduler.schedule(op);
+                //markForUpdate();
+                
+                // update the monitor
+                monitor.incOldCellTime(System.nanoTime() - cellStartTime);
+            }
+            
+            scheduler.endRevalidate();
+            
+        } catch(RuntimeException e) {
+            monitor.setException(true);
+            
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, "Rethrowing exception", e);
+            }
+            
+            throw e;
+        } finally {
+            monitor.incTotalTime(System.nanoTime() - startTime);
+            monitor.updateTotals();
+            
+            // logger.info(monitor.getMessageStats());
+            
+            // print stats
+            if (RevalidatePerformanceMonitor.printSingle()) {
+                logger.info(monitor.getRevalidateStats());
+            }
+            if (RevalidatePerformanceMonitor.printTotals()) {
+                logger.info(RevalidatePerformanceMonitor.getTotals());
+                RevalidatePerformanceMonitor.resetTotals();
+            }
+        }
+    }
+    
+    void revalidateFromGraph(ClientSession session) {
         
         // create a performance monitor
         RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
@@ -215,12 +348,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
              * 2. If already present, check to see if has been modified
              * These two steps only happen if we are given access to view the cell
              */
-            for(CellDescription cellMirror : visCells) {
+            for(CellDescription cellDescription : visCells) {
                 long cellStartTime = System.nanoTime();
-                CellID cellID = cellMirror.getCellID();
+                CellID cellID = cellDescription.getCellID();
             
                 // check this client's access to the cell
-                if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellMirror)) {
+                if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellDescription)) {
                     // the user doesn't have access to this cell -- just skip
                     // it and go on                
                     continue;
@@ -230,7 +363,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 CellRef cellRef = getCurrentCells().get(cellID);           
                 if (cellRef == null) {
                     // schedule the add operation
-                    CellAddOp op = new CellAddOp(cellRef, cellMirror,
+                    CellAddOp op = new CellAddOp(cellRef, cellDescription,
                                                  currentCellsRef, sessionRef,
                                                  capabilities);
                     scheduler.schedule(op);
@@ -239,17 +372,17 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                                         
                     // update performance monitoring
                     monitor.incNewCellTime(System.nanoTime() - cellStartTime);
-                } else if (cellRef.hasUpdates(cellMirror)) {
+                } else if (cellRef.hasUpdates(cellDescription)) {
                     for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
                         
                         // schedule the update operation
                         CellUpdateOp op = new CellUpdateOp(update, view.getTransform(),
-                                                           cellRef, cellMirror,
+                                                           cellRef, cellDescription,
                                                            currentCellsRef, sessionRef,
                                                            capabilities);
                         scheduler.schedule(op);
                     }
-                    cellRef.clearUpdateTypes(cellMirror);
+                    cellRef.clearUpdateTypes(cellDescription);
                 
                     // it is still visible, so remove it from the oldCells set
                     oldCells.remove(cellRef);
@@ -307,7 +440,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             }
         }
     }
-     
+    
     /**
      * Utility method to mark ourself for update
      */
@@ -839,8 +972,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getCellID(),
             parent,
             cell.getTransform(),
-            cell.getClientSetupData(null, capabilities)
-            
+            cell.getClientSetupData(null, capabilities),
+            cell.getName()
             
             
             );
@@ -863,8 +996,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getCellID(),
             parent,
             cell.getTransform(),
-            cell.getClientSetupData(null, capabilities)
-            
+            cell.getClientSetupData(null, capabilities),
+            cell.getName()
             
             
             );
@@ -887,6 +1020,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cellID,
             null,
             null,
+            null,
             null
             );
     }
@@ -900,6 +1034,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             null,
             childCell.getCellID(),
             parentCell.getCellID(),
+            null,
             null,
             null
             
@@ -920,20 +1055,21 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      * Return a new cell update message. Indicates that the content of the cell
      * has changed.
      */
-    public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellGLO, ClientCapabilities capabilities) {
+    public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellMO, ClientCapabilities capabilities) {
         CellID parentID = null;
-        if (cellGLO.getParent() != null) {
-            parentID = cellGLO.getParent().getCellID();
+        if (cellMO.getParent() != null) {
+            parentID = cellMO.getParent().getCellID();
         }
         
         /* Return a new CellHiearchyMessage class, with populated data fields */
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UPDATE_CELL_CONTENT,
-            cellGLO.getClientCellClassName(null,capabilities),
-            cellGLO.getLocalBounds(),
-            cellGLO.getCellID(),
+            cellMO.getClientCellClassName(null,capabilities),
+            cellMO.getLocalBounds(),
+            cellMO.getCellID(),
             parentID,
-            cellGLO.getTransform(),
-            cellGLO.getClientSetupData(null, capabilities)    
+            cellMO.getTransform(),
+            cellMO.getClientSetupData(null, capabilities),
+            cellMO.getName()
             );
     }
 }

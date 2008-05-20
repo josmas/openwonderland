@@ -130,7 +130,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
         try {
             // HACK !
             if (!avatar.isLive())
-                WonderlandContext.getCellManager().addCell(avatar);
+                WonderlandContext.getCellManager().insertCellInGraph(avatar);
 
         } catch (MultipleParentException ex) {
             // the isLive check means we should never get here
