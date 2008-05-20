@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.ClientConnection.Status;
@@ -57,10 +56,17 @@ public class ChannelComponent extends CellComponent {
      * @param receiver
      */
     public void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver) {
-        System.out.println("**** registering receiver "+msgClass.getName());
         Object old = messageReceivers.put(msgClass, receiver);
         if (old!=null)
             throw new IllegalStateException("Duplicate Message class added "+msgClass);
+    }
+    
+    /**
+     * Remove the message receiver listening on the specifed message class
+     * @param msgClass
+     */
+    public void removeMessageRecevier(Class<? extends CellMessage> msgClass) {
+        messageReceivers.remove(msgClass);
     }
     
     /**
@@ -73,7 +79,7 @@ public class ChannelComponent extends CellComponent {
         
         ComponentMessageReceiver recvRef = messageReceivers.get(message.getClass());
         if (recvRef==null) {
-            Logger.getAnonymousLogger().warning("No listener for message "+message.getClass() +"  "+cell.getClass().getName());
+            Logger.getAnonymousLogger().warning("No listener for message "+message.getClass());
              
             return;
         }
