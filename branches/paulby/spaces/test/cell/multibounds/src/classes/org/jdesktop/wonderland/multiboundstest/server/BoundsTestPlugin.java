@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableCellMO;
 import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
 import org.jdesktop.wonderland.server.cell.SimpleTerrainCellMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
  * Sample plugin that doesn't do anything
@@ -52,13 +53,8 @@ public class BoundsTestPlugin implements ServerPlugin {
         logger.info("Initialize bounds test plugin");
 
         try {
-            // createStaticGrid();
 
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
-
-            CellMO c1 = new MovableCellMO(bounds,
-                    new CellTransform(null, new Vector3f(1, 1, 1)));
-            c1.setName("c1");
 
             MovableCellMO c2 = new MovableCellMO(bounds,
                     new CellTransform(null, new Vector3f(10, 10, 10)));
@@ -77,74 +73,16 @@ public class BoundsTestPlugin implements ServerPlugin {
 
             c3.addChild(c4);
 
-            c1.addChild(c2);
-            c1.addChild(c3);
-            WonderlandContext.getCellManager().addCell(c1);
+            WonderlandContext.getCellManager().insertCellInGraph(c2);
+            WonderlandContext.getCellManager().insertCellInGraph(c3);
 
             Task t = new TestTask(c3, c2);
 
             AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
 
-            RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
-            BoundingVolume visBounds = new BoundingSphere(5, new Vector3f());
-
-//            for(CellID cellID : getCell(getRootCellID()).getVisibleCells(visBounds, monitor)) {
-//                System.out.println(cellID);
-//            }
-
-        // Octtree test
-//            Matrix4d centerTransform = new Matrix4d();
-//            centerTransform.setIdentity();
-//            float size = 1000;
-//            OctTreeCellMO oct = new OctTreeCellMO(
-//                    createBoundingBox(size, size, size), 
-//                    centerTransform);
-//            addCell(oct);          
-//            
-//            final CellMO test = new CellMO();
-//            test.setLocalBounds(createBoundingBox(50,50,50));
-//            test.setTransform(createTransform(375,375,-375));
-//            
-//            Bounds cellVWBounds = test.getLocalBounds();
-//            Matrix4d m4d = test.getTransform();
-//            cellVWBounds.transform(new Transform3D(m4d));
-//            CellMO parent = oct.insertCellInHierarchy(test, cellVWBounds);
-//            System.out.println("Got parent "+parent);
-//            if (parent==null) {
-//                System.out.println("FAILED TO LOCATE PARENT");
-//            } 
-//            
-//            Task t = new TestTask(test);
-//            
-//            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
-
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    /**
-     * Create a static grid of nodes
-     */
-    private void createStaticGrid() {
-        int gridWidth = 10;
-        int gridDepth = 10;
-
-        float boundsDim = 5;
-        BoundingBox gridBounds = new BoundingBox(new Vector3f(), boundsDim, boundsDim, boundsDim);
-
-        for (int x = 0; x < gridWidth; x++) {
-            for (int z = 0; z < gridDepth; z++) {
-                try {
-                    CellMO cell = new SimpleTerrainCellMO(new Vector3f(x * boundsDim * 2, 0, z * boundsDim * 2), boundsDim);
-                    cell.setName("grid_" + x + "_" + z);
-                    WonderlandContext.getCellManager().addCell(cell);
-                } catch (MultipleParentException ex) {
-                    Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-
     }
 
     static class TestTask implements Task, Serializable {
@@ -168,8 +106,8 @@ public class BoundsTestPlugin implements ServerPlugin {
             if (pos.x > 40 || pos.x < 2) {
                 dir = -dir;
             }
-            cellRef.get().setTransform(new CellTransform(null, pos));
-            cell2Ref.get().setTransform(new CellTransform(null, pos2));
+            cellRef.get().getComponent(MovableComponentMO.class).setTransform(new CellTransform(null, pos));
+            cell2Ref.get().getComponent(MovableComponentMO.class).setTransform(new CellTransform(null, pos2));
         }
     }
 }

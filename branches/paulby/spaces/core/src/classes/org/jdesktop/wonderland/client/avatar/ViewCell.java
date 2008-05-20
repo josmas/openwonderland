@@ -19,16 +19,35 @@
 
 package org.jdesktop.wonderland.client.avatar;
 
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.MovableCell;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- *
+ * ViewCell defines the view into the virtual world for a specific window
+ * on a client. A client may have many ViewCells instanstantiated, however
+ * there is a 1-1 correlation between the ViewCell and a rendering of the
+ * virtual world.
+ * 
  * @author paulby
  */
-public class ViewCell extends MovableCell {
+@ExperimentalAPI
+public class ViewCell extends Cell {
+    
+    private MovableComponent movableComp;
 
     public ViewCell(CellID cellID) {
         super(cellID);
+        addComponent(new ChannelComponent(this));
+        addComponent(new MovableComponent(this));
+        movableComp = getComponent(MovableComponent.class);
+    }
+    
+    public void localMoveRequest(CellTransform transform) {
+        movableComp.localMoveRequest(transform);
     }
 }

@@ -41,6 +41,7 @@ public class CellHierarchyMessage extends Message {
     private CellTransform cellTransform;
     private CellSetup setupData;
     private String avatarID;
+    private String cellName;
     
     private CellTransform cellLocal2VW;      // FOR TESTING - TODO REMOVE
 
@@ -63,7 +64,8 @@ public class CellHierarchyMessage extends Message {
                                 CellID cellID, 
                                 CellID parentID,
                                 CellTransform cellTransform,
-                                CellSetup setupData) {
+                                CellSetup setupData,
+                                String cellName) {
         this.msgType = msgType;
         this.cellClassName = cellClassName;
         this.cellID = cellID;
@@ -71,6 +73,7 @@ public class CellHierarchyMessage extends Message {
         this.localBounds = localBounds;
         this.cellTransform = cellTransform;
         this.setupData = setupData;
+        this.cellName = cellName;
     }
     
     private CellHierarchyMessage(ActionType msgType) {
@@ -126,6 +129,10 @@ public class CellHierarchyMessage extends Message {
      */
     public String getViewID() {
         return avatarID;
+    }
+    
+    public String getCellName() {
+        return cellName;
     }
 
     /**
