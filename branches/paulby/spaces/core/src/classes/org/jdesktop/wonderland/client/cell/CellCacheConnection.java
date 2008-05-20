@@ -113,7 +113,9 @@ public class CellCacheConnection extends BaseConnection {
                                 msg.getLocalBounds(),
                                 msg.getParentID(),
                                 msg.getCellTransform(),
-                                msg.getSetupData());
+                                msg.getSetupData(),
+                                msg.getCellName()
+                                );
                 }
                 if (viewCellID!=null && viewCellID.equals(msg.getCellID())) {
                     clientView.viewCellConfigured(viewCellID);
@@ -176,7 +178,8 @@ public class CellCacheConnection extends BaseConnection {
                                BoundingVolume localBounds,
                                CellID parentCellID,
                                CellTransform cellTransform,
-                               CellSetup setup);
+                               CellSetup setup,
+                               String cellName);
         /**
          * Unload the cell. This removes the cell from memory but will leave
          * cell data cached on the client

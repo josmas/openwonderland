@@ -51,7 +51,7 @@ public class CellManager {
      * @param cell
      * @param fromServer
      */
-    void notifyCellMoved(MovableCell cell, boolean fromServer) {
+    void notifyCellMoved(Cell cell, boolean fromServer) {
         for(CellMoveListener listener : moveListeners)
             listener.cellMoved(cell, fromServer);
     }
@@ -80,6 +80,6 @@ public class CellManager {
          * @param fromServer, if true then the move came from the server, otherwise
          * the move originated on this client
          */
-        public void cellMoved(MovableCell cell, boolean fromServer);
+        public void cellMoved(Cell cell, boolean fromServer);
     }
 }
