@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 public class ChannelComponent extends CellComponent {
     
-    private HashMap<Class, WeakReference<ComponentMessageReceiver>> messageReceivers = new HashMap();
+    private HashMap<Class, ComponentMessageReceiver> messageReceivers = new HashMap();
     
     private CellChannelConnection connection;
     
@@ -57,7 +57,8 @@ public class ChannelComponent extends CellComponent {
      * @param receiver
      */
     public void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver) {
-        Object old = messageReceivers.put(msgClass, new WeakReference(receiver));
+        System.out.println("**** registering receiver "+msgClass.getName());
+        Object old = messageReceivers.put(msgClass, receiver);
         if (old!=null)
             throw new IllegalStateException("Duplicate Message class added "+msgClass);
     }
@@ -70,13 +71,14 @@ public class ChannelComponent extends CellComponent {
      */
     public void messageReceived(CellMessage message ) {
         
-        WeakReference<ComponentMessageReceiver> recvRef = messageReceivers.get(message.getClass());
-        if (recvRef==null && recvRef.get()!=null) {
-            Logger.getAnonymousLogger().warning("Not listener for message "+message.getClass());
+        ComponentMessageReceiver recvRef = messageReceivers.get(message.getClass());
+        if (recvRef==null) {
+            Logger.getAnonymousLogger().warning("No listener for message "+message.getClass() +"  "+cell.getClass().getName());
+             
             return;
         }
         
-        recvRef.get().messageReceived(message);
+        recvRef.messageReceived(message);
     }
     
     public Status getStatus() {
