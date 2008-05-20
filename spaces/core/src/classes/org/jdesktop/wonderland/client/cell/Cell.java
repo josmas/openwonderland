@@ -19,13 +19,17 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -49,6 +53,8 @@ public class Cell {
     private CellID cellID;
     private String name=null;
     private CellStatus currentStatus;
+    
+    private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
     
     public Cell(CellID cellID) {
         this.cellID = cellID;
@@ -103,6 +109,32 @@ public class Cell {
             children.add(child);
             child.setParent(this);
         }
+    }
+    
+    /**
+     * If this cell supports the capabilities of cellComponent then
+     * return an instance of cellComponent associated with this cell. Otherwise
+     * return null.
+     * 
+     * @see MovableCellComponent
+     * @param cellComponent
+     * @return
+     */
+    public <T extends CellComponent> T getComponent(Class<T> cellComponentClass) {
+        return (T) components.get(cellComponentClass);
+    }
+    
+    /**
+     * Add a component to this cell. Only a single instance of each component
+     * class can be added to a cell. Adding duplicate components will result in
+     * an IllegalArgumentException 
+     * 
+     * @param component
+     */
+    public void addComponent(CellComponent component) {
+        CellComponent previous = components.put(component.getClass(),component);
+        if (previous!=null)
+            throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
     }
     
     /**
@@ -349,5 +381,29 @@ public class Cell {
         currentStatus = status;
         
         return true;
+    }
+    
+    /**
+     * Called once after the cell is instantiated, for cells that require
+     * setup data. This method is called once the cell has been placed in
+     * the cell tree hierarchy.
+     * 
+     * @param setupData
+     */
+    public void setupCell(CellSetup setupData) {
+        
+    }
+    
+    /**
+     * Called occasioanally by the server if the cell needs to reconfigure
+     * it's internal state. This is intended to be a heavyweight operation
+     * not for continous changes.
+     * 
+     * Example use is when the wfs world is reloaded
+     * 
+     * @param updateData
+     */
+    public void reconfigureCell(CellSetup updateData) {
+        
     }
 }

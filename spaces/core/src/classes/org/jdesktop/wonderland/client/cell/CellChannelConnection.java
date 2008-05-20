@@ -112,11 +112,13 @@ public class CellChannelConnection extends BaseConnection {
             logger.warning("Unable to deliver CellMessage, cell not available on this client");
             return;
         }
-        if (!(cell instanceof ChannelCell)) {
+        
+        ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
+        if (channelComp==null) {
             logger.severe("Attempting to deliver message to cell that does not implement ChannelCell");
             throw new RuntimeException("Illegal message target");
         }
         
-        ((ChannelCell)cell).handleMessage(cellMessage);
+        channelComp.messageReceived(cellMessage);
     }
 }

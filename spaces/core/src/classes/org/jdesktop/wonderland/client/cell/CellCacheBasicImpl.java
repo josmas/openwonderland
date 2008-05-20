@@ -18,6 +18,7 @@ import org.jdesktop.wonderland.client.avatar.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
@@ -78,20 +79,25 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          BoundingVolume localBounds, 
                          CellID parentCellID, 
                          CellTransform cellTransform, 
-                         CellSetup setup) {
+                         CellSetup setup,
+                         String cellName) {
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
             return;     // Instantiation failed, error has already been logged
         
         cell.setLocalBounds(localBounds);
         cell.setTransform(cellTransform);
+        cell.setName(cellName);
         Cell parent = cells.get(parentCellID);
+        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
         if (parent!=null) {
             try {
                 parent.addChild(cell);
             } catch (MultipleParentException ex) {
                 Logger.getLogger(CellCacheBasicImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
+        } else {
+            logger.warning("loadCell - Cell parent is null");
         }
 
         cells.put(cellId, cell);
@@ -101,23 +107,32 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             rootCells.add(cell);
         }
         
+        if (setup!=null)
+            cell.setupCell(setup);
+        
         // if the cell has a channel, notify it of the CellChannelConnection
-        if (cell instanceof ChannelCell) {
-            ((ChannelCell) cell).setCellChannelConnection(cellChannelConnection);
+        ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
+        if (channelComp!=null) {
+            channelComp.setCellChannelConnection(cellChannelConnection);
         }
     }
 
+    /**
+     * Unload the cell from memory, sets the Cells status to DISK
+     * @param cellId
+     */
     public void unloadCell(CellID cellId) {
-        cells.remove(cellId);
+        Cell cell = cells.remove(cellId);
+        cell.setStatus(CellStatus.DISK);
     }
 
     public void deleteCell(CellID cellId) {
-        // TODO - remove local resources from client asset cache
-        cells.remove(cellId);
+        // TODO - remove local resources from client asset cache as long
+        // as they are not shared
+        Cell cell = cells.remove(cellId);
     }
 
     public void moveCell(CellID cellId, CellTransform cellTransform) {
-        logger.warning("MOVE CELL");
         Cell cell = cells.get(cellId);
         if (cell==null) {
             // TODO this is probably ok, need to check
@@ -125,9 +140,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             return;
         }
 
-        if (!(cell instanceof MovableCell)) {
-            cell.setTransform(cellTransform);
-        }
+        cell.setTransform(cellTransform);
     }
     
     private Cell instantiateCell(String className, CellID cellId) {
@@ -145,6 +158,11 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         return cell;
     }
 
+    /**
+     * Set the view cell for this cache
+     * 
+     * @param viewCellID the id of the view cell
+     */
     public void viewSetup(CellID viewCellID) {
         viewCell = (ViewCell)cells.get(viewCellID);
     }
