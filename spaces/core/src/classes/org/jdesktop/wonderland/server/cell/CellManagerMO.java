@@ -56,6 +56,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
     private CellID rootCellID;
     
     private static final String BINDING_NAME=CellManagerMO.class.getName();
+    private static final Logger logger = Logger.getLogger(CellManagerMO.class.getName());
     
     
     /**
@@ -71,8 +72,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
         CellTransform orig = new CellTransform(null, null);
         CellMO root = new RootCellMO(rootBounds, orig);
         rootCellID = root.getCellID();
-        root.setLocalBounds(rootBounds);
-        root.setTransform(orig);
         root.setName("root");
         root.setLive(true);       
         
@@ -126,12 +125,27 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Add the cell to the rootCell, which in turn will make cell and all it's
-     * children live. If the cell already has a parent a MultipleParentException
-     * will be thrown.
+     * Insert the cell into the most appropriate location in the graph. For static
+     * cells this is the first leaf space that encloses the origin of cell, for
+     * movable cells they are placed at the root of the movable graph.
      */
-    public void addCell(CellMO cell) throws MultipleParentException {
-        rootCellRef.getForUpdate().addChild(cell);
+    public void insertCellInGraph(CellMO cell) throws MultipleParentException {
+        if (cell.getComponent(MovableComponentMO.class)!=null) {
+            // Movable Cell
+            rootCellRef.getForUpdate().addChild(cell);
+            SpaceCellMO space = findEnclosingSpace(rootCellRef.get(), cell.getTransform().getTranslation(null));
+            if (space==null) {
+                logger.severe("Unable to find space to contain cell at "+cell.getTransform().getTranslation(null) +" aborting addCell");
+                return;
+            }
+            System.out.println("Cell "+cell.getTransform().getTranslation(null)+"  added to space "+space);
+            CellTransform transform = cell.getTransform();
+            transform.sub(space.getTransform());
+            cell.addToSpace(space);
+        } else {
+            // Static cell
+            rootCellRef.getForUpdate().addChild(cell);
+        }
     }
     
     /**
@@ -162,12 +176,121 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
  
     /**
+     * Create a static grid of space nodes
+     */
+    private void createSpaces() {
+        int gridWidth = 10;
+        int gridDepth = 10;
+        int gridHeight = 1;
+        
+        float boundsDim = 10;
+        
+        // The spaces must overlap slightly so that the view does not land between 2 spaces
+        float fudge = 1.00001f;
+        BoundingBox gridBounds = new BoundingBox(new Vector3f(), boundsDim*fudge, boundsDim*fudge, boundsDim*fudge);
+        
+        SpaceCellMO[][][] gridCells = new SpaceCellMO[gridWidth][gridHeight][gridDepth];
+        
+        CellMO rootCell = rootCellRef.getForUpdate();
+        
+        for(int x=0; x<gridWidth; x++) {
+            for(int y=0; y<gridHeight; y++) {
+                for(int z=0; z<gridDepth; z++) {
+                    try {
+                        SpaceCellMO cell = new SpaceCellMO(gridBounds, new CellTransform(null, new Vector3f(x * boundsDim*2, y*boundsDim*2, z * boundsDim*2) ));
+                        cell.setName("space_" + x + "_" +y +"_"+ z);
+                        insertCellInGraph(cell);
+
+                        gridCells[x][y][z] = cell;
+
+                        rootCell.addToSpace(cell);
+                    } catch (MultipleParentException ex) {
+                        Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+                
+        int xzMaxDist = 2;
+        int yMaxDist = 1;
+        for(int x=0; x<gridWidth; x++) {
+            for(int y=0; y<gridHeight; y++) {
+                for(int z=0; z<gridDepth; z++) {
+                        SpaceCellMO cell = gridCells[x][y][z];
+                        for(int xDist=0; xDist<xzMaxDist; xDist++) {
+                            for(int yDist=0; yDist<yMaxDist; yDist++) {
+                                for(int zDist=0; zDist<xzMaxDist; zDist++) {
+                                    if (!(xDist==0 && yDist==0 && zDist==0)) {
+                                        if ((x-xDist>=0) &&
+                                            (y-yDist>=0) &&
+                                            (z-zDist>=0) ) {
+                                                gridCells[x-xDist][y-yDist][z-zDist].addProximitySpace(cell);
+                                                cell.addProximitySpace(gridCells[x-xDist][y-yDist][z-zDist]);
+                                        }
+
+                                        if ((x+xDist<gridWidth) &&
+                                            (y+yDist<gridHeight) &&
+                                            (z+zDist<gridDepth) ) {
+                                                gridCells[x+xDist][y+yDist][z+zDist].addProximitySpace(cell);
+                                                cell.addProximitySpace(gridCells[x+xDist][y+yDist][z+zDist]);                                
+                                        }
+                                    }
+                                   
+                                }
+                            }
+                        }                
+                }
+            }
+        }
+    }
+    
+    /**
+     * Find the deepest space that contains the point
+     * @param point
+     * @return
+     */
+    private SpaceCellMO findEnclosingSpace(CellMO root, Vector3f point) {
+        SpaceCellMO ret = null;
+        
+        Collection<ManagedReference<CellMO>> childrenRefs = root.getAllChildrenRefs();
+        
+        if (childrenRefs!=null) {
+            for(ManagedReference<CellMO> childRef : childrenRefs) {
+                ret = findEnclosingSpace(childRef.get(), point);
+                if (ret!=null)
+                    break;
+            }
+        }
+        
+        if (ret==null && root instanceof SpaceCellMO) {
+//            System.out.println("Checking space "+root.getCachedVWBounds());
+            if (root.getCachedVWBounds().contains(point)) {
+                return (SpaceCellMO)root;
+            }
+        }
+        
+        
+        return ret;
+    }
+    
+    /**
+     * Find the deepest (closest to a leaf) space that contains the point
+     * @param point
+     * @return
+     */
+    SpaceCellMO findEnclosingSpace(Vector3f point) {
+        return findEnclosingSpace(rootCellRef.get(), point);
+    }
+    
+    
+    /**
      * For testing.....
      */
     public void loadWorld() {
         //buildWFSWorld();
         
-//        createStaticGrid();       
+        createSpaces();
+
     }
 
     /**
@@ -195,13 +318,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
          * some basic properties about the cell by hand (e.g. transform, name).
          */
         WFSCellMO mo = new WFSCellMO(root);
-        mo.setTransform(new CellTransform(null, null, null));
+        mo.setStaticTransform(new CellTransform(null, null, null));
         mo.setName("root");
         mo.setLocalBounds(new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f()));
         
         try {
             AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
-            this.addCell(mo);
+            this.insertCellInGraph(mo);
         } catch (java.lang.Exception excp) {
             WFS.getLogger().log(Level.SEVERE, "Unable to load WFS into world: " + root.toString());
             WFS.getLogger().log(Level.SEVERE, excp.toString());
@@ -232,22 +355,4 @@ public class CellManagerMO implements ManagedObject, Serializable {
         return cellID;
     }
     
-//    /**
-//     * Called by a cell when it's localBounds are changed
-//     * @param cell
-//     */
-//    abstract void cellLocalBoundsChanged(CellMO cell);
-//    
-//    /**
-//     * Called by a cell when it's transform is changed
-//     * @param cell
-//     */
-//    abstract void cellTransformChanged(CellMO cell);
-//    
-//    /**
-//     * Called when a child is added to a parent cell
-//     * @param parent
-//     * @param childAdded true when a child is added, false when child is removed
-//     */
-//    abstract void cellChildrenChanged(CellMO parent, CellMO child, boolean childAdded);
 }

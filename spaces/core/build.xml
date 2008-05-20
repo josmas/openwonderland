@@ -63,6 +63,7 @@
             <compile-classes>
                 <exclude name="org/jdesktop/wonderland/client/picking/**"/>
                 <exclude name="org/jdesktop/wonderland/client/unusedevent/**"/>
+                <exclude name="org/jdesktop/wonderland/client/scripting/**"/>
                 <include name="org/jdesktop/wonderland/client/**"/>
             </compile-classes>
             
@@ -202,6 +203,15 @@
         <java classname="org.jdesktop.lg3d.wonderland.management.ManagerUI" fork="true">
             <jvmarg value="-Dsgs.port=${sgs.port}"/>
             <jvmarg value="-Dsgs.server=${sgs.server}"/>
+           
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run-scripttest" depends="jar" description="Run manager UI">
+        <java classname="org.jdesktop.wonderland.client.scripting.ScriptTest" fork="true">
            
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
@@ -441,5 +451,17 @@
     <import file="${build-import.dir}/run-channel-test.xml"/>
     <import file="${build-import.dir}/run-jmf.xml"/>
     <import file="${build-import.dir}/run-config.xml"/>
+
+<taskdef resource="checkstyletask.properties"
+         classpath="../build-tools/checkstyle-4.4/checkstyle-all-4.4.jar"/>
+
+<target name="checkstyle">
+<checkstyle config="../build-tools/checkstyle-4.4/sun_checks.xml">
+  <fileset dir="src/classes" includes="**/*.java"/>
+  <formatter type="plain"/>
+  <formatter type="xml" toFile="build/checkstyle_errors.xml"/>
+</checkstyle>
+</target>
+
 
 </project>

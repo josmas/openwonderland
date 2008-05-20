@@ -108,6 +108,19 @@ public class CellTransform implements Serializable {
     }
     
     /**
+     * Subtract t1 from this transform, modifying this transform and
+     * returning this transform.
+     * 
+     * @param t1
+     * @return
+     */
+    public CellTransform sub(CellTransform t1) {
+        rotation.subtract(t1.rotation);
+        translation.subtract(t1.translation);
+        return this;
+    }
+    
+    /**
      * Populates translation with the translation of this CellTransform, if translation
      * is null, a new Vector3f will be created and returned
      * 

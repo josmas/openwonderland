@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.ClientSession;
@@ -25,7 +24,6 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -34,7 +32,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * @author jkaplan
  */
 class CellChannelConnectionHandler implements ClientConnectionHandler, Serializable {
-    
+
     public ConnectionType getConnectionType() {
         return CellChannelConnectionType.CLIENT_TYPE;
     }
@@ -42,65 +40,62 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
     public void registered(WonderlandClientSender sender) {
         // ignore
     }
-    
+
     public void clientConnected(WonderlandClientSender sender,
-                               ClientSession session) 
-    {
+            ClientSession session) {
         // ignore
     }
 
     public void clientDisconnected(WonderlandClientSender sender,
-                               ClientSession session) 
-    {
+            ClientSession session) {
         // ignore
     }
-    
+
     public void messageReceived(WonderlandClientSender sender,
-                                ClientSession session, 
-                                Message message) 
-    {
+            ClientSession session,
+            
+            Message message) {
         if (message instanceof CellMessage) {
             messageReceived(sender, session, (CellMessage) message);
         } else {
             Message error = new ErrorMessage(message.getMessageID(),
                     "Unexpected message type: " + message.getClass());
-            
+
             sender.send(session, error);
         }
     }
-  
+
     /**
      * When a cell message is received, dispatch it to the appropriate cell.
      * If the cell does not exist, send back an error message.
      * @param channel the channel to send back to the cell client
      * @param sessionId the id of the session that generated the message
      * @param message the cell message
-     
+    
      */
     public void messageReceived(WonderlandClientSender sender,
-                                ClientSession session,
-                                CellMessage message) 
-    {
-        // get the CellManagerMO
-        CellManagerMO mcc = WonderlandContext.getCellManager();
+            ClientSession session,
+            CellMessage message) {
         
         // find the appropriate cell
-        CellMO cell = mcc.getCell(message.getCellID());
-        
+        CellMO cell = CellManagerMO.getCell(message.getCellID());
+
         // if there was no cell, handle the error
         if (cell == null) {
             sender.send(session, new ErrorMessage(message.getMessageID(),
-                               "Unknown cell id: " + message.getCellID()));
+                    "Unknown cell id: " + message.getCellID()));
             return;
         }
-        if (!(cell instanceof ChannelCellMO)) {
+        ChannelComponentMO channelComponent = cell.getComponent(ChannelComponentMO.class);
+
+        if (channelComponent == null) {
             sender.send(session, new ErrorMessage(message.getMessageID(),
-                               "Cell does not implement ChannelCellMO id: " + message.getCellID()));
+                    "Cell does not have a ChannelComponent id: " + message.getCellID()));
             return;
-            
+
         }
-        
+
         // dispatch the message
-        ((ChannelCellMO)cell).messageReceived(sender, session, message);
+        channelComponent.messageReceived(sender, session, message);
     }
 }
