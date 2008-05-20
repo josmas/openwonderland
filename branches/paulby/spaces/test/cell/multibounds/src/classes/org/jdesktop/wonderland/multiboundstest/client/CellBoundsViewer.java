@@ -356,13 +356,15 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 BoundingVolume localBounds, 
                 CellID parentCellID, 
                 CellTransform cellTransform, 
-                CellSetup setup) {
+                CellSetup setup,
+                String cellName) {
             cacheImpl.loadCell(cellID, 
                                className, 
                                localBounds, 
                                parentCellID, 
                                cellTransform, 
-                               setup);
+                               setup,
+                               cellName);
         }
 
         public void unloadCell(CellID cellID) {
@@ -405,7 +407,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
          * @param cell
          * @param fromServer
          */
-        public void cellMoved(MovableCell cell, boolean fromServer) {
+        public void cellMoved(Cell cell, boolean fromServer) {
             repaint();
         }
     }
