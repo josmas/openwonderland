@@ -42,8 +42,6 @@ public class MovableCell extends Cell {
     private static Logger logger = Logger.getLogger(MovableCell.class.getName());
 //    private ArrayList<CellMoveListener> serverMoveListeners = null;
     
-    public enum CellMoveSource { LOCAL, REMOTE }; // Do we need BOTH as well ?
-    
     public MovableCell(CellID cellID) {
         super(cellID);
         addComponent(new ChannelComponent(this));
