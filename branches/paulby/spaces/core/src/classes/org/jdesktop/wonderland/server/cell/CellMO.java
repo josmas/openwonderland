@@ -511,13 +511,13 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     /**
      * Remove this cell from the specified session, only applicable to cells
-     * with a ChannelComponent.
+     * with a ChannelComponent. This modifies the ChannelComponent for this cell
+     * (if it exists) but does not modify the CellMO itself.
      * 
      * @param session
      */
     protected void removeSession(ClientSession session) {
         ChannelComponentMO chan = getComponent(ChannelComponentMO.class);
-        System.out.println("*********** REMOVE FROM SESSION "+getName());
         if (chan!=null) {
             chan.removeUserFromCellChannel(session);
         }
