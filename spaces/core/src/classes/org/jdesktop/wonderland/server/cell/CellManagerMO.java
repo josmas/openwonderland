@@ -76,7 +76,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
         root.setLive(true);       
         
         // Special case for the root cell, ensure the bounds are updated
-        BoundsManager.get().cellTransformChanged(rootCellID, orig);  
+//        BoundsManager.get().cellTransformChanged(rootCellID, orig);  
         rootCellRef = AppContext.getDataManager().createReference(root);
     }
     
@@ -179,8 +179,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * Create a static grid of space nodes
      */
     private void createSpaces() {
-        int gridWidth = 10;
-        int gridDepth = 10;
+        int gridWidth = 50;
+        int gridDepth = 50;
         int gridHeight = 1;
         
         float boundsDim = 10;
