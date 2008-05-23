@@ -115,7 +115,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //            BoundsManager.get().cellBoundsChanged(cellID, bounds);
 //        }
         if (live) {
-            calcVwBounds();
+            calcWorldBounds();
         }
     }
     
@@ -134,7 +134,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @return
      */
-    BoundingVolume getCachedVWBounds() {
+    BoundingVolume getWorldBounds() {
         if (!live)
             throw new IllegalStateException("Cell is not live");
         
@@ -189,7 +189,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @return
      */
-    CellTransform getLocalToVWorld() {
+    CellTransform getLocalToWorld() {
         if (!live)
             throw new IllegalStateException("Unsupported Operation, only valid for a live Cell");
         
@@ -203,12 +203,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
         return (CellTransform) local2VWorld.clone();
     }
     
-    private CellTransform computeLocalToVWorld(CellMO currentCell) {
+    private CellTransform computeLocalToWorld(CellMO currentCell) {
         if (currentCell instanceof RootCellMO)
-            return currentCell.getTransform();
+            return currentCell.getLocalTransform();
         
-        CellTransform ret = currentCell.computeLocalToVWorld(currentCell.getParent());
-        ret.mul(currentCell.getTransform());
+        CellTransform ret = currentCell.computeLocalToWorld(currentCell.getParent());
+        ret.mul(currentCell.getLocalTransform());
         return ret;
     }
     
@@ -336,7 +336,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @param transform
      */
-    protected void setStaticTransform(CellTransform transform) {
+    protected void setLocalTransform(CellTransform transform) {
         this.transform = (CellTransform) transform.clone();  
         
 //        if (live) {
@@ -353,8 +353,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param parent
      */
     private void processTransformChange() {
-        calcLocal2VWorld();
-        calcVwBounds();
+        calcLocal2World();
+        calcWorldBounds();
             
         Collection<ManagedReference<CellMO>> childrenRef = getAllChildrenRefs();
         for(ManagedReference<CellMO> childRef : childrenRef) {
@@ -365,7 +365,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     /**
      * Calculate the vw bounds
      */
-    private void calcVwBounds() {
+    private void calcWorldBounds() {
         assert(live);
         vwBounds = localBounds.clone(vwBounds);
         local2VWorld.transform(vwBounds);        
@@ -374,11 +374,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
     /**
      * Calculate the local2VWorld transform
      */
-    private void calcLocal2VWorld() {
+    private void calcLocal2World() {
         assert(live);
         local2VWorld = (CellTransform) transform.clone();
         if (parentRef!=null) {
-             local2VWorld.mul(parentRef.get().getTransform());  
+             local2VWorld.mul(parentRef.get().getLocalTransform());  
         }
     }
     
@@ -387,7 +387,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @return return a clone of the transform
      */
-    public CellTransform getTransform() {
+    public CellTransform getLocalTransform() {
         return (CellTransform) transform.clone();
     }
     
@@ -438,8 +438,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
 //                BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
             }
-            calcLocal2VWorld();
-            calcVwBounds();
+            calcLocal2World();
+            calcWorldBounds();
         } else {
 //            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
 //            BoundsManager.get().removeBounds(this);
@@ -551,7 +551,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param setup the properties to setup with
      */
     public void setupCell(BasicCellMOSetup<?> setup) {
-        setStaticTransform(BasicCellMOHelper.getCellTransform(setup));
+        setLocalTransform(BasicCellMOHelper.getCellTransform(setup));
         setLocalBounds(BasicCellMOHelper.getCellBounds(setup));
     }
     
@@ -680,7 +680,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         public BoundingVolume getSpaceBounds() {
             if (spaceBounds==null)
-                spaceBounds = space.get().getCachedVWBounds();
+                spaceBounds = space.get().getWorldBounds();
             return spaceBounds;
         }
         

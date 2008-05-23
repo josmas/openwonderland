@@ -69,7 +69,7 @@ public class MovableComponentMO extends CellComponentMO {
     public void setTransform(CellTransform transform) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent;
-        cell.setStaticTransform(transform);
+        cell.setLocalTransform(transform);
         
         channelComponent = channelComponentRef.getForUpdate();
         
@@ -95,7 +95,7 @@ public class MovableComponentMO extends CellComponentMO {
         } else {       
             for(SpaceInfo spaceInfo : spaces) {
                 BoundingVolume bounds = spaceInfo.getSpaceBounds();
-                if (bounds.contains(cell.getLocalToVWorld().getTranslation(null))) {
+                if (bounds.contains(cell.getLocalToWorld().getTranslation(null))) {
     //                System.out.println("In Space "+spaceInfo.getSpaceBounds());
                 } else {
                     System.out.println("Left space");
@@ -121,12 +121,12 @@ public class MovableComponentMO extends CellComponentMO {
      * Check if the object needs to be added as 'in' other spaces
      */
     private void checkForNewSpace(CellMO cell, Collection<SpaceInfo> currentSpaces) {
-        Vector3f origin = cell.getLocalToVWorld().getTranslation(null);
+        Vector3f origin = cell.getLocalToWorld().getTranslation(null);
         
         for(SpaceInfo spaceInfo : currentSpaces) {
             Collection<ManagedReference<SpaceCellMO>> proximity = spaceInfo.getSpaceRef().get().getProximitySpaces();
             for(ManagedReference<SpaceCellMO> spaceCellRef : proximity) {
-                if (spaceCellRef.get().getCachedVWBounds().contains(origin)) {
+                if (spaceCellRef.get().getWorldBounds().contains(origin)) {
                     cell.addToSpace(spaceCellRef.getForUpdate());
                     System.out.println("Entering Space");
                 }

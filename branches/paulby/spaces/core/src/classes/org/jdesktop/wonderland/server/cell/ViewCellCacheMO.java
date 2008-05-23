@@ -971,7 +971,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
-            cell.getTransform(),
+            cell.getLocalTransform(),
             cell.getClientSetupData(null, capabilities),
             cell.getName()
             
@@ -995,7 +995,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
-            cell.getTransform(),
+            cell.getLocalTransform(),
             cell.getClientSetupData(null, capabilities),
             cell.getName()
             
@@ -1067,7 +1067,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cellMO.getLocalBounds(),
             cellMO.getCellID(),
             parentID,
-            cellMO.getTransform(),
+            cellMO.getLocalTransform(),
             cellMO.getClientSetupData(null, capabilities),
             cellMO.getName()
             );

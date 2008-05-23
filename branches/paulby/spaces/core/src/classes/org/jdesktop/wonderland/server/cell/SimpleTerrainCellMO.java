@@ -105,7 +105,7 @@ public class SimpleTerrainCellMO extends CellMO
         }
         
         /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getTransform();
+        CellTransform transform = this.getLocalTransform();
         if (transform != null) {
             setup.setOrigin(BasicCellMOHelper.getTranslation(transform));
             setup.setRotation(BasicCellMOHelper.getRotation(transform));

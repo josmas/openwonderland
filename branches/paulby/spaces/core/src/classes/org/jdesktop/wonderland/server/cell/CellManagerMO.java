@@ -133,14 +133,14 @@ public class CellManagerMO implements ManagedObject, Serializable {
         if (cell.getComponent(MovableComponentMO.class)!=null) {
             // Movable Cell
             rootCellRef.getForUpdate().addChild(cell);
-            SpaceCellMO space = findEnclosingSpace(rootCellRef.get(), cell.getTransform().getTranslation(null));
+            SpaceCellMO space = findEnclosingSpace(rootCellRef.get(), cell.getLocalTransform().getTranslation(null));
             if (space==null) {
-                logger.severe("Unable to find space to contain cell at "+cell.getTransform().getTranslation(null) +" aborting addCell");
+                logger.severe("Unable to find space to contain cell at "+cell.getLocalTransform().getTranslation(null) +" aborting addCell");
                 return;
             }
-            System.out.println("Cell "+cell.getTransform().getTranslation(null)+"  added to space "+space);
-            CellTransform transform = cell.getTransform();
-            transform.sub(space.getTransform());
+            System.out.println("Cell "+cell.getLocalTransform().getTranslation(null)+"  added to space "+space);
+            CellTransform transform = cell.getLocalTransform();
+            transform.sub(space.getLocalTransform());
             cell.addToSpace(space);
         } else {
             // Static cell
@@ -264,7 +264,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
         
         if (ret==null && root instanceof SpaceCellMO) {
 //            System.out.println("Checking space "+root.getCachedVWBounds());
-            if (root.getCachedVWBounds().contains(point)) {
+            if (root.getWorldBounds().contains(point)) {
                 return (SpaceCellMO)root;
             }
         }
@@ -318,7 +318,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
          * some basic properties about the cell by hand (e.g. transform, name).
          */
         WFSCellMO mo = new WFSCellMO(root);
-        mo.setStaticTransform(new CellTransform(null, null, null));
+        mo.setLocalTransform(new CellTransform(null, null, null));
         mo.setName("root");
         mo.setLocalBounds(new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f()));
         
