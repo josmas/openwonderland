@@ -86,4 +86,8 @@ public class AvatarMO extends CellMO implements View {
         
     }
 
+    public CellTransform getWorldTransform() {
+        return super.getLocalToWorld();
+    }
+
 }
