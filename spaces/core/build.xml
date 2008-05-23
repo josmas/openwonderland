@@ -318,6 +318,16 @@
 	<syspropertyset refid="wonderland.properties"/>
     </target>
     
+    <target name="run-jme" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	    <syspropertyset refid="wonderland.properties"/>
+        </java>
+    </target>
+    
     <target name="run-jmetest" depends="jar-client">
         <java classname="org.jdesktop.wonderland.client.jme.WonderlandJmeClient" fork="true">
             <!--start debug-->

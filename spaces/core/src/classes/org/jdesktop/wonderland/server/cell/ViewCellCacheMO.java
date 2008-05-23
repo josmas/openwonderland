@@ -197,7 +197,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         try {
             // getTranslation the current user's bounds
             View view = viewRef.get();
-            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(view.getTransform().getTranslation(null));
+            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(view.getWorldTransform().getTranslation(null));
             CellMO cell = view.getCell();
             
             // copy the existing cells into the list of known cells 
@@ -240,7 +240,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                         } else if (cellRef.hasUpdates(cellDescription)) {   // TODO - THIS IS NOT FUNCTIONING, cellDescription is not COMPLETE.
                             for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
                                 // schedule the update operation
-                                CellUpdateOp op = new CellUpdateOp(update, view.getTransform(),
+                                CellUpdateOp op = new CellUpdateOp(update, view.getWorldTransform(),
                                                                    cellRef, cellDescription,
                                                                    currentCellsRef, sessionRef,
                                                                    capabilities);
@@ -322,7 +322,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         try {
             // getTranslation the current user's bounds
             View view = viewRef.get();
-            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(view.getTransform().getTranslation(null));
+            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(view.getWorldTransform().getTranslation(null));
             
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer("Revalidating CellCache for   " + 
@@ -376,7 +376,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                     for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
                         
                         // schedule the update operation
-                        CellUpdateOp op = new CellUpdateOp(update, view.getTransform(),
+                        CellUpdateOp op = new CellUpdateOp(update, view.getWorldTransform(),
                                                            cellRef, cellDescription,
                                                            currentCellsRef, sessionRef,
                                                            capabilities);

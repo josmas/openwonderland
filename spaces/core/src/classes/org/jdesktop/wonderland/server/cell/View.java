@@ -35,7 +35,7 @@ public interface View {
      * Return the transform of the camera for this view
      * @return
      */
-    public CellTransform getTransform();
+    public CellTransform getWorldTransform();
     
     /**
      * Get the user who owns this view
