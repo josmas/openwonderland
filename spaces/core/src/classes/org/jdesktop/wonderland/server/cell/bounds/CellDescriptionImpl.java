@@ -62,10 +62,10 @@ public class CellDescriptionImpl
     public CellDescriptionImpl(CellMO cell) {
         cellID = cell.getCellID();
         localBounds = cell.getLocalBounds();
-        transform = cell.getTransform();
+        transform = cell.getLocalTransform();
         cellClass = cell.getClass();
         this.priority = cell.getPriority();
-        isMovable = (cell instanceof MovableCellMO); 
+        isMovable = (cell.getComponent(MovableComponentMO.class)!=null); 
     }
     
     /**

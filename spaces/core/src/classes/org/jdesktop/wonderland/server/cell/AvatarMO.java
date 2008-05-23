@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellMoveListener;
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarMO extends MovableCellMO implements View {
+public class AvatarMO extends CellMO implements View {
     
     private ManagedReference<ViewCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
@@ -44,6 +44,8 @@ public class AvatarMO extends MovableCellMO implements View {
     public AvatarMO(UserMO user) {
         super(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()),
               new CellTransform(null, new Vector3f())  );
+        addComponent(new ChannelComponentMO(this));
+        addComponent(new MovableComponentMO(this));
         this.userRef = AppContext.getDataManager().createReference(user);
 //        addCellMoveListener(new AvatarMoveListener());
     }

@@ -315,7 +315,7 @@ public class WFSCellMO extends CellMO
                 this.fileModifiedMap.put(canonical, modified);
                 
 		// Notify the cell that it's content has changed
-                ((MovableCellMO)glo).contentChanged();
+                glo.contentChanged();
                 
                 logger.log(Level.INFO, "WFS Reload: cell id=" +
                     glo.getCellID() +

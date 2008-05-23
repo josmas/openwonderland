@@ -103,7 +103,7 @@ public class CellListMO implements ManagedObject, Serializable {
             if (cell instanceof AvatarMO)
                 isMovable=false;
             localBounds = cell.getLocalBounds();
-            cellTransform = cell.getTransform();
+            cellTransform = cell.getLocalTransform();
             name = cell.getName();
             System.out.println("Adding to CellList "+name+"  "+cellTransform.getTranslation(null));
         }
@@ -132,8 +132,8 @@ public class CellListMO implements ManagedObject, Serializable {
 
         public CellTransform getTransform() {
             if (isMovable) {
-                System.out.println("Cell "+name+"  "+cellRef.get().getTransform());
-                return cellRef.get().getTransform();
+                System.out.println("Cell "+name+"  "+cellRef.get().getLocalTransform());
+                return cellRef.get().getLocalTransform();
             }
             return cellTransform;
         }
