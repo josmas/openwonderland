@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.testharness.common.LoginRequest;
 import org.jdesktop.wonderland.testharness.common.MasterInfo;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
-import org.jdesktop.wonderland.testharness.slave.client3D.Client3D;
+import org.jdesktop.wonderland.testharness.slave.client3D.Client3DSim;
 
 /**
  *
@@ -41,7 +41,7 @@ public class SlaveMain {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     
-    private Client3D clientSim = null;
+    private Client3DSim clientSim = null;
     private boolean done = false;
     
     public SlaveMain() {
@@ -49,9 +49,7 @@ public class SlaveMain {
             Socket s = new Socket(MasterInfo.MASTER_NAME, MasterInfo.PORT);
             System.out.println("Opening streams");
             out = new ObjectOutputStream(s.getOutputStream());
-            System.out.println("Got out "+s.isInputShutdown());
             in = new ObjectInputStream(s.getInputStream());
-            System.out.println("Got in");
             do {
                 try {
                     System.out.println("Waiting for request...");
@@ -75,7 +73,8 @@ public class SlaveMain {
     private void processRequest(TestRequest request) {
         if (request instanceof LoginRequest) {
             try {
-                clientSim = new Client3D((LoginRequest) request);
+                // Hardcoded Client3D, TODO make configurable
+                clientSim = new Client3DSim((LoginRequest) request);
             } catch (LoginFailureException ex) {
                 // TODO send error to server
                 Logger.getLogger(SlaveMain.class.getName()).log(Level.SEVERE, null, ex);
