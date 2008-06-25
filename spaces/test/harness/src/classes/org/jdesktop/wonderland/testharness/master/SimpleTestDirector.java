@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.testharness.master;
 
+import com.jme.math.Vector3f;
 import java.util.ArrayList;
+import org.jdesktop.wonderland.testharness.common.Client3DRequest;
 import org.jdesktop.wonderland.testharness.common.LoginRequest;
 
 /**
@@ -41,6 +43,12 @@ public class SimpleTestDirector implements TestDirector {
                                               new char[] {}, 
                                               0f, 0f, 0f));
         
+        Vector3f[] locations = new Vector3f[] {
+            new Vector3f(0,0,0),
+            new Vector3f(4,0,0),
+            new Vector3f(2,0,4)
+        };
+        slaveController.send(Client3DRequest.newWalkLoopRequest(locations, 0.25f, -1));
         return true; // We used the slave so return true
     }
 
