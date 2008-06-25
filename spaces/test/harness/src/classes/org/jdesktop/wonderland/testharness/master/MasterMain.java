@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.testharness.master;
 
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -141,7 +142,7 @@ public class MasterMain {
      * Manage the connected managers
      */
     class ManagerController extends Thread {
-        private ArrayList<ManagerConnection> listeners = new ArrayList();
+        private HashSet<ManagerConnection> connections = new HashSet();
         
         private MasterStatus lastStatusMessage = null;
         
@@ -158,7 +159,7 @@ public class MasterMain {
                         System.err.println("Listening for manager connection");
                         Socket s = ss.accept();
                         ManagerConnection connection = new ManagerConnection(s);
-                        listeners.add(connection);
+                        connections.add(connection);
                         if (lastStatusMessage != null) {
                             connection.send(lastStatusMessage);
                         }
@@ -173,8 +174,20 @@ public class MasterMain {
         
         void sendStatusMessage(int activeSlaves, int passiveSlaves) {
             lastStatusMessage = new MasterStatus(activeSlaves, passiveSlaves);
-            for(ManagerConnection l : listeners)
-                l.send(lastStatusMessage);
+            synchronized(connections) {
+                for(ManagerConnection l : connections)
+                    l.send(lastStatusMessage);
+            }
+        }
+        
+        /**
+         * Notification that a manager has closed
+         * @param manager
+         */
+        void managerClosed(ManagerConnection manager) {
+            synchronized(connections) {
+                connections.remove(manager);
+            }
         }
     }
     
@@ -190,10 +203,10 @@ public class MasterMain {
             try {
                 in = new ObjectInputStream(socket.getInputStream());
                 out = new ObjectOutputStream(socket.getOutputStream());
-                out.flush();
             } catch (IOException ex) {
                 Logger.getLogger(MasterMain.class.getName()).log(Level.SEVERE, null, ex);
             }
+            start();
         }
         
         @Override
@@ -201,8 +214,10 @@ public class MasterMain {
 
             while (!done) {
                 try {
-                    System.out.println("ManagerConnection: waiting for message");
                     in.readObject();
+                } catch(EOFException eofe) {
+                    manager.managerClosed(this);
+                    done=true;
                 } catch (IOException ex) {
                     Logger.getLogger(MasterMain.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ClassNotFoundException ex) {
