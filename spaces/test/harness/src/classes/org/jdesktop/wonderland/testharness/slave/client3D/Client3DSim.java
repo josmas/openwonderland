@@ -150,6 +150,9 @@ public class Client3DSim
         
         @Override
         public void run() {
+            // Set initial position
+            avatar.localMoveRequest(currentLocation, orientation); 
+            
             while(!quit) {
                 try {
                     semaphore.acquire();
@@ -160,14 +163,12 @@ public class Client3DSim
                 while(!quit && walking) {
                     if (currentLocation.subtract(desiredLocations[locationIndex]).lengthSquared()<0.1) {   // Need epsilonEquals
                         if (locationIndex<desiredLocations.length-1) {
-                            System.out.println("Selecting next location");
                             locationIndex++;
 
                             step = desiredLocations[locationIndex].subtract(currentLocation);
                             step.multLocal(speed/(1000f/sleepTime));
 
                         } else if (locationIndex==desiredLocations.length-1 && desiredLoopCount!=currentLoopCount) {
-                            System.out.println("Loop ");
                             currentLoopCount++;
                             locationIndex = 0;
 
@@ -179,7 +180,6 @@ public class Client3DSim
                     
                     if (walking) {
                         currentLocation.addLocal(step);
-                        System.out.println("Stepped "+currentLocation);
                         avatar.localMoveRequest(currentLocation, orientation);    
                     }
                     
@@ -208,9 +208,7 @@ public class Client3DSim
             
             step = new Vector3f(desiredLocations[0]);
             step.subtractLocal(currentLocation);
-            System.out.println("******* step "+step+"   scale "+(speed/(1000f/sleepTime)));
             step.multLocal(speed/(1000f/sleepTime));
-            System.out.println("Speed adjusted "+step);
             
             walking = true;
             semaphore.release();
