@@ -103,6 +103,7 @@
         <java classname="org.jdesktop.wonderland.testharness.master.MasterMain" fork="true">
             <classpath>
                 <path location="${build.classes.dir}"/>
+		<pathelement path="${wonderland-client.classpath}"/>  <!-- for vecmath-->
             </classpath>    
             
             <arg value="props/wonderland-server.properties"/>
