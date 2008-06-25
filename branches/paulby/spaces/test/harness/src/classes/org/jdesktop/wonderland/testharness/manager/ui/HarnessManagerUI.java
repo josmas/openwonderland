@@ -37,6 +37,10 @@ public class HarnessManagerUI extends javax.swing.JFrame {
     /** Creates new form HarnessManagerUI */
     public HarnessManagerUI() {
         initComponents();
+        
+        directorsPanel.add("Simple Director", new SimpleTestDirectorUI());
+        pack();
+        
         try {
             Socket s = new Socket("localhost", MasterMain.MANAGER_PORT);
             out = new ObjectOutputStream(s.getOutputStream());
@@ -105,13 +109,13 @@ public class HarnessManagerUI extends javax.swing.JFrame {
                     .add(jLabel2)
                     .add(activeSlavesTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(passiveSlavesTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(184, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
 
         getContentPane().add(northPanel, java.awt.BorderLayout.NORTH);
 
         centerPanel.setLayout(new java.awt.BorderLayout());
-        centerPanel.add(directorsPanel, java.awt.BorderLayout.PAGE_START);
+        centerPanel.add(directorsPanel, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
