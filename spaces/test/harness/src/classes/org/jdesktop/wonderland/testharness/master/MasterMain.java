@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.testharness.common.MasterInfo;
 import org.jdesktop.wonderland.testharness.manager.common.ManagerMessage;
 import org.jdesktop.wonderland.testharness.manager.common.MasterStatus;
 
@@ -65,7 +64,14 @@ public class MasterMain {
     
     public MasterMain(String[] args) {
         masterMain = this;
-        props = loadProperties(args[0]);
+        if (args.length<2) {
+            System.err.println("Usage: SlaveMain <master port> <property filename>");
+            System.exit(1);
+        }
+        
+        int masterPort = Integer.parseInt(args[0]);
+        
+        props = loadProperties(args[1]);
         sgsServerName = props.getProperty(SERVER_NAME_PROP,
                                               SERVER_NAME_DEFAULT);
         sgsServerPort = Integer.valueOf(props.getProperty(SERVER_PORT_PROP,
@@ -76,7 +82,7 @@ public class MasterMain {
         
         director = new SimpleTestDirector();
         try {
-            ServerSocket serverSocket = new ServerSocket(MasterInfo.PORT);
+            ServerSocket serverSocket = new ServerSocket(masterPort);
             while(true) {
                 Socket s = serverSocket.accept();
                 SlaveConnection slaveController = new SlaveConnection(s); 

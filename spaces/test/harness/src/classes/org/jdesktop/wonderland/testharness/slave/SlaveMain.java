@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.testharness.common.LoginRequest;
-import org.jdesktop.wonderland.testharness.common.MasterInfo;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 import org.jdesktop.wonderland.testharness.slave.client3D.Client3DSim;
 
@@ -44,9 +43,21 @@ public class SlaveMain {
     private Client3DSim clientSim = null;
     private boolean done = false;
     
-    public SlaveMain() {
+    public SlaveMain(String[] args) {
+        
+        String masterHostname;
+        int masterPort;
+        
+        if (args.length<2) {
+            System.err.println("Usage: SlaveMain <master hostname> <master port>");
+            System.exit(1);
+        }
+        
+        masterHostname = args[0];
+        masterPort = Integer.parseInt(args[1]);
+        
         try {
-            Socket s = new Socket(MasterInfo.MASTER_NAME, MasterInfo.PORT);
+            Socket s = new Socket(masterHostname, masterPort);
             System.out.println("Opening streams");
             out = new ObjectOutputStream(s.getOutputStream());
             in = new ObjectInputStream(s.getInputStream());
@@ -88,6 +99,6 @@ public class SlaveMain {
     }
     
     public static void main(String[] args) {
-        new SlaveMain();
+        new SlaveMain(args);
     }
 }
