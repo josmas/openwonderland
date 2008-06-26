@@ -231,7 +231,6 @@
     </condition>
     
     <pathconvert property="wonderland-common-compile.classpath">
-        <path path="${j3d.classpath}"/>
         <path path="${voice.classpath}"/>
         <path path="${wonderland-incubator.classpath}"/>
 	<path path="${darkstar.client.classpath}"/>
@@ -298,7 +297,7 @@
         <propertyref name="wonderland.wfs.root"/>
         <propertyref name="wonderland.appshare.minPort"/>
         <propertyref name="wonderland.appshare.maxPort"/>
-	<propertyref name="j3d.rend"/>
+	<!--<propertyref name="j3d.rend"/>-->
 	<propertyref name="sun.java2d.noddraw"/>
 	<propertyref name="registrar.timeout"/>
 	<propertyref name="voicelib.tunerEnabled"/>

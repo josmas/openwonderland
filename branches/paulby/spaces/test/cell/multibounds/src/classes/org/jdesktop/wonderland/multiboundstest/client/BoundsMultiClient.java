@@ -19,6 +19,7 @@
  */
 package org.jdesktop.wonderland.multiboundstest.client;
 
+import org.jdesktop.wonderland.client.comms.CellClientSession;
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -34,6 +35,7 @@ import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
+import org.jdesktop.wonderland.client.comms.CellClientSession;
 
 /**
  *
@@ -81,9 +83,9 @@ public class BoundsMultiClient
     private MoverThread mover;
     
     
-    private static int groupSize;  // Number of users in each group
-    private static int numGroups;  // Total number of groups
-    private static int percentageIdle; // Not implemented
+    private static int groupSize;       // Number of users in each group
+    private static int numGroups;       // Total number of groups
+    private static int percentageIdle;  // Not implemented
     private static int startedClients = 0; // Number of clients currently started
     private static float groupSeparation;  // Distance between each group
     
@@ -102,7 +104,7 @@ public class BoundsMultiClient
         startedClients++;
         
         // login
-        BoundsTestClientSession session = new BoundsTestClientSession(server);
+        CellClientSession session = new CellClientSession(server);
         ClientContext3D.registerCellCache(session.getCellCache(), session);
         session.addSessionStatusListener(this);
         session.login(login);
@@ -236,7 +238,8 @@ public class BoundsMultiClient
         private Quaternion orientation = null;
         private LocalAvatar avatar;
         private boolean quit = false;
-        
+        private long sleepTime = 200;
+                
         public MoverThread(LocalAvatar avatar) {
             this.avatar = avatar;
             
@@ -258,7 +261,7 @@ public class BoundsMultiClient
                 nextPosition();
                 avatar.localMoveRequest(location, orientation);
                 try {
-                    sleep(200);
+                    sleep(sleepTime);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(BoundsMultiClient.class.getName()).log(Level.SEVERE, null, ex);
                 }

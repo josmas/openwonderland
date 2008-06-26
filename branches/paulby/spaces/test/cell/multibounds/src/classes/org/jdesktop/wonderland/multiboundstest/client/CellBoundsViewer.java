@@ -6,6 +6,7 @@
 
 package org.jdesktop.wonderland.multiboundstest.client;
 
+import org.jdesktop.wonderland.client.comms.CellClientSession;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
@@ -31,12 +32,13 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.MovableCell;
 import org.jdesktop.wonderland.client.cell.CellManager;
+import org.jdesktop.wonderland.client.cell.RootCell;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -62,7 +64,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     private static final String SERVER_PORT_DEFAULT = "1139";
     private static final String USER_NAME_DEFAULT   = "test";
    
-    private BoundsTestClientSession session;
+    private CellClientSession session;
     
     private LocalAvatar localAvatar;
     
@@ -101,7 +103,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                                                           "test".toCharArray());
         
         // create a session
-        session = new BoundsTestClientSession(server) {
+        session = new CellClientSession(server) {
             @Override
             protected CellCache createCellCache() {
                 getCellCacheConnection().addListener(boundsPanel);
@@ -253,7 +255,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         
         // BoundsPanel actually wraps the cacheImpl
         private CellCacheBasicImpl cacheImpl;
-        private BoundsTestClientSession session;
+        private CellClientSession session;
         
         private Point mousePress = null;
         
@@ -295,7 +297,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             return session;
         }
         
-        public void setSession(BoundsTestClientSession session) {
+        public void setSession(CellClientSession session) {
             this.session = session;
             
             // setup internal cache
@@ -315,6 +317,9 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         }
         
         private void drawCell(Cell cell, Graphics2D g) {
+            if (cell instanceof RootCell)
+                return;
+            
             drawBounds(cell.getCachedVWBounds(), g);
             
             Vector3f cellPos = cell.getLocalToVWorld().getTranslation(null);
@@ -347,7 +352,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                            (int)((radius*2)*scale), 
                            (int)((radius*2)*scale));
             } else {
-                System.out.println("Unsupported bounds type "+bounds);
+                logger.warning("Unsupported bounds type "+bounds);
             }
         }
 
@@ -358,6 +363,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 CellTransform cellTransform, 
                 CellSetup setup,
                 String cellName) {
+            System.out.println("LOAD CELL "+cellID);
             cacheImpl.loadCell(cellID, 
                                className, 
                                localBounds, 
@@ -368,6 +374,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         }
 
         public void unloadCell(CellID cellID) {
+            System.out.println("UNLOAD CELL "+cellID);
             cacheImpl.unloadCell(cellID);
             repaint();
         }
@@ -378,7 +385,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         }
 
         /**
-         * The cell has moved. If it's an movable cell the transform has already
+         * The cell has moved. If it's a movable cell the transform has already
          * been updated, so just process the cache update. If its not a
          * movable cell then update the transform and cache.
          * 
@@ -387,6 +394,8 @@ public class CellBoundsViewer extends javax.swing.JFrame {
          */
         public void moveCell(CellID cellID, CellTransform cellTransform) {
             cacheImpl.moveCell(cellID, cellTransform);
+//            System.out.println("Cell move "+cellID);
+//            System.out.println("Cell move "+cellTransform.getTranslation(null));
             repaint();
         }
         
@@ -408,6 +417,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
          * @param fromServer
          */
         public void cellMoved(Cell cell, boolean fromServer) {
+//            System.out.println("Cell moved "+cell.getLocalToVWorld().getTranslation(null)+"  "+cell);
             repaint();
         }
     }
