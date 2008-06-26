@@ -17,7 +17,7 @@
  *  $Date$
  */
 
-package org.jdesktop.wonderland.client.extracells;
+package org.jdesktop.wonderland.client.cell;
 
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -27,9 +27,9 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * 
  * @author paulby
  */
-public class SimpleTerrainCell extends Cell {
+public class StaticModelCell extends Cell {
 
-    public SimpleTerrainCell(CellID cellID) {
+    public StaticModelCell(CellID cellID) {
         super(cellID);
     }
 }

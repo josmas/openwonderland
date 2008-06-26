@@ -24,10 +24,12 @@ import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +60,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
     private static final String BINDING_NAME=CellManagerMO.class.getName();
     private static final Logger logger = Logger.getLogger(CellManagerMO.class.getName());
     
+    private SpaceManager spaceManager = new SpaceManagerGridImpl();
     
     /**
      * Creates a new instance of CellManagerMO
@@ -65,19 +68,18 @@ public class CellManagerMO implements ManagedObject, Serializable {
     CellManagerMO() {
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
         createRootCell();
+        spaceManager.initialize();
     }
     
     private void createRootCell() {
-        BoundingSphere rootBounds = new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f());
-        CellTransform orig = new CellTransform(null, null);
+        BoundingSphere rootBounds = new BoundingSphere(Float.MAX_VALUE, new Vector3f());
+        CellTransform orig = new CellTransform(null, new Vector3f());
         CellMO root = new RootCellMO(rootBounds, orig);
         rootCellID = root.getCellID();
         root.setName("root");
-        root.setLive(true);       
+        root.setLive(true);   
         
-        // Special case for the root cell, ensure the bounds are updated
-//        BoundsManager.get().cellTransformChanged(rootCellID, orig);  
-        rootCellRef = AppContext.getDataManager().createReference(root);
+         rootCellRef = AppContext.getDataManager().createReference(root);
     }
     
     /**
@@ -114,6 +116,16 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
     
 
+    
+    /**
+     * Return the space that encloses this point, if the space does not exist, create it
+     * @param position
+     * @return
+     */
+    SpaceMO[] getEnclosingSpace(Vector3f point) {
+        return spaceManager.getEnclosingSpace(point);
+    }
+    
     /**
      * Return the cell with the given ID, or null if the id is invalid
      * 
@@ -121,167 +133,28 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * @return the cell with the given ID
      */
     public static CellMO getCell(CellID cellID) {
-        return (CellMO) AppContext.getDataManager().getBinding("CELL_"+cellID.toString());        
-    }
-    
-    /**
-     * Insert the cell into the most appropriate location in the graph. For static
-     * cells this is the first leaf space that encloses the origin of cell, for
-     * movable cells they are placed at the root of the movable graph.
-     */
-    public void insertCellInGraph(CellMO cell) throws MultipleParentException {
-        if (cell.getComponent(MovableComponentMO.class)!=null) {
-            // Movable Cell
-            rootCellRef.getForUpdate().addChild(cell);
-            SpaceCellMO space = findEnclosingSpace(rootCellRef.get(), cell.getLocalTransform().getTranslation(null));
-            if (space==null) {
-                logger.severe("Unable to find space to contain cell at "+cell.getLocalTransform().getTranslation(null) +" aborting addCell");
-                return;
-            }
-            System.out.println("Cell "+cell.getLocalTransform().getTranslation(null)+"  added to space "+space);
-            CellTransform transform = cell.getLocalTransform();
-            transform.sub(space.getLocalTransform());
-            cell.addToSpace(space);
-        } else {
-            // Static cell
-            rootCellRef.getForUpdate().addChild(cell);
+        try {
+            return (CellMO) AppContext.getDataManager().getBinding("CELL_"+cellID.toString()); 
+        } catch(NameNotBoundException e) {
+            return null;
         }
     }
     
     /**
-     * Return the collection of descriptors of the root cells for the world.
-     * 
-     * TODO - NOT IMPLEMENTED, always returns an empty set.
-     * 
-     * @return
+     * Insert the cell into the world. 
      */
-    public Collection<CellDescription> getRootCells() {
-        throw new NotImplementedException();
-    }
-    
-    /**
-     *  Traverse all trees and return the CellDescription for the cells which are within
-     * the specified bounds and are of the given Class 
-     * 
-     * TODO - NOT IMPLEMENTED, always returns an empty set.
-     * 
-     * @param b the bounds to search inside
-     * @param cellClasses the classes of cells to search for
-     * @return an array of cell descriptions that provide details about the
-     * cells in range
-     */
-    @InternalAPI
-    public Collection<CellDescription> getCells(BoundingVolume b, Class<?>... cellClasses) {
-        throw new NotImplementedException();
-    }
- 
-    /**
-     * Create a static grid of space nodes
-     */
-    private void createSpaces() {
-        int gridWidth = 50;
-        int gridDepth = 50;
-        int gridHeight = 1;
-        
-        float boundsDim = 10;
-        
-        // The spaces must overlap slightly so that the view does not land between 2 spaces
-        float fudge = 1.00001f;
-        BoundingBox gridBounds = new BoundingBox(new Vector3f(), boundsDim*fudge, boundsDim*fudge, boundsDim*fudge);
-        
-        SpaceCellMO[][][] gridCells = new SpaceCellMO[gridWidth][gridHeight][gridDepth];
-        
-        CellMO rootCell = rootCellRef.getForUpdate();
-        
-        for(int x=0; x<gridWidth; x++) {
-            for(int y=0; y<gridHeight; y++) {
-                for(int z=0; z<gridDepth; z++) {
-                    try {
-                        SpaceCellMO cell = new SpaceCellMO(gridBounds, new CellTransform(null, new Vector3f(x * boundsDim*2, y*boundsDim*2, z * boundsDim*2) ));
-                        cell.setName("space_" + x + "_" +y +"_"+ z);
-                        insertCellInGraph(cell);
-
-                        gridCells[x][y][z] = cell;
-
-                        rootCell.addToSpace(cell);
-                    } catch (MultipleParentException ex) {
-                        Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
+    public void insertCellInWorld(CellMO cell) throws MultipleParentException {
+        rootCellRef.getForUpdate().addChild(cell);
+        SpaceMO[] space = getEnclosingSpace(cell.getLocalTransform().getTranslation(null));
+        if (space[0]==null) {
+            logger.severe("Unable to find space to contain cell at "+cell.getLocalTransform().getTranslation(null) +" aborting addCell");
+            return;
         }
-                
-        int xzMaxDist = 2;
-        int yMaxDist = 1;
-        for(int x=0; x<gridWidth; x++) {
-            for(int y=0; y<gridHeight; y++) {
-                for(int z=0; z<gridDepth; z++) {
-                        SpaceCellMO cell = gridCells[x][y][z];
-                        for(int xDist=0; xDist<xzMaxDist; xDist++) {
-                            for(int yDist=0; yDist<yMaxDist; yDist++) {
-                                for(int zDist=0; zDist<xzMaxDist; zDist++) {
-                                    if (!(xDist==0 && yDist==0 && zDist==0)) {
-                                        if ((x-xDist>=0) &&
-                                            (y-yDist>=0) &&
-                                            (z-zDist>=0) ) {
-                                                gridCells[x-xDist][y-yDist][z-zDist].addProximitySpace(cell);
-                                                cell.addProximitySpace(gridCells[x-xDist][y-yDist][z-zDist]);
-                                        }
-
-                                        if ((x+xDist<gridWidth) &&
-                                            (y+yDist<gridHeight) &&
-                                            (z+zDist<gridDepth) ) {
-                                                gridCells[x+xDist][y+yDist][z+zDist].addProximitySpace(cell);
-                                                cell.addProximitySpace(gridCells[x+xDist][y+yDist][z+zDist]);                                
-                                        }
-                                    }
-                                   
-                                }
-                            }
-                        }                
-                }
-            }
+        Collection<ManagedReference<SpaceMO>> inSpaces = space[0].getSpaces(cell.getWorldBounds());
+        for(ManagedReference<SpaceMO> spaceRef : inSpaces) {
+            cell.addToSpace(spaceRef.get());
         }
-    }
-    
-    /**
-     * Find the deepest space that contains the point
-     * @param point
-     * @return
-     */
-    private SpaceCellMO findEnclosingSpace(CellMO root, Vector3f point) {
-        SpaceCellMO ret = null;
-        
-        Collection<ManagedReference<CellMO>> childrenRefs = root.getAllChildrenRefs();
-        
-        if (childrenRefs!=null) {
-            for(ManagedReference<CellMO> childRef : childrenRefs) {
-                ret = findEnclosingSpace(childRef.get(), point);
-                if (ret!=null)
-                    break;
-            }
-        }
-        
-        if (ret==null && root instanceof SpaceCellMO) {
-//            System.out.println("Checking space "+root.getCachedVWBounds());
-            if (root.getWorldBounds().contains(point)) {
-                return (SpaceCellMO)root;
-            }
-        }
-        
-        
-        return ret;
-    }
-    
-    /**
-     * Find the deepest (closest to a leaf) space that contains the point
-     * @param point
-     * @return
-     */
-    SpaceCellMO findEnclosingSpace(Vector3f point) {
-        return findEnclosingSpace(rootCellRef.get(), point);
-    }
-    
+    }        
     
     /**
      * For testing.....
@@ -289,10 +162,78 @@ public class CellManagerMO implements ManagedObject, Serializable {
     public void loadWorld() {
         //buildWFSWorld();
         
-        createSpaces();
-
+        test();
     }
 
+    public void test() {
+        logger.info("Initialize bounds test plugin");
+
+        try {
+
+            BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
+
+            MovableCellMO c2 = new MovableCellMO(bounds,
+                    new CellTransform(null, new Vector3f(10, 5, 10)));
+            c2.setName("c2");
+            c2.setLocalBounds(bounds);
+
+            MovableCellMO c3 = new MovableCellMO(
+                    new BoundingSphere(2, new Vector3f()),
+                    new CellTransform(null, new Vector3f(5, 5, 5)));
+            c3.setName("c3");
+
+            CellMO c4 = new MovableCellMO(
+                    new BoundingSphere(0.5f, new Vector3f()),
+                    new CellTransform(null, new Vector3f(0, 0, 0)));
+            c4.setName("c4");
+
+            c3.addChild(c4);
+            
+            CellMO s1 = new StaticModelCellMO(new Vector3f(3, 10, 5), 5);
+            CellMO s2 = new StaticModelCellMO(new Vector3f(8, 10, 5), 5);
+            CellMO s3 = new StaticModelCellMO(new Vector3f(11, 10, 5), 5);
+
+            WonderlandContext.getCellManager().insertCellInWorld(c2);
+            WonderlandContext.getCellManager().insertCellInWorld(c3);
+            WonderlandContext.getCellManager().insertCellInWorld(s1);
+            WonderlandContext.getCellManager().insertCellInWorld(s2);
+            WonderlandContext.getCellManager().insertCellInWorld(s3);
+
+            Task t = new TestTask(c3, c2);
+
+//            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
+
+        } catch (Exception ex) {
+            Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    static class TestTask implements Task, Serializable {
+
+        private ManagedReference<MovableCellMO> cellRef;
+        private Vector3f pos;
+        private Vector3f pos2;
+        private int dir = 2;
+        private ManagedReference<MovableCellMO> cell2Ref;
+
+        public TestTask(MovableCellMO cell, MovableCellMO c2) {
+            this.cellRef = AppContext.getDataManager().createReference(cell);
+            this.cell2Ref = AppContext.getDataManager().createReference(c2);
+            pos = cell.getLocalTransform().getTranslation(null);
+            pos2 = cell.getLocalTransform().getTranslation(null);
+        }
+
+        public void run() throws Exception {
+            pos.x += dir;
+            pos2.z += dir;
+            if (pos.x > 40 || pos.x < 4) {
+                dir = -dir;
+            }
+            cellRef.get().getComponent(MovableComponentMO.class).setTransform(new CellTransform(null, pos));
+            cell2Ref.get().getComponent(MovableComponentMO.class).setTransform(new CellTransform(null, pos2));
+        }
+    }
+    
     /**
      * Builds a world defined by a wonderland file system (e.g. on disk). The
      * world's root directory must be setTranslation in the system property 
@@ -324,7 +265,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
         
         try {
             AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
-            this.insertCellInGraph(mo);
+            this.insertCellInWorld(mo);
         } catch (java.lang.Exception excp) {
             WFS.getLogger().log(Level.SEVERE, "Unable to load WFS into world: " + root.toString());
             WFS.getLogger().log(Level.SEVERE, excp.toString());

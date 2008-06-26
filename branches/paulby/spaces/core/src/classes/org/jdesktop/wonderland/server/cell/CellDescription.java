@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.app.ManagedObject;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -38,20 +39,16 @@ public interface CellDescription {
     public CellID getCellID();
 
     /**
-     * Returns the version number of the cells contents. Each change
-     * of the cells contents causes this value to be incremented, it will roll
-     * around when MAX_VALUE is reached.
+     * Returns the time stamp for when the contents was last modified
      * @return
      */
-    public int getContentsVersion();
+    public long getContentsTimestamp();
     
     /**
-     * Return the version number of the cells transform. Each change
-     * of the cells transform causes this value to be incremented, it will roll
-     * around when MAX_VALUE is reached.
+     * Returns the time stamp for when the transform was last modified
      * @return
      */
-    public int getTransformVersion();
+    public long getTransformTimestamp();
     
      /**
      * Returns a copy of the cell's local bounds
@@ -65,6 +62,8 @@ public interface CellDescription {
      */
     public CellTransform getTransform();
     
+    void setTransform(CellTransform localTransform, long timestamp);
+    
     /**
      * Return the cells priority
      * @return
@@ -72,14 +71,14 @@ public interface CellDescription {
     public short getPriority();
     
     /**
-     * Returns true if this is a description for a MovableCell.
-     * @return
-     */
-    public boolean isMovableCell();
-    
-    /**
      * Return the class of the cell represented by this mirror
      * @return
      */
     public Class getCellClass();
+    
+    /**
+     * Return true if this is static cell, false if its dynamic
+     * @return
+     */
+    public boolean isStatic();
 }

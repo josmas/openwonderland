@@ -69,6 +69,7 @@ public class ChannelComponentMO extends CellComponentMO {
         // cache the sender for sending to cell clients.  This saves a
         // Darkstar lookup for every cell we want to send to.
         cellSender = WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
+        
     }
     
     /**
@@ -96,8 +97,10 @@ public class ChannelComponentMO extends CellComponentMO {
      * @param message
      */
     public void sendAll(Message message) {
-        if (cellChannelRef==null)
+        if (cellChannelRef==null) {
             return;
+        }
+//        System.out.println("Sending data "+cellSender.getSessions().size());
         cellSender.send(cellChannelRef.get(), message);
     }
     
@@ -109,7 +112,7 @@ public class ChannelComponentMO extends CellComponentMO {
         if (cellChannelRef == null)
             return;
             
-        cellChannelRef.get().join(session);
+        cellChannelRef.getForUpdate().join(session);
     }
     
     /**
@@ -120,7 +123,7 @@ public class ChannelComponentMO extends CellComponentMO {
         if (cellChannelRef == null)
             return;
             
-        cellChannelRef.get().leave(session);        
+        cellChannelRef.getForUpdate().leave(session);        
     }
      
     /**

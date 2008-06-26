@@ -17,14 +17,25 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.common.cell.CellStatus;
+
 /**
  *
  * @author paulby
  */
 public class CellComponent {
     protected Cell cell;
+    protected CellStatus status;
     
     public CellComponent(Cell cell) {
         this.cell = cell;
+    }
+    
+    /**
+     * Set the status of the component.
+     * @param status
+     */
+    public void setStatus(CellStatus status) {
+        this.status = status;
     }
 }

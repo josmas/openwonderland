@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
@@ -25,13 +24,13 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.TaskManager;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
+import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO.SpaceInfo;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
@@ -45,6 +44,8 @@ public class MovableComponentMO extends CellComponentMO {
 
     private ArrayList<ManagedReference<CellMoveListener>> listeners = null;
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
+    private ManagedReference<SpaceMO> currentSpaceRef = null;
+    private long transformTimestamp;
     
     /**
      * Create a MovableComponent for the given cell. The cell must already
@@ -54,12 +55,25 @@ public class MovableComponentMO extends CellComponentMO {
     public MovableComponentMO(CellMO cell) {
         super(cell);
         
+        cell.setStatic(false);
         ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
         if (channelComponent==null)
             throw new IllegalStateException("Cell does not have a ChannelComponent");
         channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
                 
         channelComponent.addMessageReceiver(MovableMessage.class, new ComponentMessageReceiverImpl(this));
+    }
+    
+    @Override
+    public void setLive(boolean live) {
+        if (live) {
+            CellMO cell = cellRef.get();
+            SpaceMO[] currentSpace = WonderlandContext.getCellManager().getEnclosingSpace(
+                                        cell.getLocalToWorld().getTranslation(null));
+            currentSpaceRef = AppContext.getDataManager().createReference(currentSpace[0]);  
+        } else {
+            currentSpaceRef = null;
+        }
     }
     
     /**
@@ -77,43 +91,22 @@ public class MovableComponentMO extends CellComponentMO {
         if (listeners!=null) {
             notifyMoveListeners(cell, transform);
         }
-
+        
+        // TODO only handles a single space at the moment
+        CellTransform cellWorld = cell.getLocalToWorld();
+        SpaceMO[] spaceSet = WonderlandContext.getCellManager().getEnclosingSpace(cellWorld.getTranslation(null));
+        SpaceMO newSpace = spaceSet[0];
+        ManagedReference<SpaceMO> newSpaceRef = AppContext.getDataManager().createReference(newSpace);
+        if (newSpaceRef!=currentSpaceRef) {
+            cell.removeFromSpace(currentSpaceRef.getForUpdate());
+            cell.addToSpace(newSpace);
+            currentSpaceRef = newSpaceRef;
+        }
+        transformTimestamp = TimeManager.getWonderlandTime();
+        
         if (cell.isLive()) {
 //            System.out.println("Sending pos "+transform.getTranslation(null));
             channelComponent.sendAll(MovableMessage.newMovedMessage(cell.getCellID(), transform));
-        }
-        
-        Collection<SpaceInfo> spaces = cell.inSpaces();  // List of spaces cell was in before the move
-        
-        if (spaces.size()==0) {
-            // Cell is not in any space, therefore search the static cells
-            // to determine if we have reentered a space
-            SpaceCellMO spaceCell = WonderlandContext.getCellManager().findEnclosingSpace(transform.getTranslation(null));
-            if (spaceCell!=null) {
-                cell.addToSpace(spaceCell);
-            }
-        } else {       
-            for(SpaceInfo spaceInfo : spaces) {
-                BoundingVolume bounds = spaceInfo.getSpaceBounds();
-                if (bounds.contains(cell.getLocalToWorld().getTranslation(null))) {
-    //                System.out.println("In Space "+spaceInfo.getSpaceBounds());
-                } else {
-                    System.out.println("Left space");
-                    cell.removeFromSpace(spaceInfo.getSpaceRef().getForUpdate());
-                    checkForNewSpace(cell, spaces);
-                }
-            }
-            if (cell.numInSpaces()==0) {
-                // Cell has moved too far to fall in the proximity check, so
-                // scan the tree. TODO optimise by searching up the tree, instead
-                // of down from the root
-                SpaceCellMO spaceCell = WonderlandContext.getCellManager().findEnclosingSpace(transform.getTranslation(null));
-                if (spaceCell!=null) {
-                    cell.addToSpace(spaceCell);
-                    checkForNewSpace(cell, cell.inSpaces());
-                }
-               
-            }
         }
     }
     
@@ -124,11 +117,10 @@ public class MovableComponentMO extends CellComponentMO {
         Vector3f origin = cell.getLocalToWorld().getTranslation(null);
         
         for(SpaceInfo spaceInfo : currentSpaces) {
-            Collection<ManagedReference<SpaceCellMO>> proximity = spaceInfo.getSpaceRef().get().getProximitySpaces();
-            for(ManagedReference<SpaceCellMO> spaceCellRef : proximity) {
-                if (spaceCellRef.get().getWorldBounds().contains(origin)) {
+            Collection<ManagedReference<SpaceMO>> proximity = spaceInfo.getSpaceRef().get().getSpaces(cell.getWorldBounds());
+            for(ManagedReference<SpaceMO> spaceCellRef : proximity) {
+                if (spaceCellRef.get().getWorldBounds(null).contains(origin)) {
                     cell.addToSpace(spaceCellRef.getForUpdate());
-                    System.out.println("Entering Space");
                 }
             }
         }
@@ -193,8 +185,11 @@ public class MovableComponentMO extends CellComponentMO {
 
         public void messageReceived(WonderlandClientSender sender, ClientSession session, CellMessage message) {
             MovableMessage ent = (MovableMessage) message;
+//            System.out.println("MovableComponentMO.messageReceived "+ent.getActionType());
             switch (ent.getActionType()) {
                 case MOVE_REQUEST:
+                    // TODO check permisions
+                    
                     compRef.getForUpdate().setTransform(new CellTransform(ent.getRotation(), ent.getTranslation()));
 
                     // Only need to send a response if the move can not be completed as requested

@@ -76,7 +76,7 @@ public class ChannelComponent extends CellComponent {
      * @param message
      */
     public void messageReceived(CellMessage message ) {
-        
+//        System.out.println("Receved "+message);
         ComponentMessageReceiver recvRef = messageReceivers.get(message.getClass());
         if (recvRef==null) {
             Logger.getAnonymousLogger().warning("No listener for message "+message.getClass());

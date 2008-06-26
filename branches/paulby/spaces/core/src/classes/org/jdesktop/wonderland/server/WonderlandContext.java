@@ -53,7 +53,7 @@ public class WonderlandContext {
     public static CellManagerMO getCellManager() {
         return CellManagerMO.getCellManager();
     }
-
+    
     /**
      * Return the user manager singleton.
      * @return the user manager

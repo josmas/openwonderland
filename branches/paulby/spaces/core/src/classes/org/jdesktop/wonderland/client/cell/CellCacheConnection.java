@@ -134,6 +134,11 @@ public class CellCacheConnection extends BaseConnection {
                     l.unloadCell(msg.getCellID());
                 }
                 break;
+            case DELETE_CELL :
+                for(CellCacheMessageListener l : listeners) {
+                    l.deleteCell(msg.getCellID());
+                }
+                break;
             default :
                 logger.warning("Message type not implemented "+msg.getActionType());
         }

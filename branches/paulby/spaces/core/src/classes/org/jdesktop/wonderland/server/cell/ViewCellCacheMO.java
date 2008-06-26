@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingSphere;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.DataManager;
@@ -49,11 +50,11 @@ import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
 import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
+import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellListMO.ListInfo;
 import org.jdesktop.wonderland.server.cell.CellMO.SpaceInfo;
-import org.jdesktop.wonderland.server.cell.bounds.CellDescriptionManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -85,9 +86,13 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private ClientCapabilities capabilities = null;
      
     /**
-     * List of currently active cells
+     * List of currently active static cells
      */
-    private ManagedReference<Map<CellID, CellRef>> currentCellsRef;
+    private ManagedReference<Map<CellID, CellDescription>> currentStaticCellsRef;
+    /**
+     * List of currently active dynamic cells
+     */
+    private ManagedReference<Map<CellID, CellDescription>> currentDynamicCellsRef;
     
     private PeriodicTaskHandle task = null;
     
@@ -96,6 +101,15 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     
     // whether or not to aggregate messages
     private static final boolean AGGREGATE_MESSAGES = true;
+    
+    private long viewTransformVersion = Long.MIN_VALUE;
+    
+    private Collection<ManagedReference<SpaceMO>> proximitySpaces=null;
+    private ManagedReference<SpaceMO> currentSpaceRef = null;
+    private CellListMO allCells = new CellListMO();
+    
+    private long lastRevalidationTimestamp;     // Last time we did a validation
+    private BoundingSphere proximityBounds;
     
     /**
      * Creates a new instance of ViewCellCacheMO
@@ -123,6 +137,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     void login(WonderlandClientSender sender, ClientSession session) {
         this.sender = sender;
         
+        lastRevalidationTimestamp=0;
+        if (allCells.size()!=0) {
+            logger.warning("User login, allCells is not empty !");
+        }
+        
         DataManager dm = AppContext.getDataManager();
         sessionRef = dm.createReference(session);
         
@@ -132,13 +151,13 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
         CellMO rootCell = CellManagerMO.getCell(rootCellID);
-        
         msg = newCreateCellMessage(rootCell, capabilities);
         sender.send(session, msg);
         
-        Map<CellID, CellRef> currentCells = new ManagedHashMap<CellID, CellRef>();
-        currentCells.put(rootCellID, new CellRef(rootCell));
-        currentCellsRef = dm.createReference(currentCells);
+        Map<CellID, CellDescription> currentStaticCells = new ManagedHashMap<CellID, CellDescription>();
+        currentStaticCellsRef = dm.createReference(currentStaticCells);
+        Map<CellID, CellDescription> currentDynamicCells = new ManagedHashMap<CellID, CellDescription>();
+        currentDynamicCellsRef = dm.createReference(currentDynamicCells);
         
         // set up the revalidate scheduler
         scheduler = new ImmediateRevalidateScheduler(sender, session);
@@ -149,8 +168,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         } else {
             // Periodically revalidate the cache
              task = AppContext.getTaskManager().schedulePeriodicTask(
-                    new ViewCellCacheRevalidateTask(this), 100, 500); 
+                    new ViewCellCacheRevalidateTask(this), 100, 1000); 
         }
+        
+        View view = viewRef.get();
+        Vector3f translation = view.getWorldTransform().getTranslation(null);
+        proximityBounds = AvatarBoundsHelper.getProximityBounds(translation);            
     }
     
     /**
@@ -159,13 +182,13 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     void logout(ClientSession session) {
         logger.warning("DEBUG - logout");
         
-        DataManager dm = AppContext.getDataManager();
-        dm.removeObject(getCurrentCells());
+        allCells.clear();
         
         if (CacheManager.USE_CACHE_MANAGER) {
             CacheManager.removeCache(this);
         } else {
             task.cancel();
+            task=null;
         }
     }
      
@@ -185,106 +208,66 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             return;
         }
         
-//        revalidateFromGraph(session);
         revalidateFromSpaces(session);
     }
+
+    /**
+     * @param session
+     */
     
     void revalidateFromSpaces(ClientSession session) {
         // create a performance monitor
         RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
         long startTime = System.nanoTime();
         
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer("Revalidating CellCache for   " + 
+                          session.getName());
+        }
+
         try {
             // getTranslation the current user's bounds
             View view = viewRef.get();
-            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(view.getWorldTransform().getTranslation(null));
-            CellMO cell = view.getCell();
+            Vector3f translation = view.getWorldTransform().getTranslation(null);
+            proximityBounds.setCenter(translation);            
             
-            // copy the existing cells into the list of known cells 
-            Collection<CellRef> oldCells = new ArrayList(getCurrentCells().values());
+            CellListMO dynamicCellList = new CellListMO();
             
             // notify the schduler
             scheduler.startRevalidate();
             
-            Collection<SpaceInfo> spaces = cell.inSpaces();
-            for(SpaceInfo spaceInfo : spaces) {
-                SpaceCellMO spaceCell = spaceInfo.getSpaceRef().get();
-                Collection<CellListMO> visCellLists = spaceCell.getProximityCellLists();
-                for(CellListMO cellLists : visCellLists) {
-                    // Todo check cellList version
-                    Collection<CellDescription> cellInfoList = cellLists.getCells();
-                    for(CellDescription cellDescription : cellInfoList) {
-                        long cellStartTime = System.nanoTime();
-                        // find the cell in our current list of cells
-                        
-                        // check this client's access to the cell
-                        if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellDescription)) {
-                            // the user doesn't have access to this cell -- just skip
-                            // it and go on                
-                            continue;
-                        }
+            // TODO - only supports a single current space at the moment, should
+            // support multiple current spaces
+            SpaceMO space = CellManagerMO.getCellManager().getEnclosingSpace(translation)[0];
+            if (true || AppContext.getDataManager().createReference(space)!=currentSpaceRef) {
+//                System.err.println("Full revalidation "+space.position);
+                // copy the existing cells into the list of old cells 
+                CellListMO oldCells = (CellListMO) allCells.clone();
+                CellListMO currentCells = new CellListMO();  // Cells found during this revalidation
                 
-                        CellRef cellRef = getCurrentCells().get(cellDescription.getCellID());           
-                        if (cellRef == null) {
-                            // schedule the add operation
-                            CellAddOp op = new CellAddOp(cellRef, cellDescription,
-                                                         currentCellsRef, sessionRef,
-                                                         capabilities);
-                            scheduler.schedule(op);
-
-                            // monitor.incMessageCount();
-
-                            // update performance monitoring
-                            monitor.incNewCellTime(System.nanoTime() - cellStartTime);
-                        
-                        } else if (cellRef.hasUpdates(cellDescription)) {   // TODO - THIS IS NOT FUNCTIONING, cellDescription is not COMPLETE.
-                            for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
-                                // schedule the update operation
-                                CellUpdateOp op = new CellUpdateOp(update, view.getWorldTransform(),
-                                                                   cellRef, cellDescription,
-                                                                   currentCellsRef, sessionRef,
-                                                                   capabilities);
-                                scheduler.schedule(op);
-                            }
-                            cellRef.clearUpdateTypes(cellDescription);
-
-                            // it is still visible, so remove it from the oldCells set
-                            oldCells.remove(cellRef);
-
-                            // update the monitor
-                            monitor.incUpdateCellTime(System.nanoTime() - cellStartTime);
-                        } else {
-                            // t is still visible, so remove it from the oldCells set
-                            oldCells.remove(cellRef);
-                        }
-                    }
-                }
+                proximitySpaces = space.getSpaces(proximityBounds);
+                currentSpaceRef = AppContext.getDataManager().createReference(space);
+                CellListMO staticCellList = space.getStaticCells(proximitySpaces, proximityBounds, currentCells);               
+                
+                generateLoadMessages(staticCellList);
+                                
+                // Get all dynamics cells, no matter when they were last updated
+                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, currentCells);                 
+                generateLoadMessages(dynamicCellList);
+                
+                Collection<CellDescription> descList = currentCells.getCells();
+                for(CellDescription desc : descList)
+                    oldCells.removeCell(desc);
+                generateUnloadMessages(oldCells);
+                oldCells.clear();
+            } else {           
+                // Get only the dynamic cells that have been updated since our last revalidation
+                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, null, lastRevalidationTimestamp);
+//                System.out.println(session.getName()+"  "+dynamicCellList.size());
+                generateLoadMessages(dynamicCellList);
             }
-            
-            if (logger.isLoggable(Level.FINER)) {
-                logger.finer("Revalidating CellCache for   " + 
-                              session.getName() + "  " + proximityBounds);
-            }
-            
-            // oldCells contains the set of cells to be removed from client memory
-            for(CellRef ref : oldCells) {
-                long cellStartTime = System.nanoTime();
-                
-                if (logger.isLoggable(Level.FINER)) {
-                    logger.finer("Leaving cell " + ref.getCellID() +
-                                 " cellcache for user "+username);
-                }
-                
-                // schedule the add operation
-                CellRemoveOp op = new CellRemoveOp(ref, null,
-                                                   currentCellsRef, sessionRef,
-                                                   capabilities);
-                scheduler.schedule(op);
-                //markForUpdate();
-                
-                // update the monitor
-                monitor.incOldCellTime(System.nanoTime() - cellStartTime);
-            }
+                   
+            lastRevalidationTimestamp = TimeManager.getWonderlandTime();
             
             scheduler.endRevalidate();
             
@@ -299,146 +282,60 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         } finally {
             monitor.incTotalTime(System.nanoTime() - startTime);
             monitor.updateTotals();
-            
-            // logger.info(monitor.getMessageStats());
-            
-            // print stats
-            if (RevalidatePerformanceMonitor.printSingle()) {
-                logger.info(monitor.getRevalidateStats());
+        }
+    }
+    
+    private void generateLoadMessages(CellListMO visCellList) {
+        
+        Collection<CellDescription> cellInfoList = visCellList.getCells();
+        for(CellDescription cellDescription : cellInfoList) {
+            // find the cell in our current list of cells
+
+            // check this client's access to the cell
+            if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellDescription)) {
+                // the user doesn't have access to this cell -- just skip
+                // it and go on                
+                continue;
             }
-            if (RevalidatePerformanceMonitor.printTotals()) {
-                logger.info(RevalidatePerformanceMonitor.getTotals());
-                RevalidatePerformanceMonitor.resetTotals();
+
+            if (!allCells.contains(cellDescription)) {
+                // schedule the add operation
+
+                if (logger.isLoggable(Level.FINER)) 
+                    logger.finer("Entering cell " + cellDescription.getCellID() +
+                                 " cellcache for user "+username);
+                
+                allCells.addCell(cellDescription);
+                CellLoadOp op = new CellLoadOp(cellDescription,
+                                             sessionRef,
+                                             capabilities);
+                scheduler.schedule(op);
+             } else {
+                if (logger.isLoggable(Level.FINER)) 
+                    logger.finer("Cell already visible " + cellDescription.getCellID() +
+                                 " cellcache for user "+username);
+                
             }
         }
     }
     
-    void revalidateFromGraph(ClientSession session) {
-        
-        // create a performance monitor
-        RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
-        long startTime = System.nanoTime();
-        
-        try {
-            // getTranslation the current user's bounds
-            View view = viewRef.get();
-            BoundingSphere proximityBounds = AvatarBoundsHelper.getProximityBounds(view.getWorldTransform().getTranslation(null));
-            
-            if (logger.isLoggable(Level.FINER)) {
-                logger.finer("Revalidating CellCache for   " + 
-                              session.getName() + "  " + proximityBounds);
-            }
+    private void generateUnloadMessages(CellListMO removeList) {
 
-            // find the visible cells
-            CellDescriptionManager boundsMgr = AppContext.getManager(CellDescriptionManager.class);
-            Collection<CellDescription> visCells = 
-                    boundsMgr.getVisibleCells(rootCellID, proximityBounds, monitor);
-            monitor.setVisibleCellCount(visCells.size());
+        Collection<CellDescription> removeCells = removeList.getCells();
+        // oldCells contains the set of cells to be removed from client memory
+        for(CellDescription ref : removeCells) {
+            if (logger.isLoggable(Level.FINER)) 
+                logger.finer("Leaving cell " + ref.getCellID() +
+                             " cellcache for user "+username);
             
-            // copy the existing cells into the list of known cells 
-            Collection<CellRef> oldCells = new ArrayList(getCurrentCells().values());
-        
-            // notify the schduler
-            scheduler.startRevalidate();
-            
-            CellHierarchyMessage msg;
-            /*
-             * Loop through all of the visible cells and:
-             * 1. If not already present, create it
-             * 2. If already present, check to see if has been modified
-             * These two steps only happen if we are given access to view the cell
-             */
-            for(CellDescription cellDescription : visCells) {
-                long cellStartTime = System.nanoTime();
-                CellID cellID = cellDescription.getCellID();
-            
-                // check this client's access to the cell
-                if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellDescription)) {
-                    // the user doesn't have access to this cell -- just skip
-                    // it and go on                
-                    continue;
-                }
-
-                // find the cell in our current list of cells
-                CellRef cellRef = getCurrentCells().get(cellID);           
-                if (cellRef == null) {
-                    // schedule the add operation
-                    CellAddOp op = new CellAddOp(cellRef, cellDescription,
-                                                 currentCellsRef, sessionRef,
-                                                 capabilities);
-                    scheduler.schedule(op);
-                    
-                    // monitor.incMessageCount();
-                                        
-                    // update performance monitoring
-                    monitor.incNewCellTime(System.nanoTime() - cellStartTime);
-                } else if (cellRef.hasUpdates(cellDescription)) {
-                    for (CellRef.UpdateType update : cellRef.getUpdateTypes()) {
-                        
-                        // schedule the update operation
-                        CellUpdateOp op = new CellUpdateOp(update, view.getWorldTransform(),
-                                                           cellRef, cellDescription,
-                                                           currentCellsRef, sessionRef,
-                                                           capabilities);
-                        scheduler.schedule(op);
-                    }
-                    cellRef.clearUpdateTypes(cellDescription);
-                
-                    // it is still visible, so remove it from the oldCells set
-                    oldCells.remove(cellRef);
-                    
-                    // update the monitor
-                    monitor.incUpdateCellTime(System.nanoTime() - cellStartTime);
-                } else {
-                    // t is still visible, so remove it from the oldCells set
-                    oldCells.remove(cellRef);
-                }
-            }
-               
-            // oldCells contains the set of cells to be removed from client memory
-            for(CellRef ref : oldCells) {
-                long cellStartTime = System.nanoTime();
-                
-                if (logger.isLoggable(Level.FINER)) {
-                    logger.finer("Leaving cell " + ref.getCellID() +
-                                 " cellcache for user "+username);
-                }
-                
-                // schedule the add operation
-                CellRemoveOp op = new CellRemoveOp(ref, null,
-                                                   currentCellsRef, sessionRef,
-                                                   capabilities);
-                scheduler.schedule(op);
-                //markForUpdate();
-                
-                // update the monitor
-                monitor.incOldCellTime(System.nanoTime() - cellStartTime);
-            }
-            
-            scheduler.endRevalidate();
-        } catch(RuntimeException e) {
-            monitor.setException(true);
-            
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "Rethrowing exception", e);
-            }
-            
-            throw e;
-        } finally {
-            monitor.incTotalTime(System.nanoTime() - startTime);
-            monitor.updateTotals();
-            
-            // logger.info(monitor.getMessageStats());
-            
-            // print stats
-            if (RevalidatePerformanceMonitor.printSingle()) {
-                logger.info(monitor.getRevalidateStats());
-            }
-            if (RevalidatePerformanceMonitor.printTotals()) {
-                logger.info(RevalidatePerformanceMonitor.getTotals());
-                RevalidatePerformanceMonitor.resetTotals();
-            }
+            allCells.removeCell(ref);
+            // schedule the add operation
+            CellUnloadOp op = new CellUnloadOp(ref,
+                                               sessionRef,
+                                               capabilities);
+            scheduler.schedule(op);
         }
+        
     }
     
     /**
@@ -458,14 +355,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             return null;
         }
     }
-    
-    /**
-     * Utility to get the list of managed cells
-     */
-    protected Map<CellID, CellRef> getCurrentCells() {
-        return currentCellsRef.get();
-    }
-    
+        
     private static class ManagedHashMap<K, V> extends HashMap<K, V> implements ManagedObject {}
     private static class ManagedLinkedList<E> extends LinkedList<E> implements ManagedObject {}
             
@@ -476,9 +366,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private static abstract class CellOp 
             implements Serializable, Runnable 
     {
-        protected CellRef cellRef;
         protected CellDescription desc;
-        protected ManagedReference<Map<CellID, CellRef>> cellsRef;
         protected ManagedReference<ClientSession> sessionRef;
         protected ClientCapabilities capabilities;
         
@@ -492,15 +380,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         // prior to calling run.
         private WonderlandClientSender sender;
     
-        public CellOp(CellRef cellRef,
-                      CellDescription desc,
-                      ManagedReference<Map<CellID, CellRef>> cellsRef,
+        public CellOp(CellDescription desc,
                       ManagedReference<ClientSession> sessionRef, 
                       ClientCapabilities capabilities) 
         {
-            this.cellRef = cellRef;
             this.desc = desc;
-            this.cellsRef = cellsRef;
             this.sessionRef = sessionRef;
             this.capabilities = capabilities;
         }
@@ -527,84 +411,34 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Operation to add a cell to the set of cached cells
      */
-    private static class CellAddOp extends CellOp {
-        public CellAddOp(CellRef cellRef,
-                         CellDescription desc,
-                         ManagedReference<Map<CellID, CellRef>> cellsRef,
+    private static class CellLoadOp extends CellOp {
+        public CellLoadOp(CellDescription desc,
                          ManagedReference<ClientSession> sessionRef, 
-                         ClientCapabilities capabilities)
-        {
-            super (cellRef, desc, cellsRef, sessionRef, capabilities);
+                         ClientCapabilities capabilities) {
+            super (desc, sessionRef, capabilities);
         }
         
         public void run() {
             // the cell is new -- add it and send a message
             CellMO cell = CellManagerMO.getCell(desc.getCellID());
-            cellRef = new CellRef(cell, desc);
-            cellsRef.getForUpdate().put(desc.getCellID(), cellRef);
                           
             //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
             CellSessionProperties prop = cell.addSession(sessionRef.get(), capabilities);
-            cellRef.setCellSessionProperties(prop);
+//            cellRef.setCellSessionProperties(prop);
                     
             sendMessage(newCreateCellMessage(cell, capabilities));
         }
     }
     
     /**
-     * Operation to update the list of cached cells
-     */
-    private static class CellUpdateOp extends CellOp {
-        private CellRef.UpdateType update;
-        private CellTransform transform;
-        
-        public CellUpdateOp(CellRef.UpdateType update,
-                            CellTransform transform,
-                            CellRef cellRef,
-                            CellDescription desc,
-                            ManagedReference<Map<CellID, CellRef>> cellsRef,
-                            ManagedReference<ClientSession> sessionRef, 
-                            ClientCapabilities capabilities)
-        {
-            super (cellRef, desc, cellsRef, sessionRef, capabilities);
-        
-            this.update = update;
-            this.transform = transform;
-        }
-        
-        public void run() {
-            CellHierarchyMessage msg;
-            
-            switch (update) {
-                case TRANSFORM:
-                    // MovableCells manage their own movement over
-                    // their cell channel, so this only deals with
-                    // non movable cells.
-                    if (!desc.isMovableCell()) {
-                        sendMessage(newCellMoveMessage(desc));
-                    }
-                    break;
-                case CONTENT:
-                    sendMessage(newContentUpdateCellMessage(cellRef.get(), capabilities));
-                    break;
-                case VIEW_CACHE_OPERATION:
-                    cellRef.getCellSessionProperties().getViewCellCacheRevalidationListener().cacheRevalidate(transform);
-                    break;
-            }
-        }
-    }
-    
-    /**
      * Operation to remove a cell from the list of cached cells
      */
-    private static class CellRemoveOp extends CellOp {
-        public CellRemoveOp(CellRef cellRef,
-                         CellDescription desc,
-                         ManagedReference<Map<CellID, CellRef>> cellsRef,
+    private static class CellUnloadOp extends CellOp {
+        public CellUnloadOp(CellDescription desc,
                          ManagedReference<ClientSession> sessionRef, 
                          ClientCapabilities capabilities)
         {
-            super (cellRef, desc, cellsRef, sessionRef, capabilities);
+            super (desc, sessionRef, capabilities);
         }
         
         public void run() {
@@ -613,27 +447,19 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             // the cell may be inactive or removed.  Try to get the cell,
             // and catch the exception if it no longer exists.
             try {
-                CellMO cell = cellRef.get();
+                CellMO cell = CellManagerMO.getCellManager().getCell(desc.getCellID());
 
                 // get suceeded, so cell is just inactive
                 msg = newUnloadCellMessage(cell);
                 cell.removeSession(sessionRef.get());
             } catch (ObjectNotFoundException onfe) {
                 // get failed, cell is deleted
-                msg = newDeleteCellMessage(cellRef.getCellID());
+                msg = newDeleteCellMessage(desc.getCellID());
             }
 
             sendMessage(msg);
             //System.out.println("SENDING "+msg.getClass().getName()+" "+msg.getBytes().length);
 
-            // the cell is no longer visible on this client, so remove
-            // our current reference to it.  This client will no longer
-            // receive any updates about the given cell, including future
-            // deletes.  This implies that the client must clear out
-            // its cache of inactive cells periodically, as some of them
-            // may have been deleted.
-            // TODO periodically clean out client cell cache
-            cellsRef.getForUpdate().remove(cellRef.getCellID());
         }
     }
     
@@ -819,142 +645,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         }
     }
     
-    /**
-     * Information about a cell in our cache.  This object contains our record
-     * of the given cell, including a reference to the cell and the cell's
-     * id.  CellRef object are compared by cellID, so two CellRefs with the
-     * same id are considered equal, regardless of other information.
-     */
-    private static class CellRef implements Serializable {
-        private static final long serialVersionUID = 1L;
 
-        enum UpdateType { TRANSFORM, CONTENT, VIEW_CACHE_OPERATION };
-        
-        private Set<UpdateType> updateTypes=null;
-        
-        // the cell id of the cell we reference
-        private CellID id;
-        
-        // a reference to the cell itself
-        private ManagedReference<CellMO> cellRef;
-        
-        private int transformVersion=Integer.MIN_VALUE;
-        private int contentsVersion=Integer.MIN_VALUE;
-        
-        private CellSessionProperties cellSessionProperties;
-        
-        public CellRef(CellMO cell) {
-            this (cell, BoundsManager.get().getCellMirror(cell.getCellID()));
-        }
-        
-        public CellRef(CellMO cell, CellDescription cellMirror) {
-            this (cell.getCellID(), cell, cellMirror);
-        }
-        
-        private CellRef(CellID id, CellMO cell, CellDescription cellMirror) {
-            this.id = id;
-            
-            // create a reference to the given CellMO
-            if (cell != null) {
-                DataManager dm = AppContext.getDataManager();
-                cellRef = dm.createReference(cell);
-            }
-            
-            // initialize versions
-            if (cellMirror != null) {
-                transformVersion = cellMirror.getTransformVersion();
-                contentsVersion = cellMirror.getContentsVersion();
-            }
-        }
-        
-        public CellID getCellID() {
-            return id;
-        }
-        
-        public CellMO get() {
-            return cellRef.get();
-        }
-        
-        public CellMO getForUpdate() {
-            return cellRef.getForUpdate();
-        }
-        
-        public Collection<UpdateType> getUpdateTypes() {
-            return updateTypes;
-        }
-
-        public void addUpdateType(UpdateType updateType) {
-            if (updateTypes==null)
-                updateTypes = EnumSet.of(updateType);
-            else
-                updateTypes.add(updateType);
-        }
-        
-        public void clearUpdateTypes(CellDescription cellMirror) {
-            transformVersion = cellMirror.getTransformVersion();
-            contentsVersion = cellMirror.getContentsVersion();
-      
-            updateTypes.clear();
-        }
-        
-        public int getTransformVersion() {
-            return transformVersion;
-        }
-
-        public void setTransformVersion(int transformVersion) {
-            this.transformVersion = transformVersion;
-        }
-
-        public int getContentsVersion() {
-            return contentsVersion;
-        }
-
-        public void setContentsVersion(int contentsVersion) {
-            this.contentsVersion = contentsVersion;
-        }
-
-        public boolean hasUpdates(CellDescription cellDescription) {
-            boolean ret = false;
-            if (cellDescription.getTransformVersion()!=transformVersion) {
-                addUpdateType(UpdateType.TRANSFORM);
-                ret = true;
-            }
-            if (cellDescription.getContentsVersion()!=contentsVersion) {
-                addUpdateType(UpdateType.CONTENT);
-                ret = true;
-            }
-            if (cellSessionProperties!=null && cellSessionProperties.getViewCellCacheRevalidationListener()!=null) {
-                addUpdateType(UpdateType.VIEW_CACHE_OPERATION);
-                ret = true;
-            }
-            
-            return ret;
-        }
-        
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof CellRef)) {
-                return false;
-            }
-            
-            return id.equals(((CellRef) o).id);
-        }
-        
-        @Override
-        public int hashCode() {
-            return id.hashCode();
-        }
-        
-        public CellSessionProperties getCellSessionProperties() {
-            return cellSessionProperties;
-        }
-
-        public void setCellSessionProperties(CellSessionProperties cellSessionProperties) {
-            this.cellSessionProperties = cellSessionProperties;
-        }
-
-    }
-    
     /**
      * Return a new Create cell message
      */
@@ -1028,18 +719,18 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Return a new Delete cell message
      */
-    public static CellHierarchyMessage newChangeParentCellMessage(CellMO childCell, CellMO parentCell) {
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CHANGE_PARENT,
-            null,
-            null,
-            childCell.getCellID(),
-            parentCell.getCellID(),
-            null,
-            null,
-            null
-            
-            );
-    }
+//    public static CellHierarchyMessage newChangeParentCellMessage(CellMO childCell, CellMO parentCell) {
+//        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CHANGE_PARENT,
+//            null,
+//            null,
+//            childCell.getCellID(),
+//            parentCell.getCellID(),
+//            null,
+//            null,
+//            null
+//            
+//            );
+//    }
     
     /**
      * Return a new cell move message
