@@ -106,6 +106,7 @@
 		<pathelement path="${wonderland-client.classpath}"/>  <!-- for vecmath-->
             </classpath>    
             
+            <arg value="${harness.master.port}"/>
             <arg value="props/wonderland-server.properties"/>
         </java>
     </target>
@@ -118,7 +119,10 @@
                 <path location="${core.lib.dir}/wonderland-client.jar"/>
                 <path location="${core.lib.dir}/wonderland-common.jar"/>
 		<pathelement path="${wonderland-client.classpath}"/>
-            </classpath>    
+            </classpath>  
+            
+            <arg value="${harness.master.hostname}"/>
+            <arg value="${harness.master.port}"/>
         </java>
     </target>
 
