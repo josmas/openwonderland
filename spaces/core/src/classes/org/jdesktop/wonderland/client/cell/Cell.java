@@ -52,7 +52,7 @@ public class Cell {
     private CellTransform local2VW = new CellTransform(null, null);
     private CellID cellID;
     private String name=null;
-    private CellStatus currentStatus;
+    private CellStatus currentStatus = CellStatus.DISK;
     
     private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
     
@@ -174,20 +174,38 @@ public class Cell {
     void setTransform(CellTransform localTransform) {
         if (localTransform==null) {
             this.localTransform=null;
+            // Get parent local2VW
+            Cell current=getParent();
+            while(current!=null) {
+                CellTransform parentLocal2VW = current.getLocalToVWorld();
+                if (parentLocal2VW!=null) {
+                    setLocalToVWorld(parentLocal2VW);
+                    current = null;
+                } else
+                    current = current.getParent();
+            }
         } else {
             this.localTransform = (CellTransform) localTransform.clone();
             if (parent!=null) {
+                local2VW = (CellTransform) localTransform.clone();
                 local2VW = local2VW.mul(parent.getLocalToVWorld());
+                cachedVWBounds = localBounds.clone(cachedVWBounds);
+                local2VW.transform(cachedVWBounds);                
+            } else if (this instanceof RootCell) {
+                System.out.println("SETTING ROOT");
+                local2VW = (CellTransform) localTransform.clone();
+                cachedVWBounds = localBounds.clone(cachedVWBounds);               
             }
         }
         
+        if (cachedVWBounds==null) {
+            System.out.println("********** NULL cachedVWBounds "+getName() +"  "+localBounds+"  "+localTransform);
+            Thread.dumpStack();
+        }
+                
         for(Cell child : getChildren())
             transformTreeUpdate(this, child);
         
-        CellTransform l2vw = getLocalToVWorld();
-        BoundingVolume vwBounds = getLocalBounds();
-        l2vw.transform(vwBounds);
-        setCachedVWBounds(vwBounds);
     }
     
     /**
@@ -195,7 +213,9 @@ public class Cell {
      * @return cells local to VWorld transform
      */
     public CellTransform getLocalToVWorld() {
-        return computeLocal2VWorld(this);
+        if (local2VW==null)
+            return null;
+        return (CellTransform) local2VW.clone();
     }
     
     
@@ -205,7 +225,7 @@ public class Cell {
      */
     void setLocalToVWorld(CellTransform localToVWorld) {
         local2VW = (CellTransform) localToVWorld.clone();
-        localBounds.clone(cachedVWBounds);
+        cachedVWBounds = localBounds.clone(cachedVWBounds);
         local2VW.transform(cachedVWBounds);
     }
     
@@ -214,23 +234,23 @@ public class Cell {
      * @param parent
      * @return
      */
-    private CellTransform computeLocal2VWorld(Cell cell) {
-        LinkedList<CellTransform> transformStack = new LinkedList<CellTransform>();
-        
-        // Get the root
-        Cell current=cell;
-        while(current.getParent()!=null) {
-            transformStack.addFirst(current.localTransform);
-            current = current.getParent();
-        }
-        CellTransform ret = new CellTransform(null, null);
-        for(CellTransform t : transformStack) {
-            if (t!=null)
-                ret.mul(t);
-        }
-        
-        return ret;
-    }
+//    private CellTransform computeLocal2VWorld(Cell cell) {
+//        LinkedList<CellTransform> transformStack = new LinkedList<CellTransform>();
+//        
+//        // Get the root
+//        Cell current=cell;
+//        while(current.getParent()!=null) {
+//            transformStack.addFirst(current.localTransform);
+//            current = current.getParent();
+//        }
+//        CellTransform ret = new CellTransform(null, null);
+//        for(CellTransform t : transformStack) {
+//            if (t!=null)
+//                ret.mul(t);
+//        }
+//        
+//        return ret;
+//    }
 
     /**
      * Update local2VWorld and bounds of child and all its children to
@@ -371,6 +391,9 @@ public class Cell {
      * INACTIVE - All cell data is in memory
      * ACTIVE - Cell is within the avatars proximity bounds
      * VISIBLE - Cell is in the view frustum
+     * 
+     * The system guarantees that if a large change is made in the status, say from BOUNDS to VISIBLE
+     * that setStatus will automatically be called for the intermediate values
      *
      * @param status the cell status
      * @return true if the status was changed, false if the new and previous status are the same
@@ -378,7 +401,19 @@ public class Cell {
     public boolean setStatus(CellStatus status) {
         if (currentStatus==status)
             return false;
+        
+        int ord = status.ordinal();
+        int currentOrd = currentStatus.ordinal();
+        if (ord>currentOrd+1 || ord<currentOrd-1) {
+            int t = currentOrd;
+            int dir = (ord>currentOrd ? 1 : -1);
+            setStatus(CellStatus.values()[t+dir]);
+        }
+        
         currentStatus = status;
+        
+        for(CellComponent component : components.values())
+            component.setStatus(status);
         
         return true;
     }

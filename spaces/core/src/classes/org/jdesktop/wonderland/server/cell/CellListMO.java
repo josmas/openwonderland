@@ -27,13 +27,14 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.server.TimeManager;
 
 /**
  *
  * @author paulby
  */
-public class CellListMO implements ManagedObject, Serializable {
-    private long version = Long.MIN_VALUE;
+public class CellListMO implements Serializable {
+    private long listTimestamp = Long.MIN_VALUE;
     private HashMap<CellID, CellDescription> cells = new HashMap();
 
     /**
@@ -44,32 +45,63 @@ public class CellListMO implements ManagedObject, Serializable {
      * 
      * @param cell
      */
-    public void addCell(CellMO cell) {
+    public CellDescription addCell(CellMO cell) {
         assert(cell!=null);
-        cells.put(cell.getCellID(), new ListInfo(cell));
-        version++;
+        ListInfo info = new ListInfo(cell);
+        cells.put(cell.getCellID(), info);
+        listTimestamp = TimeManager.getWonderlandTime();
+        return info;
+    }
+    
+    public void addCell(CellDescription cellDesc) {
+        cells.put(cellDesc.getCellID(), cellDesc);
+        listTimestamp = TimeManager.getWonderlandTime();
     }
     
     /**
-     * Remove the specified cell from this list, increment the list version
-     * number.
+     * Remove the specified cell from this list, updating the listTimestamp with the
+     * time of the change.
      * 
      * @param cell
      */
     public void removeCell(CellMO cell) {
         assert(cell!=null);
-        if (cells.remove(cell.getCellID())==null) {
-            Logger.getAnonymousLogger().warning("removeCell failed, object was not present");
+        CellDescription desc = cells.remove(cell.getCellID());
+        if (desc==null) {
+//            Logger.getAnonymousLogger().warning("removeCell failed, cell was not present "+cell.getCellID());
+        } else {
+            listTimestamp = TimeManager.getWonderlandTime();
         }
-        version++;        
     }
     
     /**
-     * Return the list version number
-     * @return the list version number
+     * Remove the specified cell from this list, updating the listTimestamp with the
+     * time of the change.
+     * 
+     * @param cell
      */
-    public long getVersion() {
-        return version;
+    public void removeCell(CellDescription cellDesc) {
+        CellDescription desc = cells.remove(cellDesc.getCellID());
+        if (desc==null) {
+//            Logger.getAnonymousLogger().warning("removeCell failed, cell was not present "+cellDesc.getCellID());
+        } else {
+            listTimestamp = TimeManager.getWonderlandTime();
+        }
+        
+    }
+    
+    /**
+     * Clear the contents of the list
+     */
+    public void clear() {
+        cells.clear();
+    }
+    
+    /**
+     * Return timestamp of last change of the list or one of its items.
+     */
+    public long getChangeTimestamp() {
+        return listTimestamp;
     }
     
     /**
@@ -81,31 +113,64 @@ public class CellListMO implements ManagedObject, Serializable {
         return cells.values();
     }
     
+    public int size() {
+        return cells.size();
+    }
+    
+    /**
+     * Return true if this list contains the specified cell
+     * @param cellDesc
+     * @return
+     */
+    public boolean contains(CellDescription cellDesc) {
+        return cells.containsKey(cellDesc.getCellID());
+    }
+    
+    /**
+     * Create a shallow clone
+     * @return
+     */
+    @Override
+    public Object clone() {
+        CellListMO ret = new CellListMO();
+        ret.cells = (HashMap<CellID, CellDescription>) this.cells.clone();
+        
+        return ret;
+    }
+    
+    void notifyCellTransformChanged(CellMO cell, long timestamp) {
+        CellDescription desc = cells.get(cell.getCellID());
+        if (desc!=null) {
+//            System.err.println("CellListMO transform changed "+timestamp+"  "+desc.getCellID()+"  "+this);
+            desc.setTransform(cell.getLocalTransform(), timestamp);
+            listTimestamp = timestamp;
+        }
+    }
+    
     // TODO we don't need full set of CellDescription fields, reduce
     // once we settle of the cache scheme.
     public static class ListInfo implements CellDescription, Serializable {
         
         private CellID cellID;
         private ManagedReference<CellMO> cellRef;
-        private int contentsVersion;
-        private int transformVersion;
-        private boolean isMovable;
+        private long contentsTimestamp;
+        private long transformTimestamp;
         private BoundingVolume localBounds;
         private CellTransform cellTransform;
         private String name;
+        private Class cellClass;
+        private boolean isStatic;
         
         ListInfo(CellMO cell) {
             cellID = cell.getCellID();
             cellRef = AppContext.getDataManager().createReference(cell);
-            contentsVersion = 0;
-            transformVersion = 0;
-            isMovable = (cell.getComponent(MovableComponentMO.class)!=null);
-            if (cell instanceof AvatarMO)
-                isMovable=false;
+            contentsTimestamp = 0;
+            transformTimestamp = 0;
             localBounds = cell.getLocalBounds();
             cellTransform = cell.getLocalTransform();
             name = cell.getName();
-            System.out.println("Adding to CellList "+name+"  "+cellTransform.getTranslation(null));
+            cellClass = cell.getClass();
+            isStatic = cell.isStatic();
         }
 
         public CellID getCellID() {
@@ -116,14 +181,12 @@ public class CellListMO implements ManagedObject, Serializable {
             return cellRef.get();
         }
 
-        public int getContentsVersion() {
-            return contentsVersion;
+        public long getContentsTimestamp() {
+            return contentsTimestamp;
         }
 
-        public int getTransformVersion() {
-            if (isMovable)
-                transformVersion++;     // HACK FOR TESTING
-            return transformVersion;
+        public long getTransformTimestamp() {
+            return transformTimestamp;
         }
 
         public BoundingVolume getLocalBounds() {
@@ -131,23 +194,27 @@ public class CellListMO implements ManagedObject, Serializable {
         }
 
         public CellTransform getTransform() {
-            if (isMovable) {
+            if (!isStatic) {
                 System.out.println("Cell "+name+"  "+cellRef.get().getLocalTransform());
-                return cellRef.get().getLocalTransform();
             }
             return cellTransform;
         }
 
+        public void setTransform(CellTransform localTransform, long timestamp) {
+            cellTransform = localTransform;
+            transformTimestamp = timestamp;
+        }
+        
         public short getPriority() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public boolean isMovableCell() {
-            return isMovable;
+        public Class getCellClass() {
+            return cellClass;
         }
 
-        public Class getCellClass() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public boolean isStatic() {
+            return isStatic;
         }
 
         

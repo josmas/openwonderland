@@ -15,14 +15,27 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.cell.bounds;
+package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.service.Service;
+import com.jme.math.Vector3f;
+import java.io.Serializable;
 
 /**
  *
  * @author paulby
  */
-public interface CellDescriptionService extends CellDescriptionManager, Service {
+interface SpaceManager extends Serializable {
+
+    /**
+     * Return the spaces that encloses this point, if the space does not exist, create it
+     * @param position
+     * @return
+     * 
+     */
+    SpaceMO[] getEnclosingSpace(Vector3f point);
     
+    /**
+     * Initialize the space system
+     */
+    void initialize();
 }

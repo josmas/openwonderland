@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessageResponse;
@@ -36,7 +37,6 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 @ExperimentalAPI
 public class MovableComponent extends CellComponent {
-//    private CellChannelConnection cellChannelConnection;
     
     private static Logger logger = Logger.getLogger(MovableComponent.class.getName());
     private ArrayList<CellMoveListener> serverMoveListeners = null;
@@ -44,16 +44,33 @@ public class MovableComponent extends CellComponent {
     
     public enum CellMoveSource { LOCAL, REMOTE }; // Do we need BOTH as well ?
     
+    private ChannelComponent.ComponentMessageReceiver msgReceiver;
+    
     public MovableComponent(Cell cell) {
         super(cell);
         channelComp = cell.getComponent(ChannelComponent.class);
-        channelComp.addMessageReceiver(MovableMessage.class, new ChannelComponent.ComponentMessageReceiver() {
+        msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
             public void messageReceived(CellMessage message) {
+                System.out.println("messageReceived "+message);
                 MovableMessage mov = (MovableMessage)message;
                 serverMoveRequest(new CellTransform(mov.getRotation(), mov.getTranslation()));
             }
-        });
+        };
+        channelComp.addMessageReceiver(MovableMessage.class, msgReceiver);
+    }
+    
+    
+    @Override
+    public void setStatus(CellStatus status) {
+         switch(status) {
+            case DISK :
+                if (msgReceiver!=null) {
+                    channelComp.removeMessageRecevier(MovableMessage.class);
+                    msgReceiver = null;
+                }
+                break;
+        }
     }
     
     /**
@@ -129,6 +146,10 @@ public class MovableComponent extends CellComponent {
      */
     protected void serverMoveRequest(CellTransform transform) {
         cell.setTransform(transform);
+//        if (cell.getTransform()!=null)
+//            System.out.println("serverMoveRequest "+cell.getTransform().getTranslation(null)+"  "+cell);
+//        else
+//            System.out.println("serverMoveRequest with null transform "+cell.getName());
         CellManager.getCellManager().notifyCellMoved(cell, true);
         notifyServerCellMoveListeners(transform, CellMoveSource.REMOTE);
     }

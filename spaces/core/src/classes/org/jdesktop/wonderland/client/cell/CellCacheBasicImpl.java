@@ -1,9 +1,21 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-package org.jdesktop.wonderland.client.cell;
+/**
+ * Project Wonderland
+ *
+ * $Id$
+ * 
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ */package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
@@ -85,20 +97,20 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         if (cell==null)
             return;     // Instantiation failed, error has already been logged
         
-        cell.setLocalBounds(localBounds);
-        cell.setTransform(cellTransform);
         cell.setName(cellName);
         Cell parent = cells.get(parentCellID);
-        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
         if (parent!=null) {
             try {
                 parent.addChild(cell);
             } catch (MultipleParentException ex) {
-                Logger.getLogger(CellCacheBasicImpl.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "Failed to load cell", ex);
             }
         } else {
             logger.warning("loadCell - Cell parent is null");
         }
+        cell.setLocalBounds(localBounds);
+        cell.setTransform(cellTransform);
+        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
 
         cells.put(cellId, cell);
         
@@ -115,6 +127,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         if (channelComp!=null) {
             channelComp.setCellChannelConnection(cellChannelConnection);
         }
+        cell.setStatus(CellStatus.ACTIVE);
     }
 
     /**
@@ -130,6 +143,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         // TODO - remove local resources from client asset cache as long
         // as they are not shared
         Cell cell = cells.remove(cellId);
+        cell.setStatus(CellStatus.DISK);
     }
 
     public void moveCell(CellID cellId, CellTransform cellTransform) {

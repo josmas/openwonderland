@@ -17,7 +17,7 @@
  *  $Date$
  */
 
-package org.jdesktop.wonderland.client.extracells;
+package org.jdesktop.wonderland.client.cell;
 
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;

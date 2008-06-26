@@ -34,31 +34,22 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
 
 /**
- * A cell for static terrain (or building) geometry
+ * A cell for static models.
  * @author paulby
  */
 @ExperimentalAPI
-public class SimpleTerrainCellMO extends CellMO
+public class StaticModelCellMO extends CellMO
     implements BeanSetupMO { 
     
     private String filename;
     private String baseUrl;
     	
-//    public SimpleTerrainCellMO() {
-//    }
-    
-    public SimpleTerrainCellMO(int row, int column, String filename, float size) {
-        this(new Vector3f(row*size+size/2, 0, column*size+size/2), size);
-        
-        this.filename = filename;
-    }
-    
-    public SimpleTerrainCellMO(Vector3f center, float size) {
+    public StaticModelCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
     }
     
     @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.extracells.SimpleTerrainCell";
+        return "org.jdesktop.wonderland.client.cell.StaticModelCell";
     }
 
     @Override

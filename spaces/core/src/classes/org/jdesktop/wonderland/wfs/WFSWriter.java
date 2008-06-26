@@ -31,7 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.SimpleTerrainCellMO;
+import org.jdesktop.wonderland.server.cell.StaticModelCellMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
 
@@ -71,7 +71,7 @@ public class WFSWriter {
         if (cell instanceof BeanSetupMO) {
             CellMOSetup setup = ((BeanSetupMO) cell).getCellMOSetup();
 
-            if (!(cell instanceof SimpleTerrainCellMO)) {
+            if (!(cell instanceof StaticModelCellMO)) {
                 // origin of cells is currently relative to 50,0,50 -- make sure
                 // the origin is relative to 0,0,0
 //                BasicCellMOSetup bcgs = (BasicCellMOSetup) setup;

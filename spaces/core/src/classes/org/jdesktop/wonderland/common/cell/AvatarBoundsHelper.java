@@ -30,7 +30,7 @@ import com.jme.math.Vector3f;
  */
 public class AvatarBoundsHelper {
     
-    public static float AVATAR_CELL_SIZE = 10f;
+    public static float AVATAR_CELL_SIZE = 1f;
     public static float PROXIMITY_SIZE = 30f;      // Radius
     
     // TODO use the back clip property from the view preferences for this

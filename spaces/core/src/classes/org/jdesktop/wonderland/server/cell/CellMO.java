@@ -43,7 +43,9 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellListMO.ListInfo;
 import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
@@ -85,7 +87,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
-    
+    private boolean isStatic;
     /**
      * Create a CellMO with the specified localBounds and transform.
      * If either parameter is null an IllegalArgumentException will be thrown.
@@ -150,8 +152,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //        
 //        return BoundsManager.get().getCachedVWBounds(cellID);
         
-        if (vwBounds==null)
-            System.err.println("NULL BOUNDS "+getName());
+        if (vwBounds==null) {
+            logger.severe("NULL BOUNDS "+getName());
+            return null;
+        }
         
         return vwBounds.clone(null);
     }
@@ -304,6 +308,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (parent==null)
             return;
         
+        notifySpacesDetach(TimeManager.getWonderlandTime());
+        
         parent.removeChild(this);
     }
     
@@ -337,6 +343,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param transform
      */
     protected void setLocalTransform(CellTransform transform) {
+        if (isStatic() && isLive()) {
+            throw new RuntimeException("Modifying Static Cell");
+        } 
+        
         this.transform = (CellTransform) transform.clone();  
         
 //        if (live) {
@@ -345,6 +355,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         if (live) {
             processTransformChange();
+            notifySpacesTransformChanged(transform, TimeManager.getWonderlandTime());
         }
     }
     
@@ -426,12 +437,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         this.live = live;
         
-        // Notify all components of new live state
-        Collection<ManagedReference<CellComponentMO>> compList = components.values();
-        for(ManagedReference<CellComponentMO> c : compList) {
-            c.get().setLive(live);
-        }
-        
         if (live) {
 //            BoundsManager.get().createBounds(this);
             if (getParent()!=null) { // Root cell has a null parent
@@ -443,6 +448,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
         } else {
 //            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
 //            BoundsManager.get().removeBounds(this);
+        }
+        
+        // Notify all components of new live state
+        Collection<ManagedReference<CellComponentMO>> compList = components.values();
+        for(ManagedReference<CellComponentMO> c : compList) {
+            c.get().setLive(live);
         }
         
         for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
@@ -652,35 +663,106 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
     
     /**
+     * Static cells do not change in any way, so their state is not checked
+     * periodically. If a cell changes in any way (moves, content changes, etc)
+     * then isStatic will be false;
+     * 
+     * @return
+     */
+    public boolean isStatic() {
+        return isStatic;
+    }
+    
+    /**
+     * Set the isStatic property of this cell
+     * @param isStatic
+     */
+    public void setStatic(boolean isStatic) {
+        if (isLive()) 
+            throw new RuntimeException("Changing staic state of live cells is not currently supported");
+        
+        this.isStatic = isStatic;
+    }
+    
+    /**
      * Add this cell to the space.
      * The space must be live otherwise an IllegalArgumentException will be thrown.
      * @param space
      */
-    void addToSpace(SpaceCellMO space) {
+    void addToSpace(SpaceMO space) {
         inSpaces.add(new SpaceInfo(space));
         space.addCell(this);
     }
     
-    void removeFromSpace(SpaceCellMO space) {
+    void removeFromSpace(SpaceMO space) {
         inSpaces.remove(new SpaceInfo(space));
         space.removeCell(this);
     }
     
-    public static class SpaceInfo implements Serializable {
-        private ManagedReference<SpaceCellMO> space;
-        private BoundingVolume spaceBounds;
+    /**
+     * Update the transform timestamp in the cell descriptions
+     * @param timestamp
+     */
+    private void notifySpacesTransformChanged(CellTransform transform, long timestamp) {
+        boolean spaceTransition = false;
         
-        public SpaceInfo(SpaceCellMO space) {
-            if (!space.isLive())
-                throw new IllegalArgumentException("Space must be Live");
+        ArrayList<SpaceMO> removeList = null;
+        
+        for(SpaceInfo spaceInfo : inSpaces) {
+            if (spaceInfo.getSpaceBounds().intersects(vwBounds)) {
+                // Cell still in space
+                spaceInfo.getSpaceRef().getForUpdate().notifyCellTransformChanged(this, timestamp);
+            } else {
+                if (removeList==null)
+                     removeList = new ArrayList();
+                
+                // Cell left space
+                removeList.add(spaceInfo.getSpaceRef().getForUpdate());
+                spaceTransition = true;
+            }
+        }
+        
+        
+        if (spaceTransition) {
+            for(SpaceMO remove : removeList)
+                removeFromSpace(remove);
             
+            // This is really too expensive to do every transform change, so we only do this when we leave a space
+            // Besides we should avoid space overlap where possible
+            SpaceMO[] spaces = WonderlandContext.getCellManager().getEnclosingSpace(transform.getTranslation(null));
+            ArrayList<SpaceMO> addList = new ArrayList();
+            for(SpaceMO space : spaces) {
+                if (!inSpaces.contains(this)) {
+                    addList.add(space);
+                }
+            }
+            
+            for(SpaceMO space : addList) {
+                addToSpace(space);
+            }
+        }
+    }
+    
+    private void notifySpacesDetach(long timestamp) {
+        for(SpaceInfo spaceInfo : inSpaces) {
+            spaceInfo.getSpaceRef().getForUpdate().notifyCellDetached(this, timestamp);
+        }
+    }
+    
+    public static class SpaceInfo implements Serializable {
+        private ManagedReference<SpaceMO> space;
+        private BoundingVolume spaceBounds;
+        private SpaceID spaceID;
+        
+        public SpaceInfo(SpaceMO space) {
             this.space = AppContext.getDataManager().createReference(space);
             spaceBounds = null;
+            spaceID = space.getSpaceID();
         }
         
         public BoundingVolume getSpaceBounds() {
             if (spaceBounds==null)
-                spaceBounds = space.get().getWorldBounds();
+                spaceBounds = space.get().getWorldBounds(null);
             return spaceBounds;
         }
         
@@ -688,8 +770,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
          * Return the managed reference for the space
          * @return
          */
-        public ManagedReference<SpaceCellMO> getSpaceRef() {
+        public ManagedReference<SpaceMO> getSpaceRef() {
             return space;
+        }
+        
+        public SpaceID getSpaceID() {
+            return spaceID;
         }
 
         @Override
@@ -701,6 +787,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         @Override
         public boolean equals(Object o) {
+            if (o instanceof SpaceMO && ((SpaceMO)o).getSpaceID().equals(spaceID))
+                return true;
+            
             if (!(o instanceof SpaceInfo))
                 return false;
             return ((SpaceInfo)o).space.equals(space);

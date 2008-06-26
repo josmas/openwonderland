@@ -72,6 +72,8 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
             logger.severe("clientDetached has null avatar for session");
             return;
         }
+
+        avatar.detach();    // Detach avatar from world
         avatar.getCellCache().logout(session);
     }
     
@@ -130,7 +132,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
         try {
             // HACK !
             if (!avatar.isLive())
-                WonderlandContext.getCellManager().insertCellInGraph(avatar);
+                WonderlandContext.getCellManager().insertCellInWorld(avatar);
 
         } catch (MultipleParentException ex) {
             // the isLive check means we should never get here
