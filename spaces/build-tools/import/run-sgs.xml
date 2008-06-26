@@ -59,6 +59,7 @@
         <java classname="com.sun.sgs.impl.kernel.Kernel" fork="true">
             <jvmarg value="-Djava.library.path=${sgs.bdb.dir}/${sgs.platform.lib}"/>
             <jvmarg value="-Djava.util.logging.config.file=${sgs.server.dir}/sgs-logging.properties"/>
+            <jvmarg value="-Dj3d.rend=noop"/>
 
             <!--start debug-->
 <!--            <jvmarg value="-Dcom.sun.sgs.txn.timeout=100000000"/>

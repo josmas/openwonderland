@@ -57,7 +57,7 @@ public class BoundsTestPlugin implements ServerPlugin {
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
 
             MovableCellMO c2 = new MovableCellMO(bounds,
-                    new CellTransform(null, new Vector3f(10, 10, 10)));
+                    new CellTransform(null, new Vector3f(10, 5, 10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
 
@@ -96,8 +96,8 @@ public class BoundsTestPlugin implements ServerPlugin {
         public TestTask(MovableCellMO cell, MovableCellMO c2) {
             this.cellRef = AppContext.getDataManager().createReference(cell);
             this.cell2Ref = AppContext.getDataManager().createReference(c2);
-            pos = cell.getTransform().getTranslation(null);
-            pos2 = cell.getTransform().getTranslation(null);
+            pos = cell.getLocalTransform().getTranslation(null);
+            pos2 = cell.getLocalTransform().getTranslation(null);
         }
 
         public void run() throws Exception {
