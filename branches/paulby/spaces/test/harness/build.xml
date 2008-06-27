@@ -16,6 +16,18 @@
     <property name="javasrc.dir" value="src/classes"/>
     
     <property name="core.lib.dir" value="${top.dir}/core/build/current/debug/lib"/>
+    
+    <!-- Location of test-specific JAR files -->
+    <property name="test.ext.dir" value="ext"/>
+
+    <!--Runtime Class Path for JTRunner -->
+    <pathconvert property="jtr.runtime.classpath">
+        <fileset dir="${test.ext.dir}/common/jtr" includes="*.jar"/>
+        <fileset dir="${test.ext.dir}/common/jtr/swingLayoutExts" includes="*.jar"/>
+        <fileset dir="${test.ext.dir}/common/jtr/wsif-2.0" includes="*.jar"/>
+        <fileset dir="${test.ext.dir}/common/jtr/jakarta" includes="*.jar"/>
+        <fileset dir="${test.ext.dir}/common/jtr/jaxws-2.1" includes="*.jar"/>
+    </pathconvert>
 
     <taskdef resource="net/sf/antcontrib/antlib.xml">
         <classpath>
@@ -94,6 +106,7 @@
             <compile-classpath>
                 <path location="${core.lib.dir}/wonderland-client.jar"/>
                 <path location="${core.lib.dir}/wonderland-common.jar"/>
+                <path location="${test.ext.dir}/common/jtr/jtr.jar"/>
 		<pathelement path="${wonderland-client.classpath}"/>
             </compile-classpath>
         </wl-compile>
@@ -123,6 +136,32 @@
             
             <arg value="${harness.master.hostname}"/>
             <arg value="${harness.master.port}"/>
+        </java>
+    </target>
+
+    <target name="run-jtr" depends="jar-slave">
+        <echo>JTR Classpath: ${jtr.runtime.classpath}</echo>
+        <java classname="jtr.test.Test" dir="./" fork="true">
+            <classpath>
+                <path location="${build.lib.dir}/testharness-slave.jar"/>
+                <path location="${build.lib.dir}/testharness-common.jar"/>
+                <path location="${core.lib.dir}/wonderland-client.jar"/>
+                <path location="${core.lib.dir}/wonderland-common.jar"/>
+                <path location="${test.ext.dir}/common/jtr/jtr.jar"/>
+                <pathelement path="${jtr.runtime.classpath}"/>
+		<pathelement path="${wonderland-client.classpath}"/>             
+            </classpath>
+            
+            <!-- JTR standard properties -->
+            <jvmarg value="-Djtr.test.Test.config=config/jtr.xml"/>
+            <jvmarg value="-Dlog4j.configuration=config/log4j.xml"/>
+        
+            <!-- Required JVM properties for distributed testing -->
+            <jvmarg value="-Djtr.remote.test.host=localhost"/>
+            <jvmarg value="-Djava.security.policy=config/java.policy"/>
+        
+            <!-- Optional JVM useful property -->
+            <jvmarg value="-Dcom.sun.management.jmxremote"/>
         </java>
     </target>
 

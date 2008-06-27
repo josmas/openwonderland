@@ -1,0 +1,51 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<!-- JTRunner is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2, or (at your option)
+    any later version.
+    
+    This is a sample empty JTR configuration file. Please, follow the 
+    Users' Guide you can find starting from http://jtrunner.sourceforge.net
+    if you need help, or refer to the jtr.xsd file.
+-->
+
+<test xmlns="http://jtrunner.sourceforge.net"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jtrunner.sourceforge.net file:./config/jtr.xsd" 
+    runs="0">
+
+    <!-- JTR components factories -->
+    <factories>
+        <factory key="IAssignmentPolicyFactory" fqn="jtr.assigner.impl.DefaultAssignmentPolicyFactory" />
+        <factory key="IOutcomeFactory" fqn="jtr.test.impl.DefaultOutcomeFactory" />
+        <factory key="IWsHelperFactory" fqn="jtr.ws.jaxws.JaxWsHelperFactory" />
+        <factory key="ITestCompletionListener" fqn="jtr.test.impl.DefaultTestCompletionListener" />
+        <factory key="ITestResultDisplayer" fqn="jtr.test.impl.DefaultTestResultDisplayer" />
+        <factory key="ITestResultsExporter" fqn="jtr.test.results.exporters.impl.ExcelExporter" />
+    </factories>
+
+    <!-- Nodes for JTR EDiT test sessions -->
+    <nodes>
+        <node host="localhost" port="2000"/>
+    </nodes>
+    
+    <!-- Runners Definitions -->
+    <runner runs="1">
+        <runner-fqn>org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner</runner-fqn>
+        <instance-count>4</instance-count>
+        <parameters-assignment-policy>cyclic</parameters-assignment-policy>
+        <parameters>
+            <param name="sleepTime" value="100"/>
+            <param name="hostname" value="localhost"/>
+            <param name="port" value="43210"/>
+        </parameters>
+    </runner>
+    
+    <!-- Enterprise Configurations -->
+    
+    <!-- JMS Configurations -->
+    
+    <!-- WebServices Bindings -->
+    
+</test>

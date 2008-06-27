@@ -1,0 +1,1078 @@
+09:34:39,665 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+09:34:39,669 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+09:34:39,682 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+09:34:39,682 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+09:34:39,751 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+09:34:39,751 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+09:34:39,860 FATAL [RunnerCreator] Unable to find the required IRunner implementation class: org.jdesktop.wonderland.testharness.slave.JTRSlaveRunner
+jtr.runners.IRunnerCreationException: Unable to find the required IRunner implementation class: org.jdesktop.wonderland.testharness.slave.JTRSlaveRunner
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:57)
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:78)
+	at jtr.pool.RunnerPoolFiller.fillPool(RunnerPoolFiller.java:48)
+	at jtr.test.TestRunManager.initializePool(TestRunManager.java:190)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:100)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.lang.ClassNotFoundException: org.jdesktop.wonderland.testharness.slave.JTRSlaveRunner
+	at java.net.URLClassLoader$1.run(URLClassLoader.java:200)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:188)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:316)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:280)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:251)
+	at java.lang.ClassLoader.loadClassInternal(ClassLoader.java:374)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:242)
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:37)
+	... 6 more
+09:34:39,861 FATAL [TestRunManager] The test failed at run 0 due to an IRunnerCreationException
+jtr.test.TestFailedException: The test failed at run 0 due to an IRunnerCreationException
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:110)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.runners.IRunnerCreationException: Unable to find the required IRunner implementation class: org.jdesktop.wonderland.testharness.slave.JTRSlaveRunner
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:57)
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:78)
+	at jtr.pool.RunnerPoolFiller.fillPool(RunnerPoolFiller.java:48)
+	at jtr.test.TestRunManager.initializePool(TestRunManager.java:190)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:100)
+	... 2 more
+Caused by: java.lang.ClassNotFoundException: org.jdesktop.wonderland.testharness.slave.JTRSlaveRunner
+	at java.net.URLClassLoader$1.run(URLClassLoader.java:200)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:188)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:316)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:280)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:251)
+	at java.lang.ClassLoader.loadClassInternal(ClassLoader.java:374)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:242)
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:37)
+	... 6 more
+09:34:39,861 FATAL [Test] Test failed: 
+jtr.test.TestFailedException: The test failed at run 0 due to an IRunnerCreationException
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:110)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.runners.IRunnerCreationException: Unable to find the required IRunner implementation class: org.jdesktop.wonderland.testharness.slave.JTRSlaveRunner
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:57)
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:78)
+	at jtr.pool.RunnerPoolFiller.fillPool(RunnerPoolFiller.java:48)
+	at jtr.test.TestRunManager.initializePool(TestRunManager.java:190)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:100)
+	... 2 more
+Caused by: java.lang.ClassNotFoundException: org.jdesktop.wonderland.testharness.slave.JTRSlaveRunner
+	at java.net.URLClassLoader$1.run(URLClassLoader.java:200)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:188)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:316)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:280)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:251)
+	at java.lang.ClassLoader.loadClassInternal(ClassLoader.java:374)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:242)
+	at jtr.runners.RunnerCreator.create(RunnerCreator.java:37)
+	... 6 more
+09:36:25,114 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+09:36:25,114 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+09:36:25,127 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+09:36:25,127 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+09:36:25,151 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+09:36:25,151 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+09:36:25,281 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:36:25,281 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:36:25,281 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:36:25,281 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:36:25,282 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:36:25,283 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:36:25,283 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:36:25,283 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:40:44,385 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+09:40:44,385 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+09:40:44,398 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+09:40:44,398 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+09:40:44,422 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+09:40:44,422 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+09:40:44,556 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:40:44,556 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:40:44,557 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:40:44,557 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:40:44,558 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:40:44,558 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:40:44,558 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:40:44,559 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:52:49,607 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+09:52:49,607 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+09:52:49,620 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+09:52:49,620 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+09:52:49,643 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+09:52:49,643 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+09:52:49,796 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:52:49,796 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:52:49,797 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:52:49,797 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]}
+09:52:49,798 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:52:49,798 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:52:49,798 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+09:52:49,798 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 300, Type = null]} ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 200, Type = null]}
+10:08:46,873 ERROR [JtrSaxErrorHandler] Caught a SAXParserException: 
+org.xml.sax.SAXParseException: cvc-complex-type.2.4.a: Invalid content starting with element 'parameters'. The content must match '(("http://jtrunner.sourceforge.net":runner-fqn),("http://jtrunner.sourceforge.net":instance-count),("http://jtrunner.sourceforge.net":parameters-assignment-policy),("http://jtrunner.sourceforge.net":parameters){1-UNBOUNDED})'.
+	at org.apache.xerces.util.ErrorHandlerWrapper.createSAXParseException(Unknown Source)
+	at org.apache.xerces.util.ErrorHandlerWrapper.error(Unknown Source)
+	at org.apache.xerces.impl.XMLErrorReporter.reportError(Unknown Source)
+	at org.apache.xerces.impl.XMLErrorReporter.reportError(Unknown Source)
+	at org.apache.xerces.impl.xs.XMLSchemaValidator$XSIErrorReporter.reportError(Unknown Source)
+	at org.apache.xerces.impl.xs.XMLSchemaValidator.reportSchemaError(Unknown Source)
+	at org.apache.xerces.impl.xs.XMLSchemaValidator.handleStartElement(Unknown Source)
+	at org.apache.xerces.impl.xs.XMLSchemaValidator.startElement(Unknown Source)
+	at org.apache.xerces.impl.XMLNSDocumentScannerImpl.scanStartElement(Unknown Source)
+	at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl$FragmentContentDispatcher.dispatch(Unknown Source)
+	at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.scanDocument(Unknown Source)
+	at org.apache.xerces.parsers.DTDConfiguration.parse(Unknown Source)
+	at org.apache.xerces.parsers.DTDConfiguration.parse(Unknown Source)
+	at org.apache.xerces.parsers.XMLParser.parse(Unknown Source)
+	at org.apache.xerces.parsers.AbstractSAXParser.parse(Unknown Source)
+	at org.apache.commons.digester.Digester.parse(Digester.java:1567)
+	at jtr.config.ConfigDeserializer.getConfigTree(ConfigDeserializer.java:214)
+	at jtr.test.Test.run(Test.java:79)
+	at jtr.test.Test.main(Test.java:113)
+10:08:46,875 FATAL [Test] Error while reading in the test configuration: 
+org.xml.sax.SAXParseException: cvc-complex-type.2.4.a: Invalid content starting with element 'parameters'. The content must match '(("http://jtrunner.sourceforge.net":runner-fqn),("http://jtrunner.sourceforge.net":instance-count),("http://jtrunner.sourceforge.net":parameters-assignment-policy),("http://jtrunner.sourceforge.net":parameters){1-UNBOUNDED})'.
+	at org.apache.xerces.parsers.AbstractSAXParser.parse(Unknown Source)
+	at org.apache.commons.digester.Digester.parse(Digester.java:1567)
+	at jtr.config.ConfigDeserializer.getConfigTree(ConfigDeserializer.java:214)
+	at jtr.test.Test.run(Test.java:79)
+	at jtr.test.Test.main(Test.java:113)
+10:12:03,745 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+10:12:03,745 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+10:12:03,757 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+10:12:03,757 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+10:12:03,781 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+10:12:03,781 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+10:12:03,934 FATAL [AbstractParamsAssigner] Missing the sleepTime standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = port, Value = 43210, Type = null]}
+jtr.assigner.MissingStdParameterException: Missing the sleepTime standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = port, Value = 43210, Type = null]}
+	at jtr.assigner.impl.AbstractParamsAssigner.assignSleepTime(AbstractParamsAssigner.java:187)
+	at jtr.assigner.impl.AbstractParamsAssigner.readStdParameters(AbstractParamsAssigner.java:72)
+	at jtr.assigner.impl.AbstractParamsAssigner.performStdAssignment(AbstractParamsAssigner.java:319)
+	at jtr.assigner.impl.IndexedParamsAssigner.assign(IndexedParamsAssigner.java:53)
+	at jtr.pool.RunnerPoolFiller.fillPool(RunnerPoolFiller.java:53)
+	at jtr.test.TestRunManager.initializePool(TestRunManager.java:190)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:100)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+10:12:03,936 FATAL [TestRunManager] The test failed at run 0 due to a MissingStdParameterException
+jtr.test.TestFailedException: The test failed at run 0 due to a MissingStdParameterException
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:120)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.assigner.MissingStdParameterException: Missing the sleepTime standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = port, Value = 43210, Type = null]}
+	at jtr.assigner.impl.AbstractParamsAssigner.assignSleepTime(AbstractParamsAssigner.java:187)
+	at jtr.assigner.impl.AbstractParamsAssigner.readStdParameters(AbstractParamsAssigner.java:72)
+	at jtr.assigner.impl.AbstractParamsAssigner.performStdAssignment(AbstractParamsAssigner.java:319)
+	at jtr.assigner.impl.IndexedParamsAssigner.assign(IndexedParamsAssigner.java:53)
+	at jtr.pool.RunnerPoolFiller.fillPool(RunnerPoolFiller.java:53)
+	at jtr.test.TestRunManager.initializePool(TestRunManager.java:190)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:100)
+	... 2 more
+10:12:03,936 FATAL [Test] Test failed: 
+jtr.test.TestFailedException: The test failed at run 0 due to a MissingStdParameterException
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:120)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.assigner.MissingStdParameterException: Missing the sleepTime standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = port, Value = 43210, Type = null]}
+	at jtr.assigner.impl.AbstractParamsAssigner.assignSleepTime(AbstractParamsAssigner.java:187)
+	at jtr.assigner.impl.AbstractParamsAssigner.readStdParameters(AbstractParamsAssigner.java:72)
+	at jtr.assigner.impl.AbstractParamsAssigner.performStdAssignment(AbstractParamsAssigner.java:319)
+	at jtr.assigner.impl.IndexedParamsAssigner.assign(IndexedParamsAssigner.java:53)
+	at jtr.pool.RunnerPoolFiller.fillPool(RunnerPoolFiller.java:53)
+	at jtr.test.TestRunManager.initializePool(TestRunManager.java:190)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:100)
+	... 2 more
+10:12:37,201 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+10:12:37,201 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+10:12:37,215 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+10:12:37,215 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+10:12:37,239 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+10:12:37,239 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+10:12:37,373 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:12:37,374 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:12:37,374 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:12:37,374 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:12:37,376 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@9d3f8b due to the following cause (if available):
+null
+10:12:37,377 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:12:37,378 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:12:37,378 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:12:37,378 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, indexed, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:12:37,378 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@6bcef1 due to the following cause (if available):
+null
+10:15:15,331 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+10:15:15,331 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+10:15:15,346 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+10:15:15,346 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+10:15:15,370 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+10:15:15,370 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+10:15:15,521 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:15:15,521 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:15:15,521 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:15:15,521 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:15:15,524 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@2f0ce9 due to the following cause (if available):
+null
+10:15:15,524 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:15:15,524 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:15:15,524 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:15:15,524 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:15:15,524 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@f8a4fd due to the following cause (if available):
+null
+10:16:13,565 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+10:16:13,567 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+10:16:13,579 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+10:16:13,579 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+10:16:13,602 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+10:16:13,603 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+10:16:13,753 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:16:13,753 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:16:13,753 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:16:13,754 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:16:13,756 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@4ae19a due to the following cause (if available):
+null
+10:16:13,756 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:16:13,756 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:16:13,757 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:16:13,757 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 2, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:16:13,757 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@214726 due to the following cause (if available):
+null
+10:19:38,609 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+10:19:38,609 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+10:19:38,621 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+10:19:38,621 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+10:19:38,646 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+10:19:38,646 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+10:19:38,805 FATAL [RmiUtil] Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+10:19:38,806 FATAL [TestSender] Unable to connect to rmi://localhost:2001/JTR-TestGatewayService
+TestConfiguration is not going to be sent to this JTR-node.
+jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+10:19:38,807 ERROR [TestRunManager] Unable to send test configuration to node localhost:2001 due to the following error:
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+	at jtr.test.TestSender.sendTest(TestSender.java:44)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	... 4 more
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+10:19:38,817 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,818 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,818 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,818 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,821 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@c4b664 due to the following cause (if available):
+null
+10:19:38,821 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,821 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,821 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,822 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,822 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@a269e2 due to the following cause (if available):
+null
+10:19:38,822 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,823 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,823 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,823 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,823 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@d5b561 due to the following cause (if available):
+null
+10:19:38,823 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,823 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,823 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,823 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+10:19:38,823 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@7720d7 due to the following cause (if available):
+null
+14:01:31,089 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+14:01:31,089 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+14:01:31,101 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+14:01:31,101 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+14:01:31,125 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+14:01:31,125 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+14:01:31,273 FATAL [RmiUtil] Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:01:31,274 FATAL [TestSender] Unable to connect to rmi://localhost:2001/JTR-TestGatewayService
+TestConfiguration is not going to be sent to this JTR-node.
+jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:01:31,275 ERROR [TestRunManager] Unable to send test configuration to node localhost:2001 due to the following error:
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+	at jtr.test.TestSender.sendTest(TestSender.java:44)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	... 4 more
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:01:31,286 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,286 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,286 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,286 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,289 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@8a4156 due to the following cause (if available):
+null
+14:01:31,290 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,290 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,290 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,291 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,291 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@c787d7 due to the following cause (if available):
+null
+14:01:31,291 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,291 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,291 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,291 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,291 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@a76e19 due to the following cause (if available):
+null
+14:01:31,291 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,292 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,292 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,292 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:01:31,292 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@2d49e7 due to the following cause (if available):
+null
+14:02:44,579 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+14:02:44,579 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+14:02:44,590 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+14:02:44,591 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+14:02:44,614 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+14:02:44,614 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+14:02:44,754 FATAL [RmiUtil] Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:02:44,756 FATAL [TestSender] Unable to connect to rmi://localhost:2001/JTR-TestGatewayService
+TestConfiguration is not going to be sent to this JTR-node.
+jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:02:44,756 ERROR [TestRunManager] Unable to send test configuration to node localhost:2001 due to the following error:
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+	at jtr.test.TestSender.sendTest(TestSender.java:44)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	... 4 more
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:02:44,767 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,767 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,767 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,767 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,770 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@c84051 due to the following cause (if available):
+null
+14:02:44,771 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@c84051 due to the following cause (if available):
+null
+14:02:44,772 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,772 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,772 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,772 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,772 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@f6a711 due to the following cause (if available):
+null
+14:02:44,773 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@f6a711 due to the following cause (if available):
+null
+14:02:44,773 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,773 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,773 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,773 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,773 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@525aeb due to the following cause (if available):
+null
+14:02:44,774 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@525aeb due to the following cause (if available):
+null
+14:02:44,774 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,774 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,774 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,774 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:02:44,774 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@cf16ac due to the following cause (if available):
+null
+14:02:44,774 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@cf16ac due to the following cause (if available):
+null
+14:03:14,297 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+14:03:14,298 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+14:03:14,310 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+14:03:14,310 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+14:03:14,333 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+14:03:14,333 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+14:03:14,477 FATAL [RmiUtil] Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:03:14,479 FATAL [TestSender] Unable to connect to rmi://localhost:2001/JTR-TestGatewayService
+TestConfiguration is not going to be sent to this JTR-node.
+jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:03:14,479 ERROR [TestRunManager] Unable to send test configuration to node localhost:2001 due to the following error:
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+	at jtr.test.TestSender.sendTest(TestSender.java:44)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	... 4 more
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:03:14,490 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,490 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,490 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,490 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,493 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@4f14b0 due to the following cause (if available):
+null
+14:03:14,494 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@4f14b0 due to the following cause (if available):
+null
+14:03:14,494 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,495 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,495 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,495 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,495 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@d74bb1 due to the following cause (if available):
+null
+14:03:14,495 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@d74bb1 due to the following cause (if available):
+null
+14:03:14,495 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,496 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,496 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,496 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,496 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@aa7a6a due to the following cause (if available):
+null
+14:03:14,496 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@aa7a6a due to the following cause (if available):
+null
+14:03:14,496 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,496 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,496 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,496 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:03:14,497 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@4ae5cd due to the following cause (if available):
+null
+14:03:14,497 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@4ae5cd due to the following cause (if available):
+null
+14:17:47,508 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-ServerClassLoader
+14:17:47,509 WARN  [RmiUtil] Unable to find any JTR-ServerClassLoader, trying to bind a new one...
+14:17:47,526 ERROR [RmiUtil] java.rmi.server.ExportException: internal error: ObjID already in use
+14:17:47,526 WARN  [RmiUtil] Failed, maybe there is already a running instance, trying to locate it...
+14:17:47,549 ERROR [RmiUtil] java.rmi.NotBoundException: JTR-TestOutcomeCollector
+14:17:47,549 WARN  [RmiUtil] Unable to find any JTR-TestOutcomeCollector, trying to bind a new one...
+14:17:47,696 FATAL [RmiUtil] Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:17:47,697 FATAL [TestSender] Unable to connect to rmi://localhost:2001/JTR-TestGatewayService
+TestConfiguration is not going to be sent to this JTR-node.
+jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:17:47,697 ERROR [TestRunManager] Unable to send test configuration to node localhost:2001 due to the following error:
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+jtr.test.TestSender$TestSenderException: Caugth a remote exception. This means the remote JTR node has been contacted but some error occurred.
+	at jtr.test.TestSender.sendTest(TestSender.java:44)
+	at jtr.test.TestRunManager.distributeTest(TestRunManager.java:145)
+	at jtr.test.TestRunManager.startTest(TestRunManager.java:98)
+	at jtr.test.Test.run(Test.java:85)
+	at jtr.test.Test.main(Test.java:113)
+Caused by: jtr.enterprise.LocatorException: Unable to look-up JTR-node rmi://localhost:2001/JTR-TestGatewayService
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:134)
+	at jtr.test.TestSender.sendTest(TestSender.java:37)
+	... 4 more
+Caused by: java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: 
+	java.net.ConnectException: Connection refused
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:574)
+	at sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:185)
+	at sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:171)
+	at sun.rmi.server.UnicastRef.newCall(UnicastRef.java:306)
+	at sun.rmi.registry.RegistryImpl_Stub.lookup(Unknown Source)
+	at java.rmi.Naming.lookup(Naming.java:84)
+	at jtr.remote.utils.RmiUtil.lookupServer(RmiUtil.java:126)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:432)
+	at java.net.Socket.connect(Socket.java:520)
+	at java.net.Socket.connect(Socket.java:470)
+	at java.net.Socket.<init>(Socket.java:367)
+	at java.net.Socket.<init>(Socket.java:180)
+	at sun.rmi.transport.proxy.RMIDirectSocketFactory.createSocket(RMIDirectSocketFactory.java:22)
+	at sun.rmi.transport.proxy.RMIMasterSocketFactory.createSocket(RMIMasterSocketFactory.java:128)
+	at sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:569)
+	... 11 more
+14:17:47,708 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,708 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,708 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,708 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,711 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@8df2e4 due to the following cause (if available):
+null
+14:17:47,711 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@8df2e4 due to the following cause (if available):
+null
+14:17:47,712 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,713 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,713 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,713 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,713 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@4568f8 due to the following cause (if available):
+null
+14:17:47,713 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@4568f8 due to the following cause (if available):
+null
+14:17:47,713 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,713 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,714 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,714 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,714 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@ee90b1 due to the following cause (if available):
+null
+14:17:47,714 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@ee90b1 due to the following cause (if available):
+null
+14:17:47,714 WARN  [AbstractParamsAssigner] Missing the enterprise standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,714 WARN  [AbstractParamsAssigner] Missing the jms standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,714 WARN  [AbstractParamsAssigner] Missing the binding standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,714 WARN  [AbstractParamsAssigner] Missing the webservice standard parameter while examining runner FQN: org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner, InstanceCount: 4, cyclic, DefaultSleepTime: -1, DefaultRunsCount: 1, EnterpriseConfig: see test's default enterprise, JMSConfig: see test's default enterprise
+ ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}with parameters map ParametersMap{ Param [Name = sleepTime, Value = 100, Type = null] Param [Name = hostname, Value = localhost, Type = null] Param [Name = port, Value = 43210, Type = null]}
+14:17:47,714 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property hostname with value localhost over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@5d8e63 due to the following cause (if available):
+null
+14:17:47,715 WARN  [BeanUtilsExtension] Property-setting error.
+Unable to set property port with value 43210 over instance org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner@5d8e63 due to the following cause (if available):
+null
