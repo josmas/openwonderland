@@ -23,7 +23,6 @@
     <!--Runtime Class Path for JTRunner -->
     <pathconvert property="jtr.runtime.classpath">
         <fileset dir="${test.ext.dir}/common/jtr" includes="*.jar"/>
-        <fileset dir="${test.ext.dir}/common/jtr/swingLayoutExts" includes="*.jar"/>
         <fileset dir="${test.ext.dir}/common/jtr/wsif-2.0" includes="*.jar"/>
         <fileset dir="${test.ext.dir}/common/jtr/jakarta" includes="*.jar"/>
         <fileset dir="${test.ext.dir}/common/jtr/jaxws-2.1" includes="*.jar"/>
