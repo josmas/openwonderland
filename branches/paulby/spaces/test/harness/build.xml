@@ -23,9 +23,7 @@
     <!--Runtime Class Path for JTRunner -->
     <pathconvert property="jtr.runtime.classpath">
         <fileset dir="${test.ext.dir}/common/jtr" includes="*.jar"/>
-        <fileset dir="${test.ext.dir}/common/jtr/wsif-2.0" includes="*.jar"/>
         <fileset dir="${test.ext.dir}/common/jtr/jakarta" includes="*.jar"/>
-        <fileset dir="${test.ext.dir}/common/jtr/jaxws-2.1" includes="*.jar"/>
     </pathconvert>
 
     <taskdef resource="net/sf/antcontrib/antlib.xml">
@@ -36,7 +34,7 @@
     
     <import file="${build-import.dir}/build-setup.xml"/>
     
-    <target name="build" depends="compile-master, jar-slave">
+    <target name="build" depends="compile-master, jar-slave, jar-jtr-slave">
     </target>
     
     <!-- Initialization - make dirs, unpack ext stuff... -->
@@ -191,5 +189,14 @@
                 <include name="org/jdesktop/wonderland/testharness/slave/**"/>
             </fileset>
          </jar>
+    </target>
+    
+    <!-- Packages up files that we need to drop onto the JTR save machines -->
+    <target name="jar-jtr-slave" depends="jar-common, compile-slave" description="Build JTR Slave jar">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/jtr-slave-dummy.jar">
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/slave/jtr/dummy/**"/>
+            </fileset>
+        </jar>
     </target>
 </project>
