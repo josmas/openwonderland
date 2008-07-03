@@ -23,7 +23,6 @@
     <!--Runtime Class Path for JTRunner -->
     <pathconvert property="jtr.runtime.classpath">
         <fileset dir="${test.ext.dir}/common/jtr" includes="*.jar"/>
-        <fileset dir="${test.ext.dir}/common/jtr/jakarta" includes="*.jar"/>
     </pathconvert>
 
     <taskdef resource="net/sf/antcontrib/antlib.xml">
