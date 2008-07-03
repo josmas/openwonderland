@@ -31,7 +31,7 @@
         <factory key="IWsHelperFactory" fqn="jtr.ws.jaxws.JaxWsHelperFactory" />
         <factory key="ITestCompletionListener" fqn="jtr.test.impl.DefaultTestCompletionListener" />
         <factory key="ITestResultDisplayer" fqn="jtr.test.impl.DefaultTestResultDisplayer" />
-        <factory key="ITestResultsExporter" fqn="jtr.test.results.exporters.impl.ExcelExporter" />
+        <factory key="ITestResultsExporter" fqn="org.jdesktop.wonderland.testharness.slave.jtr.JTRNullResultsExporter" />
     </factories>
 
     <!-- Nodes for JTR EDiT test sessions -->
