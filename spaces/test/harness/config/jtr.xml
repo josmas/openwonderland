@@ -28,10 +28,10 @@
     <factories>
         <factory key="IAssignmentPolicyFactory" fqn="jtr.assigner.impl.DefaultAssignmentPolicyFactory" />
         <factory key="IOutcomeFactory" fqn="jtr.test.impl.DefaultOutcomeFactory" />
-        <factory key="IWsHelperFactory" fqn="jtr.ws.jaxws.JaxWsHelperFactory" />
-        <factory key="ITestCompletionListener" fqn="jtr.test.impl.DefaultTestCompletionListener" />
-        <factory key="ITestResultDisplayer" fqn="jtr.test.impl.DefaultTestResultDisplayer" />
-        <factory key="ITestResultsExporter" fqn="org.jdesktop.wonderland.testharness.slave.jtr.JTRNullResultsExporter" />
+        <factory key="IWsHelperFactory" fqn="org.jdesktop.wonderland.testharness.slave.jtr.dummy.JTRNullWsHelperFactory" />
+        <factory key="ITestCompletionListener" fqn="org.jdesktop.wonderland.testharness.slave.jtr.dummy.JTRNullTestCompletionListener" />
+        <factory key="ITestResultDisplayer" fqn="org.jdesktop.wonderland.testharness.slave.jtr.dummy.JTRNullResultsDisplayer" />
+        <factory key="ITestResultsExporter" fqn="org.jdesktop.wonderland.testharness.slave.jtr.dummy.JTRNullResultsExporter" />
     </factories>
 
     <!-- Nodes for JTR EDiT test sessions -->

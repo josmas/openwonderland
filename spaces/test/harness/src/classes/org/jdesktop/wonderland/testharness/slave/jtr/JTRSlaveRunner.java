@@ -57,7 +57,7 @@ public class JTRSlaveRunner extends AbstractRunner {
         /*
          * Start of a new Wonderland client
          */
-        //new SlaveMain(new String[] { hostname, port });
+        new SlaveMain(new String[] { hostname, port });
     }
  
     public void receiveFailureNotification(Throwable t, String msg) {}

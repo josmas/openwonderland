@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.testharness.slave.jtr;
+package org.jdesktop.wonderland.testharness.slave.jtr.dummy;
 
 import java.io.File;
 import jtr.test.TestOutcomeTable;
