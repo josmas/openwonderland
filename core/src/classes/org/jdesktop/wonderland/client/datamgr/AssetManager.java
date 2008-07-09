@@ -19,6 +19,7 @@
  */
 package org.jdesktop.wonderland.client.datamgr;
 
+import org.jdesktop.wonderland.client.repository.Repository;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -38,10 +39,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.TrackingInputStream.ProgressListener;
+import org.jdesktop.wonderland.client.repository.RepositoryFactory;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.Checksum;
+import org.jdesktop.wonderland.common.ChecksumSha1;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 
@@ -55,6 +61,7 @@ import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 @ExperimentalAPI
 public class AssetManager {
     
+    /* The error logger for this class */
     private Logger logger = Logger.getLogger(AssetManager.class.getName());
     
     private final static String CHECKSUM_ALGORITHM = "SHA-1";
@@ -73,6 +80,9 @@ public class AssetManager {
     private ExecutorService downloadService = Executors.newFixedThreadPool(4);
     private ExecutorService localloadService = Executors.newFixedThreadPool(4);
     
+    /* Receive updates every 1 MB during downloads */
+    private static final int UPDATE_BYTE_INTERVAL = 1024 * 1024;
+    
     private AssetManager() {
         assetDB = new AssetDB();
         
@@ -81,8 +91,14 @@ public class AssetManager {
         
         loadingAssets = new HashMap();
         loadedAssets = new HashMap();
+        
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(Level.ALL);
+        logger.addHandler(ch);
+        logger.setLevel(Level.ALL);
+        logger.setUseParentHandlers(false);
     }
-    
+        
     /**
      * Return the singleton AssetManager
      * @return
@@ -95,59 +111,63 @@ public class AssetManager {
     
     /**
      * Get the asset. If the asset is not in the local cache then it will be
-     * downloaded. This call returns immediately, use assetReadyListener
-     * to determine when the asset is ready for use.
+     * downloaded. This call returns immediately with an Asset object that
+     * represents the asset downloaded or currently downloading. Register an
+     * AssetReadyListener on the Asset object to receive notification when
+     * the asset is ready to be used.
      * 
-     * @param T
-     * @param r
-     * @param filename
-     * @param checksum
-     * @return
+     * @param assetURI The unique URI of the asset to load
+     * @param assetType The type of the asset being loaded
      */
-    public Asset getAsset(AssetType assetType, Repository repository, String filename, Checksum checksum) {
-        Asset asset;      
+    public Asset getAsset(AssetURI assetURI, AssetType assetType) {
+        Asset asset = null; 
+        Checksum checksum = null; // XXX for now
         
-        assert(checksum!=null);
-        assert(filename!=null);
+        /* Log an initial message to the log at method start */
+        logger.fine("In getAsset(), looking for, uri=" + assetURI.toString());
         
         synchronized(loadingAssets) {
-            if (loadingAssets.containsKey(filename)) {
+            if (loadingAssets.containsKey(assetURI.toString())) {
                 // Currently downloading
-                asset = loadingAssets.get(filename).getAsset();
+                asset = loadingAssets.get(assetURI.toString()).getAsset();
             } else {
                 synchronized(loadedAssets) {
-                    if (loadedAssets.containsKey(filename)) {
+                    if (loadedAssets.containsKey(assetURI.toString())) {
                         // Asset already loaded
-                        logger.info("Asset already loaded "+filename);
-                        asset = loadedAssets.get(filename);
+                        logger.info("Asset already loaded "+assetURI.toString());
+                        asset = loadedAssets.get(assetURI.toString());
                     } else {
-                        Asset tmp = assetDB.getAsset(filename);
+                        Asset tmp = assetDB.getAsset(assetURI.toString());
         
                         logger.warning("CHECK LOCAL CACHE found "+tmp);
+                        
+                        /* Fetch the repository where the asset is stored */
+                        Repository repository = RepositoryFactory.getRepository(assetURI);
+                        
                         if (tmp==null) {
                             // Asset is not in local cache, so get if from the server
-                            asset = downloadFromServer(assetType, repository, filename);
+                            asset = downloadFromServer(assetURI, assetType, repository);
                         } else {
                             if (checksum==null || checksum.equals(tmp.getLocalChecksum())) {
                                 // Asset is in cache, so load it from there
                                 logger.info("Asset in local cache");
                                 asset = tmp;
                                 try {
-                                    asset.setLocalCacheFile(new File(new URL(cacheDir.toURI().toURL().toExternalForm() + "/" + asset.getFilename()).toURI()));
+                                    asset.setLocalCacheFile(new File(new URL(this.getAssetCacheFileName(assetURI)).toURI()));
                                 } catch(MalformedURLException e) {
                                     logger.log(Level.WARNING, "Cache problem ", e);
                                 } catch(URISyntaxException e) {
                                     logger.log(Level.WARNING, "Cache problem ", e);                                    
                                 }
-                                AssetLoader loader = new AssetLoader(asset, false);
-                                loadingAssets.put(filename, loader);
+                                AssetLoader loader = new AssetLoader(asset, repository, false);
+                                loadingAssets.put(assetURI.toString(), loader);
 
                                 Future f = localloadService.submit(loader);
                                 loader.setFuture(f);
                             } else {
                                 // Local cache is out of date, get from server
                                 logger.info("Asset checksum out of date");
-                                asset = downloadFromServer(assetType, repository, filename);
+                                asset = downloadFromServer(assetURI, assetType, repository);
                             }
                         }
                     }
@@ -172,14 +192,16 @@ public class AssetManager {
             AssetLoader loader;
 
             synchronized (loadingAssets) {
-                loader = loadingAssets.get(asset.getFilename());
+                loader = loadingAssets.get(asset.getAssetURI().toString());
             }
 
+            logger.fine("Waiting for asset: loader=" + loader);
             if (loader == null) {
                 return true;
             }
             
             Object o = loader.getFuture().get();
+            logger.fine("Finished waiting for asset, o=" + o);
             
             if (o==null) {
                 // Load failed
@@ -194,20 +216,29 @@ public class AssetManager {
         }
         return false;
     }
-    
+        
     /**
-     * Initiate download of asset from the server
+     * Initiate download of asset from the server given the unique uri of the asset,
+     * the asset type, and the repository to use to look for servers. This method
+     * assumes the proper locks have been obtained to update the list of loading
+     * assets.
+     * 
      * @param assetType
      * @param repository
      * @param filename
      * @return
      */
-    private Asset downloadFromServer(AssetType assetType, Repository repository, String filename) {
-        logger.info("downloadFromServer "+repository.getPreferedRepository()+" "+filename);
-        Asset asset = assetFactory(assetType, repository, filename);
-        AssetLoader loader = new AssetLoader(asset, true);
-        loadingAssets.put(filename, loader);
+    private Asset downloadFromServer(AssetURI assetURI, AssetType assetType, Repository repository) {
+        logger.info("Asset download from server, uri=" + assetURI.toString());
 
+        /* Create a new asset for the given type and uri */
+        Asset asset = assetFactory(assetType, assetURI);
+        
+        /* Create a new loader for it and add to the list of assets being loaded */
+        AssetLoader loader = new AssetLoader(asset, repository, true);
+        loadingAssets.put(assetURI.toString(), loader);
+
+        /* Spawn off an asynchronous request to download the asset */
         Future f = downloadService.submit(loader);
         loader.setFuture(f);
         
@@ -220,7 +251,7 @@ public class AssetManager {
      */
     public void unloadAsset(Asset asset) {
         synchronized(loadedAssets) {
-            loadedAssets.remove(asset.getFilename());
+            loadedAssets.remove(asset.getAssetURI().toString());
             asset.unloaded();
         }
     }
@@ -231,27 +262,30 @@ public class AssetManager {
      */
     public void deleteAsset(Asset asset) {
         synchronized(loadedAssets) {
-            loadedAssets.remove(asset.getFilename());
+            loadedAssets.remove(asset.getAssetURI().toString());
             asset.unloaded();
-            assetDB.deleteAsset(asset.getFilename());
+            assetDB.deleteAsset(asset.getAssetURI().toString());
             asset.getLocalCacheFile().delete();
         }
     }
     
     /**
-     * Factory for creating assets of the required type
+     * Factory for creating assets of the required type, takes the type of
+     * asset desired (given by the AssetType enumeration) and the unique URI
+     * that describes the asset
      * 
-     * @param assetType
-     * @return
+     * @param assetType The type of the asset
+     * @param assetURI The unique URI describing the asset
+     * @return The new Asset, or null upon error
      */
-    Asset assetFactory(AssetType assetType, Repository repository, String filename) {
+    Asset assetFactory(AssetType assetType, AssetURI assetURI) {
         switch(assetType) {
             case FILE :
-                return new AssetFile(repository, filename);
+                return new AssetFile(assetURI);
             case IMAGE :
-                return new AssetImage(repository, filename);
+                return new AssetImage(assetURI);
             case MODEL :
-                return new AssetBranchGroup(repository, filename);
+                return new AssetBranchGroup(assetURI);
             case OTHER :
                 throw new RuntimeException("Not implemented");
         }
@@ -284,54 +318,77 @@ public class AssetManager {
     }
     
     /**
-     * Download the asset from the repository. The asset object will be updated
-     * with the local file containing the cached asset and the locally computed 
-     * checksum
-     * 
-     * @param asset the asset to download
+     * Given the unique URI for the asset, return the name of its cache file
      */
-    private void getAssetFromRepository(Asset asset, ProgressListener progressListener) throws IOException {
-        URL url = new URL(asset.getRepository().getPreferedRepository().toExternalForm()+"/"+asset.getFilename());        
-        logger.info("Loading file "+asset.getFilename()+" from URL "+url);
-        File file;
-        
+    private String getAssetCacheFileName(AssetURI assetURI) {
         try {
-            URLConnection connection = url.openConnection();
+            String relativePath = assetURI.getRelativePath();
+            String cacheFile = cacheDir.toURI().toURL().toExternalForm() + "/" + relativePath;
+            return cacheFile;
+        } catch (java.net.MalformedURLException excp) {
+            // XXX log error
+            return null;
+        }
+    }
+    
+    /**
+     * Synchronously download an asset from a server, given the asset and the
+     * url of the server to look for the asset. The asset object will be updated
+     * with the local file containing the cached asset and the locally computed 
+     * checksum. Returns true upon success, false upon failure
+     * 
+     * @param asset The asset to download
+     * @param url The full URL to the asset
+     * @param progressListener Notified of updates in the loading
+     * @return True upon success, false upon failure 
+     */
+    private boolean getAssetFromServer(Asset asset, String url, ProgressListener progressListener) {        
+        try {
+            /* Open up all of the connections to the remote server */
+            URLConnection connection = new URL(url).openConnection();
             TrackingInputStream track = new TrackingInputStream(connection.getInputStream());
-            InputStream in;
+            InputStream in = new BufferedInputStream(track);
 
-            in = new BufferedInputStream(track);
-
-            if (progressListener!=null)
-                track.setListener(progressListener, 1024*1024, connection.getContentLength());
-
-            file = new File(new URL(cacheDir.toURI().toURL().toExternalForm() + "/" + asset.getFilename()).toURI());
+            /* Receive notifcation after every N bytes during the download */
+            if (progressListener != null) {
+                track.setListener(progressListener, AssetManager.UPDATE_BYTE_INTERVAL, connection.getContentLength());
+            }
+            
+            /* Open the cache file, create directories if necessary */
+            String cacheFile = this.getAssetCacheFileName(asset.getAssetURI());
+            File file = new File(cacheFile);
             if (!file.canWrite())
                 makeDirectory(file);
 
+            /* Create the output stream, through a digest to compute the checksum */
             byte[] buf = new byte[1024*2];
             MessageDigest digest = MessageDigest.getInstance(CHECKSUM_ALGORITHM);
             OutputStream out = new DigestOutputStream(new BufferedOutputStream(new FileOutputStream(file), buf.length), digest);
 
+            /* Read from the server, write to the cache file */
             int c = in.read(buf);
             while(c>0) {
                 out.write(buf, 0, c);
                 c = in.read(buf);
             } 
+            
+            /* Close everything up since we done */
             in.close();
             out.close();
             track.close();
+            
+            /* Compute the checksum and set in the asset */
             asset.setLocalChecksum(new ChecksumSha1(digest.digest()));
             digest.reset();
 
+            /* Point the asset to the local cache file */
             asset.setLocalCacheFile(file);
-        } catch(Exception ex) {
-            //ex.printStackTrace();
-            logger.log(Level.SEVERE, "Unable to load asset "+asset.getFilename()+
-                       " from " + url, ex);
-            throw new IOException("Failed to retrieve asset");
+            return true;
+        } catch(java.lang.Exception ex) {
+            /* Log an error and return false */
+            logger.log(Level.SEVERE, "Unable to load asset url=" + url);
+            return false;
         }
-        
     }
     
     /**
@@ -353,171 +410,208 @@ public class AssetManager {
     }
     
     /**
-     * Return the file extension of the give filename. If there is no extension
-     * null is returned;
+     * Attempts to load the file from the local cache synchronously. Returns
+     * true upon success, false upon failure.
+     * 
+     * @param asset The asset to load from the local cache
+     * @return True upon success, false upon failure
      */
-    String getFileExtension(String filename) {
+    private boolean getAssetFromCache(Asset asset) {
         try {
-            return filename.substring(filename.lastIndexOf('.')+1);        
-        } catch(Exception ex) {
-            return null;
-        }
-    }
-    
-    /**
-     * TODO move to common package
-     */
-    public static abstract class Checksum {
-        public abstract boolean equals(Checksum checksum);        
-    }
-    
-    /**
-     * TODO move to common package
-     */
-    public static class ChecksumSha1 extends Checksum {
-        private byte[] checksum;
-        
-        public ChecksumSha1(byte[] checksum) {
-            this.checksum = checksum.clone();
-        }
-        
-        /**
-         * Returns true if this checksum is equals to the supplied checksum
-         * @param checksum
-         * @return
-         */
-        public boolean equals(Checksum checksum2) {
-            if (!(checksum2 instanceof ChecksumSha1))
+            /* Attempt to load the asset, return false if we cannot */
+            if (asset.loadLocal() == false) {
                 return false;
-            
-            ChecksumSha1 c2 = (ChecksumSha1)checksum2;
-            if (c2.checksum.length!=this.checksum.length)
-                return false;
-            
-            for(int i=0; i<checksum.length; i++) {
-                if (checksum[i]!=c2.checksum[i])
-                    return false;
             }
-            
+
+            /* Otherwise update the list of loading and loaded assets */
+            synchronized (loadingAssets) {
+                synchronized (loadedAssets) {
+                    String uri = asset.getAssetURI().toString();
+                    loadingAssets.remove(uri);
+                    loadedAssets.put(uri, asset);
+                }
+            }
             return true;
-        }
-        
-        /**
-         * HACK ALERT !
-         * toString must return a toHexString as it's used
-         * to store this in the db
-         * @return
-         */
-        @Override
-        public String toString() {
-            return AssetDB.toHexString(checksum);
+        } catch (java.lang.Exception excp) {
+            /* Catch any exception and return false */
+            logger.warning("Unable to fetch asset from local cache, uri=" +
+                    asset.getAssetURI().toString());
+            logger.warning(excp.toString());
+            return false;
         }
     }
     
 
-
     /**
-     * Used to load assets in parallel.
+     * Used to load assets in parallel. This class implements the Callable
+     * interface and is run inside of a Java Executer. The class can load
+     * assets from both a remote repository and the local file cache, as given
+     * by the 'server' flag.
      */
     class AssetLoader implements Callable {
-        private Asset asset;
-        private boolean server;
-        private Future future;
+        /* The asset to load */
+        private Asset asset = null;
+        
+        /* True to load from a remote repository, false to load from the cache */
+        private boolean server = true;
+        
+        /* The repository from which to fetch the asset */
+        private Repository repository = null;
+        
+        /* Object reflecting the results of the asynchronous operation */
+        private Future future = null;
         
         /**
-         * Load an asset, either from local cache or the server
-         * @param asset
-         * @param server true loads from server, false for client
+         * Load a given asset, either from local cache or the server.
+         * 
+         * @param asset The asset to load
+         * @param repository The repository from which to fetch the asset
+         * @param server true loads from server, false for client local cache
          */
-        public AssetLoader(Asset asset, boolean server) {
+        public AssetLoader(Asset asset, Repository repository, boolean server) {
             this.asset = asset;
+            this.repository = repository;
             this.server = server;
         }
         
         /**
          * Return the asset this loader is loading
-         * @return
+         * 
+         * @return The asset
          */
         public Asset getAsset() {
-            return asset;
+            return this.asset;
         }
         
-        public Object call() throws Exception {
-            try {
-                if (server) {
-                    getFromServer();
-                }
-
-                try {
-                    getLocal();
-                } catch(Exception e) {
-                    if (server) {
-                        getFromServer();
-                        getLocal();
-                    }
-                }
-
-                if (server)
-                    assetDB.addAsset(asset);
-
-                asset.notifyAssetReadyListeners();
-            } catch(Exception e) {
-                e.printStackTrace();
-                logger.log(Level.INFO, "Loader FAILED ", e);
-                asset.setFailureInfo("Load Failed "+e.getMessage());
-                asset.notifyAssetReadyListeners();
-                
-                // Return null to indicate failure to Future object
-                return null;
-            }
-            
-            return asset.getAsset();
-        }
-        
-        private void getFromServer() throws IOException {
-            try {
-                getAssetFromRepository(asset, null);
-                asset.postProcess();
-            } catch (IOException ex) {
-                // TODO try different repositories
-                Logger.getLogger(AssetManager.class.getName()).log(Level.SEVERE, null, ex);
-                throw ex;
-            }
-            
-        }
-        
-        private void getLocal() {
-            asset.loadLocal();
-
-            synchronized(loadingAssets) {              
-                synchronized(loadedAssets) {
-                    loadingAssets.remove(asset.getFilename());
-                    loadedAssets.put(asset.getFilename(), asset);
-                }
-            }            
-        }
-
+        /**
+         * Returns the object representing the state of the asynchronous task
+         *
+         * @return The Future status object
+         */
         Future getFuture() {
-            return future;
+            return this.future;
         }
 
+        /**
+         * Sets the object representing the state of the asynchronous task.
+         * Typically this is called by the thread that kicks off the task and
+         * sets the Future object returns by the Java Executer service.
+         * 
+         * @param future The Future status object
+         */
         void setFuture(Future future) {
             this.future = future;
         }
         
+        /**
+         * Called by the asynchronous task service to attempt to load the asset.
+         * Returns the asset upon success, null upn failure.
+         * 
+         * @return Upon success returns the asset, null upon failure
+         * @throws java.lang.Exception
+         */
+        public Object call() throws Exception {
+            try {
+                /* Log a message when this asynchronous task kicks off */
+                logger.fine("Starting to fetch asset, uri=" + this.asset.getAssetURI().toString() +
+                        ", server=" + server);
+
+                /*
+                 * First see if we wish to load the asset from the local cache. If
+                 * so, then synchronously load the asset. If it fails to load, then
+                 * drop through and try to load the asset from the server
+                 */
+                if (this.server == false) {
+                    /* If we can load the asset, then all is well and return */
+                    if (getAssetFromCache(this.asset) == true) {
+                        logger.fine("Loaded asset from local cache, uri=" + this.asset.getAssetURI().toString());
+                        asset.setFailureInfo(null);
+                        asset.notifyAssetReadyListeners();
+                        return this.asset;
+                    }
+
+                    /* Otherwise, log a warning and drop through to below */
+                    logger.fine("Unable to load asset from local cache, uri=" + this.asset.getAssetURI().toString());
+                }
+
+                /*
+                 * Next try to load the asset from the server. We fetch an ordered
+                 * lists of assets servers to try from the repository information.
+                 * If loading from one fails, then move onto the next until the
+                 * loading is successful and complete.
+                 */
+                String uri = this.asset.getAssetURI().toString();
+                logger.fine("Looking at possible repositories for uri=" + uri +
+                        ", from repository=" + this.repository);
+                String[] urls = this.repository.getAllURLs(this.asset.getAssetURI());
+                
+                for (String url : urls) {
+                    /* Log a message for this attempt to download from the next source */
+                    logger.fine("Attempting to load from location, url=" + url);
+
+                    /*
+                     * Try to synchronously download the asset. Upon failure log
+                     * a message and continue to the next one.
+                     */
+                    if (getAssetFromServer(this.asset, url, null) == false) {
+                        logger.fine("Loading of asset uri=" + uri + " failed for, url=" + url);
+                        continue;
+                    }
+
+                    /*
+                     * If we've reached here, we have successfully loaded the asset
+                     * from the repository, so add it to the cache and return.
+                     */
+                    asset.postProcess();
+                    if (assetDB.addAsset(asset) == false) {
+                        // XXX This is a big more than a warning situation
+                        logger.warning("Failed to add new asset to cache db, uri=" + uri);
+                    }
+
+                    /* Now that it is download, attempt to open from the cache */
+                    if (getAssetFromCache(this.asset) == true) {
+                        logger.fine("Loaded asset from local cache, uri=" + this.asset.getAssetURI().toString());
+                        asset.setFailureInfo(null);
+                        asset.notifyAssetReadyListeners();
+                        return this.asset;
+                    }
+
+                    logger.warning("Unable to load asset from local cache, uri=" + this.asset.getAssetURI().toString());
+                    asset.setFailureInfo("Unable to load asset from local cache, uri=" + this.asset.getAssetURI().toString());
+                    asset.notifyAssetReadyListeners();
+                    return null;
+                }
+
+                /* If we have reached here, couldn't find the asset anywhere */
+                logger.warning("Unable to load asset from local anywhere, uri=" + this.asset.getAssetURI().toString());
+                asset.setFailureInfo("Unable to load asset from local anywhere, uri=" + this.asset.getAssetURI().toString());
+                asset.notifyAssetReadyListeners();
+                return null;
+            } catch (java.lang.RuntimeException excp) {
+                logger.info("Exception in call: " + excp.toString());
+                excp.printStackTrace();
+                throw excp;
+            }
+        }
     }
-    
+
     /**
-     * Used to recieve notification when an asset load has been completed.
+     * Used to recieve notification when an asset load has been completed or
+     * has failed. Register with Asset.addAssetReadyListener().
      */
     @ExperimentalAPI
     public interface AssetReadyListener {
         /**
          * Called when the asset is ready for use
-         * @param asset
+         * @param asset The asset loaded
          */
         public void assetReady(Asset asset);
         
-        public void assetFailure(Asset Asset, String reason);
+        /**
+         * Called when loading the asset has failed, with the given reason
+         * @param asset The asset that has failed to load
+         * @param reason The reason why the asset has failed to load
+         */
+        public void assetFailure(Asset asset, String reason);
     }
 }
