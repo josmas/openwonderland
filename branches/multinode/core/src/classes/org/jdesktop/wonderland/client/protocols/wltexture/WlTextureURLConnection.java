@@ -28,7 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
-import org.jdesktop.wonderland.client.datamgr.Repository;
+import org.jdesktop.wonderland.client.repository.Repository;
 import org.jdesktop.wonderland.common.AssetType;
 
 /**

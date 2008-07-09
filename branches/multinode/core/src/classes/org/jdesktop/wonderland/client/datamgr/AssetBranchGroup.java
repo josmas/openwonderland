@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.client.datamgr;
 
 import com.jme.scene.Spatial;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
 
 /**
  *
@@ -28,8 +29,11 @@ import org.jdesktop.wonderland.common.AssetType;
  */
 public class AssetBranchGroup extends Asset<Spatial> {
 
-    AssetBranchGroup(Repository repository, String filename) {
-        super(repository, filename);
+    /**
+     * @{inherit-javadoc}
+     */
+    AssetBranchGroup(AssetURI assetURI) {
+        super(assetURI);
         type = AssetType.MODEL;
     }
 

@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.client.datamgr;
 
 import java.io.File;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
 
 /**
  *
@@ -28,9 +29,11 @@ import org.jdesktop.wonderland.common.AssetType;
  */
 public class AssetFile extends Asset<File> {
 
-    public AssetFile(Repository r, 
-            String filename) {
-        super(r,filename);
+    /**
+     * @{inherit-javadoc}
+     */
+    public AssetFile(AssetURI assetURI) { 
+        super(assetURI);
         type = AssetType.FILE;
     }
     
