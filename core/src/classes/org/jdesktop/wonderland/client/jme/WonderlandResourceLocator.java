@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
 import org.jdesktop.wonderland.client.repository.Repository;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
 
 /**
  * Resource Locator for wonderland.
@@ -39,13 +40,13 @@ public class WonderlandResourceLocator implements ResourceLocator {
     private Repository repository;
 
     public WonderlandResourceLocator() {
-        try {
-//                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models"));
-//                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core"));
-            repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+////                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models"));
+////                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core"));
+//            //repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
+//        } catch (MalformedURLException ex) {
+//            Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     public URL locateResource(String filename) {
@@ -58,10 +59,18 @@ public class WonderlandResourceLocator implements ResourceLocator {
             filename = filename.substring(trim);
 
         AssetManager assetManager = AssetManager.getAssetManager();
-        Asset asset = assetManager.getAsset(AssetType.IMAGE, repository, filename, null);
-
+        //Asset asset = assetManager.getAsset(AssetType.IMAGE, repository, filename, null);
+        AssetURI assetURI = null;
         try {
-            ret = new URL("wltexture://"+repository.getOriginalRepository().getHost()+"/"+filename+"#"+repository.getOriginalRepository().getFile());
+            assetURI = new AssetURI("http://192.18.37.42/compiled_models/" + filename);
+        } catch (java.net.URISyntaxException excp) {
+            Logger.getLogger(CellModule.class.getName()).warning("Invalid resource URI: " + excp.toString());
+        }
+        Asset asset = AssetManager.getAssetManager().getAsset(assetURI, AssetType.FILE);
+        
+        try {
+            //ret = new URL("wltexture://"+repository.getOriginalRepository().getHost()+"/"+filename+"#"+repository.getOriginalRepository().getFile());
+            ret = assetURI.getURI().toURL();
         } catch (MalformedURLException ex) {
             Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
             ret = null;

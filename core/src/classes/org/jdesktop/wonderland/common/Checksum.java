@@ -24,6 +24,8 @@ package org.jdesktop.wonderland.common;
  */
 public abstract class Checksum {
     public abstract boolean equals(Checksum checksum);
+    
+    @Override
     public abstract String toString();
     
     /**
@@ -31,7 +33,7 @@ public abstract class Checksum {
      * @param bytes
      * @return
      */
-    static String toHexString(byte bytes[]) {
+    public static String toHexString(byte bytes[]) {
         StringBuffer retString = new StringBuffer();
         for (int i = 0; i < bytes.length; ++i) {
             retString.append(

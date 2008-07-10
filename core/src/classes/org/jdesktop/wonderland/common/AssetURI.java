@@ -19,6 +19,7 @@
  */
 package org.jdesktop.wonderland.common;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -120,7 +121,7 @@ public class AssetURI {
      */
     public String getModuleName() {
         if (this.isModule() == true) {
-            return this.uri.getScheme();
+            return this.uri.getHost();
         }
         return null;
     }
@@ -132,6 +133,39 @@ public class AssetURI {
      */
     public String getRelativePath() {
         return this.uri.getPath();
+    }
+    
+    /**
+     * Returns a relative path of the asset so that it exists in a unique
+     * location within a cache. The path does not have a leading "/".
+     * 
+     * @return A unique relative path for the URI
+     */
+    public String getRelativeCachePath() {
+ 
+        if (this.isRelative() == true) {
+            /*
+             * If the uri is relative (to some system-wide asset repository) simply
+             * store it under the "system" directory.
+             */
+            return "system" + File.separator + this.getRelativePath();
+        }
+        else if (this.isDefinite() == true) {
+            /*
+             * If the uri refers to an asset described by a full URL, then simply
+             * store it under the "definite" directory.
+             */
+            return "definite" + this.getRelativePath();
+        }
+        else if (this.isModule() == true) {
+            /*
+             * If the uri describes an asset within a module, prepend the "module"
+             * directory followed by the name of the module (which must be
+             * unique).
+             */
+            return "module" + File.separator + this.getModuleName() + this.getRelativePath();
+        }
+        return null;
     }
     
     /**

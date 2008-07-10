@@ -294,6 +294,35 @@ public class AssetDB {
     }
     
     /**
+     * Adds a new asset to database. Returns true upon success, false upon
+     * failure. If the asset already exists, this method logs an exception and
+     * returns false.
+     * 
+     * @param asset The asset to add to the database
+     * @return True if the asset was added successfully, false if not
+     */
+    public boolean addAsset(Asset asset) {
+        boolean isSaved = false;
+        synchronized(stmtSaveNewRecord) {
+            try {
+                logger.fine("AssetDB: Saving asset to database, uri=" + asset.getAssetURI().toString());
+                stmtSaveNewRecord.clearParameters();
+                stmtSaveNewRecord.setString(1, asset.getAssetURI().toString());
+                stmtSaveNewRecord.setString(2, asset.getURL());
+                stmtSaveNewRecord.setString(3, asset.getLocalChecksum().toString());
+                stmtSaveNewRecord.setString(4, asset.getType().toString());
+                int row = stmtSaveNewRecord.executeUpdate();
+                logger.fine("AssetDB: Saving asset, row=" + row);
+                isSaved = true;            
+            } catch (java.sql.SQLException sqle) {
+                logger.log(Level.SEVERE, "AssetDB: SQL Error saving record for " + asset.getAssetURI().toString());
+                sqle.printStackTrace();
+            }
+        }
+        return isSaved;
+    }
+    
+    /**
      * Returns true if the asset database already exist. The asset database is
      * considered to exist, if the proper version of the database exists. If
      * not, a new one is created.
@@ -395,53 +424,31 @@ public class AssetDB {
     }
     
     /**
-     * Adds a new asset to database. Returns true upon success, false upon
-     * failure. XXX What if the asset already exists? XXX
+     * Updates an existing asset on the database with new information. If the
+     * asset does not exist, this method logs an exception and returns false.
      * 
-     * @param asset The asset to add to the database
-     * @return True if the asset was added successfully, false if not
+     * @param asset The asset to update
+     * @return True upon success, false upon failure
      */
-    public boolean addAsset(Asset asset) {
-        // XXX What if the asset already exists? XXX
-        boolean isSaved = false;
-        synchronized(stmtSaveNewRecord) {
-            try {
-                logger.fine("AssetDB: Saving asset to database, uri=" + asset.getAssetURI().toString());
-                stmtSaveNewRecord.clearParameters();
-                stmtSaveNewRecord.setString(1, asset.getAssetURI().toString());
-                stmtSaveNewRecord.setString(2, asset.getURL());
-                stmtSaveNewRecord.setString(3, asset.getLocalChecksum().toString());
-                stmtSaveNewRecord.setString(4, asset.getType().toString());
-                int row = stmtSaveNewRecord.executeUpdate();
-                logger.fine("AssetDB: Saving asset, row=" + row);
-                isSaved = true;            
-            } catch (java.sql.SQLException sqle) {
-                logger.log(Level.SEVERE, "AssetDB: SQL Error saving record for " + asset.getAssetURI().toString());
-                sqle.printStackTrace();
-            }
-        }
-        return isSaved;
-    }
-    
-    
-    private boolean updateRecord(String filename, String baseUrl, String checksum, AssetType assetType) {
+    public boolean updateAsset(Asset asset) {
         boolean bEdited = false;
         synchronized(stmtUpdateExistingRecord) {
             try {
                 stmtUpdateExistingRecord.clearParameters();
 
-                stmtUpdateExistingRecord.setString(1, filename);
-                stmtUpdateExistingRecord.setString(2, baseUrl);
-                stmtUpdateExistingRecord.setString(3, checksum);
-                stmtUpdateExistingRecord.setString(4, assetType.toString());
-                stmtUpdateExistingRecord.setString(5, filename);
+                stmtUpdateExistingRecord.setString(1, asset.getAssetURI().toString());
+                stmtUpdateExistingRecord.setString(2, asset.getURL());
+                stmtUpdateExistingRecord.setString(3, asset.getLocalChecksum().toString());
+                stmtUpdateExistingRecord.setString(4, asset.getType().toString());
+                stmtUpdateExistingRecord.setString(5, asset.getAssetURI().toString());
                 stmtUpdateExistingRecord.executeUpdate();
                 bEdited = true;
             } catch(SQLException sqle) {
+                logger.log(Level.SEVERE, "AssetDB: SQL Error updating record for " + asset.getAssetURI().toString());
                 sqle.printStackTrace();
             }
         }
-        return bEdited;        
+        return bEdited;
     }
     
     /**
