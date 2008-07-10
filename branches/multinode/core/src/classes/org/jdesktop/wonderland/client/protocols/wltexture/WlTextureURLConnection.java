@@ -53,7 +53,10 @@ public class WlTextureURLConnection extends URLConnection {
     
     @Override
     public InputStream getInputStream() {
+        /*
+
         try {
+            /*
             System.out.println("Asset "+url);
             
             Repository repository = new Repository(new URL("http://" + url.getHost()+"/"+trimSlash(url.getRef())));
@@ -74,6 +77,7 @@ public class WlTextureURLConnection extends URLConnection {
         } catch (MalformedURLException ex) {
             Logger.getLogger(WlTextureURLConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
+         * */
         return null;
         
     }

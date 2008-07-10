@@ -29,17 +29,11 @@ import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
 import com.jme.util.TextureKey;
 import com.jme.util.TextureManager;
-import com.jme.util.export.binary.BinaryExporter;
-import com.jme.util.export.binary.BinaryImporter;
-import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.Asset;
@@ -48,6 +42,7 @@ import org.jdesktop.wonderland.client.repository.Repository;
 import org.jdesktop.wonderland.client.utils.jme.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.utils.jme.traverser.TreeScan;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
 
 /**
  *
@@ -60,9 +55,17 @@ public class CellModule extends RenderModule {
     
     public void init(RenderInfo info) {
         try {
-            Repository repository = new Repository(new URL("http://192.18.37.42/"));
-
-            Asset asset = AssetManager.getAssetManager().getAsset(AssetType.FILE, repository, "mpk20.jme", null);
+            //Repository repository = new Repository(new URL("http://192.18.37.42/"));
+            //Asset asset = AssetManager.getAssetManager().getAsset(AssetType.FILE, repository, "mpk20.jme", null);
+            
+            AssetURI assetURI = null;
+            try {
+                assetURI = new AssetURI("http://192.18.37.42/mpk20.jme");
+            } catch (java.net.URISyntaxException excp) {
+                logger.warning("Invalid resource URI: " + excp.toString());
+                return;
+            }
+            Asset asset = AssetManager.getAssetManager().getAsset(assetURI, AssetType.FILE);
             AssetManager.getAssetManager().waitForAsset(asset);
             URL url = asset.getLocalCacheFile().toURI().toURL();
             

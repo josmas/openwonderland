@@ -17,8 +17,11 @@
  */
 package org.jdesktop.wonderland.client.repository;
 
+import org.jdesktop.wonderland.client.modules.ModuleCache;
+import org.jdesktop.wonderland.client.modules.ModuleCacheList;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.ModuleRepository;
 
 /**
  * The Repository factory class generates the proper repository given the type
@@ -64,17 +67,23 @@ public class RepositoryFactory {
              */
             String moduleName = assetURI.getModuleName();
             if (moduleName == null) {
+                System.out.println("Module name is null");
                 // XXX log an error
                 return null;
             }
             
-            // XXX Fetch module and get master and mirrors
-            String master = "http://foo.net";
-            String mirrors[] = { "http://192.18.37.42/compiled_models" };
-            return new MasterMirrorRepository(master, mirrors);
+            /* Fetch the module information using the module name */
+            ModuleCache mc = ModuleCacheList.getModuleCacheList().getModuleCache("server");
+            ModuleRepository mr = mc.getModuleRepository(moduleName);
+            if (mr == null) {
+                System.out.println("Module repository is null");
+                return null;
+            }
+            return new MasterMirrorRepository(mr.getMaster(), mr.getMirrors());
         }
         
         // Log an error XXX
+        System.out.println("Not valid asset URI type handled");
         return null;
     }
 }

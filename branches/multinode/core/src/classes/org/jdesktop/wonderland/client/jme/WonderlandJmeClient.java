@@ -17,10 +17,8 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.app.BaseGame;
 import com.jme.app.FixedFramerateGame;
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import com.jme.image.Texture;
 import com.jme.input.AbsoluteMouse;
 import com.jme.input.ChaseCamera;
@@ -43,7 +41,6 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.Skybox;
 import com.jme.scene.Spatial;
-import com.jme.scene.shape.Box;
 import com.jme.scene.state.AlphaState;
 import com.jme.scene.state.CullState;
 import com.jme.scene.state.LightState;
@@ -52,10 +49,6 @@ import com.jme.scene.state.ZBufferState;
 import com.jme.system.DisplaySystem;
 import com.jme.system.JmeException;
 import com.jme.util.TextureManager;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,9 +56,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
-import org.jdesktop.wonderland.client.repository.Repository;
 import org.jdesktop.wonderland.client.jme.WonderlandJmeClient.PendingModuleAction.Action;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
 
 /**
  *
@@ -453,9 +446,16 @@ public class WonderlandJmeClient extends FixedFramerateGame implements PluginAcc
             try {
                 //box stand in
 //                Box b = new Box("box", new Vector3f(0f,HEIGHT/2f,0f), 0.65f, HEIGHT, 0.4f);
-                Repository repository = new Repository(new URL("http://192.18.37.42/"));
-
-                Asset asset = AssetManager.getAssetManager().getAsset(AssetType.FILE, repository, "mannikin.jme", null);
+                //Repository repository = new Repository(new URL("http://192.18.37.42/"));
+                //Asset asset = AssetManager.getAssetManager().getAsset(AssetType.FILE, repository, "mannikin.jme", null);
+                AssetURI assetURI = null;
+                try {
+                    assetURI = new AssetURI("http://192.18.37.42/mannikin.jme");
+                } catch (java.net.URISyntaxException excp) {
+                    logger.warning("Invalid resource URI: " + excp.toString());
+                }
+                Asset asset = AssetManager.getAssetManager().getAsset(assetURI, AssetType.FILE);
+                    
                 AssetManager.getAssetManager().waitForAsset(asset);
                 // new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core/mannikin.jme")
                 URL url = asset.getLocalCacheFile().toURI().toURL();
