@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.common.cell.messages;
 import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.messages.Message;
 

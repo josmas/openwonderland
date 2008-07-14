@@ -30,9 +30,10 @@ import org.jdesktop.wonderland.server.WonderlandContext;
  */
 class SpaceManagerGridImpl implements SpaceManager {
 
-    private static final float SPACE_SIZE = 10; // Radius
+    private static final int SPACE_SIZE = 25; // Radius
+ 
     // The spaces must overlap slightly so that the view does not land between 2 spaces
-    private static final float fudge = 1.00001f;
+    private static final float fudge = 1.0001f;
     private long nextID = 0L;
      
     public void initialize() {
@@ -44,16 +45,16 @@ class SpaceManagerGridImpl implements SpaceManager {
      * @return
      */
     public SpaceMO[] getEnclosingSpace(Vector3f point) {
-        int x = (int) (point.x / SPACE_SIZE);
-        int y = (int) (point.y / SPACE_SIZE);
-        int z = (int) (point.z / SPACE_SIZE);
+        int x = (int) (point.x / (SPACE_SIZE*2));
+        int y = (int) (point.y / (SPACE_SIZE*2));
+        int z = (int) (point.z / (SPACE_SIZE*2));
         SpaceMO ret = getEnclosingSpaceImpl(x,y,z);
         
         if (ret==null)
-            ret = createSpace(point);
+            ret = createSpace(point, x, y, z);
         
-//        if (!ret.worldBounds.contains(point))
-//            throw new RuntimeException("BAD ENCLOSING SPACE "+ret.getWorldBounds(null)+"  does not contain "+point+"   name "+getSpaceBindingName(x, y, z));
+        if (!ret.worldBounds.contains(point))
+            throw new RuntimeException("BAD ENCLOSING SPACE "+ret.getWorldBounds(null)+"  does not contain "+point+"   name "+getSpaceBindingName(x, y, z));
         
         return new SpaceMO[] {ret};
     }
@@ -62,20 +63,17 @@ class SpaceManagerGridImpl implements SpaceManager {
         return new SpaceID(nextID++);
     }
     
-    private SpaceMO createSpace(Vector3f point) {
-        int x = (int) (point.x / SPACE_SIZE);
-        int y = (int) (point.y / SPACE_SIZE);
-        int z = (int) (point.z / SPACE_SIZE);
+    private SpaceMO createSpace(Vector3f point, int x, int y, int z) {
         
-        Vector3f center = new Vector3f(x * SPACE_SIZE, 
-                                       y*SPACE_SIZE, 
-                                       z * SPACE_SIZE);
+        Vector3f center = new Vector3f((x * SPACE_SIZE*2)+SPACE_SIZE, 
+                                       (y * SPACE_SIZE*2)+SPACE_SIZE, 
+                                       (z * SPACE_SIZE*2)+SPACE_SIZE);
         BoundingBox gridBounds = new BoundingBox(center, 
                                                  SPACE_SIZE*fudge, 
                                                  SPACE_SIZE*fudge, 
                                                  SPACE_SIZE*fudge);
         
-        System.out.println("CREATING SPACE "+x+" "+y+" "+z+"    center "+center);
+        System.out.println("CREATING SPACE "+x+" "+y+" "+z+"    bounds "+gridBounds+"  for point "+point);
         SimpleSpaceMO space = new SimpleSpaceMO(gridBounds, 
                                                 center,
                                                 nextSpaceID());
@@ -89,12 +87,12 @@ class SpaceManagerGridImpl implements SpaceManager {
         list.add((SimpleSpaceMO)getEnclosingSpaceImpl(x+1,y,z-1));  // SE
         list.add((SimpleSpaceMO)getEnclosingSpaceImpl(x-1,y,z-1));  // SW
         list.add((SimpleSpaceMO)getEnclosingSpaceImpl(x-1,y,z+1));  // NW
-        space.setNeighbours(list.toArray(new SimpleSpaceMO[list.size()]));
+        space.setAdjacentSpaces(list.toArray(new SimpleSpaceMO[list.size()]));
         
         // connect existing neighbour spaces to the new space
         for(SimpleSpaceMO n : list) {
             if (n!=null)
-                n.addNeighbour(space);
+                n.addAdjacentSpace(space);
         }
         
         AppContext.getDataManager().setBinding(getSpaceBindingName(x,y,z), space);

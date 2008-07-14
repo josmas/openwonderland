@@ -18,17 +18,29 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import java.util.ArrayList;
+import com.jme.app.mtgame.WorldManager;
+import com.jme.app.mtgame.entity.Entity;
+import com.jme.app.mtgame.entity.ProcessorComponent;
+import com.jme.app.mtgame.entity.RotationProcessor;
+import com.jme.app.mtgame.entity.SceneComponent;
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.light.PointLight;
+import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Node;
+import com.jme.scene.shape.Box;
+import com.jme.scene.shape.Teapot;
+import com.jme.scene.state.LightState;
+import com.jme.scene.state.MaterialState;
+import com.jme.scene.state.RenderState;
+import com.jme.scene.state.ZBufferState;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.comms.ClientConnection;
-import org.jdesktop.wonderland.client.comms.ResponseListener;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
-import org.jdesktop.wonderland.common.cell.messages.MovableMessageResponse;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A cell that can move
@@ -48,146 +60,77 @@ public class MovableCell extends Cell {
         addComponent(new MovableComponent(this));
     }
     
-    /**
-     * A request from this client to move the cell. The cell we be moved locally
-     * and the requested change sent to the server. If the server denies the move
-     * the cell will be moved to a server provided location and the listener
-     * will be called. The server will
-     * notify all other clients of the new location.
-     * 
-     * @param transform the requrested transform
-     * @param listener the listener that will be notified in the event the
-     * system modifies this move (due to collision etc).
-     */
-//    public void localMoveRequest(CellTransform transform, 
-//                                 final CellMoveModifiedListener listener) {
-//    
-//        CellManager.getCellManager().notifyCellMoved(this, false);        
-//        
-//        ChannelComponent channelComp = getComponent(ChannelComponent.class);
-//        
-//        // make sure we are connected to the server
-//        if (channelComp == null || 
-//                channelComp.getStatus() != ClientConnection.Status.CONNECTED)
-//        {
-//            logger.warning("Cell channel not connected when moving cell " +
-//                           getCellID());
-//            return;
-//        }
-//        
-//        // TODO at the moment this request does not apply a local change, rather
-//        // it relies on the MOVED message sent by the server as a result of this
-//        // request to actually move the local cell. Obviously needs updating
-//        // so a local change is applied.
-//        
-//        // TODO throttle sends, we should only send so many times a second.
-//        if (listener!=null) {
-//            channelComp.send(
-//                MovableMessage.newMoveRequestMessage(getCellID(), 
-//                                                    transform.getTranslation(null), 
-//                                                    transform.getRotation(null)),
-//                new ResponseListener() {
-//
-//                    public void responseReceived(ResponseMessage response) {
-//                        MovableMessageResponse msg = (MovableMessageResponse)response;
-//                        CellTransform requestedTransform = null;
-//                        CellTransform actualTransform = new CellTransform(msg.getRotation(), msg.getTranslation());
-//                        int reason = 1;
-//                        listener.moveModified(requestedTransform, reason, actualTransform);
-//                    }
-//                });
-//        } else {
-//            channelComp.send(
-//                MovableMessage.newMoveRequestMessage(getCellID(), 
-//                                                    transform.getTranslation(null), 
-//                                                    transform.getRotation(null)));
-//        }
-//    }
-//    
-//    /**
-//     * A request from this client to move the cell. The cell we be moved locally
-//     * and the requested change sent to the server. If the server denies the move
-//     * the cell will be moved to a server provided location. The server will
-//     * notify all other clients of the new location.
-//     * 
-//     * @param transform
-//     */
-//    public void localMoveRequest(CellTransform transform) {
-//        localMoveRequest(transform, null);
-//    }
-//    
-//    /**
-//     * Called when a message arrives from the server requesting that the
-//     * cell be moved.
-//     * @param transform
-//     */
-//    protected void serverMoveRequest(CellTransform transform) {
-//        setTransform(transform);
-//        CellManager.getCellManager().notifyCellMoved(this, true);
-//        notifyServerCellMoveListeners(transform, CellMoveSource.REMOTE);
-//    }
-//    
-//    
-//    
-//    /**
-//     * Listen for move events from the server
-//     * @param listener
-//     */
-//    public void addServerCellMoveListener(CellMoveListener listener) {
-//        if (serverMoveListeners==null) {
-//            serverMoveListeners = new ArrayList();
-//        }
-//        serverMoveListeners.add(listener);
-//    }
-//    
-//    /**
-//     * Remove the server move listener.
-//     * @param listener
-//     */
-//    public void removeServerCellMoveListener(CellMoveListener listener) {
-//        if (serverMoveListeners!=null) {
-//            serverMoveListeners.remove(listener);
-//        }
-//    }
-//    
-//    /**
-//     * Notify any serverMoveListeners that the cell has moved
-//     * 
-//     * @param transform
-//     */
-//    private void notifyServerCellMoveListeners(CellTransform transform, CellMoveSource source) {
-//        if (serverMoveListeners==null)
-//            return;
-//        
-//        for(CellMoveListener listener : serverMoveListeners) {
-//            listener.cellMoved(transform, source);
-//        }
-//    }
-//    
-//    @ExperimentalAPI
-//    public interface CellMoveListener {
-//        /**
-//         * Notification that the cell has moved. Source indicates the source of 
-//         * the move, local is from this client, remote is from the server.
-//         * 
-//         * @param transform
-//         * @param source
-//         */
-//        public void cellMoved(CellTransform transform, CellMoveSource source);
-//    }
-//    
-//    @ExperimentalAPI
-//    public interface CellMoveModifiedListener {
-//        /**
-//         * Notification from the server that the requested move was
-//         * not possible and a modified move took place instead. The cell should be positioned with the actualTransform
-//         * transform.
-//         * 
-//         * @param requestedTransform
-//         * @param reason
-//         * @param actualTransform
-//         */
-//        public void moveModified(CellTransform requestedTransform, int reason, CellTransform actualTransform);
-//    }
+    @Override
+    protected Entity createEntity() {
+        Entity ret = new Entity("StaticModelCell "+getCellID(), null);
+        BoundingVolume b = getLocalBounds();
+        if (!(b instanceof BoundingBox)) {
+           BoundingSphere s = (BoundingSphere) b;
+           b = new BoundingBox(s.getCenter(), s.getRadius(), s.getRadius(), s.getRadius()); 
+        }
+        ret.setBounds((BoundingBox) b);
+        
+        WorldManager wm = JmeClientMain.getWorldManager();
+        CellTransform t = getTransform();
+        ret.setTransform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
+        Vector3f v3f = new Vector3f();
+        ret.getPosition(v3f);
+        System.out.println("****** Created Entity "+v3f);
+        
+        addBoundsGeometry(ret, wm);
+        
+        return ret;
+    }
 
+    private void addBoundsGeometry(Entity entity, WorldManager wm) {
+        ColorRGBA color = new ColorRGBA();
+
+        ZBufferState buf = (ZBufferState) wm.createRendererState(RenderState.RS_ZBUFFER);
+        buf.setEnabled(true);
+        buf.setFunction(ZBufferState.CF_LEQUAL);
+
+        PointLight light = new PointLight();
+        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
+        light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
+        light.setLocation(new Vector3f(100, 100, 100));
+        light.setEnabled(true);
+        LightState lightState = (LightState) wm.createRendererState(RenderState.RS_LIGHT);
+        lightState.setEnabled(true);
+        lightState.attach(light);
+
+        Vector3f translation = getTransform().getTranslation(null);
+        
+        color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
+        createTeapotEntity("West ", translation.x, translation.y, translation.z, buf, lightState, color, wm);        
+    }
+
+    public void createTeapotEntity(String name, float xoff, float yoff, float zoff, 
+            ZBufferState buf, LightState ls, ColorRGBA color, WorldManager wm) {
+        MaterialState matState = null;
+        
+        // The center teapot
+        Node node = new Node();
+//        Teapot teapot = new Teapot();
+//        teapot.resetData();
+        Box teapot = new Box("MovableCell", new Vector3f(0,0,0), 1f, 1f, 1f);
+        node.attachChild(teapot);
+
+        matState = (MaterialState) wm.createRendererState(RenderState.RS_MATERIAL);
+        matState.setDiffuse(color);
+        node.setRenderState(matState);
+        node.setRenderState(buf);
+        node.setRenderState(ls);
+        node.setLocalTranslation(xoff, yoff, zoff);
+
+        Entity te = new Entity(name + "Teapot", null);
+        SceneComponent sc = new SceneComponent();
+        sc.setSceneRoot(node);
+        te.addComponent(SceneComponent.class, sc);
+        
+        RotationProcessor rp = new RotationProcessor(name + "Teapot Rotator", wm, 
+                node, (float) (6.0f * Math.PI / 180.0f));
+        //rp.setRunInRenderer(true);
+        te.addComponent(ProcessorComponent.class, rp);
+        wm.addEntity(te);        
+    }
 }

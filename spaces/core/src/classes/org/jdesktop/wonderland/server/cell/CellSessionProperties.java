@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 
 /**
  * The properties of the cell for a particular combination of session

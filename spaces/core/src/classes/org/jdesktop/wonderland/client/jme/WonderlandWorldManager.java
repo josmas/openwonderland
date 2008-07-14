@@ -18,213 +18,31 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.app.mtgame.NetworkManager;
 import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.CameraComponent;
 import com.jme.app.mtgame.entity.Entity;
 import java.util.HashMap;
-import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.ClientContext3D;
-import org.jdesktop.wonderland.client.avatar.LocalAvatar;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
-import org.jdesktop.wonderland.client.cell.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.CellManager;
-import org.jdesktop.wonderland.client.comms.CellClientSession;
-import org.jdesktop.wonderland.client.comms.LoginFailureException;
-import org.jdesktop.wonderland.client.comms.LoginParameters;
-import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellSetup;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 
 /**
  *
+ *  TEMPORARY CLASS, WILL BE REMOVED ONCE WE HAVE entityMoved listener interface in WorldManager
+ * 
  * @author paulby
  */
 public class WonderlandWorldManager extends WorldManager {
-    private static final Logger logger = Logger.getLogger(WonderlandWorldManager.class.getName());
+
+    private ClientManager clientManager;
     
-    // properties
-    private Properties props;
-    
-    // standard properties
-    private static final String SERVER_NAME_PROP = "sgs.server";
-    private static final String SERVER_PORT_PROP = "sgs.port";
-    private static final String USER_NAME_PROP   = "cellboundsviewer.username";
-    
-    // default values
-    private static final String SERVER_NAME_DEFAULT = "localhost";
-    private static final String SERVER_PORT_DEFAULT = "1139";
-    private static final String USER_NAME_DEFAULT   = "test";
-   
-    private CellClientSession session;
-    
-    private LocalAvatar localAvatar;
-    
-//    private Vector3f location = new Vector3f();
-//    private static final float STEP = 2f;
-    private Cache boundsPanel = new Cache();
-    
-    private Vector3f previousPos = new Vector3f();
-    
-    public WonderlandWorldManager(String name, HashMap attributes) {
+    public WonderlandWorldManager(String name, HashMap attributes, ClientManager clientManager) {
         super(name, attributes);
-        // load properties from file
-//        if (args.length == 1) {
-//            props = loadProperties(args[0]);
-//        } else {
-            props = loadProperties(null);
-//        }
-   
-        String serverName = props.getProperty(SERVER_NAME_PROP,
-                                              SERVER_NAME_DEFAULT);
-        String serverPort = props.getProperty(SERVER_PORT_PROP,
-                                              SERVER_PORT_DEFAULT);
-        String userName   = props.getProperty(USER_NAME_PROP,
-                                              USER_NAME_DEFAULT);
-        
-        
-        WonderlandServerInfo server = new WonderlandServerInfo(serverName,
-                                                  Integer.parseInt(serverPort));
-        
-        LoginParameters loginParams = new LoginParameters(userName, 
-                                                          "test".toCharArray());
-        
-        
-        // create a session
-        session = new CellClientSession(server) {
-            @Override
-            protected CellCache createCellCache() {
-                getCellCacheConnection().addListener(boundsPanel);
-                return boundsPanel;
-            }
-        };
-        ClientContext3D.registerCellCache(boundsPanel, session);
-        
-        boundsPanel.setSession(session);
-        
-        localAvatar = session.getLocalAvatar();
-                
-        try {
-            session.login(loginParams);
-        } catch (LoginFailureException ex) {
-            logger.log(Level.SEVERE, "Login Failure", ex);
-        }
-        
+        this.clientManager = clientManager;
     }
     
     @Override
     public void entityMoved(Entity entity) {
         super.entityMoved(entity);
-        if (entity.getComponent(CameraComponent.class)!=null) {
-            Vector3f v3f = new Vector3f();
-            entity.getPosition(v3f);
-            if (!previousPos.equals(v3f)) {
-                System.out.println("Camera moved "+v3f);
-                localAvatar.localMoveRequest(v3f, null);
-                previousPos.set(v3f);
-            }
-        }
+        clientManager.entityMoved(entity);
     }
     
-    class Cache implements CellCacheConnection.CellCacheMessageListener, CellCache {
-        
-        // BoundsPanel actually wraps the cacheImpl
-        private CellCacheBasicImpl cacheImpl;
-        private CellClientSession session;
-        
-        public Cache() {
-        }
-        
-        public WonderlandSession getSession() {
-            return session;
-        }
-        
-        public void setSession(CellClientSession session) {
-            this.session = session;
-            
-            // setup internal cache
-            cacheImpl = new CellCacheBasicImpl(session, 
-                                               session.getCellCacheConnection(), 
-                                               session.getCellChannelConnection());
-        }
-        
-        public void loadCell(CellID cellID, 
-                String className, 
-                BoundingVolume localBounds, 
-                CellID parentCellID, 
-                CellTransform cellTransform, 
-                CellSetup setup,
-                String cellName) {
-            cacheImpl.loadCell(cellID, 
-                               className, 
-                               localBounds, 
-                               parentCellID, 
-                               cellTransform, 
-                               setup,
-                               cellName);
-        }
 
-        public void unloadCell(CellID cellID) {
-            cacheImpl.unloadCell(cellID);
-        }
-
-        public void deleteCell(CellID cellID) {
-            cacheImpl.deleteCell(cellID);
-        }
-
-        /**
-         * The cell has moved. If it's an movable cell the transform has already
-         * been updated, so just process the cache update. If its not a
-         * movable cell then update the transform and cache.
-         * 
-         * @param cellID
-         * @param cellTransform
-         */
-        public void moveCell(CellID cellID, CellTransform cellTransform) {
-            cacheImpl.moveCell(cellID, cellTransform);
-        }
-        
-        /*************************************************
-         * CellCache implementation
-         *************************************************/
-        public Cell getCell(CellID cellId) {
-            return cacheImpl.getCell(cellId);
-        }
-
-        
-        /*************************************************
-         * End CellCache implementation
-         *************************************************/
-        
-    }
-    
-    private static Properties loadProperties(String fileName) {
-        // start with the system properties
-        Properties props = new Properties(System.getProperties());
-    
-        // load the given file
-        if (fileName != null) {
-            try {
-                props.load(new FileInputStream(fileName));
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error reading properties from " +
-                           fileName, ioe);
-            }
-        }
-        
-        return props;
-    }
-   
 }

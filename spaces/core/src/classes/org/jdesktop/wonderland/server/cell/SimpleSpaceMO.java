@@ -40,40 +40,25 @@ public class SimpleSpaceMO extends SpaceMO {
         super(bounds, position, spaceID);
     }
     
-    void setNeighbours(SimpleSpaceMO... neighbours) {
+    void setAdjacentSpaces(SimpleSpaceMO... neighbours) {
         adjacentSpaces = new ArrayList();
         adjacentBounds = new ArrayList();
         
         for(SimpleSpaceMO n : neighbours) {
             if (n!=null) {
                 adjacentSpaces.add(AppContext.getDataManager().createReference(n));
-                adjacentBounds.add(n.getWorldBounds(null));               
+                adjacentBounds.add(n.getWorldBounds(null));     
+                n.addAdjacentSpace(this);
             }
-        }
-        
-//        if (north!=null) {
-//            adjacentSpaces.add(AppContext.getDataManager().createReference(north));
-//            adjacentBounds.add(north.getWorldBounds(null));
-//        }
-//        if (east!=null) {
-//            adjacentSpaces.add(AppContext.getDataManager().createReference(east));
-//            adjacentBounds.add(east.getWorldBounds(null));
-//        }
-//        if (south!=null) {
-//            adjacentSpaces.add(AppContext.getDataManager().createReference(south));
-//            adjacentBounds.add(south.getWorldBounds(null));
-//        }
-//        if (west!=null) {
-//            adjacentSpaces.add(AppContext.getDataManager().createReference(west));
-//            adjacentBounds.add(west.getWorldBounds(null));
-//        }
+        }        
     }
     
-    void addNeighbour(SimpleSpaceMO neighbour) {
+    void addAdjacentSpace(SimpleSpaceMO neighbour) {
         ManagedReference<SimpleSpaceMO> neighbourRef = AppContext.getDataManager().createReference(neighbour);
-        if (adjacentSpaces.contains(neighbourRef))
-            return;
-        adjacentSpaces.add(neighbourRef);
+        if (!adjacentSpaces.contains(neighbourRef)) {
+            adjacentSpaces.add(neighbourRef);
+            adjacentBounds.add(neighbour.getWorldBounds(null));     
+        }
     }
     
     @Override
