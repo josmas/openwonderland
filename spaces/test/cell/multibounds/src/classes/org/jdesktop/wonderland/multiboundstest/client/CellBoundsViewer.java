@@ -40,8 +40,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 
 /**
  *
@@ -356,7 +356,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             }
         }
 
-        public void loadCell(CellID cellID, 
+        public Cell loadCell(CellID cellID, 
                 String className, 
                 BoundingVolume localBounds, 
                 CellID parentCellID, 
@@ -364,13 +364,15 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 CellSetup setup,
                 String cellName) {
             System.out.println("LOAD CELL "+cellID);
-            cacheImpl.loadCell(cellID, 
+            Cell ret = cacheImpl.loadCell(cellID, 
                                className, 
                                localBounds, 
                                parentCellID, 
                                cellTransform, 
                                setup,
                                cellName);
+            repaint();
+            return ret;
         }
 
         public void unloadCell(CellID cellID) {
