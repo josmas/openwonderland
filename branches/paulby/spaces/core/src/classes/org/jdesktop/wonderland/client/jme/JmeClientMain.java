@@ -42,16 +42,23 @@ public class JmeClientMain {
     private int height = 600;
     private float aspect = 800.0f/600.0f;
     
+    private static WorldManager worldManager;
+    
     public JmeClientMain(String[] args) {
-        WonderlandWorldManager wm = new WonderlandWorldManager("Wonderland", null);
+        ClientManager clientManager = new ClientManager();
+        worldManager = new WonderlandWorldManager("Wonderland", null, clientManager);
         
         processArgs(args);
-        wm.setDesiredFrameRate(desiredFrameRate);
+        worldManager.setDesiredFrameRate(desiredFrameRate);
         
-        createUI(wm);  
-        createTestSpaces(wm);
-        createTestEntities(wm);
-        createCameraEntity(wm);        
+        createUI(worldManager);  
+//        createTestSpaces(worldManager);
+//        createTestEntities(worldManager);
+        createCameraEntity(worldManager);        
+    }
+    
+    public static WorldManager getWorldManager() {
+        return worldManager;
     }
     
     private void createCameraEntity(WorldManager wm) {

@@ -63,7 +63,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
     void addCell(CellMO cell) {
 //        System.out.println("Space "+getName()+"  adding Cell "+cell.getName());
         CellListMO cellList;
-        if (cell.isStatic()) {
+        if (cell.getComponent(MovableComponentMO.class)==null) {
             cellList = staticCellList;
         } else {
             cellList = dynamicCellList;
@@ -117,17 +117,17 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
     }
     
     
-    public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results) {        
-        return getDynamicCells(spaces, bounds, results, 0L);
+    public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results, CacheStats stats) {        
+        return getDynamicCells(spaces, bounds, results, stats, 0L);
     }
     
-    public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results, long changedSince) {
+    public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results, CacheStats stats, long changedSince) {
         
         if (results==null)
             results = new CellListMO();
         int cellCount = 0;
         for(ManagedReference<SpaceMO> spaceRef : spaces) {
-            cellCount += spaceRef.get().getDynamicCells(results, bounds, changedSince);
+            cellCount += spaceRef.get().getDynamicCells(results, bounds, stats, changedSince);
         }
 
 //        System.out.println("Checked "+spaces.size()+" spaces and "+cellCount+" cells");
@@ -135,15 +135,18 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
         return results;
     }
     
-    public CellListMO getStaticCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results) {
+    public CellListMO getStaticCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results, CacheStats stats) {
         
         if (results==null)
             results = new CellListMO();
         
         int cellCount = 0;
+        System.out.println("Neighbours ");
         for(ManagedReference<SpaceMO> spaceRef : spaces) {
-            cellCount += spaceRef.get().getStaticCells(results, bounds);
+            System.out.print(spaceRef.get().getSpaceID()+" ");
+            cellCount += spaceRef.get().getStaticCells(results, bounds, stats);
         }
+        System.out.println();
 
 //        System.out.println("Checked "+spaces.size()+" spaces and "+cellCount+" cells");
         
@@ -157,7 +160,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
      * @param list
      * @param bounds
      */
-    private int getDynamicCells(CellListMO list, BoundingVolume bounds, long changedSince) {
+    private int getDynamicCells(CellListMO list, BoundingVolume bounds, CacheStats stats, long changedSince) {
         if (dynamicCellList.getChangeTimestamp()>changedSince-TimeManager.getTimeDrift()) {
             // List has changed recently, so check contents
 //        System.err.println("Checking list "+dynamicCellList.size());
@@ -165,6 +168,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
     //            System.err.println(cellDesc.getCellID()+"  "+cellDesc.getTransformTimestamp()+">"+(changedSince-TimeManager.getTimeDrift()));
                 if (cellDesc.getTransformTimestamp()>changedSince-TimeManager.getTimeDrift() && CellManagerMO.getCell(cellDesc.getCellID()).getWorldBounds().intersects(bounds)) {
                     list.addCell(cellDesc);
+                    stats.logCellIntersect(this, cellDesc);
     //                System.out.println("intersect with "+cellDesc.getCellID());
                 }
             }
@@ -183,16 +187,20 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
      * @param list
      * @param bounds
      */
-    private int getStaticCells(CellListMO list, BoundingVolume bounds) {
+    private int getStaticCells(CellListMO list, BoundingVolume bounds, CacheStats stats) {
 //        return getCells(list, bounds, stationaryCellListRef.get());
-        return getCells(list, bounds, staticCellList);
+        return getCells(list, bounds, staticCellList, stats);
     }
     
-    private int getCells(CellListMO list, BoundingVolume bounds, CellListMO localList) {
+    private int getCells(CellListMO list, BoundingVolume bounds, CellListMO localList, CacheStats stats) {
         for(CellDescription cellDesc : localList.getCells()) {
-            if (CellManagerMO.getCell(cellDesc.getCellID()).getWorldBounds().intersects(bounds)) {
+            // Check if list already contains cellDesc to avoid DS datastore get
+            if (!list.contains(cellDesc) && CellManagerMO.getCell(cellDesc.getCellID()).getWorldBounds().intersects(bounds)) {
                 list.addCell(cellDesc);
 //                System.out.println("intersect with "+cellDesc.getCellID());
+                if (stats!=null) {
+                    stats.logCellIntersect(this, cellDesc);
+                }
             }
         }
         return localList.size();

@@ -102,8 +102,6 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     // whether or not to aggregate messages
     private static final boolean AGGREGATE_MESSAGES = true;
     
-    private long viewTransformVersion = Long.MIN_VALUE;
-    
     private Collection<ManagedReference<SpaceMO>> proximitySpaces=null;
     private ManagedReference<SpaceMO> currentSpaceRef = null;
     private CellListMO allCells = new CellListMO();
@@ -168,7 +166,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         } else {
             // Periodically revalidate the cache
              task = AppContext.getTaskManager().schedulePeriodicTask(
-                    new ViewCellCacheRevalidateTask(this), 100, 1000); 
+                    new ViewCellCacheRevalidateTask(this), 1000, 2000);  // Start delay, duration
         }
         
         View view = viewRef.get();
@@ -224,7 +222,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             logger.finer("Revalidating CellCache for   " + 
                           session.getName());
         }
-
+        
         try {
             // getTranslation the current user's bounds
             View view = viewRef.get();
@@ -247,12 +245,19 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 
                 proximitySpaces = space.getSpaces(proximityBounds);
                 currentSpaceRef = AppContext.getDataManager().createReference(space);
-                CellListMO staticCellList = space.getStaticCells(proximitySpaces, proximityBounds, currentCells);               
-                
+                CacheStats staticStats = new CacheStats();
+                CellListMO staticCellList = space.getStaticCells(proximitySpaces, proximityBounds, currentCells, staticStats);   
+                System.out.println("Static ");
+                staticStats.report();
+               
                 generateLoadMessages(staticCellList);
                                 
+                CacheStats dynamicStats = new CacheStats();
                 // Get all dynamics cells, no matter when they were last updated
-                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, currentCells);                 
+                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, currentCells, dynamicStats);                 
+                System.out.println("Dynamic ");
+                dynamicStats.report();
+                System.out.println("----------------------------");
                 generateLoadMessages(dynamicCellList);
                 
                 Collection<CellDescription> descList = currentCells.getCells();
@@ -262,8 +267,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 oldCells.clear();
             } else {           
                 // Get only the dynamic cells that have been updated since our last revalidation
-                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, null, lastRevalidationTimestamp);
-//                System.out.println(session.getName()+"  "+dynamicCellList.size());
+                CacheStats dynamicStats = new CacheStats();
+                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, null, dynamicStats, lastRevalidationTimestamp);
+                System.out.println("Dynamic ");
+                dynamicStats.report();
+                System.out.println("----------------------------");
                 generateLoadMessages(dynamicCellList);
             }
                    
@@ -274,8 +282,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         } catch(RuntimeException e) {
             monitor.setException(true);
             
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "Rethrowing exception", e);
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING, "Rethrowing exception", e);
             }
             
             throw e;

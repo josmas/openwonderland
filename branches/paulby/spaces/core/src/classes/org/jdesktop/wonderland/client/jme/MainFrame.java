@@ -24,8 +24,11 @@ import java.awt.Canvas;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 
 /**
  * The Main JFrame for the wonderland jme client
@@ -33,14 +36,18 @@ import javax.swing.JPanel;
  * @author  paulby
  */
 public class MainFrame extends javax.swing.JFrame {
+    private static final ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/resources/bundle", Locale.getDefault());
 
     JPanel mainPanel = new JPanel();
     Canvas canvas = null;
     JLabel fpsLabel = new JLabel("FPS: ");
     private JPanel contentPane;
     
+    private ImportSessionFrame importSessionFrame = null;
+    
     /** Creates new form MainFrame */
     public MainFrame(WorldManager wm, int width, int height) {
+        System.out.println("bundle "+bundle);
         initComponents();
             // make the canvas:
             canvas = wm.createCanvas(width, height);
@@ -95,12 +102,14 @@ public class MainFrame extends javax.swing.JFrame {
         jMenu3 = new javax.swing.JMenu();
         exitMI = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
+        toolsMenu = new javax.swing.JMenu();
+        modelImportMI = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jMenu3.setText("File");
+        jMenu3.setText(bundle.getString("File")); // NOI18N
 
-        exitMI.setText("Exit");
+        exitMI.setText(bundle.getString("Exit")); // NOI18N
         exitMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitMIActionPerformed(evt);
@@ -110,8 +119,20 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(jMenu3);
 
-        jMenu4.setText("Edit");
+        jMenu4.setText(bundle.getString("Edit")); // NOI18N
         jMenuBar2.add(jMenu4);
+
+        toolsMenu.setText(bundle.getString("Tools")); // NOI18N
+
+        modelImportMI.setText(bundle.getString("Model_Importer...")); // NOI18N
+        modelImportMI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                modelImportMIActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(modelImportMI);
+
+        jMenuBar2.add(toolsMenu);
 
         setJMenuBar(jMenuBar2);
 
@@ -120,7 +141,14 @@ public class MainFrame extends javax.swing.JFrame {
 
 private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMIActionPerformed
 // TODO add your handling code here:
+    System.exit(0);
 }//GEN-LAST:event_exitMIActionPerformed
+
+private void modelImportMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelImportMIActionPerformed
+if (importSessionFrame==null) 
+        importSessionFrame = new ImportSessionFrame();
+    importSessionFrame.setVisible(true);
+}//GEN-LAST:event_modelImportMIActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -128,6 +156,8 @@ private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
+    private javax.swing.JMenuItem modelImportMI;
+    private javax.swing.JMenu toolsMenu;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -45,8 +45,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
 import org.jdesktop.wonderland.client.datamgr.Repository;
-import org.jdesktop.wonderland.client.utils.jme.traverser.ProcessNodeInterface;
-import org.jdesktop.wonderland.client.utils.jme.traverser.TreeScan;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.AssetType;
 
 /**

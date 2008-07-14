@@ -18,6 +18,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import com.jme.app.mtgame.entity.Entity;
 import com.jme.bounding.BoundingVolume;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,10 +27,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -55,6 +57,10 @@ public class Cell {
     private CellStatus currentStatus = CellStatus.DISK;
     
     private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
+    
+    private Entity entity;
+    
+    protected static Logger logger = Logger.getLogger(Cell.class.getName());
     
     public Cell(CellID cellID) {
         this.cellID = cellID;
@@ -204,8 +210,12 @@ public class Cell {
         }
                 
         for(Cell child : getChildren())
-            transformTreeUpdate(this, child);
+            transformTreeUpdate(this, child);      
         
+        if (entity!=null) {
+            entity.setTransform(localTransform.getRotation(null), localTransform.getTranslation(null), localTransform.getScaling(null));
+//            System.out.println("Moving entity");
+        }
     }
     
     /**
@@ -440,5 +450,25 @@ public class Cell {
      */
     public void reconfigureCell(CellSetup updateData) {
         
+    }
+    
+    /**
+     * Return the 3D entity for this cell.
+     * 
+     * TODO - this is 3D specific, should have a generic mechanism
+     * @return
+     */
+    public Entity getEntity() {
+        if (entity==null)
+            entity = createEntity();
+        return entity;
+    }
+    
+    /**
+     * Create the JME Entity for this cell
+     */
+    protected Entity createEntity() {
+        Logger.getAnonymousLogger().warning(this.getClass().getName()+" createEntity returning null");
+        return null;
     }
 }

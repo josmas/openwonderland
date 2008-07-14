@@ -189,15 +189,22 @@ public class CellManagerMO implements ManagedObject, Serializable {
 
             c3.addChild(c4);
             
-            CellMO s1 = new StaticModelCellMO(new Vector3f(3, 10, 5), 5);
-            CellMO s2 = new StaticModelCellMO(new Vector3f(8, 10, 5), 5);
-            CellMO s3 = new StaticModelCellMO(new Vector3f(11, 10, 5), 5);
+            float cellSize = 5;
+            int xMax = 40;
+            int zMax = 40;
+            
+            for(int x=0; x<cellSize*xMax; x+=cellSize) {
+                for(int z=0; z<cellSize*zMax; z+=cellSize) {
+                    WonderlandContext.getCellManager().insertCellInWorld(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
+                }
+            }
 
-            WonderlandContext.getCellManager().insertCellInWorld(c2);
-            WonderlandContext.getCellManager().insertCellInWorld(c3);
-            WonderlandContext.getCellManager().insertCellInWorld(s1);
-            WonderlandContext.getCellManager().insertCellInWorld(s2);
-            WonderlandContext.getCellManager().insertCellInWorld(s3);
+//            WonderlandContext.getCellManager().insertCellInWorld(c2);
+//            WonderlandContext.getCellManager().insertCellInWorld(c3);
+//            WonderlandContext.getCellManager().insertCellInWorld(s0);
+//            WonderlandContext.getCellManager().insertCellInWorld(s1);
+//            WonderlandContext.getCellManager().insertCellInWorld(s2);
+//            WonderlandContext.getCellManager().insertCellInWorld(s3);
 
             Task t = new TestTask(c3, c2);
 

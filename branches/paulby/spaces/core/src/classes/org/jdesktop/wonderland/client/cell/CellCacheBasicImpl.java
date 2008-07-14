@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.avatar.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -86,16 +86,17 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         return (Cell[]) cells.values().toArray(new Cell[cells.size()]);
     }
 
-    public void loadCell(CellID cellId, 
+    public Cell loadCell(CellID cellId, 
                          String className, 
                          BoundingVolume localBounds, 
                          CellID parentCellID, 
                          CellTransform cellTransform, 
                          CellSetup setup,
                          String cellName) {
+        System.out.println("-----> creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
-            return;     // Instantiation failed, error has already been logged
+            return null;     // Instantiation failed, error has already been logged
         
         cell.setName(cellName);
         Cell parent = cells.get(parentCellID);
@@ -128,6 +129,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             channelComp.setCellChannelConnection(cellChannelConnection);
         }
         cell.setStatus(CellStatus.ACTIVE);
+        
+        return cell;
     }
 
     /**

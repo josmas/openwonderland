@@ -19,25 +19,17 @@
 
 package org.jdesktop.wonderland.server.setup;
 
+import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+
 /**
  *
  * @author jkaplan
  */
 public interface CellLocation {
-    public enum BoundsType { BOX, SPHERE };
-    
-    public BoundsType getBoundsType();
-    public void setBoundsType(BoundsType boundsType);
+    public BoundingVolume getLocalBounds();
+    public void setBounds(BoundingVolume bounds);
    
-    public double getBoundsRadius();
-    public void setBoundsRadius(double boundsRadius);
-    
-    public double[] getOrigin();
-    public void setOrigin(double[] origin);
-    
-    public double[] getRotation();
-    public void setRotation(double[] rotation);
-    
-    public double getScale();
-    public void setScale(double scale);
+    public void setLocalTransform(CellTransform transform);
+    public CellTransform getLocalTransform();
 }

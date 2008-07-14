@@ -40,13 +40,12 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellListMO.ListInfo;
-import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
 /**
@@ -87,7 +86,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
-    private boolean isStatic;
+    private boolean isStatic=false;
     /**
      * Create a CellMO with the specified localBounds and transform.
      * If either parameter is null an IllegalArgumentException will be thrown.
@@ -562,8 +561,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param setup the properties to setup with
      */
     public void setupCell(BasicCellMOSetup<?> setup) {
-        setLocalTransform(BasicCellMOHelper.getCellTransform(setup));
-        setLocalBounds(BasicCellMOHelper.getCellBounds(setup));
+        setLocalTransform(setup.getLocalTransform());
+        setLocalBounds(setup.getLocalBounds());
     }
     
     /**

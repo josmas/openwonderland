@@ -20,7 +20,9 @@
 
 package org.jdesktop.wonderland.server.setup;
 
-import org.jdesktop.wonderland.common.cell.CellSetup;
+import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.common.cell.setup.CellSetup;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -35,16 +37,11 @@ public class BasicCellMOSetup<T extends CellSetup>
     /** the class of cell MO */
     private String cellMOClassName;
 
-   /* the location of the cell */
-    private double[] origin   = new double[] { 0.0, 0.0, 0.0 };
-    private double[] rotation = new double[] { 0.0, 1.0, 0.0, 0.0 };
-    private double   scale    = 1.0;
-
     /* the bounds of the cell */
-    private BoundsType boundsType   = BoundsType.SPHERE;
-    private double     boundsRadius = 4.0f;
+    private BoundingVolume bounds = null;
     
     private short priority;
+    private CellTransform transform;
     
     /** Default constructor */
     public BasicCellMOSetup() {
@@ -66,53 +63,22 @@ public class BasicCellMOSetup<T extends CellSetup>
         this.cellMOClassName = cellMOClassName;
     }
     
-   public double[] getOrigin() {
-        return origin;
+    public void setLocalTransform(CellTransform transform) {
+        this.transform = transform;
+        
+    }
+    public CellTransform getLocalTransform() {
+        return transform;
+    }
+
+    public BoundingVolume getLocalBounds() {
+        return bounds;
+    }
+
+    public void setBounds(BoundingVolume bounds) {
+        this.bounds = bounds;
     }
     
-    public void setOrigin(double[] origin) {
-        this.origin = origin;
-    }
-    
-    public double[] getRotation() {
-        return rotation;
-    }
-
-    public void setRotation(double[] rotation) {
-        this.rotation = rotation;
-    }
-
-    public double getScale() {
-        return scale;
-    }
-
-    public void setScale(double scale) {
-        this.scale = scale;
-    }
-    
-    public BoundsType getBoundsType() {
-        return boundsType;
-    }
-
-    public void setBoundsType(BoundsType boundsType) {
-        this.boundsType = boundsType;
-    }
-    
-    public void setBoundsType(String boundsType) {
-        if (boundsType.equals("SPHERE"))
-            this.boundsType = BoundsType.SPHERE;
-        else if (boundsType.equals("BOX"))
-            this.boundsType = BoundsType.BOX;
-    }
-
-    public double getBoundsRadius() {
-        return boundsRadius;
-    }
-
-    public void setBoundsRadius(double boundsRadius) {
-        this.boundsRadius = boundsRadius;
-    }
-
     public void validate() throws InvalidCellMOSetupException {
         // do nothing
     }
@@ -125,16 +91,4 @@ public class BasicCellMOSetup<T extends CellSetup>
         this.priority = priority;
     }
     
-    /**
-     * Returns a string representation of the setup data for human-readable
-     * viewing.
-     */
-    @Override
-    public String toString() {
-        return "class: " + this.cellMOClassName + ", origin: " +
-                this.origin.toString() +
-                ", scale: " + this.scale + ", bounds: " +
-                this.boundsType + " (" + this.boundsRadius + ") " +
-                this.cellSetup.toString();
-    }
 }

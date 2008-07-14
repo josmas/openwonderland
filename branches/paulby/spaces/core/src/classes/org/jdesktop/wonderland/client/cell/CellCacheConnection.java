@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
@@ -178,7 +178,7 @@ public class CellCacheConnection extends BaseConnection {
          * @param cellTransform
          * @param setup
          */
-        public void loadCell(CellID cellID, 
+        public Cell loadCell(CellID cellID, 
                                String className, 
                                BoundingVolume localBounds,
                                CellID parentCellID,
