@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.testharness.master;
 
 import com.jme.math.Vector3f;
 import java.util.ArrayList;
+import java.util.Properties;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.testharness.common.Client3DRequest;
 import org.jdesktop.wonderland.testharness.common.LoginRequest;
 
@@ -31,6 +33,8 @@ public class SimpleTestDirector implements TestDirector {
     private ArrayList<SlaveConnection> slaves = new ArrayList();
     private ArrayList<String> users = new ArrayList();
     
+    private Logger logger = Logger.getLogger(SimpleTestDirector.class.getName());
+    
     public boolean slaveJoined(SlaveConnection slaveController) {
         slaves.add(slaveController);
         
@@ -38,7 +42,7 @@ public class SimpleTestDirector implements TestDirector {
         int serverPort = MasterMain.getMaster().getSgsPort();
         
         String user;
-        for(int i=0; i<4; i++) {
+        for(int i=0; i<10; i++) {
             user = UsernameManager.getUniqueUsername();
             users.add(user);
             slaveController.send(new LoginRequest(serverName, 

@@ -214,6 +214,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
      * @param v
      * @return
      */
+    
     abstract Collection<ManagedReference<SpaceMO>> getSpaces(BoundingVolume v);
     
     /**

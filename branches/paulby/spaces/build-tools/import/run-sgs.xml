@@ -61,14 +61,27 @@
             <jvmarg value="-Djava.util.logging.config.file=${sgs.server.dir}/sgs-logging.properties"/>
             <jvmarg value="-Dj3d.rend=noop"/>
 
+            <jvmarg value="-Dcom.sun.sgs.txn.timeout=1000"/>
+<!--
+-->
             <!--start debug-->
-<!--            <jvmarg value="-Dcom.sun.sgs.txn.timeout=100000000"/>
+<!--
+            <jvmarg value="-Dcom.sun.sgs.txn.timeout=100000000"/>
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=8890,server=y,suspend=n"/>
  -->
             <!--end debug-->        
+
+	    <!-- start profile -->
+<!--
+            <jvmarg value="-Dcom.sun.sgs.txn.timeout=100000000"/>
+            <jvmarg value="-agentpath:/tmp/NBProfiler13535.link/deployed/jdk15/mac/libprofilerinterface.jnilib=/tmp/NBProfiler13535.link,5140"/>
+-->
+            <!--end profile-->        
+
+
             
             <classpath>
 		<pathelement path="${wonderland-server.classpath}"/>

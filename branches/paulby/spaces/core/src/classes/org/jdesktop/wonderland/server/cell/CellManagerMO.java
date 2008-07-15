@@ -190,8 +190,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
             c3.addChild(c4);
             
             float cellSize = 5;
-            int xMax = 40;
-            int zMax = 40;
+            int xMax = 4;
+            int zMax = 4;
             
             for(int x=0; x<cellSize*xMax; x+=cellSize) {
                 for(int z=0; z<cellSize*zMax; z+=cellSize) {

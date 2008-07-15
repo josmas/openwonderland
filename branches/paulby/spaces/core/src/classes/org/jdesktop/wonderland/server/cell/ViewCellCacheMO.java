@@ -211,8 +211,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
     /**
      * @param session
-     */
-    
+     */    
     void revalidateFromSpaces(ClientSession session) {
         // create a performance monitor
         RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();

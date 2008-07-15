@@ -55,8 +55,6 @@ class SpaceManagerGridImpl implements SpaceManager {
         
         SpaceMO ret = getEnclosingSpaceImpl(x,y,z);
         
-        System.out.println("Space "+(ret==null ? "null" : ret.getSpaceID())+" "+getSpaceBindingName(x, y, z));
-        
         if (ret==null)
             ret = createSpace(point, x, y, z);
         
@@ -80,7 +78,7 @@ class SpaceManagerGridImpl implements SpaceManager {
                                                  SPACE_SIZE*fudge, 
                                                  SPACE_SIZE*fudge);
         
-        System.out.println("CREATING SPACE "+x+" "+y+" "+z+"    bounds "+gridBounds+"  for point "+point);
+//        System.out.println("CREATING SPACE "+x+" "+y+" "+z+"    bounds "+gridBounds+"  for point "+point);
         SimpleSpaceMO space = new SimpleSpaceMO(gridBounds, 
                                                 center,
                                                 nextSpaceID());
