@@ -100,7 +100,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private RevalidateScheduler scheduler;
     
     // whether or not to aggregate messages
-    private static final boolean AGGREGATE_MESSAGES = true;
+    private static final boolean AGGREGATE_MESSAGES = false;
     
     private Collection<ManagedReference<SpaceMO>> proximitySpaces=null;
     private ManagedReference<SpaceMO> currentSpaceRef = null;
@@ -237,7 +237,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             // TODO - only supports a single current space at the moment, should
             // support multiple current spaces
             SpaceMO space = CellManagerMO.getCellManager().getEnclosingSpace(translation)[0];
-            if (true || AppContext.getDataManager().createReference(space)!=currentSpaceRef) {
+//            System.out.println("Current SPACE "+space.getSpaceID());
+            if (AppContext.getDataManager().createReference(space)!=currentSpaceRef) {
 //                System.err.println("Full revalidation "+space.position);
                 // copy the existing cells into the list of old cells 
                 CellListMO oldCells = (CellListMO) allCells.clone();
