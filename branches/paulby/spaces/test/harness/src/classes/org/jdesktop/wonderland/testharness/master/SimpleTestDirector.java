@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.testharness.common.LoginRequest;
 public class SimpleTestDirector implements TestDirector {
 
     private ArrayList<SlaveConnection> slaves = new ArrayList();
-    
+    private ArrayList<String> users = new ArrayList();
     
     public boolean slaveJoined(SlaveConnection slaveController) {
         slaves.add(slaveController);
@@ -37,18 +37,24 @@ public class SimpleTestDirector implements TestDirector {
         String serverName = MasterMain.getMaster().getSgsServerName();
         int serverPort = MasterMain.getMaster().getSgsPort();
         
-        slaveController.send(new LoginRequest(serverName, 
-                                              serverPort, 
-                                              UsernameManager.getUniqueUsername(), 
-                                              new char[] {}, 
-                                              0f, 0f, 0f));
+        String user;
+        for(int i=0; i<4; i++) {
+            user = UsernameManager.getUniqueUsername();
+            users.add(user);
+            slaveController.send(new LoginRequest(serverName, 
+                                                  serverPort, 
+                                                  user, 
+                                                  new char[] {}, 
+                                                  0f, 0f, 0f));
+
+            Vector3f[] locations = new Vector3f[] {
+                new Vector3f(0,0,0),
+                new Vector3f(4,0,0),
+                new Vector3f(2,0,4)
+            };
+            slaveController.send(Client3DRequest.newWalkLoopRequest(user, locations, 0.25f, -1));
+        }
         
-        Vector3f[] locations = new Vector3f[] {
-            new Vector3f(0,0,0),
-            new Vector3f(4,0,0),
-            new Vector3f(2,0,4)
-        };
-        slaveController.send(Client3DRequest.newWalkLoopRequest(locations, 0.25f, -1));
         return true; // We used the slave so return true
     }
 

@@ -25,7 +25,6 @@ public class LoginRequest extends TestRequest {
 
     private String sgsServerName;
     private int sgsServerPort;
-    private String username;
     private char[] passwd;
     
     public LoginRequest(String sgsServerName, 
@@ -33,9 +32,9 @@ public class LoginRequest extends TestRequest {
                         String username,
                         char[] passwd,
                         float x, float y, float z) {
+        super(username);
         this.sgsServerName = sgsServerName;
         this.sgsServerPort = sgsServerPort;
-        this.username = username;
         this.passwd = passwd;
     }
 
@@ -47,9 +46,6 @@ public class LoginRequest extends TestRequest {
         return sgsServerPort;
     }
 
-    public String getUsername() {
-        return username;
-    }
 
     public char[] getPasswd() {
         return passwd;
