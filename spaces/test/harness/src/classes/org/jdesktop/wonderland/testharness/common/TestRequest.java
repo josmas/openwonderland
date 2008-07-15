@@ -25,4 +25,17 @@ import java.io.Serializable;
  */
 public class TestRequest implements Serializable {
 
+    private String username;
+    
+    /**
+     * Test Request for a specific user
+     * @param username
+     */
+    public TestRequest(String username) {
+        this.username = username;
+    }
+    
+    public String getUsername() {
+        return username;
+    }
 }

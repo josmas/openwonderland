@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
@@ -40,7 +41,7 @@ public class SlaveMain {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     
-    private Client3DSim clientSim = null;
+    private HashMap<String, Client3DSim> clientSim = new HashMap();
     private boolean done = false;
     
     public SlaveMain(String[] args) {
@@ -85,14 +86,14 @@ public class SlaveMain {
         if (request instanceof LoginRequest) {
             try {
                 // Hardcoded Client3D, TODO make configurable
-                clientSim = new Client3DSim((LoginRequest) request);
+                clientSim.put(request.getUsername(), new Client3DSim((LoginRequest) request));
             } catch (LoginFailureException ex) {
                 // TODO send error to server
                 Logger.getLogger(SlaveMain.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             if (clientSim!=null)
-                clientSim.processRequest(request);
+                clientSim.get(request.getUsername()).processRequest(request);
             else
                 Logger.getAnonymousLogger().severe("Unrecognized request "+request.getClass().getName());
         }

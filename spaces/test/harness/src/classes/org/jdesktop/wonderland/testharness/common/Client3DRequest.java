@@ -31,7 +31,8 @@ public class Client3DRequest extends TestRequest {
     public enum ActionType { WALK };
     private ActionType action;
     
-    private Client3DRequest(ActionType action) {
+    private Client3DRequest(String username, ActionType action) {
+        super(username);
         this.action = action;
     }
     
@@ -57,8 +58,8 @@ public class Client3DRequest extends TestRequest {
      * @param speed
      * @return
      */
-    public static Client3DRequest newWalkToRequest(Vector3f[] desiredLocations, float speed) {
-        Client3DRequest req = new Client3DRequest(ActionType.WALK);
+    public static Client3DRequest newWalkToRequest(String username, Vector3f[] desiredLocations, float speed) {
+        Client3DRequest req = new Client3DRequest(username, ActionType.WALK);
         req.desiredLocations = desiredLocations;
         req.speed = speed;
         req.desiredLoopCount = 0;
@@ -75,8 +76,8 @@ public class Client3DRequest extends TestRequest {
      * @param loopCount number of iterations through the desired locations, -1 to loop forever
      * @return
      */
-    public static Client3DRequest newWalkLoopRequest(Vector3f[] desiredLocations, float speed, int loopCount) {
-        Client3DRequest req = new Client3DRequest(ActionType.WALK);
+    public static Client3DRequest newWalkLoopRequest(String username, Vector3f[] desiredLocations, float speed, int loopCount) {
+        Client3DRequest req = new Client3DRequest(username, ActionType.WALK);
         req.desiredLocations = desiredLocations;
         req.speed = speed;
         req.desiredLoopCount = loopCount;
