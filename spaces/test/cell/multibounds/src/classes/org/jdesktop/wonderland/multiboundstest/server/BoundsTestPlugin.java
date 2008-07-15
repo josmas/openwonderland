@@ -36,8 +36,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableCellMO;
-import org.jdesktop.wonderland.server.cell.RevalidatePerformanceMonitor;
-import org.jdesktop.wonderland.server.cell.SimpleTerrainCellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
@@ -73,8 +71,8 @@ public class BoundsTestPlugin implements ServerPlugin {
 
             c3.addChild(c4);
 
-            WonderlandContext.getCellManager().insertCellInGraph(c2);
-            WonderlandContext.getCellManager().insertCellInGraph(c3);
+            WonderlandContext.getCellManager().insertCellInWorld(c2);
+            WonderlandContext.getCellManager().insertCellInWorld(c3);
 
             Task t = new TestTask(c3, c2);
 
