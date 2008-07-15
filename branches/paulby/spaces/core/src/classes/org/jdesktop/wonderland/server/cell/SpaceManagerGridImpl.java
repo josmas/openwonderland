@@ -48,7 +48,14 @@ class SpaceManagerGridImpl implements SpaceManager {
         int x = (int) (point.x / (SPACE_SIZE*2));
         int y = (int) (point.y / (SPACE_SIZE*2));
         int z = (int) (point.z / (SPACE_SIZE*2));
+        
+        if (point.x<0) x-=1;
+        if (point.y<0) y-=1;
+        if (point.z<0) z-=1;
+        
         SpaceMO ret = getEnclosingSpaceImpl(x,y,z);
+        
+        System.out.println("Space "+(ret==null ? "null" : ret.getSpaceID())+" "+getSpaceBindingName(x, y, z));
         
         if (ret==null)
             ret = createSpace(point, x, y, z);
