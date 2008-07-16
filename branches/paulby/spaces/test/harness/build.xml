@@ -198,4 +198,10 @@
             </fileset>
         </jar>
     </target>
+
+    <target name="clean" description="Clean the build">
+        <delete dir="${build.platform.dir}"/>
+        <delete dir="${release.dir}"/>
+        <delete dir="$(release.javadoc.dir)"/>
+    </target>
 </project>
