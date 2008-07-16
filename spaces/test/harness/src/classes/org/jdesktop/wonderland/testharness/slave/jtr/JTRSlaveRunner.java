@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.testharness.slave.jtr;
 
 import jtr.runners.AbstractRunner;
