@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.testharness.slave.jtr.dummy;
 
 import java.io.File;

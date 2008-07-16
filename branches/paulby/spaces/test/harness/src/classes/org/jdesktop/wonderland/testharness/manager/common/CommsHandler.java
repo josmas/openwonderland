@@ -15,22 +15,21 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.testharness.master;
+package org.jdesktop.wonderland.testharness.manager.common;
+
+import java.io.IOException;
 
 /**
- * The class provides the high level control of a test case
- * 
+ *
  * @author paulby
  */
-public interface TestDirector {
+public interface CommsHandler {
 
-    /**
-     * A slave has joined the master session. The director can choose if it want
-     * to include the slave in its tests. If it does include the slave it should
-     * return true. If it returns false the slave will be offered to another director
-     * @param slaveController
-     * @return
-     */
-    public boolean slaveJoined(SlaveConnection slaveController);
-
+    public void send(ManagerMessage message) throws IOException;
+    
+    public void addMessageListener(Class msgClass, MessageListener listener );
+            
+    public interface MessageListener {
+        public void messageReceived(ManagerMessage msg);
+    }
 }

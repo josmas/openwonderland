@@ -1,3 +1,4 @@
+
 /**
  * Project Wonderland
  *
@@ -14,22 +15,23 @@
  * $Revision$
  * $Date$
  * $State$
- */package org.jdesktop.wonderland.testharness.manager.ui;
-
+ */
+import java.io.EOFException;
 import java.io.IOException;
-import org.jdesktop.wonderland.testharness.master.*;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.testharness.manager.common.CommsHandler;
+import org.jdesktop.wonderland.testharness.manager.common.CommsHandler.MessageListener;
 import org.jdesktop.wonderland.testharness.manager.common.ManagerMessage;
 import org.jdesktop.wonderland.testharness.manager.common.MasterStatus;
+import org.jdesktop.wonderland.testharness.manager.ui.SimpleTestDirectorUI;
+import org.jdesktop.wonderland.testharness.master.MasterMain;
 
-/**
- *
- * @author  paulby
- */
 public class HarnessManagerUI extends javax.swing.JFrame {
     private ObjectOutputStream out;
     private ObjectInputStream in;
@@ -38,15 +40,17 @@ public class HarnessManagerUI extends javax.swing.JFrame {
     public HarnessManagerUI() {
         initComponents();
         
-        directorsPanel.add("Simple Director", new SimpleTestDirectorUI());
-        pack();
-        
         try {
             Socket s = new Socket("localhost", MasterMain.MANAGER_PORT);
             out = new ObjectOutputStream(s.getOutputStream());
             in = new ObjectInputStream(s.getInputStream());
 
-            new MasterConnection(in).start();
+            MasterConnection con = new MasterConnection(in, out);
+            con.start();
+            
+            directorsPanel.add("Simple Director", new SimpleTestDirectorUI(con));
+            pack();
+        
         } catch(IOException e) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to open connection to master", e);
         }
@@ -154,29 +158,69 @@ private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         });
     }
     
-    class MasterConnection extends Thread {
+    class MasterConnection extends Thread implements CommsHandler {
         private ObjectInputStream in;
-        public MasterConnection(ObjectInputStream in) {
+        private ObjectOutputStream out;
+        private HashMap<Class, LinkedList<CommsHandler.MessageListener>> messageListeners = new HashMap();
+        
+        public MasterConnection(ObjectInputStream in, ObjectOutputStream out) {
             this.in = in;
+            this.out = out;
+            
+            addMessageListener(MasterStatus.class, new CommsHandler.MessageListener() {
+
+                public void messageReceived(ManagerMessage message) {
+                    if (message instanceof MasterStatus) {
+                        activeSlavesTF.setText(Integer.toString(((MasterStatus)message).getActiveSlaves()));
+                        passiveSlavesTF.setText(Integer.toString(((MasterStatus)message).getPassiveSlaves()));
+                    }
+                }
+                
+            });
         }
         
         @Override
         public void run() {
             ManagerMessage message;
+            boolean done=false;
             
-            while(true) {
+            while(!done) {
                 try {
                     message = (ManagerMessage) in.readObject();
-                    if (message instanceof MasterStatus) {
-                        activeSlavesTF.setText(Integer.toString(((MasterStatus)message).getActiveSlaves()));
-                        passiveSlavesTF.setText(Integer.toString(((MasterStatus)message).getPassiveSlaves()));
+                    System.out.println("HARNESS received "+message);
+                    if (message!=null) {
+                        LinkedList<CommsHandler.MessageListener> listeners = messageListeners.get(message.getClass());
+                        if (listeners!=null) {
+                            for(MessageListener l : listeners)
+                                l.messageReceived(message);
+                        }
                     }
+                } catch(EOFException eofe) {
+                    done = true;
                 } catch(IOException e) {
                     Logger.getAnonymousLogger().log(Level.SEVERE, "Error reading message ",e);
                 } catch(ClassNotFoundException cnfe) {
                     Logger.getAnonymousLogger().log(Level.SEVERE, "Error reading message ",cnfe);                    
                 }
             } 
+            
+            System.err.println("Lost connection to master, exiting....");
+            System.exit(0);
+        }
+
+        public void send(ManagerMessage message) throws IOException {
+            synchronized(out) {
+                out.writeObject(message);
+            }
+        }
+
+        public void addMessageListener(Class msgClass, MessageListener listener) {
+            LinkedList<MessageListener> listeners = messageListeners.get(msgClass);
+            if (listeners==null) {
+                listeners = new LinkedList();
+                messageListeners.put(msgClass, listeners);
+            }
+            listeners.add(listener);
         }
     }
 

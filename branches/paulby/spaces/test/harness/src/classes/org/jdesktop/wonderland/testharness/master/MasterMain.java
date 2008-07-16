@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.testharness.master;
 
+import com.sun.corba.se.impl.protocol.giopmsgheaders.MessageHandler;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,10 +26,18 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.testharness.manager.common.CommsHandler;
+import org.jdesktop.wonderland.testharness.manager.common.CommsHandler.MessageListener;
 import org.jdesktop.wonderland.testharness.manager.common.ManagerMessage;
 import org.jdesktop.wonderland.testharness.manager.common.MasterStatus;
 
@@ -40,10 +49,9 @@ public class MasterMain {
     
     public static final int MANAGER_PORT = 5567;
 
-    private HashSet<SlaveConnection> activeSlaves = new HashSet();
-    private HashSet<SlaveConnection> passiveSlaves = new HashSet();
+    private Set<SlaveConnection> activeSlaves = new HashSet();
+    private Set<SlaveConnection> passiveSlaves = new HashSet();
     
-    private TestDirector director;
     private Properties props;
     
     private String sgsServerName;
@@ -80,7 +88,8 @@ public class MasterMain {
         manager = new ManagerController();
         manager.start();
         
-        director = new SimpleTestDirector();
+        TestDirector director = new SimpleTestDirector(manager);
+        manager.addTestDirector(director);
         try {
             ServerSocket serverSocket = new ServerSocket(masterPort);
             while(true) {
@@ -88,11 +97,15 @@ public class MasterMain {
                 SlaveConnection slaveController = new SlaveConnection(s); 
                 if (director.slaveJoined(slaveController)) {
                     // Director is using the slave
-                    activeSlaves.add(slaveController);
+                    synchronized(activeSlaves) {
+                        activeSlaves.add(slaveController);
+                    }
                     slaveController.setDirector(director);
                 } else {
                     // Director did not want slave
-                    passiveSlaves.add(slaveController);
+                    synchronized(passiveSlaves) {
+                        passiveSlaves.add(slaveController);
+                    }
                 }
                 manager.sendStatusMessage(activeSlaves.size(), passiveSlaves.size());
             }
@@ -100,6 +113,34 @@ public class MasterMain {
             Logger.getLogger(MasterMain.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+    }
+    
+    /**
+     * The test director is requesting another slave. This call returns immediately
+     * but at some point in the future the TestDirectors slaveJoined(..) method will
+     * be called with a slave.
+     * @param testDirector
+     */
+    public void requestSlave(final TestDirector testDirector) {
+        new Thread() {
+            @Override
+            public void run() {
+                synchronized(passiveSlaves) {
+                    Iterator<SlaveConnection> it = passiveSlaves.iterator();
+                    if (it.hasNext()) {
+                        SlaveConnection c = it.next();
+                        if (testDirector.slaveJoined(c)) {
+                            passiveSlaves.remove(c);
+                            synchronized(activeSlaves) {
+                                activeSlaves.add(c);
+                                manager.sendStatusMessage(activeSlaves.size(), passiveSlaves.size());
+                            }
+                        }
+                    }
+                }
+                
+            }
+        }.start();
     }
     
     public static MasterMain getMaster() {
@@ -147,8 +188,10 @@ public class MasterMain {
     /**
      * Manage the connected managers
      */
-    class ManagerController extends Thread {
+    class ManagerController extends Thread implements CommsHandler {
         private HashSet<ManagerConnection> connections = new HashSet();
+        private ArrayList<TestDirector> testDirectors = new ArrayList();
+        private HashMap<Class, LinkedList<MessageListener>> messageListeners = new HashMap();
         
         private MasterStatus lastStatusMessage = null;
         
@@ -165,7 +208,16 @@ public class MasterMain {
                         System.err.println("Listening for manager connection");
                         Socket s = ss.accept();
                         ManagerConnection connection = new ManagerConnection(s);
-                        connections.add(connection);
+                        
+                        Set<Map.Entry<Class, LinkedList<MessageListener>>> set = messageListeners.entrySet();
+                        for(Map.Entry<Class, LinkedList<MessageListener>> entry : set) {
+                            for(MessageListener listener : entry.getValue()) {
+                                connection.addMessageListener(entry.getKey(), listener);
+                            }
+                        }
+                        synchronized(connection) {
+                            connections.add(connection);
+                        }
                         if (lastStatusMessage != null) {
                             connection.send(lastStatusMessage);
                         }
@@ -178,11 +230,16 @@ public class MasterMain {
             }
         }
         
+        void addTestDirector(TestDirector testDirector) {
+            testDirectors.add(testDirector);
+        }
+        
         void sendStatusMessage(int activeSlaves, int passiveSlaves) {
             lastStatusMessage = new MasterStatus(activeSlaves, passiveSlaves);
-            synchronized(connections) {
-                for(ManagerConnection l : connections)
-                    l.send(lastStatusMessage);
+            try {
+                send(lastStatusMessage);
+            } catch (IOException ex) {
+                Logger.getLogger(MasterMain.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
@@ -195,6 +252,27 @@ public class MasterMain {
                 connections.remove(manager);
             }
         }
+
+        public void send(ManagerMessage message) throws IOException {
+            synchronized(connections) {
+                for(ManagerConnection l : connections)
+                    l.send(message);               
+            }
+        }
+
+        public void addMessageListener(Class msgClass, MessageListener listener) {
+            LinkedList<MessageListener> list = messageListeners.get(msgClass);
+            if (list==null) {
+                list = new LinkedList();
+                messageListeners.put(msgClass, list);
+            }
+            list.add(listener);
+            
+            synchronized(connections) {
+                for(ManagerConnection l : connections)
+                    l.addMessageListener(msgClass, listener);               
+            }
+        }
     }
     
     class ManagerConnection extends Thread {
@@ -202,6 +280,7 @@ public class MasterMain {
         private ObjectInputStream in;
         private ObjectOutputStream out;
         private boolean done = false;
+        private HashMap<Class, LinkedList<MessageListener>> messageListeners = new HashMap();
         
         public ManagerConnection(Socket s) {
             socket = s;
@@ -220,7 +299,14 @@ public class MasterMain {
 
             while (!done) {
                 try {
-                    in.readObject();
+                    ManagerMessage msg = (ManagerMessage) in.readObject();
+                    System.out.println("RECEIVED "+msg);
+                    LinkedList<MessageListener> listeners = messageListeners.get(msg.getClass());
+                    if (listeners!=null) {
+                        for(MessageListener l : listeners)
+                            l.messageReceived(msg);
+                    }
+                    
                 } catch(EOFException eofe) {
                     manager.managerClosed(this);
                     done=true;
@@ -233,11 +319,28 @@ public class MasterMain {
         }
         
         private void send(ManagerMessage msg) {
-            try {
-                out.writeObject(msg);
-            } catch (IOException ex) {
-                Logger.getLogger(MasterMain.class.getName()).log(Level.SEVERE, null, ex);
+            synchronized(out) {
+                System.out.println("MasterMain sending "+msg);
+                try {
+                    out.writeObject(msg);
+                } catch (IOException ex) {
+                    Logger.getLogger(MasterMain.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
+        }
+        
+        /**
+         * Add listener for messages to this director
+         * @param testDirector
+         */
+        void addMessageListener(Class msgClass, MessageListener testDirector) {
+            LinkedList<MessageListener> list = messageListeners.get(msgClass);
+            if (list==null) {
+                list = new LinkedList();
+                messageListeners.put(msgClass, list);
+                System.out.println("REGISTERING "+msgClass);
+            }
+            list.add(testDirector);
         }
     }
     
