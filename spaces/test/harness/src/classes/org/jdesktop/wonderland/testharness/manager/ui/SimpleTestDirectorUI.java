@@ -17,15 +17,49 @@
  */
 package org.jdesktop.wonderland.testharness.manager.ui;
 
+import java.io.IOException;
+import org.jdesktop.wonderland.testharness.manager.common.CommsHandler;
+import org.jdesktop.wonderland.testharness.manager.common.ManagerMessage;
+import org.jdesktop.wonderland.testharness.manager.common.SimpleTestDirectorMessage;
+import org.jdesktop.wonderland.testharness.manager.common.CommsHandler.MessageListener;
+
 /**
  *
  * @author  paulby
  */
 public class SimpleTestDirectorUI extends javax.swing.JPanel {
 
+    private CommsHandler commsHandler;
+    
     /** Creates new form SimpleDirectorUI */
-    public SimpleTestDirectorUI() {
+    public SimpleTestDirectorUI(CommsHandler commsHandler) {
+        this.commsHandler = commsHandler;
         initComponents();
+        
+        commsHandler.addMessageListener(SimpleTestDirectorMessage.class, new MessageListener()  {
+
+            public void messageReceived(ManagerMessage msg) {
+                assert(msg instanceof SimpleTestDirectorMessage);
+                
+                SimpleTestDirectorMessage message = (SimpleTestDirectorMessage) msg;
+                
+                System.err.println("Got message "+msg);
+                switch(message.getMessageType()) {
+                    case UI_UPDATE :
+                        actualUsersTF.setText(Integer.toString(message.getUserCount()));
+                        break;
+                    default :
+                        System.err.println("Unexpected message "+message.getMessageType());
+                }
+            }
+            
+        });
+        
+        try {
+            commsHandler.send(SimpleTestDirectorMessage.newRequestStatusMessage());   // Request current status
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -39,9 +73,10 @@ public class SimpleTestDirectorUI extends javax.swing.JPanel {
 
         applyB = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        desiredUsersTF = new javax.swing.JTextField();
+        actualUsersTF = new javax.swing.JTextField();
         jSpinner1 = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
 
         applyB.setText("Apply");
         applyB.addActionListener(new java.awt.event.ActionListener() {
@@ -53,13 +88,20 @@ public class SimpleTestDirectorUI extends javax.swing.JPanel {
         jLabel1.setText("Desired Users :");
         jLabel1.setFocusable(false);
 
-        desiredUsersTF.setEditable(false);
-        desiredUsersTF.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        desiredUsersTF.setText("0");
-        desiredUsersTF.setFocusable(false);
+        actualUsersTF.setEditable(false);
+        actualUsersTF.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        actualUsersTF.setText("0");
+        actualUsersTF.setFocusable(false);
 
         jLabel2.setText("Actual Users :");
         jLabel2.setFocusable(false);
+
+        jButton1.setText("Test");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -74,11 +116,16 @@ public class SimpleTestDirectorUI extends javax.swing.JPanel {
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(jLabel1)
-                            .add(jLabel2))
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel2)
+                                .add(6, 6, 6)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(desiredUsersTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jSpinner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(jSpinner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(actualUsersTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jButton1)))
                 .addContainerGap(175, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -91,8 +138,10 @@ public class SimpleTestDirectorUI extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(desiredUsersTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 170, Short.MAX_VALUE)
+                    .add(actualUsersTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(46, 46, 46)
+                .add(jButton1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 95, Short.MAX_VALUE)
                 .add(applyB)
                 .addContainerGap())
         );
@@ -102,10 +151,20 @@ private void applyBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
 // TODO add your handling code here:
 }//GEN-LAST:event_applyBActionPerformed
 
+private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    
+    try {
+        commsHandler.send(SimpleTestDirectorMessage.newAddUserMessage());
+    } catch(IOException e) {
+        e.printStackTrace();
+    }
+}//GEN-LAST:event_jButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField actualUsersTF;
     private javax.swing.JButton applyB;
-    private javax.swing.JTextField desiredUsersTF;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JSpinner jSpinner1;
