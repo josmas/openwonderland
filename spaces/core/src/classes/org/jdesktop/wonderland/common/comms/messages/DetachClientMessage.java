@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.common.comms.messages;
 
 import org.jdesktop.wonderland.common.messages.Message;

@@ -15,7 +15,8 @@
  *
  * $Revision$
  * $Date$
- */package org.jdesktop.wonderland.client.cell;
+ */
+package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
@@ -34,10 +35,6 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
-/**
- *
- * @author paulby
- */
 public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCacheMessageListener {
 
     private Map<CellID, Cell> cells = Collections.synchronizedMap(new HashMap());
