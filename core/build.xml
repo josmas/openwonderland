@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$
+     $Revision$
+     $Date$
+     $Author$
+-->
+<project basedir="." default="jar" name="wonderland-core">
+
+    <property name="top.dir" location=".."/>
+    <property name="current.dir" location="."/>
+
+    <!-- Use my-build.properties to override default values in build.properties.
+         You can specify an alternate build.properties override file by
+         running with "ant -Dbuild.properties.file=<file>" -->
+    <property name="build.properties.file" location="my.build.properties"/>
+    <property file="${build.properties.file}"/>
+    <property file="build.properties"/>
+
+    <property name="project.name" value="${ant.project.name}"/>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${build-import.dir}/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+
+    <taskdef name="pack200" 
+             classname="com.sun.tools.apache.ant.pack200.Pack200Task" 
+             classpath="${build-import.dir}/Pack200Task.jar"/>
+
+    <taskdef name="unpack200" 
+             classname="com.sun.tools.apache.ant.pack200.Unpack200Task" 
+             classpath="${build-import.dir}/Pack200Task.jar"/>
+
+    <!-- Do platform/x11/environment specific setup common to all tasks -->
+    <import file="${build-import.dir}/build-setup.xml"/>
+
+    <!-- Initialization - make dirs, unpack ext stuff... -->
+    <target name="init" depends="unpack-ext" description="Initial set-up">
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${build.lib.dir}"/>
+    </target>
+    
+    <!-- compile Wonderland -->
+    <target name="compile" depends="init, compile-common, compile-server, compile-client"/>
+    
+    <!-- Compile the common -->
+    <target name="compile-common" depends="init" description="Compile common code">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/common/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${wonderland-common-compile.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <!-- Compile the client side code -->
+    <target name="compile-client" depends="init, compile-common" description="Compile client code">
+        <wl-compile>
+            <compile-classes>
+                <exclude name="org/jdesktop/wonderland/client/picking/**"/>
+                <exclude name="org/jdesktop/wonderland/client/unusedevent/**"/>
+                <exclude name="org/jdesktop/wonderland/client/scripting/**"/>
+                <include name="org/jdesktop/wonderland/client/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+		<pathelement path="${wonderland-client-compile.classpath}"/>
+	    </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <!-- Compile the server side code -->
+    <target name="compile-server" depends="init, compile-common" description="Compile Darkstar Server plugin">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/server/**"/>
+                <exclude name="org/jdesktop/wonderland/server/cell/bounds/**"/>
+                <include name="org/jdesktop/wonderland/wfs/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+		<pathelement path="${wonderland-server-compile.classpath}"/>
+	    </compile-classpath>
+        </wl-compile>
+    </target>
+
+    <!-- build wonderland jars -->
+    <target name="jar" depends="compile, jar-client, jar-server, jar-common" 
+            description="Build Wonderland jars"/>
+    
+    <!-- Build the client jars -->
+    <target name="jar-client" depends="compile-client, jar-common, jar-modules-client" 
+            description="Build client side jars">
+        
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-utils.jar">
+            <fileset dir="${build.classes.dir}/" excludes="org/jdesktop/lg3d/**"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/j3d/**"/>
+            <fileset dir="${javasrc.dir}/" includes="com/sun/j3d/**"/>
+            <fileset dir="${javasrc.dir}/" includes="com/imi/**"/>
+        </jar>
+         
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-client.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/client/**"/>
+            </fileset>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.png"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.jpg"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.properties"/>
+         </jar>
+     </target>
+        
+     <target name="jar-common" depends="compile-common" 
+            description="Build common jar">
+       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-common.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/common/**"/>
+            </fileset>
+         </jar>
+    </target>
+    
+    <!-- Build the server jar -->
+    <target name="jar-server" depends="compile-server, jar-common, jar-modules-server" 
+            description="Build the server side jar">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-server.jar">
+            <fileset dir="${build.classes.dir}">
+		<include name="org/jdesktop/wonderland/server/**"/>
+                <include name="org/jdesktop/wonderland/wfs/**"/>
+	    </fileset>
+        </jar>
+    </target>
+   
+    <target name="run-benchmark" description="Run a benchmark client">
+        <buildnumber/>
+        <property name="wonderland.benchmark" value="bench-${build.number}"/>
+        <property name="j3d.rend" value="noop"/>
+        <antcall target="run"/>
+    </target>
+
+    <target name="run-manager" depends="jar" description="Run manager UI">
+        <java classname="org.jdesktop.lg3d.wonderland.management.ManagerUI" fork="true">
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+           
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run-scripttest" depends="jar" description="Run manager UI">
+        <java classname="org.jdesktop.wonderland.client.scripting.ScriptTest" fork="true">
+           
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run-bridgemonitor" depends="jar" description="Run BridgeMonitor">
+        <java classname="bridgemonitor.BridgeMonitorUI" fork="true">
+            <classpath>
+		<pathelement path="${wonderland.dir}/ext/bridgemonitor/BridgeMonitor.jar"/>
+		<pathelement path="${voicelib.dir}/voicelib.jar"/>
+		<pathelement path="${voicebridge.dir}/bridge.jar"/>
+		<pathelement path="${common.javaext.dir}/swing-layout-1.0.jar"/>
+	    </classpath>
+       </java>
+    </target>
+
+    <target name="softphone" depends="jar" description="Start softphone">
+        <java classname="org.jdesktop.lg3d.wonderland.darkstar/client/SipStarter" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+
+	    <syspropertyset refid="wonderland.properties"/>
+
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	</java>
+    </target>
+    
+    <target name="run-dbtest" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.datamgr.AssetDB" fork="true">
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+        </java>
+	<syspropertyset refid="wonderland.properties"/>
+    </target>
+    
+    <target name="run" depends="jar">
+        <!--<java classname="org.jdesktop.wonderland.client.WorldClient" fork="true">-->
+        <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	    <syspropertyset refid="wonderland.properties"/>
+        </java>
+    </target>
+    
+    <target name="run-jmetest" depends="jar-client">
+        <java classname="org.jdesktop.wonderland.client.jme.WonderlandJmeClient" fork="true">
+            <!--start debug-->
+            <!--
+ 	    <jvmarg value="-Xdebug"/>
+	    <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
+ 	    -->
+	    <!--
+            <jvmarg value="-agentpath:/usr/local/netbeans/profiler2/lib/deployed/jdk16/linux/libprofilerinterface.so=/usr/local/netbeans/profiler2/lib,5140"/>
+            -->
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <!--<jvmarg value="-Xincgc"/>-->
+            <jvmarg value="-Xms32m"/>
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	    <syspropertyset refid="wonderland.properties"/>
+        </java>
+    </target>
+    
+    <target name="run-collada2jme" depends="jar-client">
+        <java classname="com.jmex.model.collada.ColladaToJme" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+	    </classpath>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+            <arg value="mpk20.dae"/>
+            <arg value="/home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models/textures/default_building"/>
+            <arg value="mpk20.jme"/>
+        </java>
+    </target>
+    
+    <target name="clean" depends="clean-modules" description="Clean all build products.">
+        <delete dir="${build.platform.dir}"/>
+        <delete dir="${release.dir}"/>
+        <delete dir="$(release.javadoc.dir)"/>
+    </target>
+    
+    <target name="clean-cache" description="Clean the world cache">
+        <delete dir="${wonderland.cache.dir}"/>
+        <delete dir="${wonderland.cache.dir}/../AssetDB"/>
+    </target>
+
+    <target name="clean-db" description="Clean the SGS database dir">
+        <delete dir="${sgs.db.dir}"/>
+    </target>
+
+    <target name="scrub" depends="clean,clean-cache,clean-db,clean-ext"
+	    description="Clean all rebuildable stuff."/>
+
+    <target name="javadoc" depends="init, javadoc-api, javadoc-all" description="Javadoc for Wonderland"/>
+    
+    <target name="javadoc-all" description="All Wonderland Javadoc" unless="nojavadoc">
+        <mkdir dir="${release.javadoc.dir}"/>
+
+        <javadoc destdir="${release.javadoc.dir}/all"
+            sourcepath="${javasrc.dir}"
+            packagenames="org.jdesktop.*"
+            windowtitle="Wonderland Platform"
+            overview="${top.dir}/core/doc/overview.html">
+            <classpath>
+		<pathelement path="${wonderland-server.classpath}"/>
+		<pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+            </classpath>
+            
+            <doctitle><![CDATA[<h1>Project Wonderland</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Project Wonderland - http://wonderland.dev.java.net</i>]]></bottom>
+            <link offline="true" href="http://java.sun.com/javase/6/docs/api" packageListLoc="${javadoc.packagelist.dir}/1.5.0"/>
+            <link offline="true" href="http://www.jmonkeyengine.com/doc/" packageListLoc="${javadoc.packagelist.dir}/jmonkeyengine"/>
+            <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-server"/>
+            <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-client"/>
+        </javadoc>
+    </target>
+
+    <target name="javadoc-api" depends="-build-wonderland-doclet" 
+            description="Wonderland API Javadoc" unless="nojavadoc">
+        <mkdir dir="${release.javadoc.dir}"/>
+
+        <javadoc destdir="${release.javadoc.dir}/api"
+            sourcepath="${javasrc.dir}"
+            packagenames="org.jdesktop.*"
+            windowtitle="Wonderland API"
+            overview="${top.dir}/core/doc/overview.html">
+                
+            <classpath>
+		<pathelement path="${wonderland-server.classpath}"/>
+		<pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+            </classpath>
+            
+            <doclet name="org.jdesktop.wonderland.utils.doclet.WonderlandDoclet"
+                    path="${wonderland.doclet.dir}/dist/wonderland-doclet.jar">
+                <param name="-wonderlandAPI" value="stable,experimental"/> 
+            </doclet>
+            
+            <doctitle><![CDATA[<h1>Project Wonderland</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Project Wonderland - http://wonderland.dev.java.net</i>]]></bottom>
+            <link offline="true" href="http://java.sun.com/javase/6/docs/api" packageListLoc="${javadoc.packagelist.dir}/1.5.0"/>
+            <link offline="true" href="http://www.jmonkeyengine.com/doc/" packageListLoc="${javadoc.packagelist.dir}/jmonkeyengine"/>
+            <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-server"/>
+            <link offline="true" href="http://TODO/" packageListLoc="${javadoc.packagelist.dir}/sgs-client"/>
+        </javadoc>
+    </target>
+    
+    <target name="-build-wonderland-doclet" description="Build Wonderland doclet in utils">
+        <property name="wonderland.doclet.dir" location="${top.dir}/utils/wonderland-doclet"/>
+        
+        <ant antfile="${wonderland.doclet.dir}/build.xml" target="dist" inheritall="false" dir="${wonderland.doclet.dir}"/>
+    </target>
+    
+    <target name="run-server" description="Run the Wonderland Server">
+        <antcall target="run-sgs"/>
+    </target>
+    
+    <import file="${build-import.dir}/build-package.xml"/>
+    <import file="${build-import.dir}/build-modules.xml"/>
+    <import file="${build-import.dir}/build-webstart.xml"/>
+        
+    <import file="${build-import.dir}/run-sgs.xml"/>
+    <!--<import file="${build-import.dir}/run-xapps.xml"/>-->
+    <import file="${build-import.dir}/run-smc.xml"/>
+    <import file="${build-import.dir}/run-voice.xml"/>
+    <import file="${build-import.dir}/run-channel-test.xml"/>
+    <import file="${build-import.dir}/run-jmf.xml"/>
+    <import file="${build-import.dir}/run-config.xml"/>
+
+<taskdef resource="checkstyletask.properties"
+         classpath="../build-tools/checkstyle-4.4/checkstyle-all-4.4.jar"/>
+
+<target name="checkstyle">
+<checkstyle config="../build-tools/checkstyle-4.4/sun_checks.xml">
+  <fileset dir="src/classes" includes="**/*.java"/>
+  <formatter type="plain"/>
+  <formatter type="xml" toFile="build/checkstyle_errors.xml"/>
+</checkstyle>
+</target>
+
+
+</project>
