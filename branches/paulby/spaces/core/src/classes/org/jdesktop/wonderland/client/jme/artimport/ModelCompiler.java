@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.client.jme.artimport;
 
 import com.jme.image.Texture;

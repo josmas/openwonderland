@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.common.cell;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;

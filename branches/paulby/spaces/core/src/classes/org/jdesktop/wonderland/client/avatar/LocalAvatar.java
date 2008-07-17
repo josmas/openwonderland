@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.client.avatar;
 
 import com.jme.math.Quaternion;

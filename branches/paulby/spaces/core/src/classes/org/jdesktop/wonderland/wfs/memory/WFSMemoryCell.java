@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: WFSMemoryCell.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.1.2.4 $
- * $Date: 2008/04/08 10:44:29 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
-
 package org.jdesktop.wonderland.wfs.memory;
 
 import java.io.FileNotFoundException;

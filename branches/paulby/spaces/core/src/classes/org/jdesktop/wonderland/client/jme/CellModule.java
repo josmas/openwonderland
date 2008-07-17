@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.bounding.BoundingSphere;

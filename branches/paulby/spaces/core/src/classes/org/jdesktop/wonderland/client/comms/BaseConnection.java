@@ -1,8 +1,6 @@
 /**
  * Project Wonderland
  *
- * $Id$
- *
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
@@ -15,6 +13,7 @@
  *
  * $Revision$
  * $Date$
+ * $State$
  */
 package org.jdesktop.wonderland.client.comms;
 

@@ -1,10 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: ModelUploader.java,v $
- *
- * Copyright (c) 2007, Sun Microsystems, Inc. and Immediate Mode Interactive, 
- * All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -14,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2 $
- * $Date: 2008/06/13 18:19:04 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 

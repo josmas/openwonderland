@@ -1,4 +1,3 @@
-
 /**
  * Project Wonderland
  *
@@ -16,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.ClientSession;

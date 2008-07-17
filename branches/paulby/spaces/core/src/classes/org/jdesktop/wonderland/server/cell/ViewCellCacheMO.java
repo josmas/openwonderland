@@ -283,7 +283,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             monitor.setException(true);
             
             if (logger.isLoggable(Level.WARNING)) {
-                logger.log(Level.WARNING, "Rethrowing exception", e);
+                logger.log(Level.WARNING, "Rethrowing exception", e.getMessage());
             }
             
             throw e;

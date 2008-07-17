@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $Id$
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -15,8 +13,8 @@
  *
  * $Revision$
  * $Date$
+ * $State$
  */
-
 package org.jdesktop.wonderland.server.setup;
 
 import com.jme.bounding.BoundingVolume;
