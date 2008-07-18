@@ -1,0 +1,92 @@
+<project basedir="." default="unpack-ext" name="build-unpack">
+
+    <macrodef name="unpack-java-ext">
+	<attribute name="pkgname"/>
+	<attribute name="srcdir" default="${os.zip.javaext.dir}"/>
+	<attribute name="destdir" default="${os.javaext.dir}"/>
+	<attribute name="enabled" default="true"/>
+	<attribute name="verbose" default="false"/>
+	<sequential>
+	    <if>
+		<istrue value="@{verbose}"/>
+		<then>
+		    <echo message="pkgname = @{pkgname}"/>
+		    <echo message="srcdir = @{srcdir}"/>
+		    <echo message="destdir = @{destdir}"/>
+		    <echo message="enabled = @{enabled}"/>
+		</then>
+	    </if>
+
+	    <if>
+		<istrue value="@{enabled}"/>
+		<then>
+		    <ant dir="${imported.basedir}" antfile="build-ext.xml">
+			<property name="pkgname" value="@{pkgname}"/>
+			<property name="unpack.src.dir" value="@{srcdir}"/>
+			<property name="unpack.dest.dir" value="@{destdir}"/>
+		    </ant>
+		</then>
+	    </if>
+	</sequential>
+    </macrodef>
+
+    <!--<target name="unpack-j3d"> <unpack-java-ext pkgname="j3d"/> </target>-->
+    <target name="unpack-jai"> <unpack-java-ext pkgname="jai"/> </target>
+    <target name="unpack-jai-iio"> <unpack-java-ext pkgname="jai_iio"/> </target>
+    <!--<target name="unpack-jogl"> <unpack-java-ext pkgname="jogl"/> </target>-->
+    <target name="unpack-joal"> <unpack-java-ext pkgname="joal"/> </target>
+    <target name="unpack-jmf"> <unpack-java-ext pkgname="jmf"/> </target>
+    <target name="unpack-fobs"> <unpack-java-ext pkgname="fobs"/> </target>
+    <target name="unpack-jinput"> <unpack-java-ext pkgname="jinput"/> </target>
+    <target name="unpack-escher"> <unpack-java-ext pkgname="escher"/> </target>
+
+    <target name="unpack-xremwin">
+	<unpack-java-ext pkgname="xremwin" enabled="${platform-supports-x}"/>
+    </target>
+
+    <target name="unpack-xvfb-xorg">
+        <switch value="${system.type}">
+	    <case value="linux-i386">
+    	        <unpack-java-ext pkgname="xvfb.xorg" enabled="${platform-supports-x}"/>
+            </case>
+	    <default>
+	    </default>
+        </switch>
+    </target>
+
+    <target name="unpack-xorgxset">
+	<unpack-java-ext pkgname="xorgxset" enabled="${platform-supports-x}"/>
+    </target>
+
+    <target name="unpack-lg3d">
+	<!--<unpack-java-ext pkgname="lg3d"
+			 srcdir="${zip.javaext.dir}" destdir="${common.javaext.dir}"/>-->
+    </target>
+    
+    <target name="unpack-jme">
+	<unpack-java-ext pkgname="jme"
+			 srcdir="${zip.javaext.dir}" destdir="${javaext.dir}"/>
+    </target>
+
+    <target name="unpack-sgs">
+	<unpack-java-ext pkgname="sgs-server"
+			 srcdir="${zip.javaext.dir}" destdir="${sgs.javaext.dir}"/>
+	<unpack-java-ext pkgname="sgs-client"
+			 srcdir="${zip.javaext.dir}" destdir="${sgs.javaext.dir}"/>
+    </target>
+
+    <target name="unpack-ext"
+	depends="unpack-jme, unpack-jai,unpack-jai-iio,unpack-jmf,unpack-joal,unpack-jinput,unpack-fobs,unpack-xremwin,unpack-xvfb-xorg,unpack-xorgxset,unpack-sgs,unpack-escher,unpack-audio-jar">
+	<chmod perm="ugo+x" dir="${os.javaext.dir}/bin" includes="*"/>
+    </target>
+
+    <target name="clean-ext" depends="clean-audio-jar" description="Clean the java extension stuff.">
+        <delete dir="${os.javaext.dir}"/>
+        <delete dir="${sgs.javaext.dir}"/>
+        <delete>
+	    <fileset dir="${common.javaext.dir}" includes="**/*-bundle-readme.txt"/>
+	    <fileset dir="${sgs.javaext.dir}/.." includes="**/*-bundle-readme.txt"/>
+	</delete>
+    </target>
+
+</project>
