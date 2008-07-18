@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.setup.ModelCellSetup;
 import org.jdesktop.wonderland.server.ChecksumManagerMO;
+import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
@@ -41,6 +42,10 @@ public class StaticModelCellMO extends CellMO
     private String filename;
     private String baseUrl;
     	
+    /** Default constructor, used when cell is created via WFS */
+    public StaticModelCellMO() {
+    }
+
     public StaticModelCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
     }
@@ -88,13 +93,16 @@ public class StaticModelCellMO extends CellMO
         /* Set the bounds of the cell */
         BoundingVolume bounds = this.getLocalBounds();
         if (bounds != null) {
-            setup.setBounds(bounds);
+            setup.setBoundsType(BasicCellMOHelper.getBoundsType(bounds));
+            setup.setBoundsRadius(BasicCellMOHelper.getBoundsRadius(bounds));
         }
         
         /* Set the origin, scale, and rotation of the cell */
         CellTransform transform = this.getLocalTransform();
         if (transform != null) {
-            setup.setLocalTransform(transform);
+            setup.setOrigin(BasicCellMOHelper.getTranslation(transform));
+            setup.setRotation(BasicCellMOHelper.getRotation(transform));
+            setup.setScale(BasicCellMOHelper.getScaling(transform));
         }
         return setup;
     }

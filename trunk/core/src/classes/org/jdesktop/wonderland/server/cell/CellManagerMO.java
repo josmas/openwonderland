@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
@@ -29,7 +28,6 @@ import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +40,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -160,9 +157,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * For testing.....
      */
     public void loadWorld() {
-        //buildWFSWorld();
+        buildWFSWorld();
         
-        test();
+        //test();
     }
 
     public void test() {
@@ -251,7 +248,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
         //URL root = WonderlandServerConfig.getDefault().getWorldRoot();
         URL root = null;
         try {
-            root = new URL("file:src/worlds/test-wfs");
+            root = new URL("file:///Users/jordanslott/wonderland/v0.5-trunk/core/src/worlds/test-wfs");
         } catch (MalformedURLException excp) {
             WFS.getLogger().log(Level.SEVERE, "Invalid WFS URL");
         }

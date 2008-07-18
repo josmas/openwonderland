@@ -31,11 +31,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.MovableCellMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.setup.CellMOSetup;
 import org.jdesktop.wonderland.wfs.InvalidWFSCellException;
@@ -78,7 +78,8 @@ public class WFSCellMO extends CellMO
          * These bounds may not entirely be correct -- a WFSCellGLO should simply
          * assume the bounds of its parent.
          */
-        super(new BoundingBox(new Vector3f(), Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY), null);
+        super(new BoundingBox(new Vector3f(), Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
+                new CellTransform(null, null, null));
         this.root = root;
         
         /* Load the world initially */
@@ -182,7 +183,7 @@ public class WFSCellMO extends CellMO
     }
     
     @Override protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.extracells.WFSCell";
+        return "org.jdesktop.wonderland.client.cell.WFSCell";
     }
     
     @Override
