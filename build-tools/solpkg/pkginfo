@@ -1,0 +1,10 @@
+ARCH=@OS_ARCH@
+PKG=@SOLPKG_NAME@
+NAME=Project Wonderland
+VERSION=@VERSION@
+DESC=Project Wonderland server and client software
+VENDOR=Sun Microsystems, Inc.
+EMAIL=krishna.gadepalli@sun.com
+CATEGORY=application
+BASEDIR=/opt
+CLASSES=none

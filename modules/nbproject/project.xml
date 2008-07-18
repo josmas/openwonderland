@@ -4,14 +4,19 @@
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <!-- Do not use Project Properties customizer when editing this file manually. -->
-            <name>wonderland</name>
-            <properties>
-                <property name="project.license">gplv2</property>
-            </properties>
+            <name>wonderland-core-modules</name>
+            <properties/>
             <folders/>
             <ide-actions>
                 <action name="build">
-                    <target>release</target>
+                    <target>dist</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>dist</target>
                 </action>
             </ide-actions>
             <view>
@@ -22,12 +27,12 @@
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
                 </context-menu>
             </view>
             <subprojects>
-                <project>core</project>
-                <project>utils</project>
-                <project>test</project>
+                <project>src/modules/apps/2d/pdfviewer</project>
             </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
