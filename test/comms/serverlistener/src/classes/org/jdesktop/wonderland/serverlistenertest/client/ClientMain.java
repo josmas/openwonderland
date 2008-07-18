@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.serverlistenertest.client;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
@@ -52,6 +53,9 @@ public class ClientMain {
     private TestOneClient   t1c;
     private TestTwoClient   t2c;
     private TestThreeClient t3c;
+    
+    // properties
+    private Properties t2props;
     
     /**
      * Create a new client
@@ -92,8 +96,12 @@ public class ClientMain {
         t2c = new TestTwoClient();
         t3c = new TestThreeClient();
         
+        t2props = new Properties();
+        t2props.setProperty("test1", "123");
+        t2props.setProperty("test2", "test456");
+        
         t1c.connect(session);
-        t2c.connect(session);
+        t2c.connect(session, t2props);
         t3c.connect(session);
         
         t1c.send(new TestMessageOne("TestOne"));
@@ -123,7 +131,7 @@ public class ClientMain {
         logger.info("Testing reattach");
         
         t2c = new TestTwoClient();
-        t2c.connect(session);
+        t2c.connect(session, t2props);
         t2c.send(new TestMessageTwo("TestTwo"));
 
         // re-reattach

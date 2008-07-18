@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.common.comms.messages;
 
+import java.util.Properties;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
@@ -28,12 +29,18 @@ public class AttachClientMessage extends Message {
     /** the client type to attach */
     private ConnectionType type;
     
-    /** 
+    /** intialization information for the connection */
+    private Properties properties;
+    
+    /**
      * Create a new AttachClientMessage
      * @param type the type of client to attach
+     * @param properties the properties to send to the server
+     * about this message
      */
-    public AttachClientMessage(ConnectionType type) {
+    public AttachClientMessage(ConnectionType type, Properties properties) {
         this.type = type;
+        this.properties = properties;
     }
     
     /**
@@ -42,5 +49,13 @@ public class AttachClientMessage extends Message {
      */
     public ConnectionType getClientType() {
         return type;
+    }
+    
+    /**
+     * Get the attach properties
+     * @return the attach properties
+     */
+    public Properties getProperties() {
+        return properties;
     }
 }

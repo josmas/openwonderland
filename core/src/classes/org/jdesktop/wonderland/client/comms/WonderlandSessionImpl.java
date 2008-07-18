@@ -209,6 +209,13 @@ public class WonderlandSessionImpl implements WonderlandSession {
     public void connect(final ClientConnection client) 
             throws ConnectionFailureException 
     {
+        connect(client, null);
+    }
+    
+    public void connect(final ClientConnection client, 
+                        final Properties properties)
+            throws ConnectionFailureException
+    {
         logger.fine(getName() + " attach client " + client);
         
         // check our status to make sure we are connected
@@ -235,7 +242,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
         
         // send a request to the server to connect the given client type
-        Message attachMessage = new AttachClientMessage(client.getConnectionType());
+        Message attachMessage = new AttachClientMessage(client.getConnectionType(),
+                                                        properties);
         
         // Create a listener to handle the response.  We cannot do this
         // using just sendAndWait() because the response has to be

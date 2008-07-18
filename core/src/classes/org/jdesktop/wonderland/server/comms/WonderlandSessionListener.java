@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -313,8 +314,11 @@ public class WonderlandSessionListener
      * Handle an attach request
      * @param messageID the ID of the message to respond to
      * @param type the type of client to attach
+     * @param properties the message properties
      */
-    protected void handleAttach(MessageID messageID, ConnectionType type) {
+    protected void handleAttach(MessageID messageID, ConnectionType type,
+                                Properties properties) 
+    {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Session " + getSession().getName() + " attach " +
                         "client type " + type);
@@ -360,8 +364,13 @@ public class WonderlandSessionListener
         // every call to messageReceived()
         senders.put(clientID, sender);
         
+        // make sure properties aren't null
+        if (properties == null) {
+            properties = new Properties();
+        }
+        
         // notify the handler
-        ref.get().clientConnected(sender, session);
+        ref.get().clientConnected(sender, session, properties);
     }
     
     /**
@@ -615,13 +624,14 @@ public class WonderlandSessionListener
         }
         
         public void clientConnected(WonderlandClientSender sender,
-                                   ClientSession session) 
+                                    ClientSession session,
+                                    Properties properties) 
         {
             // ignore
         }
         
         public void clientDisconnected(WonderlandClientSender sender,
-                                   ClientSession session) 
+                                       ClientSession session) 
         {
             // ignore
         }
@@ -632,7 +642,8 @@ public class WonderlandSessionListener
         {
             if (message instanceof AttachClientMessage) {
                 AttachClientMessage acm = (AttachClientMessage) message;
-                listener.handleAttach(acm.getMessageID(), acm.getClientType());
+                listener.handleAttach(acm.getMessageID(), acm.getClientType(),
+                                      acm.getProperties());
             } else if (message instanceof DetachClientMessage) {
                 DetachClientMessage dcm = (DetachClientMessage) message;
                 listener.handleDetach(dcm.getClientID());

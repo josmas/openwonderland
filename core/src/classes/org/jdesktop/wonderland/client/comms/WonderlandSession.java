@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.comms;
 
 import com.sun.sgs.client.simple.SimpleClient;
 import java.util.Collection;
+import java.util.Properties;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -78,6 +79,18 @@ public interface WonderlandSession {
     public void logout();
     
     /**
+     * Connect a new client to this session, with no properties. This is
+     * identical to calling <code>connect(client, null)</code>.
+     * 
+     * @param client the client to connect
+     * @throws ConnectionFailureException of the connection fails
+     * 
+     * @see connect(ClientConnect, Properties)
+     */
+    public void connect(ClientConnection client) 
+            throws ConnectionFailureException;
+    
+    /**
      * Connect a new client to this session.  When a client is connected to
      * this session, it will interact with the server associated with
      * this session.  
@@ -90,11 +103,20 @@ public interface WonderlandSession {
      * If the session is in any other state, an ConnectionFailureException will
      * be thrown.  When a session disconnects, all clients are disconnected,
      * and must be re-connected to start working again.
+     * <p>
+     * A client may optionally specify properties to use when making the
+     * given connection.  If properties are specified, the client will send
+     * the properties to the server, where they will be available in the
+     * <code>ClientConnectionManager.clientConnected()</code>.  If null
+     * is passed in for the properties argument, and empty properties will
+     * be sent to the server.
      * 
      * @param client the client to connect
+     * @param properties the properties object to send to the server
      * @throws ConnectionFailureException of the connection fails
      */
-    public void connect(ClientConnection client) throws ConnectionFailureException;
+    public void connect(ClientConnection client, Properties properties) 
+            throws ConnectionFailureException;
     
     /**
      * Disconnect a previously connected client from this session.
