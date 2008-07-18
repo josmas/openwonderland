@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.comms;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
@@ -60,7 +61,8 @@ public abstract class BaseConnection implements ClientConnection {
     }
 
     /**
-     * Connect this client to the given session
+     * Connect this client to the given session.  Identical to calling
+     * <code>session.connect(this)</code>
      * @param session the session to connect to
      * @throws ConnectionFailureException if there is a problem connecting
      */
@@ -68,6 +70,19 @@ public abstract class BaseConnection implements ClientConnection {
             throws ConnectionFailureException
     {
         session.connect(this);
+    }
+    
+    /**
+     * Connect this client to the given session with the given properties.  
+     * Identical to calling <code>session.connect(this, properties)</code>
+     * @param session the session to connect to
+     * @param properties the properties to use while connecting
+     * @throws ConnectionFailureException if there is a problem connecting
+     */
+    public void connect(WonderlandSession session, Properties properties) 
+            throws ConnectionFailureException
+    {
+        session.connect(this, properties);
     }
     
     public synchronized void connected(WonderlandSession session) {

@@ -24,6 +24,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.clientlistenertest.common.TestClientType;
 import org.jdesktop.wonderland.clientlistenertest.common.TestMessageOne;
@@ -61,7 +62,8 @@ public class ClientListenerPlugin implements ServerPlugin {
         }
 
         public void clientConnected(WonderlandClientSender sender,
-                                    ClientSession session) 
+                                    ClientSession session,
+                                    Properties properties) 
         {
             logger.info("Session connected: " + session);
             

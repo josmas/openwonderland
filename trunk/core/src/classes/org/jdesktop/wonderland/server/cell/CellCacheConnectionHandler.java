@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
@@ -55,7 +56,8 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
     }
     
     public void clientConnected(WonderlandClientSender sender,
-                               ClientSession session)   
+                                ClientSession session,
+                                Properties properties)   
     {
         // Nothing to do, setup is done when we get the SET_VIEW
         // message

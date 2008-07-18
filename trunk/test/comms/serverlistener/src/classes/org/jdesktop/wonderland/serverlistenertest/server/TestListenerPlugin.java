@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.serverlistenertest.server;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -56,8 +57,15 @@ public class TestListenerPlugin implements ServerPlugin {
         }
         
         public void clientConnected(WonderlandClientSender sender,
-                                    ClientSession session) {
+                                    ClientSession session,
+                                    Properties properties) 
+        {
             logger.info(getName() + " client attached: " + session);
+            
+            assert properties != null : 
+                logger.getName() + " null properties on attach: " + session;
+            assert properties.size() == 0 :
+                logger.getName() + " properties included in attach: " + session;
         }
         
         public void messageReceived(WonderlandClientSender sender,
@@ -105,6 +113,28 @@ public class TestListenerPlugin implements ServerPlugin {
         
         public ConnectionType getConnectionType() { 
             return TestClientType.CLIENT_TWO_TYPE;
+        }
+        
+        @Override
+        public void clientConnected(WonderlandClientSender sender,
+                                    ClientSession session,
+                                    Properties properties) 
+        {
+            logger.info(getName() + " client attached: " + session);
+            
+            assert properties != null : 
+                logger.getName() + " null properties on attach: " + session;
+            
+            // test that properties are sent properly
+            assert properties.size() == 2 :
+                logger.getName() + " properties missing: " + properties.size();
+            assert properties.getProperty("test1").equals("123") :
+                logger.getName() + " bad value for property test1: " +
+                properties.getProperty("test1");
+            assert properties.getProperty("test2").equals("test456") :
+                logger.getName() + " bad value for property test2: " +
+                properties.getProperty("test2");
+            
         }
         
         @Override

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
+import java.util.Properties;
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -42,7 +43,7 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
     }
 
     public void clientConnected(WonderlandClientSender sender,
-            ClientSession session) {
+            ClientSession session, Properties properties) {
         // ignore
     }
 

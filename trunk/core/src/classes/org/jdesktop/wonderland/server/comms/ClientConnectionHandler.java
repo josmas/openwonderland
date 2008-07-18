@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
+import java.util.Properties;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -47,9 +48,12 @@ public interface ClientConnectionHandler {
      * @param sender the sender that can be used to send to clients
      * of this handler
      * @param session the session that connected
+     * @param properties the properties of the connection, or an
+     * empty property object if the client didn't send any properties
      */
     public void clientConnected(WonderlandClientSender sender,
-                               ClientSession session);
+                                ClientSession session,
+                                Properties properties);
     
     /**
      * Handle a message from a client
