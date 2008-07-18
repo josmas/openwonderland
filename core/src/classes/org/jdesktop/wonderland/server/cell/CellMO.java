@@ -17,16 +17,12 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
-import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
@@ -34,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -45,7 +40,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.cell.CellListMO.ListInfo;
+import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
 import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
 
 /**
@@ -87,6 +82,14 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
     private boolean isStatic=false;
+    
+    /** Default constructor, used when the cell is created via WFS */
+    public CellMO() {
+        this.localBounds = null;
+        this.transform = null;
+        this.cellID = WonderlandContext.getCellManager().createCellID(this);
+    }
+    
     /**
      * Create a CellMO with the specified localBounds and transform.
      * If either parameter is null an IllegalArgumentException will be thrown.
@@ -561,8 +564,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param setup the properties to setup with
      */
     public void setupCell(BasicCellMOSetup<?> setup) {
-        setLocalTransform(setup.getLocalTransform());
-        setLocalBounds(setup.getLocalBounds());
+        setLocalTransform(BasicCellMOHelper.getCellTransform(setup));
+        setLocalBounds(BasicCellMOHelper.getCellBounds(setup));
     }
     
     /**

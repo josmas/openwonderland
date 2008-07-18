@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.common.cell.setup;
 
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 
 /**
  *

@@ -17,16 +17,23 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- * Client side class for world root cells.
+ * Client side class for WFS cells. Although the WFS cell is present in the
+ * hierarchy, they are invisible. It is kept in the hierarchy because it
+ * could be useful at some point to know how the cells are containing with
+ * separate WFSs.
  * 
- * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class WFSCell extends Cell {
 
+    /**
+     * Constructor, takes the unique cell ID as an argument.
+     * 
+     * @param cellID The unique cell identifier
+     */
     public WFSCell(CellID cellID) {
         super(cellID);
     }

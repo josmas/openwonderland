@@ -17,9 +17,7 @@
  */
 package org.jdesktop.wonderland.server.setup;
 
-import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.setup.CellSetup;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -27,18 +25,24 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 public class BasicCellMOSetup<T extends CellSetup>
     implements CellMOSetup, CellLocation 
-{
+{    
     /** the setup object to send to the cell */
     private T cellSetup;
 
     /** the class of cell MO */
     private String cellMOClassName;
+    
+   /* the location of the cell */
+    private double[] origin   = new double[] { 0.0, 0.0, 0.0 };
+    private double[] rotation = new double[] { 0.0, 1.0, 0.0, 0.0 };
+    private double   scale    = 1.0;
 
     /* the bounds of the cell */
-    private BoundingVolume bounds = null;
+    private BoundsType boundsType   = BoundsType.SPHERE;
+    private double     boundsRadius = 4.0f;
     
+    /* The cell priority, this should have a default value XXX */
     private short priority;
-    private CellTransform transform;
     
     /** Default constructor */
     public BasicCellMOSetup() {
@@ -60,20 +64,51 @@ public class BasicCellMOSetup<T extends CellSetup>
         this.cellMOClassName = cellMOClassName;
     }
     
-    public void setLocalTransform(CellTransform transform) {
-        this.transform = transform;
-        
+    public double[] getOrigin() {
+        return origin;
     }
-    public CellTransform getLocalTransform() {
-        return transform;
+    
+    public void setOrigin(double[] origin) {
+        this.origin = origin;
+    }
+    
+    public double[] getRotation() {
+        return rotation;
     }
 
-    public BoundingVolume getLocalBounds() {
-        return bounds;
+    public void setRotation(double[] rotation) {
+        this.rotation = rotation;
     }
 
-    public void setBounds(BoundingVolume bounds) {
-        this.bounds = bounds;
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
+    }
+    
+    public BoundsType getBoundsType() {
+        return boundsType;
+    }
+
+    public void setBoundsType(BoundsType boundsType) {
+        this.boundsType = boundsType;
+    }
+    
+    public void setBoundsType(String boundsType) {
+        if (boundsType.equals("SPHERE"))
+            this.boundsType = BoundsType.SPHERE;
+        else if (boundsType.equals("BOX"))
+            this.boundsType = BoundsType.BOX;
+    }
+
+    public double getBoundsRadius() {
+        return boundsRadius;
+    }
+
+    public void setBoundsRadius(double boundsRadius) {
+        this.boundsRadius = boundsRadius;
     }
     
     public void validate() throws InvalidCellMOSetupException {
