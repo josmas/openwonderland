@@ -38,8 +38,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.wfs.WFS;
-import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
+//import org.jdesktop.wonderland.wfs.WFS;
+//import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
 
 /**
  *
@@ -157,7 +157,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * For testing.....
      */
     public void loadWorld() {
-        buildWFSWorld();
+        //buildWFSWorld();
         
         //test();
     }
@@ -238,44 +238,44 @@ public class CellManagerMO implements ManagedObject, Serializable {
         }
     }
     
-    /**
-     * Builds a world defined by a wonderland file system (e.g. on disk). The
-     * world's root directory must be setTranslation in the system property 
-     * wonderland.wfs.root
-     */
-    private void buildWFSWorld() {
-        /* Fetch the world root URI, if null, then log an error */
-        //URL root = WonderlandServerConfig.getDefault().getWorldRoot();
-        URL root = null;
-        try {
-            root = new URL("file:///Users/jordanslott/wonderland/v0.5-trunk/core/src/worlds/test-wfs");
-        } catch (MalformedURLException excp) {
-            WFS.getLogger().log(Level.SEVERE, "Invalid WFS URL");
-        }
-        
-        if (root == null) {
-            WFS.getLogger().log(Level.SEVERE, "World Root attribute not setTranslation in server config file.");
-            return;
-        }
-
-        /*
-         * Attempt to create a new MO based upon the WFS root. We need to setup
-         * some basic properties about the cell by hand (e.g. transform, name).
-         */
-        WFSCellMO mo = new WFSCellMO(root);
-        mo.setLocalTransform(new CellTransform(null, null, null));
-        mo.setName("root");
-        mo.setLocalBounds(new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f()));
-        
-        try {
-            AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
-            this.insertCellInWorld(mo);
-        } catch (java.lang.Exception excp) {
-            WFS.getLogger().log(Level.SEVERE, "Unable to load WFS into world: " + root.toString());
-            WFS.getLogger().log(Level.SEVERE, excp.toString());
-            excp.printStackTrace();
-        }
-    }
+//    /**
+//     * Builds a world defined by a wonderland file system (e.g. on disk). The
+//     * world's root directory must be setTranslation in the system property 
+//     * wonderland.wfs.root
+//     */
+//    private void buildWFSWorld() {
+//        /* Fetch the world root URI, if null, then log an error */
+//        //URL root = WonderlandServerConfig.getDefault().getWorldRoot();
+//        URL root = null;
+//        try {
+//            root = new URL("file:///Users/jordanslott/wonderland/v0.5-trunk/core/src/worlds/test-wfs");
+//        } catch (MalformedURLException excp) {
+//            WFS.getLogger().log(Level.SEVERE, "Invalid WFS URL");
+//        }
+//        
+//        if (root == null) {
+//            WFS.getLogger().log(Level.SEVERE, "World Root attribute not setTranslation in server config file.");
+//            return;
+//        }
+//
+//        /*
+//         * Attempt to create a new MO based upon the WFS root. We need to setup
+//         * some basic properties about the cell by hand (e.g. transform, name).
+//         */
+//        WFSCellMO mo = new WFSCellMO(root);
+//        mo.setLocalTransform(new CellTransform(null, null, null));
+//        mo.setName("root");
+//        mo.setLocalBounds(new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f()));
+//        
+//        try {
+//            AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
+//            this.insertCellInWorld(mo);
+//        } catch (java.lang.Exception excp) {
+//            WFS.getLogger().log(Level.SEVERE, "Unable to load WFS into world: " + root.toString());
+//            WFS.getLogger().log(Level.SEVERE, excp.toString());
+//            excp.printStackTrace();
+//        }
+//    }
     
     /**
      * Creates a bounding box with the specified dimensions,centered at 0,0,0
