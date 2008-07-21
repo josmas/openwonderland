@@ -1,0 +1,113 @@
+<project basedir="." default="..." name="wonderland.run-smc">
+    <dirname property="imported.basedir" file="${ant.file.build-setup}"/>
+
+    <target name="run-smc" depends="jar, modules-client-classpath" description="Run Server Master Client">
+        <java classname="org.jdesktop.lg3d.wonderland.Main" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <!--jvmarg value="-Xincgc"/-->
+            <jvmarg value="-Xms32m"/>
+<!--            <jvmarg value="-XX:MaxGCPauseMillis=20"/>
+            <jvmarg value="-XX:CompileThreshold=500"/>
+            <jvmarg value="-XX:+UseAdaptiveSizePolicy"/>
+-->
+            <!--start debug-->
+<!--
+	    <jvmarg value="-Xdebug"/>
+	    <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8889,suspend=n"/>
+-->
+            <!--end debug-->
+
+            <!-- <jvmarg value="-agentlib:yjpagent"/> -->
+
+            <jvmarg value="-Djava.util.logging.config.file=logging.properties"/>
+            <jvmarg value="-Dlg.appcodebase=file:///${core.ext.dir}/app"/>
+            <jvmarg value="-Dlg.maxfps=30"/>
+            
+            <jvmarg value="-DJ3dFly.SystemPlugins=${j3dfly.dir}/J3dEditor/preferences/editor_plugin_prefs.xml"/>
+            <jvmarg value="-DJ3dFly.UserPlugins="/>
+            <jvmarg value="-DJ3dFly.Loaders=${j3dfly.dir}/J3dFly/preferences/loaders.xml"/>
+            <jvmarg value="-DJ3dEditor.NodeConfigs=${j3dfly.dir}/J3dEditor/preferences/j3deditor-config.xml"/>
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+            <!-- <jvmarg value="-Dj3d.rend=jogl"/> -->
+            <jvmarg value="-Dj3d.cacheAutoComputeBounds=true"/>
+            
+	    <!-- Tell Wonderland that this client is a Master -->
+            <jvmarg value="-Dwl.xapps=true"/>
+
+            <jvmarg value="-Dwl.serverMasterClient=true"/>
+
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+	    </classpath>
+	    <syspropertyset refid="wonderland.properties"/>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	</java>
+        
+        <!-- Workaround for 142 -->
+        <exec executable="pkill">
+            <arg line="-9 Xvfb"/>
+        </exec>
+    </target>
+    
+    <target depends="jar, modules-client-classpath" name="debug-smc">
+        <nbjpdastart addressproperty="jpda.address" name="lg3d-wonderland" transport="dt_socket">
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+            </classpath>
+        </nbjpdastart>
+
+        <java classname="org.jdesktop.lg3d.wonderland.Main" fork="true">
+            <jvmarg value="-client"/>
+            <jvmarg value="-Xmx384m"/>
+            <jvmarg value="-Xincgc"/>
+            <jvmarg value="-Xms32m"/>
+            <jvmarg value="-XX:MaxGCPauseMillis=20"/>
+            <jvmarg value="-XX:CompileThreshold=500"/>
+            <jvmarg value="-XX:+UseAdaptiveSizePolicy"/>
+
+            <jvmarg value="-Djava.util.logging.config.file=logging.properties"/>
+            <jvmarg value="-Dlg.appcodebase=file:///${core.ext.dir}/app"/>
+            <jvmarg value="-Dlg.maxfps=30"/>
+            
+            <jvmarg value="-DJ3dFly.SystemPlugins=${j3dfly.dir}/J3dEditor/preferences/editor_plugin_prefs.xml"/>
+            <jvmarg value="-DJ3dFly.UserPlugins="/>
+            <jvmarg value="-DJ3dFly.Loaders=${j3dfly.dir}/J3dFly/preferences/loaders.xml"/>
+            <jvmarg value="-DJ3dEditor.NodeConfigs=${j3dfly.dir}/J3dEditor/preferences/j3deditor-config.xml"/>
+
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+            <!-- <jvmarg value="-Dj3d.rend=jogl"/> -->
+            
+	    <!-- Tell Wonderland that this client is a Master -->
+            <jvmarg value="-Dwl.xapps=true"/>
+
+	    <!-- App Share Debug Mode: change to false for manual X remote window server startup -->
+            <jvmarg value="-Dwl.appshare.remoteWinServerLaunch=true"/>
+
+            <jvmarg value="-Dwl.serverMasterClient=true"/>
+
+            <classpath>
+		<pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+	    </classpath>
+
+            <!--start debug-->
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <!--end debug-->
+
+	    <syspropertyset refid="wonderland.properties"/>
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	</java>
+        
+        <!-- Workaround for 142 -->
+        <exec executable="pkill">
+            <arg line="-9 Xvfb"/>
+        </exec>
+    </target>
+</project>

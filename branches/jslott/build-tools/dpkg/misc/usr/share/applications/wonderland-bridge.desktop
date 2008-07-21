@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Project Wonderland Voice Bridge
+GenericName=Project Wonderland
+Comment=Run Project Wonderland Voice Bridge
+Exec=/usr/share/lg3d-wonderland/bin/wonderland-bridge.sh
+Icon=wonderland.png
+Terminal=true
+Type=Application
+Categories=Application;Graphics;

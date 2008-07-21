@@ -1,0 +1,9 @@
+<project basedir="." default="..." name="wonderland.build-pkg-linux-amd64">
+    <dirname property="imported.basedir" file="${ant.file.build-pkg-linux-amd64}"/>
+
+    <target name="pkg-platform" depends="pkg-stage" description="Create debian package">
+	<echo message="Platform specific packaging for ${system.type} not yet supported!"/>
+    </target>
+
+    <target name="pkg-platform-clean"/>
+</project>

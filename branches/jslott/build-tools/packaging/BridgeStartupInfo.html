@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//Tigris//DTD XHTML 1.0 Transitional//EN"
+"http://style.tigris.org/tigris_transitional.dtd">
+<html>
+  <head>
+    <title>Bridge Startup Information</title>
+  </head>
+  <body>
+  <h1><center>Bridge Startup Information</center></h1>  
+<p>
+When the voice bridge is started, there are many messages logged
+and it is difficult for a new user to determine if it came up 
+successfully or not.
+<p>
+There shouldn't be any exceptions in the bridge log.
+<p>
+If you see this message:
+<p>
+ERROR:  InvalidArgumentException javax.sip.InvalidArgumentException: Address already in use
+<p>
+then either voice bridge is already running
+or some other program is using the SIP Port (usually 5060).
+You will need to kill the program using that SIP Port.
+<p>
+Important messages you should see:
+<p>
+Bridge started in location "location"
+<p>
+Other messages which are harmless:
+<p>
+WARNING: At least one SIP gateway should be specified using 
+    -Dcom.sun.voip.server.VoIPGateways. 
+     Outgoing calls to PSTN will not work.
+<p>
+ module path '/home/jp/jvoicebridge/voip/modules/' is not a directory.  Ignoring.
+<p>
+If the voice bridge is started before the darkstar server,
+messages will appear indicating that the voice bridge is unable
+to notify the darkstar server that a bridge is online.
+This is not a problem.  The bridge will retry once a second to connect
+to the darkstar server.
+
+      <p/><hr>
+
+  </body>
+</html>
