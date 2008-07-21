@@ -24,8 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
-import org.jdesktop.wonderland.client.datamgr.Repository;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
 
 /**
  * Resource Locator for wonderland.
@@ -36,16 +36,16 @@ import org.jdesktop.wonderland.common.AssetType;
  */
 public class WonderlandResourceLocator implements ResourceLocator {
 
-    private Repository repository;
+    private String assetURI;
 
     public WonderlandResourceLocator() {
-        try {
+//        try {
 //                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models"));
 //                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core"));
-            repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
-        }
+            assetURI = "http://192.18.37.42/compiled_models/";
+//        } catch (MalformedURLException ex) {
+//            Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     public URL locateResource(String filename) {
@@ -57,12 +57,15 @@ public class WonderlandResourceLocator implements ResourceLocator {
         if (trim!=0)
             filename = filename.substring(trim);
 
-        AssetManager assetManager = AssetManager.getAssetManager();
-        Asset asset = assetManager.getAsset(AssetType.IMAGE, repository, filename, null);
+ 
 
         try {
-            ret = new URL("wltexture://"+repository.getOriginalRepository().getHost()+"/"+filename+"#"+repository.getOriginalRepository().getFile());
-        } catch (MalformedURLException ex) {
+            AssetURI uri = new AssetURI(assetURI + "/" + filename);
+            AssetManager assetManager = AssetManager.getAssetManager();
+            Asset asset = assetManager.getAsset(uri, AssetType.IMAGE);
+            //ret = new URL("wltexture://"+repository.getOriginalRepository().getHost()+"/"+filename+"#"+repository.getOriginalRepository().getFile());
+            ret = new URL(""); // XXX
+        } catch (Exception ex) {
             Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
             ret = null;
         }

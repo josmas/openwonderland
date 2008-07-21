@@ -53,27 +53,27 @@ public class WlTextureURLConnection extends URLConnection {
     
     @Override
     public InputStream getInputStream() {
-        try {
-            System.out.println("Asset "+url);
-            
-            Repository repository = new Repository(new URL("http://" + url.getHost()+"/"+trimSlash(url.getRef())));
-
-            String fileStr = url.getFile();
-            trimSlash(fileStr);
-            
-            System.out.println("ASSET "+repository.getOriginalRepository()+"   "+fileStr+"   orig "+url.getFile());
-            
-            Asset asset = AssetManager.getAssetManager().getAsset(AssetType.IMAGE, repository, fileStr, null);
-            if (!AssetManager.getAssetManager().waitForAsset(asset))
-                return null;
-            
-            
-            return new FileInputStream(asset.getLocalCacheFile());
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(WlTextureURLConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(WlTextureURLConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            System.out.println("Asset "+url);
+//            
+//            Repository repository = new Repository(new URL("http://" + url.getHost()+"/"+trimSlash(url.getRef())));
+//
+//            String fileStr = url.getFile();
+//            trimSlash(fileStr);
+//            
+//            System.out.println("ASSET "+repository.getOriginalRepository()+"   "+fileStr+"   orig "+url.getFile());
+//            
+//            Asset asset = AssetManager.getAssetManager().getAsset(AssetType.IMAGE, repository, fileStr, null);
+//            if (!AssetManager.getAssetManager().waitForAsset(asset))
+//                return null;
+//            
+//            
+//            return new FileInputStream(asset.getLocalCacheFile());
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(WlTextureURLConnection.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (MalformedURLException ex) {
+//            Logger.getLogger(WlTextureURLConnection.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         return null;
         
     }
