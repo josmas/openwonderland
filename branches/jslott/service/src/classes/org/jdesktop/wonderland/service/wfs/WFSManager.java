@@ -82,9 +82,9 @@ public class WFSManager {
     }
     
     /**
-     * Returns an array of WFS root names.
+     * Returns an array of WFS root names. If there are no roots, returns null.
      * 
-     * @return An array of WFS root names
+     * @return An array of WFS root names, or null if there are non.
      */
     public String[] getWFSRoots() {
         return new String[] {

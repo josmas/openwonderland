@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.service.wfs.resources;
 
 import java.io.StringWriter;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -34,7 +35,8 @@ import org.jdesktop.wonderland.wfs.WFSRoots;
  * The format of the URI is: /wfs/roots/directory.
  * <p>
  * The root information returned is the JAXB serialization of the root name
- * information (the WFSRoots class).
+ * information (the WFSRoots class). The getCellResource() method handles the
+ * HTTP GET request
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -43,13 +45,23 @@ public class WFSRootsResource {
     
     /**
      * Returns the JAXB XML serialization of the WFS root names. Returns
-     * the XML via an HTTP GET request.
-     * 
+     * the XML via an HTTP GET request. The format of the URI is:
+     * <p>
+     * /wfs/roots/directory
+     * <p>
+     * Returns BAD_REQUEST to the HTTP connection upon error
+     *
      * @return The XML serialization of the cell setup information via HTTP GET
      */
     @GET
     public Response getCellResource() {
-        /* Fetch the wfs manager and the WFS roots. */
+        /* Fetch thhe error logger for use in this method */
+        Logger logger = WFSManager.getLogger();
+        
+        /*
+         * Fetch the wfs manager and the individual root names. If the roots
+         * is null, then return a blank response.
+         */
         WFSManager wfsm = WFSManager.getWFSManager();
         String roots[] = wfsm.getWFSRoots();
         WFSRoots wfsRoots = new WFSRoots(roots);
@@ -61,7 +73,7 @@ public class WFSRootsResource {
             ResponseBuilder rb = Response.ok(sw.toString());
             return rb.build();
         } catch (javax.xml.bind.JAXBException excp) {
-            WFSManager.getLogger().log(Level.SEVERE, "Unable to write roots: " + excp.toString());
+            logger.warning("WFSManager: Unable to write roots: " + excp.toString());
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }

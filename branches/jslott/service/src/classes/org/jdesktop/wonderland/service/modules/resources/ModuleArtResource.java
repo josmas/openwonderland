@@ -19,7 +19,7 @@
 package org.jdesktop.wonderland.service.modules.resources;
 
 import java.io.InputStream;
-import java.io.StringWriter;
+import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -48,22 +48,23 @@ public class ModuleArtResource {
      * <p>
      * where {modulename} is the name of the module and {path} is the relative
      * path of the art resource. All spaces in the module name must be encoded
-     * to %20. Returns INVALID to the HTTP connection if
-     * the module name is invalid or if there was an error encoding the module's
-     * information.
+     * to %20. Returns BAD_REQUEST to the HTTP connection if the module name is
+     * invalid or if there was an error encoding the module's information.
      * 
      * @param moduleName The unique name of the module
      * @return An XML encoding of the module's basic information
      */
     @GET
     public Response getModuleArt(@PathParam("modulename") String moduleName, @PathParam("path") String path) {
-        System.out.println(moduleName);
-        System.out.println(path);
+        /* Fetch thhe error logger for use in this method */
+        Logger logger = ModuleManager.getLogger();
+        
         /* Fetch the module from the module manager */
         ModuleManager mm = ModuleManager.getModuleManager();
         InstalledModule im = mm.getInstalledModule(moduleName);
         if (im == null) {
-            // XXX write out to log
+            /* Log an error and return an error response */
+            logger.warning("ModuleManager: unable to locate module " + moduleName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
@@ -79,10 +80,14 @@ public class ModuleArtResource {
         /* Fetch the input stream for the art resource */
         ModuleResource mr = im.getModuleArtResource(path);
         if (mr == null) {
-            // XXX write out to log
+            /* Write an error to the log and return */
+            logger.warning("ModuleManager: unable to locate resource " + path +
+                    " in module: " + moduleName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
+        
+        /* Encode in an HTTP response and send */
         InputStream is = im.getInputStream(mr);
         ResponseBuilder rb = Response.ok(is);
         return rb.build();

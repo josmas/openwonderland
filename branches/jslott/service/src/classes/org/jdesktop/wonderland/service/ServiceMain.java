@@ -29,16 +29,18 @@ import org.jdesktop.wonderland.service.wfs.WFSManager;
  * @author jordanslott
  */
 public class ServiceMain {
-
+    /* The hostname and port where these services are located */
+    public static final String SERVER = "http://localhost:9998/";
+    
     public static void main(String args[]) throws IOException {
         ModuleManager mm = ModuleManager.getModuleManager();
         WFSManager wfsm = WFSManager.getWFSManager();
         
-        HttpServer server = HttpServerFactory.create("http://localhost:9998/");
+        HttpServer server = HttpServerFactory.create(ServiceMain.SERVER);
         server.start();
         
         System.out.println("Server running");
-        System.out.println("Visit: http://localhost:9998/");
+        System.out.println("Visit: " + SERVER);
         System.out.println("Hit return to stop...");
         System.in.read();
         System.out.println("Stopping server");   

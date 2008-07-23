@@ -129,7 +129,16 @@ public class ModuleManager {
     public static final ModuleManager getModuleManager() {
         return ModuleManagerHolder.moduleManager;
     }
-     
+    
+    /**
+     * Returns the error logger associated with this class.
+     * 
+     * @return The error logger
+     */
+    public static Logger getLogger() {
+        return ModuleManager.logger;
+    }
+   
     /**
      * TBD.
      */

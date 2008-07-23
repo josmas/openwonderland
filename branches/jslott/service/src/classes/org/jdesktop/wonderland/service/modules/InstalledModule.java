@@ -19,8 +19,6 @@
 package org.jdesktop.wonderland.service.modules;
 
 import java.io.File;
-import java.io.InputStream;
-import org.jdesktop.wonderland.modules.ModuleResource;
 import org.jdesktop.wonderland.modules.file.FileModule;
 
 /**

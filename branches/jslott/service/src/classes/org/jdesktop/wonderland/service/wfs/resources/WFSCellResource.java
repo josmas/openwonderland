@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.service.wfs.resources;
 
 import java.io.StringWriter;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -62,6 +63,9 @@ public class WFSCellResource {
      */
     @GET
     public Response getCellResource(@PathParam("wfsname") String wfsName, @PathParam("path") String path) {
+        /* Fetch thhe error logger for use in this method */
+        Logger logger = WFSManager.getLogger();
+        
         /*
          * Fetch the wfs manager and the WFS. If invalid, then return a bad
          * response.
@@ -69,21 +73,24 @@ public class WFSCellResource {
         WFSManager wfsm = WFSManager.getWFSManager();
         WFS wfs = wfsm.getWFS(wfsName);
         if (wfs == null) {
-            WFSManager.getLogger().log(Level.SEVERE, "Unable to find WFS with" +
-                    " name " + wfsName);
+            logger.warning("Unable to find WFS with name " + wfsName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
+        
+        /* Fetch the root directory, check if null, but should never be */
         WFSCellDirectory dir = wfs.getRootDirectory();
+        if (dir == null) {
+            logger.warning("WFSManager: Unable to find WFS root with name " + wfsName);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
+        }
         
         /*
          * Split the path up into individual components. We then fetch the
-         * object down the chain. We assume the last element is the file
+         * object down the chain. We assume the last element is the file.
          */
         String paths[] = path.split("/");
-        System.out.println("name=" + wfsName);
-        System.out.println("path=" + path);
-        System.out.println("paths length=" + paths.length);
         for (int i = 0; i < paths.length - 1; i++) {
             /*
              * First fetch the cell. If it does not exist, then return a bad
@@ -91,8 +98,7 @@ public class WFSCellResource {
              */
             WFSCell cell = dir.getCellByName(paths[i]);
             if (cell == null) {
-                WFSManager.getLogger().log(Level.SEVERE, "Unable to find cell " +
-                        "with path: " + path);
+                logger.warning("Unable to find cell with path: " + path);
                 ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
                 return rb.build();
             }
@@ -102,8 +108,7 @@ public class WFSCellResource {
              * to exist, otherwise, return a bad response.
              */
             if ((dir = cell.getCellDirectory()) == null) {
-                WFSManager.getLogger().log(Level.SEVERE, "Unable to find cell " +
-                        "with path: " + path);
+                logger.warning("WFSManager: Unable to find cell with path: " + path);
                 ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
                 return rb.build();
             }
@@ -115,8 +120,7 @@ public class WFSCellResource {
          */
         WFSCell cell = dir.getCellByName(paths[paths.length - 1]);
         if (cell == null) {
-            WFSManager.getLogger().log(Level.SEVERE, "Unable to find cell " +
-                    "with path: " + path);
+            logger.warning("WFSManager: Unable to find cell with path: " + path);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
@@ -125,16 +129,22 @@ public class WFSCellResource {
          * Load in the cell and stream its setup information to the client.
          */
         try {
+            /* Fetch the essential configuration information, check for null */
             BasicCellSetup setup = cell.getCellSetup();
-            StringWriter sw = new StringWriter();
-            setup.encode(sw);
-            
-            /* Formulate the HTTP response and send the string */
-            ResponseBuilder rb = Response.ok(sw.toString());
-            return rb.build();
+            if (setup == null) {
+                logger.warning("WFSManager: Unable to find cell setup: " + path);
+                ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+                return rb.build();
+            }
+            else {
+                /* Formulate the HTTP response and send the string */
+                StringWriter sw = new StringWriter();
+                setup.encode(sw);
+                ResponseBuilder rb = Response.ok(sw.toString());
+                return rb.build();
+            }
         } catch (java.lang.Exception excp) {
-            WFSManager.getLogger().log(Level.SEVERE, "Unable to read cell " +
-                    "with path: " + path + ": " + excp.toString());
+            logger.warning("WFSManager: Unable to read cell with path: " + path + ": " + excp.toString());
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }

@@ -19,10 +19,14 @@
 package org.jdesktop.wonderland.service.modules.resources;
 
 import java.io.StringWriter;
+import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.ProduceMime;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import org.jdesktop.wonderland.modules.ModuleInfo;
 import org.jdesktop.wonderland.service.modules.InstalledModule;
 import org.jdesktop.wonderland.service.modules.ModuleManager;
 
@@ -43,7 +47,7 @@ public class ModuleInfoResource {
      * /module/{modulename}/info
      * <p>
      * where {modulename} is the name of the module. All spaces in the module
-     * name must be encoded to %20. Returns INVALID to the HTTP connection if
+     * name must be encoded to %20. Returns BAD_REQUEST to the HTTP connection if
      * the module name is invalid or if there was an error encoding the module's
      * information.
      * 
@@ -52,21 +56,40 @@ public class ModuleInfoResource {
      */
     @GET
     @ProduceMime("text/plain")
-    public String getModuleInfo(@PathParam("modulename") String moduleName) {
+    public Response getModuleInfo(@PathParam("modulename") String moduleName) {
+        /* Fetch thhe error logger for use in this method */
+        Logger logger = ModuleManager.getLogger();
+        
         /* Fetch the module from the module manager */
         ModuleManager mm = ModuleManager.getModuleManager();
         InstalledModule im = mm.getInstalledModule(moduleName);
         if (im == null) {
-            return "INVALID";
+            /* Log an error and return an error response */
+            logger.warning("ModuleManager: unable to locate module " + moduleName);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
+        }
+        
+        /* Check to see that the module info exists -- it's really bad if it doesn't */
+        ModuleInfo moduleInfo = im.getModuleInfo();
+        if (moduleInfo == null) {
+            /* Log an error and return an error response */
+            logger.warning("ModuleManager: unable to locate module info: " + moduleName);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
         }
         
         /* Write the XML encoding to a writer and return it */
         StringWriter sw = new StringWriter();
         try {
-            im.getModuleInfo().encode(sw);
+            moduleInfo.encode(sw);
+            ResponseBuilder rb = Response.ok(sw.toString());
+            return rb.build();
         } catch (javax.xml.bind.JAXBException excp) {
-            return "INVALID";
+            /* Log an error and return an error response */
+            logger.warning("ModuleManager: unable to encode module info " + moduleName);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
         }
-        return sw.toString();
     }
 }

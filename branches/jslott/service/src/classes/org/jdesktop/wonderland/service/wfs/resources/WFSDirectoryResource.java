@@ -19,7 +19,7 @@
 package org.jdesktop.wonderland.service.wfs.resources;
 
 import java.io.StringWriter;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -62,9 +62,8 @@ public class WFSDirectoryResource {
      */
     @GET
     public Response getCellResource(@PathParam("wfsname") String wfsName, @PathParam("path") String path) {
-        
-        System.out.println("name=" + wfsName);
-        System.out.println("path=" + path);
+        /* Fetch thhe error logger for use in this method */
+        Logger logger = WFSManager.getLogger();
         
         /*
          * Fetch the wfs manager and the WFS. If invalid, then return a bad
@@ -73,12 +72,18 @@ public class WFSDirectoryResource {
         WFSManager wfsm = WFSManager.getWFSManager();
         WFS wfs = wfsm.getWFS(wfsName);
         if (wfs == null) {
-            WFSManager.getLogger().log(Level.SEVERE, "Unable to find WFS with" +
-                    " name " + wfsName);
+            logger.warning("WFSManager: Unable to find WFS with name " + wfsName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
+        
+        /* Fetch the root directory, check if null, but should never be */
         WFSCellDirectory dir = wfs.getRootDirectory();
+        if (dir == null) {
+            logger.warning("WFSManager: Unable to find WFS root with name " + wfsName);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
+        }
         
         /*
          * Split the path up into individual components. We then fetch the
@@ -91,7 +96,9 @@ public class WFSDirectoryResource {
             paths = path.split("/");
         }
         
-        System.out.println("paths length=" + paths.length);
+        /*
+         * Loop through each component and find the subdirectory in turn.
+         */
         for (int i = 0; i < paths.length; i++) {
             /*
              * First fetch the cell. If it does not exist, then return a bad
@@ -99,8 +106,7 @@ public class WFSDirectoryResource {
              */
             WFSCell cell = dir.getCellByName(paths[i]);
             if (cell == null) {
-                WFSManager.getLogger().log(Level.SEVERE, "Unable to find cell " +
-                        "with path: " + path);
+                logger.info("WFSManager: Unable to find cell with path: " + path);
                 ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
                 return rb.build();
             }
@@ -110,8 +116,7 @@ public class WFSDirectoryResource {
              * to exist, otherwise, return a bad response.
              */
             if ((dir = cell.getCellDirectory()) == null) {
-                WFSManager.getLogger().log(Level.SEVERE, "Unable to find cell " +
-                        "with path: " + path);
+                WFSManager.getLogger().info("WFSManager: Unable to find cell with path: " + path);
                 ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
                 return rb.build();
             }
@@ -122,7 +127,6 @@ public class WFSDirectoryResource {
          * the cells should be. Create a WFSCellChildren object which is used
          * to serialize the result.
          */
-
         String names[] = dir.getCellNames();
         WFSCellChildren children = new WFSCellChildren(path, names);
         
@@ -133,8 +137,7 @@ public class WFSDirectoryResource {
             ResponseBuilder rb = Response.ok(sw.toString());
             return rb.build();
         } catch (javax.xml.bind.JAXBException excp) {
-              WFSManager.getLogger().log(Level.SEVERE, "Unable to write dir " +
-                    "with path: " + path + ": " + excp.toString());
+            logger.info("WFSManager: Unable to write dir with path: " + path + ": " + excp.toString());
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
