@@ -18,8 +18,8 @@
 package org.jdesktop.wonderland.server.cell;
 
 import java.io.Serializable;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 
 /**
  * The properties of the cell for a particular combination of session
@@ -32,11 +32,11 @@ public class CellSessionProperties implements Serializable {
 
     private ViewCellCacheRevalidationListener viewCacheOperation;
     private String clientCellClassName;
-    private CellSetup clientCellSetup;
+    private BasicCellSetup clientCellSetup;
     
     public CellSessionProperties(ViewCellCacheRevalidationListener viewCacheOperation,
             String clientCellClassName,
-            CellSetup clientCellSetup) {
+            BasicCellSetup clientCellSetup) {
         this.viewCacheOperation = viewCacheOperation;
         this.clientCellClassName = clientCellClassName;
         this.clientCellSetup = clientCellSetup;
@@ -63,7 +63,7 @@ public class CellSessionProperties implements Serializable {
      * Return the setup data that will be sent to the client for this session
      * @return
      */
-    public CellSetup getClientCellSetup() {
+    public BasicCellSetup getClientCellSetup() {
         return clientCellSetup;
     }
     

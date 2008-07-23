@@ -18,26 +18,21 @@
 package org.jdesktop.wonderland.client;
 
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
-import org.jdesktop.wonderland.client.comms.LoginFailureException;
-import org.jdesktop.wonderland.client.comms.LoginParameters;
-import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -147,7 +142,7 @@ public class WorldClient {
                 BoundingVolume localBounds, 
                 CellID parentCellID, 
                 CellTransform cellTransform, 
-                CellSetup setup,
+                BasicCellSetup setup,
                 String cellName) {
             return cacheImpl.loadCell(cellID, 
                                className, 

@@ -29,21 +29,18 @@ import com.sun.sgs.app.PeriodicTaskHandle;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.TaskManager;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.io.StringWriter;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
@@ -53,8 +50,6 @@ import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.cell.CellListMO.ListInfo;
-import org.jdesktop.wonderland.server.cell.CellMO.SpaceInfo;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -665,17 +660,27 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             parent = p.getCellID();
         }
         
+        /* Serialize the setup data into a string */
+        BasicCellSetup setup = cell.getClientSetupData(null, capabilities);
+        String setupData = null;
+        if (setup != null) {
+            try {
+                StringWriter sw = new StringWriter();
+                setup.encode(sw);
+                setupData = sw.toString();
+            } catch (Exception excp) {
+                System.out.println(excp.toString());
+            }
+        }
+        
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
             cell.getClientCellClassName(null,capabilities),
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
             cell.getLocalTransform(),
-            cell.getClientSetupData(null, capabilities),
-            cell.getName()
-            
-            
-            );
+            setupData,
+            cell.getName());
     }
     
     /**
@@ -689,17 +694,27 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             parent = p.getCellID();
         }
         
+        /* Serialize the setup data into a string */
+        BasicCellSetup setup = cell.getClientSetupData(null, capabilities);
+        String setupData = null;
+        if (setup != null) {
+            try {
+                StringWriter sw = new StringWriter();
+                setup.encode(sw);
+                setupData = sw.toString();
+            } catch (Exception excp) {
+                System.out.println(excp.toString());
+            }
+        }
+        
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CLIENT_AVATAR,
-            cell.getClientCellClassName(null,capabilities),
-            cell.getLocalBounds(),
-            cell.getCellID(),
-            parent,
-            cell.getLocalTransform(),
-            cell.getClientSetupData(null, capabilities),
-            cell.getName()
-            
-            
-            );
+                cell.getClientCellClassName(null, capabilities),
+                cell.getLocalBounds(),
+                cell.getCellID(),
+                parent,
+                cell.getLocalTransform(),
+                setupData,
+                cell.getName());
     }
     
     /**
@@ -760,6 +775,19 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             parentID = cellMO.getParent().getCellID();
         }
         
+        /* Serialize the setup data into a string */
+        BasicCellSetup setup = cellMO.getClientSetupData(null, capabilities);
+        String setupData = null;
+        if (setup != null) {
+            try {
+                StringWriter sw = new StringWriter();
+                setup.encode(sw);
+                setupData = sw.toString();
+            } catch (Exception excp) {
+                System.out.println(excp.toString());
+            }
+        }
+        
         /* Return a new CellHiearchyMessage class, with populated data fields */
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UPDATE_CELL_CONTENT,
             cellMO.getClientCellClassName(null,capabilities),
@@ -767,7 +795,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cellMO.getCellID(),
             parentID,
             cellMO.getLocalTransform(),
-            cellMO.getClientSetupData(null, capabilities),
+            setupData,
             cellMO.getName()
             );
     }

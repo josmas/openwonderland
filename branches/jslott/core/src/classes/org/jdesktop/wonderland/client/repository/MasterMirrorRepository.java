@@ -21,7 +21,6 @@ package org.jdesktop.wonderland.client.repository;
 
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.common.config.WonderlandConfig;
 
 /**
  * The SystemDefaultRepository class represents content that comes from an asset
@@ -40,10 +39,15 @@ public class MasterMirrorRepository implements Repository {
     
     /** Default constructor */
     public MasterMirrorRepository(String masterBaseURL, String[] mirrorBaseURLs) {
-        this.masterBaseURL = new String(this.stripTrailingSlash(masterBaseURL));
-        this.mirrorBaseURLs = new String[mirrorBaseURLs.length];
-        for (int i = 0; i < mirrorBaseURLs.length; i++) {
-            this.mirrorBaseURLs[i] = new String(this.stripTrailingSlash(mirrorBaseURLs[i]));
+        if (masterBaseURL != null) {
+            this.masterBaseURL = new String(this.stripTrailingSlash(masterBaseURL));
+        }
+        
+        if (this.mirrorBaseURLs != null) {
+            this.mirrorBaseURLs = new String[mirrorBaseURLs.length];
+            for (int i = 0; i < mirrorBaseURLs.length; i++) {
+                this.mirrorBaseURLs[i] = new String(this.stripTrailingSlash(mirrorBaseURLs[i]));
+            }
         }
     }
     
@@ -85,29 +89,35 @@ public class MasterMirrorRepository implements Repository {
      * 
      * @return An array of base repository URLs
      */
-     public String[] getAllBaseURLs() {
-         String[] baseURLs = new String[this.mirrorBaseURLs.length + 1];
-         baseURLs[0] = this.masterBaseURL;
-         for (int i = 0; i < this.mirrorBaseURLs.length; i++) {
-             baseURLs[i + 1] = this.mirrorBaseURLs[i];
-         }
-         return baseURLs;
-     }
+    public String[] getAllBaseURLs() {
+        if (this.mirrorBaseURLs != null) {
+            String[] baseURLs = new String[this.mirrorBaseURLs.length + 1];
+            baseURLs[0] = this.masterBaseURL;
+            for (int i = 0; i < this.mirrorBaseURLs.length; i++) {
+                baseURLs[i + 1] = this.mirrorBaseURLs[i];
+            }
+            return baseURLs;
+        }
+        return new String[]{this.masterBaseURL};
+    }
      
-     /**
-      * Returns an array of full URLs used to download the asset from the
-      * repository that host the content for the given asset uri. The order of
-      * the list is determined by some policy.
-      * 
-      * @param assetURI The uri of the asset to download
-      * @return The full URLs of the asset download
-      */
-     public String[] getAllURLs(AssetURI assetURI) {
-         String[] baseURLs = new String[this.mirrorBaseURLs.length + 1];
-         baseURLs[0] = this.masterBaseURL + "/" + assetURI.getRelativePath();
-         for (int i = 0; i < this.mirrorBaseURLs.length; i++) {
-             baseURLs[i + 1] = this.mirrorBaseURLs[i] + "/" + assetURI.getRelativePath();
-         }
-         return baseURLs; 
-     }
+    /**
+     * Returns an array of full URLs used to download the asset from the
+     * repository that host the content for the given asset uri. The order of
+     * the list is determined by some policy.
+     * 
+     * @param assetURI The uri of the asset to download
+     * @return The full URLs of the asset download
+     */
+    public String[] getAllURLs(AssetURI assetURI) {
+        if (this.mirrorBaseURLs != null) {
+            String[] baseURLs = new String[this.mirrorBaseURLs.length + 1];
+            baseURLs[0] = this.masterBaseURL + "/" + assetURI.getRelativePath();
+            for (int i = 0; i < this.mirrorBaseURLs.length; i++) {
+                baseURLs[i + 1] = this.mirrorBaseURLs[i] + "/" + assetURI.getRelativePath();
+            }
+            return baseURLs;
+        }
+        return new String[]{this.masterBaseURL + "/" + assetURI.getRelativePath()};
+    }
 }

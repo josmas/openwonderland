@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.client.avatar.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -88,7 +88,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          BoundingVolume localBounds, 
                          CellID parentCellID, 
                          CellTransform cellTransform, 
-                         CellSetup setup,
+                         BasicCellSetup setup,
                          String cellName) {
         System.out.println("-----> creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);

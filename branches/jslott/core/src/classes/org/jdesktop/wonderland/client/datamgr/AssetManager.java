@@ -98,7 +98,7 @@ public class AssetManager {
 
         /* Open the cache directory */
         cacheDir = new File(this.getCacheDirectory());
-        logger.info("AssetManager: cacheDir = " + cacheDir);
+        logger.warning("AssetManager: cacheDir = " + cacheDir);
         
         loadingAssets = new HashMap();
         loadedAssets = new HashMap();
@@ -374,25 +374,26 @@ public class AssetManager {
      * true upon success, false upon failure. This method uses getAssetFromServer()
      * to download the asset from each server.
      */
-    private boolean getAssetFromRepository(Asset asset, Repository repository) {
+    private boolean getAssetFromRepository(Asset asset, Repository repository) {        
         /* Fetch an (ordered) array of urls to look for the asset */
         String uri = asset.getAssetURI().toString();
         String[] urls = repository.getAllURLs(asset.getAssetURI());
 
+        System.out.println("Looking at all possible repositories: " + urls);
         /*
          * Try each url in turn and return true when one succeeds. Save the
          * asset to the local cache.
          */
         for (String url : urls) {
             /* Log a message for this attempt to download from the next source */
-            logger.fine("Attempting to load from location, url=" + url);
+            System.out.println("Attempting to load from location, url=" + url);
 
             /*
              * Try to synchronously download the asset. Upon failure log
              * a message and continue to the next one.
              */
             if (getAssetFromServer(asset, url, null) == false) {
-                logger.fine("Loading of asset uri=" + uri + " failed for, url=" + url);
+                System.out.println("Loading of asset uri=" + uri + " failed for, url=" + url);
                 continue;
             }
 
@@ -420,6 +421,7 @@ public class AssetManager {
      */
     private boolean getAssetFromServer(Asset asset, String url, ProgressListener progressListener) {        
         try {
+            System.out.println("Downloading: " + url.toString());
             /* Open up all of the connections to the remote server */
             URLConnection connection = new URL(url).openConnection();
             TrackingInputStream track = new TrackingInputStream(connection.getInputStream());
@@ -432,10 +434,12 @@ public class AssetManager {
             
             /* Open the cache file, create directories if necessary */
             String cacheFile = this.getAssetCacheFileName(asset.getAssetURI());
-            logger.fine("AssetManager: Writing asset to local cache file: " + cacheFile);
+            System.out.println("AssetManager: Writing asset to local cache file: " + cacheFile);
             File file = new File(cacheFile);
+            System.out.println("Can write file? " + file.canWrite());
             if (!file.canWrite())
                 makeDirectory(file);
+            System.out.println("Does dir exsit? " + file.getAbsolutePath());
 
             /* Create the output stream, through a digest to compute the checksum */
             byte[] buf = new byte[AssetManager.NETWORK_CHUNK_SIZE];
@@ -494,7 +498,7 @@ public class AssetManager {
      * @return True upon success, false upon failure
      */
     private boolean getAssetFromCache(Asset asset) {
-        logger.info("Fetching asset from cache, file=" + asset.getLocalCacheFile().getAbsolutePath());
+        System.out.println("Fetching asset from cache, file=" + asset.getLocalCacheFile().getAbsolutePath());
         try {
             /* Attempt to load the asset, return false if we cannot */
             if (asset.loadLocal() == false) {
@@ -589,87 +593,91 @@ public class AssetManager {
          * @throws java.lang.Exception
          */
         public Object call() throws Exception {
+            try {
+                String uri = this.asset.getAssetURI().toString();
 
-            String uri = this.asset.getAssetURI().toString();
+                /* Log a message when this asynchronous task kicks off */
+                System.out.println("Start asset fetch, uri=" + uri + ", server=" + this.server);
 
-            /* Log a message when this asynchronous task kicks off */
-            logger.fine("Start asset fetch, uri=" + uri + ", server=" + server);
+                /*
+                 * First see if we wish to load the asset from the local cache. If
+                 * so, then synchronously load the asset. If it fails to load, then
+                 * drop through and try to load the asset from the server
+                 */
+                if (this.server == false) {
+                    /* If we can load the asset, then all is well and return */
+                    if (getAssetFromCache(this.asset) == true) {
+                        System.out.println("Loaded asset from local cache, uri=" + uri);
+                        this.asset.setFailureInfo(null);
+                        this.asset.notifyAssetReadyListeners();
+                        return this.asset;
+                    }
 
-            /*
-             * First see if we wish to load the asset from the local cache. If
-             * so, then synchronously load the asset. If it fails to load, then
-             * drop through and try to load the asset from the server
-             */
-            if (this.server == false) {
-                /* If we can load the asset, then all is well and return */
+                    /* Otherwise, log a warning and try to load from the server */
+                    System.out.println("Unable to load asset from local cache, uri=" + uri);
+                    if (getAssetFromRepository(this.asset, this.repository) == false) {
+                        System.out.println("Loading asset from repository failed, uri=" + uri);
+                        this.asset.setFailureInfo(new String("Failed to load asset from repository, uri=" + uri));
+                        this.asset.notifyAssetReadyListeners();
+                        return this.asset;
+                    }
+
+                    /*
+                     * Update the cache information locally. If server == false,
+                     * then we presume the asset exists in the database
+                     */
+                    if (assetDB.updateAsset(asset) == false) {
+                        // XXX This is a bit more than a warning situation
+                        logger.warning("Failed to update asset to cache db, uri=" + uri);
+                    }
+                }
+                else {
+                    /* Load the asset from the remote repository */
+                    if (getAssetFromRepository(this.asset, this.repository) == false) {
+                        System.out.println("Loading asset from repository failed, uri=" + uri);
+                        this.asset.setFailureInfo(new String("Failed to load asset from repository, uri=" + uri));
+                        this.asset.notifyAssetReadyListeners();
+                        return this.asset;
+                    }
+
+                    /*
+                     * If we've reached here, we have successfully loaded the asset
+                     * from the repository, so add it to the cache. If server == true,
+                     * we assume the asset does not exist in the database.
+                     */
+                    if (assetDB.addAsset(asset) == false) {
+                        // XXX This is a bit more than a warning situation
+                        logger.warning("Failed to add new asset to cache db, uri=" + uri);
+                    }
+                }
+
+                /*
+                 * At this point the asset exists locally in the cache, whether
+                 * it was download just now or already exists. Attempt to open
+                 * the cached version.
+                 */
                 if (getAssetFromCache(this.asset) == true) {
                     logger.fine("Loaded asset from local cache, uri=" + uri);
-                    this.asset.setFailureInfo(null);
-                    this.asset.notifyAssetReadyListeners();
-                    return this.asset;
-                }
-
-                /* Otherwise, log a warning and try to load from the server */
-                logger.fine("Unable to load asset from local cache, uri=" + uri);
-                if (getAssetFromRepository(this.asset, this.repository) == false) {
-                    logger.fine("Loading asset from repository failed, uri=" + uri);
-                    this.asset.setFailureInfo(new String("Failed to load asset from repository, uri=" + uri));
-                    this.asset.notifyAssetReadyListeners();
+                    asset.setFailureInfo(null);
+                    asset.notifyAssetReadyListeners();
                     return this.asset;
                 }
 
                 /*
-                 * Update the cache information locally. If server == false,
-                 * then we presume the asset exists in the database
-                 */
-                if (assetDB.updateAsset(asset) == false) {
-                    // XXX This is a bit more than a warning situation
-                    logger.warning("Failed to update asset to cache db, uri=" + uri);
-                }
-            }
-            else {
-                /* Load the asset from the remote repository */
-                if (getAssetFromRepository(this.asset, this.repository) == false) {
-                    logger.fine("Loading asset from repository failed, uri=" + uri);
-                    this.asset.setFailureInfo(new String("Failed to load asset from repository, uri=" + uri));
-                    this.asset.notifyAssetReadyListeners();
-                    return this.asset;
-                }
-
-                /*
-                 * If we've reached here, we have successfully loaded the asset
-                 * from the repository, so add it to the cache. If server == true,
-                 * we assume the asset does not exist in the database.
-                 */
-                if (assetDB.addAsset(asset) == false) {
-                    // XXX This is a bit more than a warning situation
-                    logger.warning("Failed to add new asset to cache db, uri=" + uri);
-                }
-            }
-
-            /*
-             * At this point the asset exists locally in the cache, whether
-             * it was download just now or already exists. Attempt to open
-             * the cached version.
-             */
-            if (getAssetFromCache(this.asset) == true) {
-                logger.fine("Loaded asset from local cache, uri=" + uri);
-                asset.setFailureInfo(null);
+                 * If we have reached here, we were unable to open the local cache
+                 * copy for some reason...
+                 * */
+                logger.warning("Unable to load asset from local cache, uri=" + uri);
+                asset.setFailureInfo("Unable to load asset from local cache, uri=" + uri);
                 asset.notifyAssetReadyListeners();
-                return this.asset;
+                return null;
+            } catch (java.lang.Exception excp) {
+                excp.printStackTrace();
+                throw excp;
             }
-
-            /*
-             * If we have reached here, we were unable to open the local cache
-             * copy for some reason...
-             * */
-            logger.warning("Unable to load asset from local cache, uri=" + uri);
-            asset.setFailureInfo("Unable to load asset from local cache, uri=" + uri);
-            asset.notifyAssetReadyListeners();
-            return null;
         }
     }
-
+    
     /**
      * Used to recieve notification when an asset load has been completed or
      * has failed. Register with Asset.addAssetReadyListener().

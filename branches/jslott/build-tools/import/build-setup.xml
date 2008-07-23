@@ -92,6 +92,13 @@
     </pathconvert>
 -->
 
+    <!-- Class path for this compile: include jersey -->
+    <pathconvert property="jersey.classpath">
+        <fileset dir="${common.ext.dir}">
+          <include name="common/jersey/**/*.jar"/>
+        </fileset>
+    </pathconvert>
+
     <pathconvert property="jme.classpath">
 	<path location="${jme.dir}/jme/jme.jar"/>
 	<path location="${jme.dir}/jme/jme-gamestates.jar"/>
@@ -205,7 +212,7 @@
         <path location="${common.javaext.dir}/smackx.jar"/>
         <path path="${wonderlandscripting.classpath}"/>
     </pathconvert>
-   
+ 
     <!-- wonderland modules -->
     <condition property="use.modules">
         <and>
@@ -235,6 +242,8 @@
         <path path="${wonderland-incubator.classpath}"/>
 	<path path="${darkstar.client.classpath}"/>
 	<path path="${jme.classpath}"/>
+        <path location="${wonderland.tools.dir}/build/current/debug/lib/wonderland-tools.jar"/>
+        <path path="${jersey.classpath}"/>
     </pathconvert>
     
     <pathconvert property="wonderland-client-compile.classpath">
@@ -246,6 +255,7 @@
 	<path location="${build.lib.dir}/bean-builder.jar"/>
 	<!--<path path="${extras.classpath}"/>-->
         <path location="${javaext.dir}/bridgemonitor/BridgeMonitor.jar"/>
+        <path location="${wonderland.tools.dir}/build/current/debug/lib/wonderland-tools.jar"/>
     </pathconvert>
 
     <pathconvert property="wonderland-client.classpath">

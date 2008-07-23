@@ -19,18 +19,14 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.app.mtgame.entity.Entity;
 import com.jme.bounding.BoundingVolume;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -434,7 +430,7 @@ public class Cell {
      * 
      * @param setupData
      */
-    public void setupCell(CellSetup setupData) {
+    public void setupCell(BasicCellSetup setupData) {
         
     }
     
@@ -447,7 +443,7 @@ public class Cell {
      * 
      * @param updateData
      */
-    public void reconfigureCell(CellSetup updateData) {
+    public void reconfigureCell(BasicCellSetup updateData) {
         
     }
     

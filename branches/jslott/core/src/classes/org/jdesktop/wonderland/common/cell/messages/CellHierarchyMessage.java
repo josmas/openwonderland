@@ -18,9 +18,9 @@
 package org.jdesktop.wonderland.common.cell.messages;
 
 import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.messages.Message;
 
@@ -39,7 +39,7 @@ public class CellHierarchyMessage extends Message {
     private BoundingVolume computedBounds;
     private String cellClassName;
     private CellTransform cellTransform;
-    private CellSetup setupData;
+    private String setupData;
     private String avatarID;
     private String cellName;
     
@@ -64,7 +64,7 @@ public class CellHierarchyMessage extends Message {
                                 CellID cellID, 
                                 CellID parentID,
                                 CellTransform cellTransform,
-                                CellSetup setupData,
+                                String setupData,
                                 String cellName) {
         this.msgType = msgType;
         this.cellClassName = cellClassName;
@@ -115,7 +115,7 @@ public class CellHierarchyMessage extends Message {
         return cellTransform;
     }
 
-    public CellSetup getSetupData() {
+    public String getSetupData() {
         return setupData;
     }
 

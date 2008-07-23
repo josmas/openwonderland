@@ -26,8 +26,6 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,6 +37,7 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 //import org.jdesktop.wonderland.wfs.WFS;
+import org.jdesktop.wonderland.server.wfs.WFSLoader;
 //import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
 
 /**
@@ -157,7 +156,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * For testing.....
      */
     public void loadWorld() {
-        //buildWFSWorld();
+        buildWFSWorld();
         
         //test();
     }
@@ -238,6 +237,11 @@ public class CellManagerMO implements ManagedObject, Serializable {
         }
     }
     
+    private void buildWFSWorld() {
+        new WFSLoader().load();
+    }
+    
+        
 //    /**
 //     * Builds a world defined by a wonderland file system (e.g. on disk). The
 //     * world's root directory must be setTranslation in the system property 

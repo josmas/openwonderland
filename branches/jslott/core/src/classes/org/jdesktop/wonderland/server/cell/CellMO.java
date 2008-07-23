@@ -32,16 +32,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
-import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
+import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
 /**
  * Superclass for all server side representation of a cell
@@ -546,7 +545,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Get the setupdata for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    protected CellSetup getClientSetupData(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected BasicCellSetup getClientSetupData(ClientSession clientSession, ClientCapabilities capabilities) {
         return null;
     }
     
@@ -563,9 +562,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Set up the cell from the given properties
      * @param setup the properties to setup with
      */
-    public void setupCell(BasicCellMOSetup<?> setup) {
-        setLocalTransform(BasicCellMOHelper.getCellTransform(setup));
-        setLocalBounds(BasicCellMOHelper.getCellBounds(setup));
+    public void setupCell(BasicCellSetup setup) {
+        setLocalTransform(BasicCellSetupHelper.getCellTransform(setup));
+        setLocalBounds(BasicCellSetupHelper.getCellBounds(setup));
     }
     
     /**
@@ -573,7 +572,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * calls <code>setupCell()</code>.
      * @param setup the properties to setup with
      */
-    public void reconfigureCell(BasicCellMOSetup<?> setup) {
+    public void reconfigureCell(BasicCellSetup setup) {
         // just call setupCell, since there is nothing to do differently
         // if this is a change
         setupCell(setup);

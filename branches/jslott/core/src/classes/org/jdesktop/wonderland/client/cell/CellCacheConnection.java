@@ -18,27 +18,26 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.client.avatar.ClientView;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
-import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageList;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * Handler for Cell cache information
@@ -106,14 +105,26 @@ public class CellCacheConnection extends BaseConnection {
         switch(msg.getActionType()) {
             case LOAD_CELL :
                 for(CellCacheMessageListener l : listeners) {
+                    /* Convert the string back into the object */
+                    BasicCellSetup setup = null;
+                    String setupData = msg.getSetupData();
+                    if (setupData != null) {
+                        try {
+                            System.out.println(setupData);
+                            StringReader sr = new StringReader(msg.getSetupData());
+                            setup = BasicCellSetup.decode(sr);
+                        } catch (JAXBException ex) {
+                            Logger.getLogger(CellCacheConnection.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    
                     l.loadCell(msg.getCellID(),
-                                msg.getCellClassName(),
-                                msg.getLocalBounds(),
-                                msg.getParentID(),
-                                msg.getCellTransform(),
-                                msg.getSetupData(),
-                                msg.getCellName()
-                                );
+                            msg.getCellClassName(),
+                            msg.getLocalBounds(),
+                            msg.getParentID(),
+                            msg.getCellTransform(),
+                            setup,
+                            msg.getCellName());
                 }
                 if (viewCellID!=null && viewCellID.equals(msg.getCellID())) {
                     clientView.viewCellConfigured(viewCellID);
@@ -181,7 +192,7 @@ public class CellCacheConnection extends BaseConnection {
                                BoundingVolume localBounds,
                                CellID parentCellID,
                                CellTransform cellTransform,
-                               CellSetup setup,
+                               BasicCellSetup setup,
                                String cellName);
         /**
          * Unload the cell. This removes the cell from memory but will leave

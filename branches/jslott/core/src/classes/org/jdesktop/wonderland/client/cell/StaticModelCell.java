@@ -29,14 +29,21 @@ import com.jme.light.PointLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.shape.Box;
-import com.jme.scene.shape.Teapot;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import java.net.URISyntaxException;
+import java.net.URL;
+import org.jdesktop.wonderland.cells.BasicCellSetup;
+import org.jdesktop.wonderland.cells.StaticModelCellSetup;
 import org.jdesktop.wonderland.client.cell.*;
+import org.jdesktop.wonderland.client.datamgr.Asset;
+import org.jdesktop.wonderland.client.datamgr.AssetManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.Loaders;
+import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -51,8 +58,24 @@ public class StaticModelCell extends Cell {
         super(cellID);
     }
     
+    private String model = null;
+    
+    /**
+     * Called once after the cell is instantiated, for cells that require
+     * setup data. This method is called once the cell has been placed in
+     * the cell tree hierarchy.
+     * 
+     * @param setupData
+     */
+    public void setupCell(BasicCellSetup setupData) {
+        StaticModelCellSetup setup = (StaticModelCellSetup)setupData;
+        System.out.println("STATIC MODEL CELL SETUP: " + setup.getModel());
+        this.model = setup.getModel();
+    }
+    
     @Override
     protected Entity createEntity() {
+        System.out.println("Creating StaticModel Entity!");
         Entity ret = new Entity("StaticModelCell "+getCellID(), null);
         ret.setBounds((BoundingBox) getLocalBounds());
         
@@ -64,6 +87,34 @@ public class StaticModelCell extends Cell {
         
         addBoundsGeometry(ret, wm);
         
+        /*
+         * Attempt to load the asset via the asset manager.
+         */
+        System.out.println("Starting to load asset: " + this.model);
+        if (this.model != null) {
+            try {
+                AssetManager assetManager = AssetManager.getAssetManager();
+                System.out.println("using uri: " + this.model);
+                AssetURI assetURI = new AssetURI(this.model);
+                Asset asset = assetManager.getAsset(assetURI, AssetType.MODEL);
+                assetManager.waitForAsset(asset);
+               
+                /*
+                URL url = asset.getLocalCacheFile().toURI().toURL();
+                
+                Node model = Loaders.loadJMEBinary(url, new Vector3f());
+                model.setModelBound(new BoundingBox());
+                model.updateModelBound();
+                
+                SceneComponent sc = new SceneComponent();
+                sc.setSceneRoot(model);
+                ret.addComponent(SceneComponent.class, sc);
+                wm.addEntity(ret);
+                 */
+            } catch (Exception excp) {
+                System.out.println(excp.toString());
+            }
+        }
         return ret;
     }
     

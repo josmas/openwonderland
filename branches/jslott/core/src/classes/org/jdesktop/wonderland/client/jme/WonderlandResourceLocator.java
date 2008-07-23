@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
 
 /**
+ * The WonderlandResourceLocator 
  * Resource Locator for wonderland.
  * This uses the AssetManager to locate a resource and returns an
  * asset URL, one of wltexture: ....
@@ -49,6 +50,8 @@ public class WonderlandResourceLocator implements ResourceLocator {
     }
 
     public URL locateResource(String filename) {
+        System.out.println("LOCATING TEXTURE: " + filename);
+        
         URL ret;
 
         int trim = 0;
