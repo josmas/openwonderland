@@ -17,11 +17,13 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.ProcessorComponent;
 import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import org.jdesktop.mtgame.NewFrameCondition;
+import org.jdesktop.mtgame.ProcessorArmingCollection;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.WorldManager;
 
 /**
  *
@@ -42,12 +44,12 @@ public class TransformProcessorComponent extends ProcessorComponent {
         }
         
         @Override
-        public void compute(long conditions) {
+        public void compute(ProcessorArmingCollection conditions) {
             // Nothing to do
         }
 
         @Override
-        public void commit(long conditions) {
+        public void commit(ProcessorArmingCollection conditions) {
             synchronized(this) {
                 if (updatePending) {
                     node.setLocalRotation(rotation);
@@ -61,7 +63,7 @@ public class TransformProcessorComponent extends ProcessorComponent {
 
         @Override
         public void initialize() {
-            setArmingConditions(ProcessorComponent.NEW_FRAME_COND);
+            setArmingCondition(new NewFrameCondition(this));
         }
 
         public void setTransform(Matrix3f rotation, Vector3f translation) {
@@ -71,4 +73,6 @@ public class TransformProcessorComponent extends ProcessorComponent {
                 updatePending = true;
             }
         }
+
+    
 }

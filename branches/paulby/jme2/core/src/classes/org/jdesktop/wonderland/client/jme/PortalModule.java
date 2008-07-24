@@ -46,60 +46,60 @@ public class PortalModule extends RenderModule {
     private float frameSize = 0.2f;
     
     public void init(RenderInfo info) {
-        tRenderer = info.getDisplay().createTextureRenderer(
-                256, 
-                256, 
-                TextureRenderer.RENDER_TEXTURE_2D);
-        portalCamera = new CameraNode("Portal Camera Node", tRenderer.getCamera());
-        portalCamera.setLocalTranslation(new Vector3f(5, 2, 5));
-        portalCamera.updateGeometricState(0, true);
-
-        portalNode = new Node("Portal Node");
-        Quad quad = new Quad("Portal");
-        quad.initialize(width, height);
-        portalNode.attachChild(quad);
-        
-        Quad top = new Quad("Portal Frame Top");
-        top.initialize(width+frameSize*2, frameSize);
-        top.setLocalTranslation(0, height/2+frameSize/2, 0);
-        portalNode.attachChild(top);
-
-        Quad bottom = new Quad("Portal Frame Bottom");
-        bottom.initialize(width+frameSize*2, frameSize);
-        bottom.setLocalTranslation(0, -(height/2+frameSize/2), 0);
-        portalNode.attachChild(bottom);
-
-        Quad right = new Quad("Portal Frame Right");
-        right.initialize(frameSize, height+frameSize*2);
-        right.setLocalTranslation(width/2+frameSize/2, 0, 0);
-        portalNode.attachChild(right);
-
-        Quad left = new Quad("Portal Frame Left");
-        left.initialize(frameSize, height+frameSize*2);
-        left.setLocalTranslation(-(width/2+frameSize/2), 0, 0);
-        portalNode.attachChild(left);
-                
-        portalNode.setLocalTranslation(portalLocation);
-    
-        tRenderer.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
-        rendTexture = new Texture();
-        rendTexture.setRTTSource(Texture.RTT_SOURCE_RGBA);
-        tRenderer.setupTexture(rendTexture);
-        TextureState screen = info.getDisplay().getRenderer().createTextureState();
-        screen.setTexture(rendTexture);
-        screen.setEnabled(true);
-        quad.setRenderState(screen);
-        
-        // Setup our params for the depth buffer
-        ZBufferState buf = info.getDisplay().getRenderer().createZBufferState();
-        buf.setEnabled(true);
-        buf.setFunction(ZBufferState.CF_LEQUAL);
-
-        portalNode.setRenderState(buf);
-    
-        portalNode.updateGeometricState(0.0f, true);
-        portalNode.updateRenderState();
-        portalNode.setLightCombineMode(LightState.OFF);
+//        tRenderer = info.getDisplay().createTextureRenderer(
+//                256, 
+//                256, 
+//                TextureRenderer.RENDER_TEXTURE_2D);
+//        portalCamera = new CameraNode("Portal Camera Node", tRenderer.getCamera());
+//        portalCamera.setLocalTranslation(new Vector3f(5, 2, 5));
+//        portalCamera.updateGeometricState(0, true);
+//
+//        portalNode = new Node("Portal Node");
+//        Quad quad = new Quad("Portal");
+//        quad.initialize(width, height);
+//        portalNode.attachChild(quad);
+//        
+//        Quad top = new Quad("Portal Frame Top");
+//        top.initialize(width+frameSize*2, frameSize);
+//        top.setLocalTranslation(0, height/2+frameSize/2, 0);
+//        portalNode.attachChild(top);
+//
+//        Quad bottom = new Quad("Portal Frame Bottom");
+//        bottom.initialize(width+frameSize*2, frameSize);
+//        bottom.setLocalTranslation(0, -(height/2+frameSize/2), 0);
+//        portalNode.attachChild(bottom);
+//
+//        Quad right = new Quad("Portal Frame Right");
+//        right.initialize(frameSize, height+frameSize*2);
+//        right.setLocalTranslation(width/2+frameSize/2, 0, 0);
+//        portalNode.attachChild(right);
+//
+//        Quad left = new Quad("Portal Frame Left");
+//        left.initialize(frameSize, height+frameSize*2);
+//        left.setLocalTranslation(-(width/2+frameSize/2), 0, 0);
+//        portalNode.attachChild(left);
+//                
+//        portalNode.setLocalTranslation(portalLocation);
+//    
+//        tRenderer.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
+//        rendTexture = new Texture();
+//        rendTexture.setRTTSource(Texture.RTT_SOURCE_RGBA);
+//        tRenderer.setupTexture(rendTexture);
+//        TextureState screen = info.getDisplay().getRenderer().createTextureState();
+//        screen.setTexture(rendTexture);
+//        screen.setEnabled(true);
+//        quad.setRenderState(screen);
+//        
+//        // Setup our params for the depth buffer
+//        ZBufferState buf = info.getDisplay().getRenderer().createZBufferState();
+//        buf.setEnabled(true);
+//        buf.setFunction(ZBufferState.CF_LEQUAL);
+//
+//        portalNode.setRenderState(buf);
+//    
+//        portalNode.updateGeometricState(0.0f, true);
+//        portalNode.updateRenderState();
+//        portalNode.setLightCombineMode(LightState.OFF);
     }
 
     public void update(RenderInfo info, float interpolation) {

@@ -17,9 +17,9 @@
  */
 package org.jdesktop.wonderland.client.jme.utils.traverser;
 
-import com.jme.scene.SceneElement;
+import com.jme.scene.Spatial;
 
 public interface ProcessNodeInterface {
 
-  public boolean processNode( SceneElement node );
+  public boolean processNode( Spatial node );
 }

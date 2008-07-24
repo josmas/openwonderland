@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.app.mtgame.WorldManager;
 import com.jme.scene.Node;
 import com.jme.scene.CameraNode;
 import com.jme.scene.state.ZBufferState;
@@ -30,7 +29,16 @@ import com.jme.scene.shape.Teapot;
 import com.jme.scene.shape.Box;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.*;
-import com.jme.app.mtgame.entity.*;
+import org.jdesktop.mtgame.AWTEventListenerComponent;
+import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.FPSCameraProcessor;
+import org.jdesktop.mtgame.ProcessorCollectionComponent;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.RotationProcessor;
+import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.Space;
+import org.jdesktop.mtgame.WorldManager;
 
 /**
  *
@@ -77,7 +85,7 @@ public class JmeClientMain {
         Node cameraSG = createCameraGraph(wm);
         
         // Add the camera
-        Entity camera = new Entity("DefaultCamera", null);
+        Entity camera = new Entity("DefaultCamera");
         CameraComponent cc = new CameraComponent(width, height, 45.0f, aspect, 1.0f, 1000.0f, true);
         cc.setCameraSceneGraph(cameraSG);
         cc.setCameraNode(cameraNode);
@@ -99,7 +107,7 @@ public class JmeClientMain {
 
         ZBufferState buf = (ZBufferState) wm.createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
-        buf.setFunction(ZBufferState.CF_LEQUAL);
+        buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
         PointLight light = new PointLight();
         light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
@@ -144,7 +152,7 @@ public class JmeClientMain {
         node.setRenderState(ls);
         node.setLocalTranslation(xoff, yoff, zoff);
 
-        Entity te = new Entity(name + "Teapot", null);
+        Entity te = new Entity(name + "Teapot");
         SceneComponent sc = new SceneComponent();
         sc.setSceneRoot(node);
         te.addComponent(SceneComponent.class, sc);
@@ -162,7 +170,7 @@ public class JmeClientMain {
 
         ZBufferState buf = (ZBufferState) wm.createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
-        buf.setFunction(ZBufferState.CF_LEQUAL);
+        buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
         PointLight light = new PointLight();
         light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
@@ -232,7 +240,7 @@ public class JmeClientMain {
         sc.setSceneRoot(node);
         
         // Finally, create the space and add it.
-        Space s = new Space(name + "Space", null, sc, bbox);
+        Space s = new Space(name + "Space", sc, bbox);
         s.addComponent(ProcessorCollectionComponent.class, pcc);
         wm.addSpace(s);        
     }

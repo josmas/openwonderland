@@ -65,6 +65,7 @@
                 <exclude name="org/jdesktop/wonderland/client/unusedevent/**"/>
                 <exclude name="org/jdesktop/wonderland/client/scripting/**"/>
                 <include name="org/jdesktop/wonderland/client/**"/>
+                <include name="org/jdesktop/mtgame/**"/>
             </compile-classes>
             
             <compile-classpath>
