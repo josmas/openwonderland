@@ -17,11 +17,6 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.ProcessorComponent;
-import com.jme.app.mtgame.entity.RotationProcessor;
-import com.jme.app.mtgame.entity.SceneComponent;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
@@ -35,6 +30,11 @@ import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.RotationProcessor;
+import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -53,14 +53,14 @@ public class StaticModelCell extends Cell {
     
     @Override
     protected Entity createEntity() {
-        Entity ret = new Entity("StaticModelCell "+getCellID(), null);
-        ret.setBounds((BoundingBox) getLocalBounds());
+        Entity ret = new Entity("StaticModelCell "+getCellID());
+//        ret.setBounds((BoundingBox) getLocalBounds());
         
         WorldManager wm = JmeClientMain.getWorldManager();
-        CellTransform t = getTransform();
-        ret.setTransform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
-        Vector3f v3f = new Vector3f();
-        ret.getPosition(v3f);
+//        CellTransform t = getTransform();
+//        ret.setTransform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
+//        Vector3f v3f = new Vector3f();
+//        ret.getPosition(v3f);
         
         addBoundsGeometry(ret, wm);
         
@@ -72,7 +72,7 @@ public class StaticModelCell extends Cell {
 
         ZBufferState buf = (ZBufferState) wm.createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
-        buf.setFunction(ZBufferState.CF_LEQUAL);
+        buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
         PointLight light = new PointLight();
         light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
@@ -109,7 +109,7 @@ public class StaticModelCell extends Cell {
         node.setRenderState(ls);
         node.setLocalTranslation(xoff, yoff, zoff);
 
-        Entity te = new Entity(name + "Teapot", null);
+        Entity te = new Entity(name + "Teapot");
         SceneComponent sc = new SceneComponent();
         sc.setSceneRoot(node);
         te.addComponent(SceneComponent.class, sc);
@@ -153,7 +153,7 @@ public class StaticModelCell extends Cell {
 //        node.setRenderState(ls);
         node.setLocalTranslation(xoff, yoff, zoff);
 
-        Entity te = new Entity(name + "Entity", null);
+        Entity te = new Entity(name + "Entity");
         SceneComponent sc = new SceneComponent();
         sc.setSceneRoot(node);
         te.addComponent(SceneComponent.class, sc);

@@ -17,9 +17,10 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.Entity;
+import com.jme.entity.Entity;
+import com.jme.scene.Node;
 import java.util.HashMap;
+import org.jdesktop.mtgame.WorldManager;
 
 
 /**
@@ -33,14 +34,14 @@ public class WonderlandWorldManager extends WorldManager {
     private ClientManager clientManager;
     
     public WonderlandWorldManager(String name, HashMap attributes, ClientManager clientManager) {
-        super(name, attributes);
+        super(name);
         this.clientManager = clientManager;
     }
     
-    @Override
-    public void entityMoved(Entity entity) {
-        super.entityMoved(entity);
-        clientManager.entityMoved(entity);
+    // TODO replace with listener
+    public void nodeMoved(Node entity) {
+        super.nodeMoved(entity);
+        clientManager.nodeMoved(entity);
     }
     
 
