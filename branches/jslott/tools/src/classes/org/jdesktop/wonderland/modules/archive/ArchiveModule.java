@@ -26,6 +26,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.jdesktop.wonderland.checksum.RepositoryChecksums;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.modules.ModuleInfo;
@@ -71,19 +72,15 @@ public class ArchiveModule extends Module {
             // print error message XXX
         }
         ModuleRequires requires = ArchiveModuleUtil.parseModuleRequires(this.zipFile);
-        if (requires == null) {
-            System.out.println("requires is null");
-        }
-        
         ModuleRepository repository = ArchiveModuleUtil.parseModuleRepository(this.zipFile);
-                
-        /* Parse the module artwork */
         HashMap<String, ModuleArtResource> artwork = ArchiveModuleUtil.parseModuleArt(this.zipFile);
+        RepositoryChecksums checksums = ArchiveModuleUtil.parseModuleChecksums(this.zipFile);
 
         /* Create a new module based upon what has been parsed */
         this.setModuleInfo(info);
         this.setModuleRequires(requires);
         this.setModuleRepository(repository);
+        this.setModuleChecksums(checksums);
         this.setModuleArtwork(artwork);
     }
     

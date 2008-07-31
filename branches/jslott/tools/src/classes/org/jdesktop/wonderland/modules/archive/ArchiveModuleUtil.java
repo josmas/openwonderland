@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.jdesktop.wonderland.checksum.RepositoryChecksums;
 import org.jdesktop.wonderland.wfs.WFS;
 
 /**
@@ -194,6 +195,46 @@ public class ArchiveModuleUtil {
             }
             return hashMap;
         } catch (java.lang.IllegalStateException excp) {
+            // print stack trace
+            return null;
+        }
+    }
+
+    /**
+     * Parses the module's checksum file for its resources
+     *
+     * @param zipFile The archive file
+     * @return A collection of resource checksums
+     */
+    public static RepositoryChecksums parseModuleChecksums(ZipFile zipFile) {
+        try {
+            /* Fetch the entry, return null if it does not exist */
+            ZipEntry entry = zipFile.getEntry(Module.MODULE_CHECKSUMS);
+            if (entry == null) {
+                return null;
+            }
+            
+            /* Fetch the input stream, parse and return */
+            InputStream is = zipFile.getInputStream(entry);
+            return RepositoryChecksums.decode(new InputStreamReader(is));
+        } catch (java.lang.IllegalStateException excp) {
+            System.out.println(excp.toString());
+            // print stack trace
+            return null;
+        } catch (java.io.IOException excp) {
+            System.out.println(excp.toString());
+            // print stack trace
+            return null;
+        } catch (java.lang.ClassCastException excp) {
+            System.out.println(excp.toString());
+            // print stack trace
+            return null;
+        } catch (java.lang.ArrayIndexOutOfBoundsException excp) {
+            System.out.println(excp.toString());
+            // print stack trace
+            return null;
+        } catch (javax.xml.bind.JAXBException excp) {
+            System.out.println(excp.toString());
             // print stack trace
             return null;
         }

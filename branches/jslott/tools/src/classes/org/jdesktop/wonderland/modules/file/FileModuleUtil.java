@@ -25,6 +25,8 @@ import org.jdesktop.wonderland.modules.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.checksum.RepositoryChecksums;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.wfs.InvalidWFSException;
 import org.jdesktop.wonderland.wfs.WFS;
@@ -153,11 +155,31 @@ public class FileModuleUtil {
                     // log an error and continue
                 } catch (InvalidWFSException excp) {
                     // log an error and continue
+                } catch (JAXBException excp) {
+                    // log an error and continue
                 }
-
             }
         }
         return wfsMap;
+    }
+    
+    /**
+     * Parses the module's checksum file for its resources
+     *
+     * @param root The module's root directory
+     * @return A collection of resource checksums
+     */
+    public static RepositoryChecksums parseModuleChecksums(File root) {
+        /* Find the "art/" subdirectory and the checksum file */
+        File file = new File(root, Module.MODULE_CHECKSUMS);
+        try {
+            return RepositoryChecksums.decode(new FileReader(file));
+        } catch (java.io.IOException excp) {
+            // log an error and continue
+        } catch (javax.xml.bind.JAXBException excp) {
+            // log an error and continue
+        }
+        return null;
     }
     
     /**

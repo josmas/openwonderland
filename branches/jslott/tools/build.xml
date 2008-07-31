@@ -50,6 +50,7 @@
                 <include name="org/jdesktop/wonderland/cells/**"/>
                 <include name="org/jdesktop/wonderland/modules/**"/>
                 <include name="org/jdesktop/wonderland/wfs/**"/>
+                <include name="org/jdesktop/wonderland/checksum/**"/>
             </compile-classes>
             <compile-classpath>
                 <pathelement path="${jersey.classpath}"/>
@@ -64,6 +65,7 @@
                 <include name="org/jdesktop/wonderland/cells/**"/>
                 <include name="org/jdesktop/wonderland/modules/**"/>
                 <include name="org/jdesktop/wonderland/wfs/**"/>
+                <include name="org/jdesktop/wonderland/checksum/**"/>
             </fileset>
         </jar>
     </target>

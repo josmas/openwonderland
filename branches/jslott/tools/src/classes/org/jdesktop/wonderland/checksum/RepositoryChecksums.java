@@ -22,10 +22,16 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -51,6 +57,22 @@ public class RepositoryChecksums {
         @XmlElement(name="checksum")
     })
     public Checksum[] checksums = null;
+
+    /* The XML marshaller and unmarshaller for later use */
+    private static Marshaller marshaller = null;
+    private static Unmarshaller unmarshaller = null;
+    
+    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    static {
+        try {
+            JAXBContext jc = JAXBContext.newInstance(Checksum.class);
+            RepositoryChecksums.unmarshaller = jc.createUnmarshaller();
+            RepositoryChecksums.marshaller = jc.createMarshaller();
+            RepositoryChecksums.marshaller.setProperty("jaxb.formatted.output", true);
+        } catch (javax.xml.bind.JAXBException excp) {
+            System.out.println(excp.toString());
+        }
+    }
     
     /** Default constructor */
     public RepositoryChecksums() {
@@ -72,6 +94,28 @@ public class RepositoryChecksums {
      */
     public Checksum[] getChecksums() {
         return this.checksums;
+    }
+    
+    /**
+     * Takes the input reader of the XML file and instantiates an instance of
+     * the RepositoryChecksums class
+     * <p>
+     * @param r The input reader of the version XML file
+     * @throw ClassCastException If the input file does not map to RepositoryChecksums
+     * @throw JAXBException Upon error reading the XML file
+     */
+    public static RepositoryChecksums decode(Reader r) throws JAXBException {
+        return (RepositoryChecksums)RepositoryChecksums.unmarshaller.unmarshal(r);        
+    }
+    
+    /**
+     * Writes the RepositoryChecksums class to an output writer.
+     * <p>
+     * @param w The output writer to write to
+     * @throw JAXBException Upon error writing the XML file
+     */
+    public void encode(Writer w) throws JAXBException {
+        RepositoryChecksums.marshaller.marshal(this, w);
     }
     
     /**

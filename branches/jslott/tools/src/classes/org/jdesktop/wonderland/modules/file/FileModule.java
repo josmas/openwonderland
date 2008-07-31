@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import org.jdesktop.wonderland.checksum.RepositoryChecksums;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.modules.ModuleInfo;
@@ -64,12 +65,14 @@ public class FileModule extends Module {
         ModuleRepository repository = FileModuleUtil.parseModuleRepository(this.root);
         HashMap<String, ModuleArtResource> artwork = FileModuleUtil.parseModuleArt(this.root);
         HashMap<String, WFS> wfs = FileModuleUtil.parseModuleWFS(this.root);
+        RepositoryChecksums checksums = FileModuleUtil.parseModuleChecksums(this.root);
         
         /* Create a new module based upon what has been parsed */
         this.setModuleInfo(info);
         this.setModuleRequires(requires);
         this.setModuleRepository(repository);
         this.setModuleArtwork(artwork);
+        this.setModuleChecksums(checksums);
         this.setModuleWFSs(wfs);
     }
     

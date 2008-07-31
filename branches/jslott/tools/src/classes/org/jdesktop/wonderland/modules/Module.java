@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import org.jdesktop.wonderland.checksum.RepositoryChecksums;
 import org.jdesktop.wonderland.wfs.WFS;
 
 /**
@@ -51,6 +52,7 @@ public abstract class Module {
     public static final String MODULE_REQUIRES   = "requires.xml";
     public static final String MODULE_REPOSITORY = "repository.xml";
     public static final String MODULE_ART        = "art/";
+    public static final String MODULE_CHECKSUMS  = MODULE_ART + "checksums.xml";
     public static final String MODULE_WFS        = "wfs/";
     
     private ModuleInfo       moduleInfo       = null; /* Basic module info   */
@@ -62,6 +64,9 @@ public abstract class Module {
     
     /* A map of unique WFS names to their WFS objects */
     private HashMap<String, WFS> moduleWFS = null;
+    
+    /* A single table of checkums for all of the resources */
+    private RepositoryChecksums checksums = null;
     
     /** Default constructor */
     protected Module() {}
@@ -177,6 +182,24 @@ public abstract class Module {
      */
     public void setModuleWFSs(HashMap<String, WFS> wfs) {
         this.moduleWFS = wfs;
+    }
+    
+    /**
+     * Sets the list of checksums for the resources in the module.
+     * 
+     * @param checksums The collection of checksums for the resources
+     */
+    public void setModuleChecksums(RepositoryChecksums checksums) {
+        this.checksums = checksums;
+    }
+    
+    /**
+     * Returns a collection of checksums for the resources in the module.
+     * 
+     * @returns The collection of resource checksums
+     */
+    public RepositoryChecksums getModuleChecksums() {
+        return this.checksums;
     }
     
     /**
