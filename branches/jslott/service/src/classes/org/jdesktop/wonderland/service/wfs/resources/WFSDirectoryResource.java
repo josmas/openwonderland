@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.service.wfs.resources;
 
 import java.io.StringWriter;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -29,6 +30,7 @@ import org.jdesktop.wonderland.service.wfs.WFSManager;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSCell;
 import org.jdesktop.wonderland.wfs.WFSCellChildren;
+import org.jdesktop.wonderland.wfs.WFSCellChildren.CellChild;
 import org.jdesktop.wonderland.wfs.WFSCellDirectory;
 
 /**
@@ -113,10 +115,10 @@ public class WFSDirectoryResource {
             
             /*
              * Next, get the directory associated with the cell. It also needs
-             * to exist, otherwise, return a bad response.
+             * to exist, otherwise, return a bad response. If it does not exist,
+             * it means the cell does not have children.
              */
             if ((dir = cell.getCellDirectory()) == null) {
-                WFSManager.getLogger().info("WFSManager: Unable to find cell with path: " + path);
                 ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
                 return rb.build();
             }
@@ -128,7 +130,33 @@ public class WFSDirectoryResource {
          * to serialize the result.
          */
         String names[] = dir.getCellNames();
-        WFSCellChildren children = new WFSCellChildren(path, names);
+        if (names == null) {
+            logger.info("WFSManager: Child names are null in " + path);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
+        }
+        
+        /*
+         * Loop through and create the WFSCellChildren object, we need to
+         * include the last modified time so that the client can check whether
+         * the cell has been modified or not.
+         */
+        LinkedList<CellChild> list = new LinkedList<CellChild>();
+        for (String name : names) {
+            /* Fetch the cell, it should not be null, but we check anyway */
+            WFSCell cell = dir.getCellByName(name);
+            if (cell == null) {
+                logger.info("WFSManager: no cell exists with name " + name);
+                continue;
+            }
+            
+            /* Add it to the list */
+            list.add(new CellChild(name, cell.getLastModified()));
+        }
+        
+        /* Convert the list of CellChilds to an array */
+        CellChild[] childs = list.toArray(new CellChild[] {});
+        WFSCellChildren children = new WFSCellChildren(path, childs);
         
         /* Send the serialized cell names to the client */
         try {

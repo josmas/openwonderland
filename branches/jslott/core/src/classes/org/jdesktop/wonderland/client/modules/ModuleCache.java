@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.client.modules;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -114,7 +115,7 @@ public class ModuleCache {
             
             /* Try to parse the xml stream and return a ModuleInfo class */
             System.out.println("FETCH: " + url.toString());
-            ModuleInfo mi = ModuleInfo.decode(is);
+            ModuleInfo mi = ModuleInfo.decode(new InputStreamReader(is));
             return mi;
         } catch (java.net.MalformedURLException excp) {
             System.out.println(excp.toString());
@@ -145,7 +146,7 @@ public class ModuleCache {
             InputStream is = url.openStream();
             
             /* Try to parse the xml stream and return a ModuleInfo class */
-            ModuleRepository mr = ModuleRepository.decode(is);
+            ModuleRepository mr = ModuleRepository.decode(new InputStreamReader(is));
             return mr;
         } catch (java.net.MalformedURLException excp) {
             // log an error

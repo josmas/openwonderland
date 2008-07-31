@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.service.modules;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -569,7 +570,7 @@ public class ModuleManager {
              * just the ModuleInfo set.
              */
             try {
-                ModuleInfo info = ModuleInfo.decode(new FileInputStream(entry));
+                ModuleInfo info = ModuleInfo.decode(new FileReader(entry));
                 RemovedModule rm = new RemovedModule(entry, info);
                 this.removeModules.put(info.getName(), rm);
             } catch (java.io.FileNotFoundException excp) {
@@ -604,7 +605,7 @@ public class ModuleManager {
              * just the ModuleInfo set.
              */
             try {
-                ModuleInfo info = ModuleInfo.decode(new FileInputStream(entry));
+                ModuleInfo info = ModuleInfo.decode(new FileReader(entry));
                 UninstalledModule um = new UninstalledModule(entry, info);
                 this.uninstallModules.put(info.getName(), um);
             } catch (java.io.FileNotFoundException excp) {
