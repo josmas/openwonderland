@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.service.wfs;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSFactory;
 
@@ -124,6 +125,8 @@ public class WFSManager {
                 logger.warning("WFSManager: Error opening WFS root: " + excp.toString());
             } catch (org.jdesktop.wonderland.wfs.InvalidWFSException excp) {
                 logger.warning("WFSManager: Invalid WFS: " + excp.toString());
+            } catch (javax.xml.bind.JAXBException excp) {
+                logger.warning("WFSManager: Parse error: " + excp.toString());
             }
         }   
     }
