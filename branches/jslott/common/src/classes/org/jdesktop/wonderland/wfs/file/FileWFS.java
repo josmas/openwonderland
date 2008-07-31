@@ -30,8 +30,10 @@ import java.util.logging.Level;
 import org.jdesktop.wonderland.wfs.InvalidWFSException;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSAliases;
+import org.jdesktop.wonderland.wfs.WFSCellNotLoadedException;
 import org.jdesktop.wonderland.wfs.WFSRootDirectory;
 import org.jdesktop.wonderland.wfs.WFSVersion;
+import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 
 /**
@@ -44,9 +46,6 @@ public class FileWFS extends WFS {
     /* The location of the file system, and a referring File object */
     private URI  uri  = null;
     private File root = null;
-    
-    /* The directory object associated with the root of the file system */
-    private WFSRootDirectory directory = null;
     
     /* File and directory filters for reading Wonderland file system */
     public static final FileFilter CELL_FILE_FILTER = new CellFileFilter();
@@ -97,7 +96,9 @@ public class FileWFS extends WFS {
                 throw new IOException("Unable to create WFS: " + uri.toString());
             }
         }
-        this.directory = new WFSFileRootDirectory(this.root);
+        
+        DirectoryDelegate delegate = new FileDirectoryDelegate(this.root);
+        this.directory = new WFSRootDirectory(this, delegate);
         
         /* At this point, if we are created a new WFS, then simply return */
         if (create == true) {
@@ -113,7 +114,7 @@ public class FileWFS extends WFS {
             File afile   = new File(this.root, WFSRootDirectory.ALIASES);
             this.directory.setAliases(WFSAliases.decode(new FileInputStream(afile)));
         } catch (FileNotFoundException excp) {
-            WFS.getLogger().log(Level.WARNING, "Invalid/Nonexistent aliases.xml file in WFS: " + uri.toString());
+            WFS.getLogger().log(Level.INFO, "Invalid/Nonexistent aliases.xml file in WFS: " + uri.toString());
         }
         
         /*
@@ -125,17 +126,8 @@ public class FileWFS extends WFS {
             File vfile   = new File(this.root, WFSRootDirectory.VERSION);
             this.directory.setVersion(WFSVersion.decode(new FileInputStream(vfile)));
         } catch (FileNotFoundException excp) {
-            WFS.getLogger().log(Level.WARNING, "Invalid/Nonexistent version.xml file in WFS: " + uri.toString());
+            WFS.getLogger().log(Level.INFO, "Invalid/Nonexistent version.xml file in WFS: " + uri.toString());
         }
-    }
-    
-    /**
-     * Returns the root cell directory class representing of the WFS.
-     * 
-     * @return The directory containing the children in the root of the WFS
-     */
-    public WFSRootDirectory getRootDirectory() {
-        return this.directory;
     }
         
     /**
@@ -145,7 +137,8 @@ public class FileWFS extends WFS {
      * <p>
      * @throw IOException Upon a general I/O error.
      */
-    public void write() throws IOException {
+    @Override
+    public void write() throws IOException, WFSCellNotLoadedException {
         /* Delegate to the root directory for writing */
         this.directory.write();
     }

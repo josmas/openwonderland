@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.cells;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,8 +34,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -54,7 +53,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public abstract class BasicCellSetup {
+public abstract class BasicCellSetup implements Serializable {
 
     /* The (x, y, z) origin of the cell */
     @XmlElement(name="origin")
@@ -78,10 +77,10 @@ public abstract class BasicCellSetup {
     })
     public MetaDataHashMap metadata = new MetaDataHashMap();
     
-    @XmlElementRefs({
-        @XmlElementRef()
-    })
-    public CellSetupComponent components[] = new CellSetupComponent[0];
+//    @XmlElementRefs({
+//        @XmlElementRef()
+//    })
+//    public CellSetupComponent components[] = new CellSetupComponent[0];
     
     /*
      * The internal representation of the metadata as a hased map. The HashMap
@@ -98,7 +97,10 @@ public abstract class BasicCellSetup {
     /* Create the XML marshaller and unmarshaller once for all setup classes */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.cells"); // XX
+            JAXBContext jc = JAXBContext.newInstance(
+                        org.jdesktop.wonderland.cells.StaticModelCellSetup.class
+            );
+
             BasicCellSetup.unmarshaller = jc.createUnmarshaller();
             BasicCellSetup.marshaller = jc.createMarshaller();
             BasicCellSetup.marshaller.setProperty("jaxb.formatted.output", true);
@@ -110,7 +112,7 @@ public abstract class BasicCellSetup {
     /**
      * The Origin static inner class simply stores (x, y, z) cell origin.
      */
-    public static class Origin {
+    public static class Origin implements Serializable {
         /* The (x, y, z) origin components */
         @XmlElement(name="x") public double x = 0;        
         @XmlElement(name="y") public double y = 0;        
@@ -124,7 +126,7 @@ public abstract class BasicCellSetup {
     /**
      * The Bounds static inner class stores the bounds type and bounds radius.
      */
-    public static class Bounds {
+    public static class Bounds implements Serializable {
         public enum BoundsType { SPHERE, BOX };
                 
         /* The bounds type, either SPHERE or BOX */
@@ -142,7 +144,7 @@ public abstract class BasicCellSetup {
      * The Scaling static inner class stores the scaling for each of the
      * (x, y, z) components
      */
-    public static class Scaling {
+    public static class Scaling implements Serializable {
         /* The (x, y, z) scaling components */
         @XmlElement(name="x") public double x = 0;  
         @XmlElement(name="y") public double y = 0;
@@ -157,7 +159,7 @@ public abstract class BasicCellSetup {
      * The Rotation static inner class stores a rotation about an (x, y, z)
      * axis over an angle.
      */
-    public static class Rotation {
+    public static class Rotation implements Serializable {
         /* The (x, y, z) rotation axis components */
         @XmlElement(name="x") public double x = 0;        
         @XmlElement(name="y") public double y = 0;        
@@ -175,7 +177,7 @@ public abstract class BasicCellSetup {
      * A wrapper class for hashmaps, because JAXB does not correctly support
      * the HashMap class.
      */
-    public static class MetaDataHashMap {
+    public static class MetaDataHashMap implements Serializable {
         /* A list of entries */
         @XmlElements( {
             @XmlElement(name="entry")
@@ -191,7 +193,7 @@ public abstract class BasicCellSetup {
      * A wrapper class for hashmap entries, because JAXB does not correctly
      * support the HashMap class
      */
-    public static class HashMapEntry {
+    public static class HashMapEntry implements Serializable {
         /* The key and values */
         @XmlAttribute public String key;
         @XmlAttribute public String value;
@@ -289,24 +291,24 @@ public abstract class BasicCellSetup {
         this.rotation = rotation;
     }
     
-    /**
-     * Returns the cell's collection of component setup information
-     * 
-     * @return The cell's collection of component setup information
-     */
-    @XmlTransient public CellSetupComponent[] getCellSetupComponents() {
-        return this.components;
-    }
-    
-    /**
-     * Sets the cell's collection of component setup information. If null, then
-     * this property will not be written out to the file.
-     * 
-     * @param bounds The new cell bounds
-     */
-    public void setCellSetupComponents(CellSetupComponent[] components) {
-        this.components = components;
-    }
+//    /**
+//     * Returns the cell's collection of component setup information
+//     * 
+//     * @return The cell's collection of component setup information
+//     */
+//    @XmlTransient public CellSetupComponent[] getCellSetupComponents() {
+//        return this.components;
+//    }
+//    
+//    /**
+//     * Sets the cell's collection of component setup information. If null, then
+//     * this property will not be written out to the file.
+//     * 
+//     * @param bounds The new cell bounds
+//     */
+//    public void setCellSetupComponents(CellSetupComponent[] components) {
+//        this.components = components;
+//    }
     
     /**
      * Returns the cell metadata.
@@ -380,7 +382,7 @@ public abstract class BasicCellSetup {
     }
     
     public static void main(String[] args) throws JAXBException, IOException {
-        SimpleTerrainCellSetup setup = new SimpleTerrainCellSetup();
+        StaticModelCellSetup setup = new StaticModelCellSetup();
         //setup.setMetaData(null);
         setup.encode(new FileWriter("setup.xml"));
     }

@@ -22,6 +22,7 @@ package org.jdesktop.wonderland.wfs.memory;
 
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSRootDirectory;
+import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 /**
  * The MemoryWFS class extends the WFS abstract class and represents a Wonderland
@@ -30,25 +31,19 @@ import org.jdesktop.wonderland.wfs.WFSRootDirectory;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class MemoryWFS extends WFS {
-    
-    /* The directory object associated with the root of the file system */
-    private WFSRootDirectory directory = null;
+    /* The name of the WFS in memory */
+    private String name = null;
     
     /**
      * Creates a new instance of WFS.
      */
     public MemoryWFS(String name) {
         super();
-        this.directory = new WFSMemoryRootDirectory(name + WFS.WFS_DIRECTORY_SUFFIX);
-    }
-    
-    /**
-     * Returns the root cell directory class representing of the WFS.
-     * 
-     * @return The directory containing the children in the root of the WFS
-     */
-    public WFSRootDirectory getRootDirectory() {
-        return this.directory;
+        this.name = name;
+        
+        /* Create the proper delegate for the root directory */
+        DirectoryDelegate delegate = new MemoryDirectoryDelegate();
+        this.directory = new WFSRootDirectory(this, delegate);
     }
         
     /**

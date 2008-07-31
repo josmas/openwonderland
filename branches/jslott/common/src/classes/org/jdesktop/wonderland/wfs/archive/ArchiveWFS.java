@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSAliases;
 import org.jdesktop.wonderland.wfs.WFSRootDirectory;
 import org.jdesktop.wonderland.wfs.WFSVersion;
+import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 /**
  * The ArchiveWFS class extends the WFS abstract class and represents a Wonderland
@@ -51,9 +52,6 @@ import org.jdesktop.wonderland.wfs.WFSVersion;
 public class ArchiveWFS extends WFS {
     /* The location of the file system */
     private URI uri = null;
-    
-    /* The directory object associated with the root of the file system */
-    private WFSRootDirectory directory = null;
     
     /* The object managing the manifest and JAR file contents */
     private ArchiveManifest manifest = null;
@@ -107,7 +105,8 @@ public class ArchiveWFS extends WFS {
         /* If a WFS URI is given, find the root of the world XXX */
         
         /* Create the top level directory consisting of the base WFS directory */
-        this.directory = new WFSArchiveRootDirectory(this.manifest, wfsdir);
+        DirectoryDelegate delegate = new ArchiveDirectoryDelegate(this.manifest, wfsdir);
+        this.directory = new WFSRootDirectory(this, delegate);
         
         /*
          * Read the version.xml file from disk and instantiate a WFSVersion
@@ -139,15 +138,6 @@ public class ArchiveWFS extends WFS {
     public void close() {
         this.manifest.close();
     }
-
-    /**
-     * Returns the root cell directory class representing of the WFS.
-     * 
-     * @return The directory containing the children in the root of the WFS
-     */
-    public WFSRootDirectory getRootDirectory() {
-        return this.directory;
-    }
         
     /**
      * Writes the entire WFS to the underlying medium, including the meta-
@@ -156,6 +146,7 @@ public class ArchiveWFS extends WFS {
      * <p>
      * @throw IOException Upon a general I/O error.
      */
+    @Override
     public void write() throws IOException {
         // Writing to archive not currently suppported
         throw new UnsupportedOperationException("Not yet supported.");

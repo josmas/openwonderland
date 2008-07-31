@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.cells;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -34,8 +35,8 @@ import javax.xml.bind.annotation.XmlTransient;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@XmlRootElement(name="static-model-component")
-public class StaticModelCellSetup extends CellSetupComponent {
+@XmlRootElement(name="static-model")
+public class StaticModelCellSetup extends BasicCellSetup implements Serializable {
 
     /* The URI of the static model file */
     @XmlElement(name="model")
@@ -62,5 +63,9 @@ public class StaticModelCellSetup extends CellSetupComponent {
      */
     public void setModel(String model) {
         this.model = model;
+    }
+    
+    public String getServerClassName() {
+        return "org.jdesktop.wonderland.server.cell.StaticModelCellMO";
     }
 }

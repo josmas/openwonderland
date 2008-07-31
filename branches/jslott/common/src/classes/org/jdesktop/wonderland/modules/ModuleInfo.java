@@ -50,7 +50,7 @@ public class ModuleInfo implements Serializable {
     public static final int VERSION_UNSET = -1;
     
     /* The unique module name */
-    @XmlElement(name="name")
+    @XmlElement(name="name", required=true)
     private String name = null;
     
     /* The version numbers */

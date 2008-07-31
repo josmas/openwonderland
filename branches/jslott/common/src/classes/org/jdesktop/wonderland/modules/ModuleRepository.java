@@ -28,6 +28,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -53,17 +54,36 @@ import javax.xml.bind.annotation.XmlTransient;
  * can be downloaded and also a list of mirror repositories. Both the master
  * and mirror repositories are optional. If no master or mirror is specified,
  * then it is assumed the artwork is made available by the Wonderland server
- * in which the module is installed.
+ * in which the module is installed (if use_server is not false).
  * <p>
- * This class follows the Java Bean pattern (default constructor, setter/getter
- * methods) so that it may be serialised to/from disk. The static decode() and
- * encode methods take an instance of a ModuleVersion class and perform the
- * loading and saving from/to disk.
+ * If an entry contains the special string %WL_SERVER% then the hostname of
+ * the machine on which the module is installed is inserted before send to
+ * the client. This special tag can be use as either the master or any one of
+ * the mirror repositories.
+ * <p>
+ * By default, the hostname of the machine on which the module is installed is
+ * inserted as the final mirror, in case other repositories cannot be found. This
+ * happens only if no other entry contains the %WL_SERVER% tag and if the
+ * use_server attribute is not set to false.
+ * <p>
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="module-repository")
 public class ModuleRepository implements Serializable {
-      
+    /*
+     * The special string that denotes the Wonderland server from which the
+     * module was installed should be used.
+     */
+    public static final String WL_SERVER = "%WLSERVER%";
+    
+    /*
+     * An attribute saying whether or not to insert the server at the end of
+     * the list of mirrors if it does not already exist in the list of asset
+     * servers somewhere.
+     */
+    @XmlAttribute(name="server_fallback")
+    private boolean useServer = true;
+    
     /* An array of module resources, as relative paths within the module */
     @XmlElements({
         @XmlElement(name="resource")
@@ -98,6 +118,24 @@ public class ModuleRepository implements Serializable {
     /** Default constructor */
     public ModuleRepository() {}
     
+    /** Constructor that takes an existing ModuleRepository and makes a copy */
+    public ModuleRepository(ModuleRepository repository) {
+        this.useServer = repository.isUseServer();
+        this.master = (repository.getMaster() != null) ? new String(repository.getMaster()) : null;
+        this.mirrors = (repository.getMirrors() != null) ? new String[repository.getMirrors().length] : null;
+        if (this.mirrors != null) {
+            for (int i = 0; i < this.mirrors.length; i++) {
+                this.mirrors[i] = mirrors[i];
+            }
+        }
+        this.resources = (repository.getResources() != null) ? new String[repository.getResources().length] : null;
+        if (this.resources != null) {
+            for (int i = 0; i < this.resources.length; i++) {
+                this.resources[i] = resources[i];
+            }
+        }
+    }
+    
     /* Setters and getters */
     @XmlTransient public String[] getResources() { return this.resources; }
     public void setResources(String[] resources) { this.resources = resources; }
@@ -105,6 +143,8 @@ public class ModuleRepository implements Serializable {
     public void setMaster(String master) { this.master = master; }
     @XmlTransient public String[] getMirrors() { return this.mirrors; }
     public void setMirrors(String[] mirrors) { this.mirrors = mirrors; }
+    @XmlTransient public boolean isUseServer() { return this.useServer; }
+    public void setUseServer(boolean useServer) { this.useServer = useServer; }
     
         /**
      * Returns the version as a string: <major>.<minor>
@@ -112,14 +152,19 @@ public class ModuleRepository implements Serializable {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder("Module Repository:\n");
+        str.append("Use Server: " + this.isUseServer());
         str.append("Master:\n  " + this.getMaster() + "\n");
         str.append("Mirrors:\n");
-        for (String mirror : mirrors) {
-            str.append("  " + mirror + "\n");
+        if (this.mirrors != null) {
+            for (String mirror : mirrors) {
+                str.append("  " + mirror + "\n");
+            }
         }
-        str.append("Resources:\n");
-        for (String resource : resources) {
-            str.append("  " + resource + "\n");
+        if (this.resources != null) {
+            str.append("Resources:\n");
+            for (String resource : resources) {
+                str.append("  " + resource + "\n");
+            }
         }
         return str.toString();
     }

@@ -32,7 +32,9 @@ import javax.xml.bind.annotation.XmlTransient;
 /**
  * The WFSCellChildren class simply represent an array of child names for a
  * given cell. It is used to serialize this list across a network in XML form
- * or out to disk.
+ * or out to disk. It also contains the date the cell was last modified, so
+ * that the cell loading and reloading scheme in Wonderland can check whether
+ * a cell has been updated or not.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -42,7 +44,7 @@ public class WFSCellChildren {
     @XmlElements({
         @XmlElement(name="child")
     })
-    private String[] children = null;
+    private CellChild[] children = null;
 
     /* The relative path of the parent of the children */
     @XmlTransient private String relativePath = null;
@@ -63,12 +65,36 @@ public class WFSCellChildren {
         }
     }
     
+    /**
+     * The Child inner class simply stores the name of the cell child and the
+     * date it was last modified.
+     */
+    public static class CellChild {
+        /* The name of the cell */
+        @XmlElement(name="name")
+        public String name = null;
+        
+        /* The date the cell was last modified, or -1 if unset */
+        @XmlElement(name="last_modified")
+        public long lastModified = -1;
+        
+        /** Default constructor */
+        public CellChild() {
+        }
+        
+        /** Constructor, takes the name and last modified date */
+        public CellChild(String name, long lastModified) {
+            this.name = name;
+            this.lastModified = lastModified;
+        }
+    }
+    
     /** Default constructor */
     public WFSCellChildren() {
     }
     
     /** Constructor, takes the relative path and names of the children */
-    public WFSCellChildren(String relativePath, String[] children) {
+    public WFSCellChildren(String relativePath, CellChild[] children) {
         this.relativePath = relativePath;
         this.children = children;
     }
@@ -78,7 +104,7 @@ public class WFSCellChildren {
      * 
      * @return An array of cell child names
      */
-    @XmlTransient public String[] getChildren() {
+    @XmlTransient public CellChild[] getChildren() {
         return this.children;
     }
     

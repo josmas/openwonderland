@@ -63,13 +63,13 @@ public class WFSRoots {
     public WFSRoots() {
     }
     
-    /** Constructor, takes the names of the roots */
+    /** Constructor, takes the names of the roots, which may be null */
     public WFSRoots(String[] roots) {
         this.roots = roots;
     }
     
     /**
-     * Returns the array of WFS root names
+     * Returns the array of WFS root names, null if there are none.
      * 
      * @return An array of WFS root names
      */

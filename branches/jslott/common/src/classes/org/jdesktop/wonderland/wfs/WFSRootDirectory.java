@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.wfs;
 
 import java.io.IOException;
+import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 /**
  * The WFSRootDirectory represents the base-level directory for all WFSs. It
@@ -30,11 +31,10 @@ import java.io.IOException;
  * the WFS URI aliases and the version. Unlike WFSCellDirectory objects, this
  * class has no cell associated with it, so calls to getAssociatedCell() always
  * return null.
- * <p>
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public abstract class WFSRootDirectory extends WFSCellDirectory {
+public class WFSRootDirectory extends WFSCellDirectory {
    
     /* The WFSVersion and WFSAliases objects */
     private WFSAliases aliases = null;
@@ -44,9 +44,9 @@ public abstract class WFSRootDirectory extends WFSCellDirectory {
     public static final String ALIASES = "aliases.xml";
     public static final String VERSION = "version.xml";
     
-    /** Constructor that takes no cell as its argument */
-    protected WFSRootDirectory() {
-        super(null);
+    /** Constructor that takes the directory delegate */
+    public WFSRootDirectory(WFS wfs, DirectoryDelegate delegate) {
+        super(wfs, delegate);
     }
 
     /**
@@ -55,7 +55,16 @@ public abstract class WFSRootDirectory extends WFSCellDirectory {
      * @return The aliases of the WFS.
      */
     public WFSAliases getAliases() {
-        return this.aliases;
+        /*
+         * Protect with a read lock since this can be updated via the public
+         * method setAliases().
+         */
+        this.wfsRef.get().getReadLock().lock();
+        try {
+            return this.aliases;
+        } finally {
+            this.wfsRef.get().getReadLock().unlock();
+        }
     }
     
     /**
@@ -64,6 +73,9 @@ public abstract class WFSRootDirectory extends WFSCellDirectory {
      * @param aliases The new aliases for this filesytem
      */
     public void setAliases(WFSAliases aliases) {
+        /* Make sure the thread has write permissions */
+        this.wfsRef.get().checkOwnership();
+        
         this.aliases = aliases;
     }
     
@@ -73,7 +85,16 @@ public abstract class WFSRootDirectory extends WFSCellDirectory {
      * @return The version of the WFS
      */
     public WFSVersion getVersion() {
-        return this.version;
+        /*
+         * Protect with a read lock since this can be updated via the public
+         * method setVersion().
+         */
+        this.wfsRef.get().getReadLock().lock();
+        try {
+            return this.version;
+        } finally {
+            this.wfsRef.get().getReadLock().unlock();
+        }
     }
     
     /**
@@ -82,6 +103,9 @@ public abstract class WFSRootDirectory extends WFSCellDirectory {
      * @param version The new version for this filesystem
      */
     public void setVersion(WFSVersion version) {
+        /* Make sure the thread has write permissions */
+        this.wfsRef.get().checkOwnership();
+        
         this.version = version;
     }
     
@@ -93,12 +117,33 @@ public abstract class WFSRootDirectory extends WFSCellDirectory {
      * @throw IOException Upon general I/O error
      * @throw WFSCellNotLoadedException If not all of the cells have been loaded
      */
-    public abstract void write() throws IOException;
+    @Override
+    public void write() throws IOException, WFSCellNotLoadedException {
+        /* Make sure the thread has write permissions */
+        this.wfsRef.get().checkOwnership();
+        
+        /* Write out the meta data */
+        this.writeMetaData();
+        
+        /* Ask the cell directory super class to do the rest */
+        super.write();
+    }
     
     /**
      * Writes the WFS meta-information (e.g. version, aliases) to the WFS.
      * <p>
      * @throw IOException Upon a general I/O error.
      */
-    public abstract void writeMetaData() throws IOException; 
+    public void writeMetaData() throws IOException {
+        /* Make sure the thread has write permissions */
+        this.wfsRef.get().checkOwnership();
+        
+        if (this.getVersion() != null) {
+            this.getVersion().encode(this.delegate.getOutputStream(WFSRootDirectory.VERSION));
+        }
+
+        if (this.getAliases() != null) {
+            this.getAliases().encode(this.delegate.getOutputStream(WFSRootDirectory.ALIASES));
+        }
+    }
 }
