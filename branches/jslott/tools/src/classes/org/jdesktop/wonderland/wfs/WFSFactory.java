@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.wfs;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.wfs.archive.ArchiveWFS;
 import org.jdesktop.wonderland.wfs.file.FileWFS;
 import org.jdesktop.wonderland.wfs.memory.MemoryWFS;
@@ -45,9 +46,10 @@ public final class WFSFactory {
      * <p>
      * @param url The URL of the WFS to create
      * @throw IOException Upon some general I/O error reading the WFS
+     * @throw JAXBException Upon error reading XML
      * @throw InvalidWFSException If the WFS is not properly formatted 
      */
-    public static WFS create(URL url) throws IOException, InvalidWFSException {
+    public static WFS create(URL url) throws IOException, InvalidWFSException, JAXBException {
         String protocol = url.getProtocol();
         
         /* If the URL points to a disk directory */
@@ -72,9 +74,10 @@ public final class WFSFactory {
      * @param url The URL of the WFS to open
      * @throw FileNotFoundException If the WFS does not exist
      * @throw IOException Upon some general I/O error reading the WFS
+     * @throw JAXBException Upon error reading XML
      * @throw InvalidWFSException If the WFS is not properly formatted 
      */
-    public static final WFS open(URL url) throws FileNotFoundException, IOException, InvalidWFSException {
+    public static final WFS open(URL url) throws FileNotFoundException, IOException, JAXBException, InvalidWFSException {
         String protocol = url.getProtocol();
         
         /* If the URL points to a disk directory */
