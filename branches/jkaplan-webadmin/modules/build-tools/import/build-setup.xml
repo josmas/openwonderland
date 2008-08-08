@@ -1,0 +1,188 @@
+<project basedir="." default="..." name="wonderland-modules.build-setup">
+    <dirname property="imported.basedir" file="${ant.file.wonderland-modules.build-setup}"/>
+
+    <tstamp>
+	<format property="build.stamp" pattern="yyMMddHHmm"/>
+	<format property="build.date" pattern="kk:mm zzz dd MMM yyyy"/>
+	<format property="build.stamp.pkg" pattern="yyyyMMdd"/>
+	<format property="build.stamp.pkg-copy" pattern="yyyy-MM-dd"/>
+    </tstamp>
+
+    <!-- extended ant tasks -->
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${imported.basedir}/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+    
+    <!-- Do platform specific setup -->
+    <import file="${imported.basedir}/platform-setup.xml"/>
+    
+    <!-- load properties -->
+    <property file="${modules.dir}/build.properties"/>
+    
+    <!-- 
+	To better support daily builds on multiple architectures and OS'es
+	the platformBuild flag will cause the build files to go into platform
+	specific directories. This is not used in the general case as IDE's
+	can't deal with architecture info in the classpath etc
+    -->
+    <property name="build.platform" value="${ostype}-${arch}"/>
+    <condition property="build.location"
+	       value="${build.platform}/${build.level}"
+	       else="current/${build.level}">
+	<istrue value="${platformBuild}"/>
+    </condition>
+
+    <!-- properties that depend on build level -->
+    <propertycopy name="build.debuglevel" from="build.debuglevel.${build.level}"/>
+    <property name="wonderland.lib.dir" location="${core.dir}/build/${build.location}/lib"/>
+    
+    <!-- All other jars in the ext dir -->
+    <pathconvert property="javaext.classpath">
+	<path location="${os.javaext.dir}"/>
+	<path location="${jars.javaext.dir}"/>
+
+	<!-- Escher -->
+	<path location="${jars.javaext.dir}/escher-0.2.2.lg.jar"/>
+
+	<!-- JMF, Fobs4JMF -->
+	<path location="${jars.javaext.dir}/jmf.jar"/>
+	<path location="${jars.javaext.dir}/jipcam.jar"/>
+	<path location="${jars.javaext.dir}/mediaplayer.jar"/>
+	<path location="${jars.javaext.dir}/fobs4jmf.jar"/>
+
+	<!-- JOAL + JOGL -->
+	<path location="${jars.javaext.dir}/joal.jar"/>
+	<path location="${jars.javaext.dir}/jogl.jar"/>
+	<path location="${jars.javaext.dir}/gluegen-rt.jar"/>
+
+	<!-- JAI -->
+	<path location="${jars.javaext.dir}/jai_core.jar"/>
+	<path location="${jars.javaext.dir}/jai_codec.jar"/>
+	<path location="${jars.javaext.dir}/mlibwrapper_jai.jar"/>
+
+	<!-- JAI-IMAGEIO -->
+	<path location="${jars.javaext.dir}/jai_imageio.jar"/>
+	<path location="${jars.javaext.dir}/clibwrapper_jiio.jar"/>
+
+	<!-- JInput-->
+	<path location="${jars.javaext.dir}/jinput.jar"/>
+
+        <!-- JME -->
+	<path location="${common.javaext.dir}/jme.jar"/>
+	<path location="${common.javaext.dir}/jme-gamestates.jar"/>
+	<path location="${common.javaext.dir}/jme-awt.jar"/>
+	<path location="${common.javaext.dir}/jme-audio.jar"/>
+	<path location="${common.javaext.dir}/jme-scene.jar"/>
+	<path location="${common.javaext.dir}/jme-model.jar"/>
+	<path location="${common.javaext.dir}/jme-collada.jar"/>
+	<path location="${common.javaext.dir}/jme-xml.jar"/>
+	<path location="${common.javaext.dir}/lwjgl.jar"/>
+
+    </pathconvert>
+
+    <!-- Other wonderland specific supporting jars -->
+    <pathconvert property="wonderlandext.classpath">
+        <path location="${common.javaext.dir}/derby.jar"/>
+        <path location="${common.javaext.dir}/commons-beanutils-core.jar"/>
+        <path location="${common.javaext.dir}/commons-codec-1.3.jar"/>
+        <path location="${common.javaext.dir}/commons-httpclient-3.0.1.jar"/>
+        <path location="${common.javaext.dir}/commons-logging-1.1.jar"/>
+        <path location="${common.javaext.dir}/swing-layout-1.0.jar"/>
+        <path location="${common.javaext.dir}/TimingFramework.jar"/>
+    </pathconvert>
+    
+    <pathconvert property="voice.classpath">
+	<path location="${voicelib.dir}/${voicelib-jar}"/>
+	<path location="${voicebridge.dir}/bridge_connector.jar"/>
+	<path location="${voicebridge.dir}/softphone.jar"/>
+        <path location="${javaext.dir}/bridgemonitor/BridgeMonitor.jar"/>
+    </pathconvert>
+    
+    <pathconvert property="darkstar.server.classpath">
+	<path location="${sgs.javaext.dir}/sgs-${sgs.version}/lib/sgs.jar"/>
+	<path location="${sgs.javaext.dir}/sgs-client-${sgs.version}/lib/sgs-client.jar"/>
+	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
+	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
+	<path location="${sgs.bdb.dir}/db.jar"/>
+    </pathconvert>
+
+     <pathconvert property="darkstar.client.classpath">
+	<path location="${sgs.javaext.dir}/sgs-client-${sgs.version}/lib/sgs-client.jar"/>
+	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
+	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
+    </pathconvert>
+   
+    <!-- wonderland modules -->
+    <condition property="use.modules">
+        <and>
+            <istrue value="${modules.enabled}"/>
+            <available file="${modules.dir}"/>
+        </and>
+    </condition>
+      
+    <pathconvert property="wonderland-common-compile.classpath">
+        <path path="${j3d.classpath}"/>
+        <path path="${voice.classpath}"/>
+        <path path="${wonderland-incubator.classpath}"/>
+	<path path="${darkstar.client.classpath}"/>
+    </pathconvert>
+    
+    <pathconvert property="wonderland-client-compile.classpath">
+        <path path="${wonderland-common-compile.classpath}"/>
+	<path path="${javaext.classpath}"/>
+	<path path="${wonderlandext.classpath}"/>
+	<path path="${core.ext.classpath}"/>
+	<path path="${darkstar.client.classpath}"/>
+    </pathconvert>
+
+    <pathconvert property="wonderland-client.classpath">
+	<path path="${wonderland-client-compile.classpath}"/>
+	<path location="${wonderland.lib.dir}/wonderland-client.jar"/>
+	<path location="${wonderland.lib.dir}/wonderland-utils.jar"/>
+	<path location="${wonderland.lib.dir}/wonderland-common.jar"/>
+        <path path="${module-client.classpath}"/>
+    </pathconvert>
+
+    <pathconvert property="wonderland-server-compile.classpath">
+        <path path="${wonderland-common-compile.classpath}"/>
+	<path path="${darkstar.server.classpath}"/>
+        <path location="${common.javaext.dir}/commons-beanutils-core.jar"/>
+        <path location="${common.javaext.dir}/commons-logging-1.1.jar"/>
+    </pathconvert>
+
+    <pathconvert property="wonderland-server.classpath">
+	<path path="${wonderland-server-compile.classpath}"/>
+	<path location="${wonderland.lib.dir}/wonderland-server.jar"/>
+	<path location="${wonderland.lib.dir}/wonderland-common.jar"/>
+        <path path="${module-server.classpath}"/>
+    </pathconvert>
+
+    <!-- If building in verbose mode, echo important build properties... -->
+    <if>
+	<and>
+	    <istrue value="${build.verbose}"/>
+	    <not> <isset property="${build-setup.echoed}"/> </not>
+	</and>
+	<then>
+	    <echo message="project-name = ${project.name}"/>
+	    <echo message="ostype = ${ostype}"/>
+	    <echo message="arch = ${arch}"/>
+	    <echo message="build level=${build.level}, debug=${build.debug}, debuglevel=${build.debuglevel}"/>
+	    <echo message="build.platform.dir = ${build.platform.dir}"/>
+	    <echo message="platform-supports-x = ${platform-supports-x}"/>
+	    <property name="${build-setup.echoed}" value="true"/>
+	    <!-- <echo message="javaext.classpath = ${javaext.classpath}"/> -->
+	</then>
+    </if>
+
+    <echo file="${current.dir}/nbproject/nb.properties">
+wonderland.ostype=${ostype}
+wonderland.arch=${arch}
+wonderland.system.type=${system.type}
+wonderland.dir=${wonderland.dir}
+wonderland.client.classpath=${wonderland-client.classpath}
+wonderland.server.classpath=${wonderland-server.classpath}
+    </echo>
+</project>

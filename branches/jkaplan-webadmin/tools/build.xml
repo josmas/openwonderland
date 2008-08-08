@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-tools" default="jar" basedir=".">
+    <!-- Define some commons locations -->
+    <property name="top.dir" location=".."/>
+    <property name="current.dir" location="."/>
+    <property name="core.dir" location="${top.dir}/core"/>
+    
+    <!-- Use my-build.properties to override default values in build.properties -->
+    <property file="my.build.properties"/>
+    <property file="${core.dir}/my.build.properties"/>
+    <property file="build.properties"/>
+    <property file="${core.dir}/build.properties"/>
+    <property name="project.name" value="${ant.project.name}"/>
+
+    <!-- Include some extra stuff for ant -->
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${build-import.dir}/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+
+    <!-- Do platform/x11/environment specific setup common to all task -->
+    <import file="${build-import.dir}/build-setup.xml"/>
+    
+    <!-- Initialization - make dirs, unpack ext stuff... -->
+    <target name="init">
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${build.lib.dir}"/>
+    </target>
+    
+    <!-- Class path for this compile: include jersey -->
+    <pathconvert property="jersey.classpath">
+        <path location="${common.ext.dir}/common/jersey/activation.jar"/>
+        <path location="${common.ext.dir}/common/jersey/jaxb-api.jar"/>
+        <path location="${common.ext.dir}/common/jersey/jaxb-impl.jar"/>
+        <path location="${common.ext.dir}/common/jersey/jaxb-xjc.jar"/>
+        <path location="${common.ext.dir}/common/jersey/jaxb1-impl.jar"/>
+        <path location="${common.ext.dir}/common/jersey/jsr173_1.0_api.jar"/>
+    </pathconvert>
+    
+    <!-- Class path for this compile: include TestNG -->
+    <pathconvert property="testng.classpath">
+        <path location="${common.ext.dir}/common/testng/testng-5.8-jdk15.jar"/>
+    </pathconvert>
+    
+    <!-- Target: BUILD. Compile all of the classes under the src/ directory -->
+    <target name="build" depends="init">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/cells/**"/>
+                <include name="org/jdesktop/wonderland/modules/**"/>
+                <include name="org/jdesktop/wonderland/wfs/**"/>
+                <include name="org/jdesktop/wonderland/checksum/**"/>
+            </compile-classes>
+            <compile-classpath>
+                <pathelement path="${jersey.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <!-- Target: JAR. Packing everything up into a single jar file -->
+    <target name="jar" depends="build">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-tools.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="org/jdesktop/wonderland/cells/**"/>
+                <include name="org/jdesktop/wonderland/modules/**"/>
+                <include name="org/jdesktop/wonderland/wfs/**"/>
+                <include name="org/jdesktop/wonderland/checksum/**"/>
+            </fileset>
+        </jar>
+    </target>
+       
+    <!-- Target: BUILD-TEST. Compile all of the classes under the test/ directory -->
+    <target name="build-test" depends="init, build, jar">
+        <sequential>
+            <javac  debug="${build.debug}"
+                debuglevel="${build.debuglevel}"
+                deprecation="${build.showdeprecation}"
+                destdir="${build.classes.dir}"
+                nowarn="true"
+                source="1.5"
+                target="1.5"
+                srcdir="test/classes">
+                <include name="org/jdesktop/wonderland/wfs/test/**"/>
+                <classpath>
+                    <pathelement path="${jersey.classpath}"/>
+                    <pathelement path="${build.lib.dir}/wonderland-tools.jar"/>
+                </classpath>
+            </javac>
+        </sequential>
+    </target>
+    
+     <!-- Target: RUN-TEST. Runs the tool test code -->
+    <target name="run-test" depends="build-test">
+        <java fork="yes" classname="org.testng.TestNG">
+            <arg value="tools-testng.xml"/>
+            <classpath>
+                <pathelement path="${jersey.classpath}"/>
+                <pathelement path="${testng.classpath}"/>
+                <pathelement path="${apache.commons.classpath}"/>
+                <pathelement path="${tools.dir}/build/current/debug/lib/wonderland-tools.jar"/>
+                <pathelement path="${build.classes.dir}"/>
+            </classpath>
+        </java>
+    </target>   
+    
+    <!-- Target: CLEAN. Clean out everything that was build -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+</project>

@@ -1,0 +1,86 @@
+<project basedir="." default="..." name="wonderland.build-audio">
+    <dirname property="imported.basedir" file="${ant.file.build-audio}"/>
+
+    <!-- This is a place holder until we ship the audio jars out to the public -->
+    <property name="audio.jar.zip.basename" value="WonderlandAudio.zip"/>
+    <property name="audio.jar.zip.filename" value="${zip.javaext.dir}/${audio.jar.zip.basename}"/>
+
+    <property name="audio.data.zip.basename" value="MPK20Audio.zip"/>
+    <property name="audio.data.zip.filename" value="${zip.javaext.dir}/${audio.data.zip.basename}"/>
+
+    <target name="unpack-audio-jar" description="Unzip Sun voice bridge jars">
+	<if>
+	    <available file="${audio.jar.zip.filename}"/>
+	    <then>
+		<unzip src="${audio.jar.zip.filename}" dest="${javaext.dir}">
+		    <patternset excludes="**/CVS"/>
+		</unzip>
+	    </then>
+	    <else>
+		<echo message="WARNING: Could not find audio zip file ${audio.jar.zip.filename}"/>
+	    </else>
+	</if>
+    </target>
+
+    <property name="fetch-audio-au.list"
+	      value="DaveDouglasBlackBox.au,thumper-sim-nigelson.au,levelup-darkstar-chris.au,levelup-darkstar-jeff.au"/>
+
+    <target name="fetch-audio-au" if="voicebridge.enabled.set">
+        <mkdir dir="${voicebridge.audio.dir}"/>
+	<for param="audio.file" list="${fetch-audio-au.list}">
+	    <sequential>
+		<get src="${voicebridge.audio.url}/audio/mpk20/@{audio.file}"
+		     dest="${voicebridge.audio.dir}/@{audio.file}" usetimestamp="true"/>
+	    </sequential>
+	</for>
+    </target>
+
+    <target name="fetch-audio-au-all" if="voicebridge.enabled.set">
+	<get src="${voicebridge.audio.url}/audio/${audio.data.zip.basename}"
+	     dest="${audio.data.zip.filename}" usetimestamp="true"/>
+    </target>
+
+    <target name="unpack-audio-au-all" if="voicebridge.enabled.set">
+	<if>
+	    <available file="${audio.data.zip.filename}"/>
+	    <then>
+		<mkdir dir="${voicebridge.audio.dir}"/>
+		<unzip src="${audio.data.zip.filename}"
+		      dest="${voicebridge.audio.dir}/../.." overwrite="false"/>
+	    </then>
+	</if>
+    </target>
+
+    <target name="check-audio" unless="check-audio.done">
+        <property name="check-audio.done" value="true"/>
+	<if>
+	    <isfalse value="${voicebridge.enabled}"/>
+	    <then>
+		<echo message="Set property 'voicebridge.enabled=true' for enabling audio related stuff!"/>
+	    </then>
+	</if>
+    </target>
+
+    <target name="setup-audio"
+	    depends="check-audio,unpack-audio-jar,fetch-audio-au"
+	    description="Download/Unzip and setup Audio jars and few samples"/>
+
+    <target name="setup-audio-all"
+	    depends="check-audio,unpack-audio-jar,fetch-audio-au-all,unpack-audio-au-all"
+	    description="Download/Unzip and setup Audio jars and ALL samples"/>
+
+    <target name="clean-audio-jar" description="Clean up audio jars">
+	<delete quiet="true" dir="${voicebridge.dir}"/>
+	<delete quiet="true" dir="${voicelib.dir}/voicelib.jar"/>
+    </target>
+
+    <target name="clean-audio-data" description="Clean up audio data (samples)">
+	<delete quiet="true" dir="${voicebridge.audio.dir}"/>
+    </target>
+
+    <target name="clean-audio" depends="clean-audio-jar,clean-audio-data"
+			description="Clean up audio zips and jars">
+	<delete quiet="true" file="${audio.jar.zip.filename}"/>
+	<delete quiet="true" file="${audio.data.zip.filename}"/>
+    </target>
+</project>
