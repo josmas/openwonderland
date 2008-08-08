@@ -24,10 +24,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.ProduceMime;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 import org.jdesktop.wonderland.modules.ModuleRepository;
-import org.jdesktop.wonderland.service.ServiceMain;
 import org.jdesktop.wonderland.service.modules.InstalledModule;
 import org.jdesktop.wonderland.service.modules.ModuleManager;
 
@@ -40,6 +42,9 @@ import org.jdesktop.wonderland.service.modules.ModuleManager;
  */
 @Path("/module/{modulename}/repository")
 public class ModuleRepositoryResource {
+    
+    @Context
+    private UriInfo context;
     
     /**
      * Returns the repository information about a module, given its module name
@@ -76,7 +81,9 @@ public class ModuleRepositoryResource {
          * server path to the asset.
          */
         boolean replaced = false;
-        String hostname = ServiceMain.SERVER + "module/" + moduleName + "/art";
+        UriBuilder artBuilder = context.getBaseUriBuilder();
+        artBuilder = artBuilder.path("module").path(moduleName).path("art");
+        String hostname = artBuilder.build().toString();
         
         /* Fetch the module repository, return an error if it does not exist */
         ModuleRepository mr = im.getModuleRepository();
