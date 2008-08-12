@@ -103,6 +103,7 @@
 	<path location="${jme.dir}/target/jme-xml.jar"/>
 	<path location="${jme.dir}/target/jme-terrain.jar"/>
 	<path location="${jme.dir}/lib/lwjgl/lwjgl.jar"/>
+        <path location="${jme.dir}/lib/lwjgl/lwjgl_util.jar"/>
     </pathconvert>
     
     <!-- All other jars in the ext dir -->
