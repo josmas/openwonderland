@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: WFSFileCellDirectory.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2.8.3 $
- * $Date: 2008/04/08 10:44:31 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs.file;
@@ -32,9 +30,9 @@ import org.jdesktop.wonderland.wfs.delegate.CellDelegate;
 import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 /**
- * The WFSFileCellDirectory is a directory on disk that contains child cells
- * within a WFS. This class extends the WFSCellDirectory abstract base class.
- *
+ * The FileDirectoryDelegate class implements methods to interface with WFS
+ * directories on disk.
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class FileDirectoryDelegate implements DirectoryDelegate {
@@ -127,10 +125,7 @@ public class FileDirectoryDelegate implements DirectoryDelegate {
             int    index    = oldFile.getName().indexOf(WFS.CELL_FILE_SUFFIX);
             String cellName = oldFile.getName().substring(0, index);
             if (children.containsKey(cellName) == false) {
-                /*
-                 * Ignore an errors upon deletion.
-                 * XXX Perhaps we should report upon this
-                 */
+                /* Ignore an errors upon deletion. */
                 oldFile.delete();
                 
                 /*

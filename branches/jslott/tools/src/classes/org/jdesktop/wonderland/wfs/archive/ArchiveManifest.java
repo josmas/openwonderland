@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: ArchiveManifest.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2.8.1 $
- * $Date: 2008/04/08 10:44:29 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs.archive;
@@ -43,7 +41,7 @@ import org.jdesktop.wonderland.wfs.WFS;
  * This class also serves as the 'front-end' to a JAR file and returns the
  * input stream for individual entries.
  * <p>
- * @author jslott
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ArchiveManifest {
     /*
@@ -104,9 +102,8 @@ public class ArchiveManifest {
      * @throw IOException Upon an invalid entry name
      */
     public InputStream getEntryInputStream(String path) throws IOException {
-        ZipEntry    entry = this.jarfile.getEntry(path);
-        System.out.println("zip entry: " + entry);
-        InputStream is    = jarfile.getInputStream(entry);
+        ZipEntry entry = this.jarfile.getEntry(path);
+        InputStream is = jarfile.getInputStream(entry);
         return is;
     }
     
@@ -178,12 +175,10 @@ public class ArchiveManifest {
          * there is no forward slash present in the string.
          */
         String[] result = new String[2];
-        int      index  = entry.lastIndexOf("/");
-        result[0]       = "";
-        result[1]       = entry;
+        int index = entry.lastIndexOf("/");
+        result[0] = "";
+        result[1] = entry;
 
-        System.out.println("splitEntry: entry:" + entry + " index: " + index);
-        
         /* In the case where there are no more characters after the '/' */
         if (index == entry.length() - 1) {
             result[0] = entry.substring(0, index);

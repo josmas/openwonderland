@@ -78,7 +78,7 @@ public class WFSListenerTest implements WFSListener {
             WFSCellDirectory dir = wfs.getRootDirectory();
             WFSCell cell = dir.getCellByName("building");
             wfs.addWFSListener(new WFSListenerTest());
-            BasicCellSetup setup = cell.getCellSetup();
+            String setup = cell.getCellSetup();
             cell.setCellSetup(setup);
             WFSCell newcell = cell.createCellDirectory().addCell("fubar");
             WFSCell newcell2 = cell.getCellDirectory().addCell("fubar2");

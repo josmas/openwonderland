@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: CellFileFilter.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2.8.2 $
- * $Date: 2008/04/08 10:44:31 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs.file;
@@ -29,7 +27,7 @@ import org.jdesktop.wonderland.wfs.WFS;
  * plain files and they conform to the Wonderland cell file naming convention.
  * The naming convention is currently '<name>-wlc.xml'.
  *
- * @author jslott
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class CellFileFilter implements FileFilter {
     

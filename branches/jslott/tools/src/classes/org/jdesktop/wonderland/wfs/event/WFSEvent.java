@@ -16,19 +16,13 @@
  * $State$
  */
 
-
 package org.jdesktop.wonderland.wfs.event;
 
 import org.jdesktop.wonderland.wfs.WFSCell;
 
 /**
  * The WFSCellEvent class represents an update to a cell: its attributes have
- * been updated, children have been added, children have been removed, or the
- * cell has been removed.
- * <p>
- * Note that in the case of deletion, the WFSCell object should be garabage
- * collected. Listeners should not hold onto this WFSCellEvent object for long,
- * since it maintains a strong reference to the WFSCell object
+ * been updated, children have been added, or children have been removed.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */

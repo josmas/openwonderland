@@ -29,7 +29,6 @@ import java.net.URL;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.wfs.InvalidWFSException;
 import org.jdesktop.wonderland.wfs.WFS;
-import org.jdesktop.wonderland.wfs.WFSAliases;
 import org.jdesktop.wonderland.wfs.WFSRootDirectory;
 import org.jdesktop.wonderland.wfs.WFSVersion;
 import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
@@ -78,9 +77,9 @@ public class ArchiveWFS extends WFS {
          * file.
          */
         String protocol = url.getProtocol();
-        String body     = url.getPath();
-        URI    wfsuri   = null;
-        
+        String body = url.getPath();
+        URI wfsuri = null;
+
         /* If the protocol is not JAR, then throw IOException */
         if (protocol.equals("jar") != true) {
             throw new IOException("Protocol of URL is not JAR: " + url.toString());
@@ -107,9 +106,7 @@ public class ArchiveWFS extends WFS {
                 uri.toString());
         }
         String wfsdir = fsystems[0];
-        
-        /* If a WFS URI is given, find the root of the world XXX */
-        
+                
         /* Create the top level directory consisting of the base WFS directory */
         DirectoryDelegate delegate = new ArchiveDirectoryDelegate(this.manifest, wfsdir);
         this.directory = new WFSRootDirectory(this, delegate);
@@ -123,18 +120,6 @@ public class ArchiveWFS extends WFS {
         if (vis != null) {
             this.directory.setVersion(WFSVersion.decode(new InputStreamReader(vis)));
         }
-        
-        /*
-         * Read the aliases.xml file from disk and instantiate a WFSAliases
-         * class, if it exists
-         */
-        String      wfsaliases = wfsdir + "/" + WFSRootDirectory.ALIASES;
-        InputStream ais        = this.manifest.getEntryInputStream(wfsaliases);
-        if (ais != null) {
-            this.directory.setAliases(WFSAliases.decode(new InputStreamReader(ais)));
-        }
-        
- 
     }
     
     /**

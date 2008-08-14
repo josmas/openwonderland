@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: WFSVersion.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2.8.2 $
- * $Date: 2008/04/08 10:44:30 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs;
@@ -38,13 +36,8 @@ import javax.xml.bind.annotation.XmlTransient;
  * the structure of the file system, etc. Each individual cell has a separate
  * version number too. The WFS version consists of a 'major' and 'minor' version
  * number, both integers.
- * <p>
- * This class follows the Java Bean pattern (default constructor, setter/getter
- * methods) so that it may be serialised to/from disk. The static decode() and
- * encode methods take an instance of a WFSVersion class and perform the loading
- * and saving from/to disk.
  *
- * @author jslott
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="wfs-version")
 public class WFSVersion {
@@ -110,7 +103,7 @@ public class WFSVersion {
      * @throw JAXBException Upon error reading the XML file
      */
     public static WFSVersion decode(Reader r) throws JAXBException {
-        return (WFSVersion)WFSVersion.unmarshaller.unmarshal(r);        
+        return (WFSVersion) WFSVersion.unmarshaller.unmarshal(r);
     }
     
     /**

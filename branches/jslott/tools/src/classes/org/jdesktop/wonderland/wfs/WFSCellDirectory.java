@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: WFSCellDirectory.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2.8.2 $
- * $Date: 2008/04/08 10:44:30 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs;
@@ -23,46 +21,63 @@ package org.jdesktop.wonderland.wfs;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Level;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.wfs.delegate.CellDelegate;
 import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 /**
- * The WFSCellDirectory abstract class represents the directory within the WFS
- * that stores child cells. (If the cell is named 'cell-wlc.xml' within the
- * WFS, this directory is correspondingly named 'cell-wld/' although these
- * details are hidden by the WFS API.) 
+ * The WFSCellDirectory class represents a directory within the WFS that stores
+ * child cells. (If the cell is named 'cell-wlc.xml' within the WFS, this
+ * directory is correspondingly named 'cell-wld/' although these details are
+ * hidden by the WFS API.) 
  * <p>
  * The list of child cells are obtained via two method calls: getCellNames()
- * and getCells() method. The list of cells are not read until either one of
- * these is invoked;
- *
+ * and getCells() method. A cell may also be obtained via the getCellByName()
+ * by giving the name of the cell (without the '-wlc.xml' suffix and extension).
+ * The list of cells are not read until either one of these three methods is
+ * invoked.
+ * <p>
  * The list of child cells may be updated via the addCell() and removeCell()
  * methods. This updates the list of children in memory and is not written by
  * to the underlying medium until explicitly told to do so. These methods
  * first load all of the cells, if not already done so. This may be a time-
  * consuming task, so users of this API are strongly encouraged to call the
  * getCells() method themselves at a time of their choosing.
- *
+ * <p>
+ * Threads may walk up the directory tree by finding the cell associated with
+ * this directory, with the getAssociatedCell() method.
+ * 
  * <h3>Writring</h3>
  * 
  * The directory on the underlying medium is updated via the write() method.
  * Each cell must have been first loaded -- either by the getCells() or the
  * getCellNames() methods -- otherwise, this method does nothing. If all cells
  * have been loaded, the method simply calls the write() method on each cell.
- * <p>
- * Note: Each individual cell is not written until its setup is de-serialized.
- * A cell to write() on this class may result in some cell's setup parameters
- * being written, others not.
- * <p>
+ * 
+ * <h3>Invalid Directories</h3>
+ * 
+ * If a cell directory is removed (via the WFSCell.removeCellDirectory() method)
+ * threads may still have a reference to the WFSCellDirectory object, yet it
+ * is no longer valid. In this case, the state of the WFSCellDirectory object
+ * is set to "invalid" and invocation of any of its methods will throw an
+ * IllegalStateException.
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WFSCellDirectory {
-    /* The cell associated with this directory */
+public class WFSCellDirectory extends WFSObject {
+    /*
+     * The cell associated with this directory. That is, the associated cell is
+     * the parent of all cells contained within this directory. This is set
+     * during object construction time and is invariant.
+     */
     private WFSCell associatedCell = null;
        
-    /* The path name of the cell (with the suffix) */
+    /*
+     * The path name of the cell directory, including all of the naming
+     * convention suffixes.
+     */
     private String pathName = null;
     
     /*
@@ -81,10 +96,10 @@ public class WFSCellDirectory {
     /**
      * Constructor, takes the implementation-specific directory delegate
      */
-    public WFSCellDirectory(WFS wfs, WFSCell associatedCell, DirectoryDelegate delegate) {
+    public WFSCellDirectory(WFS wfs, WFSCell assocCell, DirectoryDelegate del) {
         this.wfsRef = new WeakReference(wfs);
-        this.associatedCell = associatedCell;
-        this.delegate = delegate;
+        this.associatedCell = assocCell;
+        this.delegate = del;
     
         /* Compute what the path name of this directory should be */
         try {
@@ -110,12 +125,15 @@ public class WFSCellDirectory {
     }
     
     /**
-     * Returns an array of string representing the cell names in the current
-     * directory. Returns an empty array if no names exist.
+     * Returns an array of strings representing the cell names in the current
+     * directory. Returns an empty array if no cells exist.
      * 
      * @return An array of cell names contained within this directory
      */
     public String[] getCellNames() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * First attempt to read in the cells first. This simply returns if the
          * children have already been created. We don't need to explicitly
@@ -131,6 +149,9 @@ public class WFSCellDirectory {
      * @return The cell given its name, null if it does not exist
      */
     public WFSCell getCellByName(String cellName) {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * First attempt to read in the cells first. This simply returns if the
          * children have already been created. We don't need to explicitly
@@ -142,11 +163,14 @@ public class WFSCellDirectory {
     
     /**
      * Returns an array the WFSCell class representing all of the cells in the
-     * current directory.
+     * current directory. Returns an empty array if no cells exist.
      * 
      * @return An array of cells containing within this directory
      */
     public WFSCell[] getCells() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * First attempt to read in the cells first. This simply returns if the
          * children have already been created. We don't need to explicitly
@@ -163,6 +187,9 @@ public class WFSCellDirectory {
      * @return The associated cell
      */
     public WFSCell getAssociatedCell() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * There is no need to protect this with a read lock. Even though a
          * cell can move around within a file system, this is implemented as
@@ -173,15 +200,17 @@ public class WFSCellDirectory {
     }
 
     /**
-     * Adds a cell to this directory. Takes the name of the cell and its
-     * properties; a new WFSCell class is returned.
+     * Adds a cell to this directory. Takes the name of the cell; a new WFSCell
+     * class is returned. If the cell name already exists, this method returns
+     * null.
      * 
      * @param cellName The name of the new cell to add
-     * @param cellSetup The properties of the cell
      * @return The class representing the new cell
-     * @throw IOException Upon I/O error when adding the new cell
      */
     public WFSCell addCell(String cellName) {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
@@ -192,6 +221,13 @@ public class WFSCellDirectory {
          * loadChildCells() method does so.
          */
         this.loadChildCells();
+        
+        /*
+         * Check if the cell name already exists, if so, return null
+         */
+        if (this.children.containsKey(cellName) == true) {
+            return null;
+        }
         
         /* Call the implementation to create the cell */
         CellDelegate cellDelegate = this.delegate.createCellDelegate(cellName);
@@ -211,6 +247,9 @@ public class WFSCellDirectory {
      * @throw IOException Upon I/O error when removing the cell
      */
     public void removeCell(WFSCell cell) {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
@@ -222,30 +261,38 @@ public class WFSCellDirectory {
          */
         this.loadChildCells();
 
-        /* Remove the cell from the hashmap, ignore if it does not exist */
-        this.children.remove(cell.getCellName());
-        
-        /* Fire events to indicate a cell has been removed -- check to see that is really has been removed! XXX*/
-        this.wfsRef.get().fireCellChildrenRemoved(this.getAssociatedCell());
-        this.wfsRef.get().fireCellRemoved(cell);
+        /*
+         * Remove the cell from the hashmap. If it was present (non-null return)
+         * then set the cell to be invalid and fire a remove event
+         */
+        if (this.children.remove(cell.getCellName()) != null) {
+            cell.setInvalid();
+            
+            /*
+             * Fire an event to indicate the cell has been removed.
+             */
+            this.wfsRef.get().fireCellChildrenRemoved(this.getAssociatedCell());
+        }
     }
     
     /**
      * Writes all of the cells in this directory to the underlying medium. The
-     * list of cells must first be loaded (e.g. by calling getCells()), otherwise
-     * a WFSCellNotLoadedException is throw.
+     * list of cells must first be loaded (e.g. by calling getCells()),
+     * otherwise this method does nothing.
      * 
      * @throw IOException Upon general I/O error
      * @throw JAXBException Upon error writing to XML
-     * @throw WFSCellNotLoadedException If not all of the cells have been loaded
      */
-    public void write() throws IOException, JAXBException, WFSCellNotLoadedException {
+    public void write() throws IOException, JAXBException {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
-        /* If the hashmap is null, throw an exception */
+        /* If the hashmap is null, do nothing */
         if (this.children == null) {
-            throw new WFSCellNotLoadedException();
+            return;
         }
 
         /*
@@ -257,9 +304,6 @@ public class WFSCellDirectory {
             try {
                 cell.write();
             } catch (java.io.IOException excp) {
-                // log some error and continue
-                WFS.getLogger().warning("Unable to write cell to WFS: " + cell);
-            } catch (InvalidWFSCellException excp) {
                 // log some error and continue
                 WFS.getLogger().warning("Unable to write cell to WFS: " + cell);
             } catch (javax.xml.bind.JAXBException excp) {
@@ -277,6 +321,29 @@ public class WFSCellDirectory {
     }
     
     /**
+     * Tells the cell directory that the underlying medium has changed and it
+     * should set its contents to "dirty" -- so the next time information is
+     * fetched, it will be re-loaded from the underlying medium. Recursively
+     * sets all child cells to be "dirty" too.
+     */
+    public void setReload() {
+        /* Make sure the thread has write permissions */
+        this.wfsRef.get().checkOwnership();
+        
+        /* Mark this directory as dirty */
+        super.setDirty(true);
+        
+        /* Recursively tell all children that they are dirty too */
+        if (this.children != null) {
+            Iterator<WFSCell> it = this.children.values().iterator();
+            while (it.hasNext() == true) {
+                WFSCell cell = it.next();
+                cell.setReload();
+            }
+        }
+    }
+    
+    /**
      * Returns the unique path name of this cell directory, including all of
      * the naming convention suffixes.
      * 
@@ -284,6 +351,28 @@ public class WFSCellDirectory {
      */
     protected String getPathName() {
         return this.pathName;
+    }
+    
+    /**
+     * Sets the object to be invalid.
+     */
+    @Override
+    protected void setInvalid() {
+        super.setInvalid();
+        
+        /* Recursively set all child cells to be invalid */
+        if (this.children != null) {
+            Iterator<WFSCell> it = this.children.values().iterator();
+            while (it.hasNext() == true) {
+                WFSCell cell = it.next();
+                cell.setInvalid();
+            }
+        }
+        
+        /* Clean up references to help garbage collection */
+        this.children = null;
+        this.delegate = null;
+        this.associatedCell = null;      
     }
     
     /**
@@ -312,12 +401,24 @@ public class WFSCellDirectory {
         try {
             synchronized(this.children) {
                 /*
-                 * If the hashmap is not null, then simply return. We need to
-                 * make this check inside the synchronized keyword because the
-                 * creation of the hashmap and filling the hashmap happen in
-                 * multiple steps below.
+                 * If the hashmap is not null and the WFS has not been reloaded
+                 * (dirty = false), then simply return. We need to make this
+                 * check inside the synchronized keyword because the creation
+                 * of the hashmap and filling the hashmap happen in multiple
+                 * steps below.
                  */
-                if (this.children != null) {
+                if (this.children != null && super.isDirty() == false) {
+                    return;
+                }
+                else if (this.children != null) {
+                    /*
+                     * Otherwise if the children have already been loaded and
+                     * we have asked this cell directory to reload itself, we
+                     * should intelligently figure out which cells are new and
+                     * which are no longer existent.
+                     */
+                    this.refreshCells();
+                    super.setDirty(false);
                     return;
                 }
 
@@ -329,14 +430,75 @@ public class WFSCellDirectory {
                 this.children = new HashMap<String, WFSCell>();
                 String fileNames[] = this.delegate.loadCellNames();
                 for (String fileName : fileNames) {
-                    String cellName = WFSCell.stripCellFileSuffix(fileName);
-                    CellDelegate cellDelegate = this.delegate.createCellDelegate(cellName);
-                    WFSCell cell = new WFSCell(this.wfsRef.get(), cellName, this, cellDelegate);
-                    this.children.put(cellName, cell);
+                    String name = WFSCell.stripCellFileSuffix(fileName);
+                    CellDelegate del = this.delegate.createCellDelegate(name);
+                    WFSCell cell = new WFSCell(this.wfsRef.get(), name, this, del);
+                    this.children.put(name, cell);
                 }
             }
         } finally {
             this.wfsRef.get().getReadLock().unlock();
+        }
+    }
+    
+    /**
+     * Refresh the list of cells intelligently. Create new cells for those that
+     * are new, remove the cell for those that have been removed. This method
+     * assumes that the cells have already been loaded (this.children != null)
+     */
+    private void refreshCells() {
+        /* Make a copy of the existing list of children */
+        HashMap<String, WFSCell> oldChildren = new HashMap(this.children);
+        
+        /* Booleans indicating whether to fire added or removed events */
+        boolean fireAdded = false;
+        boolean fireRemoved = false;
+        
+        /*
+         * Loop through and see if the cell is in the directory. If it already
+         * exists in the list, do nothing. If it is new, create a new cell and
+         * fire an event. Remove it from the list of "old" children.
+         */
+        String fileNames[] = this.delegate.loadCellNames();
+        for (String fileName : fileNames) {
+            String name = WFSCell.stripCellFileSuffix(fileName);
+            if (oldChildren.containsKey(name) == true) {
+                oldChildren.remove(name);
+            }
+            else {
+                CellDelegate del = this.delegate.createCellDelegate(name);
+                WFSCell cell = new WFSCell(this.wfsRef.get(), name, this, del);
+                this.children.put(name, cell);
+                fireAdded = true;   
+            }
+        }
+        
+        /*
+         * This list of children that no longer exist in the directory is now
+         * given by oldChildren. Remove each child, one by one, invalidate them,
+         * and fire a remove event, and remove them from the list.
+         */
+        Iterator<String> it = oldChildren.keySet().iterator();
+        while (it.hasNext() == true) {
+            /*
+             * Fetch the cell from the list, invalidate it (recursively), and
+             * remove from the list and fire an event.
+             */
+            String cellName = it.next();
+            WFSCell cell = this.children.get(cellName);
+            cell.setInvalid();
+            this.children.remove(cellName);
+            fireRemoved = true;
+        }
+        
+        /* Fire the added event if needed */
+        if (fireAdded == true) {
+            this.wfsRef.get().fireCellChildrenAdded(this.getAssociatedCell());
+        }
+        
+        /* Fire the removed event if needed */
+        if (fireRemoved == true) {
+            this.wfsRef.get().fireCellChildrenRemoved(this.getAssociatedCell());
         }
     }
 }

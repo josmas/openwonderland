@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: WFSRootDirectory.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,10 +11,11 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.1.2.2 $
- * $Date: 2008/04/08 10:44:30 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
+
 package org.jdesktop.wonderland.wfs;
 
 import java.io.IOException;
@@ -29,55 +28,22 @@ import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
  * cells. It delegates to an instance of WFSCellDirectory
  * <p>
  * The root directory also contains meta-information about the WFS, including
- * the WFS URI aliases and the version. Unlike WFSCellDirectory objects, this
- * class has no cell associated with it, so calls to getAssociatedCell() always
- * return null.
+ * the WFS version. Unlike WFSCellDirectory objects, this class has no cell
+ * associated with it, so calls to getAssociatedCell() always return null.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class WFSRootDirectory extends WFSCellDirectory {
    
-    /* The WFSVersion and WFSAliases objects */
-    private WFSAliases aliases = null;
+    /* The WFSVersion object */
     private WFSVersion version = null;
     
-    /* The file names for the aliases and version classes */
-    public static final String ALIASES = "aliases.xml";
+    /* The file names for the version class */
     public static final String VERSION = "version.xml";
     
     /** Constructor that takes the directory delegate */
     public WFSRootDirectory(WFS wfs, DirectoryDelegate delegate) {
         super(wfs, delegate);
-    }
-
-    /**
-     * Returns the WFS URI aliases for this filesystem.
-     * 
-     * @return The aliases of the WFS.
-     */
-    public WFSAliases getAliases() {
-        /*
-         * Protect with a read lock since this can be updated via the public
-         * method setAliases().
-         */
-        this.wfsRef.get().getReadLock().lock();
-        try {
-            return this.aliases;
-        } finally {
-            this.wfsRef.get().getReadLock().unlock();
-        }
-    }
-    
-    /**
-     * Sets the WFS URI aliases for this filesystem.
-     * 
-     * @param aliases The new aliases for this filesytem
-     */
-    public void setAliases(WFSAliases aliases) {
-        /* Make sure the thread has write permissions */
-        this.wfsRef.get().checkOwnership();
-        
-        this.aliases = aliases;
     }
     
     /**
@@ -86,6 +52,9 @@ public class WFSRootDirectory extends WFSCellDirectory {
      * @return The version of the WFS
      */
     public WFSVersion getVersion() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * Protect with a read lock since this can be updated via the public
          * method setVersion().
@@ -104,6 +73,9 @@ public class WFSRootDirectory extends WFSCellDirectory {
      * @param version The new version for this filesystem
      */
     public void setVersion(WFSVersion version) {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
@@ -117,10 +89,12 @@ public class WFSRootDirectory extends WFSCellDirectory {
      * 
      * @throw IOException Upon general I/O error
      * @throw JAXBException Upon error writing to XML
-     * @throw WFSCellNotLoadedException If not all of the cells have been loaded
      */
     @Override
-    public void write() throws IOException, JAXBException, WFSCellNotLoadedException {
+    public void write() throws IOException, JAXBException {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
@@ -132,21 +106,20 @@ public class WFSRootDirectory extends WFSCellDirectory {
     }
     
     /**
-     * Writes the WFS meta-information (e.g. version, aliases) to the WFS.
+     * Writes the WFS meta-information (e.g. version) to the WFS.
      * <p>
      * @throw IOException Upon a general I/O error
      * @throw JAXBException Upon error writing to XML
      */
     public void writeMetaData() throws IOException, JAXBException {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
         if (this.getVersion() != null) {
             this.getVersion().encode(this.delegate.getWriter(WFSRootDirectory.VERSION));
-        }
-
-        if (this.getAliases() != null) {
-            this.getAliases().encode(this.delegate.getWriter(WFSRootDirectory.ALIASES));
         }
     }
 }

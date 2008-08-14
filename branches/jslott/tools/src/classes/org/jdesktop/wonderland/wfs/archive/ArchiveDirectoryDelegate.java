@@ -31,10 +31,9 @@ import org.jdesktop.wonderland.wfs.delegate.CellDelegate;
 import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 /**
- * The WFSArchiveCellDirectory is a directory within a Wonderland File System
- * (WFS) that corresponds to a cell and corresponds to an entry within a JAR
- * file. A WFSArchiveCellDirectory may contain cells and cell directories.
- *
+ * The ArchiveDirectoryDelegate class implements methods to support accessing WFS
+ * directories from an archive.
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ArchiveDirectoryDelegate implements DirectoryDelegate {

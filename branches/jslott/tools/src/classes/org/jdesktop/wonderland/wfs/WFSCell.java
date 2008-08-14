@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: WFSCell.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,71 +11,72 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2.8.4 $
- * $Date: 2008/04/08 10:44:30 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
-import javax.swing.event.EventListenerList;
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.cells.BasicCellSetup;
-import org.jdesktop.wonderland.wfs.event.WFSEvent;
-import org.jdesktop.wonderland.wfs.event.WFSListener;
 import org.jdesktop.wonderland.wfs.delegate.CellDelegate;
 import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 /**
- * The WFSCell abstract class represents a single cell in a WFS. Each cell is
- * identified by a name that corresponds to the name given the file contained
- * within the WFS (without the '-wlc.xml' extension). Each cell is also given
- * a canonical name that can be used to uniquely identify the cell within the
- * WFS. The cell name (and canonical name) are immutable--to rename a cell, one
- * must create a new WFSCell object and delete the old object.
+ * The WFSCell class represents a single cell in a WFS. Each cell is identified
+ * by a name that corresponds to the name given the file contained within the
+ * WFS (without the '-wlc.xml' extension). The cell name is immutable--to rename
+ * a cell, one must create a new WFSCell object and delete the old object. The
+ * cell name is unique only to its immediate parent.
  * <p>
+ * The directory in which this cell is contained is obtained via the
+ * getParentCellDirectory() method and the cell's parent via the getParentCell()
+ * method.
+ * 
+ * <h3>Canonical Name</h3>
+ * 
+ * A cell also has a name unique in the entire WFS. Typically, this name is the
+ * hierarchical path to the cell, but the particular format of this name is
+ * not guaranteed. Threads obtain the unique name via the getCanonicalName()
+ * method.
+ * 
+ * <h3>Cell Setup Properties</h3>
+ * 
+ * Each cell has a collection of configuration ("setup") properties encoded as
+ * a string in its disk file. Typically, this string is XML encoded, but this
+ * API is not tied to one particular encoding. The properties of the cell are
+ * not read until explictly asked to do so, via the getCellSetup() method. The
+ * cell's setup properties may be set via the setCellSetup() method. Note that
+ * a cell's setup properties are not written back out to the underlying medium
+ * unless the properties were modified via the setCellSetup() method.
+ * 
+ * <h3>Cell Children</h3>
+ *
  * If the WFSCell has children, they reside in the corresponding directory (with
  * the '-wld' extension), a handle to the directory is obtained by calling the
- * getCellDirectory() method. The actual directory is not referenced until this
- * method is called for the first time. 
- * <p>
+ * getCellDirectory() method. If the child cell directory does not exist, the
+ * getCellDirectory() returns null. A child cell directory may be created via
+ * the createCellDirectory() method.
+ * 
+ * <h3>Writing to Underlying Medium</h3>
+ * 
  * The writeCell() method updates the cell data on the underlying medium. It
  * does not update any of its children. The write() method updates the cell
  * data on the underlying medium and recursively updates all of its children
  * too.
  *
- * <h3>Cell Properties<h3>
+ * <h3>Invalid Cells</h3>
  * 
- * The properties of the cell are not read until explictly asked to do so, via
- * the getCellSetup() method. This method returns a subclass of BasicCellSetup.
- * <p>
- * The cell properties object may be set via the setCellSetup() method, although
- * modifying the cell setup class itself will also update a cell's properties.
- * When a WFS is updated on the underlying medium, the cell property class,
- * because it can be a time-consuming operation, is not automatically updated. 
- * (Noly only may the serlialization to XML be time-consuming, but the 'last
- * modified' stamp on the cell gets updates upon each write too, causing the
- * cell to always be reloaded by Wonderland. The 'reload' is a time-consuming
- * process and not necessary if the cell did not change.)
- * <p>
- * The WFS API follows the following algorithm to determine whether to update
- * the cell properties on the underlying medium:
- * <p>
- * 1. If the setCellSetup() method is invoked since the last write, then the
- *    cell properties are written.
- * 2. If the setCellSetupUpdate() method is invoked since the last write, then
- *    the cell properties are written.
- * <p>
- * If a write is performed before the cell property's are explicitly read, then
- * the write method throws WFSCellNotLoadedException, and the write stops.
- * <p>
+ * Threads may have obtained a WFSCell object that has since been removed from
+ * the WFS. In such a case, a cell is considered "invalid" and any calls to its
+ * methods will throw an IllegalStateException.
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WFSCell {
+public class WFSCell extends WFSObject {
     /* The cell name without any naming convention suffix */ 
     private String cellName = null;
     
@@ -93,18 +92,20 @@ public class WFSCell {
     /* The implementation specific cell delegate */
     private CellDelegate delegate = null;
     
-    /* The cell's setup object, null if it has not yet been read */
-    protected BasicCellSetup cellSetup = null;
+    /* The cell's setup data, null if it has not yet been read */
+    protected String cellSetup = null;
     
     /* True if the cell's setup should be written upon the next write() */
     private boolean cellSetupUpdate = false;
     
     /* The parent cell directory that contains this cell */
     private WFSCellDirectory parentDirectory = null;
-
     
     /* A weak reference to the main WFS object */
     private WeakReference<WFS> wfsRef = null;
+    
+    /* The time the file was last modified when it was last read */
+    private long lastModifiedWhenRead = -1;
     
     /** Default constructor, should never be called */
     protected WFSCell(WFS wfs, String cellName, WFSCellDirectory parentDirectory, CellDelegate delegate) {
@@ -149,6 +150,9 @@ public class WFSCell {
      * @return The parent cell directory
      */
     public WFSCellDirectory getParentCellDirectory() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * There is no need to protect this with a read lock. Even though the
          * parent of a cell can change on the file system-level, that gets
@@ -166,6 +170,9 @@ public class WFSCell {
      * @return The parent cell, null if in the root directory
      */
     public WFSCell getParentCell() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * There is no need to protect this with a read lock. Even though the
          * parent of a cell can change on the file system-level, that gets
@@ -183,6 +190,9 @@ public class WFSCell {
      * @return A unique, canonical name for the cell
      */
     public String getCanonicalName() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * There is no need to protect this with a read lock. Even though a
          * cell can move around within a file system, this is implemented as
@@ -198,28 +208,16 @@ public class WFSCell {
      * @return The name of the cell file in the WFS
      */
     public String getCellName() {
-        /*
-         * The cell name can change via the public method setCellName(), so
-         * we must protect this with a read lock
-         */
-        this.wfsRef.get().getReadLock().lock();
-        try {
-            return this.cellName;
-        } finally {
-            this.wfsRef.get().getReadLock().unlock();
-        }
-    }
-
-    /**
-     * Sets the name of the cell
-     *
-     * @param cellName The name of the cell 
-     */
-    public void setCellName(String cellName) {
-        /* Make sure the thread has write permissions */
-        this.wfsRef.get().checkOwnership();
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
         
-        this.cellName = cellName;
+        /*
+         * There is no need to protect this with a read lock. Even though a
+         * cell can move around within a file system, this is implemented as
+         * removing a cell and adding it somewhere else. The 'canonicalName'
+         * member variable is invariant in the WFSCell class.
+         */
+        return this.cellName;
     }
 
     /**
@@ -229,6 +227,9 @@ public class WFSCell {
      * @return The child directory for this cell, null if none
      */
     public WFSCellDirectory getCellDirectory() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * Protect with a read lock. The cell directory is initially null and
          * is created by the public method createCellDirectory().
@@ -245,13 +246,22 @@ public class WFSCell {
      * Creates a directory that will contain children of this cell. Depending
      * upon the type of WFS, this routine may either update a file system
      * immediately, or simply store the update in memory. Returns the object
-     * representing the new directory.
+     * representing the new directory. If the cell directory already exists,
+     * returns the exist directory object.
      * 
      * @return A WFSCellDirectory object representing the new directory
      */
     public WFSCellDirectory createCellDirectory() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
+        
+        /* If the cell directory already exists, return it */
+        if (this.cellDirectory != null) {
+            return this.cellDirectory;
+        }
         
         /*
          * Simply create the object -- the actual directory does not get
@@ -267,8 +277,16 @@ public class WFSCell {
      * does not exist, then this method does nothing.
      */
     public void removeCellDirectory() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
+        
+        /* Tell the cell directory to invalidate itself */
+        if (this.cellDirectory != null) {
+            this.cellDirectory.setInvalid();
+        }
         
         /* Simply set the object to null -- to be removed upon a write() */
         this.cellDirectory = null;
@@ -281,6 +299,9 @@ public class WFSCell {
      * @return The last time the cell was modified in the WFS
      */
     public long getLastModified() {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * There is no need to protect this with a read lock. The only way this
          * can change is if the disk file changes.
@@ -289,15 +310,15 @@ public class WFSCell {
     }
 
     /**
-     * Returns the instance of a subclass of the BasisCellSetup class that is
-     * decoded from the XML file representation.
-     *
-     * @return A class representing the cell's properties
-     * @throw FileNotFoundException If the file cannot be read
-     * @throw InvalidWFSCellException If the cell in the file is invalid
+     * Returns the cell's setup properties as a string.
+     * 
+     * @return A string representing the cell's properties
+     * @throw IOException Upon general I/O error
      */
-    public <T extends BasicCellSetup> T getCellSetup()
-            throws FileNotFoundException, InvalidWFSCellException {
+    public String getCellSetup() throws IOException {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /*
          * The multi-threaded behavior of this method is a bit complicated. On
          * the one-hand, the method should try to acquire the read lock. One
@@ -306,24 +327,42 @@ public class WFSCell {
          * acquire a read lock (that will prevent other writes to the 'cellSetup'
          * member variable) and also synchronize around cellSetup so that more
          * than one thread calling this method won't re-parse the same data.
-         */
-        
+         */        
         this.wfsRef.get().getReadLock().lock();
         
         try {
             synchronized (this.cellSetup) {
-                /* If the cell's setup has already been read, then return it */
-                if (this.cellSetup != null) {
-                    Class clazz = this.cellSetup.getClass();
-                    return (T) clazz.cast(this.cellSetup);
+                /*
+                 * If the cell's setup has already been read and the cell has
+                 * not been told to reload itself, then return the loaded
+                 * properties.
+                 */
+                if (this.cellSetup != null && this.isDirty() == false) {
+                    return this.cellSetup;
+                }
+                else if (this.cellSetup != null) {
+                    /*
+                     * If the cell's properties have been loaded and we have
+                     * been told to reload the cell's properties, check whether
+                     * the last modified time has changed. If so, reload the
+                     * properties
+                     */
+                    if (this.lastModifiedWhenRead < this.getLastModified()) {
+                        this.cellSetup = this.delegate.decode();
+                        this.lastModifiedWhenRead = this.getLastModified();
+                        this.cellSetupUpdate = false;
+                        this.wfsRef.get().fireCellAttributeUpdate(this);
+                        return this.cellSetup;
+                    }
+                    this.setDirty(false);
                 }
 
                 /* Otherwise, read it in from disk and return it */
                 try {
-                    T newCellSetup = (T) this.delegate.decode();
-                    this.cellSetup = newCellSetup;
+                    this.cellSetup = this.delegate.decode();
+                    this.lastModifiedWhenRead = this.getLastModified();
                     this.cellSetupUpdate = false;
-                    return newCellSetup;
+                    return this.cellSetup;
                 } catch (java.lang.UnsupportedOperationException excp) {
                     /* If it is unsupported, just quietly return null */
                     return null;
@@ -340,70 +379,30 @@ public class WFSCell {
      * @param cellSetup The cell properties class
      * @throw InvalidWFSCellException If the cell properties is invalid
      */
-    public <T extends BasicCellSetup> void setCellSetup(T cellSetup)
-            throws InvalidWFSCellException {
+    public void setCellSetup(String cellSetup) {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
         
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
         /*
-         * Sets the cell setup class and indicates the cell to be udpated upon
+         * Sets the cell setup class and indicates the cell to be updated upon
          * the next write
          */
         this.cellSetup = cellSetup;
-        this.setCellSetupUpdate();
-    }
-    
-    /**
-     * Indicates that this cell's setup class should be updated upon the next
-     * write() invocation, even if the setup parameters have not changed.
-     */
-    public void setCellSetupUpdate() {
-        /* Make sure the thread has write permissions */
-        this.wfsRef.get().checkOwnership();
-        
-        /* Indiciate that the cell's attributes should be update, and fire events */
         this.cellSetupUpdate = true;
-        this.wfsRef.get().fireCellAttributeUpdate(this);
-    }
-    
-    /**
-     * Returns true if the cell's setup class should be updated upon the next
-     * write() invocation.
-     * 
-     * @return True to update the cell's setup
-     */
-    public boolean isCellSetupUpdate() {
-        /*
-         * Acquire the read lock since this can be updated via setCellSetupUpdate()
-         * or clearCellSetupUpdate().
-         */
-        this.wfsRef.get().getReadLock().lock();
-        try {
-            return this.cellSetupUpdate;
-        } finally {
-            this.wfsRef.get().getReadLock().unlock();
-        }
-    }
-
-    /**
-     * Clears the flag to indicate whether the cell should be updated upon the
-     * next write. This is not a public method on the API.
-     */
-    private void clearCellSetupUpdate() {
-        /* Make sure the thread has write permissions */
-        this.wfsRef.get().checkOwnership();
-        
-        this.cellSetupUpdate = false;
     }
     
     /**
      * Updates the contents of the cell to the underlying medium.
      * 
-     * @throw InvalidWFSCellException If the cell's setup is not valid
      * @throw IOException Upon general I/O error
      */
-    public void writeCell() throws IOException, InvalidWFSCellException, JAXBException {
+    public void writeCell() throws IOException, JAXBException {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
@@ -412,20 +411,22 @@ public class WFSCell {
          * disk. If so, then write and clear the update flag. If not, do
          * nothing.
          */
-        if (this.isCellSetupUpdate() == true) {
+        if (this.cellSetupUpdate == true) {
             this.delegate.encode(this.cellSetup);
-            this.clearCellSetupUpdate();
+            this.cellSetupUpdate = false;
         }
     }
     
     /**
      * Updates the contents of the cell to the underlying medium, and recursively
-     * for all of its children cells
+     * for all of its children cells.
      * 
-     * @throw InvalidWFSCellException If the cell's setup is not valid
      * @throw IOException Upon general I/O error
      */
-    public void write() throws IOException, InvalidWFSCellException, JAXBException {
+    public void write() throws IOException, JAXBException {
+        /* Check to see if the cell is no longer valid */
+        super.checkInvalid();
+        
         /* Make sure the thread has write permissions */
         this.wfsRef.get().checkOwnership();
         
@@ -448,14 +449,45 @@ public class WFSCell {
          * and ignore.
          */
         this.delegate.createCellDirectory();
-        try {
-            this.cellDirectory.write();
-        } catch (WFSCellNotLoadedException excp) {
-            /* Quietly ignore */
+        this.cellDirectory.write();
+    }
+    
+    /**
+     * Tells the cell that the underlying medium has changed and it should set
+     * its contents to "dirty" -- so the next time information is fetched, it
+     * will be re-loaded from the underlying medium. Recursively sets all child
+     * cells to be "dirty" too.
+     */
+    public void setReload() {
+        /* Make sure the thread has write permissions */
+        this.wfsRef.get().checkOwnership();
+        
+        /*
+         * Mark this directory as dirty. This will cause the cell properties
+         * to be reloaded if the last modified date has changed.
+         */
+        super.setDirty(true);
+ 
+        /*
+         * Because the cell directory is created only at object construction
+         * time, we need to check whether it still exists, or whether it newly
+         * exists.
+         */
+        if (this.cellDirectory == null && this.delegate.cellDirectoryExists() == true) {
+            DirectoryDelegate dirDelegate = this.delegate.createDirectoryDelegate();
+            this.cellDirectory = new WFSCellDirectory(this.wfsRef.get(), this, dirDelegate);
+        }
+        else if (this.cellDirectory != null && this.delegate.cellDirectoryExists() == false) {
+            this.cellDirectory.setInvalid();
+            this.cellDirectory = null;
+        }
+        
+        /* Recursively tell all children that they are dirty too */
+        if (this.cellDirectory != null) {
+            this.cellDirectory.setReload();
         }
     }
     
- 
     /**
      * Returns the unique path name of this cell, including all of the naming
      * convention suffixes.
@@ -483,5 +515,23 @@ public class WFSCell {
             /* Quietly return the original */
         }
         return fileName;
+    }
+ 
+    /**
+     * Sets the object to be invalid.
+     */
+    @Override
+    protected void setInvalid() {
+        super.setInvalid();
+        
+        /* Recursively ask any cell directory to invalidate itself */
+        if (this.cellDirectory != null) {
+            this.cellDirectory.setInvalid();
+        }
+        
+        /* Null out references to help out garbage collection */
+        this.cellDirectory = null;
+        this.cellSetup = null;
+        this.parentDirectory = null;
     }
 }

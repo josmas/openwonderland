@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: FileWFS.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3.8.2 $
- * $Date: 2008/04/08 10:44:31 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs.file;
@@ -30,8 +28,6 @@ import java.util.logging.Level;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.wfs.InvalidWFSException;
 import org.jdesktop.wonderland.wfs.WFS;
-import org.jdesktop.wonderland.wfs.WFSAliases;
-import org.jdesktop.wonderland.wfs.WFSCellNotLoadedException;
 import org.jdesktop.wonderland.wfs.WFSRootDirectory;
 import org.jdesktop.wonderland.wfs.WFSVersion;
 import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
@@ -41,7 +37,7 @@ import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
  * The FileWFS class extends the WFS abstract class and represents a Wonderland
  * File System that resides on disk.
  * <p>
- * @author jslott
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class FileWFS extends WFS {
     /* The location of the file system, and a referring File object */
@@ -70,7 +66,7 @@ public class FileWFS extends WFS {
         
         /*
          * Test whether the URI has a null scheme (in which case it is assumed to
-         * be 'file' type or whether it is of type file. XXX
+         * be 'file' type) or whether it is of type file.
          */
         if (uri.getScheme() != null && uri.getScheme().equals("file") != true) {
             throw new SecurityException("Invalid URI scheme type: " + uri.getScheme());
@@ -102,6 +98,7 @@ public class FileWFS extends WFS {
             }
         }
         
+        /* Create the root directory */
         DirectoryDelegate delegate = new FileDirectoryDelegate(this.root);
         this.directory = new WFSRootDirectory(this, delegate);
         
@@ -111,24 +108,12 @@ public class FileWFS extends WFS {
         }
         
         /*
-         * Attempt to open and read the aliases.xml file as a WFSAliases class, if
-         * it exists. If it does not exist, then simply have no mapping and fail
-         * by writing an error to the log.
-         */
-        try {
-            File afile   = new File(this.root, WFSRootDirectory.ALIASES);
-            this.directory.setAliases(WFSAliases.decode(new FileReader(afile)));
-        } catch (FileNotFoundException excp) {
-            WFS.getLogger().log(Level.INFO, "Invalid/Nonexistent aliases.xml file in WFS: " + uri.toString());
-        }
-        
-        /*
          * Attempt to open and read the version.xml file as a WFSVersion class, if
          * it exists. If it does not exist, then simply assign the current version
          * of the software and log a message
          */
         try {
-            File vfile   = new File(this.root, WFSRootDirectory.VERSION);
+            File vfile = new File(this.root, WFSRootDirectory.VERSION);
             this.directory.setVersion(WFSVersion.decode(new FileReader(vfile)));
         } catch (FileNotFoundException excp) {
             WFS.getLogger().log(Level.INFO, "Invalid/Nonexistent version.xml file in WFS: " + uri.toString());
@@ -144,7 +129,7 @@ public class FileWFS extends WFS {
      * @throw IOException Upon a general I/O error.
      */
     @Override
-    public void write() throws IOException, JAXBException, WFSCellNotLoadedException {
+    public void write() throws IOException, JAXBException {
         /* Delegate to the root directory for writing */
         this.directory.write();
     }

@@ -1,5 +1,19 @@
-/*
- * Copyright TBD
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs;
@@ -20,7 +34,7 @@ import org.jdesktop.wonderland.wfs.memory.MemoryWFS;
  * created programmatically.
  * <p>
  * All methods on this class are static.
- * <p>
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public final class WFSFactory {
@@ -49,7 +63,9 @@ public final class WFSFactory {
      * @throw JAXBException Upon error reading XML
      * @throw InvalidWFSException If the WFS is not properly formatted 
      */
-    public static WFS create(URL url) throws IOException, InvalidWFSException, JAXBException {
+    public static WFS create(URL url)
+            throws IOException, InvalidWFSException, JAXBException {
+        
         String protocol = url.getProtocol();
         
         /* If the URL points to a disk directory */
@@ -77,7 +93,10 @@ public final class WFSFactory {
      * @throw JAXBException Upon error reading XML
      * @throw InvalidWFSException If the WFS is not properly formatted 
      */
-    public static final WFS open(URL url) throws FileNotFoundException, IOException, JAXBException, InvalidWFSException {
+    public static final WFS open(URL url)
+            throws FileNotFoundException, IOException, JAXBException,
+            InvalidWFSException {
+        
         String protocol = url.getProtocol();
         
         /* If the URL points to a disk directory */

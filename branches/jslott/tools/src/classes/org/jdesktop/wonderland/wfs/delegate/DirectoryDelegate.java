@@ -24,9 +24,9 @@ import java.util.HashMap;
 import org.jdesktop.wonderland.wfs.WFSCell;
 
 /**
- * The WFSCellDirectoryDelegate interface represents the methods that must be
+ * The DirectoryDelegate interface represents the methods that must be
  * implemented for each different kind of medium for a WFS (disk, archive,
- * memory). The methods here are used to manipulate the file in the medium.
+ * memory). The methods here are used to manipulate the directory in the medium.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */

@@ -23,18 +23,26 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * The RepositoryChecksums class represents a collection of checkums for a given
@@ -52,12 +60,20 @@ public class RepositoryChecksums {
     /* The SHA-1 checksum algorithm */
     public final static String SHA1_CHECKSUM_ALGORITHM = "SHA-1";
     
-    /* An array of individual checksum objects */
-    @XmlElements({
+    /* A hashtable to resource path name-checksum entries */
+    @XmlElements({ 
         @XmlElement(name="checksum")
     })
-    public Checksum[] checksums = null;
+    public ChecksumsHashMap checksums = new ChecksumsHashMap();
 
+    /*
+     * The internal representation of the checksums as a hashed map. The HashMap
+     * class is not supported by JAXB so we must convert it to a list for
+     * serialization
+     */
+    @XmlTransient
+    public HashMap<String, Checksum> internalChecksums = new HashMap<String, Checksum>();
+    
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
     private static Unmarshaller unmarshaller = null;
@@ -73,6 +89,36 @@ public class RepositoryChecksums {
             System.out.println(excp.toString());
         }
     }
+
+    /**
+     * A wrapper class for hashmaps, because JAXB does not correctly support
+     * the HashMap class.
+     */
+    public static class ChecksumsHashMap implements Serializable {
+        /* A list of entries */
+        @XmlElements( {
+            @XmlElement(name="entry")
+        })
+        public List<HashMapEntry> entries = new ArrayList<HashMapEntry>();
+
+        /** Default constructor */
+        public ChecksumsHashMap() {
+        }
+    }
+    
+    /**
+     * A wrapper class for hashmap entries, because JAXB does not correctly
+     * support the HashMap class
+     */
+    public static class HashMapEntry implements Serializable {
+        /* The key and values */
+        @XmlAttribute public String key;
+        @XmlAttribute public Checksum value;
+
+        /** Default constructor */
+        public HashMapEntry() {
+        }
+    }
     
     /** Default constructor */
     public RepositoryChecksums() {
@@ -81,10 +127,10 @@ public class RepositoryChecksums {
     /**
      * Sets the array of individual checksums.
      * 
-     * @param checksums An array of Checksum objects
+     * @param checksums An hash map of Checksum objects
      */
-    public void setChecksums(Checksum[] checksums) {
-        this.checksums = checksums;
+    public void setChecksums(HashMap<String, Checksum> checksums) {
+        this.internalChecksums = checksums;
     }
     
     /**
@@ -92,8 +138,8 @@ public class RepositoryChecksums {
      * 
      * @return An array of Checksum objects
      */
-    public Checksum[] getChecksums() {
-        return this.checksums;
+    public HashMap<String, Checksum> getChecksums() {
+        return this.internalChecksums;
     }
     
     /**
@@ -105,7 +151,21 @@ public class RepositoryChecksums {
      * @throw JAXBException Upon error reading the XML file
      */
     public static RepositoryChecksums decode(Reader r) throws JAXBException {
-        return (RepositoryChecksums)RepositoryChecksums.unmarshaller.unmarshal(r);        
+        RepositoryChecksums rc = (RepositoryChecksums)RepositoryChecksums.unmarshaller.unmarshal(r); 
+        
+        /* Convert metadata to internal representation */
+        if (rc.checksums != null) {
+            ListIterator<HashMapEntry> iterator = rc.checksums.entries.listIterator();
+            rc.internalChecksums = new HashMap<String, Checksum>();
+            while (iterator.hasNext() == true) {
+                HashMapEntry entry = iterator.next();
+                rc.internalChecksums.put(entry.key, entry.value);
+            }
+        }
+        else {
+            rc.internalChecksums = null;
+        }
+        return rc;
     }
     
     /**
@@ -115,6 +175,19 @@ public class RepositoryChecksums {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
+        /* Convert internal checksum hash to one suitable for serialization */
+        if (this.internalChecksums != null) {
+            this.checksums = new ChecksumsHashMap();
+            for (Map.Entry<String, Checksum> e : this.internalChecksums.entrySet()) {
+                HashMapEntry entry = new HashMapEntry();
+                entry.key = e.getKey();
+                entry.value = e.getValue();
+                this.checksums.entries.add(entry);
+            }
+        }
+        else {
+            this.checksums = null;
+        }
         RepositoryChecksums.marshaller.marshal(this, w);
     }
     
@@ -141,22 +214,22 @@ public class RepositoryChecksums {
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         
         /* Recursively generate checksums, then convert list to an array */
-        LinkedList<Checksum> list = RepositoryChecksums.generateChecksumForDirectory(
+        HashMap<String, Checksum> list = RepositoryChecksums.generateChecksumForDirectory(
                 root, root, digest, includes, excludes);
         RepositoryChecksums rc = new RepositoryChecksums();
-        rc.setChecksums(list.toArray(new Checksum[] {}));
+        rc.setChecksums(list);
         return rc;
     }
     
     /**
-     * Recursively generates checksums for the given directory. Returns a linked
-     * list of all checksum objects beneath the given root directory.
+     * Recursively generates checksums for the given directory. Returns a hash
+     * map of all checksum objects beneath the given root directory.
      */
-    private static LinkedList<Checksum> generateChecksumForDirectory(File root,
+    private static HashMap<String, Checksum> generateChecksumForDirectory(File root,
             File dir, MessageDigest digest, String[] includes, String[] excludes) {
  
         /* Put all of the checksums we generate in this linked list */
-        LinkedList<Checksum> list = new LinkedList<Checksum>();
+        HashMap<String, Checksum> list = new HashMap<String, Checksum>();
 
         /*
          * Loop through all of the files. If it is a directory, then recursively
@@ -167,9 +240,9 @@ public class RepositoryChecksums {
         for (File file : files) {
             /* If a directory, then recursively descend and append */
             if (file.isDirectory() == true) {
-                LinkedList<Checksum> rList = RepositoryChecksums.generateChecksumForDirectory(
+                HashMap<String, Checksum> rList = RepositoryChecksums.generateChecksumForDirectory(
                         root, file, digest, includes, excludes);
-                list.addAll(rList);
+                list.putAll(rList);
             }
             else if (file.isFile() == true && file.isHidden() == false) {
                 /*
@@ -205,7 +278,7 @@ public class RepositoryChecksums {
                         c.setLastModified(file.lastModified());
                         c.setPathName(name);
                         c.setChecksum(Checksum.toHexString(byteChecksum));
-                        list.add(c);
+                        list.put(name, c);
                     } catch (java.io.IOException excp) {
                         // ignore for now
                     }

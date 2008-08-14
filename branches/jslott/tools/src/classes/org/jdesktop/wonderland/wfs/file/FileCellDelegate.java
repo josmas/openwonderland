@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: WFSFileCell.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,23 +11,20 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3.8.4 $
- * $Date: 2008/04/08 10:44:31 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs.file;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.cells.BasicCellSetup;
-import org.jdesktop.wonderland.wfs.InvalidWFSCellException;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSCell;
 import org.jdesktop.wonderland.wfs.delegate.CellDelegate;
@@ -37,9 +32,9 @@ import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 
 /**
- * The WFSCell class represents an XML file on disk corresponding to the
- * definition of Wonderland cell. This class extends WFSCell.
- * <p>
+ * The FileCellDelegate class implements methods to support accessing WFS files
+ * on disk.
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class FileCellDelegate implements CellDelegate {
@@ -56,7 +51,7 @@ public class FileCellDelegate implements CellDelegate {
      * Creates a new directory delegate for the cell directory containing the
      * child cells of this cell.
      * 
-     * @return A new directory delegate.
+     * @return A new directory delegate
      */
     public DirectoryDelegate createDirectoryDelegate() {
         /*
@@ -139,44 +134,34 @@ public class FileCellDelegate implements CellDelegate {
     }
         
     /**
-     * Returns the instance of a subclass of the CellProperties class that is
-     * decoded from the XML file representation.
+     * Returns the cell's setup information, encoded as a String.
      *
-     * @throw FileNotFoundException If the file cannot be read
-     * @throw InvalidWFSCellException If the cell in the file is invalid
+     * @throw IOException Upon general I/O error
      */
-    public <T extends BasicCellSetup> T decode() throws FileNotFoundException, InvalidWFSCellException {
+    public String decode() throws IOException {
         /*
-         * Decode the XML file from disk and return the Properties class read
+         * Read the data from disk as a string and return
          */
-        T setup = null;
-        try {
-            FileInputStream fis = new FileInputStream(this.getFile());
-            setup = (T)BasicCellSetup.decode(new InputStreamReader(fis));
-        } catch (java.lang.Exception excp) {
-            /* Ignore any exception here and just set the class to null */
-            setup = null;
-        }
+        BufferedReader reader = new BufferedReader(new FileReader(this.getFile()));
+        StringBuffer data = new StringBuffer();
+        char buf[] = new char[4 * 1024];
+        int ret = -1;
         
-        /* If the object returned is invalid, check if null */
-        if (setup == null) {
-            throw new InvalidWFSCellException("Invalid Cell from file: " + this.getFile());
+        while ((ret = reader.read(buf)) != -1) {
+            data.append(buf, 0, ret);
         }
-        
-        return setup;
+        reader.close();
+        return data.toString();
     }
  
     /**
-     * Updates the cell's properties. Depending upon the type of the WFS, this
-     * method may immediately serialize the cell properties to disk or store
-     * them for later serialization.
+     * Updates the cell's setup information, encoded as a String.
      * 
-     * @param cellSetup The cell properties class
+     * @param cellSetup The cell setup properties
      * @throw IOException Upon general I/O error
-     * @throw InvalidWFSCellException If the cell properties is invalid
      */
-    public <T extends BasicCellSetup> void encode(T cellSetup) throws IOException, InvalidWFSCellException, JAXBException {
-        FileWriter fw = new FileWriter(this.getFile());
-        cellSetup.encode(fw);
+    public void encode(String cellSetup) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(this.getFile()));
+        writer.write(cellSetup, 0, cellSetup.length());
     }
 }

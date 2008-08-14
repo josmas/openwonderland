@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: WFSArchiveCell.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,28 +11,26 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3.8.4 $
- * $Date: 2008/04/08 10:44:29 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs.archive;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.jar.JarEntry;
-import org.jdesktop.wonderland.cells.BasicCellSetup;
-import org.jdesktop.wonderland.wfs.InvalidWFSCellException;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSCell;
 import org.jdesktop.wonderland.wfs.delegate.CellDelegate;
 import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 /**
- * The WFSArchiveCell class represents a cell within an archive (jar) file. This
- * class extends the WFSCell class.
- *
+ * The ArchiveCellDelegate class implements methods to support accessing WFS
+ * files from an archive.
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ArchiveCellDelegate implements CellDelegate {
@@ -81,45 +77,34 @@ public class ArchiveCellDelegate implements CellDelegate {
     }
 
     /**
-     * Returns the instance of a subclass of the CellProperties class that is
-     * decoded from the XML file representation.
+     * Returns the cell's setup information, encoded as a String.
      *
-     * @throw FileNotFoundException If the file cannot be read
-     * @throw InvalidWFSCellException If the cell in the file is invalid
+     * @throw IOException Upon general I/O error
      */
-    public <T extends BasicCellSetup> T decode() throws FileNotFoundException, InvalidWFSCellException {
-        T setup = null;
-        
+    public String decode() throws IOException {
         /*
-         * Decode the XML file from disk and return the Properties class read
+         * Read the data from the archive as a string and return
          */
-        try {
-            String fname = this.pathName;
-            InputStream ais = this.manifest.getEntryInputStream(fname);
-            setup = (T)BasicCellSetup.decode(new InputStreamReader(ais));
-        } catch (java.lang.Exception excp) {
-            /* Ignore any exception here and just set the class to null */
-            System.out.println(excp.toString());
-            setup = null;
-        }
+        InputStream is = this.manifest.getEntryInputStream(this.pathName);
+        InputStreamReader reader = new InputStreamReader(is);
+        StringBuffer data = new StringBuffer();
+        char buf[] = new char[4 * 1024];
+        int ret = -1;
         
-        /* If the object returned is invalid, check if null */
-        if (setup == null) {
-            throw new InvalidWFSCellException("Invalid Cell from file: " + this.pathName);
+        while ((ret = reader.read(buf)) != -1) {
+            data.append(buf, 0, ret);
         }
-        return setup;
+        reader.close();
+        return data.toString();
     }
 
     /**
-     * Updates the cell's properties. Depending upon the type of the WFS, this
-     * method may immediately serialize the cell properties to disk or store
-     * them for later serialization.
+     * Updates the cell's setup information, encoded as a String.
      * 
-     * @param cellSetup The cell properties class
+     * @param cellSetup The cell setup properties
      * @throw IOException Upon general I/O error
-     * @throw InvalidWFSCellException If the cell properties is invalid
      */
-    public <T extends BasicCellSetup> void encode(T cellSetup) {
+    public void encode(String cellSetup) throws IOException {
         throw new UnsupportedOperationException("Writing a cell to an archive is not supported");
     }
 

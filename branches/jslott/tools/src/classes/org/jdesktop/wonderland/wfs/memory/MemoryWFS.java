@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: MemoryWFS.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.1.2.2 $
- * $Date: 2008/04/08 10:44:29 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs.memory;
@@ -27,7 +25,7 @@ import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 /**
  * The MemoryWFS class extends the WFS abstract class and represents a Wonderland
  * File System that resides entire in memory.
- * <p>
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class MemoryWFS extends WFS {
@@ -53,7 +51,7 @@ public class MemoryWFS extends WFS {
      */
     @Override
     public void write() {
-        // Not supported, since nothing to write to!
+        /* Not supported, since nothing to write to! */
         throw new UnsupportedOperationException("Not supported. Please use WFS.writeTo()");
     }
 }
