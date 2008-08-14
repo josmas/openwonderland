@@ -21,7 +21,6 @@ package org.jdesktop.wonderland.service.wfs;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSFactory;
 

@@ -133,7 +133,7 @@ public class WFSCellResource {
          */
         try {
             /* Fetch the essential configuration information, check for null */
-            BasicCellSetup setup = cell.getCellSetup();
+            String setup = cell.getCellSetup();
             if (setup == null) {
                 logger.warning("WFSManager: Unable to find cell setup: " + path);
                 ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
@@ -141,9 +141,7 @@ public class WFSCellResource {
             }
             else {
                 /* Formulate the HTTP response and send the string */
-                StringWriter sw = new StringWriter();
-                setup.encode(sw);
-                ResponseBuilder rb = Response.ok(sw.toString());
+                ResponseBuilder rb = Response.ok(setup);
                 return rb.build();
             }
         } catch (java.lang.Exception excp) {
