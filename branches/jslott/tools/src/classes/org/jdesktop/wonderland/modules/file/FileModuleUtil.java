@@ -126,7 +126,7 @@ public class FileModuleUtil {
     }
     
     /**
-     * Parses the module's WFS contains within it, given the modile file root.
+     * Parses the module's WFS contained within it, given the modile file root.
      * Returns a collection of WFS objects that represent each file system. If
      * no Wonderland file systems exist, this method returns an empty collection.
      * 
@@ -205,7 +205,7 @@ public class FileModuleUtil {
      * Takes a directory and returns a Map containing all of the files beneath
      * the directory, making a recursive search through the directory structure.
      * <p>
-     * The path name returns are with respect to the root directory passed to
+     * The path name returned are with respect to the root directory passed to
      * the first call of this method.
      * <p>
      * @param root The root directory of the search
@@ -240,5 +240,56 @@ public class FileModuleUtil {
             }
         }
         return hashMap;
+    }
+
+    
+    /**
+     * Takes directory and returns a Map containing all of the plugins in the
+     * module. Returns an empty map if no plugins are found.
+     * 
+     * @param root The module's root directory
+     * @return A HashMap of plugin entries
+     */
+    public static HashMap<String, ModulePlugin> parseModulePlugins(File root) {
+        /* Where to put all of the plugins we find */
+        HashMap<String, ModulePlugin> plugins = new HashMap();
+        
+        /* Filter for only files ending in .jar */
+        JarFileFilter filter = new JarFileFilter();
+        
+        /*
+         * List all of the files. Take only those files that are actual files
+         * and are not hidden. For each, fetch the name of the JAR files in
+         * each of the client/, server/, common/ subdirectories
+         */
+        File dir = new File(root, Module.MODULE_PLUGINS);
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            /*
+             * If a directory, then fetch all of its jar entries in client/,
+             * common/, and server/.
+             */
+            if (file.isDirectory() == true && file.isHidden() == false) {
+                /* Create file objects for each of the subdirectories */
+                File clientFile = new File(file, ModulePlugin.CLIENT_JAR);
+                File serverFile = new File(file, ModulePlugin.SERVER_JAR);
+                File commonFile = new File(file, ModulePlugin.COMMON_JAR);
+                
+                /* List each of the JAR files */
+                String[] client = clientFile.list(filter);
+                String[] server = serverFile.list(filter);
+                String[] common = commonFile.list(filter);
+                
+                /* Make sure each are not null */
+                client = (client != null) ? client : new String[] {};
+                server = (server != null) ? server : new String[] {};
+                common = (common != null) ? common : new String[] {};
+                
+                /* Create the ModulePlugin object, add, and continue */
+                ModulePlugin p = new ModulePlugin(client, server, common);
+                plugins.put(file.getName(), p);
+            }
+        }
+        return plugins;
     }
 }

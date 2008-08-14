@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.checksum.RepositoryChecksums;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.modules.ModulePlugin;
 import org.jdesktop.wonderland.modules.ModuleRepository;
 import org.jdesktop.wonderland.modules.ModuleRequires;
 import org.jdesktop.wonderland.modules.ModuleResource;
@@ -35,7 +36,7 @@ import org.jdesktop.wonderland.wfs.WFS;
  * The FileModule class extends the Module abstract base class and represents
  * all modules that exist as a collection of directories and files on disk
  * representing the structure of the module.
- * <p>
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class FileModule extends Module {
@@ -65,6 +66,7 @@ public class FileModule extends Module {
         ModuleRepository repository = FileModuleUtil.parseModuleRepository(this.root);
         HashMap<String, ModuleArtResource> artwork = FileModuleUtil.parseModuleArt(this.root);
         HashMap<String, WFS> wfs = FileModuleUtil.parseModuleWFS(this.root);
+        HashMap<String, ModulePlugin> plugins = FileModuleUtil.parseModulePlugins(this.root);
         RepositoryChecksums checksums = FileModuleUtil.parseModuleChecksums(this.root);
         
         /* Create a new module based upon what has been parsed */
@@ -74,18 +76,38 @@ public class FileModule extends Module {
         this.setModuleArtwork(artwork);
         this.setModuleChecksums(checksums);
         this.setModuleWFSs(wfs);
+        this.setModulePlugins(plugins);
     }
     
     /**
      * Returns an input stream for the given resource, null upon error.
-     * <p>
+     *
      * @param resource A resource contained within the archive
      * @return An input stream to the resource
      */
-    public InputStream getInputStream(ModuleResource resource) {
+    public InputStream getInputStreamForResource(ModuleResource resource) {
         try {
             String resourcePath = "art/" + resource.getPathName();
             File entry = new File(this.root, resourcePath);
+            return new FileInputStream(entry);
+        } catch (java.io.IOException excp) {
+            // print stack trace
+            return null;
+        }
+    }
+    
+    /**
+     * Returns an input stream for the given JAR file from a plugin, null
+     * upon error
+     * 
+     * @param name The name of the plugin
+     * @param jar The name of the jar file
+     * @param type The type of the jar file (CLIENT, SERVER, COMMON)
+     */
+    public InputStream getInputStreamForPlugin(String name, String jar, String type) {
+        try {
+            String path = Module.MODULE_PLUGINS + name + "/" + type + jar;
+            File entry = new File(this.root, path);
             return new FileInputStream(entry);
         } catch (java.io.IOException excp) {
             // print stack trace

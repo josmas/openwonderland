@@ -18,7 +18,9 @@
 
 package org.jdesktop.wonderland.modules;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
 
 /**
  * A ModulePlugin represents a plugin-module that extends the functionality of
@@ -29,29 +31,51 @@ import java.util.Collection;
  * This class enumerates the unique locations within the module for each jar
  * file. (The Wonderland server may then stream the client-side jar files over
  * an http connection knowing their location within the server installation).
- * <p>
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ModulePlugin {
-
-    /** Default constructor */
-    ModulePlugin() {}
+    /* The types of plugins */
+    public static final String CLIENT_JAR = "client/";
+    public static final String SERVER_JAR = "server/";
+    public static final String COMMON_JAR = "common/";
+    
+    /* Collections of the names of server, client, and common jars */
+    private LinkedList<String> serverJars = new LinkedList<String>();
+    private LinkedList<String> clientJars = new LinkedList<String>();
+    private LinkedList<String> commonJars = new LinkedList<String>();
+    
+    /** Default constructor, takes collections of JARs */
+    public ModulePlugin(String[] client, String[] server, String[] common) {
+        this.serverJars.addAll(Arrays.asList(server));
+        this.clientJars.addAll(Arrays.asList(client));
+        this.commonJars.addAll(Arrays.asList(common));
+    }
     
     /**
      * Returns a collection of server-side component paths within the module.
      * <p>
-     * @return A collection of path names to server-side components.
+     * @return A collection of path names to server-side components
      */
     public Collection<String> getServerJars() {
-        return null; // XXX
+        return this.serverJars;
     }
     
     /**
-     * Returns a connection of client-side component paths within the module.
+     * Returns a collection of client-side component paths within the module.
      * <p>
-     * @return A collection of path names to client-side components.
+     * @return A collection of path names to client-side components
      */
     public Collection<String> getClientJars() {
-        return null; // XXX
+        return this.clientJars;
+    }
+    
+    /**
+     * Returns a collection of components common to both the client and server
+     * 
+     * @return A collection of path names to common components
+     */
+    public Collection<String> getCommonsJars() {
+        return this.commonJars;
     }
 }

@@ -54,6 +54,7 @@ public abstract class Module {
     public static final String MODULE_ART        = "art/";
     public static final String MODULE_CHECKSUMS  = MODULE_ART + "checksums.xml";
     public static final String MODULE_WFS        = "wfs/";
+    public static final String MODULE_PLUGINS    = "plugins/";
     
     private ModuleInfo       moduleInfo       = null; /* Basic module info   */
     private ModuleRequires   moduleRequires   = null; /* Module dependencies */
@@ -64,6 +65,9 @@ public abstract class Module {
     
     /* A map of unique WFS names to their WFS objects */
     private HashMap<String, WFS> moduleWFS = null;
+    
+    /* A map of plugin names to the plugin object */
+    private HashMap<String, ModulePlugin> modulePlugins = null;
     
     /* A single table of checkums for all of the resources */
     private RepositoryChecksums checksums = null;
@@ -183,6 +187,28 @@ public abstract class Module {
     public void setModuleWFSs(HashMap<String, WFS> wfs) {
         this.moduleWFS = wfs;
     }
+
+    /**
+     * Returns a map of ModulePlugin objects for all plugins contained within
+     * the module. The key for each entry of the map is the name of the plugin
+     * and the value is its ModulePlugin object. If no plugins exist within
+     * the module, this method returns an empty map.
+     *
+     * @return A map of plugin entries within the module
+     */
+    public Map<String, ModulePlugin> getModulePlugins() {
+        return this.modulePlugins;
+    }
+    
+    /**
+     * Sets the map of plugin objects for this module. This method assumes that
+     * the argument is not null; for no plugin objects, pass an empty set.
+     * 
+     * @param plugins A map of WFS entries within the module
+     */
+    public void setModulePlugins(HashMap<String, ModulePlugin> plugins) {
+        this.modulePlugins = plugins;
+    }
     
     /**
      * Sets the list of checksums for the resources in the module.
@@ -208,7 +234,7 @@ public abstract class Module {
      * @param resource A resource contained within the archive
      * @return An input stream to the resource
      */
-    public abstract InputStream getInputStream(ModuleResource resource);
+    public abstract InputStream getInputStreamForResource(ModuleResource resource);
     
     /**
      * Stream this module out to an archive file.
