@@ -17,10 +17,6 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.ProcessorCollectionComponent;
-import com.jme.app.mtgame.entity.ProcessorComponent;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
@@ -28,7 +24,6 @@ import com.jme.math.Matrix3f;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import com.jme.scene.SceneElement;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -55,6 +50,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**

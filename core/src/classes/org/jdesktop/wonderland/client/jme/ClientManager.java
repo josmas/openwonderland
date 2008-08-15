@@ -17,31 +17,30 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.app.mtgame.NetworkManager;
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.CameraComponent;
-import com.jme.app.mtgame.entity.Entity;
-import java.util.HashMap;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import com.jme.scene.CameraNode;
+import com.jme.scene.Node;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.ClientContext3D;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.CellManager;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -65,7 +64,7 @@ public class ClientManager {
     // default values
     private static final String SERVER_NAME_DEFAULT = "localhost";
     private static final String SERVER_PORT_DEFAULT = "1139";
-    private static final String USER_NAME_DEFAULT   = "test";
+    private static final String USER_NAME_DEFAULT   = "jmetest";
    
     private CellClientSession session;
     
@@ -78,12 +77,7 @@ public class ClientManager {
     private Vector3f previousPos = new Vector3f();
     
     public ClientManager() {
-        // load properties from file
-//        if (args.length == 1) {
-//            props = loadProperties(args[0]);
-//        } else {
-            props = loadProperties(null);
-//        }
+        props = loadProperties("run.properties");
    
         String serverName = props.getProperty(SERVER_NAME_PROP,
                                               SERVER_NAME_DEFAULT);
@@ -108,7 +102,7 @@ public class ClientManager {
                 return boundsPanel;
             }
         };
-        ClientContext3D.registerCellCache(boundsPanel, session);
+        ClientContext.registerCellCache(boundsPanel, session);
         
         boundsPanel.setSession(session);
         
@@ -122,12 +116,10 @@ public class ClientManager {
         
     }
     
-    public void entityMoved(Entity entity) {
-        if (entity.getComponent(CameraComponent.class)!=null) {
-            Vector3f v3f = new Vector3f();
-            entity.getPosition(v3f);
+    void nodeMoved(Node node) {
+        if (node instanceof CameraNode) {
+            Vector3f v3f = node.getWorldTranslation();
             if (!previousPos.equals(v3f)) {
-//                System.out.println("Camera moved "+v3f);
                 localAvatar.localMoveRequest(v3f, null);
                 previousPos.set(v3f);
             }
@@ -171,9 +163,14 @@ public class ClientManager {
                                setup,
                                cellName);
             logger.warning("Loaded Cell "+ret.getClass().getName());
-            if (ret!=null && ret.getEntity()!=null) {
-                logger.warning("Got entity "+ret.getEntity());
-//                JmeClientMain.getWorldManager().addEntity(ret.getEntity());
+            
+            CellRenderer rend = ret.getCellRenderer(Cell.RendererType.RENDERER_JME);
+            if (ret!=null && rend!=null) {
+                logger.warning("Got entity "+rend);
+                if (rend instanceof CellRendererJME)
+                    JmeClientMain.getWorldManager().addEntity(((CellRendererJME)rend).getEntity());
+                else
+                    logger.warning("Unexpected renderer class "+rend.getClass().getName());
             } else {
                 logger.warning("No Entity for Cell "+ret.getClass().getName());
             }
@@ -181,6 +178,14 @@ public class ClientManager {
         }
 
         public void unloadCell(CellID cellID) {
+            Cell cell = cacheImpl.getCell(cellID);
+            CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+            if (cell!=null && rend!=null) {
+                if (rend instanceof CellRendererJME)
+                    JmeClientMain.getWorldManager().removeEntity(((CellRendererJME)rend).getEntity());
+                else
+                    logger.warning("Unexpected renderer class "+rend.getClass().getName());
+            }
             cacheImpl.unloadCell(cellID);
         }
 
@@ -214,7 +219,7 @@ public class ClientManager {
         
         
         private Entity createCellEntity(CellID cellID) {
-            Entity entity = new Entity("Cell_"+cellID, null);
+            Entity entity = new Entity("Cell_"+cellID);
             
             Cell cell = getCell(cellID);
              

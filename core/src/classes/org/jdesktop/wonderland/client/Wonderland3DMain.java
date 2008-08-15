@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client;
 
+import org.jdesktop.wonderland.client.*;
 import java.util.Iterator;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -37,7 +38,7 @@ public class Wonderland3DMain extends javax.swing.JFrame {
     private Wonderland3DClientSession session;
     
     /** Creates new form Wonderland3DMain */
-    public Wonderland3DMain() {
+    private Wonderland3DMain() {
         // create UI components
         initComponents();
 
@@ -113,13 +114,13 @@ public class Wonderland3DMain extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Wonderland3DMain().setVisible(true);
-            }
-        });
-    }
+//    public static void main(String args[]) {
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                new Wonderland3DMain().setVisible(true);
+//            }
+//        });
+//    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem exitMI;

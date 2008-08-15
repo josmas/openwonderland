@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.app.mtgame.FrameRateListener;
-import com.jme.app.mtgame.WorldManager;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.GridBagConstraints;
@@ -28,6 +26,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.jdesktop.mtgame.FrameRateListener;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 
 /**

@@ -65,6 +65,7 @@
                 <exclude name="org/jdesktop/wonderland/client/unusedevent/**"/>
                 <exclude name="org/jdesktop/wonderland/client/scripting/**"/>
                 <include name="org/jdesktop/wonderland/client/**"/>
+                <include name="org/jdesktop/mtgame/**"/>
             </compile-classes>
             
             <compile-classpath>
@@ -200,6 +201,8 @@
     <target name="run" depends="jar">
         <!--<java classname="org.jdesktop.wonderland.client.WorldClient" fork="true">-->
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
+            <jvmarg value="-Djava.library.path=${javaext.dir}/jme20/lib/lwjgl/native/${ostype}"/>
+            
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
 	    </classpath>

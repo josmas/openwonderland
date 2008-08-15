@@ -58,7 +58,7 @@ public class Loaders {
 
             return ret;
         } catch (IOException ex) {
-            Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getAnonymousLogger().log(Level.SEVERE, null, ex);
             return null;
         }
     }

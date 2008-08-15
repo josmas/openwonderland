@@ -141,9 +141,9 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
             results = new CellListMO();
         
         int cellCount = 0;
-        System.out.println("Neighbours ");
+//        System.out.println("Neighbours ");
         for(ManagedReference<SpaceMO> spaceRef : spaces) {
-            System.out.print(spaceRef.get().getSpaceID()+" ");
+//            System.out.print(spaceRef.get().getSpaceID()+" ");
             cellCount += spaceRef.get().getStaticCells(results, bounds, stats);
         }
         System.out.println();
@@ -168,7 +168,9 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
     //            System.err.println(cellDesc.getCellID()+"  "+cellDesc.getTransformTimestamp()+">"+(changedSince-TimeManager.getTimeDrift()));
                 if (cellDesc.getTransformTimestamp()>changedSince-TimeManager.getTimeDrift() && CellManagerMO.getCell(cellDesc.getCellID()).getWorldBounds().intersects(bounds)) {
                     list.addCell(cellDesc);
-                    stats.logCellIntersect(this, cellDesc);
+                    if (stats!=null) {
+                        stats.logCellIntersect(this, cellDesc);
+                    }
     //                System.out.println("intersect with "+cellDesc.getCellID());
                 }
             }

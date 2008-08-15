@@ -18,11 +18,11 @@
 package org.jdesktop.wonderland.client.jme.utils.traverser;
 
 import com.jme.scene.Node;
-import com.jme.scene.SceneElement;
 import com.jme.scene.Spatial;
 import com.jme.scene.SwitchNode;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class TreeScan extends Object {
     
@@ -42,7 +42,7 @@ public class TreeScan extends Object {
      * @throws CapabilityNotSetException If the node is live or compiled and the scene graph
      * contains groups without ALLOW_CHILDREN_READ capability
      */
-    public static void findNode(SceneElement treeRoot,Class nodeClass,ProcessNodeInterface processor,boolean onlyEnabledSwitchChildren,boolean sharedGroupsOnce) {
+    public static void findNode(Spatial treeRoot,Class nodeClass,ProcessNodeInterface processor,boolean onlyEnabledSwitchChildren,boolean sharedGroupsOnce) {
         
         Class[] nodeClasses = new Class[]{ nodeClass };
         
@@ -58,8 +58,8 @@ public class TreeScan extends Object {
      * @param treeRoot
      * @param processor
      */
-    public static void findNode(SceneElement treeRoot, ProcessNodeInterface processor) {
-        findNode(treeRoot, new Class[]{SceneElement.class}, processor, false, false);
+    public static void findNode(Spatial treeRoot, ProcessNodeInterface processor) {
+        findNode(treeRoot, new Class[]{Spatial.class}, processor, false, false);
     }
     
     /** Traverse the SceneGraph starting at node treeRoot. Every time a node of
@@ -75,7 +75,7 @@ public class TreeScan extends Object {
      * @throws CapabilityNotSetException If the node is live or compiled and the scene graph
      * contains groups without ALLOW_CHILDREN_READ capability
      */
-    public static void findNode( SceneElement treeRoot,
+    public static void findNode( Spatial treeRoot,
             Class[] nodeClasses,
             ProcessNodeInterface processor,
             boolean onlyEnabledSwitchChildren,
@@ -108,7 +108,7 @@ public class TreeScan extends Object {
         }
     }
     
-    private static void actualFindNode( SceneElement treeRoot,
+    private static void actualFindNode( Spatial treeRoot,
             Class[] nodeClasses,
             ProcessNodeInterface processor,
             boolean onlyEnabledSwitchChildren,
@@ -152,7 +152,7 @@ public class TreeScan extends Object {
 //                actualFindNode( ((Switch)treeRoot).currentChild(), nodeClasses,
 //                        processor, onlyEnabledSwitchChildren, sharedGroupsOnce );
         } else if (treeRoot instanceof Node) {
-            ArrayList<Spatial> children = ((Node)treeRoot).getChildren();
+            List<Spatial> children = ((Node)treeRoot).getChildren();
             if (children!=null) {
                 for(Spatial sp : children) {
                     actualFindNode( sp, nodeClasses, processor,

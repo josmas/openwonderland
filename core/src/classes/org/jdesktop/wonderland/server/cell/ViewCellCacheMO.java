@@ -109,6 +109,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private long lastRevalidationTimestamp;     // Last time we did a validation
     private BoundingSphere proximityBounds;
     
+    private boolean showStats = false;
+    
     /**
      * Creates a new instance of ViewCellCacheMO
      */
@@ -121,6 +123,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         DataManager dm = AppContext.getDataManager();
         viewRef = dm.createReference(view);
         dm.setBinding(username + "_CELL_CACHE", this);
+        
+        if (username.startsWith("jmetest")) {   // TODO use a login property once they are supported
+            showStats = true;
+        }
         
         UserSecurityContextMO securityContextMO = view.getUser().getUserSecurityContext();
         if (securityContextMO!=null)
@@ -185,7 +191,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         if (CacheManager.USE_CACHE_MANAGER) {
             CacheManager.removeCache(this);
         } else {
-            task.cancel();
+            if (task!=null)  // In case logout is called before login is complete (seen in testing)
+               task.cancel();
             task=null;
         }
     }
@@ -233,6 +240,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             // notify the schduler
             scheduler.startRevalidate();
             
+            CacheStats dynamicStats = null;
+            CacheStats staticStats = null;
+                         
             // TODO - only supports a single current space at the moment, should
             // support multiple current spaces
             SpaceMO space = CellManagerMO.getCellManager().getEnclosingSpace(translation)[0];
@@ -243,21 +253,19 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 CellListMO oldCells = (CellListMO) allCells.clone();
                 CellListMO currentCells = new CellListMO();  // Cells found during this revalidation
                 
+                if (showStats) {
+                    dynamicStats = new CacheStats();
+                    staticStats = new CacheStats();
+                }
+                
                 proximitySpaces = space.getSpaces(proximityBounds);
                 currentSpaceRef = AppContext.getDataManager().createReference(space);
-                CacheStats staticStats = new CacheStats();
                 CellListMO staticCellList = space.getStaticCells(proximitySpaces, proximityBounds, currentCells, staticStats);   
-                System.out.println("Static ");
-                staticStats.report();
                
                 generateLoadMessages(staticCellList);
                                 
-                CacheStats dynamicStats = new CacheStats();
                 // Get all dynamics cells, no matter when they were last updated
-                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, currentCells, dynamicStats);                 
-                System.out.println("Dynamic ");
-                dynamicStats.report();
-                System.out.println("----------------------------");
+                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, currentCells, dynamicStats);    
                 generateLoadMessages(dynamicCellList);
                 
                 Collection<CellDescription> descList = currentCells.getCells();
@@ -266,13 +274,27 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 generateUnloadMessages(oldCells);
                 oldCells.clear();
             } else {           
+                if (showStats) {
+                    dynamicStats = new CacheStats();
+                }
+                
                 // Get only the dynamic cells that have been updated since our last revalidation
-                CacheStats dynamicStats = new CacheStats();
                 dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, null, dynamicStats, lastRevalidationTimestamp);
+                generateLoadMessages(dynamicCellList);
+            }
+            
+            if (staticStats!=null) {
+                System.out.println("Static ");
+                staticStats.report();                
+            }
+            
+            if (dynamicStats!=null) {
                 System.out.println("Dynamic ");
                 dynamicStats.report();
-                System.out.println("----------------------------");
-                generateLoadMessages(dynamicCellList);
+            }
+            
+            if (dynamicStats!=null || staticStats!=null) {
+                System.out.println("----------------------------");               
             }
                    
             lastRevalidationTimestamp = TimeManager.getWonderlandTime();
@@ -309,8 +331,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             if (!allCells.contains(cellDescription)) {
                 // schedule the add operation
 
-                if (logger.isLoggable(Level.FINER)) 
-                    logger.finer("Entering cell " + cellDescription.getCellID() +
+                if (true || logger.isLoggable(Level.FINER)) 
+                    logger.warning("Entering cell " + cellDescription.getCellID() +
                                  " cellcache for user "+username);
                 
                 allCells.addCell(cellDescription);
