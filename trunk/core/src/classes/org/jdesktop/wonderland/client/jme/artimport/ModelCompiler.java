@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.client.jme.artimport;
 
 import com.jme.image.Texture;
 import com.jme.scene.Node;
-import com.jme.scene.SceneElement;
+import com.jme.scene.Spatial;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
 import com.jme.util.export.binary.BinaryExporter;
@@ -268,11 +268,11 @@ public class ModelCompiler {
      * @param bg
      * @return
      */
-    public static Collection<Texture> getImageComponents(SceneElement bg) {
+    public static Collection<Texture> getImageComponents(Spatial bg) {
         final Set<Texture> ret = new HashSet();
-        TreeScan.findNode(bg, SceneElement.class, new ProcessNodeInterface() {
+        TreeScan.findNode(bg, Spatial.class, new ProcessNodeInterface() {
 
-            public boolean processNode(SceneElement node) {
+            public boolean processNode(Spatial node) {
                 TextureState ts = (TextureState) node.getRenderState(RenderState.RS_TEXTURE);
                 
                 if (ts==null) {

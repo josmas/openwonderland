@@ -17,10 +17,6 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.ProcessorComponent;
-import com.jme.app.mtgame.entity.SceneComponent;
 import com.jme.bounding.BoundingBox;
 import com.jme.light.PointLight;
 import com.jme.math.Matrix3f;
@@ -65,6 +61,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.ClientManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.artimport.ModelCompiler.CompilerMessageDisplay;
@@ -681,7 +681,7 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         ZBufferState buf = (ZBufferState) wm.createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
-        buf.setFunction(ZBufferState.CF_LEQUAL);
+        buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
         PointLight light = new PointLight();
         light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
@@ -700,7 +700,7 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         rootBG.setLocalTranslation(0f,0f,0f);
 
                         
-        Entity entity = new Entity(model.getOrigModel(), null);
+        Entity entity = new Entity(model.getOrigModel());
         SceneComponent scene = new SceneComponent();
         scene.setSceneRoot(rootBG);
         entity.addComponent(SceneComponent.class,scene);

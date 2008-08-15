@@ -44,7 +44,7 @@ public class WonderlandResourceLocator implements ResourceLocator {
 //                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core"));
             repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
         } catch (MalformedURLException ex) {
-            Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getAnonymousLogger().log(Level.SEVERE, null, ex);
         }
     }
 
@@ -63,7 +63,7 @@ public class WonderlandResourceLocator implements ResourceLocator {
         try {
             ret = new URL("wltexture://"+repository.getOriginalRepository().getHost()+"/"+filename+"#"+repository.getOriginalRepository().getFile());
         } catch (MalformedURLException ex) {
-            Logger.getLogger(CellModule.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getAnonymousLogger().log(Level.SEVERE, null, ex);
             ret = null;
         }
 

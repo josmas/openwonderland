@@ -45,9 +45,10 @@ public class AvatarMO extends CellMO implements View {
         super(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()),
               new CellTransform(null, new Vector3f())  );
         addComponent(new ChannelComponentMO(this));
-        addComponent(new MovableComponentMO(this));
+        MovableComponentMO movableComponent = new MovableComponentMO(this);
+        addComponent(movableComponent);
         this.userRef = AppContext.getDataManager().createReference(user);
-//        addCellMoveListener(new AvatarMoveListener());
+//        movableComponent.addCellMoveListener(new AvatarMoveListener());
     }
     
     @Override 

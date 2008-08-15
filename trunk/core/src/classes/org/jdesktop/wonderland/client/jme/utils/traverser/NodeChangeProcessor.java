@@ -24,9 +24,9 @@ package org.jdesktop.wonderland.client.jme.utils.traverser;
  */
 public abstract class NodeChangeProcessor implements ProcessNodeInterface {
     
-    public boolean processNode(com.jme.scene.SceneElement node) {
+    public boolean processNode(com.jme.scene.Spatial node) {
         return changeNode( node );
     }
     
-    abstract public boolean changeNode( com.jme.scene.SceneElement node );
+    abstract public boolean changeNode( com.jme.scene.Spatial node );
 }

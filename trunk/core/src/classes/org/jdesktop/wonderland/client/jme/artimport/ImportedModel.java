@@ -17,10 +17,10 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.entity.Entity;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.io.Serializable;
+import org.jdesktop.mtgame.Entity;
 
 public class ImportedModel implements Serializable {
     private String origModel;
