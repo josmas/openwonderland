@@ -331,8 +331,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             if (!allCells.contains(cellDescription)) {
                 // schedule the add operation
 
-                if (logger.isLoggable(Level.FINER)) 
-                    logger.finer("Entering cell " + cellDescription.getCellID() +
+                if (true || logger.isLoggable(Level.FINER)) 
+                    logger.warning("Entering cell " + cellDescription.getCellID() +
                                  " cellcache for user "+username);
                 
                 allCells.addCell(cellDescription);
