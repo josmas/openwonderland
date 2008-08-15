@@ -72,7 +72,7 @@ public class WorldClient {
 
     
     /** Creates new form CellBoundsViewer */
-    public WorldClient(String[] args) {
+    private WorldClient(String[] args) {
         // load properties from file
 //        if (args.length == 1) {
 //            props = loadProperties(args[0]);

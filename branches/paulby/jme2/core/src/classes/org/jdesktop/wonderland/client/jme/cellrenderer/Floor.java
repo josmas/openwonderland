@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.jme.cellrenderer;
 
 import java.nio.FloatBuffer;
 

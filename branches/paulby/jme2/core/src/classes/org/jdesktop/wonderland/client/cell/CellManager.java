@@ -33,7 +33,7 @@ public class CellManager {
 
     private static CellManager cellManager = null;
     
-    private Set<CellMoveListener> moveListeners=Collections.synchronizedSet(new LinkedHashSet());            
+//    private Set<CellMoveListener> moveListeners=Collections.synchronizedSet(new LinkedHashSet());            
 ;
     
     private CellManager() {
@@ -50,35 +50,35 @@ public class CellManager {
      * @param cell
      * @param fromServer
      */
-    void notifyCellMoved(Cell cell, boolean fromServer) {
-        for(CellMoveListener listener : moveListeners)
-            listener.cellMoved(cell, fromServer);
-    }
+//    void notifyCellMoved(Cell cell, boolean fromServer) {
+//        for(CellMoveListener listener : moveListeners)
+//            listener.cellMoved(cell, fromServer);
+//    }
     
-    /**
-     * Add a listener that will be notified of entity cell movement
-     * @param listener
-     */
-    public synchronized void addCellMoveListener(CellMoveListener listener) {
-        moveListeners.add(listener);
-    }
+//    /**
+//     * Add a listener that will be notified of entity cell movement
+//     * @param listener
+//     */
+//    public synchronized void addCellMoveListener(CellMoveListener listener) {
+//        moveListeners.add(listener);
+//    }
+//    
+//    /**
+//     * Remove the specified entity cell listener
+//     * @param listener
+//     */
+//    public synchronized void removeCellMoveListener(CellMoveListener listener) {
+//        moveListeners.remove(listener);
+//    }
     
-    /**
-     * Remove the specified entity cell listener
-     * @param listener
-     */
-    public synchronized void removeCellMoveListener(CellMoveListener listener) {
-        moveListeners.remove(listener);
-    }
-    
-    @ExperimentalAPI
-    public interface CellMoveListener {
-        /**
-         * Notification that an MovableCell has moved. 
-         * @param cell the cell that moved
-         * @param fromServer, if true then the move came from the server, otherwise
-         * the move originated on this client
-         */
-        public void cellMoved(Cell cell, boolean fromServer);
-    }
+//    @ExperimentalAPI
+//    public interface CellMoveListener {
+//        /**
+//         * Notification that an MovableCell has moved. 
+//         * @param cell the cell that moved
+//         * @param fromServer, if true then the move came from the server, otherwise
+//         * the move originated on this client
+//         */
+//        public void cellMoved(Cell cell, boolean fromServer);
+//    }
 }

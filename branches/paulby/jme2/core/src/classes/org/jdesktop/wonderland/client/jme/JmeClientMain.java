@@ -33,6 +33,7 @@ import org.jdesktop.mtgame.AWTEventListenerComponent;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.FPSCameraProcessor;
+import org.jdesktop.mtgame.NodeListener;
 import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RotationProcessor;
@@ -65,8 +66,16 @@ public class JmeClientMain {
     private static WorldManager worldManager;
     
     public JmeClientMain(String[] args) {
-        ClientManager clientManager = new ClientManager();
-        worldManager = new WonderlandWorldManager("Wonderland", null, clientManager);
+        final ClientManager clientManager = new ClientManager();
+        worldManager = new WorldManager("Wonderland");
+        
+        worldManager.addNodeListener(new NodeListener() {
+
+            public void nodeMoved(Node arg0) {
+                clientManager.nodeMoved(arg0);
+            }
+            
+        });
         
         processArgs(args);
         worldManager.setDesiredFrameRate(desiredFrameRate);

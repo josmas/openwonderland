@@ -86,7 +86,7 @@ public class MovableComponent extends CellComponent {
     public void localMoveRequest(CellTransform transform, 
                                  final CellMoveModifiedListener listener) {
     
-        CellManager.getCellManager().notifyCellMoved(cell, false);        
+//        CellManager.getCellManager().notifyCellMoved(cell, false);        
         
         // make sure we are connected to the server
         if (channelComp == null || 
@@ -149,7 +149,7 @@ public class MovableComponent extends CellComponent {
 //            System.out.println("serverMoveRequest "+cell.getTransform().getTranslation(null)+"  "+cell);
 //        else
 //            System.out.println("serverMoveRequest with null transform "+cell.getName());
-        CellManager.getCellManager().notifyCellMoved(cell, true);
+//        CellManager.getCellManager().notifyCellMoved(cell, true);
         notifyServerCellMoveListeners(transform, CellMoveSource.REMOTE);
     }
     
