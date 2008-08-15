@@ -80,8 +80,8 @@
     <property name="wonderland.bin.dir" location="${os.javaext.dir}/bin"/>
     <property name="wonderland.xvfb.dir" location="${wonderland.bin.dir}"/>
     
-    <property name="jme.dir" location="${javaext.dir}/jme"/>
-    <property name="jme.native.dir" location="${jme.dir}/lib"/>
+    <property name="jme.dir" location="${javaext.dir}/jme20"/>
+    <property name="jme.native.dir" location="${jme.dir}/lib/lwjgl/native"/>
 
     <!-- Jars needed to use Java3d-->
 <!--    <pathconvert property="j3d.classpath">
@@ -93,16 +93,17 @@
 -->
 
     <pathconvert property="jme.classpath">
-	<path location="${jme.dir}/jme/jme.jar"/>
-	<path location="${jme.dir}/jme/jme-gamestates.jar"/>
-	<path location="${jme.dir}/jme/jme-awt.jar"/>
-	<path location="${jme.dir}/jme/jme-audio.jar"/>
-	<path location="${jme.dir}/jme/jme-scene.jar"/>
-	<path location="${jme.dir}/jme/jme-model.jar"/>
-	<path location="${jme.dir}/jme/jme-collada.jar"/>
-	<path location="${jme.dir}/jme/jme-xml.jar"/>
-	<path location="${jme.dir}/jme/jme-terrain.jar"/>
-	<path location="${jme.dir}/lib/lwjgl.jar"/>
+	<path location="${jme.dir}/target/jme.jar"/>
+	<path location="${jme.dir}/target/jme-gamestates.jar"/>
+	<path location="${jme.dir}/target/jme-awt.jar"/>
+	<path location="${jme.dir}/target/jme-audio.jar"/>
+	<path location="${jme.dir}/target/jme-scene.jar"/>
+	<path location="${jme.dir}/target/jme-model.jar"/>
+	<path location="${jme.dir}/target/jme-collada.jar"/>
+	<path location="${jme.dir}/target/jme-xml.jar"/>
+	<path location="${jme.dir}/target/jme-terrain.jar"/>
+	<path location="${jme.dir}/lib/lwjgl/lwjgl.jar"/>
+        <path location="${jme.dir}/lib/lwjgl/lwjgl_util.jar"/>
     </pathconvert>
     
     <!-- All other jars in the ext dir -->
@@ -135,7 +136,7 @@
 
 	<!-- JInput-->
 	<path location="${jars.javaext.dir}/jinput.jar"/>
-
+        
     </pathconvert>
 
     <property name="env.path.defvalue" value="${env.path.value}:${native.javaext.dir}:${jme.native.dir}:${yjp.home}/bin/${yjp.platform.dir}"/>
@@ -174,6 +175,7 @@
         <path location="${common.javaext.dir}/swing-layout-1.0.jar"/>
         <path location="${common.javaext.dir}/TimingFramework.jar"/>
         <path location="${common.javaext.dir}/gvis.jar"/>
+	<path location="${common.javaext.dir}/mtgame.jar"/>
     </pathconvert>
     
     <pathconvert property="wonderlandscripting.classpath">
