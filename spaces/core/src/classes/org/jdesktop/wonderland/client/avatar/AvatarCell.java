@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.client.avatar;
 
+import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- *
+ * A cell representing the users avatar
+ * 
  * @author paulby
  */
 public class AvatarCell extends ViewCell {
@@ -28,4 +31,20 @@ public class AvatarCell extends ViewCell {
     public AvatarCell(CellID cellID) {
         super(cellID);
     }
+    
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        CellRenderer ret = null;
+        switch(rendererType) {
+            case RENDERER_2D :
+                // No 2D Renderer yet
+                break;
+            case RENDERER_JME :
+                ret= new AvatarJME(this);
+                break;                
+        }
+        
+        return ret;
+    }
+
 }

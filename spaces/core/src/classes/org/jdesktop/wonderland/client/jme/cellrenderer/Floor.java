@@ -15,14 +15,15 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.jme.cellrenderer;
 
 import java.nio.FloatBuffer;
 
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.TexCoords;
 import com.jme.scene.TriMesh;
-import com.jme.scene.batch.TriangleBatch;
+//import com.jme.scene.batch.TriangleBatch;
 import com.jme.util.geom.BufferUtils;
 
 public class Floor extends TriMesh {
@@ -70,47 +71,48 @@ public class Floor extends TriMesh {
      *            the height of the <code>Quad</code>.
      */
     public void initialize(float width, float height) {
-        TriangleBatch batch = getBatch(0);
-        batch.setVertexCount(4);
-        batch.setVertexBuffer(BufferUtils.createVector3Buffer(batch.getVertexCount()));
-        batch.setNormalBuffer(BufferUtils.createVector3Buffer(batch.getVertexCount()));
-        batch.setColorBuffer(BufferUtils.createColorBuffer(batch.getVertexCount()));
-        FloatBuffer tbuf = BufferUtils.createVector2Buffer(batch.getVertexCount());
-        setTextureBuffer(0, tbuf);
-        batch.setTriangleQuantity(2);
-        batch.setIndexBuffer(BufferUtils.createIntBuffer(batch.getTriangleCount() * 3));
+        setVertexCount(4);
+        setVertexBuffer(BufferUtils.createVector3Buffer(getVertexCount()));
+        setNormalBuffer(BufferUtils.createVector3Buffer(getVertexCount()));
+        setColorBuffer(BufferUtils.createColorBuffer(getVertexCount()));
+        
+        FloatBuffer tbuf = BufferUtils.createVector2Buffer(getVertexCount());
+        setTextureCoords(new TexCoords(tbuf));
+        
+        setTriangleQuantity(2);
+        setIndexBuffer(BufferUtils.createIntBuffer(getTriangleCount() * 3));
 
-        batch.getVertexBuffer().put(-width / 2f).put(0).put(height / 2f);
-        batch.getVertexBuffer().put(-width / 2f).put(0).put(-height / 2f);
-        batch.getVertexBuffer().put(width / 2f).put(0).put(-height / 2f);
-        batch.getVertexBuffer().put(width / 2f).put(0).put(height / 2f);
+        getVertexBuffer().put(-width / 2f).put(0).put(height / 2f);
+        getVertexBuffer().put(-width / 2f).put(0).put(-height / 2f);
+        getVertexBuffer().put(width / 2f).put(0).put(-height / 2f);
+        getVertexBuffer().put(width / 2f).put(0).put(height / 2f);
 
-        batch.getNormalBuffer().put(0).put(1).put(0);
-        batch.getNormalBuffer().put(0).put(1).put(0);
-        batch.getNormalBuffer().put(0).put(1).put(0);
-        batch.getNormalBuffer().put(0).put(1).put(0);
+        getNormalBuffer().put(0).put(1).put(0);
+        getNormalBuffer().put(0).put(1).put(0);
+        getNormalBuffer().put(0).put(1).put(0);
+        getNormalBuffer().put(0).put(1).put(0);
 
         ColorRGBA c1 = ColorRGBA.blue;
         ColorRGBA c2 = ColorRGBA.cyan;
         ColorRGBA c3 = ColorRGBA.green;
         ColorRGBA c4 = ColorRGBA.red;
         
-        batch.getColorBuffer().put(c1.getColorArray());
-        batch.getColorBuffer().put(c2.getColorArray());
-        batch.getColorBuffer().put(c3.getColorArray());
-        batch.getColorBuffer().put(c4.getColorArray());
+        getColorBuffer().put(c1.getColorArray());
+        getColorBuffer().put(c2.getColorArray());
+        getColorBuffer().put(c3.getColorArray());
+        getColorBuffer().put(c4.getColorArray());
 
         tbuf.put(0).put(1);
         tbuf.put(0).put(0);
         tbuf.put(1).put(0);
         tbuf.put(1).put(1);
 
-        batch.getIndexBuffer().put(0);
-        batch.getIndexBuffer().put(1);
-        batch.getIndexBuffer().put(2);
-        batch.getIndexBuffer().put(0);
-        batch.getIndexBuffer().put(2);
-        batch.getIndexBuffer().put(3);
+        getIndexBuffer().put(0);
+        getIndexBuffer().put(1);
+        getIndexBuffer().put(2);
+        getIndexBuffer().put(0);
+        getIndexBuffer().put(2);
+        getIndexBuffer().put(3);
     }
 
     /**
