@@ -17,10 +17,8 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.SceneComponent;
 import com.jme.scene.Node;
-import com.jme.scene.SceneElement;
+import com.jme.scene.Spatial;
 import java.awt.Component;
 import java.util.LinkedList;
 import javax.swing.JLabel;
@@ -32,6 +30,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.SceneComponent;
 
 
 /**
@@ -90,10 +90,10 @@ public class SceneGraphViewFrame extends javax.swing.JFrame {
     
     class JmeTreeModel implements TreeModel {
 
-        private SceneElement root;
+        private Spatial root;
         private LinkedList<TreeModelListener> modelListeners = new LinkedList();
         
-        public JmeTreeModel(SceneElement node) {
+        public JmeTreeModel(Spatial node) {
             root = node;
         }
         
@@ -143,7 +143,7 @@ public class SceneGraphViewFrame extends javax.swing.JFrame {
                                                boolean leaf,
                                                int row,
                                                boolean hasFocus) {
-            String name = ((SceneElement)value).getName();
+            String name = ((Spatial)value).getName();
             if (name==null)
                 name="";
             return new JLabel(getTrimmedClassname(value)+":"+name);

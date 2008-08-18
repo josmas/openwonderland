@@ -15,18 +15,26 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.jme.cellrenderer;
 
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- *
+ * Interface for all JME based Cell Renderers
+ * 
  * @author paulby
  */
-public class SpaceCell extends Cell {
+@ExperimentalAPI
+public interface CellRendererJME extends CellRenderer {
 
-    public SpaceCell(CellID cellID) {
-        super(cellID);
-    }
-
+    /**
+     * Return the 3D entity for this cell.
+     * 
+     * TODO - this is 3D specific, should have a generic mechanism
+     * @return
+     */
+    public Entity getEntity();
+    
 }

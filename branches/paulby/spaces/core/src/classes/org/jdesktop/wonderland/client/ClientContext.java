@@ -19,17 +19,21 @@ package org.jdesktop.wonderland.client;
 
 import java.util.HashMap;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- *
+ * Provides global static access to the various client subsystems.
+ * 
  * @author paulby
  */
 @ExperimentalAPI
 public class ClientContext {
 
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
+    private static WonderlandSessionManager sessionManager = null;
     
     /**
      * Return the CellCache if the session has one, otherwise
@@ -57,5 +61,23 @@ public class ClientContext {
         
         if (previous!=null)
             throw new RuntimeException("registerCellCache can only be called once");
+    }
+    
+    /**
+     * Return the WonderlandSessionManager for this client
+     * 
+     */
+    public static WonderlandSessionManager getWonderlandSessionManager() {
+        if (sessionManager==null)
+            sessionManager = new WonderlandSessionManager();
+        return sessionManager;
+    }
+    
+    /**
+     * Return the CellManager for this client
+     * @return
+     */
+    public static CellManager getCellManager() {
+        return CellManager.getCellManager();
     }
 }

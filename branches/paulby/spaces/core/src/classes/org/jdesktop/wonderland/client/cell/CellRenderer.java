@@ -15,24 +15,24 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.jme;
+package org.jdesktop.wonderland.client.cell;
+
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
+ * Provides an interface to the cell rendering code. This abstraction allows
+ * for both 2D and 3D renderers for a cells content.
+ * 
  * @author paulby
  */
-public interface PluginAccessor {
-
-    public void addModule(RenderModule module);
-
-    /**
-     * Set the desired fps rate
-     */
-    public void setFPS(int fps);
+@ExperimentalAPI
+public interface CellRenderer {
     
     /**
-     * Returns the module manager
-     * @return
+     * The cell has moved, the transform is the cell position in world coordinates
+     * @param cellTransform
      */
-    public ModuleManager getModuleManager();
+    public void cellTransformUpdate(CellTransform cellLocal2VW);
 }

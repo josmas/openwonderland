@@ -32,6 +32,14 @@
   </p>
   
   <p>
+      The functionality of cells can be changed by adding CellComponentMO to a 
+      cell. For example all cells are static (in that there origin or bounds can
+      not be changed) unless they have  MovableComponentMO in their component list.
+      This allows features to be dynamically added and removed from cells which is
+      not possible using subclassing.
+  </p>
+  
+  <p>
       Spaces - 
         A live Cell is always in at least one space
         Space origin and bounds are immutable (need to special case movable spaces)

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import com.jme.app.mtgame.entity.Entity;
 import com.jme.bounding.BoundingVolume;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -58,6 +58,10 @@ public class Cell {
     private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
     
     private Entity entity;
+    
+    public enum RendererType { RENDERER_JME, RENDERER_2D };
+    
+    private HashMap<RendererType, CellRenderer> cellRenderers = new HashMap();
     
     protected static Logger logger = Logger.getLogger(Cell.class.getName());
     
@@ -210,13 +214,12 @@ public class Cell {
                 
         for(Cell child : getChildren())
             transformTreeUpdate(this, child);      
-        
-        if (entity!=null) {
-            entity.setTransform(localTransform.getRotation(null), localTransform.getTranslation(null), localTransform.getScaling(null));
-//            System.out.println("Moving entity");
-        }
+
+        // Notify Renderers that the cell has moved
+        for(CellRenderer rend : cellRenderers.values())
+            rend.cellTransformUpdate(local2VW);
     }
-    
+        
     /**
      * Return the local to Virtual World transform for this cell.
      * @return cells local to VWorld transform
@@ -452,22 +455,25 @@ public class Cell {
     }
     
     /**
-     * Return the 3D entity for this cell.
-     * 
-     * TODO - this is 3D specific, should have a generic mechanism
-     * @return
+     * Create the renderer for this cell
      */
-    public Entity getEntity() {
-        if (entity==null)
-            entity = createEntity();
-        return entity;
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        Logger.getAnonymousLogger().warning(this.getClass().getName()+" createEntity returning null");
+        return null;
     }
     
     /**
-     * Create the JME Entity for this cell
+     * Return the renderer of the given type for this cell. If a renderer of the
+     * requested type is not available null will be returned
+     * @return
      */
-    protected Entity createEntity() {
-        Logger.getAnonymousLogger().warning(this.getClass().getName()+" createEntity returning null");
-        return null;
+    public CellRenderer getCellRenderer(RendererType rendererType) {
+        CellRenderer ret = cellRenderers.get(rendererType);
+        if (ret==null) {
+            ret = createCellRenderer(rendererType);
+            cellRenderers.put(rendererType, ret);
+        }
+        
+        return ret;
     }
 }
