@@ -17,12 +17,15 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
- *
+ * CellComponents provide dynamic extensions to the Cell infrastructure. 
+ * 
  * @author paulby
  */
+@ExperimentalAPI
 public class CellComponent {
     protected Cell cell;
     protected CellStatus status;
