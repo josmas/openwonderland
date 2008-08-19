@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.messages.MovableMessageResponse;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * A component that provide cell movement
+ * A component that provides cell movement
  * 
  * @author paulby
  */

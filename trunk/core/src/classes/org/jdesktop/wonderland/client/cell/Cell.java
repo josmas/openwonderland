@@ -34,7 +34,6 @@ import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -373,7 +372,7 @@ public class Cell {
      * Return the cell cache which instantiated and owns this cell.
      */
     public CellCache getCellCache() {
-        throw new NotImplementedException();
+        throw new RuntimeException("Not Implemented");
     }
     
     /**

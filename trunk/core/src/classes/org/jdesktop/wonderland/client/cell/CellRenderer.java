@@ -25,6 +25,10 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * Provides an interface to the cell rendering code. This abstraction allows
  * for both 2D and 3D renderers for a cells content.
  * 
+ * TODO Add Heuristic based LOD listeners
+ * TODO Add view distance listeners
+ * TODO Frustum enter/exit listeners
+ * 
  * @author paulby
  */
 @ExperimentalAPI
