@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
  * TODO - Do we need a listener that allows veto of a move request, don't
  * think so instead I suggest we would subclass to add veto capability
  * 
+ * @deprecated
  * @author paulby
  */
 public class MovableCellMO extends CellMO {

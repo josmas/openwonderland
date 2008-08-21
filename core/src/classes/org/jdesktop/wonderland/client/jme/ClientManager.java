@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
+import org.jdesktop.wonderland.client.avatar.ViewCell;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
@@ -168,6 +169,9 @@ public class ClientManager {
             if (ret!=null && rend!=null) {
                 logger.warning("Got entity "+rend);
                 if (rend instanceof CellRendererJME)
+                    // TODO find parent entity (traverse up graph), if found add this entity as a child, else add to root
+                    // Note the next code drop of mtgame will add an attach point for subentities in RenderComonent
+                    
                     JmeClientMain.getWorldManager().addEntity(((CellRendererJME)rend).getEntity());
                 else
                     logger.warning("Unexpected renderer class "+rend.getClass().getName());
@@ -212,20 +216,16 @@ public class ClientManager {
             return cacheImpl.getCell(cellId);
         }
 
+        public void viewSetup(ViewCell viewCell) {
+            cacheImpl.viewSetup(viewCell);
+        }
+
         
         /*************************************************
          * End CellCache implementation
          *************************************************/
         
         
-        private Entity createCellEntity(CellID cellID) {
-            Entity entity = new Entity("Cell_"+cellID);
-            
-            Cell cell = getCell(cellID);
-             
-            
-            return entity;
-        }
     }
     
     private static Properties loadProperties(String fileName) {

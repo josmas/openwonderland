@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
+import org.jdesktop.wonderland.client.avatar.ViewCell;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
@@ -129,10 +130,6 @@ public class WorldClient {
         public Cache() {
         }
         
-        public WonderlandSession getSession() {
-            return session;
-        }
-        
         public void setSession(CellClientSession session) {
             this.session = session;
             
@@ -185,6 +182,14 @@ public class WorldClient {
             return cacheImpl.getCell(cellId);
         }
 
+        public void viewSetup(ViewCell viewCell) {
+            cacheImpl.viewSetup(viewCell);
+        }
+
+        public WonderlandSession getSession() {
+            return session;
+        }
+        
         
         /*************************************************
          * End CellCache implementation
