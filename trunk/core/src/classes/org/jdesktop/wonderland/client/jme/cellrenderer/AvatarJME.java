@@ -58,7 +58,7 @@ public class AvatarJME extends BasicRenderer {
         lightState.setEnabled(true);
         lightState.attach(light);
 
-        Vector3f translation = cell.getTransform().getTranslation(null);
+        Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
         Node ret = createTeapotEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);        

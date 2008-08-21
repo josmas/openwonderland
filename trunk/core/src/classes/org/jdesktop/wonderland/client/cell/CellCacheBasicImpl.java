@@ -35,6 +35,12 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
+/**
+ * A basic implementation of core cell cache features. This is a convenience class
+ * designed to be called from more complete cache implementations. 
+ * 
+ * @author paulby
+ */
 public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCacheMessageListener {
 
     private Map<CellID, Cell> cells = Collections.synchronizedMap(new HashMap());
@@ -71,6 +77,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         this.cellChannelConnection = cellChannelConnection;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public Cell getCell(CellID cellId) {
         return cells.get(cellId);
     }
@@ -83,6 +92,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         return (Cell[]) cells.values().toArray(new Cell[cells.size()]);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Cell loadCell(CellID cellId, 
                          String className, 
                          BoundingVolume localBounds, 
@@ -90,7 +102,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          CellTransform cellTransform, 
                          CellSetup setup,
                          String cellName) {
-        System.out.println("-----> creating cell "+className+" "+cellId);
+        logger.info("-----> creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
             return null;     // Instantiation failed, error has already been logged
@@ -107,7 +119,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             logger.warning("loadCell - Cell parent is null");
         }
         cell.setLocalBounds(localBounds);
-        cell.setTransform(cellTransform);
+        cell.setLocalTransform(cellTransform);
         System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
 
         cells.put(cellId, cell);
@@ -139,6 +151,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         cell.setStatus(CellStatus.DISK);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void deleteCell(CellID cellId) {
         // TODO - remove local resources from client asset cache as long
         // as they are not shared
@@ -146,6 +161,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         cell.setStatus(CellStatus.DISK);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void moveCell(CellID cellId, CellTransform cellTransform) {
         Cell cell = cells.get(cellId);
         if (cell==null) {
@@ -154,7 +172,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             return;
         }
 
-        cell.setTransform(cellTransform);
+        cell.setLocalTransform(cellTransform);
     }
     
     private Cell instantiateCell(String className, CellID cellId) {
@@ -173,12 +191,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     }
 
     /**
-     * Set the view cell for this cache
-     * 
-     * @param viewCellID the id of the view cell
+     * {@inheritDoc}
      */
-    public void viewSetup(CellID viewCellID) {
-        viewCell = (ViewCell)cells.get(viewCellID);
+    public void viewSetup(ViewCell viewCell) {
+        this.viewCell = viewCell;
     }
 
     /**

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.client.avatar.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -41,4 +42,11 @@ public interface CellCache {
      * @return
      */
     public WonderlandSession getSession();
+    
+    /**
+     * Set the view cell for this cache
+     * 
+     * @param viewCell the view cell
+     */
+    public void viewSetup(ViewCell viewCell);
 }

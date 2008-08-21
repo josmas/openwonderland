@@ -144,7 +144,7 @@ public class MovableComponent extends CellComponent {
      * @param transform
      */
     protected void serverMoveRequest(CellTransform transform) {
-        cell.setTransform(transform);
+        cell.setLocalTransform(transform);
 //        if (cell.getTransform()!=null)
 //            System.out.println("serverMoveRequest "+cell.getTransform().getTranslation(null)+"  "+cell);
 //        else
