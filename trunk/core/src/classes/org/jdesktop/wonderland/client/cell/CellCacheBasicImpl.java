@@ -20,13 +20,18 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.avatar.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -70,11 +75,11 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      */
     public CellCacheBasicImpl(WonderlandSession session,
                               CellCacheConnection cellCacheConnection,
-                              CellChannelConnection cellChannelConnection)
-    {
+                              CellChannelConnection cellChannelConnection) {
         this.session = session;
         this.cellCacheConnection = cellCacheConnection;
         this.cellChannelConnection = cellChannelConnection;
+        ClientContext.registerCellCache(this, session);
     }
     
     /**
@@ -102,7 +107,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          CellTransform cellTransform, 
                          CellSetup setup,
                          String cellName) {
-        logger.info("-----> creating cell "+className+" "+cellId);
+//        logger.info("-----> creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
             return null;     // Instantiation failed, error has already been logged
@@ -120,24 +125,30 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
         cell.setLocalBounds(localBounds);
         cell.setLocalTransform(cellTransform);
-        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
+//        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
 
-        cells.put(cellId, cell);
-        
-        // record the set of root cells
-        if (cell instanceof RootCell) {
-            rootCells.add(cell);
+        synchronized(cells) {
+            cells.put(cellId, cell);
+
+            // record the set of root cells
+            if (cell instanceof RootCell) {
+                rootCells.add(cell);
+            }
+
+            if (setup!=null)
+                cell.setupCell(setup);
+
+            // if the cell has a channel, notify it of the CellChannelConnection
+            ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
+            if (channelComp!=null) {
+                channelComp.setCellChannelConnection(cellChannelConnection);
+            }
+
+            if (viewCell!=null) {
+                // No point in makeing cells active if we don't have a view
+                cell.setStatus(CellStatus.ACTIVE);  
+            }
         }
-        
-        if (setup!=null)
-            cell.setupCell(setup);
-        
-        // if the cell has a channel, notify it of the CellChannelConnection
-        ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
-        if (channelComp!=null) {
-            channelComp.setCellChannelConnection(cellChannelConnection);
-        }
-        cell.setStatus(CellStatus.ACTIVE);
         
         return cell;
     }
@@ -175,13 +186,20 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         cell.setLocalTransform(cellTransform);
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public Collection<Cell> getRootCells() {
+        return new LinkedList(rootCells);
+    }
+    
     private Cell instantiateCell(String className, CellID cellId) {
         Cell cell;
         
         try {
             Class clazz = Class.forName(className);
-            Constructor constructor = clazz.getConstructor(CellID.class);
-            cell = (Cell) constructor.newInstance(cellId);
+            Constructor constructor = clazz.getConstructor(CellID.class, CellCache.class);
+            cell = (Cell) constructor.newInstance(cellId, this);
         } catch(Exception e) {
             logger.log(Level.SEVERE, "Problem instantiating cell "+className, e);
             return null;
@@ -193,14 +211,30 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     /**
      * {@inheritDoc}
      */
-    public void viewSetup(ViewCell viewCell) {
+    public void setViewCell(ViewCell viewCell) {
         this.viewCell = viewCell;
+        
+        // Activate all current cells
+        synchronized(cells) {
+            for(Cell cell : cells.values()) {
+                if (cell.getStatus().ordinal()<CellStatus.ACTIVE.ordinal())
+                    cell.setStatus(CellStatus.ACTIVE);
+            }
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public ViewCell getViewCell() {
+        return viewCell;
+    }
+    
     /**
      * {@inheritDoc}
      */
     public WonderlandSession getSession() {
         return session;
     }
+
 }

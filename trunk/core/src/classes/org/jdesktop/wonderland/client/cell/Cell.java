@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.cell;
 import com.jme.bounding.BoundingVolume;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -53,10 +55,9 @@ public class Cell {
     private CellID cellID;
     private String name=null;
     private CellStatus currentStatus = CellStatus.DISK;
+    private CellCache cellCache;
     
     private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
-    
-    private Entity entity;
     
     public enum RendererType { RENDERER_JME, RENDERER_2D };
     
@@ -64,8 +65,16 @@ public class Cell {
     
     protected static Logger logger = Logger.getLogger(Cell.class.getName());
     
-    public Cell(CellID cellID) {
+    private ArrayList<TransformChangeListener> transformChangeListeners = null;
+    
+    /**
+     * Instantiate a new cell
+     * @param cellID the cells unique ID
+     * @param cellCache the cell cache which instantiated, and owns, this cell
+     */
+    public Cell(CellID cellID, CellCache cellCache) {
         this.cellID = cellID;
+        this.cellCache = cellCache;
     }
     
     /**
@@ -135,7 +144,10 @@ public class Cell {
     /**
      * Add a component to this cell. Only a single instance of each component
      * class can be added to a cell. Adding duplicate components will result in
-     * an IllegalArgumentException 
+     * an IllegalArgumentException.
+     * 
+     * When a component is added component.setStatus is called automatically with
+     * the current status of this cell.
      * 
      * @param component
      */
@@ -143,6 +155,18 @@ public class Cell {
         CellComponent previous = components.put(component.getClass(),component);
         if (previous!=null)
             throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
+        component.setStatus(currentStatus);
+    }
+    
+    /**
+     * Return a collection of all the components in this cell.
+     * The collection is a clone of the internal data structure, so this is a
+     * snapshot of the component set.
+     * 
+     * @return
+     */
+    public Collection<CellComponent> getComponents() {
+        return new ArrayList<CellComponent>(components.values());
     }
     
     /**
@@ -176,7 +200,11 @@ public class Cell {
     }
     
     /**
-     * Set the transform for this cell
+     * Set the transform for this cell.
+     * 
+     * Users should not call this method directly, rather MovableComponent should
+     * be used, which will keep the client and server in sync.
+     * 
      * @param localTransform
      */
     void setLocalTransform(CellTransform localTransform) {
@@ -187,7 +215,7 @@ public class Cell {
             while(current!=null) {
                 CellTransform parentLocal2VW = current.getLocalToWorldTransform();
                 if (parentLocal2VW!=null) {
-                    setLocalToWorldTransform(parentLocal2VW);
+                    setLocalToWorldTransform(parentLocal2VW);  // this method also calls notifyTransformChangeListeners
                     current = null;
                 } else
                     current = current.getParent();
@@ -204,6 +232,8 @@ public class Cell {
                 local2VW = (CellTransform) localTransform.clone();
                 cachedVWBounds = localBounds.clone(cachedVWBounds);               
             }
+            
+            notifyTransformChangeListeners();
         }
         
         if (cachedVWBounds==null) {
@@ -217,6 +247,7 @@ public class Cell {
         // Notify Renderers that the cell has moved
         for(CellRenderer rend : cellRenderers.values())
             rend.cellTransformUpdate(local2VW);
+        
     }
         
     /**
@@ -238,6 +269,8 @@ public class Cell {
         local2VW = (CellTransform) localToVWorld.clone();
         cachedVWBounds = localBounds.clone(cachedVWBounds);
         local2VW.transform(cachedVWBounds);
+        
+        notifyTransformChangeListeners();
     }
     
     /**
@@ -264,8 +297,8 @@ public class Cell {
 //    }
 
     /**
-     * Update local2VWorld and bounds of child and all its children to
-     * reflect changes in a parent
+     * Update local2VWorld and bounds of child and all its children recursively 
+     * to reflect changes in a parent
      * 
      * @param parent
      * @param child
@@ -283,55 +316,37 @@ public class Cell {
             child.setLocalToWorldTransform(parentL2VW);
         }
         
-        BoundingVolume ret = child.getCachedVWBounds();
+        BoundingVolume ret = child.getWorldBounds();
         
         Iterator<Cell> it = child.getChildren().iterator();
         while(it.hasNext()) {
             ret.mergeLocal(transformTreeUpdate(child, it.next()));
         }
         
-//        child.setComputedWorldBounds(ret);
-        
+        child.setWorldBounds(ret);
+                
         return null;
     }
     
     /**
-     * Returns the local bounds transformed into VW coordinates. These bounds
-     * do not include the subgraph bounds. This call is only valid for live
-     * cells
+     * Returns the world bounds, this is the local bounds transformed into VW 
+     * coordinates. These bounds do not include the subgraph bounds. This call 
+     * is only valid for live cells.
      * 
-     * @return
+     * @return world bounds
      */
-    public BoundingVolume getCachedVWBounds() {
+    public BoundingVolume getWorldBounds() {
         return cachedVWBounds;
     }
 
     /**
-     * Set the VW Bounds for this cell
+     * Set the World Bounds for this cell
      * @param cachedVWBounds
      */
-    private void setCachedVWBounds(BoundingVolume cachedVWBounds) {
+    private void setWorldBounds(BoundingVolume cachedVWBounds) {
         this.cachedVWBounds = cachedVWBounds;
     }
     
-    /**
-     * Return a computed bounds for this cell in World coordinates that 
-     * encapsulates the bounds of this cell and all it's children.
-     * 
-     * The bounds returned by this call are computed periodically so changes
-     * to the local bounds of this node or any of it's children may not be 
-     * immediately reflected in this bounds.
-     * 
-     * @return
-     */
-//    public BoundingVolume getComputedWorldBounds() {
-//        return computedWorldBounds;
-//    }
-//
-//    public void setComputedWorldBounds(BoundingVolume computedWorldBounds) {
-//        this.computedWorldBounds = computedWorldBounds;
-//    }
-
     /**
      * Return the name for this cell (defaults to cellID)
      * @return
@@ -372,7 +387,7 @@ public class Cell {
      * Return the cell cache which instantiated and owns this cell.
      */
     public CellCache getCellCache() {
-        throw new RuntimeException("Not Implemented");
+        return cellCache;
     }
     
     /**
@@ -403,8 +418,11 @@ public class Cell {
      * ACTIVE - Cell is within the avatars proximity bounds
      * VISIBLE - Cell is in the view frustum
      * 
-     * The system guarantees that if a large change is made in the status, say from BOUNDS to VISIBLE
-     * that setStatus will automatically be called for the intermediate values
+     * The system guarantees that if a change is made between non adjacent status, say from BOUNDS to VISIBLE
+     * that setStatus will automatically be called for the intermediate values.
+     * 
+     * If you overload this method in your own class you must call super.setStatus(...) as the first operation
+     * in your method.
      *
      * @param status the cell status
      * @return true if the status was changed, false if the new and previous status are the same
@@ -425,6 +443,21 @@ public class Cell {
         
         for(CellComponent component : components.values())
             component.setStatus(status);
+        
+        switch(status) {
+            case DISK :
+                if (transformChangeListeners!=null) {
+                    transformChangeListeners.clear();
+                    transformChangeListeners = null;
+                }
+                
+                if (components!=null) {
+                    components.clear();
+                }
+                break;
+        }
+        
+        CellManager.getCellManager().notifyCellStatusChange(this, status);
         
         return true;
     }
@@ -474,5 +507,33 @@ public class Cell {
         }
         
         return ret;
+    }
+    
+    /**
+     * Add a TransformChangeListener to this cell. The listener will be
+     * called for any changes to the cells transform
+     * 
+     * @param listener to add
+     */
+    public void addTransformChangeListener(TransformChangeListener listener) {
+        if (transformChangeListeners==null)
+            transformChangeListeners = new ArrayList();
+        transformChangeListeners.add(listener);
+    }
+    
+    /**
+     * Remove the specified listener.
+     * @param listener to be removed
+     */
+    public void removeTransformChangeListener(TransformChangeListener listener) {
+        transformChangeListeners.remove(listener);
+    }
+    
+    private void notifyTransformChangeListeners() {
+        if (transformChangeListeners==null)
+            return;
+        
+        for(TransformChangeListener listener : transformChangeListeners)
+            listener.transformChanged(this);
     }
 }

@@ -17,16 +17,19 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
 /**
- * Client side class for world root cells.
+ * Listener for tracking cell transform changes
+ * 
+ * TODO Unify this interface with MovableComponent.CellMoveListener
  * 
  * @author paulby
  */
-public class RootCell extends Cell {
+public interface TransformChangeListener {
 
-    public RootCell(CellID cellID, CellCache cellCache) {
-        super(cellID, cellCache);
-    }
+    /**
+     * Called when the cells transform has changed.
+     * 
+     * @param cell
+     */
+    public void transformChanged(Cell cell);
 }

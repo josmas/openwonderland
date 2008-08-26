@@ -17,16 +17,16 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
- * Client side class for world root cells.
+ * Listener for notification of cell status changes
  * 
  * @author paulby
  */
-public class RootCell extends Cell {
+@ExperimentalAPI
+public interface CellStatusChangeListener {
 
-    public RootCell(CellID cellID, CellCache cellCache) {
-        super(cellID, cellCache);
-    }
+    public void cellStatusChanged(Cell cell, CellStatus status);
 }

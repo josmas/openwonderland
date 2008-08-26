@@ -24,6 +24,7 @@ import com.jme.scene.Node;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,7 +74,7 @@ public class ClientManager {
     
 //    private Vector3f location = new Vector3f();
 //    private static final float STEP = 2f;
-    private Cache boundsPanel = new Cache();
+    private JmeCellCache cellCache = null;
     
     private Vector3f previousPos = new Vector3f();
     
@@ -97,16 +98,17 @@ public class ClientManager {
         
         // create a session
         session = new CellClientSession(server) {
+            // createCellCache is called in the constructor fo CellClientSession
+            // so the cellCache will be set before we proceed
             @Override
             protected CellCache createCellCache() {
-                getCellCacheConnection().addListener(boundsPanel);
-                return boundsPanel;
+                cellCache = new JmeCellCache(this);  // this session
+                getCellCacheConnection().addListener(cellCache);
+                return cellCache;
             }
         };
-        ClientContext.registerCellCache(boundsPanel, session);
-        
-        boundsPanel.setSession(session);
-        
+        ClientContext.getWonderlandSessionManager().registerSession(session);
+                   
         localAvatar = session.getLocalAvatar();
                 
         try {
@@ -127,28 +129,19 @@ public class ClientManager {
         }
     }
     
-    class Cache implements CellCacheConnection.CellCacheMessageListener, CellCache {
+    class JmeCellCache extends CellCacheBasicImpl {
         
         // BoundsPanel actually wraps the cacheImpl
         private CellCacheBasicImpl cacheImpl;
         private CellClientSession session;
         
-        public Cache() {
+        public JmeCellCache(CellClientSession session) {
+            super(session, 
+                  session.getCellCacheConnection(), 
+                  session.getCellChannelConnection());
         }
         
-        public WonderlandSession getSession() {
-            return session;
-        }
-        
-        public void setSession(CellClientSession session) {
-            this.session = session;
-            
-            // setup internal cache
-            cacheImpl = new CellCacheBasicImpl(session, 
-                                               session.getCellCacheConnection(), 
-                                               session.getCellChannelConnection());
-        }
-        
+        @Override
         public Cell loadCell(CellID cellID, 
                 String className, 
                 BoundingVolume localBounds, 
@@ -156,18 +149,18 @@ public class ClientManager {
                 CellTransform cellTransform, 
                 CellSetup setup,
                 String cellName) {
-            Cell ret = cacheImpl.loadCell(cellID, 
+            Cell ret = super.loadCell(cellID, 
                                className, 
                                localBounds, 
                                parentCellID, 
                                cellTransform, 
                                setup,
                                cellName);
-            logger.warning("Loaded Cell "+ret.getClass().getName());
+//            logger.warning("Loaded Cell "+ret.getClass().getName());
             
             CellRenderer rend = ret.getCellRenderer(Cell.RendererType.RENDERER_JME);
             if (ret!=null && rend!=null) {
-                logger.warning("Got entity "+rend);
+//                logger.warning("Got entity "+rend);
                 if (rend instanceof CellRendererJME)
                     // TODO find parent entity (traverse up graph), if found add this entity as a child, else add to root
                     // Note the next code drop of mtgame will add an attach point for subentities in RenderComonent
@@ -181,8 +174,9 @@ public class ClientManager {
             return ret;
         }
 
+        @Override
         public void unloadCell(CellID cellID) {
-            Cell cell = cacheImpl.getCell(cellID);
+            Cell cell = getCell(cellID);
             CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
             if (cell!=null && rend!=null) {
                 if (rend instanceof CellRendererJME)
@@ -190,42 +184,9 @@ public class ClientManager {
                 else
                     logger.warning("Unexpected renderer class "+rend.getClass().getName());
             }
-            cacheImpl.unloadCell(cellID);
+            super.unloadCell(cellID);
         }
 
-        public void deleteCell(CellID cellID) {
-            cacheImpl.deleteCell(cellID);
-        }
-
-        /**
-         * The cell has moved. If it's an movable cell the transform has already
-         * been updated, so just process the cache update. If its not a
-         * movable cell then update the transform and cache.
-         * 
-         * @param cellID
-         * @param cellTransform
-         */
-        public void moveCell(CellID cellID, CellTransform cellTransform) {
-            cacheImpl.moveCell(cellID, cellTransform);
-        }
-        
-        /*************************************************
-         * CellCache implementation
-         *************************************************/
-        public Cell getCell(CellID cellId) {
-            return cacheImpl.getCell(cellId);
-        }
-
-        public void viewSetup(ViewCell viewCell) {
-            cacheImpl.viewSetup(viewCell);
-        }
-
-        
-        /*************************************************
-         * End CellCache implementation
-         *************************************************/
-        
-        
     }
     
     private static Properties loadProperties(String fileName) {

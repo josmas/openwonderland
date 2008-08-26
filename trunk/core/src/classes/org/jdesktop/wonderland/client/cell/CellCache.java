@@ -17,13 +17,15 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.util.Collection;
 import org.jdesktop.wonderland.client.avatar.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- *
+ * The defining interface for the client Cell Cache
+ * 
  * @author paulby
  */
 @ExperimentalAPI
@@ -48,5 +50,18 @@ public interface CellCache {
      * 
      * @param viewCell the view cell
      */
-    public void viewSetup(ViewCell viewCell);
+    public void setViewCell(ViewCell viewCell);
+    
+    /**
+     * Returns the ViewCell for this cache
+     */
+    public ViewCell getViewCell();
+    
+    /**
+     * Returns a collection of root cells in this cache. The returned collection
+     * is a copy of the internal collection.
+     * 
+     * @return the RootCells for this cache
+     */
+    public Collection<Cell> getRootCells();
 }

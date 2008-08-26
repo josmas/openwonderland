@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class MovableComponentMO extends CellComponentMO {
 
-    private ArrayList<ManagedReference<CellMoveListener>> listeners = null;
+    private ArrayList<ManagedReference<CellTransformChangeListener>> listeners = null;
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
     private ManagedReference<SpaceMO> currentSpaceRef = null;
     private long transformTimestamp;
@@ -89,7 +89,7 @@ public class MovableComponentMO extends CellComponentMO {
         
         // Notify listeners
         if (listeners!=null) {
-            notifyMoveListeners(cell, transform);
+            notifyTransformChangeListeners(cell, transform);
         }
         
         // TODO only handles a single space at the moment
@@ -132,9 +132,9 @@ public class MovableComponentMO extends CellComponentMO {
      * 
      * @param listener
      */
-    public void addCellMoveListener(CellMoveListener listener) {
+    public void addTransformChangeListener(CellTransformChangeListener listener) {
         if (listeners==null)
-            listeners = new ArrayList<ManagedReference<CellMoveListener>>();
+            listeners = new ArrayList<ManagedReference<CellTransformChangeListener>>();
         
         listeners.add(AppContext.getDataManager().createReference(listener));
     }
@@ -143,7 +143,7 @@ public class MovableComponentMO extends CellComponentMO {
      * Remove the CellMoveListener
      * @param listener
      */
-    public void removeCellMoveListener(CellMoveListener listener) {
+    public void removeTransformChangeListener(CellTransformChangeListener listener) {
         if (listeners!=null)
             listeners.remove(AppContext.getDataManager().createReference(listener));
     }
@@ -153,14 +153,14 @@ public class MovableComponentMO extends CellComponentMO {
      * in a separate task.
      * @param transform
      */
-    private void notifyMoveListeners(final CellMO cell, final CellTransform transform) {
+    private void notifyTransformChangeListeners(final CellMO cell, final CellTransform transform) {
         TaskManager tm = AppContext.getTaskManager();
         
-        for(final ManagedReference<CellMoveListener> listenerRef : listeners) {
+        for(final ManagedReference<CellTransformChangeListener> listenerRef : listeners) {
             tm.scheduleTask(new Task() {
 
                 public void run() throws Exception {
-                    listenerRef.get().cellMoved(cell, transform);
+                    listenerRef.get().transformChanged(cell, transform);
                 }
 
             });
@@ -171,8 +171,8 @@ public class MovableComponentMO extends CellComponentMO {
     /**
      * Listener inteface for cell movement
      */
-    public interface CellMoveListener extends ManagedObject {
-        public void cellMoved(CellMO cell, CellTransform transform);
+    public interface CellTransformChangeListener extends ManagedObject {
+        public void transformChanged(CellMO cell, CellTransform transform);
     }
 
     private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {

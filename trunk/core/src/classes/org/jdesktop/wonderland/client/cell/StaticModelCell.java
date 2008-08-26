@@ -27,8 +27,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class StaticModelCell extends Cell {
     
-    public StaticModelCell(CellID cellID) {
-        super(cellID);
+    public StaticModelCell(CellID cellID, CellCache cellCache) {
+        super(cellID, cellCache);
     }
     
     @Override

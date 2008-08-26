@@ -34,7 +34,7 @@ public class WFSCell extends Cell {
      * 
      * @param cellID The unique cell identifier
      */
-    public WFSCell(CellID cellID) {
-        super(cellID);
+    public WFSCell(CellID cellID, CellCache cellCache) {
+        super(cellID, cellCache);
     }
 }
