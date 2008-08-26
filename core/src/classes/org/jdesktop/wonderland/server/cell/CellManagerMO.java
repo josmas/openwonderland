@@ -204,7 +204,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
 //            WonderlandContext.getCellManager().insertCellInWorld(s3);
 
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
-            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
+//            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
 
             
             Task t = new TestTask(c3, c2);

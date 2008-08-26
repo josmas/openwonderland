@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.jme.cellrenderer.RoomTestRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -28,8 +31,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class RoomTestCell extends Cell {
     
-    public RoomTestCell(CellID cellID) {
-        super(cellID);
+    public RoomTestCell(CellID cellID, CellCache cellCache) {
+        super(cellID, cellCache);
     }
     
     @Override
@@ -44,6 +47,19 @@ public class RoomTestCell extends Cell {
                 break;                
         }
         
+        ProximityComponent comp = new ProximityComponent(this, new BoundingVolume[] { 
+            new BoundingSphere(15, new Vector3f()),
+            new BoundingSphere(13, new Vector3f()),
+            new BoundingSphere(11, new Vector3f())
+        });
+        comp.addProximityListener(new ProximityListener() {
+
+            public void viewEnterExit(boolean entered, Cell cell, BoundingVolume proximityVolume, int proximityIndex) {
+                System.out.println("-----------> View Enter/Exit "+entered+", "+proximityIndex+"  "+proximityVolume);
+            }
+        });
+        addComponent(comp);
+                
         return ret;
     }
     

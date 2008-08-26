@@ -56,8 +56,8 @@ class MovableCell extends Cell {
     private static Logger logger = Logger.getLogger(MovableCell.class.getName());
 //    private ArrayList<CellMoveListener> serverMoveListeners = null;
     
-    public MovableCell(CellID cellID) {
-        super(cellID);
+    public MovableCell(CellID cellID, CellCache cellCache) {
+        super(cellID, cellCache);
         addComponent(new ChannelComponent(this));
         addComponent(new MovableComponent(this));
     }

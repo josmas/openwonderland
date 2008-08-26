@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.server.UserMO;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellMoveListener;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellTransformChangeListener;
 
 /**
  * Superclass for all avatar cells. 
@@ -79,9 +79,9 @@ public class AvatarMO extends CellMO implements View {
         return this;
     }
     
-    class AvatarMoveListener implements CellMoveListener, Serializable {
+    class AvatarMoveListener implements CellTransformChangeListener, Serializable {
 
-        public void cellMoved(CellMO cell, CellTransform transform) {
+        public void transformChanged(CellMO cell, CellTransform transform) {
             System.out.println("AvatarMO.cellMoved");
         }
         

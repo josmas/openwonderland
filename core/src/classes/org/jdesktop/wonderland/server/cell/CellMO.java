@@ -161,30 +161,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         return vwBounds.clone(null);
     }
-
-    /**
-     * Return a computed bounds for this cell in World coordinates that 
-     * encapsulates the bounds of this cell and all it's children.
-     * 
-     * The bounds returned by this call are computed periodically so changes
-     * to the local bounds of this node or any of it's children may not be 
-     * immediately reflected in this bounds.
-     * 
-     * This call is only valid for live
-     * cells, for non live cells an IllegalStateException will be thrown.
-     * 
-     * @return the bounds in world coordinates
-     */
-//    public BoundingVolume getComputedWorldBounds() {
-//        if (!live)
-//            throw new IllegalStateException("Cell is not live");
-//        
-//        if (boundsChanged)
-//            throw new IllegalStateException("LocalBounds have been changed, "
-//                    + "cached bounds not valid until the transaction commits");
-//        
-//        return BoundsManager.get().getComputedWorldBounds(cellID);   
-//    }
    
     /**
      * Get the local to VWorld transform of this cells origin. This call

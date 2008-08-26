@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.avatar;
 
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -37,13 +38,17 @@ public class ViewCell extends Cell {
     
     private MovableComponent movableComp;
 
-    public ViewCell(CellID cellID) {
-        super(cellID);
+    public ViewCell(CellID cellID, CellCache cellCache) {
+        super(cellID, cellCache);
         addComponent(new ChannelComponent(this));
         addComponent(new MovableComponent(this));
         movableComp = getComponent(MovableComponent.class);
     }
     
+    /**
+     * Convenience method, simply calls moveableComponent.localMoveRequest
+     * @param transform
+     */
     public void localMoveRequest(CellTransform transform) {
         movableComp.localMoveRequest(transform);
     }

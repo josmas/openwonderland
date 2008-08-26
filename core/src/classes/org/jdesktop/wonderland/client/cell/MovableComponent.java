@@ -48,15 +48,15 @@ public class MovableComponent extends CellComponent {
     public MovableComponent(Cell cell) {
         super(cell);
         channelComp = cell.getComponent(ChannelComponent.class);
-        msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-
-            public void messageReceived(CellMessage message) {
-//                System.out.println("messageReceived "+message);
-                MovableMessage mov = (MovableMessage)message;
-                serverMoveRequest(new CellTransform(mov.getRotation(), mov.getTranslation()));
-            }
-        };
-        channelComp.addMessageReceiver(MovableMessage.class, msgReceiver);
+//        msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+//
+//            public void messageReceived(CellMessage message) {
+////                System.out.println("messageReceived "+message);
+//                MovableMessage mov = (MovableMessage)message;
+//                serverMoveRequest(new CellTransform(mov.getRotation(), mov.getTranslation()));
+//            }
+//        };
+//        channelComp.addMessageReceiver(MovableMessage.class, msgReceiver);
     }
     
     
@@ -69,6 +69,19 @@ public class MovableComponent extends CellComponent {
                     msgReceiver = null;
                 }
                 break;
+             case BOUNDS : {
+                 if (msgReceiver==null) {
+                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+
+                        public void messageReceived(CellMessage message) {
+            //                System.out.println("messageReceived "+message);
+                            MovableMessage mov = (MovableMessage)message;
+                            serverMoveRequest(new CellTransform(mov.getRotation(), mov.getTranslation()));
+                        }
+                    };                    
+                    channelComp.addMessageReceiver(MovableMessage.class, msgReceiver);
+                 }
+             }
         }
     }
     

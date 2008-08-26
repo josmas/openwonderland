@@ -17,10 +17,15 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -41,10 +46,20 @@ public class WonderlandSessionManager {
     
     /**
      * Get the WonderlandSession to connect to server identified by the given
-     * server info object.  
+     * server info object. The returned session will be an instance of WonderlandSessionImpl
+     * 
      * @param serverInfo the server to connect to
      */
     public WonderlandSession getSession(WonderlandServerInfo serverInfo) {
+        return getSession(serverInfo, WonderlandSessionImpl.class);
+    }
+    /**
+     * Get the WonderlandSession to connect to server identified by the given
+     * server info object.  
+     * @param serverInfo the server to connect to
+     * @param sessionClass the class of the session object
+     */
+    public WonderlandSession getSession(WonderlandServerInfo serverInfo, Class sessionClass) {
         WonderlandSession session;
         boolean newSession = false;
         
@@ -54,8 +69,23 @@ public class WonderlandSessionManager {
             // see if we need to create a new session
             if (session == null) {
                 newSession = true;
-                session = new WonderlandSessionImpl(serverInfo);
-                sessions.put(serverInfo, session);
+                try {
+                    Constructor constructor = sessionClass.getConstructor(WonderlandServerInfo.class);
+                    session = (WonderlandSession) constructor.newInstance(serverInfo);
+                    sessions.put(serverInfo, session);
+                } catch (InstantiationException ex) {
+                    Logger.getLogger(WonderlandSessionManager.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(WonderlandSessionManager.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(WonderlandSessionManager.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InvocationTargetException ex) {
+                    Logger.getLogger(WonderlandSessionManager.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NoSuchMethodException ex) {
+                    Logger.getLogger(WonderlandSessionManager.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SecurityException ex) {
+                    Logger.getLogger(WonderlandSessionManager.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
        
@@ -68,6 +98,14 @@ public class WonderlandSessionManager {
     }
     
     /**
+     * Register the session with the manager
+     * @param session
+     */
+    public void registerSession(CellClientSession session) {
+        sessions.put(session.getServerInfo(), session);
+    }
+    
+    /**
      * Add a lifecycle listener.  This will receive messages for all
      * clients that are created or change status
      * @param listener the listener to add
@@ -75,7 +113,7 @@ public class WonderlandSessionManager {
     public void addLifecycleListener(SessionLifecycleListener listener) {
         lifecycleListeners.add(listener);
     }
-    
+
     /**
      * Remove a lifecycle listener.
      * @param listener the listener to remove
@@ -92,5 +130,14 @@ public class WonderlandSessionManager {
         for (SessionLifecycleListener listener : lifecycleListeners) {
             listener.sessionCreated(session);
         }
+    }
+
+    /**
+     * Return all the current sessions
+     * @return collection of current sessions
+     */
+    public Iterator<WonderlandSession> getSessions() {
+        System.out.println("SESSIONS "+sessions.values().size());
+        return sessions.values().iterator();
     }
 }

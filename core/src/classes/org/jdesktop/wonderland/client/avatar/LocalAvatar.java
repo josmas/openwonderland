@@ -67,7 +67,7 @@ public class LocalAvatar implements ClientView {
     public void viewCellConfigured(CellID cellID) {
 //        System.out.println("******************* viewCellConfigured");
         viewCell = (ViewCell) ClientContext.getCellCache(session).getCell(cellID);
-        ClientContext.getCellCache(session).viewSetup(viewCell);
+        ClientContext.getCellCache(session).setViewCell(viewCell);
     }
     
     /**

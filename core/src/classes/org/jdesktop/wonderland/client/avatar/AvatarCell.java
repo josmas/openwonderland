@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.avatar;
 
+import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -28,8 +29,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class AvatarCell extends ViewCell {
 
-    public AvatarCell(CellID cellID) {
-        super(cellID);
+    public AvatarCell(CellID cellID, CellCache cellCache) {
+        super(cellID, cellCache);
     }
     
     @Override

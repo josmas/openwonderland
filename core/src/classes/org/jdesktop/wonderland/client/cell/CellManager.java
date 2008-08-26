@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
  * Global services for client cells. The manager will only
@@ -35,6 +38,8 @@ public class CellManager {
     
 //    private Set<CellMoveListener> moveListeners=Collections.synchronizedSet(new LinkedHashSet());            
 ;
+
+    private Set<CellStatusChangeListener> statusChangeListeners = null;
     
     private CellManager() {
     }
@@ -43,7 +48,43 @@ public class CellManager {
         if (cellManager==null)
             cellManager = new CellManager();
         return cellManager;
-    } 
+    }
+
+    /**
+     * Notify the cellStatusChangeListeners that the cell status has been updated.
+     * @param cell
+     * @param status
+     */
+    void notifyCellStatusChange(Cell cell, CellStatus status) {
+        if (statusChangeListeners==null)
+            return;
+        
+        for(CellStatusChangeListener listener : statusChangeListeners)
+            listener.cellStatusChanged(cell, status);
+    }
+    
+    /**
+     * Add a CellStatusChangeListener for notification of the change of status
+     * of any cell in the system. Listeners are notifed prior to the status change
+     * actually taking place.
+     * @param listener to be added
+     */
+    public void addCellStatusChangeListener(CellStatusChangeListener listener) {
+        if (statusChangeListeners==null)
+            statusChangeListeners = Collections.synchronizedSet(new HashSet());
+        
+        statusChangeListeners.add(listener);        
+    }
+    
+    /**
+     * Remove the CellStatusChangeListener
+     * @param listener to be removed
+     */
+    public void removeCellStatusChangeListener(CellStatusChangeListener listener) {
+        if (statusChangeListeners!=null) {
+            statusChangeListeners.remove(listener);
+        }
+    }
     
     /**
      * Called by the MovableCell to notify the system that it has moved.

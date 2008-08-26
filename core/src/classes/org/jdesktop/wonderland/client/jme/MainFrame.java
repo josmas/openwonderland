@@ -28,6 +28,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 
 /**
@@ -44,6 +47,7 @@ public class MainFrame extends javax.swing.JFrame {
     private JPanel contentPane;
     
     private ImportSessionFrame importSessionFrame = null;
+    private CellViewerFrame cellViewerFrame = null;
     
     /** Creates new form MainFrame */
     public MainFrame(WorldManager wm, int width, int height) {
@@ -104,6 +108,7 @@ public class MainFrame extends javax.swing.JFrame {
         jMenu4 = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
         modelImportMI = new javax.swing.JMenuItem();
+        cellViewerMI = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -132,6 +137,14 @@ public class MainFrame extends javax.swing.JFrame {
         });
         toolsMenu.add(modelImportMI);
 
+        cellViewerMI.setText("Cell Viewer...");
+        cellViewerMI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cellViewerMIActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(cellViewerMI);
+
         jMenuBar2.add(toolsMenu);
 
         setJMenuBar(jMenuBar2);
@@ -150,8 +163,18 @@ if (importSessionFrame==null)
     importSessionFrame.setVisible(true);
 }//GEN-LAST:event_modelImportMIActionPerformed
 
+private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cellViewerMIActionPerformed
+    if (cellViewerFrame==null) {
+        // TODO handle multiple sessions
+        WonderlandSession session = ClientContext.getWonderlandSessionManager().getSessions().next();
+        cellViewerFrame = new CellViewerFrame(session);
+    }
+    cellViewerFrame.setVisible(true);
+}//GEN-LAST:event_cellViewerMIActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem cellViewerMI;
     private javax.swing.JMenuItem exitMI;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
