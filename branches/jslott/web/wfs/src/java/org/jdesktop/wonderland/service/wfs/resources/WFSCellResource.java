@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.service.wfs.WFSManager;
@@ -59,6 +60,7 @@ public class WFSCellResource {
      * @return The XML serialization of the cell setup information via HTTP GET.
      */
     @GET
+    @ProduceMime("text/plain")
     public Response getCellResource(@PathParam("wfsname") String wfsName, @PathParam("path") String path) {
         /* Fetch thhe error logger for use in this method */
         Logger logger = WFSManager.getLogger();
