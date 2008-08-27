@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * The WFSCellChildren class simply represent an array of child names for a
+ * The WFSCellList class simply represent an array of child names for a
  * given cell. It is used to serialize this list across a network in XML form
  * or out to disk. It also contains the date the cell was last modified, so
  * that the cell loading and reloading scheme in Wonderland can check whether
@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="wfs-children")
-public class WFSCellChildren {
+public class WFSCellList {
     /* An array of cell children names */
     @XmlElements({
         @XmlElement(name="child")
@@ -56,10 +56,10 @@ public class WFSCellChildren {
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(WFSCellChildren.class);
-            WFSCellChildren.unmarshaller = jc.createUnmarshaller();
-            WFSCellChildren.marshaller = jc.createMarshaller();
-            WFSCellChildren.marshaller.setProperty("jaxb.formatted.output", true);
+            JAXBContext jc = JAXBContext.newInstance(WFSCellList.class);
+            WFSCellList.unmarshaller = jc.createUnmarshaller();
+            WFSCellList.marshaller = jc.createMarshaller();
+            WFSCellList.marshaller.setProperty("jaxb.formatted.output", true);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -90,11 +90,11 @@ public class WFSCellChildren {
     }
     
     /** Default constructor */
-    public WFSCellChildren() {
+    public WFSCellList() {
     }
     
     /** Constructor, takes the relative path and names of the children */
-    public WFSCellChildren(String relativePath, CellChild[] children) {
+    public WFSCellList(String relativePath, CellChild[] children) {
         this.relativePath = relativePath;
         this.children = children;
     }
@@ -119,14 +119,14 @@ public class WFSCellChildren {
     
     /**
      * Takes the input stream of the XML and instantiates an instance of
-     * the WFSCellChildren class
+     * the WFSCellList class
      * <p>
      * @param is The input stream of the XML representation
-     * @throw ClassCastException If the input file does not map to WFSCellChildren
+     * @throw ClassCastException If the input file does not map to WFSCellList
      * @throw JAXBException Upon error reading the XML stream
      */
-    public static WFSCellChildren decode(String relativePath, InputStream is) throws JAXBException {
-        WFSCellChildren children = (WFSCellChildren)WFSCellChildren.unmarshaller.unmarshal(is);
+    public static WFSCellList decode(String relativePath, InputStream is) throws JAXBException {
+        WFSCellList children = (WFSCellList)WFSCellList.unmarshaller.unmarshal(is);
         children.relativePath = relativePath;
         return children;
     }
@@ -138,6 +138,6 @@ public class WFSCellChildren {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        WFSCellChildren.marshaller.marshal(this, w);
+        WFSCellList.marshaller.marshal(this, w);
     }
 }

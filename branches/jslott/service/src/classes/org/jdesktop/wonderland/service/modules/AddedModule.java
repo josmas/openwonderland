@@ -54,7 +54,7 @@ public class AddedModule extends ArchiveModule {
     }
     
     @Override
-    public InputStream getInputStream(ModuleResource resource) {
+    public InputStream getInputStreamForResource(ModuleResource resource) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

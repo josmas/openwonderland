@@ -19,14 +19,14 @@
 package org.jdesktop.wonderland.service.wfs.resources;
 
 import java.io.StringWriter;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.service.wfs.WFSManager;
-import org.jdesktop.wonderland.wfs.WFSRoots;
+import org.jdesktop.wonderland.service.wfs.WFSRoots;
+
 
 /**
  * The WFSRootsResource class is a Jersey RESTful resource that allows clients

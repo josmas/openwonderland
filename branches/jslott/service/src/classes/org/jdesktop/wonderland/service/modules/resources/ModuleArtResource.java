@@ -88,7 +88,7 @@ public class ModuleArtResource {
         }
         
         /* Encode in an HTTP response and send */
-        InputStream is = im.getInputStream(mr);
+        InputStream is = im.getInputStreamForResource(mr);
         ResponseBuilder rb = Response.ok(is);
         return rb.build();
     }

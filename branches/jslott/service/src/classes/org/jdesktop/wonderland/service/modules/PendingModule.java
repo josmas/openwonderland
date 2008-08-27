@@ -53,7 +53,7 @@ public class PendingModule extends ArchiveModule {
     }
     
     @Override
-    public InputStream getInputStream(ModuleResource resource) {
+    public InputStream getInputStreamForResource(ModuleResource resource) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     

@@ -26,11 +26,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.service.wfs.WFSCellList;
+import org.jdesktop.wonderland.service.wfs.WFSCellList.CellChild;
 import org.jdesktop.wonderland.service.wfs.WFSManager;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSCell;
-import org.jdesktop.wonderland.wfs.WFSCellChildren;
-import org.jdesktop.wonderland.wfs.WFSCellChildren.CellChild;
 import org.jdesktop.wonderland.wfs.WFSCellDirectory;
 
 /**
@@ -49,7 +50,7 @@ import org.jdesktop.wonderland.wfs.WFSCellDirectory;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/wfs/{wfsname}/{path}/directory", limited=false)
+@Path(value="/wfs/{wfsname}/directory/{path}", limited=false)
 public class WFSDirectoryResource {
     
     /**
@@ -156,7 +157,7 @@ public class WFSDirectoryResource {
         
         /* Convert the list of CellChilds to an array */
         CellChild[] childs = list.toArray(new CellChild[] {});
-        WFSCellChildren children = new WFSCellChildren(path, childs);
+        WFSCellList children = new WFSCellList(path, childs);
         
         /* Send the serialized cell names to the client */
         try {
@@ -164,7 +165,7 @@ public class WFSDirectoryResource {
             children.encode(sw);
             ResponseBuilder rb = Response.ok(sw.toString());
             return rb.build();
-        } catch (javax.xml.bind.JAXBException excp) {
+        } catch (JAXBException excp) {
             logger.info("WFSManager: Unable to write dir with path: " + path + ": " + excp.toString());
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();

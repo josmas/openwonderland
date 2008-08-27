@@ -18,14 +18,12 @@
 
 package org.jdesktop.wonderland.service.wfs.resources;
 
-import java.io.StringWriter;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.service.wfs.WFSManager;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSCell;
@@ -47,7 +45,7 @@ import org.jdesktop.wonderland.wfs.WFSCellDirectory;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/wfs/{wfsname}/{path}/cell", limited=false)
+@Path(value="/wfs/{wfsname}/cell/{path}", limited=false)
 public class WFSCellResource {
     
     /**
@@ -65,6 +63,8 @@ public class WFSCellResource {
         /* Fetch thhe error logger for use in this method */
         Logger logger = WFSManager.getLogger();
         
+        System.out.println("Get CELL: " + path);
+        
         /*
          * Fetch the wfs manager and the WFS. If invalid, then return a bad
          * response.
@@ -72,7 +72,7 @@ public class WFSCellResource {
         WFSManager wfsm = WFSManager.getWFSManager();
         WFS wfs = wfsm.getWFS(wfsName);
         if (wfs == null) {
-            logger.warning("Unable to find WFS with name " + wfsName);
+            System.out.println("Unable to find WFS with name " + wfsName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
@@ -80,7 +80,7 @@ public class WFSCellResource {
         /* Fetch the root directory, check if null, but should never be */
         WFSCellDirectory dir = wfs.getRootDirectory();
         if (dir == null) {
-            logger.warning("WFSManager: Unable to find WFS root with name " + wfsName);
+            System.out.println("WFSManager: Unable to find WFS root with name " + wfsName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
@@ -111,7 +111,7 @@ public class WFSCellResource {
              * to exist, otherwise, return a bad response.
              */
             if ((dir = cell.getCellDirectory()) == null) {
-                logger.warning("WFSManager: Unable to find directory with path: " + path);
+                System.out.println("WFSManager: Unable to find directory with path: " + path);
                 ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
                 return rb.build();
             }
@@ -123,7 +123,7 @@ public class WFSCellResource {
          */
         WFSCell cell = dir.getCellByName(paths[paths.length - 1]);
         if (cell == null) {
-            logger.warning("WFSManager: Unable to find final cell with path: " + path);
+            System.out.println("WFSManager: Unable to find final cell with path: " + path);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
@@ -135,7 +135,7 @@ public class WFSCellResource {
             /* Fetch the essential configuration information, check for null */
             String setup = cell.getCellSetup();
             if (setup == null) {
-                logger.warning("WFSManager: Unable to find cell setup: " + path);
+                System.out.println("WFSManager: Unable to find cell setup: " + path);
                 ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
                 return rb.build();
             }
@@ -145,7 +145,7 @@ public class WFSCellResource {
                 return rb.build();
             }
         } catch (java.lang.Exception excp) {
-            logger.warning("WFSManager: Unable to read cell with path: " + path + ": " + excp.toString());
+            System.out.println("WFSManager: Unable to read cell with path: " + path + ": " + excp.toString());
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
