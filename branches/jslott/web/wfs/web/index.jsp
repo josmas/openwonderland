@@ -14,6 +14,15 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h2>Hello World!</h2>
+        <h3>Wonderland File Systems (WFS)</h3>
+        <table>
+            <%@ page import="org.jdesktop.wonderland.service.wfs.WFSManager" %>
+            <% String roots[] = WFSManager.getWFSManager().getWFSRoots(); %>
+            <% for (String root : roots) { %>
+            <tr>
+                <td><%= root%></td>
+            </tr>
+            <% } %>
+        </table>
     </body>
 </html>
