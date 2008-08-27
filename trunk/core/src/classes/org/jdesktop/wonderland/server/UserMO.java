@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.server.cell.AvatarMO;
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 
 /**
  * This class represensents a real world user. A user can be logged into
@@ -49,7 +49,7 @@ public class UserMO implements ManagedObject, Serializable {
     
     private Set<ManagedReference<ClientSession>> activeSessions = null;
     private Map<String, Serializable> extendedData = null;
-    private Map<String, ManagedReference<AvatarMO>> avatars = new HashMap();
+    private Map<String, ManagedReference<AvatarCellMO>> avatars = new HashMap();
     
     protected static Logger logger = Logger.getLogger(UserMO.class.getName());
 
@@ -120,8 +120,8 @@ public class UserMO implements ManagedObject, Serializable {
      * @param avatarName
      * @return
      */
-    public AvatarMO getAvatar(String avatarName) {
-        ManagedReference<AvatarMO> avatarRef = avatars.get(avatarName);
+    public AvatarCellMO getAvatar(String avatarName) {
+        ManagedReference<AvatarCellMO> avatarRef = avatars.get(avatarName);
         if (avatarRef == null) {
             return null;
         }
@@ -134,7 +134,7 @@ public class UserMO implements ManagedObject, Serializable {
      * @param avatarName
      * @param avatar
      */
-    public void putAvatar(String avatarName, AvatarMO avatar) {
+    public void putAvatar(String avatarName, AvatarCellMO avatar) {
         DataManager dm = AppContext.getDataManager();
         avatars.put(avatarName, dm.createReference(avatar));
     }

@@ -24,12 +24,14 @@ import com.jme.bounding.BoundingVolume;
  * Enter/Exit is triggered when the origin of the ViewCell enters/exits the
  * bounds of a cell.
  * 
+ * @see ProximityComponent for more details
+ * 
  * @author paulby
  */
 public interface ProximityListener {
 
     /**
-     * The origin of the view cell for this client has entered the cells bounds
+     * The origin of the view cell for this client has entered or exited a proximity bounds
      * @param entered true if this is an enter event, false if its exit
      * @param cell the cell associated with the proximity listener
      * @param proximityVolume the bounding volume entered/exited

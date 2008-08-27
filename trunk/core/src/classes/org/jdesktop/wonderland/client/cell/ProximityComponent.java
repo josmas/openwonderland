@@ -180,11 +180,9 @@ public class ProximityComponent extends CellComponent {
                 int nowInIndex=-1;      // -1 = not in any bounding volume
                 int i=0;
                 while(i<worldProxBounds.length) {
-//                    System.out.println("***** Checking proximity "+worldTransform+" "+worldProxBounds[i]+"  "+worldProxBounds[i].contains(worldTransform));
                     if (worldProxBounds[i].contains(worldTransform)) {
                         nowIn = worldProxBounds[i];
                         nowInIndex = i;
-//                        System.err.println("NOW IN "+nowIn);
                     } else {
                         i=worldProxBounds.length; // Exit the while
                     }

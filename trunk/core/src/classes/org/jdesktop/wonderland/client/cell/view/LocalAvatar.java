@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.avatar;
+package org.jdesktop.wonderland.client.cell.view;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;

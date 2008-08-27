@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.client.comms;
 
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.client.avatar.LocalAvatar;
+import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;

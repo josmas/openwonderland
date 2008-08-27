@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.client.cell;
 
 import java.util.Collection;
-import org.jdesktop.wonderland.client.avatar.ViewCell;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;

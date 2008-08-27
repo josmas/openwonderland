@@ -33,7 +33,7 @@ import com.jme.scene.state.ZBufferState;
  * 
  * @author paulby
  */
-public class PortalModule extends RenderModule {
+public class PortalModule {
 
     private TextureRenderer tRenderer;
     private CameraNode portalCamera;
@@ -45,7 +45,7 @@ public class PortalModule extends RenderModule {
     private float height = 3;
     private float frameSize = 0.2f;
     
-    public void init(RenderInfo info) {
+//    public void init(RenderInfo info) {
 //        tRenderer = info.getDisplay().createTextureRenderer(
 //                256, 
 //                256, 
@@ -100,22 +100,21 @@ public class PortalModule extends RenderModule {
 //        portalNode.updateGeometricState(0.0f, true);
 //        portalNode.updateRenderState();
 //        portalNode.setLightCombineMode(LightState.OFF);
-    }
+//    }
 
-    public void update(RenderInfo info, float interpolation) {
-        // nothing to do
-    }
-
-    public void render(RenderInfo info, float interpolation) {  
-        tRenderer.render(info.getRoot(), rendTexture);
-    }
-
-    @Override
-    public void setActiveImpl(boolean active, RenderInfo info) {
-        if (active)
-            info.getRoot().attachChild(portalNode);
-        else
-            info.getRoot().detachChild(portalNode);
-    }
+//    public void update(RenderInfo info, float interpolation) {
+//        // nothing to do
+//    }
+//
+//    public void render(RenderInfo info, float interpolation) {  
+//        tRenderer.render(info.getRoot(), rendTexture);
+//    }
+//
+//    public void setActiveImpl(boolean active, RenderInfo info) {
+//        if (active)
+//            info.getRoot().attachChild(portalNode);
+//        else
+//            info.getRoot().detachChild(portalNode);
+//    }
 
 }
