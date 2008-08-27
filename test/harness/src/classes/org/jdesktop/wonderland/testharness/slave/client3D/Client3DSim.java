@@ -23,7 +23,7 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.avatar.LocalAvatar;
+import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -61,7 +61,6 @@ public class Client3DSim
                 
         // login
         CellClientSession session = new CellClientSession(server);
-        ClientContext.registerCellCache(session.getCellCache(), session);
         session.addSessionStatusListener(this);
         session.login(login);
         
