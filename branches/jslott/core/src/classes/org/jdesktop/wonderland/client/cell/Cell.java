@@ -17,13 +17,13 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import com.jme.app.mtgame.entity.Entity;
 import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -208,7 +208,7 @@ public class Cell {
             transformTreeUpdate(this, child);      
         
         if (entity!=null) {
-            entity.setTransform(localTransform.getRotation(null), localTransform.getTranslation(null), localTransform.getScaling(null));
+//            entity.setTransform(localTransform.getRotation(null), localTransform.getTranslation(null), localTransform.getScaling(null));
 //            System.out.println("Moving entity");
         }
     }

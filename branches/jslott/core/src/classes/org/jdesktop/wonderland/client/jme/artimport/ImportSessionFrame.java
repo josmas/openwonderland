@@ -17,10 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.ProcessorComponent;
-import com.jme.app.mtgame.entity.SceneComponent;
+
 import com.jme.bounding.BoundingBox;
 import com.jme.light.PointLight;
 import com.jme.math.Matrix3f;
@@ -35,7 +32,6 @@ import com.jme.util.export.Savable;
 import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
-import com.jme.util.resource.SimpleResourceLocator;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -65,7 +61,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
-import org.jdesktop.wonderland.client.jme.ClientManager;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.artimport.ModelCompiler.CompilerMessageDisplay;
 import org.jdesktop.wonderland.common.config.WonderlandConfig;
@@ -700,19 +699,20 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         rootBG.setLocalTranslation(0f,0f,0f);
 
                         
-        Entity entity = new Entity(model.getOrigModel(), null);
-        SceneComponent scene = new SceneComponent();
-        scene.setSceneRoot(rootBG);
-        entity.addComponent(SceneComponent.class,scene);
-        
-        model.setEntity(entity);
-        
-        entity.addComponent(ProcessorComponent.class, new TransformProcessorComponent(wm, rootBG));
-        
-        wm.addEntity(entity);
-        sgViewFrame.addEntity(entity);
-        
-        return entity;
+//        Entity entity = new Entity(model.getOrigModel(), null);
+//        SceneComponent scene = new SceneComponent();
+//        scene.setSceneRoot(rootBG);
+//        entity.addComponent(SceneComponent.class,scene);
+//        
+//        model.setEntity(entity);
+//        
+//        entity.addComponent(ProcessorComponent.class, new TransformProcessorComponent(wm, rootBG));
+//        
+//        wm.addEntity(entity);
+//        sgViewFrame.addEntity(entity);
+//        
+//        return entity;
+        return null;
     }
     
      // This gimble locks, but good enough for now...

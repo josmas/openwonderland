@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.client.datamgr;
 
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +35,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
-import org.jdesktop.wonderland.common.ChecksumSha1;
 
 /**
  * The AssetDB class represents the client-side cache of assets. The database
@@ -107,6 +107,7 @@ public class AssetDB {
     
     /* The maximum length of strings in the database */
     private static final int MAX_STRING_LENGTH = 8192;
+
     
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(AssetDB.class.getName());
@@ -254,6 +255,8 @@ public class AssetDB {
             stmtUpdateExistingRecord = dbConnection.prepareStatement(strUpdateAsset);
             stmtGetAsset = dbConnection.prepareStatement(strGetAsset);
             stmtDeleteAsset = dbConnection.prepareStatement(strDeleteAsset);
+            stmtUpdateLastAccessed = dbConnection.prepareStatement(strUpdateLastAccessed);
+            stmtComputeTotalSize = dbConnection.prepareStatement(strComputeTotalSize);
             
             this.isConnected = dbConnection != null;
         } catch (SQLException ex) {
@@ -308,9 +311,11 @@ public class AssetDB {
                 logger.fine("AssetDB: Saving asset to database, uri=" + asset.getAssetURI().toString());
                 stmtSaveNewRecord.clearParameters();
                 stmtSaveNewRecord.setString(1, asset.getAssetURI().toString());
-                stmtSaveNewRecord.setString(2, asset.getURL());
-                stmtSaveNewRecord.setString(3, asset.getLocalChecksum().toString());
+                stmtSaveNewRecord.setString(2, asset.getLocalChecksum().toString());
+                stmtSaveNewRecord.setString(3, asset.getURL());
                 stmtSaveNewRecord.setString(4, asset.getType().toString());
+                stmtSaveNewRecord.setLong(5, System.currentTimeMillis());
+                stmtSaveNewRecord.setLong(6, 0 /* XXX */);
                 int row = stmtSaveNewRecord.executeUpdate();
                 logger.fine("AssetDB: Saving asset, row=" + row);
                 isSaved = true;            
@@ -437,10 +442,14 @@ public class AssetDB {
                 stmtUpdateExistingRecord.clearParameters();
 
                 stmtUpdateExistingRecord.setString(1, asset.getAssetURI().toString());
-                stmtUpdateExistingRecord.setString(2, asset.getURL());
-                stmtUpdateExistingRecord.setString(3, asset.getLocalChecksum().toString());
+                stmtUpdateExistingRecord.setString(2, asset.getLocalChecksum().toString());
+                stmtUpdateExistingRecord.setString(3, asset.getURL());
                 stmtUpdateExistingRecord.setString(4, asset.getType().toString());
-                stmtUpdateExistingRecord.setString(5, asset.getAssetURI().toString());
+                stmtUpdateExistingRecord.setLong(5, System.currentTimeMillis());
+                stmtUpdateExistingRecord.setLong(6, 0 /* XXX */);
+                stmtUpdateExistingRecord.setString(7, asset.getAssetURI().toString());
+                stmtUpdateExistingRecord.setString(8, asset.getLocalChecksum().toString());
+
                 stmtUpdateExistingRecord.executeUpdate();
                 bEdited = true;
             } catch(SQLException sqle) {
@@ -452,18 +461,20 @@ public class AssetDB {
     }
     
     /**
-     * Removes an asset given its unique identifying URI. Returns true if the
-     * asset was successfully removed, false if not.
+     * Removes an asset given its unique identifying URI and checksum. Returns
+     * true if the asset was successfully removed, false if not.
      * 
      * @param assetURI The unique asset URI
+     * @param checksum The asset checksum
      * @return True upon success, false upon failure
      */
-    public boolean deleteAsset(String assetURI) {
+    public boolean deleteAsset(String assetURI, String checksum) {
         boolean bDeleted = false;
         synchronized(stmtDeleteAsset) {
             try {
                 stmtDeleteAsset.clearParameters();
                 stmtDeleteAsset.setString(1, assetURI);
+                stmtDeleteAsset.setString(2, checksum);
                 stmtDeleteAsset.executeUpdate();
                 bDeleted = true;
             } catch (SQLException sqle) {
@@ -481,30 +492,32 @@ public class AssetDB {
      * @param assetURI The unique URI describing the asset
      * @return The asset record in the cache, null if not present.
      */
-    public Asset getAsset(String assetFilename) {
+    public Asset getAsset(String assetURI, String checksum) {
         Asset asset = null;
         synchronized(stmtGetAsset) {
             try {
-                // XXX Should we check for return status from query? XXX
                 stmtGetAsset.clearParameters();
-                stmtGetAsset.setString(1, assetFilename);
+                stmtGetAsset.setString(1, assetURI);
+                stmtGetAsset.setString(2, checksum);
                 ResultSet result = stmtGetAsset.executeQuery();
-                if (result.next()) {
+                if (result.next() == true) {
                     /* Fetch the information from the database */
                     String uri = result.getString("ASSET_URI");
+                    String cksum = result.getString("CHECKSUM");
                     String url = result.getString("URL");
-                    String checksum = result.getString("CHECKSUM");
                     AssetType assetType = AssetType.valueOf(result.getString("TYPE"));
-           
+                    long lastAccessed = result.getLong("LAST_ACCESSED");
+                    long size = result.getLong("SIZE");
+                    
                     /*
                      * Create an AssetURI class, log and error and return null
                      * if its syntax is invalid.
                      */
                     try {
-                        AssetURI assetURI = new AssetURI(uri);
-                        asset = AssetManager.getAssetManager().assetFactory(assetType, assetURI);
+                        AssetURI auri = new AssetURI(uri);
+                        asset = AssetManager.getAssetManager().assetFactory(assetType, auri);
                         asset.setURL(url);
-                        asset.setLocalChecksum(new ChecksumSha1(fromHexString(checksum)));
+                        asset.setLocalChecksum(cksum);
                     } catch (java.net.URISyntaxException excp) {
                         // Log an error XXX
                     }
@@ -513,33 +526,70 @@ public class AssetDB {
                 sqle.printStackTrace();
             }
         }
+        
+        /* Update the time the asset was last accessed */
+        this.updateLastAccessed(assetURI, checksum);
         return asset;
     }
 
-
     /**
-     * Convert a hex string to a byte array. Each hex value must be 2 digits.
-     * @param str
-     * @return
+     * Update the "last accessed" time with the current time (in milliseconds
+     * since the epoch) for the given asset uri and checksum
      */
-    static byte[] fromHexString(String str) {
-        byte[] ret = new byte[str.length()/2];
-        for(int i=0; i<str.length(); i+=2) {
-            ret[i/2] = (byte) Integer.parseInt(str.substring(i,i+2), 16);
+    private void updateLastAccessed(String assetURI, String checksum) {
+        synchronized(stmtUpdateLastAccessed) {
+            try {
+                stmtUpdateLastAccessed.clearParameters();
+                stmtUpdateLastAccessed.setLong(1, System.currentTimeMillis());
+                stmtUpdateLastAccessed.setString(2, assetURI);
+                stmtUpdateLastAccessed.setString(3, checksum);
+                stmtUpdateLastAccessed.executeUpdate();
+            } catch(SQLException sqle) {
+                logger.log(Level.SEVERE, "AssetDB: SQL Error updating last accessed for " + assetURI);
+                sqle.printStackTrace();
+            }
         }
-        
-        return ret;
     }
     
-    public void listAssets() {
+    /**
+     * Computes and returns the sum of all of the assets.
+     * 
+     * @return The size in bytes of all of the assets
+     */
+    public long getTotalSize() {
+        synchronized (stmtComputeTotalSize) {
+            try {
+                /* Do the SQL statement to compute the sum */
+                stmtComputeTotalSize.clearParameters();
+                ResultSet result = stmtComputeTotalSize.executeQuery();
+                
+                /* Fetch the one result, which should be the sum */
+                if (result.next() == true) {
+                    long size = result.getLong(0);
+                    return size;
+                }
+            } catch(SQLException sqle) {
+                sqle.printStackTrace();
+            }
+        }
+        return 0;
+    }
+    
+    /**
+     * Prints out all of the assets to stdout
+     */
+    private void listAssets() {
         try {
             Statement queryStatement = dbConnection.createStatement();
             ResultSet result = queryStatement.executeQuery(strGetListEntries);
             logger.fine("AssetDB: listing assets in database");
             while(result.next()) {
-                System.out.print(result.getString("ASSET_URI") + "\t\t");
-                System.out.print(result.getString("URL")+"\t\t");
-                System.out.print(result.getString("TYPE"));
+                System.out.print(result.getString("ASSET_URI") + "\t");
+                System.out.print(result.getString("CHECKSUM") + "\t");
+                System.out.print(result.getString("URL")+"\t");
+                System.out.print(result.getString("TYPE") + "\t");
+                System.out.print(result.getLong("LAST_ACCESSED") + "\t");
+                System.out.print(result.getLong("SIZE"));
                 System.out.println();
             }
             logger.fine("AssetDB: Done listing assets in database");
@@ -555,7 +605,7 @@ public class AssetDB {
      * LIST: Lists all of the entries in the database
      * ADD: Add an entry to the database, followed by the required data fields
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws URISyntaxException {
         /* Create the database and open a connection */
         AssetDB db = new AssetDB();
         
@@ -564,25 +614,17 @@ public class AssetDB {
         logger.fine("AssetDB: Database URL:      " + db.getDatabaseUrl());
         logger.fine("AssetDB: Is Connected?      " + db.isConnected());
 
-        /* Check to see if there are enough arguments 
-        if (args.length < 2) {
-            logger.fine("AssetDB: So, what do you want to do?");
-            System.exit(0);
-        }
-        
-        String cmd = args[1];
-        if (cmd.compareTo("LIST") == 0) {
-            db.listAssets();
-        }
-        else if (cmd.compareTo("ADD") == 0) {
-            String assetURI = args[2];
-            String url = args[3];
-            String checksum = args[4];
-            String type = args[5];
-            
-            
-        }*/
-        
+        Asset asset = new AssetFile(new AssetURI("wlm://mpk20/models/web.gz"));
+        asset.setLocalChecksum("XXXXXX");
+        asset.setURL("http://java.net");
+        db.addAsset(asset);
+  
+        Asset asset2 = new AssetFile(new AssetURI("wlm://mpk20/models/web.gz"));
+        asset2.setLocalChecksum("YYYYYY");
+        asset2.setURL("http://java.net");
+        db.addAsset(asset2);
+
+        /* List the assets in the database */
         db.listAssets();
         
         /* Disconnect from the database and exit */
@@ -595,41 +637,58 @@ public class AssetDB {
     private PreparedStatement stmtGetListEntries;
     private PreparedStatement stmtGetAsset;
     private PreparedStatement stmtDeleteAsset;
+    private PreparedStatement stmtUpdateLastAccessed;
+    private PreparedStatement stmtComputeTotalSize;
    
     /* Creates the tables in the database */
     private static final String strCreateAssetTable =
             "create table APP.ASSET (" +
-            "    ASSET_URI      VARCHAR(" + AssetDB.MAX_STRING_LENGTH + ") not null primary key, " +
+            "    ASSET_URI      VARCHAR(" + AssetDB.MAX_STRING_LENGTH + ") not null, " +
+            "    CHECKSUM       VARCHAR(40) not null, " +
             "    URL            VARCHAR(" + AssetDB.MAX_STRING_LENGTH + "), " +
-            "    CHECKSUM       VARCHAR(40), " +
-            "    TYPE           VARCHAR(10) " +
+            "    TYPE           VARCHAR(10), " +
+            "    LAST_ACCESSED  BIGINT, " +
+            "    SIZE           BIGINT, " +
+            "    PRIMARY KEY (ASSET_URI, CHECKSUM) " +
             ")";
     
     /* Get an asset based upon the unique resource path name */
     private static final String strGetAsset =
-            "SELECT * FROM APP.ASSET WHERE ASSET_URI = ?";
+            "SELECT * FROM APP.ASSET WHERE ASSET_URI = ? AND CHECKSUM = ?";
     
     /* Save an asset given all of its values */
     private static final String strSaveAsset =
             "INSERT INTO APP.ASSET " +
-            "   (ASSET_URI, URL, CHECKSUM, TYPE)" +
-            "VALUES (?, ?, ?, ?)";
+            "   (ASSET_URI, CHECKSUM, URL, TYPE, LAST_ACCESSED, SIZE)" +
+            "VALUES (?, ?, ?, ?, ?, ?)";
     
     /* Return all of the entries based upon the unique resource path key */
     private static final String strGetListEntries =
-            "SELECT ASSET_URI, URL, CHECKSUM, TYPE " +
+            "SELECT ASSET_URI, CHECKSUM, URL, TYPE, LAST_ACCESSED, SIZE " +
             "FROM APP.ASSET ORDER BY ASSET_URI ASC";
     
     /* Updates an entry using its resource path and values */
     private static final String strUpdateAsset =
             "UPDATE APP.ASSET " +
             "SET ASSET_URI = ?, " +
-            "    URL = ?, " +
             "    CHECKSUM = ?, " +
-            "    TYPE = ? " +
-            "WHERE ASSET_URI = ?";
+            "    URL = ?, " +
+            "    TYPE = ?, " +
+            "    LAST_ACCESSED = ? " +
+            "    SIZE = ? " +
+            "WHERE ASSET_URI = ? AND CHECKSUM = ?";
+    
+    /* Updates an asset's last accessed time, used after a "get" */
+    private static final String strUpdateLastAccessed =
+            "UPDATE APP.ASSET " +
+            "SET LAST_ACCESSED = ? " +
+            "WHERE ASSET_URI = ? AND CHECKSUM = ?";
     
     /* Deletes an entry using its unique resource path */
     private static final String strDeleteAsset =
-            "DELETE FROM APP.ASSET WHERE ASSET_URI = ?";
+            "DELETE FROM APP.ASSET WHERE ASSET_URI = ? AND CHECKSUM = ?";
+    
+    /* Computes the sum of the sizes of the assets */
+    private static final String strComputeTotalSize = "" +
+            "SELECT SUM(SIZE) FROM APP.ASSET";
 }

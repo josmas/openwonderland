@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.jdesktop.wonderland.checksum.RepositoryChecksums;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.ModuleRepository;
@@ -95,8 +96,13 @@ public class ModuleCache {
             }
             System.out.println("REPOSITORY: " + repository.toString());
             
+            /* Fetch the checksum information for the module */
+            RepositoryChecksums checksums = this.fetchModuleChecksums(uniqueName);
+            
             module.setModuleInfo(info);
             module.setModuleRepository(repository);
+            module.setModuleChecksums(checksums);
+            
             this.modules.put(uniqueName, module);
         }           
         return module;
@@ -148,6 +154,32 @@ public class ModuleCache {
             /* Try to parse the xml stream and return a ModuleInfo class */
             ModuleRepository mr = ModuleRepository.decode(new InputStreamReader(is));
             return mr;
+        } catch (java.net.MalformedURLException excp) {
+            // log an error
+            return null;
+        } catch (java.io.IOException excp) {
+            // log an error
+            return null;
+        } catch (javax.xml.bind.JAXBException excp) {
+            // log an error
+            return null;
+        }
+    }
+    
+    /**
+     * Asks the server for the module's checksum information given its name,
+     * returns null upon error
+     */
+    private RepositoryChecksums fetchModuleChecksums(String uniqueName) {
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            String baseURL = "http://localhost:9998/module/";
+            URL url = new URL(baseURL + uniqueName + "/checksums");
+            InputStream is = url.openStream();
+            
+            /* Try to parse the xml stream and return a RepositoryChecksums class */
+            RepositoryChecksums rc = RepositoryChecksums.decode(new InputStreamReader(is));
+            return rc;
         } catch (java.net.MalformedURLException excp) {
             // log an error
             return null;

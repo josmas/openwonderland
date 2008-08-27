@@ -191,8 +191,8 @@
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
 	    </classpath>
+	    <syspropertyset refid="wonderland.properties"/>
         </java>
-	<syspropertyset refid="wonderland.properties"/>
     </target>
     
     <target name="run" depends="jar">

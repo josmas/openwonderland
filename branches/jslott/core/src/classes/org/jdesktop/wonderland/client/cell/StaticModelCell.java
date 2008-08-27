@@ -17,11 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.ProcessorComponent;
-import com.jme.app.mtgame.entity.RotationProcessor;
-import com.jme.app.mtgame.entity.SceneComponent;
+
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
@@ -33,15 +29,17 @@ import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
-import java.net.URISyntaxException;
-import java.net.URL;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.RotationProcessor;
+import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.cells.StaticModelCellSetup;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.datamgr.Asset;
 import org.jdesktop.wonderland.client.datamgr.AssetManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.Loaders;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -75,17 +73,17 @@ public class StaticModelCell extends Cell {
     
     @Override
     protected Entity createEntity() {
-        System.out.println("Creating StaticModel Entity!");
-        Entity ret = new Entity("StaticModelCell "+getCellID(), null);
-        ret.setBounds((BoundingBox) getLocalBounds());
-        
-        WorldManager wm = JmeClientMain.getWorldManager();
-        CellTransform t = getTransform();
-        ret.setTransform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
-        Vector3f v3f = new Vector3f();
-        ret.getPosition(v3f);
-        
-        addBoundsGeometry(ret, wm);
+//        System.out.println("Creating StaticModel Entity!");
+//        Entity ret = new Entity("StaticModelCell "+getCellID(), null);
+//        ret.setBounds((BoundingBox) getLocalBounds());
+//        
+//        WorldManager wm = JmeClientMain.getWorldManager();
+//        CellTransform t = getTransform();
+//        ret.setTransform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
+//        Vector3f v3f = new Vector3f();
+//        ret.getPosition(v3f);
+//        
+//        addBoundsGeometry(ret, wm);
         
         /*
          * Attempt to load the asset via the asset manager.
@@ -115,7 +113,7 @@ public class StaticModelCell extends Cell {
                 System.out.println(excp.toString());
             }
         }
-        return ret;
+        return null;
     }
     
     private void addBoundsGeometry(Entity entity, WorldManager wm) {
@@ -160,7 +158,8 @@ public class StaticModelCell extends Cell {
         node.setRenderState(ls);
         node.setLocalTranslation(xoff, yoff, zoff);
 
-        Entity te = new Entity(name + "Teapot", null);
+//        Entity te = new Entity(name + "Teapot", null);
+        Entity te = null;
         SceneComponent sc = new SceneComponent();
         sc.setSceneRoot(node);
         te.addComponent(SceneComponent.class, sc);
@@ -204,7 +203,8 @@ public class StaticModelCell extends Cell {
 //        node.setRenderState(ls);
         node.setLocalTranslation(xoff, yoff, zoff);
 
-        Entity te = new Entity(name + "Entity", null);
+//        Entity te = new Entity(name + "Entity", null);
+        Entity te = null;
         SceneComponent sc = new SceneComponent();
         sc.setSceneRoot(node);
         te.addComponent(SceneComponent.class, sc);

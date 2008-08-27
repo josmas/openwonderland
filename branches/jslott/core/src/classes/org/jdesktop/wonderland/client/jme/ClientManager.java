@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.app.mtgame.entity.CameraComponent;
-import com.jme.app.mtgame.entity.Entity;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import java.io.FileInputStream;
@@ -26,6 +24,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.client.ClientContext3D;
 import org.jdesktop.wonderland.client.avatar.LocalAvatar;
@@ -120,7 +120,7 @@ public class ClientManager {
     public void entityMoved(Entity entity) {
         if (entity.getComponent(CameraComponent.class)!=null) {
             Vector3f v3f = new Vector3f();
-            entity.getPosition(v3f);
+//            entity.getPosition(v3f);
             if (!previousPos.equals(v3f)) {
 //                System.out.println("Camera moved "+v3f);
                 localAvatar.localMoveRequest(v3f, null);
@@ -209,8 +209,8 @@ public class ClientManager {
         
         
         private Entity createCellEntity(CellID cellID) {
-            Entity entity = new Entity("Cell_"+cellID, null);
-            
+//            Entity entity = new Entity("Cell_"+cellID, null);
+            Entity entity = null;
             Cell cell = getCell(cellID);
              
             

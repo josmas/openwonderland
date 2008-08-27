@@ -17,45 +17,25 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.ProcessorCollectionComponent;
-import com.jme.app.mtgame.entity.ProcessorComponent;
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
+
 import com.jme.math.Matrix3f;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import com.jme.scene.SceneElement;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPOutputStream;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
 
 /**
  *
@@ -139,8 +119,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 //                    rootBG.setLocalRotation(currentRotation);
 //                    rootBG.setLocalTranslation(currentTranslation);
 //                    rootBG.setLocalScale(1f);
-                    if (transformProcessor!=null)
-                        transformProcessor.setTransform(currentRotation, currentTranslation);
+//                    if (transformProcessor!=null)
+//                        transformProcessor.setTransform(currentRotation, currentTranslation);
                 }
             }
 
@@ -161,8 +141,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 //                    rootBG.setLocalRotation(currentRotation);
 //                    rootBG.setLocalTranslation(currentTranslation);
 //                    rootBG.setLocalScale(1f);
-                    if (transformProcessor!=null)
-                        transformProcessor.setTransform(currentRotation, currentTranslation);
+//                    if (transformProcessor!=null)
+//                        transformProcessor.setTransform(currentRotation, currentTranslation);
                 }
             }
 
@@ -254,7 +234,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                                                 null);
         entity = sessionFrame.loadModel(importedModel);
         
-        transformProcessor = (TransformProcessorComponent) entity.getComponent(ProcessorComponent.class);
+//        transformProcessor = (TransformProcessorComponent) entity.getComponent(ProcessorComponent.class);
         
         calcModelBounds(importedModel.getModelBG());
 

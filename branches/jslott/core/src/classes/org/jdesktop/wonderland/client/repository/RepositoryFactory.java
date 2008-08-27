@@ -45,13 +45,13 @@ public class RepositoryFactory {
      * @param assetURI The unique uri of the asset
      * @return The repository to find the asset
      */
-    public static final Repository getRepository(AssetURI assetURI) {
+    public static final RepositoryList getRepository(AssetURI assetURI) {
         /*
          * If the asset uri is relative, then return a repository that reflects
          * assets from the default repository set for the entire server.
          */
         if (assetURI.isRelative() == true) {
-            return SystemDefaultRepository.getSystemDefaultRepository();
+            return SystemDefaultRepositoryList.getSystemDefaultRepository();
         }
         else if (assetURI.isDefinite() == true) {
             /*
@@ -59,7 +59,7 @@ public class RepositoryFactory {
              * with a 'http', 'file', or 'ftp' scheme, then return a repository
              * that uses the hostname encoded in the URI.
              */
-            return DefiniteRepository.getDefiniteRepository();
+            return DefiniteRepositoryList.getDefiniteRepository();
         }
         else if (assetURI.isModule() == true) {
             /*
@@ -87,7 +87,7 @@ public class RepositoryFactory {
             
             System.out.println("info=" + info.toString());
             System.out.println("rep=" + repository.toString());
-            return new MasterMirrorRepository(repository.getMaster(), repository.getMirrors());
+            return new MasterMirrorRepositoryList(repository.getMaster(), repository.getMirrors());
         }
         
         // Log an error XXX

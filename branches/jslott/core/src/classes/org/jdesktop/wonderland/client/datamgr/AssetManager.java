@@ -19,7 +19,7 @@
  */
 package org.jdesktop.wonderland.client.datamgr;
 
-import org.jdesktop.wonderland.client.repository.Repository;
+import org.jdesktop.wonderland.client.repository.RepositoryList;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -40,12 +40,13 @@ import java.util.concurrent.Future;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.checksum.Checksum;
+import org.jdesktop.wonderland.client.checksums.ChecksumFactory;
 import org.jdesktop.wonderland.client.datamgr.TrackingInputStream.ProgressListener;
+import org.jdesktop.wonderland.client.repository.Repository;
 import org.jdesktop.wonderland.client.repository.RepositoryFactory;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
-import org.jdesktop.wonderland.common.Checksum;
-import org.jdesktop.wonderland.common.ChecksumSha1;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 
@@ -92,6 +93,9 @@ public class AssetManager {
     
     /* Number of bytes to read as chunks from the network */
     private static final int NETWORK_CHUNK_SIZE = 2 * 1024;
+    
+    /* The maximum size of the data cache */
+    private static final int MAX_DATA_CACHE = 0; // XXX
     
     private AssetManager() {
         assetDB = new AssetDB();
@@ -145,7 +149,7 @@ public class AssetManager {
         String defaultName = WonderlandConfigUtil.getWonderlandDir() +
                 File.separatorChar + "v" + this.getVersion() + File.separatorChar +
                 "cache";
-        return System.getProperty("wonderland.cache.dir", defaultName);       
+        return defaultName;
     }
     
     /**
@@ -160,8 +164,14 @@ public class AssetManager {
      */
     public Asset getAsset(AssetURI assetURI, AssetType assetType) {
         String uri = assetURI.toString();
-        Asset asset = null; 
-        Checksum checksum = null; // XXX for now
+        Asset asset = null;
+        
+        /*
+         * First fetch the desired checksum based upon the asset. This is the
+         * checksum that we want to match
+         */
+        Checksum checksum = ChecksumFactory.getChecksum(assetURI);
+
         
         // XXX Some profiling shows this method takes a while -- hmmm, is it
         // because of the synchronized calls? Can we do this better?
@@ -180,12 +190,12 @@ public class AssetManager {
                         logger.info("Asset already loaded "+assetURI.toString());
                         asset = loadedAssets.get(uri);
                     } else {
-                        Asset tmp = assetDB.getAsset(uri);
+                        Asset tmp = assetDB.getAsset(uri, "");
         
                         logger.warning("CHECK LOCAL CACHE found "+tmp);
                         
                         /* Fetch the repository where the asset is stored */
-                        Repository repository = RepositoryFactory.getRepository(assetURI);
+                        RepositoryList repository = RepositoryFactory.getRepository(assetURI);
                         
                         if (tmp==null) {
                             // Asset is not in local cache, so get if from the server
@@ -265,7 +275,7 @@ public class AssetManager {
      * @param filename
      * @return
      */
-    public Asset downloadFromServer(AssetURI assetURI, AssetType assetType, Repository repository) {
+    public Asset downloadFromServer(AssetURI assetURI, AssetType assetType, RepositoryList repository) {
         logger.info("Asset download from server, uri=" + assetURI.toString());
 
         /* Create a new asset for the given type and uri */
@@ -301,7 +311,7 @@ public class AssetManager {
         synchronized(loadedAssets) {
             loadedAssets.remove(asset.getAssetURI().toString());
             asset.unloaded();
-            assetDB.deleteAsset(asset.getAssetURI().toString());
+            assetDB.deleteAsset(asset.getAssetURI().toString(), asset.getLocalChecksum());
             asset.getLocalCacheFile().delete();
         }
     }
@@ -374,20 +384,21 @@ public class AssetManager {
      * true upon success, false upon failure. This method uses getAssetFromServer()
      * to download the asset from each server.
      */
-    private boolean getAssetFromRepository(Asset asset, Repository repository) {        
+    private boolean getAssetFromRepository(Asset asset, RepositoryList repositoryList) {        
         /* Fetch an (ordered) array of urls to look for the asset */
         String uri = asset.getAssetURI().toString();
-        String[] urls = repository.getAllURLs(asset.getAssetURI());
+        Repository[] repositories = repositoryList.getAllRepositories();
 
-        System.out.println("Looking at all possible repositories: " + urls);
         /*
-         * Try each url in turn and return true when one succeeds. Save the
-         * asset to the local cache.
+         * Try each repository in turn and return true when one succeeds. Save
+         * the asset to the local cache.
          */
-        for (String url : urls) {
+        for (Repository repository : repositories) {
             /* Log a message for this attempt to download from the next source */
-            System.out.println("Attempting to load from location, url=" + url);
+            System.out.println("Attempting to load from location, url=" + repository.getBaseURL());
 
+            /*
+             * See if the checksum
             /*
              * Try to synchronously download the asset. Upon failure log
              * a message and continue to the next one.
@@ -459,7 +470,7 @@ public class AssetManager {
             track.close();
             
             /* Compute the checksum and set in the asset */
-            asset.setLocalChecksum(new ChecksumSha1(digest.digest()));
+            asset.setLocalChecksum(Checksum.toHexString(digest.digest()));
             digest.reset();
 
             /* Point the asset to the local cache file */
@@ -538,7 +549,7 @@ public class AssetManager {
         private boolean server = true;
         
         /* The repository from which to fetch the asset */
-        private Repository repository = null;
+        private RepositoryList repository = null;
         
         /* Object reflecting the results of the asynchronous operation */
         private Future future = null;
@@ -550,7 +561,7 @@ public class AssetManager {
          * @param repository The repository from which to fetch the asset
          * @param server true loads from server, false for client local cache
          */
-        public AssetLoader(Asset asset, Repository repository, boolean server) {
+        public AssetLoader(Asset asset, RepositoryList repository, boolean server) {
             this.asset = asset;
             this.repository = repository;
             this.server = server;

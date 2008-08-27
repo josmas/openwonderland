@@ -17,11 +17,13 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.ProcessorComponent;
+
 import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import org.jdesktop.mtgame.ProcessorArmingCollection;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.WorldManager;
 
 /**
  *
@@ -41,12 +43,12 @@ public class TransformProcessorComponent extends ProcessorComponent {
             this.worldManager = worldManager;
         }
         
-        @Override
+       // @Override
         public void compute(long conditions) {
             // Nothing to do
         }
 
-        @Override
+       // @Override
         public void commit(long conditions) {
             synchronized(this) {
                 if (updatePending) {
@@ -61,7 +63,7 @@ public class TransformProcessorComponent extends ProcessorComponent {
 
         @Override
         public void initialize() {
-            setArmingConditions(ProcessorComponent.NEW_FRAME_COND);
+       //     setArmingConditions(ProcessorComponent.NEW_FRAME_COND);
         }
 
         public void setTransform(Matrix3f rotation, Vector3f translation) {
@@ -71,4 +73,14 @@ public class TransformProcessorComponent extends ProcessorComponent {
                 updatePending = true;
             }
         }
+
+    @Override
+    public void compute(ProcessorArmingCollection arg0) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void commit(ProcessorArmingCollection arg0) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

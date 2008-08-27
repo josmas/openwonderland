@@ -19,9 +19,6 @@
 package org.jdesktop.wonderland.client.modules;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import org.jdesktop.wonderland.modules.ModuleInfo;
-import org.jdesktop.wonderland.modules.ModuleRepository;
 
 /**
  * The ModuleCacheList class stores a map of Wonderland server names and the

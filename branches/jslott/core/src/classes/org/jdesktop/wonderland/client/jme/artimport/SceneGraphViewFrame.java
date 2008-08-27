@@ -17,8 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.SceneComponent;
+
 import com.jme.scene.Node;
 import com.jme.scene.SceneElement;
 import java.awt.Component;
@@ -32,6 +31,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.SceneComponent;
 
 
 /**

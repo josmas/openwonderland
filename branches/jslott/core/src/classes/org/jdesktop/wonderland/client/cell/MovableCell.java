@@ -17,11 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import com.jme.app.mtgame.WorldManager;
-import com.jme.app.mtgame.entity.Entity;
-import com.jme.app.mtgame.entity.ProcessorComponent;
-import com.jme.app.mtgame.entity.RotationProcessor;
-import com.jme.app.mtgame.entity.SceneComponent;
+
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
@@ -30,13 +26,17 @@ import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
-import com.jme.scene.shape.Teapot;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import org.jdesktop.wonderland.common.cell.CellID;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.RotationProcessor;
+import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -61,24 +61,25 @@ public class MovableCell extends Cell {
     
     @Override
     protected Entity createEntity() {
-        Entity ret = new Entity("StaticModelCell "+getCellID(), null);
-        BoundingVolume b = getLocalBounds();
-        if (!(b instanceof BoundingBox)) {
-           BoundingSphere s = (BoundingSphere) b;
-           b = new BoundingBox(s.getCenter(), s.getRadius(), s.getRadius(), s.getRadius()); 
-        }
-        ret.setBounds((BoundingBox) b);
-        
-        WorldManager wm = JmeClientMain.getWorldManager();
-        CellTransform t = getTransform();
-        ret.setTransform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
-        Vector3f v3f = new Vector3f();
-        ret.getPosition(v3f);
-        System.out.println("****** Created Entity "+v3f);
-        
-        addBoundsGeometry(ret, wm);
-        
-        return ret;
+//        Entity ret = new Entity("StaticModelCell "+getCellID(), null);
+//        BoundingVolume b = getLocalBounds();
+//        if (!(b instanceof BoundingBox)) {
+//           BoundingSphere s = (BoundingSphere) b;
+//           b = new BoundingBox(s.getCenter(), s.getRadius(), s.getRadius(), s.getRadius()); 
+//        }
+//        ret.setBounds((BoundingBox) b);
+//        
+//        WorldManager wm = JmeClientMain.getWorldManager();
+//        CellTransform t = getTransform();
+//        ret.setTransform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
+//        Vector3f v3f = new Vector3f();
+//        ret.getPosition(v3f);
+//        System.out.println("****** Created Entity "+v3f);
+//        
+//        addBoundsGeometry(ret, wm);
+//        
+//        return ret;
+        return null;
     }
 
     private void addBoundsGeometry(Entity entity, WorldManager wm) {
@@ -121,7 +122,8 @@ public class MovableCell extends Cell {
         node.setRenderState(ls);
         node.setLocalTranslation(xoff, yoff, zoff);
 
-        Entity te = new Entity(name + "Teapot", null);
+//        Entity te = new Entity(name + "Teapot", null);
+        Entity te = null;
         SceneComponent sc = new SceneComponent();
         sc.setSceneRoot(node);
         te.addComponent(SceneComponent.class, sc);
