@@ -19,7 +19,6 @@
 package org.jdesktop.wonderland.service.modules;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
@@ -370,7 +369,17 @@ public class ModuleManager {
     public InstalledModule getInstalledModule(String uniqueName) {
         return this.installedModules.get(uniqueName);
     }
-     
+    
+    /**
+     * Returns an array of strings of the names of all installed modules.
+     * Returns an empty array if no installed modules exists.
+     * 
+     * @param An array of installed module names
+     */
+    public String[] getInstalledModules() {
+        return this.installedModules.keySet().toArray(new String[] {});
+    }
+    
     /**
      * Returns the removed module given its unique name, null if the module
      * does not exist.

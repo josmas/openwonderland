@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.service.modules.ModuleManager;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/module/{modulename}/art/{path}", limited=false)
+@Path(value="/{modulename}/art/{path}", limited=false)
 public class ModuleArtResource {
     
     /**

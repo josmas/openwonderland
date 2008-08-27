@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.service.modules.ModuleManager;
  * <p>
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path("/module/{modulename}/repository")
+@Path("/{modulename}/repository")
 public class ModuleRepositoryResource {
     
     @Context
@@ -82,7 +82,7 @@ public class ModuleRepositoryResource {
          */
         boolean replaced = false;
         UriBuilder artBuilder = context.getBaseUriBuilder();
-        artBuilder = artBuilder.path("module").path(moduleName).path("art");
+        artBuilder = artBuilder.path(moduleName).path("art");
         String hostname = artBuilder.build().toString();
         
         /* Fetch the module repository, return an error if it does not exist */

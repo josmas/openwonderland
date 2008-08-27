@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.service.modules.ModuleManager;
  * <p>
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path("/module/{modulename}/checksums")
+@Path("/{modulename}/checksums")
 public class ModuleChecksumsResource {
     
     /**
