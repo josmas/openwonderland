@@ -97,15 +97,11 @@ public class WFSManager {
             
     /**
      * Takes a URL and returns the final name in the path (without the -wfs
-     * extension
+     * extension.
      */
     private String getWFSName(String root) {
-        int index = root.lastIndexOf("/");
-        if (index != -1) {
-            String name = root.substring(index + 1, root.length());
-            if (name.endsWith(WFS.WFS_DIRECTORY_SUFFIX) == true) {
-                return name.substring(0, name.length() - WFS.WFS_DIRECTORY_SUFFIX.length());
-            }
+        if (root.endsWith(WFS.WFS_DIRECTORY_SUFFIX) == true) {
+            return root.substring(0, root.length() - WFS.WFS_DIRECTORY_SUFFIX.length());
         }
         return root;
     }
