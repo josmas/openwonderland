@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
+import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
@@ -73,7 +75,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     
     private final static Logger logger = Logger.getLogger(ViewCellCacheMO.class.getName());
     
-    private ManagedReference<View> viewRef;
+    private ManagedReference<ViewCellMO> viewRef;
     private ManagedReference<UserSecurityContextMO> securityContextRef;
     
     private String username;
@@ -114,7 +116,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Creates a new instance of ViewCellCacheMO
      */
-    public ViewCellCacheMO(View view) {
+    public ViewCellCacheMO(ViewCellMO view) {
         logger.config("Creating ViewCellCache");
         
         username = view.getUser().getUsername();
@@ -133,6 +135,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             securityContextRef = dm.createReference(securityContextMO);
         else
             securityContextRef = null;
+        
+        view.addTransformChangeListener(new TestTransformChangeListenerMO());
     }
     
     /**
@@ -175,7 +179,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                     new ViewCellCacheRevalidateTask(this), 1000, 2000);  // Start delay, duration
         }
         
-        View view = viewRef.get();
+        ViewCellMO view = viewRef.get();
         Vector3f translation = view.getWorldTransform().getTranslation(null);
         proximityBounds = AvatarBoundsHelper.getProximityBounds(translation);            
     }
@@ -231,7 +235,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         
         try {
             // getTranslation the current user's bounds
-            View view = viewRef.get();
+            ViewCellMO view = viewRef.get();
             Vector3f translation = view.getWorldTransform().getTranslation(null);
             proximityBounds.setCenter(translation);            
             
@@ -703,7 +707,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Return a new LoadLocalAvatar cell message
      */
-    public static CellHierarchyMessage newLoadLocalAvatarMessage(AvatarMO cell, ClientCapabilities capabilities) {
+    public static CellHierarchyMessage newLoadLocalAvatarMessage(CellMO cell, ClientCapabilities capabilities) {
         CellID parent=null;
         
         CellMO p = cell.getParent();

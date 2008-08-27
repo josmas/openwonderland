@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.Properties;
@@ -67,7 +68,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
                                ClientSession session) 
     {
         UserMO user = WonderlandContext.getUserManager().getUser(session);
-        AvatarMO avatar = user.getAvatar(viewID);
+        AvatarCellMO avatar = user.getAvatar(viewID);
         if (avatar == null) {
             logger.severe("clientDetached has null avatar for session");
             return;
@@ -121,10 +122,10 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
                                                      ClientSession session, 
                                                      CellHierarchyMessage msg) {
         UserMO user = WonderlandContext.getUserManager().getUser(session);
-        AvatarMO avatar = user.getAvatar(msg.getViewID());
+        AvatarCellMO avatar = user.getAvatar(msg.getViewID());
         if (avatar == null) {
             user.getReference().getForUpdate(); // Mark for update
-            avatar = new AvatarMO(user);
+            avatar = new AvatarCellMO(user);
             viewID = msg.getViewID();
             user.putAvatar(viewID, avatar);
         }

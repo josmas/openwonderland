@@ -80,7 +80,7 @@ public class MovableComponentMO extends CellComponentMO {
      * Set the transform for the cell and notify all client cells of the move.
      * @param transform
      */
-    public void setTransform(CellTransform transform) {
+    public void moveRequest(CellTransform transform) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent;
         cell.setLocalTransform(transform);
@@ -88,9 +88,9 @@ public class MovableComponentMO extends CellComponentMO {
         channelComponent = channelComponentRef.getForUpdate();
         
         // Notify listeners
-        if (listeners!=null) {
-            notifyTransformChangeListeners(cell, transform);
-        }
+//        if (listeners!=null) {
+//            notifyTransformChangeListeners(cell, transform);
+//        }
         
         // TODO only handles a single space at the moment
         CellTransform cellWorld = cell.getLocalToWorld();
@@ -125,48 +125,48 @@ public class MovableComponentMO extends CellComponentMO {
             }
         }
     }
-    /**
-     * Add a CellMoveListener. This listener is notified when the setTransform 
-     * method is called. super.setTransform is called first, so the cell transform
-     * will have been updated before the listener is called.
-     * 
-     * @param listener
-     */
-    public void addTransformChangeListener(CellTransformChangeListener listener) {
-        if (listeners==null)
-            listeners = new ArrayList<ManagedReference<CellTransformChangeListener>>();
-        
-        listeners.add(AppContext.getDataManager().createReference(listener));
-    }
-    
-    /**
-     * Remove the CellMoveListener
-     * @param listener
-     */
-    public void removeTransformChangeListener(CellTransformChangeListener listener) {
-        if (listeners!=null)
-            listeners.remove(AppContext.getDataManager().createReference(listener));
-    }
-
-    /**
-     * Notify Listeners that this Entity has moved. Each listener is notified
-     * in a separate task.
-     * @param transform
-     */
-    private void notifyTransformChangeListeners(final CellMO cell, final CellTransform transform) {
-        TaskManager tm = AppContext.getTaskManager();
-        
-        for(final ManagedReference<CellTransformChangeListener> listenerRef : listeners) {
-            tm.scheduleTask(new Task() {
-
-                public void run() throws Exception {
-                    listenerRef.get().transformChanged(cell, transform);
-                }
-
-            });
-            
-        }
-    }
+//    /**
+//     * Add a CellMoveListener. This listener is notified when the setTransform 
+//     * method is called. super.setTransform is called first, so the cell transform
+//     * will have been updated before the listener is called.
+//     * 
+//     * @param listener
+//     */
+//    public void addTransformChangeListener(CellTransformChangeListener listener) {
+//        if (listeners==null)
+//            listeners = new ArrayList<ManagedReference<CellTransformChangeListener>>();
+//        
+//        listeners.add(AppContext.getDataManager().createReference(listener));
+//    }
+//    
+//    /**
+//     * Remove the CellMoveListener
+//     * @param listener
+//     */
+//    public void removeTransformChangeListener(CellTransformChangeListener listener) {
+//        if (listeners!=null)
+//            listeners.remove(AppContext.getDataManager().createReference(listener));
+//    }
+//
+//    /**
+//     * Notify Listeners that this Entity has moved. Each listener is notified
+//     * in a separate task.
+//     * @param transform
+//     */
+//    private void notifyTransformChangeListeners(final CellMO cell, final CellTransform transform) {
+//        TaskManager tm = AppContext.getTaskManager();
+//        
+//        for(final ManagedReference<CellTransformChangeListener> listenerRef : listeners) {
+//            tm.scheduleTask(new Task() {
+//
+//                public void run() throws Exception {
+//                    listenerRef.get().transformChanged(cell, transform);
+//                }
+//
+//            });
+//            
+//        }
+//    }
        
     /**
      * Listener inteface for cell movement
@@ -190,7 +190,7 @@ public class MovableComponentMO extends CellComponentMO {
                 case MOVE_REQUEST:
                     // TODO check permisions
                     
-                    compRef.getForUpdate().setTransform(new CellTransform(ent.getRotation(), ent.getTranslation()));
+                    compRef.getForUpdate().moveRequest(new CellTransform(ent.getRotation(), ent.getTranslation()));
 
                     // Only need to send a response if the move can not be completed as requested
                     //sender.send(session, MovableMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));

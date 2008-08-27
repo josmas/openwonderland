@@ -25,6 +25,7 @@ import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,6 +83,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
     private boolean isStatic=false;
+    private HashSet<ManagedReference<TransformChangeListenerMO>> transformChangeListeners=null;
     
     /** Default constructor, used when the cell is created via WFS */
     public CellMO() {
@@ -138,7 +140,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @return
      */
-    BoundingVolume getWorldBounds() {
+    public BoundingVolume getWorldBounds() {
         if (!live)
             throw new IllegalStateException("Cell is not live");
         
@@ -171,7 +173,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @return
      */
-    CellTransform getLocalToWorld() {
+    public CellTransform getLocalToWorld() {
         if (!live)
             throw new IllegalStateException("Unsupported Operation, only valid for a live Cell");
         
@@ -349,6 +351,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
         for(ManagedReference<CellMO> childRef : childrenRef) {
             childRef.getForUpdate().processTransformChange();
         }
+        
+        notifyTransformChangeListeners();
     }
     
     /**
@@ -724,6 +728,40 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private void notifySpacesDetach(long timestamp) {
         for(SpaceInfo spaceInfo : inSpaces) {
             spaceInfo.getSpaceRef().getForUpdate().notifyCellDetached(this, timestamp);
+        }
+    }
+    
+    /**
+     * Add a TransformChangeListener to this cell. The listener will be
+     * called for any changes to the cells transform
+     * 
+     * @param listener to add
+     */
+    public void addTransformChangeListener(TransformChangeListenerMO listener) {
+        if (transformChangeListeners==null)
+            transformChangeListeners = new HashSet();
+        transformChangeListeners.add(AppContext.getDataManager().createReference(listener));
+    }
+    
+    /**
+     * Remove the specified listener.
+     * @param listener to be removed
+     */
+    public void removeTransformChangeListener(TransformChangeListenerMO listener) {
+        transformChangeListeners.remove(listener);
+    }
+    
+    private void notifyTransformChangeListeners() {
+        if (transformChangeListeners==null)
+            return;
+        
+        // Dispatch listener notifications in new tasks
+        final ManagedReference<CellMO> thisRef = AppContext.getDataManager().createReference(this);
+        final CellTransform newLocal = (CellTransform) transform.clone();
+        final CellTransform newL2VW = (CellTransform) local2VWorld.clone();
+        
+        for(final ManagedReference<TransformChangeListenerMO> listenerRef : transformChangeListeners) {
+            AppContext.getTaskManager().scheduleTask(new TransformChangeNotifierTask(listenerRef, thisRef, newLocal, local2VWorld));
         }
     }
     

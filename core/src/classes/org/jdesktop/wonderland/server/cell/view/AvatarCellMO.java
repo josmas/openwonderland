@@ -15,8 +15,9 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.server.cell.view;
 
+import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
@@ -36,24 +37,20 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellTransformChang
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarMO extends CellMO implements View {
+public class AvatarCellMO extends ViewCellMO {
     
     private ManagedReference<ViewCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
 
-    public AvatarMO(UserMO user) {
+    public AvatarCellMO(UserMO user) {
         super(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()),
               new CellTransform(null, new Vector3f())  );
-        addComponent(new ChannelComponentMO(this));
-        MovableComponentMO movableComponent = new MovableComponentMO(this);
-        addComponent(movableComponent);
         this.userRef = AppContext.getDataManager().createReference(user);
-//        movableComponent.addCellMoveListener(new AvatarMoveListener());
     }
     
     @Override 
     protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.avatar.AvatarCell";
+        return "org.jdesktop.wonderland.client.cell.view.AvatarCell";
     }
     
     /**

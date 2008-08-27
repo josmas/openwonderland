@@ -50,8 +50,6 @@ public class CellViewerFrame extends javax.swing.JFrame {
         CellManager.getCellManager().addCellStatusChangeListener(new CellStatusChangeListener() {
 
             public void cellStatusChanged(Cell cell, CellStatus status) {
-                System.out.println("Status changed "+cell+"  "+status);
-                
                 DefaultMutableTreeNode node = nodes.get(cell);
                 
                 switch(status) {
@@ -104,7 +102,6 @@ public class CellViewerFrame extends javax.swing.JFrame {
     private DefaultMutableTreeNode createJTreeNode(Cell cell) {
         DefaultMutableTreeNode ret = new DefaultMutableTreeNode(cell);
         nodes.put(cell, ret);
-        System.out.println("PUT "+cell);
         
         List<Cell> children = cell.getChildren();
         for(Cell child : children)
@@ -255,7 +252,6 @@ private void cellTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//G
     }
 
     Cell cell = (Cell) node.getUserObject();
-    System.out.println("Got cell "+cell);
     populateCellPanelInfo(cell);
 
 }//GEN-LAST:event_cellTreeValueChanged
