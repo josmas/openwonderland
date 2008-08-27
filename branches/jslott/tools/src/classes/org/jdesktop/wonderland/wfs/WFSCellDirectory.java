@@ -399,7 +399,7 @@ public class WFSCellDirectory extends WFSObject {
         this.wfsRef.get().getReadLock().lock();
         
         try {
-            synchronized(this.children) {
+            synchronized(this) {
                 /*
                  * If the hashmap is not null and the WFS has not been reloaded
                  * (dirty = false), then simply return. We need to make this

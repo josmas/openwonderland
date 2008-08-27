@@ -331,7 +331,7 @@ public class WFSCell extends WFSObject {
         this.wfsRef.get().getReadLock().lock();
         
         try {
-            synchronized (this.cellSetup) {
+            synchronized (this) {
                 /*
                  * If the cell's setup has already been read and the cell has
                  * not been told to reload itself, then return the loaded

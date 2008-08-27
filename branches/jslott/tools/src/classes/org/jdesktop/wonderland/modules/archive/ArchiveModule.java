@@ -90,7 +90,7 @@ public class ArchiveModule extends Module {
      * @param resource A resource contained within the archive
      * @return An input stream to the resource
      */
-    public InputStream getInputStream(ModuleResource resource) {
+    public InputStream getInputStreamForResource(ModuleResource resource) {
         try {
             ZipEntry entry = this.zipFile.getEntry(resource.getPathName());
             return this.zipFile.getInputStream(entry);

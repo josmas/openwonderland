@@ -112,12 +112,12 @@ public class FileWFS extends WFS {
          * it exists. If it does not exist, then simply assign the current version
          * of the software and log a message
          */
-        try {
-            File vfile = new File(this.root, WFSRootDirectory.VERSION);
-            this.directory.setVersion(WFSVersion.decode(new FileReader(vfile)));
-        } catch (FileNotFoundException excp) {
-            WFS.getLogger().log(Level.INFO, "Invalid/Nonexistent version.xml file in WFS: " + uri.toString());
-        }
+//        try {
+//            File vfile = new File(this.root, WFSRootDirectory.VERSION);
+//            this.directory.setVersion(WFSVersion.decode(new FileReader(vfile)));
+//        } catch (FileNotFoundException excp) {
+//            WFS.getLogger().log(Level.INFO, "Invalid/Nonexistent version.xml file in WFS: " + uri.toString());
+//        }
     }
         
     /**

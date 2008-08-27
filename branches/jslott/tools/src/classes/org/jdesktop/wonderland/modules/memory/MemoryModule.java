@@ -42,7 +42,7 @@ public class MemoryModule extends Module {
      * @param resource A resource contained within the archive
      * @return An input stream to the resource
      */
-    public InputStream getInputStream(ModuleResource resource) {
+    public InputStream getInputStreamForResource(ModuleResource resource) {
         return null;
     }
 

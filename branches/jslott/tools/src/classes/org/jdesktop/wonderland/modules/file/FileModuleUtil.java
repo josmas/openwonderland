@@ -264,6 +264,10 @@ public class FileModuleUtil {
          */
         File dir = new File(root, Module.MODULE_PLUGINS);
         File[] files = dir.listFiles();
+        if (files == null) {
+            return plugins;
+        }
+        
         for (File file : files) {
             /*
              * If a directory, then fetch all of its jar entries in client/,
