@@ -27,7 +27,7 @@ import javax.ws.rs.ProduceMime;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.service.modules.ModuleList;
+import org.jdesktop.wonderland.modules.util.ModuleList;
 import org.jdesktop.wonderland.service.modules.ModuleManager;
 
 /**

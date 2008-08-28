@@ -14,6 +14,15 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h2>Hello World!</h2>
+        <h3>Module System</h3>
+        <table>
+            <%@ page import="org.jdesktop.wonderland.service.modules.ModuleManager" %>
+            <% String modules[] = ModuleManager.getModuleManager().getInstalledModules(); %>
+            <% for (String module : modules) { %>
+            <tr>
+                <td><%= module%></td>
+            </tr>
+            <% } %>
+        </table>
     </body>
 </html>
