@@ -26,14 +26,12 @@ import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
-import org.jdesktop.mtgame.AWTEventListenerComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.SimpleAvatarControls;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -51,10 +49,10 @@ public class AvatarJME extends BasicRenderer {
     @Override
     protected Entity createEntity() {
         Entity ret = super.createEntity();
-        WorldManager wm = JmeClientMain.getWorldManager();
+        WorldManager wm = ClientContextJME.getWorldManager();
                
         // Avatars are movable so create a move processor
-        moveProcessor = new MoveProcessor(JmeClientMain.getWorldManager(), rootNode);
+        moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
         ret.addComponent(ProcessorComponent.class, moveProcessor);
                                 
         return ret;
@@ -64,7 +62,7 @@ public class AvatarJME extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         ColorRGBA color = new ColorRGBA();
         
-        ZBufferState buf = (ZBufferState) JmeClientMain.getWorldManager().createRendererState(RenderState.RS_ZBUFFER);
+        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
         buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
@@ -73,7 +71,7 @@ public class AvatarJME extends BasicRenderer {
         light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
         light.setLocation(new Vector3f(100, 100, 100));
         light.setEnabled(true);
-        LightState lightState = (LightState) JmeClientMain.getWorldManager().createRendererState(RenderState.RS_LIGHT);
+        LightState lightState = (LightState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_LIGHT);
         lightState.setEnabled(true);
         lightState.attach(light);
 
@@ -96,7 +94,7 @@ public class AvatarJME extends BasicRenderer {
         ret.setLocalTranslation(xoff, yoff, zoff);
         ret.attachChild(teapot);
 
-        matState = (MaterialState) JmeClientMain.getWorldManager().createRendererState(RenderState.RS_MATERIAL);
+        matState = (MaterialState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_MATERIAL);
         matState.setDiffuse(color);
         ret.setRenderState(matState);
         ret.setRenderState(buf);
