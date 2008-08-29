@@ -65,6 +65,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.SceneComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ClientManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.artimport.ModelCompiler.CompilerMessageDisplay;
@@ -677,7 +678,7 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         rootBG.setModelBound(new BoundingBox());
         rootBG.updateModelBound();
         
-        WorldManager wm = JmeClientMain.getWorldManager();
+        WorldManager wm = ClientContextJME.getWorldManager();
         
         ZBufferState buf = (ZBufferState) wm.createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);

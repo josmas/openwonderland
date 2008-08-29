@@ -142,7 +142,7 @@ public class CellListMO implements Serializable {
         CellDescription desc = cells.get(cell.getCellID());
         if (desc!=null) {
 //            System.err.println("CellListMO transform changed "+timestamp+"  "+desc.getCellID()+"  "+this);
-            desc.setTransform(cell.getLocalTransform(), timestamp);
+            desc.setTransform(cell.getLocalTransform(null), timestamp);
             listTimestamp = timestamp;
         }
     }
@@ -159,7 +159,7 @@ public class CellListMO implements Serializable {
         private CellTransform cellTransform;
         private String name;
         private Class cellClass;
-        private boolean isStatic;
+        private boolean isMovable;
         
         ListInfo(CellMO cell) {
             cellID = cell.getCellID();
@@ -167,10 +167,10 @@ public class CellListMO implements Serializable {
             contentsTimestamp = 0;
             transformTimestamp = 0;
             localBounds = cell.getLocalBounds();
-            cellTransform = cell.getLocalTransform();
+            cellTransform = cell.getLocalTransform(null);
             name = cell.getName();
             cellClass = cell.getClass();
-            isStatic = cell.isStatic();
+            isMovable = cell.isMovable();
         }
 
         public CellID getCellID() {
@@ -194,8 +194,8 @@ public class CellListMO implements Serializable {
         }
 
         public CellTransform getTransform() {
-            if (!isStatic) {
-                System.out.println("Cell "+name+"  "+cellRef.get().getLocalTransform());
+            if (isMovable) {
+                System.out.println("Cell "+name+"  "+cellRef.get().getLocalTransform(null));
             }
             return cellTransform;
         }
@@ -213,8 +213,8 @@ public class CellListMO implements Serializable {
             return cellClass;
         }
 
-        public boolean isStatic() {
-            return isStatic;
+        public boolean isMovable() {
+            return isMovable;
         }
 
         

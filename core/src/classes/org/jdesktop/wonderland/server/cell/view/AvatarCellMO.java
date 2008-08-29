@@ -76,16 +76,4 @@ public class AvatarCellMO extends ViewCellMO {
         return this;
     }
     
-    class AvatarMoveListener implements CellTransformChangeListener, Serializable {
-
-        public void transformChanged(CellMO cell, CellTransform transform) {
-            System.out.println("AvatarMO.cellMoved");
-        }
-        
-    }
-
-    public CellTransform getWorldTransform() {
-        return super.getLocalToWorld();
-    }
-
 }

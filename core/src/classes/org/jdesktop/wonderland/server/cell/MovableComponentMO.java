@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.shape.Quad;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
@@ -46,6 +48,8 @@ public class MovableComponentMO extends CellComponentMO {
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
     private ManagedReference<SpaceMO> currentSpaceRef = null;
     private long transformTimestamp;
+    private CellTransform cellTransformTmp = new CellTransform(new Quaternion(), new Vector3f());
+    private Vector3f v3fTmp = new Vector3f();
     
     /**
      * Create a MovableComponent for the given cell. The cell must already
@@ -55,7 +59,7 @@ public class MovableComponentMO extends CellComponentMO {
     public MovableComponentMO(CellMO cell) {
         super(cell);
         
-        cell.setStatic(false);
+        cell.setMovable(true);
         ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
         if (channelComponent==null)
             throw new IllegalStateException("Cell does not have a ChannelComponent");
@@ -69,7 +73,7 @@ public class MovableComponentMO extends CellComponentMO {
         if (live) {
             CellMO cell = cellRef.get();
             SpaceMO[] currentSpace = WonderlandContext.getCellManager().getEnclosingSpace(
-                                        cell.getLocalToWorld().getTranslation(null));
+                                        cell.getLocalToWorld(null).getTranslation(null));
             currentSpaceRef = AppContext.getDataManager().createReference(currentSpace[0]);  
         } else {
             currentSpaceRef = null;
@@ -87,14 +91,9 @@ public class MovableComponentMO extends CellComponentMO {
         
         channelComponent = channelComponentRef.getForUpdate();
         
-        // Notify listeners
-//        if (listeners!=null) {
-//            notifyTransformChangeListeners(cell, transform);
-//        }
-        
         // TODO only handles a single space at the moment
-        CellTransform cellWorld = cell.getLocalToWorld();
-        SpaceMO[] spaceSet = WonderlandContext.getCellManager().getEnclosingSpace(cellWorld.getTranslation(null));
+        CellTransform cellWorld = cell.getLocalToWorld(cellTransformTmp);
+        SpaceMO[] spaceSet = WonderlandContext.getCellManager().getEnclosingSpace(cellWorld.getTranslation(v3fTmp));
         SpaceMO newSpace = spaceSet[0];
         ManagedReference<SpaceMO> newSpaceRef = AppContext.getDataManager().createReference(newSpace);
         if (newSpaceRef!=currentSpaceRef) {
@@ -114,7 +113,7 @@ public class MovableComponentMO extends CellComponentMO {
      * Check if the object needs to be added as 'in' other spaces
      */
     private void checkForNewSpace(CellMO cell, Collection<SpaceInfo> currentSpaces) {
-        Vector3f origin = cell.getLocalToWorld().getTranslation(null);
+        Vector3f origin = cell.getLocalToWorld(cellTransformTmp).getTranslation(v3fTmp);
         
         for(SpaceInfo spaceInfo : currentSpaces) {
             Collection<ManagedReference<SpaceMO>> proximity = spaceInfo.getSpaceRef().get().getSpaces(cell.getWorldBounds());
@@ -125,48 +124,6 @@ public class MovableComponentMO extends CellComponentMO {
             }
         }
     }
-//    /**
-//     * Add a CellMoveListener. This listener is notified when the setTransform 
-//     * method is called. super.setTransform is called first, so the cell transform
-//     * will have been updated before the listener is called.
-//     * 
-//     * @param listener
-//     */
-//    public void addTransformChangeListener(CellTransformChangeListener listener) {
-//        if (listeners==null)
-//            listeners = new ArrayList<ManagedReference<CellTransformChangeListener>>();
-//        
-//        listeners.add(AppContext.getDataManager().createReference(listener));
-//    }
-//    
-//    /**
-//     * Remove the CellMoveListener
-//     * @param listener
-//     */
-//    public void removeTransformChangeListener(CellTransformChangeListener listener) {
-//        if (listeners!=null)
-//            listeners.remove(AppContext.getDataManager().createReference(listener));
-//    }
-//
-//    /**
-//     * Notify Listeners that this Entity has moved. Each listener is notified
-//     * in a separate task.
-//     * @param transform
-//     */
-//    private void notifyTransformChangeListeners(final CellMO cell, final CellTransform transform) {
-//        TaskManager tm = AppContext.getTaskManager();
-//        
-//        for(final ManagedReference<CellTransformChangeListener> listenerRef : listeners) {
-//            tm.scheduleTask(new Task() {
-//
-//                public void run() throws Exception {
-//                    listenerRef.get().transformChanged(cell, transform);
-//                }
-//
-//            });
-//            
-//        }
-//    }
        
     /**
      * Listener inteface for cell movement

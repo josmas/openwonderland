@@ -98,7 +98,7 @@ public class StaticModelCellMO extends CellMO
         }
         
         /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform();
+        CellTransform transform = this.getLocalTransform(null);
         if (transform != null) {
             setup.setOrigin(BasicCellMOHelper.getTranslation(transform));
             setup.setRotation(BasicCellMOHelper.getRotation(transform));

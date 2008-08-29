@@ -68,9 +68,22 @@ public class CellTransform implements Serializable {
         this.translation = new Vector3f(orig.translation);
     }
     
-    @Override
-    public Object clone() {
-        return new CellTransform(this);
+    public CellTransform clone(CellTransform result) {
+        if (result==null)
+            return new CellTransform(this);
+        
+        result.set(this);
+        return result;
+    }
+    
+    /**
+     * set this object to have the same state as source
+     * @param source
+     */
+    private void set(CellTransform source) {
+        this.rotation.set(source.rotation);       
+        this.scale.set(source.scale);        
+        this.translation.set(source.translation);
     }
 
     /**

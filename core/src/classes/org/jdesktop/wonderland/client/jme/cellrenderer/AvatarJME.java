@@ -1,11 +1,22 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
-
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
-import com.jme.bounding.BoundingSphere;
 import com.jme.light.PointLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
@@ -15,10 +26,14 @@ import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import org.jdesktop.mtgame.AWTEventListenerComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.SimpleAvatarControls;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -36,8 +51,12 @@ public class AvatarJME extends BasicRenderer {
     @Override
     protected Entity createEntity() {
         Entity ret = super.createEntity();
-                
-                
+        WorldManager wm = JmeClientMain.getWorldManager();
+               
+        // Avatars are movable so create a move processor
+        moveProcessor = new MoveProcessor(JmeClientMain.getWorldManager(), rootNode);
+        ret.addComponent(ProcessorComponent.class, moveProcessor);
+                                
         return ret;
     }
 
@@ -63,10 +82,6 @@ public class AvatarJME extends BasicRenderer {
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
         Node ret = createTeapotEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);        
 
-        // Avatars are movable so create a move processor
-        moveProcessor = new MoveProcessor(JmeClientMain.getWorldManager(), ret);
-        entity.addComponent(ProcessorComponent.class, moveProcessor);
-        
         return ret;
     }
 
