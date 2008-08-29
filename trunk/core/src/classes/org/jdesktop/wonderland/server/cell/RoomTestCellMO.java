@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
@@ -100,7 +101,7 @@ public class RoomTestCellMO extends CellMO
         }
         
         /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform();
+        CellTransform transform = this.getLocalTransform(null);
         if (transform != null) {
             setup.setOrigin(BasicCellMOHelper.getTranslation(transform));
             setup.setRotation(BasicCellMOHelper.getRotation(transform));

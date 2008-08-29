@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
@@ -49,7 +50,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 
 
 /**
- *
+ * Manage the connection between this client and the wonderland server
+ * 
  * @author paulby
  */
 public class ClientManager {
@@ -77,6 +79,7 @@ public class ClientManager {
     private JmeCellCache cellCache = null;
     
     private Vector3f previousPos = new Vector3f();
+    private Quaternion previousRot = new Quaternion();
     
     public ClientManager() {
         props = loadProperties("run.properties");
@@ -107,7 +110,7 @@ public class ClientManager {
                 return cellCache;
             }
         };
-        ClientContext.getWonderlandSessionManager().registerSession(session);
+        ClientContextJME.getWonderlandSessionManager().registerSession(session);
                    
         localAvatar = session.getLocalAvatar();
                 
@@ -120,21 +123,19 @@ public class ClientManager {
     }
     
     void nodeMoved(Node node) {
-        if (node instanceof CameraNode) {
-            Vector3f v3f = node.getWorldTranslation();
-            if (!previousPos.equals(v3f)) {
-                localAvatar.localMoveRequest(v3f, null);
-                previousPos.set(v3f);
-            }
-        }
+//        if (node instanceof CameraNode) {
+//            Vector3f v3f = node.getWorldTranslation();
+//            Quaternion rot = node.getWorldRotation();
+//            if (!previousPos.equals(v3f) || !previousRot.equals(rot)) {
+//                localAvatar.localMoveRequest(v3f, rot);
+//                previousPos.set(v3f);
+//                previousRot.set(rot);
+//            }
+//        }
     }
     
     class JmeCellCache extends CellCacheBasicImpl {
-        
-        // BoundsPanel actually wraps the cacheImpl
-        private CellCacheBasicImpl cacheImpl;
-        private CellClientSession session;
-        
+                
         public JmeCellCache(CellClientSession session) {
             super(session, 
                   session.getCellCacheConnection(), 
@@ -187,6 +188,14 @@ public class ClientManager {
             super.unloadCell(cellID);
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void setViewCell(ViewCell viewCell) {
+            super.setViewCell(viewCell);
+            ClientContextJME.getViewManager().attach(viewCell);
+        }
     }
     
     private static Properties loadProperties(String fileName) {

@@ -73,7 +73,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
         
         // Update the transform time stamp so this cell appears to have changed
         // Forcing it to be picked up by any ViewCache revalidations
-        cellDesc.setTransform(cell.getLocalTransform(), TimeManager.getWonderlandTime());
+        cellDesc.setTransform(cell.getLocalTransform(null), TimeManager.getWonderlandTime());
         
 //        System.out.println("Cell "+cell.getName()+" entering space "+position);
     }
@@ -85,10 +85,10 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
      */
     void removeCell(CellMO cell) {
         CellListMO cellList;
-        if (cell.isStatic()) {
-            cellList = staticCellList;
-        } else {
+        if (cell.isMovable()) {
             cellList = dynamicCellList;
+        } else {
+            cellList = staticCellList;
         }
         
         cellList.removeCell(cell);        
@@ -96,18 +96,18 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
     }
     
     void notifyCellTransformChanged(CellMO cell, long timestamp) {
-        if (cell.isStatic()) {
-            staticCellList.notifyCellTransformChanged(cell, timestamp);
-        } else {
+        if (cell.isMovable()) {
             dynamicCellList.notifyCellTransformChanged(cell, timestamp);
+        } else {
+            staticCellList.notifyCellTransformChanged(cell, timestamp);
         }
     }
     
     void notifyCellDetached(CellMO cell, long timestamp) {
-        if (cell.isStatic()) {
-            staticCellList.removeCell(cell);
-        } else {
+        if (cell.isMovable()) {
             dynamicCellList.removeCell(cell);
+        } else {
+            staticCellList.removeCell(cell);
         }
         
     }

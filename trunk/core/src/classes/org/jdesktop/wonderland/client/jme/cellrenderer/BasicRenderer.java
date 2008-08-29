@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -44,12 +46,15 @@ public abstract class BasicRenderer implements CellRendererJME {
     protected Node rootNode;
     protected MoveProcessor moveProcessor = null;
     
+    private Vector3f tmpV3f = new Vector3f();
+    private Quaternion tmpQuat = new Quaternion();
+    
     public BasicRenderer(Cell cell) {
         this.cell = cell;
     }
     
     protected Entity createEntity() {
-        Entity ret = new Entity("StaticModelCell "+cell.getCellID());
+        Entity ret = new Entity(this.getClass().getName()+"_"+cell.getCellID());
         
         rootNode = createSceneGraph(ret);
         
@@ -101,10 +106,12 @@ public abstract class BasicRenderer implements CellRendererJME {
         public void commit(ProcessorArmingCollection arg0) {
             synchronized(this) {
                 if (dirty) {
-                    node.setLocalTranslation(cellTransform.getTranslation(null));
-                    node.setLocalRotation(cellTransform.getRotation(null));
+                    node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
+                    node.setLocalRotation(cellTransform.getRotation(tmpQuat));
+//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f+" "+tmpQuat);
                     dirty = false;
                     worldManager.addToUpdateList(node);
+                    worldManager.nodeMoved(node);
                 }
             }
         }

@@ -142,9 +142,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
         rootCellRef.getForUpdate().addChild(cell);
-        SpaceMO[] space = getEnclosingSpace(cell.getLocalTransform().getTranslation(null));
+        SpaceMO[] space = getEnclosingSpace(cell.getLocalTransform(null).getTranslation(null));
         if (space[0]==null) {
-            logger.severe("Unable to find space to contain cell at "+cell.getLocalTransform().getTranslation(null) +" aborting addCell");
+            logger.severe("Unable to find space to contain cell at "+cell.getLocalTransform(null).getTranslation(null) +" aborting addCell");
             return;
         }
         Collection<ManagedReference<SpaceMO>> inSpaces = space[0].getSpaces(cell.getWorldBounds());
@@ -227,8 +227,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
         public TestTask(MovableCellMO cell, MovableCellMO c2) {
             this.cellRef = AppContext.getDataManager().createReference(cell);
             this.cell2Ref = AppContext.getDataManager().createReference(c2);
-            pos = cell.getLocalTransform().getTranslation(null);
-            pos2 = cell.getLocalTransform().getTranslation(null);
+            pos = cell.getLocalTransform(null).getTranslation(null);
+            pos2 = cell.getLocalTransform(null).getTranslation(null);
         }
 
         public void run() throws Exception {

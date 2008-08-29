@@ -166,7 +166,7 @@ if (importSessionFrame==null)
 private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cellViewerMIActionPerformed
     if (cellViewerFrame==null) {
         // TODO handle multiple sessions
-        WonderlandSession session = ClientContext.getWonderlandSessionManager().getSessions().next();
+        WonderlandSession session = ClientContextJME.getWonderlandSessionManager().getSessions().next();
         cellViewerFrame = new CellViewerFrame(session);
     }
     cellViewerFrame.setVisible(true);

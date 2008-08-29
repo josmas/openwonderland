@@ -61,7 +61,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     // a check if there is a bounds change that has not been committed.  If
     // there are uncommitted bounds changes, certain operations (like 
     // getting the computed VW bounds) are not valid
-    private transient boolean boundsChanged = false;
+//    private transient boolean boundsChanged = false;
     
     private String name=null;
     
@@ -82,7 +82,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
-    private boolean isStatic=false;
+    private boolean isMovable=false;
     private HashSet<ManagedReference<TransformChangeListenerMO>> transformChangeListeners=null;
     
     /** Default constructor, used when the cell is created via WFS */
@@ -115,7 +115,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     public void setLocalBounds(BoundingVolume bounds) {
         localBounds = bounds.clone(null);
-        boundsChanged = true;
+//        boundsChanged = true;
         
 //        if (live) {
 //            BoundsManager.get().cellBoundsChanged(cellID, bounds);
@@ -171,9 +171,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * TODO - should we create our own exception type ?
      * 
+     * @param result the CellTransform to populate with the result and return, 
+     * can be null in which case a new CellTransform will be returned.
      * @return
      */
-    public CellTransform getLocalToWorld() {
+    public CellTransform getLocalToWorld(CellTransform result) {
         if (!live)
             throw new IllegalStateException("Unsupported Operation, only valid for a live Cell");
         
@@ -184,15 +186,15 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //        }
 //        
 //        return BoundsManager.get().getLocalToVWorld(cellID);
-        return (CellTransform) local2VWorld.clone();
+        return (CellTransform) local2VWorld.clone(result);
     }
     
     private CellTransform computeLocalToWorld(CellMO currentCell) {
         if (currentCell instanceof RootCellMO)
-            return currentCell.getLocalTransform();
+            return currentCell.getLocalTransform(null);
         
         CellTransform ret = currentCell.computeLocalToWorld(currentCell.getParent());
-        ret.mul(currentCell.getLocalTransform());
+        ret.mul(currentCell.getLocalTransform(null));
         return ret;
     }
     
@@ -323,11 +325,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param transform
      */
     protected void setLocalTransform(CellTransform transform) {
-        if (isStatic() && isLive()) {
+        if (!isMovable() && isLive()) {
             throw new RuntimeException("Modifying Static Cell");
         } 
         
-        this.transform = (CellTransform) transform.clone();  
+        this.transform = (CellTransform) transform.clone(null);  
         
 //        if (live) {
 //            BoundsManager.get().cellTransformChanged(cellID, transform);
@@ -369,9 +371,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     private void calcLocal2World() {
         assert(live);
-        local2VWorld = (CellTransform) transform.clone();
+        local2VWorld = (CellTransform) transform.clone(null);
         if (parentRef!=null) {
-             local2VWorld.mul(parentRef.get().getLocalTransform());  
+             local2VWorld.mul(parentRef.get().getLocalTransform(null));  
         }
     }
     
@@ -380,8 +382,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * 
      * @return return a clone of the transform
      */
-    public CellTransform getLocalTransform() {
-        return (CellTransform) transform.clone();
+    public CellTransform getLocalTransform(CellTransform result) {
+        return (CellTransform) transform.clone(result);
     }
     
     /**
@@ -645,25 +647,25 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Static cells do not change in any way, so their state is not checked
-     * periodically. If a cell changes in any way (moves, content changes, etc)
-     * then isStatic will be false;
+     * Static (non movable) cells do not change in any way, so their state is not checked
+     * periodically. If a cell changes in any way (moves, bounds update)
+     * then isMovable will be true;
      * 
      * @return
      */
-    public boolean isStatic() {
-        return isStatic;
+    public boolean isMovable() {
+        return isMovable;
     }
     
     /**
-     * Set the isStatic property of this cell
-     * @param isStatic
+     * Set the isMovable property of this cell
+     * @param isMovable
      */
-    public void setStatic(boolean isStatic) {
+    public void setMovable(boolean isMovable) {
         if (isLive()) 
             throw new RuntimeException("Changing staic state of live cells is not currently supported");
         
-        this.isStatic = isStatic;
+        this.isMovable = isMovable;
     }
     
     /**
@@ -756,9 +758,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
             return;
         
         // Dispatch listener notifications in new tasks
-        final ManagedReference<CellMO> thisRef = AppContext.getDataManager().createReference(this);
-        final CellTransform newLocal = (CellTransform) transform.clone();
-        final CellTransform newL2VW = (CellTransform) local2VWorld.clone();
+        ManagedReference<CellMO> thisRef = AppContext.getDataManager().createReference(this);
+        CellTransform newLocal = (CellTransform) transform.clone(null);
+        CellTransform newL2VW = (CellTransform) local2VWorld.clone(null);
         
         for(final ManagedReference<TransformChangeListenerMO> listenerRef : transformChangeListeners) {
             AppContext.getTaskManager().scheduleTask(new TransformChangeNotifierTask(listenerRef, thisRef, newLocal, local2VWorld));

@@ -77,8 +77,8 @@ public interface CellDescription {
     public Class getCellClass();
     
     /**
-     * Return true if this is static cell, false if its dynamic
+     * Return true if this is a movable cell, false if its static
      * @return
      */
-    public boolean isStatic();
+    public boolean isMovable();
 }

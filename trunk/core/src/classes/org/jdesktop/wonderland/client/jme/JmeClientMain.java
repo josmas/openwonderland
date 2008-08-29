@@ -49,7 +49,7 @@ public class JmeClientMain {
     /**
      * The CameraNode
      */
-    private CameraNode cameraNode = null;
+    private static CameraNode cameraNode = null;
         
     /**
      * The desired frame rate
@@ -81,42 +81,13 @@ public class JmeClientMain {
         worldManager.setDesiredFrameRate(desiredFrameRate);
         
         createUI(worldManager);  
-        createCameraEntity(worldManager);        
+//        createCameraEntity(worldManager);        
     }
     
-    public static WorldManager getWorldManager() {
+    static WorldManager getWorldManager() {
         return worldManager;
     }
     
-    private void createCameraEntity(WorldManager wm) {
-        Node cameraSG = createCameraGraph(wm);
-        
-        // Add the camera
-        Entity camera = new Entity("DefaultCamera");
-        CameraComponent cc = new CameraComponent(width, height, 45.0f, aspect, 1.0f, 1000.0f, true);
-        cc.setCameraSceneGraph(cameraSG);
-        cc.setCameraNode(cameraNode);
-        camera.addComponent(CameraComponent.class, cc);
-
-        // Create the input listener and process for the camera
-        AWTEventListenerComponent eventListener = new AWTEventListenerComponent();
-        FPSCameraProcessor eventProcessor = new FPSCameraProcessor(eventListener, cameraNode, wm, camera);
-        eventProcessor.setRunInRenderer(true);
-        camera.addComponent(ProcessorComponent.class, eventProcessor);
-        wm.addAWTKeyListener(eventProcessor);
-        wm.addAWTMouseListener(eventProcessor);    
-        wm.addEntity(camera);         
-    }
-    
-    
-    
-    private Node createCameraGraph(WorldManager wm) {
-        Node cameraSG = new Node("MyCamera SG");        
-        cameraNode = new CameraNode("MyCamera", null);
-        cameraSG.attachChild(cameraNode);
-        
-        return (cameraSG);
-    }
     
     /**
      * @param args the command line arguments

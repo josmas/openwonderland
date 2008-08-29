@@ -196,7 +196,7 @@ public class Cell {
     public CellTransform getLocalTransform() {
         if (localTransform==null)
             return null;
-        return (CellTransform) localTransform.clone();
+        return (CellTransform) localTransform.clone(null);
     }
     
     /**
@@ -208,6 +208,10 @@ public class Cell {
      * @param localTransform
      */
     void setLocalTransform(CellTransform localTransform) {
+        // Don't process the same transform twice
+        if (this.localTransform!=null && this.localTransform.equals(localTransform))
+            return;
+        
         if (localTransform==null) {
             this.localTransform=null;
             // Get parent local2VW
@@ -221,15 +225,15 @@ public class Cell {
                     current = current.getParent();
             }
         } else {
-            this.localTransform = (CellTransform) localTransform.clone();
+            this.localTransform = (CellTransform) localTransform.clone(null);
             if (parent!=null) {
-                local2VW = (CellTransform) localTransform.clone();
+                local2VW = (CellTransform) localTransform.clone(null);
                 local2VW = local2VW.mul(parent.getLocalToWorldTransform());
                 cachedVWBounds = localBounds.clone(cachedVWBounds);
                 local2VW.transform(cachedVWBounds);                
             } else if (this instanceof RootCell) {
                 System.out.println("SETTING ROOT");
-                local2VW = (CellTransform) localTransform.clone();
+                local2VW = (CellTransform) localTransform.clone(null);
                 cachedVWBounds = localBounds.clone(cachedVWBounds);               
             }
             
@@ -257,7 +261,7 @@ public class Cell {
     public CellTransform getLocalToWorldTransform() {
         if (local2VW==null)
             return null;
-        return (CellTransform) local2VW.clone();
+        return (CellTransform) local2VW.clone(null);
     }
     
     
@@ -266,7 +270,7 @@ public class Cell {
      * @param localToVWorld
      */
     void setLocalToWorldTransform(CellTransform localToVWorld) {
-        local2VW = (CellTransform) localToVWorld.clone();
+        local2VW = (CellTransform) localToVWorld.clone(null);
         cachedVWBounds = localBounds.clone(cachedVWBounds);
         local2VW.transform(cachedVWBounds);
         

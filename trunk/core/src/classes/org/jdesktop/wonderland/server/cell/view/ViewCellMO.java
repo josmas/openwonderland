@@ -46,7 +46,7 @@ public abstract class ViewCellMO extends CellMO {
      * Return the transform of the camera for this view
      * @return
      */
-    public abstract CellTransform getWorldTransform();
+//    public abstract CellTransform getWorldTransform();
     
     /**
      * Get the user who owns this view

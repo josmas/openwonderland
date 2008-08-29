@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.cell;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import com.jme.bounding.BoundingSphere;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
@@ -113,6 +114,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     
     private boolean showStats = false;
     
+    private CellTransform cellTransformTmp = new CellTransform(new Quaternion(), new Vector3f());
+    
     /**
      * Creates a new instance of ViewCellCacheMO
      */
@@ -180,7 +183,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         }
         
         ViewCellMO view = viewRef.get();
-        Vector3f translation = view.getWorldTransform().getTranslation(null);
+        Vector3f translation = view.getLocalToWorld(cellTransformTmp).getTranslation(null);
         proximityBounds = AvatarBoundsHelper.getProximityBounds(translation);            
     }
     
@@ -236,7 +239,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         try {
             // getTranslation the current user's bounds
             ViewCellMO view = viewRef.get();
-            Vector3f translation = view.getWorldTransform().getTranslation(null);
+            Vector3f translation = view.getLocalToWorld(cellTransformTmp).getTranslation(null);
             proximityBounds.setCenter(translation);            
             
             CellListMO dynamicCellList = new CellListMO();
@@ -696,7 +699,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
-            cell.getLocalTransform(),
+            cell.getLocalTransform(null),
             cell.getClientSetupData(null, capabilities),
             cell.getName()
             
@@ -720,7 +723,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
-            cell.getLocalTransform(),
+            cell.getLocalTransform(null),
             cell.getClientSetupData(null, capabilities),
             cell.getName()
             
@@ -792,7 +795,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cellMO.getLocalBounds(),
             cellMO.getCellID(),
             parentID,
-            cellMO.getLocalTransform(),
+            cellMO.getLocalTransform(null),
             cellMO.getClientSetupData(null, capabilities),
             cellMO.getName()
             );
