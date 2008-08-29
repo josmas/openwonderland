@@ -27,21 +27,15 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.SharedMesh;
 import com.jme.scene.shape.Box;
-import com.jme.scene.state.BlendState;
 import com.jme.scene.state.LightState;
-import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.TextureManager;
-import java.util.logging.Logger;
-import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.RotationProcessor;
-import org.jdesktop.mtgame.SceneComponent;
-import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
  *
@@ -57,7 +51,7 @@ public class RoomTestRenderer extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         ColorRGBA color = new ColorRGBA();
 
-        ZBufferState buf = (ZBufferState) JmeClientMain.getWorldManager().createRendererState(RenderState.RS_ZBUFFER);
+        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
         buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
@@ -66,7 +60,7 @@ public class RoomTestRenderer extends BasicRenderer {
         light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
         light.setLocation(new Vector3f(100, 100, 100));
         light.setEnabled(true);
-        LightState lightState = (LightState) JmeClientMain.getWorldManager().createRendererState(RenderState.RS_LIGHT);
+        LightState lightState = (LightState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_LIGHT);
         lightState.setEnabled(true);
         lightState.attach(light);
 
@@ -119,7 +113,7 @@ public class RoomTestRenderer extends BasicRenderer {
         forceFieldNode.setLocalTranslation(xoff, zoff, zoff);
 
         //load a texture for the force field elements
-        TextureState ts = (TextureState) JmeClientMain.getWorldManager().createRendererState(RenderState.RS_TEXTURE);
+        TextureState ts = (TextureState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_TEXTURE);
         
         Texture t = TextureManager.loadTexture(RoomTestRenderer.class.getClassLoader()
                           .getResource("org/jdesktop/wonderland/client/resources/jme/dirt.jpg"),
