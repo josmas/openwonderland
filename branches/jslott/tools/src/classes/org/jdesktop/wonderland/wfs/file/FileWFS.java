@@ -21,15 +21,12 @@ package org.jdesktop.wonderland.wfs.file;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
-import java.util.logging.Level;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.wfs.InvalidWFSException;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSRootDirectory;
-import org.jdesktop.wonderland.wfs.WFSVersion;
 import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
 
 
@@ -61,7 +58,7 @@ public class FileWFS extends WFS {
             throws SecurityException, FileNotFoundException, IOException,
             InvalidWFSException, JAXBException {
         
-        super();
+        super(WFS.stripWfsSuffix(WFS.stripWfsName(path)));
         this.uri = new File(path).toURI();
         
         /*

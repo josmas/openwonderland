@@ -16,34 +16,36 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.archive;
+package org.jdesktop.wonderland.tools.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import org.jdesktop.wonderland.wfs.WFS;
 
 /**
  * The ArchiveManifest class represents a tree of entries found in the JAR
- * file that satisfy the naming conventions of the Wonderland File System
- * specification. It is parsed from a JAR's manifest file and allows queries
- * given cell names and parent cell directories.
+ * file, so that its entries may be tranversed hierarchically.
  * <p>
  * This class also serves as the 'front-end' to a JAR file and returns the
  * input stream for individual entries.
- * <p>
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ArchiveManifest {
+    /* The error logger for this class */
+    Logger logger = Logger.getLogger(ArchiveManifest.class.getName());
+    
+    /* The URL used to open the archive */
+    private URL url = null;
+    
     /*
      * A map that contains a series of file entries parsed into path components.
      * Each of the entries contains a String key of a directory path component,
@@ -51,6 +53,9 @@ public class ArchiveManifest {
      */
     private HashMap<String, LinkedList<String>> fileMap;
     
+    /* A linked list of all entries in the archive. */
+    private LinkedList<String> entryList;
+   
     /* The JAR file object association with this JAR file */
     private JarFile jarfile;
     
@@ -63,35 +68,19 @@ public class ArchiveManifest {
      */
     public ArchiveManifest(URL url) throws IOException {
         /* Open a connection to the JAR file and parse out its entries */
-        JarURLConnection urlconn  = (JarURLConnection)url.openConnection();
-        this.jarfile              = urlconn.getJarFile();
+        JarURLConnection urlconn = (JarURLConnection) url.openConnection();
+        this.url = url;
+        this.jarfile = urlconn.getJarFile();
         this.createArchiveMap(this.jarfile);
     }
- 
+    
     /**
-     * Finds and returns the list of individual WFS defined by this JAR file as
-     * an array of strings. If no valid filesystems exist, this method returns
-     * an array of length 0.
-     *
-     * @return An array of valid file system names contained within the JAR.
+     * Returns the URL used to open the archive.
+     * 
+     * @return The archive URL
      */
-    public String[] getFileSystems() {
-        ArrayList<String> wfs = new ArrayList<String>();
-        
-        /*
-         * Find the entry in the file map named "" which stores all top-level
-         * entries. Look for those with the ending "-wfs" and put those in the
-         * list.
-         */
-        LinkedList<String> entries = this.fileMap.get("");
-        if (entries != null) {
-            for (String entry : entries) {
-                if (entry.endsWith(WFS.WFS_DIRECTORY_SUFFIX) == true) {
-                    wfs.add(entry);
-                }
-            }
-        }
-        return wfs.toArray(new String[] {});
+    public URL getURL() {
+        return this.url;
     }
     
     /**
@@ -125,20 +114,43 @@ public class ArchiveManifest {
         try {
             this.jarfile.close();
         } catch (IOException excp) {
-            WFS.getLogger().log(Level.INFO, "Failed to close JAR file: " +
-                excp.toString());
+            logger.info("Failed to close JAR file: " + excp.toString());
         }
     }
     
     /**
      * Returns a copy of all of the entries given the full path name of a
-     * directory.
+     * directory. For the entries at the root, use "" for path.
+     * 
+     * @param path The path name to look for entries
+     * @return A linked list of entries in the given path
      */
-    public LinkedList<String> getCellEntries(String path) {
+    public LinkedList<String> getEntries(String path) {
         if (this.fileMap.containsKey(path) == true) {
             return this.fileMap.get(path);
         }
         return new LinkedList<String>();
+    }
+    
+    /**
+     * Returns a linked list of all entries in the archive. Note that entries
+     * that represent directories have a final "/".
+     * 
+     * @return A linked list of all entries in the archive
+     */
+    public LinkedList<String> getEntries() {
+        return new LinkedList<String>(this.entryList);
+    }
+    
+    /**
+     * Returns true if the given entry name represents a directory (that is,
+     * is has a final "/".
+     * 
+     * @param entry The name of the entry
+     * @return True if the entry is a directory, false if not
+     */
+    public boolean isDirectory(String entry) {
+        return entry.endsWith("/");
     }
     
     /**
@@ -231,13 +243,15 @@ public class ArchiveManifest {
             JarEntry entry = entries.nextElement();
             
             /* Split the path name into a path and file name part */
-            String paths[] = this.splitEntry(entry.getName());
+            String entryName = entry.getName();
+            String paths[] = this.splitEntry(entryName);
 
             /* Add the entry to the map, if it does not already exist */
             LinkedList<String> fnames = this.fileMap.get(paths[0]);
             if (fnames == null) {
                 fnames = new LinkedList<String>();
                 this.fileMap.put(paths[0], fnames);
+                this.entryList.addLast(entryName);
             }
             
             /* Add the entry in the map so long as it is not empty */

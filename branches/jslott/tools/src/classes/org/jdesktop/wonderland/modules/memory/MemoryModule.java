@@ -45,7 +45,18 @@ public class MemoryModule extends Module {
     public InputStream getInputStreamForResource(ModuleResource resource) {
         return null;
     }
-
+    /**
+     * Returns an input stream for the given JAR file from a plugin, null
+     * upon error
+     * 
+     * @param name The name of the plugin
+     * @param jar The name of the jar file
+     * @param type The type of the jar file (CLIENT, SERVER, COMMON)
+     */
+    public InputStream getInputStreamForPlugin(String name, String jar, String type) {
+        return null;
+    }
+    
     @Override
     protected void open() {
         throw new UnsupportedOperationException("Not supported yet.");

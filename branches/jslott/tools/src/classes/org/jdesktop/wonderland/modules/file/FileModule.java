@@ -106,7 +106,7 @@ public class FileModule extends Module {
      */
     public InputStream getInputStreamForPlugin(String name, String jar, String type) {
         try {
-            String path = Module.MODULE_PLUGINS + name + "/" + type + jar;
+            String path = Module.MODULE_PLUGINS + "/" + name + "/" + type + jar;
             File entry = new File(this.root, path);
             return new FileInputStream(entry);
         } catch (java.io.IOException excp) {

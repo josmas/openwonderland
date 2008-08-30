@@ -1,9 +1,7 @@
-/*
- * Project Looking Glass
+/**
+ * Project Wonderland
  *
- * $RCSfile: ArchiveWFS.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,20 +11,22 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.2.8.2 $
- * $Date: 2008/04/08 10:44:29 $
- * $State: Exp $
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.wfs.archive;
 
+import org.jdesktop.wonderland.tools.utils.ArchiveManifest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.LinkedList;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.tools.utils.JarURLUtils;
 import org.jdesktop.wonderland.wfs.InvalidWFSException;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSRootDirectory;
@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
  * File System that resides as an archive file. The archive file, which may be
  * located over the net, is specified as a URL as follows:
  * <p>
- * jar:<url>!\
+ * jar:<url>!/
  * <p>
  * where <url> is the location of the jar file. For example:
  * <p>
@@ -51,12 +51,13 @@ import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ArchiveWFS extends WFS {
-    /* The location of the file system */
-    private URI uri = null;
-    
+
     /* The object managing the manifest and JAR file contents */
     private ArchiveManifest manifest = null;
 
+    /* The root path within the JAR file containing the WFS */
+    private String wfsPath = null;
+    
     /**
      * Creates a new instance of WFS given the URL of the archive file.
      * <p>
@@ -71,51 +72,65 @@ public class ArchiveWFS extends WFS {
             throws SecurityException, IOException, InvalidWFSException,
             JAXBException {
         
+        super(WFS.stripWfsSuffix(WFS.stripWfsName(JarURLUtils.getURLMainPart(url.toExternalForm()))));
+        
         /*
          * Given the URL, parse into the constituent components: the protocol
          * (which must be JAR) and the WFS URI. Open a connection to the JAR
          * file.
          */
-        String protocol = url.getProtocol();
-        String body = url.getPath();
-        URI wfsuri = null;
+        String urlString = url.toExternalForm();
 
         /* If the protocol is not JAR, then throw IOException */
-        if (protocol.equals("jar") != true) {
+        if (urlString.startsWith("jar") != true) {
             throw new IOException("Protocol of URL is not JAR: " + url.toString());
         }
         
-        /* Try to parse of the WFS URI */
-        try {
-            wfsuri = this.getWfsUri(body);
-        } catch (URISyntaxException excp) {
-            throw new IOException("Invalid WFS URI: " + url.toString());
-        }
+        /*
+         * Parse out both the "main" part of the URL (up to an including the
+         * "!/" and the "path" part of the URL (following and not including
+         * the "!/"
+         */
+        String mainPart = JarURLUtils.getURLMainPart(urlString);
+        String pathPart = JarURLUtils.getURLResourcePart(urlString);
         
         /* Open a connection to the JAR file and parse out its entries */
-        this.manifest = new ArchiveManifest(url);
+        this.manifest = new ArchiveManifest(new URL(mainPart));
         
         /*
          * Find the base-level wfs directory. If there is more than one, then
          * simply take the first. If there are no file systems within the JAR
-         * file, then throw an exception.
+         * file, then throw an exception. We look for entries found beneath
+         * the "path" in the JAR file.
          */
-        String[] fsystems = this.manifest.getFileSystems();
-        if (fsystems.length == 0) {
-            throw new InvalidWFSException("WFS URI has no valid filesystems: " +
-                uri.toString());
+        LinkedList<String> fsystems = this.manifest.getEntries(pathPart);
+        
+        /* Look for the first entry with a '-wfs' suffix */
+        Iterator<String> it = fsystems.listIterator();
+        String wfsdir = null;
+        while (it.hasNext() == true) {
+            wfsdir = it.next();
+            if (wfsdir.endsWith(WFS.WFS_DIRECTORY_SUFFIX) == true)
+                break;
         }
-        String wfsdir = fsystems[0];
-                
+        
+        /* If we found none, throw an exception */
+        if (wfsdir == null) {
+            throw new InvalidWFSException("WFS URI has no valid filesystems: " + url.toString());
+        }
+        
+        /* The path to the valid WFS directory inside of the JAR file */
+        this.wfsPath = pathPart + "/" + wfsdir;
+        
         /* Create the top level directory consisting of the base WFS directory */
-        DirectoryDelegate delegate = new ArchiveDirectoryDelegate(this.manifest, wfsdir);
+        DirectoryDelegate delegate = new ArchiveDirectoryDelegate(this.manifest, this.wfsPath);
         this.directory = new WFSRootDirectory(this, delegate);
         
         /*
          * Read the version.xml file from disk and instantiate a WFSVersion
          * class, if it exists
          */
-        String wfsversion = wfsdir + "/" + WFSRootDirectory.VERSION;
+        String wfsversion = this.wfsPath + "/" + WFSRootDirectory.VERSION;
         InputStream vis = this.manifest.getEntryInputStream(wfsversion);
         if (vis != null) {
             this.directory.setVersion(WFSVersion.decode(new InputStreamReader(vis)));
@@ -141,29 +156,5 @@ public class ArchiveWFS extends WFS {
     public void write() throws IOException {
         // Writing to archive not currently suppported
         throw new UnsupportedOperationException("Not yet supported.");
-    }
-    
-    /*-----------------------------------------------------------------------*
-     * Private Utility Routines                                              *
-     *-----------------------------------------------------------------------*/
-    
-    /**
-     * Given an URL of protocol type "jar" searches for a WFS URI, that is,
-     * one that follows a "#" in the URL. If no such URL exists, then return
-     * null, otherwise, return the URL object.
-     * <p>
-     * @param The body of the JAR URL
-     * @return The WFS URI
-     * @throw URISyntaxException Indicates a malformed WFS URI
-     */
-    public URI getWfsUri(String url) throws URISyntaxException {
-        /* Find the '#' character and fetch the substring if it exists */
-        int index = url.lastIndexOf("#");
-        if (index == -1) {
-            return null;
-        }
-        
-        /* Otherwise, construct the WFS URI and return it */
-        return new URI(url.substring(index));
     }
 }

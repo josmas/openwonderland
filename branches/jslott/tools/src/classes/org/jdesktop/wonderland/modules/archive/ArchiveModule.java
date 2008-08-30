@@ -22,17 +22,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
+import java.net.URL;
 import java.util.HashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.Iterator;
+import java.util.LinkedList;
 import org.jdesktop.wonderland.checksum.RepositoryChecksums;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.modules.ModulePlugin;
 import org.jdesktop.wonderland.modules.ModuleRepository;
 import org.jdesktop.wonderland.modules.ModuleRequires;
 import org.jdesktop.wonderland.modules.ModuleResource;
+import org.jdesktop.wonderland.tools.utils.ArchiveManifest;
+import org.jdesktop.wonderland.wfs.WFS;
 
 /**
  * The ArchiveModule class extends the Module abstract base class and represents
@@ -41,23 +44,26 @@ import org.jdesktop.wonderland.modules.ModuleResource;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ArchiveModule extends Module {
-    /* The module's archive file in which it is contained */
-    private ZipFile zipFile = null;
+    /* The URL file in which the archive is contained */
+    private URL url = null;
+    
+    /* The manifest of the archive */
+    private ArchiveManifest manifest = null;
     
     /* The chunk size to write out while expanding archive files to disk */
     private static final int CHUNK_SIZE = (8 * 1024);
             
-    /** Default constructor, takes a reference to the archive file */
-    public ArchiveModule(ZipFile zipFile) {
-        super();
-        this.zipFile = zipFile;
-    }
-    
     /**
-     * Returns the archive file associated with this module
+     * Constructor, takes a URL to the archive file. Throws IOException upon
+     * general I/O error reading the archive module
+     * 
+     * @param url The URL of the archive module file
+     * @throw IOException Upon general I/O error
      */
-    public ZipFile getZipFile() {
-        return this.zipFile;
+    public ArchiveModule(URL url) throws IOException {
+        super();
+        this.url = url;
+        this.manifest = new ArchiveManifest(url);
     }
     
     /**
@@ -66,15 +72,18 @@ public class ArchiveModule extends Module {
     @Override
     public void open() {
         /* Fetch and parse the three XML files: info, requires, and repository */
-        ModuleInfo info = ArchiveModuleUtil.parseModuleInfo(this.zipFile);
+        ModuleInfo info = ArchiveModuleUtil.parseModuleInfo(this.manifest);
         if (info == null) {
             System.out.println("cannot parse module info");
             // print error message XXX
         }
-        ModuleRequires requires = ArchiveModuleUtil.parseModuleRequires(this.zipFile);
-        ModuleRepository repository = ArchiveModuleUtil.parseModuleRepository(this.zipFile);
-        HashMap<String, ModuleArtResource> artwork = ArchiveModuleUtil.parseModuleArt(this.zipFile);
-        RepositoryChecksums checksums = ArchiveModuleUtil.parseModuleChecksums(this.zipFile);
+        ModuleRequires requires = ArchiveModuleUtil.parseModuleRequires(this.manifest);
+        ModuleRepository repository = ArchiveModuleUtil.parseModuleRepository(this.manifest);
+        HashMap<String, ModuleArtResource> artwork = ArchiveModuleUtil.parseModuleArt(this.manifest);
+        RepositoryChecksums checksums = ArchiveModuleUtil.parseModuleChecksums(this.manifest);
+        HashMap<String, WFS> wfs = ArchiveModuleUtil.parseModuleWFS(this.manifest);
+        HashMap<String, ModulePlugin> plugins = ArchiveModuleUtil.parseModulePlugins(this.manifest);
+
 
         /* Create a new module based upon what has been parsed */
         this.setModuleInfo(info);
@@ -82,6 +91,8 @@ public class ArchiveModule extends Module {
         this.setModuleRepository(repository);
         this.setModuleChecksums(checksums);
         this.setModuleArtwork(artwork);
+        this.setModuleWFSs(wfs);
+        this.setModulePlugins(plugins);
     }
     
     /**
@@ -92,11 +103,28 @@ public class ArchiveModule extends Module {
      */
     public InputStream getInputStreamForResource(ModuleResource resource) {
         try {
-            ZipEntry entry = this.zipFile.getEntry(resource.getPathName());
-            return this.zipFile.getInputStream(entry);
+            return this.manifest.getEntryInputStream(resource.getPathName());
         } catch (java.lang.IllegalStateException excp) {
             // print stack trace
             return null;
+        } catch (java.io.IOException excp) {
+            // print stack trace
+            return null;
+        }
+    }
+
+    /**
+     * Returns an input stream for the given JAR file from a plugin, null
+     * upon error
+     * 
+     * @param name The name of the plugin
+     * @param jar The name of the jar file
+     * @param type The type of the jar file (CLIENT, SERVER, COMMON)
+     */
+    public InputStream getInputStreamForPlugin(String name, String jar, String type) {
+        try {
+            String path = Module.MODULE_PLUGINS + "/" + name + "/" + type + jar;
+            return this.manifest.getEntryInputStream(path);
         } catch (java.io.IOException excp) {
             // print stack trace
             return null;
@@ -116,27 +144,27 @@ public class ArchiveModule extends Module {
          * Loop through each entry, fetchs its input stream, and write to an
          * output stream for the file.
          */
-        Enumeration<? extends ZipEntry> entries = this.zipFile.entries();
-        while (entries.hasMoreElements() == true) {
+        LinkedList<String> entryList = this.manifest.getEntries();
+        Iterator<String> it = entryList.listIterator();
+        while (it.hasNext() == true) {
             /* Fetch the next entry, its name is the relative file name */
-            ZipEntry entry = (ZipEntry)entries.nextElement();
-            String name = entry.getName();
-            InputStream is = this.zipFile.getInputStream(entry);
+            String entryName = it.next();
+            InputStream is = this.manifest.getEntryInputStream(entryName);
             
             /* Don't expand anything that beings with META-INF */
-            if (name.startsWith("META-INF") == true) {
+            if (entryName.startsWith("META-INF") == true) {
                 continue;
             }
             
             /* Ignore if it is a directory, then create it */
-            if (entry.isDirectory() == true) {
-                File file = new File(root, name);
+            if (this.manifest.isDirectory(entryName) == true) {
+                File file = new File(root, entryName);
                 file.mkdirs();
                 continue;
             }
             
             /* Write out to a file in 'root' */
-            File file = new File(root, name);
+            File file = new File(root, entryName);
             FileOutputStream os = new FileOutputStream(file);
             byte[] b = new byte[ArchiveModule.CHUNK_SIZE];
             while (true) {

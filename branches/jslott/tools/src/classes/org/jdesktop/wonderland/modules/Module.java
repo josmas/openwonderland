@@ -51,10 +51,10 @@ public abstract class Module {
     public static final String MODULE_INFO       = "module.xml";
     public static final String MODULE_REQUIRES   = "requires.xml";
     public static final String MODULE_REPOSITORY = "repository.xml";
-    public static final String MODULE_ART        = "art/";
-    public static final String MODULE_CHECKSUMS  = MODULE_ART + "checksums.xml";
-    public static final String MODULE_WFS        = "wfs/";
-    public static final String MODULE_PLUGINS    = "plugins/";
+    public static final String MODULE_ART        = "art";
+    public static final String MODULE_CHECKSUMS  = MODULE_ART + "/checksums.xml";
+    public static final String MODULE_WFS        = "wfs";
+    public static final String MODULE_PLUGINS    = "plugins";
     
     private ModuleInfo       moduleInfo       = null; /* Basic module info   */
     private ModuleRequires   moduleRequires   = null; /* Module dependencies */
@@ -235,7 +235,17 @@ public abstract class Module {
      * @return An input stream to the resource
      */
     public abstract InputStream getInputStreamForResource(ModuleResource resource);
-    
+
+    /**
+     * Returns an input stream for the given JAR file from a plugin, null
+     * upon error
+     * 
+     * @param name The name of the plugin
+     * @param jar The name of the jar file
+     * @param type The type of the jar file (CLIENT, SERVER, COMMON)
+     */
+    public abstract InputStream getInputStreamForPlugin(String name, String jar, String type);
+        
     /**
      * Stream this module out to an archive file.
      */

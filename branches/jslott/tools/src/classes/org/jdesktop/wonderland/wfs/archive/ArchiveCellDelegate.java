@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.wfs.archive;
 
+import org.jdesktop.wonderland.tools.utils.ArchiveManifest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

@@ -20,6 +20,7 @@
 
 package org.jdesktop.wonderland.wfs.archive;
 
+import org.jdesktop.wonderland.tools.utils.ArchiveManifest;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ public class ArchiveDirectoryDelegate implements DirectoryDelegate {
          * Fetch the entry in the manifest corresponding to this directory,
          * subject to the filter for the cell file suffix.
          */
-        LinkedList<String> entries = manifest.getCellEntries(this.pathName);
+        LinkedList<String> entries = manifest.getEntries(this.pathName);
         
         WFS.getLogger().log(Level.INFO, "WFS File List: " + entries.size() +
             " files found in " + pathName);

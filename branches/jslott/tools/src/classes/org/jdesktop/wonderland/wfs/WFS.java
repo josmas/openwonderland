@@ -178,6 +178,9 @@ public abstract class WFS {
     public static final String FILE_PROTOCOL = "file";
     public static final String JAR_PROTOCOL  = "jar";
 
+    /* The name of the WFS, without the "-wfs" suffix */
+    private String name = null;
+    
     /*
      * The directory object associated with the root of the file system. This
      * is created by subclasses of the WFS object in their constructor and is
@@ -198,8 +201,20 @@ public abstract class WFS {
      * Creates a new instance of WFS. This constructor should not be called--
      * one of the factory methods on the WFSFactory class should be used
      * instead.
+     * 
+     * @param name The name of the WFS without the '-wfs' suffix
      */
-    public WFS() {
+    public WFS(String name) {
+        this.name = name;
+    }
+    
+    /**
+     * Returns the name of the WFS (without any '-wfs' suffix).
+     * 
+     * @return The name of the WFS
+     */
+    public String getName() {
+        return this.name;
     }
     
     /**
@@ -465,6 +480,38 @@ public abstract class WFS {
      */
     protected Lock getReadLock() {
         return this.ownerLock.readLock();
+    }
+    
+    /**
+     * Takes the name of a WFS (with the '-wfs' suffix) and returns the name
+     * of the WFS (without the '-wfs' suffix. If there is no '-wfs' suffix,
+     * then this method returns the given name.
+     * 
+     * @param name The WFS name (with the '-wfs' suffix
+     * @return The name of the WFS without the '-wfs' suffix
+     */
+    protected static String stripWfsSuffix(String name) {
+        if (name.endsWith(WFS.WFS_DIRECTORY_SUFFIX) == true) {
+            return name.substring(0, name.length() - WFS.WFS_DIRECTORY_SUFFIX.length() + 1);
+        }
+        return name;
+    }
+    
+    /**
+     * Takes a URL-like string of the location of the WFS and strips off
+     * everything except the final name part (everything after the final "/").
+     * If the given URL string does not have any "/", this method returns the
+     * given URL. The name must be the last part of the string.
+     * 
+     * @param url The URL string of the WFS
+     * @return The name of the wfs (including the '-wfx' suffix*
+     */
+    protected static String stripWfsName(String url) {
+        int index = url.lastIndexOf("/");
+        if (index == -1) {
+            return url;
+        }
+        return url.substring(index + 1);
     }
     
     /**

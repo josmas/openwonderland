@@ -86,7 +86,7 @@ public final class WFSFactory {
      * The jar file may be additionally located on a disk file system or over
      * the network (see the Javadoc for the ArchiveWFS class for more details
      * about the format of the URL in this case).
-     * <p>
+     *
      * @param url The URL of the WFS to open
      * @throw FileNotFoundException If the WFS does not exist
      * @throw IOException Upon some general I/O error reading the WFS

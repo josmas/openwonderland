@@ -150,7 +150,7 @@ public class FileModuleUtil {
             if (file.isDirectory() == true && name.endsWith(WFS.WFS_DIRECTORY_SUFFIX) == true) {
                 try {
                     WFS wfs = WFSFactory.open(file.toURL());
-                    wfsMap.put(name.substring(0, name.length() - WFS.WFS_DIRECTORY_SUFFIX.length() + 1), wfs);
+                    wfsMap.put(wfs.getName(), wfs);
                 } catch (java.io.IOException excp) {
                     // log an error and continue
                 } catch (InvalidWFSException excp) {

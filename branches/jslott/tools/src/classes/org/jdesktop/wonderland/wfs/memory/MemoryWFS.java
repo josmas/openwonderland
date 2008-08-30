@@ -29,15 +29,14 @@ import org.jdesktop.wonderland.wfs.delegate.DirectoryDelegate;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class MemoryWFS extends WFS {
-    /* The name of the WFS in memory */
-    private String name = null;
     
     /**
      * Creates a new instance of WFS.
+     * 
+     * @param name The name of the WFS (without any '-wfs' suffix)
      */
     public MemoryWFS(String name) {
-        super();
-        this.name = name;
+        super(name);
         
         /* Create the proper delegate for the root directory */
         DirectoryDelegate delegate = new MemoryDirectoryDelegate();
