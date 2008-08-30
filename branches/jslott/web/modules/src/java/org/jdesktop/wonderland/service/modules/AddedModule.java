@@ -20,9 +20,7 @@ package org.jdesktop.wonderland.service.modules;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.zip.ZipFile;
-import org.jdesktop.wonderland.modules.ModuleResource;
 import org.jdesktop.wonderland.modules.archive.ArchiveModule;
 
 /**
@@ -40,7 +38,7 @@ public class AddedModule extends ArchiveModule {
      * @param root
      */
     public AddedModule(File file) throws IOException {
-        super(new ZipFile(file));
+        super(file.toURL());
         this.file = file;
     }
     
@@ -51,11 +49,6 @@ public class AddedModule extends ArchiveModule {
      */
     public File getFile() {
         return this.file;
-    }
-    
-    @Override
-    public InputStream getInputStreamForResource(ModuleResource resource) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**

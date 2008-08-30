@@ -21,7 +21,6 @@ package org.jdesktop.wonderland.service.modules;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.ZipFile;
 import org.jdesktop.wonderland.modules.ModuleResource;
 import org.jdesktop.wonderland.modules.archive.ArchiveModule;
 
@@ -39,7 +38,7 @@ public class PendingModule extends ArchiveModule {
     private File file = null;
     
     public PendingModule(File root) throws IOException {
-        super(new ZipFile(root));
+        super(root.toURL());
         this.file = root;
     }
     
