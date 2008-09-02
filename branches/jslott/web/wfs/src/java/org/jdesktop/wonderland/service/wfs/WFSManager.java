@@ -33,9 +33,6 @@ import org.jdesktop.wonderland.wfs.WFSFactory;
  */
 public class WFSManager {
     
-    /* The base level directory for all WFSs, this should be a parameter XXX */
-    private static final String WFS_ROOT = "/Users/jordanslott/wonderland/wfs";
-    
     /* A collection of roots for all WFSs managed herein */
     private HashMap<String, WFS> wfsRoots = new HashMap<String, WFS>();
 
@@ -111,9 +108,17 @@ public class WFSManager {
      * to the internal list.
      */
     private void loadWFSs() {
-        for (String root : this.getWFSRootDirectories()) {
+        /* Find the directory in which the roots exist */
+        String baseDir = System.getProperty("wonderland.webserver.wfs.root");
+        if (baseDir == null) {
+            logger.warning("WFSManager: No value for wonderland.webserver.wfs.root");
+            return;
+        }
+        logger.info("WFSManager: wonderland.webserver.wfs.root=" + baseDir);
+        
+        for (String root : this.getWFSRootDirectories(baseDir)) {
             try {
-                WFS wfs = WFSFactory.open(new URL("file://" + WFSManager.WFS_ROOT + "/" + root));
+                WFS wfs = WFSFactory.open(new URL("file://" + baseDir + "/" + root));
                 this.wfsRoots.put(this.getWFSName(root), wfs);
             } catch (java.io.FileNotFoundException excp) {
                 logger.warning("WFSManager: Unable to find WFS root: " + excp.toString());
@@ -131,13 +136,13 @@ public class WFSManager {
      * Returns an array of URL object that represent the base directories for
      * each root WFS in the system.
      */
-    private String[] getWFSRootDirectories() {
+    private String[] getWFSRootDirectories(String baseDir) {
         /*
          * Search through the directory and get all of the files with a -wfs
          * extension. We check whether the directory is readable and whether
          * it is a valid WFS in the loadWFSs() method.
          */
-        File rootDir = new File(WFSManager.WFS_ROOT);
+        File rootDir = new File(baseDir);
         return rootDir.list(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.endsWith(WFS.WFS_DIRECTORY_SUFFIX);

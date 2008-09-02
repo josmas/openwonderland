@@ -82,9 +82,16 @@ public class ModuleManager {
         this.removeModules = new HashMap<String, RemovedModule>();
         this.uninstallModules = new HashMap<String, UninstalledModule>();
         
+        /* Find the base modules/ directory in which all modules exist */
+        String baseDir = ModuleManager.getModuleDirectory();
+        if (baseDir == null) {
+            logger.warning("ModuleManager: no wonderland.webserver.modules.dir");
+        }
+        logger.info("wonderland.webserver.modules.dir=" + baseDir);
+        
         /* Set the base directory for the module system, create it if necessary */
         try {
-            this.root = new File(ModuleManager.getModuleDirectory());
+            this.root = new File(baseDir);
             if (this.root.exists() == false) {
                 this.root.mkdirs();
             }
@@ -632,8 +639,7 @@ public class ModuleManager {
      * property.
      */
     private static String getModuleDirectory() {
-        //return System.getProperty("wonderland.module.dir");
-        return "/Users/jordanslott/wonderland/modules";
+        return System.getProperty("wonderland.webserver.modules.root");
     }
     
     /**
