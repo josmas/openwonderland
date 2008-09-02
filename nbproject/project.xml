@@ -8,7 +8,13 @@
             <properties>
                 <property name="project.license">gplv2</property>
             </properties>
-            <folders/>
+            <folders>
+                <source-folder>
+                    <label>core/src</label>
+                    <type>java</type>
+                    <location>core/src</location>
+                </source-folder>
+            </folders>
             <ide-actions>
                 <action name="build">
                     <target>release</target>
@@ -16,6 +22,10 @@
             </ide-actions>
             <view>
                 <items>
+                    <source-folder style="packages">
+                        <label>core/src</label>
+                        <location>core/src</location>
+                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -24,12 +34,13 @@
                     <ide-action name="build"/>
                 </context-menu>
             </view>
-            <subprojects>
-                <project>core</project>
-                <project>utils</project>
-                <project>test</project>
-            </subprojects>
+            <subprojects/>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>core/src</package-root>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
     </configuration>
 </project>
