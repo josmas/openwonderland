@@ -57,6 +57,7 @@
     <property name="release.pkg.basename" value="${release.pkgname}${release.pkg.voicename}${release.pkg.artname}-${release.pkg.suffix}"/>
     <property name="release.pkg.filename" location="${release.pkg.dir}/${release.pkg.basename}"/>
 
+    <property name="common.lib.dir" location="${wonderland.dir}/lib"/>
     <property name="javaext.dir" location="${wonderland.dir}/ext"/>
     <property name="os.javaext.dir" location="${javaext.dir}/${ostype}"/>
 
