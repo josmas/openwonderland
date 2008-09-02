@@ -22,6 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
@@ -30,7 +31,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -189,6 +189,29 @@ public class RepositoryChecksums {
             this.checksums = null;
         }
         RepositoryChecksums.marshaller.marshal(this, w);
+    }
+
+    /**
+     * Writes the RepositoryChecksums class to an output stream.
+     * <p>
+     * @param os The output stream to write to
+     * @throw JAXBException Upon error writing the XML file
+     */
+    public void encode(OutputStream os) throws JAXBException {
+        /* Convert internal checksum hash to one suitable for serialization */
+        if (this.internalChecksums != null) {
+            this.checksums = new ChecksumsHashMap();
+            for (Map.Entry<String, Checksum> e : this.internalChecksums.entrySet()) {
+                HashMapEntry entry = new HashMapEntry();
+                entry.key = e.getKey();
+                entry.value = e.getValue();
+                this.checksums.entries.add(entry);
+            }
+        }
+        else {
+            this.checksums = null;
+        }
+        RepositoryChecksums.marshaller.marshal(this, os);
     }
     
     /**

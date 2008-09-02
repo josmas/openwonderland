@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -246,13 +245,6 @@ public abstract class Module {
      */
     public abstract InputStream getInputStreamForPlugin(String name, String jar, String type);
         
-    /**
-     * Stream this module out to an archive file.
-     */
-    public void writeToJar(File file) {
-        // XXX
-    }
-    
     /**
      * Returns a string representing this module.
      */

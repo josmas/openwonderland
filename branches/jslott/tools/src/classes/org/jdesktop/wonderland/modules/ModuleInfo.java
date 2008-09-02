@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
@@ -132,11 +133,21 @@ public class ModuleInfo implements Serializable {
     /**
      * Writes the ModuleInfo class to an output writer.
      * <p>
-     * @param os The output writer to write to
+     * @param w The output writer to write to
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
         ModuleInfo.marshaller.marshal(this, w);
+    }
+
+    /**
+     * Writes the ModuleInfo class to an output stream.
+     * <p>
+     * @param os The output stream to write to
+     * @throw JAXBException Upon error writing the XML file
+     */
+    public void encode(OutputStream os) throws JAXBException {
+        ModuleInfo.marshaller.marshal(this, os);
     }
     
     /**

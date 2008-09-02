@@ -313,24 +313,20 @@ public abstract class WFS {
         this.getRootDirectory().write();
     }
 
-    
     /**
      * Writes an entire WFS to an output stream, encoded as a jar file. The
      * side effect of this method is to load the entire WFS if it has not
-     * already been loaded into memory.
+     * already been loaded in memory.
      * 
-     * @param os The output stream to write to
+     * @param jos The jar output stream to write to
      * @throw IOException Upon general I/O error
      * @throw JAXBException Upon error serializing to XML on disk
      */
-    public void writeTo(OutputStream os) throws IOException, JAXBException {
+    public void writeTo(JarOutputStream jos) throws IOException, JAXBException {
         /* We just need a read lock for this, since we aren't changing anything */
         this.getReadLock().lock();
         
         try {
-            /* Create the output stream for the jar file */
-            JarOutputStream jos = new JarOutputStream(os);
-
             /* Fetch the root directory and write out the directory */
             WFSRootDirectory rootDir = this.getRootDirectory();
             String pathName = rootDir.getPathName();
@@ -359,6 +355,19 @@ public abstract class WFS {
         } finally {
             this.getReadLock().unlock();
         }
+    }
+    
+    /**
+     * Writes an entire WFS to an output stream, encoded as a jar file. The
+     * side effect of this method is to load the entire WFS if it has not
+     * already been loaded into memory.
+     * 
+     * @param os The output stream to write to
+     * @throw IOException Upon general I/O error
+     * @throw JAXBException Upon error serializing to XML on disk
+     */
+    public void writeTo(OutputStream os) throws IOException, JAXBException {
+        this.writeTo(new JarOutputStream(os));
     }
 
     /**
