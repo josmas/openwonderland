@@ -19,7 +19,6 @@
 package org.jdesktop.wonderland.wfs.test;
 
 import java.net.URL;
-import org.jdesktop.wonderland.cells.BasicCellSetup;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSCell;
 import org.jdesktop.wonderland.wfs.WFSCellDirectory;
