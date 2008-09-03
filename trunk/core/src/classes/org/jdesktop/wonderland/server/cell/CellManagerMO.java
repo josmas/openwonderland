@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
+import org.jdesktop.wonderland.wfs.loader.WFSLoader;
 
 /**
  *
@@ -245,21 +246,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * wonderland.wfs.root
      */
     private void buildWFSWorld() {
-        /*
-         * Attempt to create a new MO based upon the WFS root. We need to setup
-         * some basic properties about the cell by hand (e.g. transform, name).
-         */
-        WFSCellMO mo = new WFSCellMO();
-        mo.setLocalTransform(new CellTransform(null, null, null));
-        mo.setName("root");
-        mo.setLocalBounds(new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f()));
-        
-        try {
-            AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
-            this.insertCellInWorld(mo);
-        } catch (java.lang.Exception excp) {
-            logger.severe("Unable to load WFS into world: " + excp.toString());
-        }
+        new WFSLoader().load();
     }
     
     /**

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
@@ -32,15 +31,11 @@ import com.sun.sgs.app.PeriodicTaskHandle;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.TaskManager;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -56,8 +51,6 @@ import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.cell.CellListMO.ListInfo;
-import org.jdesktop.wonderland.server.cell.CellMO.SpaceInfo;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -700,7 +693,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getCellID(),
             parent,
             cell.getLocalTransform(null),
-            cell.getClientSetupData(null, capabilities),
+            cell.getClientStateData(null, capabilities),
             cell.getName()
             
             
@@ -724,7 +717,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getCellID(),
             parent,
             cell.getLocalTransform(null),
-            cell.getClientSetupData(null, capabilities),
+            cell.getClientStateData(null, capabilities),
             cell.getName()
             
             
@@ -796,7 +789,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cellMO.getCellID(),
             parentID,
             cellMO.getLocalTransform(null),
-            cellMO.getClientSetupData(null, capabilities),
+            cellMO.getClientStateData(null, capabilities),
             cellMO.getName()
             );
     }

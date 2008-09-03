@@ -20,12 +20,10 @@ package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -35,10 +33,10 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.state.BasicCellState;
 
 /**
  * A basic implementation of core cell cache features. This is a convenience class
@@ -105,9 +103,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          BoundingVolume localBounds, 
                          CellID parentCellID, 
                          CellTransform cellTransform, 
-                         CellSetup setup,
+                         BasicCellState setup,
                          String cellName) {
-//        logger.info("-----> creating cell "+className+" "+cellId);
+        logger.info("-----> creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
             return null;     // Instantiation failed, error has already been logged
@@ -125,7 +123,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
         cell.setLocalBounds(localBounds);
         cell.setLocalTransform(cellTransform);
-//        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
+        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
 
         synchronized(cells) {
             cells.put(cellId, cell);

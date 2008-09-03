@@ -26,19 +26,16 @@ import org.jdesktop.wonderland.client.cell.view.ClientView;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
-import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.BasicCellState;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageList;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * Handler for Cell cache information
@@ -181,7 +178,7 @@ public class CellCacheConnection extends BaseConnection {
                                BoundingVolume localBounds,
                                CellID parentCellID,
                                CellTransform cellTransform,
-                               CellSetup setup,
+                               BasicCellState setup,
                                String cellName);
         /**
          * Unload the cell. This removes the cell from memory but will leave
