@@ -1,0 +1,10 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<!-- Testing sweeting for the tools/ directory -->
+<suite name="Tools-Suite" verbose="1" >
+    <test name="WFS-Regression">
+        <packages>
+            <package name="org.jdesktop.wonderland.wfs.test" />
+        </packages>
+    </test>
+</suite>

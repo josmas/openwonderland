@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-webserver" default="all" basedir=".">
+    <property name="top.dir" location="../.."/>
+    <property name="current.dir" location="."/>
+    <property name="web.import.dir" location="${top.dir}/web/build-tools/import"/>
+        
+    <!-- Use my-build.properties to override default values in build.properties.
+         You can specify an alternate build.properties override file by
+         running with "ant -Dbuild.properties.file=<file>" -->
+    <property name="build.properties.file" value="my.build.properties"/>
+    <property file="${build.properties.file}"/>
+    <property file="build.properties"/>
+    <property name="web.src" value="org/jdesktop/wonderland/webserver"/>
+    
+    <import file="${web.import.dir}/web-common.xml"/>
+    
+    <target name="build" depends="-do-compile-server"/>
+    
+    <target name="-declare-ant-task">
+         <taskdef name="listfiles"
+                  classname="org.jdesktop.wonderland.webserver.ant.ListFilesTask"
+                  classpath="${build.classes.dir}"/>
+
+    </target>
+    
+    <target name="jar" depends="build, -declare-ant-task">   
+        <mkdir dir="${build.dir}/lib"/>
+        
+        <!-- create a jar file with the AppServer launching classes -->
+        <jar destfile="${build.dir}/lib/wonderland-webserver.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="**"/>
+                <exclude name="org/jdesktop/wonderland/webserver/ant/**"/>
+                <exclude name="org/jdesktop/wonderland/webserver/launcher/**"/>
+            </fileset>
+        </jar>
+        
+        <jar destfile="${build.dir}/lib/Wonderland.jar">
+            <!-- classes -->
+            <fileset dir="${build.classes.dir}" >
+                <include name="org/jdesktop/wonderland/webserver/launcher/**"/>
+            </fileset>
+            
+            <!-- files that are needed for the web server classpath -->
+            <zipfileset dir="lib" prefix="webserver"/>
+            <zipfileset file="${build.dir}/lib/wonderland-webserver.jar" prefix="webserver"/>
+            <zipfileset dir="${top.dir}/tools/build/current/debug/lib" prefix="webserver"/>
+            <zipfileset dir="${top.dir}/lib/jaxb" prefix="webserver"/>
+            <zipfileset dir="${top.dir}/web/lib/restlib" prefix="webserver"/>
+            <zipfileset dir="${top.dir}/web/lib/apache" prefix="webserver"/>
+            
+            <!-- wars to deploy -->
+            <zipfileset dir="${top.dir}/web/wfs/dist" prefix="deploy"/>
+            <zipfileset dir="${top.dir}/web/modules/dist" prefix="deploy"/>
+            
+            <manifest>
+                <attribute name="Main-Class" value="org.jdesktop.wonderland.webserver.launcher.WebServerLauncher"/>
+            </manifest>
+        </jar>
+        
+        <!-- list files in the jar in the deploy and webserver category
+             ant generate a file that can be added to META-INF, so we
+             can read the list of jars from a resource -->
+        <mkdir dir="${build.dir}/tmp/META-INF"/>
+        
+        <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="deploy" 
+                   output="${build.dir}/tmp/META-INF/deploy.jars"/>
+        <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="webserver" 
+                   output="${build.dir}/tmp/META-INF/webserver.jars"/>
+                   
+        <jar destfile="${build.dir}/lib/Wonderland.jar" update="true">
+            <fileset dir="${build.dir}/tmp"/>
+        </jar>
+        
+        <delete dir="${build.dir}/tmp"/>
+    </target>
+    
+    <target name="run" depends="jar">
+        <java jar="${build.dir}/lib/Wonderland.jar"/>
+    </target>
+    
+    <target name="clean" depends="-do-clean"/>
+</project>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="dist" name="wonderland-modules">
+    <!-- load properties -->
+    <property file="my.build.properties"/>
+    <property file="build.properties"/>
+    
+    <!-- all projects in common directories -->
+    <fileset dir="src" id="common.projects">
+        <include name="**/common/**/build.xml"/>
+    </fileset>
+    
+    <!-- all projects not in common directories -->
+    <fileset dir="src" id="noncommon.projects">
+        <include name="**/build.xml"/>
+        <exclude name="**/common/**/build.xml"/>
+    </fileset>
+    
+    <!-- all projects -->
+    <fileset dir="src" id="all.projects">
+        <include name="**/build.xml"/>
+    </fileset>
+    
+    <!-- setup -->
+    <target name="init">
+    </target>
+    
+    <!-- build all subprojects -->
+    <target name="compile" depends="init">
+        <!-- first build the common directories, since other modules
+             might depend on those -->
+        <build-subprojects fileset="common.projects" target="compile"/>
+        
+        <!-- now build everything else -->
+        <build-subprojects fileset="noncommon.projects" target="compile"/>
+    </target>
+    
+    <!-- jar all subprojects -->
+    <target name="jar" depends="compile">
+        <build-subprojects fileset="all.projects" target="jar"/>
+    </target>
+    
+    <!-- copy sub-project jar files to dist directory -->
+    <target name="dist" depends="jar">
+        <!-- create dist client and server directories -->
+        <mkdir dir="dist"/>
+        <mkdir dir="dist/client"/>
+        <mkdir dir="dist/server"/>
+        
+        <!-- copy all client jars -->
+        <copy todir="dist/client">
+            <fileset dir="src">
+                <include name="**/dist/client/*.jar"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </copy>
+        
+        <!-- copy all server jars -->
+        <copy todir="dist/server">
+            <fileset dir="src">
+                <include name="**/dist/server/*.jar"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </copy>
+        
+    </target>
+    
+    <!-- clean all sub-projects -->
+    <target name="clean">
+        <!-- delete dist directory -->
+        <delete dir="dist" failonerror="false"/>
+        
+        <!-- clean sub-projects -->
+        <build-subprojects fileset="all.projects" target="clean"/>
+        
+    </target>
+    
+    <!-- macro to iterate across all subprojects -->
+    <macrodef name="build-subprojects">
+        <!-- the reference id of the fileset to iterate over -->
+        <attribute name="fileset"/>
+        
+        <!-- the build target to run -->
+        <attribute name="target"/>
+        <sequential>
+            <subant target="@{target}" inheritall="false">
+                <fileset refid="@{fileset}"/>
+            </subant>
+        </sequential>
+    </macrodef>
+</project>

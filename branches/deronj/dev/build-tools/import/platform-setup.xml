@@ -1,0 +1,172 @@
+<project basedir="." default="..." name="platform-setup">
+
+    <!-- Suck in all the environment variables (prefixed by env) -->
+    <property environment="env"/>
+
+    <!--
+	Are we building on Java6 or Java5 platform ?
+	We need to distinguish this mainly for the AWT toolkit
+    -->
+    <available classname="java.io.Console" property="build.java6"/>
+
+    <!-- ========== determine platform ========== -->
+    <condition property="system.type" value="windows-x86">
+	<os family="windows" arch="x86"/>
+    </condition>
+
+    <condition property="system.type" value="linux-i386">
+	<os name="linux" arch="i386"/>
+    </condition>
+
+    <condition property="system.type" value="linux-amd64">
+	<os name="linux" arch="amd64"/>
+    </condition>
+
+    <condition property="system.type" value="sunos-x86">
+	<os name="SunOS" arch="x86"/>
+    </condition>
+
+    <condition property="system.type" value="macos-x86">
+	<os name="Mac OS X" arch="i386"/>
+    </condition>
+
+    <condition property="system.type" value="macos-ppc">
+	<os name="Mac OS X" arch="ppc"/>
+    </condition>
+    
+    <property name="xremwin.webstart.prefix" value="xremwin-webstart"/>
+
+    <!-- setup platform properties -->
+    <switch value="${system.type}">
+	<!-- TODO: win32 should be renamed as windows -->
+	<case value="windows-x86">
+	    <property name="ostype" value="win32"/>
+	    <property name="arch" value="i686"/>
+
+	    <!-- TODO: Why is the arch i686 but we use i586 here ? -->
+	    <property name="platform" value="windows-i586-${build.comp}"/>
+	    <property name="platform-supports-x" value="false"/>
+
+	    <property name="sgs.platform.lib" value="win32-x86"/>
+	    <property name="yjp.platform.dir" value="win32"/>
+
+	    <property name="env.path.name" value="Path"/>
+	    <property name="env.path.value" value="${env.Path}"/>
+            
+            <property name="voice.vm" value="-client"/>
+	</case>
+
+	<case value="linux-i386">
+	    <property name="ostype" value="linux"/>
+	    <property name="arch" value="i686"/>
+	    <property name="platform-supports-x" value="true"/>
+	    <property name="platform-supports-x.set" value="true"/>
+
+	    <property name="sgs.platform.lib" value="linux-x86"/>
+	    <property name="yjp.platform.dir" value="linux-x86-32"/>
+	    <property name="xremwin.webstart.jar" value="${xremwin.webstart.prefix}-linux-i386.jar"/>
+
+	    <property name="env.path.name" value="LD_LIBRARY_PATH"/>
+	    <property name="env.path.value" value="${env.LD_LIBRARY_PATH}"/>
+            
+            <property name="voice.vm" value="-server"/>
+	</case>
+
+	<case value="linux-amd64">
+	    <property name="ostype" value="linux"/>
+	    <!-- Emulate i686 build if we are not using a 64-bit jvm -->
+	    <condition property="arch" value="x86_64" else="i686">
+		<or>
+		    <available file="${java.home}/jre/lib/amd64"/>
+		    <available file="${java.home}/lib/amd64"/>
+		</or>
+	    </condition>
+	    <property name="platform-supports-x" value="true"/>
+	    <property name="platform-supports-x.set" value="true"/>
+
+	    <property name="sgs.platform.lib" value="linux-x86_64"/>
+	    <property name="yjp.platform.dir" value="linux-amd64"/>
+	    <property name="xremwin.webstart.jar" value="${xremwin.webstart.prefix}-amd-64.jar"/>
+
+	    <property name="env.path.name" value="LD_LIBRARY_PATH"/>
+	    <property name="env.path.value" value="${env.LD_LIBRARY_PATH}"/>
+            
+            <property name="voice.vm" value="-server"/>
+	</case>
+
+	<case value="sunos-x86">
+	    <property name="ostype" value="solaris"/>
+	    <property name="arch" value="i86pc"/>
+	    <property name="platform-supports-x" value="true"/>
+	    <property name="platform-supports-x.set" value="true"/>
+
+	    <property name="sgs.platform.lib" value="solaris-x86"/>
+	    <property name="yjp.platform.dir" value="solaris-x86-32"/>
+	    <property name="xremwin.webstart.jar" value="${xremwin.webstart.prefix}-solaris-x86.jar"/>
+
+	    <property name="env.path.name" value="LD_LIBRARY_PATH"/>
+	    <property name="env.path.value" value="${env.LD_LIBRARY_PATH}"/>
+            
+            <property name="voice.vm" value="-server"/>
+	</case>
+
+	<case value="macos-x86">
+	    <property name="ostype" value="macosx"/>
+	    <property name="arch" value="i386"/>
+	    <property name="platform-supports-x" value="false"/>
+
+	    <property name="sgs.platform.lib" value="macosx-x86"/>
+	    <property name="yjp.platform.dir" value="mac"/>
+
+	    <property name="env.path.name" value="DYLD_LIBRARY_PATH"/>
+	    <property name="env.path.value" value="${env.DYLD_LIBRARY_PATH}"/>
+            
+            <property name="voice.vm" value="-server"/>
+        </case>
+
+        <case value="macos-ppc">
+	    <property name="ostype" value="macosx"/>
+	    <property name="arch" value="ppc"/>
+	    <property name="platform-supports-x" value="false"/>
+
+	    <property name="sgs.platform.lib" value="macosx-ppc"/>
+	    <property name="yjp.platform.dir" value="mac"/>
+
+	    <property name="env.path.name" value="DYLD_LIBRARY_PATH"/>
+	    <property name="env.path.value" value="${env.DYLD_LIBRARY_PATH}"/>
+            
+            <property name="voice.vm" value="-server"/>
+        </case>
+        
+	<default>
+	    <fail message="Platform ${system.type} not supported!"/>
+	</default>
+    </switch>
+
+    <property name="wl.xapps" value="${platform-supports-x}"/>
+
+    <property name="voicelib-jar" value="voicelib.jar"/>
+
+    <property name="voicelib-filter" value=""/>
+
+    <if>
+	<istrue value="${voicebridge.enabled}"/>
+	<then>
+	    <property name="voicebridge.enabled.set" value="true"/>
+	</then>
+	<else>
+	    <property name="voicebridge.enabled.set" value="false"/>
+	</else>
+    </if>
+
+    <if>
+	<istrue value="${registrar.timeout}"/>
+	<then>
+	    <property name="registrar.timeout.set" value="true"/>
+	</then>
+	<else>
+	    <property name="registrar.timeout.set" value="false"/>
+	</else>
+    </if>
+
+</project>

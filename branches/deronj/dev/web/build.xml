@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-web" default="all" basedir=".">
+    <target name="all" depends="build, jar"/>
+    
+    <target name="build">
+    </target>
+    
+    <target name="jar">
+    </target>
+    
+    <target name="clean">
+    </target>
+</project>
