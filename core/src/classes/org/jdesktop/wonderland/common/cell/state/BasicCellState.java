@@ -15,29 +15,15 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.setup;
+package org.jdesktop.wonderland.common.cell.state;
 
-import org.jdesktop.wonderland.common.cell.*;
-import java.net.URL;
+import java.io.Serializable;
 
 /**
- * Superclass for all setup classes of wfs created cells
+ * The BasicCellState class is the base class of all state information
+ * communicated between the client and Darkstar server nodes.
  *
- * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
-public abstract class WfsCellMOSetup implements CellMOSetup {
-
-    private URL wfsURL=null;
-    
-    /**
-     * Returns the URL from which this
-     * @return
-     */
-    public URL getWfsURL() {
-        return wfsURL;
-    }
-    
-    public void setWfsURL(URL wfsURL) {
-        this.wfsURL = wfsURL;
-    }
+public abstract class BasicCellState implements Serializable {
 }

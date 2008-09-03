@@ -18,24 +18,19 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.common.cell.state.BasicCellState;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -473,7 +468,7 @@ public class Cell {
      * 
      * @param setupData
      */
-    public void setupCell(CellSetup setupData) {
+    public void setupCell(BasicCellState setupData) {
         
     }
     
@@ -486,7 +481,7 @@ public class Cell {
      * 
      * @param updateData
      */
-    public void reconfigureCell(CellSetup updateData) {
+    public void reconfigureCell(BasicCellState updateData) {
         
     }
     

@@ -23,8 +23,8 @@ import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.BasicCellState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
 /**
@@ -39,17 +39,18 @@ public class WFSCellMO extends CellMO implements ManagedObject, Serializable {
     /* The prefix of the public binding name to find this GLO later */
     public static final String WFS_CELL_GLO = "WFS_CELL_GLO_";
     
+    /* The name of the root */
+    private String rootName = null;
+    
     /** Constructor */
-    public WFSCellMO() {
+    public WFSCellMO(String rootName) {
         /*
          * These bounds may not entirely be correct -- a WFSCellGLO should simply
          * assume the bounds of its parent.
          */
         super(new BoundingBox(new Vector3f(), Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
                 new CellTransform(null, null, null));
-        
-        /* Load the world initially */
-        //this.reload(true);
+        this.rootName = rootName;
     }
     
     /**
@@ -59,7 +60,7 @@ public class WFSCellMO extends CellMO implements ManagedObject, Serializable {
      * @return The ManagedObject binding name
      */
     public String getBindingName() {
-        return WFSCellMO.WFS_CELL_GLO + this.getCellID().toString();
+        return WFSCellMO.WFS_CELL_GLO + this.rootName;
     }
  
     @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
@@ -67,7 +68,7 @@ public class WFSCellMO extends CellMO implements ManagedObject, Serializable {
     }
     
     @Override
-    public CellSetup getClientSetupData(ClientSession clientSession,ClientCapabilities capabilities) {
+    public BasicCellState getClientStateData(ClientSession clientSession,ClientCapabilities capabilities) {
         return null;
     }
 }
