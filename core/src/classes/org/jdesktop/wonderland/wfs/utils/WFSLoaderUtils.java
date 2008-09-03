@@ -22,8 +22,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.wfs.loader.WFSLoader;
-import org.jdesktop.wonderland.wfs.util.WFSCellList;
-import org.jdesktop.wonderland.wfs.util.WFSRoots;
 
 
 /**
