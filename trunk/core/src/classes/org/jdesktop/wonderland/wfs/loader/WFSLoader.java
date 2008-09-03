@@ -31,12 +31,12 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.wfs.cell.CellMOFactory;
 import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
-import org.jdesktop.wonderland.wfs.util.WFSCellList;
-import org.jdesktop.wonderland.wfs.util.WFSCellList.Cell;
-import org.jdesktop.wonderland.wfs.util.WFSRoots;
+import org.jdesktop.wonderland.wfs.utils.WFSCellList;
+import org.jdesktop.wonderland.wfs.utils.WFSCellList.Cell;
 import org.jdesktop.wonderland.wfs.utils.WFSCellMap;
 import org.jdesktop.wonderland.wfs.utils.WFSLoaderDefs;
 import org.jdesktop.wonderland.wfs.utils.WFSLoaderUtils;
+import org.jdesktop.wonderland.wfs.utils.WFSRoots;
 
 
 
