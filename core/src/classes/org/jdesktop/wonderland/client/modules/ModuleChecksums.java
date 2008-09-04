@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.checksum;
+package org.jdesktop.wonderland.client.modules;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -45,7 +45,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * The RepositoryChecksums class represents a collection of checkums for a given
+ * The ModuleChecksums class represents a collection of checkums for a given
  * repository in one file. It can be generated automatically by the static
  * generate() utility method.
  * <p>
@@ -56,7 +56,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="repository-checksums")
-public class RepositoryChecksums {
+public class ModuleChecksums {
     /* The SHA-1 checksum algorithm */
     public final static String SHA1_CHECKSUM_ALGORITHM = "SHA-1";
     
@@ -82,9 +82,9 @@ public class RepositoryChecksums {
     static {
         try {
             JAXBContext jc = JAXBContext.newInstance(Checksum.class);
-            RepositoryChecksums.unmarshaller = jc.createUnmarshaller();
-            RepositoryChecksums.marshaller = jc.createMarshaller();
-            RepositoryChecksums.marshaller.setProperty("jaxb.formatted.output", true);
+            ModuleChecksums.unmarshaller = jc.createUnmarshaller();
+            ModuleChecksums.marshaller = jc.createMarshaller();
+            ModuleChecksums.marshaller.setProperty("jaxb.formatted.output", true);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -121,7 +121,7 @@ public class RepositoryChecksums {
     }
     
     /** Default constructor */
-    public RepositoryChecksums() {
+    public ModuleChecksums() {
     }
     
     /**
@@ -144,14 +144,14 @@ public class RepositoryChecksums {
     
     /**
      * Takes the input reader of the XML file and instantiates an instance of
-     * the RepositoryChecksums class
+     * the ModuleChecksums class
      * <p>
      * @param r The input reader of the version XML file
-     * @throw ClassCastException If the input file does not map to RepositoryChecksums
+     * @throw ClassCastException If the input file does not map to ModuleChecksums
      * @throw JAXBException Upon error reading the XML file
      */
-    public static RepositoryChecksums decode(Reader r) throws JAXBException {
-        RepositoryChecksums rc = (RepositoryChecksums)RepositoryChecksums.unmarshaller.unmarshal(r); 
+    public static ModuleChecksums decode(Reader r) throws JAXBException {
+        ModuleChecksums rc = (ModuleChecksums)ModuleChecksums.unmarshaller.unmarshal(r); 
         
         /* Convert metadata to internal representation */
         if (rc.checksums != null) {
@@ -169,7 +169,7 @@ public class RepositoryChecksums {
     }
     
     /**
-     * Writes the RepositoryChecksums class to an output writer.
+     * Writes the ModuleChecksums class to an output writer.
      * <p>
      * @param w The output writer to write to
      * @throw JAXBException Upon error writing the XML file
@@ -188,11 +188,11 @@ public class RepositoryChecksums {
         else {
             this.checksums = null;
         }
-        RepositoryChecksums.marshaller.marshal(this, w);
+        ModuleChecksums.marshaller.marshal(this, w);
     }
 
     /**
-     * Writes the RepositoryChecksums class to an output stream.
+     * Writes the ModuleChecksums class to an output stream.
      * <p>
      * @param os The output stream to write to
      * @throw JAXBException Upon error writing the XML file
@@ -211,7 +211,7 @@ public class RepositoryChecksums {
         else {
             this.checksums = null;
         }
-        RepositoryChecksums.marshaller.marshal(this, os);
+        ModuleChecksums.marshaller.marshal(this, os);
     }
     
     /**
@@ -230,16 +230,16 @@ public class RepositoryChecksums {
      * @throws NoSuchAlgorithmException If the given checksum algorithm is invalid
      * @throws PatternSynaxException If either includes or excludes is invalid
      */
-    public static RepositoryChecksums generate(File root, String algorithm,
+    public static ModuleChecksums generate(File root, String algorithm,
             String[] includes, String excludes[]) throws NoSuchAlgorithmException {
         
         /* Try creating hte message digest, throws NoSuchAlgorithmException */
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         
         /* Recursively generate checksums, then convert list to an array */
-        HashMap<String, Checksum> list = RepositoryChecksums.generateChecksumForDirectory(
+        HashMap<String, Checksum> list = ModuleChecksums.generateChecksumForDirectory(
                 root, root, digest, includes, excludes);
-        RepositoryChecksums rc = new RepositoryChecksums();
+        ModuleChecksums rc = new ModuleChecksums();
         rc.setChecksums(list);
         return rc;
     }
@@ -263,7 +263,7 @@ public class RepositoryChecksums {
         for (File file : files) {
             /* If a directory, then recursively descend and append */
             if (file.isDirectory() == true) {
-                HashMap<String, Checksum> rList = RepositoryChecksums.generateChecksumForDirectory(
+                HashMap<String, Checksum> rList = ModuleChecksums.generateChecksumForDirectory(
                         root, file, digest, includes, excludes);
                 list.putAll(rList);
             }
@@ -272,7 +272,7 @@ public class RepositoryChecksums {
                  * If a normal, non-hidden file, then check whether the name
                  * is included or excluded.
                  */
-                if (RepositoryChecksums.isAcceptable(file.getName(), includes, excludes) == true) {
+                if (ModuleChecksums.isAcceptable(file.getName(), includes, excludes) == true) {
                     try {
                         byte[] buf = new byte[1024 * 1024];
                         int bytesRead = 0;

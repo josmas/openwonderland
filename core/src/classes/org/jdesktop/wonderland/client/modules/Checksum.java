@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.checksum;
+package org.jdesktop.wonderland.client.modules;
 
 import java.io.Reader;
 import java.io.Writer;

@@ -70,6 +70,8 @@ public class Cell {
     public Cell(CellID cellID, CellCache cellCache) {
         this.cellID = cellID;
         this.cellCache = cellCache;
+        
+        logger.info("Cell: Creating new Cell ID=" + cellID);
     }
     
     /**
