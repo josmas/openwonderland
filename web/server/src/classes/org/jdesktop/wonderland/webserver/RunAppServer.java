@@ -40,7 +40,11 @@ public class RunAppServer {
         String line;
         while ((line = in.readLine()) != null) {
             File f = WebUtil.extractJar(line, deployDir);
-            as.deploy(f);
+            try {
+                as.deploy(f);
+            } catch (Exception excp) {
+                // ignore any exception and continue
+            }
         }
     }
 
