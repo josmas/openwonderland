@@ -44,7 +44,6 @@
             <!-- files that are needed for the web server classpath -->
             <zipfileset dir="lib" prefix="webserver"/>
             <zipfileset file="${build.dir}/lib/wonderland-webserver.jar" prefix="webserver"/>
-            <zipfileset dir="${top.dir}/tools/build/current/debug/lib" prefix="webserver"/>
             <zipfileset dir="${top.dir}/lib/jaxb" prefix="webserver"/>
             <zipfileset dir="${top.dir}/web/lib/restlib" prefix="webserver"/>
             <zipfileset dir="${top.dir}/web/lib/apache" prefix="webserver"/>
