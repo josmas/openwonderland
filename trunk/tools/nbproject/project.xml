@@ -61,7 +61,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../ext/common/jersey/activation.jar:../ext/common/jersey/jaxb-api.jar:../ext/common/jersey/jaxb-impl.jar:../ext/common/jersey/jaxb-xjc.jar:../ext/common/jersey/jaxb1-impl.jar:../ext/common/jersey/jsr173_1.0_api.jar:../ext/common/testng/testng-5.8-jdk15.jar</classpath>
+                <classpath mode="compile">../lib/jaxb/activation.jar:../lib/jaxb/jaxb-api.jar:../lib/jaxb/jaxb-impl.jar:../lib/jaxb/jaxb-xjc.jar:../lib/jaxb/jaxb1-impl.jar:../lib/jaxb/jsr173_1.0_api.jar</classpath>
                 <built-to>build/current/debug/lib/wonderland-tools.jar</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>
