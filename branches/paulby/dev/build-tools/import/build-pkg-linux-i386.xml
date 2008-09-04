@@ -1,0 +1,61 @@
+<project basedir="." default="..." name="wonderland.build-pkg-linux-i386">
+    <dirname property="imported.basedir" file="${ant.file.build-pkg-linux-i386}"/>
+
+    <property name="release.dpkg.dir" location="${release.dir}/dpkg"/>
+
+    <target name="pkg-platform" depends="pkg-stage" description="Create debian package">              
+        <echo message="Debian packages are not functioning correctly, disabled until fixed"/>
+        <!-- <antcall target="pkg-deb"/> -->
+    </target>
+    
+    <target name="pkg-deb" depends="pkg-stage" description="Create debian package">
+        <mkdir dir="${release.dpkg.dir}/DEBIAN"/>
+        <mkdir dir="${release.dpkg.dir}/usr/share/lg3d-wonderland"/>
+
+        <chmod dir="${release.dpkg.dir}" perm="755"/>
+
+        <copy todir="${release.dpkg.dir}/DEBIAN" overwrite="true">
+	    <fileset dir="${build-dpkg.dir}/DEBIAN">
+		<exclude name="**/CVS"/>
+	    </fileset>
+            <filterset>
+                <filter token="VERSION" value="${build.version}"/>
+                <filter token="OS_ARCH" value="i386"/>
+            </filterset>
+	</copy>
+
+        <copy todir="${release.dpkg.dir}">
+	    <fileset dir="${build-dpkg.dir}/misc">
+		<exclude name="**/CVS"/>
+	    </fileset>
+	</copy>
+
+	<!-- Concat the combined license file to the templates file -->
+	<tempfile property="lic.template"/>
+	<copy file="${release.platform.dir}/ALL-LICENSES.txt" tofile="${lic.template}"/>
+	<replaceregexp file="${lic.template}" match="^[ ]*$" replace="." byline="true"/>
+	<replaceregexp file="${lic.template}" match="^" replace=" " byline="true"/>
+	<concat append="true" destfile="${release.dpkg.dir}/DEBIAN/templates">
+	    <fileset file="${lic.template}"/>
+	</concat>
+	<delete file="${lic.template}"/>
+
+        <chmod perm="a+rx" dir="${release.dpkg.dir}/DEBIAN" includes="post*,pre*,config"/>
+        
+	<copy todir="${release.dpkg.dir}/usr/share/lg3d-wonderland">
+	    <fileset dir="${release.platform.dir}"
+			includes="**/*" excludes="**/*-bundle-readme.txt"/>
+	</copy>
+        <chmod perm="a+rx" dir="${release.dpkg.dir}/usr/share/lg3d-wonderland/bin" includes="*"/>
+
+        <exec executable="dpkg">
+            <arg value="-b"/>
+            <arg value="${release.dpkg.dir}"/>
+            <arg value="${release.pkg.filename}.deb"/>
+        </exec>
+    </target>
+
+    <target name="pkg-platform-clean">
+	<delete dir="${release.dpkg.dir}"/>
+    </target>
+</project>

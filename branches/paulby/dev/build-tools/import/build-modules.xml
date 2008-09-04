@@ -1,0 +1,57 @@
+<project basedir="." default="..." name="wonderland.build-modules">
+    
+    <pathconvert property="module-client-compile.classpath">
+        <path path="${wonderland-client-compile.classpath}"/>
+        <path location="${build.classes.dir}"/>
+    </pathconvert>
+    
+    <pathconvert property="module-server-compile.classpath">
+        <path path="${wonderland-server-compile.classpath}"/>
+        <path location="${build.classes.dir}"/>
+    </pathconvert>
+    
+    <macrodef name="iterate">
+        <attribute name="target"/>
+        <sequential>
+            <subant target="@{target}" inheritall="false">
+                <fileset dir="${modules.dir}" includes="*/build.xml"/>
+                <property name="wonderland-client.classpath" value="${module-client-compile.classpath}"/>
+                <property name="wonderland-server.classpath" value="${module-server-compile.classpath}"/>
+                <property name="module.build-from-master" value="true"/>
+            </subant>
+        </sequential>
+    </macrodef>
+    
+    <target name="jar-modules-client" if="use.modules">
+        <echo message="jar modules client"/>
+        <iterate target="jar-client"/>
+    </target>
+    
+    <target name="jar-modules-server" if="use.modules">
+        <iterate target="jar-server"/>
+    </target>
+    
+    <target name="modules-client-classpath" if="use.modules">
+        <!-- we do this in a target so the path will be set dynamically at
+             run-time (after the jar phase).  Otherwise, jar files created
+             by modules will not be included in the classpath. -->
+        <fileset dir="${modules.dir}" id="module.client.jars">
+            <include name="*/dist/client/*.jar"/>
+	</fileset>
+        <pathconvert property="module-client.classpath" refid="module.client.jars" />
+    </target>
+    
+    <target name="modules-server-classpath" if="use.modules">
+        <!-- we do this in a target so the path will be set dynamically at
+             run-time (after the jar phase).  Otherwise, jar files created
+             by modules will not be included in the classpath. -->
+        <fileset dir="${modules.dir}" id="module.server.jars">
+            <include name="*/dist/server/*.jar"/>
+	</fileset>
+        <pathconvert property="module-server.classpath" refid="module.server.jars" />
+    </target>
+    
+    <target name="clean-modules" if="use.modules">
+        <iterate target="clean"/>
+    </target>
+</project>
