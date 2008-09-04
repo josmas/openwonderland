@@ -245,8 +245,11 @@ get_jogl()
 
     /bin/rm -f joal-*.zip
 
-    wget -qN https://jogl.dev.java.net
-    files=`grep \.zip index.html | cut -d= -f2 | cut -d\> -f1 | egrep "linux-i586|macosx-universal|windows-i586"`
+    wget -qN 'https://jogl.dev.java.net/servlets/ProjectDocumentList?folderID=9260&expandFolder=9260&folderID=0'
+    mv 'ProjectDocumentList?folderID=9260&expandFolder=9260&folderID=0' index.html
+
+    #wget -qN https://jogl.dev.java.net
+    files=`grep \.zip index.html | cut -d= -f2 | cut -d\> -f1 | egrep "linux-i586|macosx-universal|windows-i586|solaris-i586"`
     for f in $files
     do
 	wgetf $f
@@ -256,7 +259,7 @@ get_jogl()
 unpack_jogl()
 {
     sol=0
-    for os in windows linux macosx
+    for os in windows linux macosx solaris
     do
 	/bin/rm -rf $tmpdir
 	mkdir -p $tmpdir
