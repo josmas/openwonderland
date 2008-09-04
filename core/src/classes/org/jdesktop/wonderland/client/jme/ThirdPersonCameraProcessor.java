@@ -49,7 +49,6 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
     public void commit(ProcessorArmingCollection arg0) {
         synchronized(this) {
             if (commitRequired) {
-                System.out.println("Camera commit");
                 cameraNode.setLocalRotation(rotation);
                 cameraNode.setLocalTranslation(translation);
                 wm.nodeMoved(cameraNode);
@@ -69,7 +68,6 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
     public void viewMoved(CellTransform worldTransform) {
         synchronized(this) {
             translation = worldTransform.getTranslation(translation);
-            System.out.println("View moved "+translation);
             rotation = worldTransform.getRotation(rotation);
             
             Vector3f cameraTrans = rotation.mult(offset);

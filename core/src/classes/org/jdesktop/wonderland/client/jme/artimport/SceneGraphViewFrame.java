@@ -31,7 +31,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.RenderComponent;
 
 
 /**
@@ -57,7 +57,7 @@ public class SceneGraphViewFrame extends javax.swing.JFrame {
     }
     
     public void addEntity(Entity entity) {
-        Node sceneRoot = ((SceneComponent)entity.getComponent(SceneComponent.class)).getSceneRoot();
+        Node sceneRoot = ((RenderComponent)entity.getComponent(RenderComponent.class)).getSceneRoot();
         
         jTree1.setModel(new JmeTreeModel(sceneRoot));
     }

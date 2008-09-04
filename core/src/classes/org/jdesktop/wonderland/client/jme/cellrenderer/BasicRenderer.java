@@ -26,8 +26,9 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -58,9 +59,9 @@ public abstract class BasicRenderer implements CellRendererJME {
         
         rootNode = createSceneGraph(ret);
         
-        SceneComponent sc = new SceneComponent();
-        sc.setSceneRoot(rootNode);
-        ret.addComponent(SceneComponent.class, sc);
+        RenderComponent sc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+//        sc.setSceneRoot(rootNode);
+        ret.addComponent(RenderComponent.class, sc);
         
         return ret;        
     }

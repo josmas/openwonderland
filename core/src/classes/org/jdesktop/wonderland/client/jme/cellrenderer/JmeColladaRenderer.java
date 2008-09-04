@@ -28,6 +28,9 @@ import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import com.jmex.model.collada.ColladaImporter;
+import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
@@ -37,12 +40,13 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
- *
+ * A cell renderer that uses the JME Collada loader
+ * 
  * @author paulby
  */
-public class StaticModelRenderer extends BasicRenderer {
+public class JmeColladaRenderer extends BasicRenderer {
     
-    public StaticModelRenderer(Cell cell) {
+    public JmeColladaRenderer(Cell cell) {
         super(cell);
     }
     
@@ -64,37 +68,33 @@ public class StaticModelRenderer extends BasicRenderer {
 
         Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
-        color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        return createFloorEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);        
+        return loadCollada(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState);        
     }
 
-    public Node createFloorEntity(String name, float xoff, float yoff, float zoff, 
-            ZBufferState buf, LightState ls, ColorRGBA color) {
+    public Node loadCollada(String name, float xoff, float yoff, float zoff, 
+            ZBufferState buf, LightState ls) {
         MaterialState matState = null;
         
-        Node ret = new Node();
-        BoundingVolume b = cell.getLocalBounds();
-        float width;
-        float depth;
-        if (b instanceof BoundingBox) {
-            Vector3f extent = ((BoundingBox)b).getExtent(null);
-            width = extent.x*2;
-            depth = extent.z*2;
-        } else if (b instanceof BoundingSphere) {
-            width = ((BoundingSphere)b).getRadius();
-            depth = width;
-        } else {
-            logger.warning("Unsupported Bounds type "+b.getClass().getName());
-            width = depth = 5;
+        Node ret;
+
+        try {
+//            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/duck_triangulate.dae");
+            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/sphere2.dae");
+            System.out.println("Resource stream "+input);
+            ColladaImporter.load(input, "Test");
+            ret = ColladaImporter.getModel();
+            ColladaImporter.cleanUp();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error loading Collada file", e);
+            ret = new Node();
         }
         
-        Floor floor = new Floor("Floor", width, depth);
-        ret.attachChild(floor);
+        
         ret.setModelBound(new BoundingBox());
         ret.updateModelBound();
+        System.out.println("Triangles "+ret.getTriangleCount());
 
         matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
-        matState.setDiffuse(color);
 //        node.setRenderState(matState);
         ret.setRenderState(buf);
 //        node.setRenderState(ls);

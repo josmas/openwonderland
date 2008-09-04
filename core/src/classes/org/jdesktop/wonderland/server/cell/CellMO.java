@@ -82,7 +82,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
     private boolean isMovable=false;
-    private HashSet<ManagedReference<TransformChangeListenerMO>> transformChangeListeners=null;
+    private HashSet<TransformChangeListenerSrv> transformChangeListeners=null;
     
     /** Default constructor, used when the cell is created via WFS */
     public CellMO() {
@@ -661,8 +661,17 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param isMovable
      */
     public void setMovable(boolean isMovable) {
-        if (isLive()) 
-            throw new RuntimeException("Changing staic state of live cells is not currently supported");
+        if (this.isMovable = isMovable)
+            return;
+        
+        if (isLive()) {
+            if (!isMovable)
+                throw new RuntimeException("Changing state to isMovable=false is not currently supported");
+            
+            for(SpaceInfo spaceInfo : inSpaces) {
+                spaceInfo.getSpaceRef().getForUpdate().setCellDynamic(this, isMovable);
+            }
+        }
         
         this.isMovable = isMovable;
     }
@@ -734,21 +743,27 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     /**
      * Add a TransformChangeListener to this cell. The listener will be
-     * called for any changes to the cells transform
+     * called for any changes to the cells transform. The listener can either
+     * be a Serialized object, or an instance of ManagedReference. Both types
+     * are handled correctly.
+     * 
+     * Listeners should generally execute quickly, if they take a long time
+     * it is recommended that the listener schedules a new task to service
+     * the callback.
      * 
      * @param listener to add
      */
-    public void addTransformChangeListener(TransformChangeListenerMO listener) {
+    public void addTransformChangeListener(TransformChangeListenerSrv listener) {
         if (transformChangeListeners==null)
             transformChangeListeners = new HashSet();
-        transformChangeListeners.add(AppContext.getDataManager().createReference(listener));
+        transformChangeListeners.add(listener);
     }
     
     /**
      * Remove the specified listener.
      * @param listener to be removed
      */
-    public void removeTransformChangeListener(TransformChangeListenerMO listener) {
+    public void removeTransformChangeListener(TransformChangeListenerSrv listener) {
         transformChangeListeners.remove(listener);
     }
     
@@ -761,8 +776,13 @@ public abstract class CellMO implements ManagedObject, Serializable {
         CellTransform newLocal = (CellTransform) transform.clone(null);
         CellTransform newL2VW = (CellTransform) local2VWorld.clone(null);
         
-        for(final ManagedReference<TransformChangeListenerMO> listenerRef : transformChangeListeners) {
-            AppContext.getTaskManager().scheduleTask(new TransformChangeNotifierTask(listenerRef, thisRef, newLocal, local2VWorld));
+        for(TransformChangeListenerSrv listenerRef : transformChangeListeners) {
+            if (listenerRef instanceof ManagedReference) {
+                ((ManagedReference<TransformChangeListenerSrv>)listenerRef).get().transformChanged(thisRef, newLocal, newL2VW);
+            } else {
+                listenerRef.transformChanged(thisRef, newLocal, newL2VW);
+            }
+                
         }
     }
     

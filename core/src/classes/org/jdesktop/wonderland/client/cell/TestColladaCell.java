@@ -17,27 +17,34 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.client.jme.cellrenderer.JmeColladaRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
-import java.util.logging.Logger;
 
 /**
- * A cell that can move
- * 
- * TODO DELETE ME
+ * Client side cell for rendering JME content
  * 
  * @author paulby
- * @deprecated
  */
-class MovableCell extends Cell {
-//    private CellChannelConnection cellChannelConnection;
+public class TestColladaCell extends Cell {
     
-    private static Logger logger = Logger.getLogger(MovableCell.class.getName());
-//    private ArrayList<CellMoveListener> serverMoveListeners = null;
-    
-    public MovableCell(CellID cellID, CellCache cellCache) {
+    public TestColladaCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponent(this));
-        addComponent(new MovableComponent(this));
     }
+    
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        CellRenderer ret = null;
+        switch(rendererType) {
+            case RENDERER_2D :
+                // No 2D Renderer yet
+                break;
+            case RENDERER_JME :
+                ret= new JmeColladaRenderer(this);
+                break;                
+        }
+        
+        return ret;
+    }
+    
 
 }

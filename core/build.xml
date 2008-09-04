@@ -110,7 +110,8 @@
             </fileset>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.png"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.jpg"/>
-            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.properties"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.dae"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/jme/resources/**/*.properties"/>
          </jar>
      </target>
         
@@ -201,7 +202,7 @@
     <target name="run" depends="jar">
         <!--<java classname="org.jdesktop.wonderland.client.WorldClient" fork="true">-->
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
-            <jvmarg value="-Djava.library.path=${javaext.dir}/jme20/lib/lwjgl/native/${ostype}"/>
+            <!--<jvmarg value="-Djava.library.path=${javaext.dir}/jme20/lib/lwjgl/native/${ostype}"/>-->
             
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>

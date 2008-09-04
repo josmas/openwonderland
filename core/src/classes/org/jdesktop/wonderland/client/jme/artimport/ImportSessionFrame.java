@@ -63,7 +63,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.SceneComponent;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ClientManager;
@@ -680,7 +680,7 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         WorldManager wm = ClientContextJME.getWorldManager();
         
-        ZBufferState buf = (ZBufferState) wm.createRendererState(RenderState.RS_ZBUFFER);
+        ZBufferState buf = (ZBufferState) wm.getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
         buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
@@ -689,11 +689,11 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
         light.setLocation(new Vector3f(100, 100, 100));
         light.setEnabled(true);
-        LightState lightState = (LightState) wm.createRendererState(RenderState.RS_LIGHT);
+        LightState lightState = (LightState) wm.getRenderManager().createRendererState(RenderState.RS_LIGHT);
         lightState.setEnabled(true);
         lightState.attach(light);
 
-        MaterialState matState = (MaterialState) wm.createRendererState(RenderState.RS_MATERIAL);
+        MaterialState matState = (MaterialState) wm.getRenderManager().createRendererState(RenderState.RS_MATERIAL);
 //        matState.setDiffuse(color);
         rootBG.setRenderState(matState);
         rootBG.setRenderState(buf);
@@ -702,9 +702,9 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
                         
         Entity entity = new Entity(model.getOrigModel());
-        SceneComponent scene = new SceneComponent();
-        scene.setSceneRoot(rootBG);
-        entity.addComponent(SceneComponent.class,scene);
+        RenderComponent scene = wm.getRenderManager().createRenderComponent(rootBG);
+//        scene.getSceneRoot().attachChild(rootBG);
+        entity.addComponent(RenderComponent.class,scene);
         
         model.setEntity(entity);
         
