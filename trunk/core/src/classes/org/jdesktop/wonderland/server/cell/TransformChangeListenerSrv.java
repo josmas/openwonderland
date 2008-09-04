@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -27,12 +26,12 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * 
  * @author paulby
  */
-public interface TransformChangeListenerMO extends ManagedObject, Serializable {
+public interface TransformChangeListenerSrv extends Serializable {
 
     /**
      * Called when the cells transform has changed.
      * 
      * @param cell
      */
-    public void transformChanged(ManagedReference<CellMO> cellRef, CellTransform localTransform, CellTransform localToWorldTransform);
+    public void transformChanged(ManagedReference<CellMO> cellRef, final CellTransform localTransform, final CellTransform localToWorldTransform);
 }

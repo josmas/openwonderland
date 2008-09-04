@@ -41,7 +41,7 @@ public class CellListMO implements Serializable {
      * Add cell to this list, the list is actually a set so multiple adds
      * of the same cell only result in a single entry in the list.
      * 
-     * This method increments the list version field.
+     * This method updates the list timestamp
      * 
      * @param cell
      */

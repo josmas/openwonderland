@@ -35,7 +35,7 @@ public class LogControl {
     /** Creates a new instance of LogControl */
     public LogControl() {
         LogManager logManager = LogManager.getLogManager();
-        InputStream in = getClass().getResourceAsStream("resources/logging.properties");
+        InputStream in = getClass().getResourceAsStream("jme/resources/logging.properties");
         try {
             logManager.readConfiguration(in);
         } catch(IOException e) {

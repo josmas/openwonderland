@@ -19,26 +19,7 @@ package org.jdesktop.wonderland.client.jme;
 
 import com.jme.scene.Node;
 import com.jme.scene.CameraNode;
-import com.jme.scene.state.ZBufferState;
-import com.jme.light.PointLight;
-import com.jme.renderer.ColorRGBA;
-import com.jme.scene.state.LightState;
-import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
-import com.jme.scene.shape.Teapot;
-import com.jme.scene.shape.Box;
-import com.jme.bounding.BoundingBox;
-import com.jme.math.*;
-import org.jdesktop.mtgame.AWTEventListenerComponent;
-import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.FPSCameraProcessor;
 import org.jdesktop.mtgame.NodeListener;
-import org.jdesktop.mtgame.ProcessorCollectionComponent;
-import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.RotationProcessor;
-import org.jdesktop.mtgame.SceneComponent;
-import org.jdesktop.mtgame.Space;
 import org.jdesktop.mtgame.WorldManager;
 
 /**
@@ -46,11 +27,6 @@ import org.jdesktop.mtgame.WorldManager;
  */
 public class JmeClientMain {
     
-    /**
-     * The CameraNode
-     */
-    private static CameraNode cameraNode = null;
-        
     /**
      * The desired frame rate
      */
@@ -78,7 +54,7 @@ public class JmeClientMain {
         });
         
         processArgs(args);
-        worldManager.setDesiredFrameRate(desiredFrameRate);
+        worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
         
         createUI(worldManager);  
 //        createCameraEntity(worldManager);        

@@ -51,7 +51,7 @@ public class RoomTestRenderer extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         ColorRGBA color = new ColorRGBA();
 
-        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_ZBUFFER);
+        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
         buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
@@ -60,7 +60,7 @@ public class RoomTestRenderer extends BasicRenderer {
         light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
         light.setLocation(new Vector3f(100, 100, 100));
         light.setEnabled(true);
-        LightState lightState = (LightState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_LIGHT);
+        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
         lightState.setEnabled(true);
         lightState.attach(light);
 
@@ -113,7 +113,7 @@ public class RoomTestRenderer extends BasicRenderer {
         forceFieldNode.setLocalTranslation(xoff, zoff, zoff);
 
         //load a texture for the force field elements
-        TextureState ts = (TextureState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_TEXTURE);
+        TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_TEXTURE);
         
         Texture t = TextureManager.loadTexture(RoomTestRenderer.class.getClassLoader()
                           .getResource("org/jdesktop/wonderland/client/resources/jme/dirt.jpg"),

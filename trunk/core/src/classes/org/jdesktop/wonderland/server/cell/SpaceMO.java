@@ -24,6 +24,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.Collection;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.TimeManager;
 
 /**
@@ -95,6 +96,24 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
 //        System.out.println("Cell "+cell.getName()+" left space "+position);
     }
     
+    /**
+     * The cell isMovable state has changed, update the Space to represent 
+     * the change. Movable cells are dynamic, in that the cell is check regularly
+     * to determine if any changes have occured that need sending to the client.
+     * 
+     * @param cellMO the cellMO that has changed
+     * @param isMovable the new state of the cellMO
+     */
+    void setCellDynamic(CellMO cellMO, boolean isDynamic) {
+        if (isDynamic) {
+            // Cell was static, changing to dynamic
+            staticCellList.removeCell(cellMO);
+            dynamicCellList.addCell(cellMO);
+        } else {
+            throw new RuntimeException("Not Implemented");
+        }
+    }
+    
     void notifyCellTransformChanged(CellMO cell, long timestamp) {
         if (cell.isMovable()) {
             dynamicCellList.notifyCellTransformChanged(cell, timestamp);
@@ -112,16 +131,29 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
         
     }
     
-    public BoundingVolume getWorldBounds(BoundingVolume b) {
-        return worldBounds.clone(b);
+    /**
+     * Return the world bounds of this space
+     * 
+     * @param result
+     * @return
+     */
+    public BoundingVolume getWorldBounds(BoundingVolume result) {
+        return worldBounds.clone(result);
     }
     
     
-    public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results, CacheStats stats) {        
+    public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, 
+                                      BoundingVolume bounds, 
+                                      CellListMO results, 
+                                      CacheStats stats) {        
         return getDynamicCells(spaces, bounds, results, stats, 0L);
     }
     
-    public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results, CacheStats stats, long changedSince) {
+    public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, 
+                                      BoundingVolume bounds, 
+                                      CellListMO results, 
+                                      CacheStats stats, 
+                                      long changedSince) {
         
         if (results==null)
             results = new CellListMO();
@@ -135,7 +167,10 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
         return results;
     }
     
-    public CellListMO getStaticCells(Collection<ManagedReference<SpaceMO>> spaces, BoundingVolume bounds, CellListMO results, CacheStats stats) {
+    public CellListMO getStaticCells(Collection<ManagedReference<SpaceMO>> spaces, 
+                                     BoundingVolume bounds, 
+                                     CellListMO results, 
+                                     CacheStats stats) {
         
         if (results==null)
             results = new CellListMO();
@@ -146,7 +181,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
 //            System.out.print(spaceRef.get().getSpaceID()+" ");
             cellCount += spaceRef.get().getStaticCells(results, bounds, stats);
         }
-        System.out.println();
+//        System.out.println();
 
 //        System.out.println("Checked "+spaces.size()+" spaces and "+cellCount+" cells");
         
