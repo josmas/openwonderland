@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//Tigris//DTD XHTML 1.0 Transitional//EN"
+"http://style.tigris.org/tigris_transitional.dtd">
+<html>
+  <head>
+    <title>Darkstar Server Startup Information</title>
+  </head>
+  <body>
+  <h1><center>Darkstar Server Startup Information</center></h1>  
+<p>
+When the darkstar server is started, there are many messages logged
+and it is difficult for a new user to determine if it came up
+successfully or not.
+
+There shouldn't be any exceptions in the server log.
+<p>
+Important messages you should see:
+<p>
+INFO: The Kernel is ready, version: 0.9.4-r3093
+<p>
+Other messages which are harmless:
+<p>
+DB_LOCK_DEADLOCK: Locker killed to resolve a deadlock
+<p> 
+When clients disconnect there may be an IOException thrown
+showing that the connection has been reset.  This is harmless.
+<p>
+If the darkstar server is started before the voice bridge is started,
+then messages may appear indicating that there are no voice bridges 
+available.  This is not a problem.  The server will be notified
+when a voice bridge comes online.
+
+      <p/><hr>
+
+  </body>
+</html>
