@@ -122,9 +122,9 @@
 	<path location="${jars.javaext.dir}/fobs4jmf.jar"/>-->
 
 	<!-- JOAL + JOGL -->
-	<!--<path location="${jars.javaext.dir}/joal.jar"/>
+	<!--<path location="${jars.javaext.dir}/joal.jar"/>-->
 	<path location="${jars.javaext.dir}/jogl.jar"/>
-	<path location="${jars.javaext.dir}/gluegen-rt.jar"/>-->
+	<path location="${jars.javaext.dir}/gluegen-rt.jar"/>
 
 	<!-- JAI -->
 	<path location="${jars.javaext.dir}/jai_core.jar"/>
