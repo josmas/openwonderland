@@ -142,6 +142,8 @@ public class RoomTestRenderer extends BasicRenderer {
 //        as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
 //        forceFieldNode.setRenderState(as);
         
+        forceFieldNode.setName("Cell_"+cell.getCellID()+":"+cell.getName());
+
         return forceFieldNode;
     }
 }

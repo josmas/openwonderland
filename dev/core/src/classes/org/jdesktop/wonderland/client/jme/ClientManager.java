@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -155,12 +157,28 @@ public class ClientManager {
             CellRenderer rend = ret.getCellRenderer(Cell.RendererType.RENDERER_JME);
             if (ret!=null && rend!=null) {
 //                logger.warning("Got entity "+rend);
-                if (rend instanceof CellRendererJME)
+                if (rend instanceof CellRendererJME) {
                     // TODO find parent entity (traverse up graph), if found add this entity as a child, else add to root
                     // Note the next code drop of mtgame will add an attach point for subentities in RenderComonent
                     
-                    JmeClientMain.getWorldManager().addEntity(((CellRendererJME)rend).getEntity());
-                else
+                    Entity parentEntity= findParentEntity(ret.getParent());
+                    Entity thisEntity = ((CellRendererJME)rend).getEntity();
+                    
+                    // TODO When subentities work uncomment this if test
+//                    if (parentEntity!=null)
+//                        parentEntity.addEntity(thisEntity);
+//                    else
+                        JmeClientMain.getWorldManager().addEntity(thisEntity);
+                    
+                    if (parentEntity!=null && thisEntity!=null) {                        
+                        RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+                        RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
+                        if (parentRendComp!=null && parentRendComp.getSceneRoot()!=null && thisRendComp!=null) {
+                            thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
+                        }
+                    }
+                    
+                } else
                     logger.warning("Unexpected renderer class "+rend.getClass().getName());
             } else {
                 logger.warning("No Entity for Cell "+ret.getClass().getName());
@@ -188,6 +206,26 @@ public class ClientManager {
         public void setViewCell(ViewCell viewCell) {
             super.setViewCell(viewCell);
             ClientContextJME.getViewManager().attach(viewCell);
+        }
+        
+        /**
+         * Traverse up the cell hierarchy and return the first Entity
+         * @param cell
+         * @return
+         */
+        private Entity findParentEntity(Cell cell) {
+            if (cell==null)
+                return null;
+            
+            CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+            if (cell!=null && rend!=null) {
+                if (rend instanceof CellRendererJME) {
+                    System.out.println("FOUND PARENT ENTITY on CELL "+cell.getName());
+                    return ((CellRendererJME)rend).getEntity();
+                }
+            }
+            
+            return findParentEntity(cell.getParent());
         }
     }
     

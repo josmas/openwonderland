@@ -768,7 +768,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     public static CellHierarchyMessage newCellMoveMessage(CellDescription cell) {
         return new CellHierarchyMoveMessage(cell.getLocalBounds(),
             cell.getCellID(),
-            cell.getTransform()
+            cell.getLocalTransform()
             );
     }
     

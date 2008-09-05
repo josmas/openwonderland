@@ -81,7 +81,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
-    private boolean isMovable=false;
+    private boolean isMovable=false;            // Is this cell movable
+    private boolean isParentMovable = false;    // Is a parent of this cell movable
     private HashSet<TransformChangeListenerSrv> transformChangeListeners=null;
     
     /** Default constructor, used when the cell is created via WFS */
@@ -289,8 +290,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (parent==null)
             return;
         
-        notifySpacesDetach(TimeManager.getWonderlandTime());
-        
         parent.removeChild(this);
     }
     
@@ -335,25 +334,43 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //        }
         
         if (live) {
-            processTransformChange();
-            notifySpacesTransformChanged(transform, TimeManager.getWonderlandTime());
+            long timestamp = TimeManager.getWonderlandTime();
+            processTransformChange(timestamp);
+            notifySpacesTransformChanged(transform, timestamp);
         }
     }
     
     /**
-     * Notify children that the transform of the parent node has changed
+     * Notify children that the transform of this node has changed, as this
+     * call recurses down into the children the processParentTransformChange
+     * method is called. This is to allow different handling of space notification.
+     * 
+     * For changes to this cell, both the transform and world bounds are updated
+     * in the space, for children only the world bounds is updated in the space
+     * 
      * @param parent
      */
-    private void processTransformChange() {
+    private void processTransformChange(long timestamp) {
         calcLocal2World();
         calcWorldBounds();
             
+        
+        
         Collection<ManagedReference<CellMO>> childrenRef = getAllChildrenRefs();
         for(ManagedReference<CellMO> childRef : childrenRef) {
-            childRef.getForUpdate().processTransformChange();
+            childRef.getForUpdate().processParentTransformChange(timestamp);
         }
         
         notifyTransformChangeListeners();
+    }
+    
+    /**
+     * 
+     * @param timestamp
+     */
+    private void processParentTransformChange(long timestamp) {
+        processTransformChange(timestamp);
+        notifySpacesWorldBoundsChanged(TimeManager.getWonderlandTime());
     }
     
     /**
@@ -428,9 +445,25 @@ public abstract class CellMO implements ManagedObject, Serializable {
             }
             calcLocal2World();
             calcWorldBounds();
+            
+            // Find the space in which the center of cell is located
+            SpaceMO[] space = CellManagerMO.getCellManager().getEnclosingSpace(transform.getTranslation(null));
+            if (space[0]==null) {
+                logger.severe("Unable to find space to contain cell at "+transform.getTranslation(null) +" aborting addCell");
+                this.live = false;
+                return;
+            }
+                       
+            // Now search all nearby spaces to find spaces which intersect or encapsulate the cells bounds
+            Collection<ManagedReference<SpaceMO>> spaces = space[0].getSpaces(vwBounds);
+            for(ManagedReference<SpaceMO> spaceRef : spaces) {
+                addToSpace(spaceRef.get());
+            }
         } else {
 //            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
 //            BoundsManager.get().removeBounds(this);
+            notifySpacesDetach(TimeManager.getWonderlandTime());
+        
         }
         
         // Notify all components of new live state
@@ -674,6 +707,19 @@ public abstract class CellMO implements ManagedObject, Serializable {
         }
         
         this.isMovable = isMovable;
+        
+        // Mark all children as movable
+        for(ManagedReference<CellMO> cellRef : childCellRefs) {
+            cellRef.getForUpdate().setParentMovable(isMovable | isParentMovable);
+        }
+    }
+    
+    /**
+     * A parent of this cell is movable
+     * @param isParentMovable
+     */
+    private void setParentMovable(boolean isParentMovable) {
+        this.isParentMovable = isParentMovable;
     }
     
     /**
@@ -738,6 +784,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private void notifySpacesDetach(long timestamp) {
         for(SpaceInfo spaceInfo : inSpaces) {
             spaceInfo.getSpaceRef().getForUpdate().notifyCellDetached(this, timestamp);
+        }
+    }
+    
+    private void notifySpacesWorldBoundsChanged(long timestamp) {
+        for(SpaceInfo spaceInfo : inSpaces) {
+            spaceInfo.getSpaceRef().getForUpdate().notifyCellWorldBoundsChanged(this, timestamp);
         }
     }
     

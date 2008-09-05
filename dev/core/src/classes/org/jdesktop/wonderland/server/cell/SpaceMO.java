@@ -24,13 +24,25 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.Collection;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.TimeManager;
 
 /**
- *
+ * Spaces provide a mechanism to provide a high level spatial search for cells.
+ * 
+ * The current SpaceMO implementation flattens the cell hierarchy and adds
+ * all cells from a graph to the same list. For very large cells with lots of children
+ * this could result is more time traversing the list (when a single check on the root
+ * would have discounted the entire graph), but this is not expected to be
+ * a common case.
+ * 
+ * If it turns out we are doing a lot of extra comparisons the hierarchy
+ * can be added without changing this api.
+ * 
  * @author paulby
  */
+@InternalAPI
 public abstract class SpaceMO implements ManagedObject, Serializable {
 
     // All the static cells in this space
@@ -62,9 +74,10 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
      * @param cell
      */
     void addCell(CellMO cell) {
-//        System.out.println("Space "+getName()+"  adding Cell "+cell.getName());
+        System.out.println("Space "+spaceID+"  adding Cell "+cell.getName()+" "+cell.getCellID());
+//        Thread.dumpStack();
         CellListMO cellList;
-        if (cell.getComponent(MovableComponentMO.class)==null) {
+        if (!cell.isMovable()) {
             cellList = staticCellList;
         } else {
             cellList = dynamicCellList;
@@ -74,7 +87,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
         
         // Update the transform time stamp so this cell appears to have changed
         // Forcing it to be picked up by any ViewCache revalidations
-        cellDesc.setTransform(cell.getLocalTransform(null), TimeManager.getWonderlandTime());
+        cellDesc.setLocalTransform(cell.getLocalTransform(null), TimeManager.getWonderlandTime());
         
 //        System.out.println("Cell "+cell.getName()+" entering space "+position);
     }
@@ -119,6 +132,14 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
             dynamicCellList.notifyCellTransformChanged(cell, timestamp);
         } else {
             staticCellList.notifyCellTransformChanged(cell, timestamp);
+        }
+    }
+    
+    void notifyCellWorldBoundsChanged(CellMO cell, long timestamp) {
+        if (cell.isMovable()) {
+            dynamicCellList.notifyCellWorldBoundsChanged(cell, timestamp);
+        } else {
+            staticCellList.notifyCellWorldBoundsChanged(cell, timestamp);
         }
     }
     
@@ -201,7 +222,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
 //        System.err.println("Checking list "+dynamicCellList.size());
             for(CellDescription cellDesc : dynamicCellList.getCells()) {
     //            System.err.println(cellDesc.getCellID()+"  "+cellDesc.getTransformTimestamp()+">"+(changedSince-TimeManager.getTimeDrift()));
-                if (cellDesc.getTransformTimestamp()>changedSince-TimeManager.getTimeDrift() && CellManagerMO.getCell(cellDesc.getCellID()).getWorldBounds().intersects(bounds)) {
+                if (cellDesc.getTransformTimestamp()>changedSince-TimeManager.getTimeDrift() && cellDesc.getWorldBounds().intersects(bounds)) {
                     list.addCell(cellDesc);
                     if (stats!=null) {
                         stats.logCellIntersect(this, cellDesc);
@@ -232,7 +253,8 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
     private int getCells(CellListMO list, BoundingVolume bounds, CellListMO localList, CacheStats stats) {
         for(CellDescription cellDesc : localList.getCells()) {
             // Check if list already contains cellDesc to avoid DS datastore get
-            if (!list.contains(cellDesc) && CellManagerMO.getCell(cellDesc.getCellID()).getWorldBounds().intersects(bounds)) {
+//            if (!list.contains(cellDesc) && CellManagerMO.getCell(cellDesc.getCellID()).getWorldBounds().intersects(bounds)) {
+            if (!list.contains(cellDesc) && cellDesc.getWorldBounds().intersects(bounds)) {
                 list.addCell(cellDesc);
 //                System.out.println("intersect with "+cellDesc.getCellID());
                 if (stats!=null) {

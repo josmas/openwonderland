@@ -140,15 +140,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
         rootCellRef.getForUpdate().addChild(cell);
-        SpaceMO[] space = getEnclosingSpace(cell.getLocalTransform(null).getTranslation(null));
-        if (space[0]==null) {
-            logger.severe("Unable to find space to contain cell at "+cell.getLocalTransform(null).getTranslation(null) +" aborting addCell");
-            return;
-        }
-        Collection<ManagedReference<SpaceMO>> inSpaces = space[0].getSpaces(cell.getWorldBounds());
-        for(ManagedReference<SpaceMO> spaceRef : inSpaces) {
-            cell.addToSpace(spaceRef.get());
-        }
     }        
     
     /**
@@ -179,7 +170,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
 
             CellMO c4 = new MovableCellMO(
                     new BoundingSphere(0.5f, new Vector3f()),
-                    new CellTransform(null, new Vector3f(0, 0, 0)));
+                    new CellTransform(null, new Vector3f(1, 0, 0)));
             c4.setName("c4");
 
             c3.addChild(c4);
@@ -194,23 +185,19 @@ public class CellManagerMO implements ManagedObject, Serializable {
                 }
             }
 
-//            WonderlandContext.getCellManager().insertCellInWorld(c2);
-//            WonderlandContext.getCellManager().insertCellInWorld(c3);
-//            WonderlandContext.getCellManager().insertCellInWorld(s0);
-//            WonderlandContext.getCellManager().insertCellInWorld(s1);
-//            WonderlandContext.getCellManager().insertCellInWorld(s2);
-//            WonderlandContext.getCellManager().insertCellInWorld(s3);
+            WonderlandContext.getCellManager().insertCellInWorld(c2);
+            WonderlandContext.getCellManager().insertCellInWorld(c3);
 
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
             WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
             WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
             WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
-//            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
+            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
 
             
             Task t = new TestTask(c3, c2);
 
-//            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
+            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
 
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);

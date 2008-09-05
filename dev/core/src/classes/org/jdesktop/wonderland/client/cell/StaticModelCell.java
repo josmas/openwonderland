@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * Client side class for world root cells.
  * 
  * @author paulby
+ * @deprecated
  */
 public class StaticModelCell extends Cell {
     
