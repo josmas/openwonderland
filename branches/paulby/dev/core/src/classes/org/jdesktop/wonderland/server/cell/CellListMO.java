@@ -138,11 +138,27 @@ public class CellListMO implements Serializable {
         return ret;
     }
     
+    /**
+     * Transform has changed, so update local transform and world bounds
+     * 
+     * @param cell
+     * @param timestamp
+     */
     void notifyCellTransformChanged(CellMO cell, long timestamp) {
         CellDescription desc = cells.get(cell.getCellID());
         if (desc!=null) {
 //            System.err.println("CellListMO transform changed "+timestamp+"  "+desc.getCellID()+"  "+this);
-            desc.setTransform(cell.getLocalTransform(null), timestamp);
+            desc.setLocalTransform(cell.getLocalTransform(null), timestamp);
+            desc.setWorldBounds(cell.getWorldBounds());
+            listTimestamp = timestamp;
+        }
+    }
+    
+    void notifyCellWorldBoundsChanged(CellMO cell, long timestamp) {
+        CellDescription desc = cells.get(cell.getCellID());
+        if (desc!=null) {
+//            System.err.println("CellListMO transform changed "+timestamp+"  "+desc.getCellID()+"  "+this);
+            desc.setWorldBounds(cell.getWorldBounds());
             listTimestamp = timestamp;
         }
     }
@@ -156,6 +172,7 @@ public class CellListMO implements Serializable {
         private long contentsTimestamp;
         private long transformTimestamp;
         private BoundingVolume localBounds;
+        private BoundingVolume worldBounds;
         private CellTransform cellTransform;
         private String name;
         private Class cellClass;
@@ -171,6 +188,7 @@ public class CellListMO implements Serializable {
             name = cell.getName();
             cellClass = cell.getClass();
             isMovable = cell.isMovable();
+            worldBounds = cell.getWorldBounds();
         }
 
         public CellID getCellID() {
@@ -193,14 +211,22 @@ public class CellListMO implements Serializable {
             return localBounds;
         }
 
-        public CellTransform getTransform() {
+        public BoundingVolume getWorldBounds() {
+            return worldBounds;
+        }
+
+        public void setWorldBounds(BoundingVolume worldBounds) {
+            this.worldBounds = worldBounds;
+        }
+        
+        public CellTransform getLocalTransform() {
             if (isMovable) {
                 System.out.println("Cell "+name+"  "+cellRef.get().getLocalTransform(null));
             }
             return cellTransform;
         }
 
-        public void setTransform(CellTransform localTransform, long timestamp) {
+        public void setLocalTransform(CellTransform localTransform, long timestamp) {
             cellTransform = localTransform;
             transformTimestamp = timestamp;
         }
@@ -216,6 +242,7 @@ public class CellListMO implements Serializable {
         public boolean isMovable() {
             return isMovable;
         }
+
 
         
     }

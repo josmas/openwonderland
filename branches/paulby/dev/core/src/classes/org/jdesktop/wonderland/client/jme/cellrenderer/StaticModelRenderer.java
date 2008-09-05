@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 /**
  *
  * @author paulby
+ * @deprecated
  */
 public class StaticModelRenderer extends BasicRenderer {
     
@@ -99,6 +100,8 @@ public class StaticModelRenderer extends BasicRenderer {
         ret.setRenderState(buf);
 //        node.setRenderState(ls);
         ret.setLocalTranslation(xoff, yoff, zoff);
+
+        ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
         return ret;
     }

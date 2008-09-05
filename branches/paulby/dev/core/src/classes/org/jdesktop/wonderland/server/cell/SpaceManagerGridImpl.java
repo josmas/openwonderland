@@ -102,11 +102,6 @@ class SpaceManagerGridImpl implements SpaceManager {
         
         AppContext.getDataManager().setBinding(getSpaceBindingName(x,y,z), space);
         
-        // Add root cell, TODO remove once we hardcode root cells on clients
-        CellManagerMO cellManager = WonderlandContext.getCellManager();
-        CellMO rootCell = CellManagerMO.getCell(cellManager.getRootCellID());
-        rootCell.addToSpace(space);
-        
         return space;
     }
     

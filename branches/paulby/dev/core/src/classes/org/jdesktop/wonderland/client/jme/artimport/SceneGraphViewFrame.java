@@ -18,18 +18,9 @@
 package org.jdesktop.wonderland.client.jme.artimport;
 
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
-import java.awt.Component;
-import java.util.LinkedList;
-import javax.swing.JLabel;
-import javax.swing.JTree;
-import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 
@@ -88,78 +79,7 @@ public class SceneGraphViewFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
     
-    class JmeTreeModel implements TreeModel {
 
-        private Spatial root;
-        private LinkedList<TreeModelListener> modelListeners = new LinkedList();
-        
-        public JmeTreeModel(Spatial node) {
-            root = node;
-        }
-        
-        public Object getRoot() {
-            return root;
-        }
-
-        public Object getChild(Object parent, int index) {
-            return ((Node)parent).getChild(index);
-        }
-
-        public int getChildCount(Object parent) {
-            if (parent instanceof Node)
-                return ((Node)parent).getQuantity();
-            else 
-                return 0;
-        }
-
-        public boolean isLeaf(Object node) {
-            return (getChildCount(node)==0);
-        }
-
-        public void valueForPathChanged(TreePath path, Object newValue) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public int getIndexOfChild(Object parent, Object child) {
-            return ((Node)parent).getChildIndex((Node)child);
-        }
-
-        public void addTreeModelListener(TreeModelListener l) {
-            modelListeners.add(l);
-        }
-
-        public void removeTreeModelListener(TreeModelListener l) {
-            modelListeners.remove(l);
-        }
-    }
-    
-    class JmeTreeCellRenderer extends DefaultTreeCellRenderer {
-        
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree,
-                                               Object value,
-                                               boolean selected,
-                                               boolean expanded,
-                                               boolean leaf,
-                                               int row,
-                                               boolean hasFocus) {
-            String name = ((Spatial)value).getName();
-            if (name==null)
-                name="";
-            return new JLabel(getTrimmedClassname(value)+":"+name);
-        }       
-        
-        /**
-         * Return the classname of the object, trimming off the package name
-         * @param o
-         * @return
-         */
-        private String getTrimmedClassname(Object o) {
-            String str = o.getClass().getName();
-            
-            return str.substring(str.lastIndexOf('.')+1);
-        }
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;

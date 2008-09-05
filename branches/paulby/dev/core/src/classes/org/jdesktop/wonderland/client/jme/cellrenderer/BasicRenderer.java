@@ -28,6 +28,7 @@ import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -59,9 +60,14 @@ public abstract class BasicRenderer implements CellRendererJME {
         
         rootNode = createSceneGraph(ret);
         
-        RenderComponent sc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-//        sc.setSceneRoot(rootNode);
-        ret.addComponent(RenderComponent.class, sc);
+        if (cell.getComponent(MovableComponent.class)!=null) {
+            // Avatars are movable so create a move processor
+            moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
+            ret.addComponent(ProcessorComponent.class, moveProcessor);
+        }
+        
+        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+        ret.addComponent(RenderComponent.class, rc);
         
         return ret;        
     }
@@ -83,7 +89,7 @@ public abstract class BasicRenderer implements CellRendererJME {
             moveProcessor.cellMoved(cellTransform);
         }
     }
-
+    
     /**
      * An mtgame ProcessorCompoenent to process cell moves.
      */
