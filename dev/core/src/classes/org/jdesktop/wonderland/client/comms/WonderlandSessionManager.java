@@ -44,6 +44,9 @@ public class WonderlandSessionManager {
             new CopyOnWriteArraySet<SessionLifecycleListener>();
     
     
+    /** The current primary server */
+    private WonderlandServerInfo primaryServer = null;
+    
     /**
      * Get the WonderlandSession to connect to server identified by the given
      * server info object. The returned session will be an instance of WonderlandSessionImpl
@@ -139,5 +142,21 @@ public class WonderlandSessionManager {
     public Iterator<WonderlandSession> getSessions() {
         System.out.println("SESSIONS "+sessions.values().size());
         return sessions.values().iterator();
+    }
+
+    /**
+     * Get the primary server.
+     * @return the primary server
+     */
+    public WonderlandServerInfo getPrimaryServer() {
+        return primaryServer;
+    }
+
+    /**
+     * Set the primary server, users should not call this method.
+     * @param primaryServer
+     */
+    public void setPrimaryServer(WonderlandServerInfo primaryServer) {
+        this.primaryServer = primaryServer;
     }
 }

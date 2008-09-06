@@ -179,25 +179,25 @@ public class CellManagerMO implements ManagedObject, Serializable {
             int xMax = 80;
             int zMax = 4;
             
-            for(int x=0; x<cellSize*xMax; x+=cellSize) {
-                for(int z=0; z<cellSize*zMax; z+=cellSize) {
-                    WonderlandContext.getCellManager().insertCellInWorld(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
-                }
-            }
+//            for(int x=0; x<cellSize*xMax; x+=cellSize) {
+//                for(int z=0; z<cellSize*zMax; z+=cellSize) {
+//                    WonderlandContext.getCellManager().insertCellInWorld(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
+//                }
+//            }
 
-            WonderlandContext.getCellManager().insertCellInWorld(c2);
-            WonderlandContext.getCellManager().insertCellInWorld(c3);
+//            WonderlandContext.getCellManager().insertCellInWorld(c2);
+//            WonderlandContext.getCellManager().insertCellInWorld(c3);
 
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
-            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
-            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
-            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
 
             
             Task t = new TestTask(c3, c2);
 
-            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
+//            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
 
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);

@@ -77,8 +77,11 @@ public class ViewManager {
      * @param cell
      */
     public void attach(Cell cell) {
-        if (attachCell!=null)
-            throw new RuntimeException("View already attached to cell");
+        if (attachCell!=null) {
+            System.err.println("VIEW ALREADY ATTACHED TO CELL (BUT CONTINUE ANYWAY)");
+            return;
+//            throw new RuntimeException("View already attached to cell");
+        }
         
         Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
 
