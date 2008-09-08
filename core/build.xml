@@ -39,6 +39,7 @@
     <target name="init" depends="unpack-ext" description="Initial set-up">
         <mkdir dir="${build.classes.dir}"/>
         <mkdir dir="${build.lib.dir}"/>
+        <mkdir dir="log"/>
     </target>
     
     <!-- compile Wonderland -->
@@ -346,6 +347,7 @@
     <import file="${build-import.dir}/run-jmf.xml"/>
     <import file="${build-import.dir}/run-config.xml"/>
 
+<!--
 <taskdef resource="checkstyletask.properties"
          classpath="../build-tools/checkstyle-4.4/checkstyle-all-4.4.jar"/>
 
@@ -356,6 +358,7 @@
   <formatter type="xml" toFile="build/checkstyle_errors.xml"/>
 </checkstyle>
 </target>
+-->
 
 
 </project>
