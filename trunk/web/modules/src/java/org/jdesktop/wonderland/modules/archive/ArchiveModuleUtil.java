@@ -25,7 +25,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.jdesktop.wonderland.client.checksum.RepositoryChecksums;
+import org.jdesktop.wonderland.client.modules.ModuleChecksums;
 import org.jdesktop.wonderland.utils.ArchiveManifest;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSFactory;
@@ -199,14 +199,14 @@ public class ArchiveModuleUtil {
      * @param manifest The archive file manifest
      * @return A collection of resource checksums
      */
-    public static RepositoryChecksums parseModuleChecksums(ArchiveManifest manifest) {
+    public static ModuleChecksums parseModuleChecksums(ArchiveManifest manifest) {
         try {
             /* Fetch the input stream, parse and return */
             InputStream is = manifest.getEntryInputStream(Module.MODULE_CHECKSUMS);
             if (is == null) {
                 return null;
             }
-            return RepositoryChecksums.decode(new InputStreamReader(is));
+            return ModuleChecksums.decode(new InputStreamReader(is));
         } catch (java.lang.IllegalStateException excp) {
             System.out.println(excp.toString());
             // print stack trace

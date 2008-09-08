@@ -26,7 +26,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.jdesktop.wonderland.client.checksum.RepositoryChecksums;
+import org.jdesktop.wonderland.client.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.modules.ModuleInfo;
@@ -80,7 +80,7 @@ public class ArchiveModule extends Module {
         ModuleRequires requires = ArchiveModuleUtil.parseModuleRequires(this.manifest);
         ModuleRepository repository = ArchiveModuleUtil.parseModuleRepository(this.manifest);
         HashMap<String, ModuleArtResource> artwork = ArchiveModuleUtil.parseModuleArt(this.manifest);
-        RepositoryChecksums checksums = ArchiveModuleUtil.parseModuleChecksums(this.manifest);
+        ModuleChecksums checksums = ArchiveModuleUtil.parseModuleChecksums(this.manifest);
         HashMap<String, WFS> wfs = ArchiveModuleUtil.parseModuleWFS(this.manifest);
         HashMap<String, ModulePlugin> plugins = ArchiveModuleUtil.parseModulePlugins(this.manifest);
 
