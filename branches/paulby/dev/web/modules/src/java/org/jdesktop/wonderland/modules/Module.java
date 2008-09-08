@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.modules;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.jdesktop.wonderland.client.checksum.RepositoryChecksums;
+import org.jdesktop.wonderland.client.modules.ModuleChecksums;
 import org.jdesktop.wonderland.wfs.WFS;
 
 /**
@@ -69,7 +69,7 @@ public abstract class Module {
     private HashMap<String, ModulePlugin> modulePlugins = null;
     
     /* A single table of checkums for all of the resources */
-    private RepositoryChecksums checksums = null;
+    private ModuleChecksums checksums = null;
     
     /** Default constructor */
     protected Module() {}
@@ -214,7 +214,7 @@ public abstract class Module {
      * 
      * @param checksums The collection of checksums for the resources
      */
-    public void setModuleChecksums(RepositoryChecksums checksums) {
+    public void setModuleChecksums(ModuleChecksums checksums) {
         this.checksums = checksums;
     }
     
@@ -223,7 +223,7 @@ public abstract class Module {
      * 
      * @returns The collection of resource checksums
      */
-    public RepositoryChecksums getModuleChecksums() {
+    public ModuleChecksums getModuleChecksums() {
         return this.checksums;
     }
     

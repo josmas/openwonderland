@@ -26,7 +26,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.client.checksum.RepositoryChecksums;
+import org.jdesktop.wonderland.client.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 
@@ -72,7 +72,7 @@ public class ModuleChecksumsResource {
         }
         
         /* Check to see that the module checksums exist, return error if not */
-        RepositoryChecksums rc = im.getModuleChecksums();
+        ModuleChecksums rc = im.getModuleChecksums();
         if (rc == null) {
             /* Log an error and return an error response */
             logger.warning("ModuleManager: unable to locate module checksums: " + moduleName);
