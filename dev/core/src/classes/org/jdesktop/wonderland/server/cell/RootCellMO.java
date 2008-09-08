@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -29,8 +31,11 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
  */
 public class RootCellMO extends CellMO {
 
+    private CellTransform local2World;
+    
     public RootCellMO(BoundingVolume bounds, CellTransform transform) {
         super(bounds, transform);
+        local2World = new CellTransform(new Quaternion(), new Vector3f());
     }
     
     /**
@@ -40,4 +45,5 @@ public class RootCellMO extends CellMO {
     protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.RootCell";
     }
+
 }

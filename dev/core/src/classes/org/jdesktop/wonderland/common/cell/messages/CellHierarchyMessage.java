@@ -49,7 +49,7 @@ public class CellHierarchyMessage extends Message {
      * SET_VIEW - client informs server which avatar to use for a cell cache
      * LOAD_CLIENT_AVATAR - server informs client to load its avatar
      */
-    public enum ActionType { LOAD_CELL, UNLOAD_CELL, MOVE_CELL, CHANGE_PARENT,
+    public enum ActionType { LOAD_CELL, UNLOAD_CELL, CHANGE_PARENT,
         DELETE_CELL, UPDATE_CELL_CONTENT, SET_VIEW, LOAD_CLIENT_AVATAR};
     
     /**

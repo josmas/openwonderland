@@ -21,6 +21,7 @@ import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
@@ -137,7 +138,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
 
         } catch (MultipleParentException ex) {
             // the isLive check means we should never get here
-            logger.severe("Failed to attach avatar, it's already attached");
+            logger.log(Level.SEVERE, "Failed to attach avatar, it's already attached", ex);
         }
         
         avatar.getCellCache().login(sender, session);

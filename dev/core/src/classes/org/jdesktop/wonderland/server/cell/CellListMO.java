@@ -23,7 +23,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.server.TimeManager;
  */
 public class CellListMO implements Serializable {
     private long listTimestamp = Long.MIN_VALUE;
-    private HashMap<CellID, CellDescription> cells = new HashMap();
+    private LinkedHashMap<CellID, CellDescription> cells = new LinkedHashMap();
 
     /**
      * Add cell to this list, the list is actually a set so multiple adds
@@ -127,13 +127,22 @@ public class CellListMO implements Serializable {
     }
     
     /**
+     * Return true if this list contains the specified cell
+     * @param cellID 
+     * @return
+     */
+    public boolean contains(CellID cellID) {
+        return cells.containsKey(cellID);
+    }
+    
+    /**
      * Create a shallow clone
      * @return
      */
     @Override
     public Object clone() {
         CellListMO ret = new CellListMO();
-        ret.cells = (HashMap<CellID, CellDescription>) this.cells.clone();
+        ret.cells = (LinkedHashMap<CellID, CellDescription>) this.cells.clone();
         
         return ret;
     }

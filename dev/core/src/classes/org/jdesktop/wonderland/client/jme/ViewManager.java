@@ -92,7 +92,6 @@ public class ViewManager {
             eventProcessor = new SimpleAvatarControls(eventListener, cell, wm);
             eventProcessor.setRunInRenderer(true);
             
-            System.out.println("ADDING LISTENERS");
             // Chaining the camera here does not seem to work...
 //            eventProcessor.addToChain(cameraProcessor);
             wm.getInputManager().addAWTKeyListener(eventListener);

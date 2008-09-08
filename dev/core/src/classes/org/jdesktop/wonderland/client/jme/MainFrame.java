@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
+import org.jdesktop.wonderland.common.LogControl;
 
 /**
  * The Main JFrame for the wonderland jme client
@@ -49,9 +50,12 @@ public class MainFrame extends javax.swing.JFrame {
     private ImportSessionFrame importSessionFrame = null;
     private CellViewerFrame cellViewerFrame = null;
     
+    static {
+        new LogControl(MainFrame.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
+    }
+    
     /** Creates new form MainFrame */
     public MainFrame(WorldManager wm, int width, int height) {
-        System.out.println("bundle "+bundle);
         initComponents();
         
         // make the canvas:

@@ -47,15 +47,16 @@ import org.jdesktop.wonderland.wfs.loader.WFSLoader;
 public class CellManagerMO implements ManagedObject, Serializable {
 
     // Used to generate unique cell ids
-    private long cellCounter=0;
+    private long cellCounter=CellID.getFirstCellID();
     
     private ManagedReference<CellMO> rootCellRef;
-    private CellID rootCellID;
     
     private static final String BINDING_NAME=CellManagerMO.class.getName();
     private static final Logger logger = Logger.getLogger(CellManagerMO.class.getName());
     
     private SpaceManager spaceManager = new SpaceManagerGridImpl();
+    
+    private static CellID rootCellID;
     
     /**
      * Creates a new instance of CellManagerMO
@@ -82,7 +83,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * a single root on the server, but the client can support multiple roots.
      * @return
      */
-    CellID getRootCellID() {
+    static CellID getRootCellID() {
         return rootCellID;
     }
     
@@ -179,25 +180,25 @@ public class CellManagerMO implements ManagedObject, Serializable {
             int xMax = 80;
             int zMax = 4;
             
-//            for(int x=0; x<cellSize*xMax; x+=cellSize) {
-//                for(int z=0; z<cellSize*zMax; z+=cellSize) {
-//                    WonderlandContext.getCellManager().insertCellInWorld(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
-//                }
-//            }
+            for(int x=0; x<cellSize*xMax; x+=cellSize) {
+                for(int z=0; z<cellSize*zMax; z+=cellSize) {
+                    WonderlandContext.getCellManager().insertCellInWorld(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
+                }
+            }
 
-//            WonderlandContext.getCellManager().insertCellInWorld(c2);
-//            WonderlandContext.getCellManager().insertCellInWorld(c3);
+            WonderlandContext.getCellManager().insertCellInWorld(c2);
+            WonderlandContext.getCellManager().insertCellInWorld(c3);
 
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
+            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
+            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
+            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
 
             
             Task t = new TestTask(c3, c2);
 
-//            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
+            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
 
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);

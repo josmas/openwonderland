@@ -50,7 +50,7 @@ public class CacheStats {
         for(SpaceData d : spaceInfo.values()) {
             d.report();
         }
-        System.out.println("Total time = "+totalTime/1000000);
+        System.out.println("Total time = "+totalTime/1000000+" ms.");
     }
 
     class SpaceData { 

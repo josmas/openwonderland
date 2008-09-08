@@ -73,8 +73,9 @@ public class JmeClientMain {
         ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
         worldManager.addNodeListener(new NodeMoveListener(clientManager));
         
-        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
-        worldManager.addNodeListener(new NodeMoveListener(clientManager2));
+        // Low level Federation testing
+//        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
+//        worldManager.addNodeListener(new NodeMoveListener(clientManager2));
         
         processArgs(args);
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
