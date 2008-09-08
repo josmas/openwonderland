@@ -57,12 +57,24 @@ public interface CellDescription {
     public BoundingVolume getLocalBounds();
     
     /**
+     * Returns a copy of the cell's world bounds
+     * @return
+     */
+    public BoundingVolume getWorldBounds();
+    
+    /**
+     * Set the world bounds
+     * @param worldBounds
+     */
+    public void setWorldBounds(BoundingVolume worldBounds);
+    
+    /**
      * Returns a copy of the cell's current transform
      * @return the cells transform.
      */
-    public CellTransform getTransform();
+    public CellTransform getLocalTransform();
     
-    void setTransform(CellTransform localTransform, long timestamp);
+    void setLocalTransform(CellTransform localTransform, long timestamp);
     
     /**
      * Return the cells priority

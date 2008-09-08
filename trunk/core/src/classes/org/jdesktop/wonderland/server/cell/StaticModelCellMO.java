@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 /**
  * A cell for static models.
  * @author paulby
+ * @deprecated
  */
 @ExperimentalAPI
 public class StaticModelCellMO extends CellMO implements BeanSetupMO { 

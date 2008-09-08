@@ -118,12 +118,12 @@ public class CellCacheConnection extends BaseConnection {
                     viewCellID = null;
                 }
                 break;
-            case MOVE_CELL :
-                for(CellCacheMessageListener l : listeners) {
-                    l.moveCell(msg.getCellID(),
-                            msg.getCellTransform());
-                }
-                 break;
+//            case MOVE_CELL :  // TODO remove - no longer used
+//                for(CellCacheMessageListener l : listeners) {
+//                    l.moveCell(msg.getCellID(),
+//                            msg.getCellTransform());
+//                }
+//                 break;
             case UNLOAD_CELL :
                 for(CellCacheMessageListener l : listeners) {
                     l.unloadCell(msg.getCellID());

@@ -51,9 +51,6 @@ public class AvatarJME extends BasicRenderer {
         Entity ret = super.createEntity();
         WorldManager wm = ClientContextJME.getWorldManager();
                
-        // Avatars are movable so create a move processor
-        moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
-        ret.addComponent(ProcessorComponent.class, moveProcessor);
                                 
         return ret;
     }

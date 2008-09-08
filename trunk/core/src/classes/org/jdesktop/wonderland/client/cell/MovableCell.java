@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.cell;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.jme.cellrenderer.JmeColladaRenderer;
 
 /**
  * A cell that can move
@@ -40,4 +41,18 @@ class MovableCell extends Cell {
         addComponent(new MovableComponent(this));
     }
 
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        CellRenderer ret = null;
+        switch(rendererType) {
+            case RENDERER_2D :
+                // No 2D Renderer yet
+                break;
+            case RENDERER_JME :
+                ret= new JmeColladaRenderer(this);
+                break;                
+        }
+        
+        return ret;
+    }
 }

@@ -44,7 +44,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMoveMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
 import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
@@ -76,8 +75,6 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
    
     private WonderlandClientSender sender;
     private ManagedReference<ClientSession> sessionRef;
-    
-    private CellID rootCellID;
     
     private ClientCapabilities capabilities = null;
      
@@ -116,7 +113,6 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         logger.config("Creating ViewCellCache");
         
         username = view.getUser().getUsername();
-        rootCellID = WonderlandContext.getCellManager().getRootCellID();
         
         DataManager dm = AppContext.getDataManager();
         viewRef = dm.createReference(view);
@@ -132,7 +128,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         else
             securityContextRef = null;
         
-        view.addTransformChangeListener(new TestTransformChangeListenerMO());
+        // Test code
+//        view.addTransformChangeListener(new TestTransformChangeListenerMO());
     }
     
     /**
@@ -140,6 +137,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     void login(WonderlandClientSender sender, ClientSession session) {
         this.sender = sender;
+        currentSpaceRef = null;
         
         lastRevalidationTimestamp=0;
         if (allCells.size()!=0) {
@@ -154,7 +152,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
-        CellMO rootCell = CellManagerMO.getCell(rootCellID);
+        CellMO rootCell = CellManagerMO.getCell(CellManagerMO.getRootCellID());
         msg = newCreateCellMessage(rootCell, capabilities);
         sender.send(session, msg);
         
@@ -177,7 +175,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         
         ViewCellMO view = viewRef.get();
         Vector3f translation = view.getLocalToWorld(cellTransformTmp).getTranslation(null);
-        proximityBounds = AvatarBoundsHelper.getProximityBounds(translation);            
+        proximityBounds = AvatarBoundsHelper.getProximityBounds(translation);        
     }
     
     /**
@@ -187,6 +185,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         logger.warning("DEBUG - logout");
         
         allCells.clear();
+        currentSpaceRef = null;
         
         if (CacheManager.USE_CACHE_MANAGER) {
             CacheManager.removeCache(this);
@@ -248,7 +247,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             SpaceMO space = CellManagerMO.getCellManager().getEnclosingSpace(translation)[0];
 //            System.out.println("Current SPACE "+space.getSpaceID());
             if (AppContext.getDataManager().createReference(space)!=currentSpaceRef) {
-//                System.err.println("Full revalidation "+space.position);
+//                System.err.println("----------> Full revalidation "+space.position);
                 // copy the existing cells into the list of old cells 
                 CellListMO oldCells = (CellListMO) allCells.clone();
                 CellListMO currentCells = new CellListMO();  // Cells found during this revalidation
@@ -327,7 +326,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 // it and go on                
                 continue;
             }
-
+            
             if (!allCells.contains(cellDescription)) {
                 // schedule the add operation
 
@@ -761,16 +760,6 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 //            
 //            );
 //    }
-    
-    /**
-     * Return a new cell move message
-     */
-    public static CellHierarchyMessage newCellMoveMessage(CellDescription cell) {
-        return new CellHierarchyMoveMessage(cell.getLocalBounds(),
-            cell.getCellID(),
-            cell.getTransform()
-            );
-    }
     
     /**
      * Return a new cell update message. Indicates that the content of the cell
