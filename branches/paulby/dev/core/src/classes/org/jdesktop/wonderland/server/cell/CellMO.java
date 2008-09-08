@@ -56,6 +56,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private CellTransform transform = null;
     protected CellID cellID;
     private BoundingVolume localBounds;
+    private CellID parentCellID;
     
     // a check if there is a bounds change that has not been committed.  If
     // there are uncommitted bounds changes, certain operations (like 
@@ -88,7 +89,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     /** Default constructor, used when the cell is created via WFS */
     public CellMO() {
         this.localBounds = null;
-        this.transform = null;
+        this.transform = null;        
         this.cellID = WonderlandContext.getCellManager().createCellID(this);
     }
     
@@ -177,7 +178,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     public CellTransform getLocalToWorld(CellTransform result) {
         if (!live)
-            throw new IllegalStateException("Unsupported Operation, only valid for a live Cell");
+            throw new IllegalStateException("Unsupported Operation, only valid for a live Cell "+this.getClass().getName());
         
 //        if (boundsChanged) {
 //            logger.warning("LocalBounds have been changed, "
@@ -211,7 +212,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (childCellRefs==null)
             childCellRefs = new ArrayList<ManagedReference<CellMO>>();
         
-        child.setParent(AppContext.getDataManager().createReference(this));
+        child.setParent(this);
         
         childCellRefs.add(AppContext.getDataManager().createReference(child));
         
@@ -283,6 +284,18 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
     
     /**
+     * Return the cellID of the parent.  This method was added for debugging
+     * and is used by SpaceMO to check that the lists are ordered correctly.
+     * 
+     * TODO remove
+     * 
+     * @return
+     */
+    CellID getParentCellID() {
+        return parentCellID;
+    }
+    
+    /**
      * Detach this cell from its parent
      */
     public void detach() {
@@ -297,14 +310,20 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Set the parent of this cell. Package private because the parent is
      * controlled through add and remove child.
      * 
-     * @param parentRef
+     * @param parent the parent cell
      * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
      */
-    void setParent(ManagedReference newParentRef) throws MultipleParentException {
-        if (newParentRef!=null && parentRef!=null)
+    void setParent(CellMO parent) throws MultipleParentException {
+        if (parent!=null && parentRef!=null)
             throw new MultipleParentException();
         
-        this.parentRef = newParentRef;
+        if (parent==null) {
+            this.parentRef = null;
+            this.parentCellID = CellID.getInvalidCellID();
+        } else {
+            this.parentRef = AppContext.getDataManager().createReference(parent);
+            this.parentCellID = parent.getCellID();
+        }
     }
     
     /**
@@ -446,23 +465,27 @@ public abstract class CellMO implements ManagedObject, Serializable {
             calcLocal2World();
             calcWorldBounds();
             
-            // Find the space in which the center of cell is located
-            SpaceMO[] space = CellManagerMO.getCellManager().getEnclosingSpace(transform.getTranslation(null));
-            if (space[0]==null) {
-                logger.severe("Unable to find space to contain cell at "+transform.getTranslation(null) +" aborting addCell");
-                this.live = false;
-                return;
-            }
-                       
-            // Now search all nearby spaces to find spaces which intersect or encapsulate the cells bounds
-            Collection<ManagedReference<SpaceMO>> spaces = space[0].getSpaces(vwBounds);
-            for(ManagedReference<SpaceMO> spaceRef : spaces) {
-                addToSpace(spaceRef.get());
+            if (!(this instanceof RootCellMO)) {
+                // Find the space in which the center of cell is located
+                SpaceMO[] space = CellManagerMO.getCellManager().getEnclosingSpace(transform.getTranslation(null));
+                if (space[0]==null) {
+                    logger.severe("Unable to find space to contain cell at "+transform.getTranslation(null) +" aborting addCell");
+                    this.live = false;
+                    return;
+                }
+
+                // Now search all nearby spaces to find spaces which intersect or encapsulate the cells bounds
+                Collection<ManagedReference<SpaceMO>> spaces = space[0].getSpaces(vwBounds);
+                for(ManagedReference<SpaceMO> spaceRef : spaces) {
+                    addToSpace(spaceRef.get());
+                }
             }
         } else {
 //            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
 //            BoundsManager.get().removeBounds(this);
-            notifySpacesDetach(TimeManager.getWonderlandTime());
+            if (!(this instanceof RootCellMO)) {
+                notifySpacesDetach(TimeManager.getWonderlandTime());
+            }
         
         }
         

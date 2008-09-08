@@ -82,7 +82,7 @@ class SpaceManagerGridImpl implements SpaceManager {
         SimpleSpaceMO space = new SimpleSpaceMO(gridBounds, 
                                                 center,
                                                 nextSpaceID());
-        
+
         ArrayList<SimpleSpaceMO> list = new ArrayList();
         list.add((SimpleSpaceMO)getEnclosingSpaceImpl(x,y,z+1));    // North
         list.add((SimpleSpaceMO)getEnclosingSpaceImpl(x+1,y,z));    // East

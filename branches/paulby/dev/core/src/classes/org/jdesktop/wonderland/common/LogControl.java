@@ -31,9 +31,9 @@ import java.io.IOException;
 public class LogControl {
     
     /** Creates a new instance of LogControl */
-    public LogControl() {
+    public LogControl(Class refClass, String loggingProperties) {
         LogManager logManager = LogManager.getLogManager();
-        InputStream in = getClass().getResourceAsStream("resources/logging.properties");
+        InputStream in = refClass.getResourceAsStream(loggingProperties);
 //        System.out.println("************************ LOADING LOG config from resource/logging.properties");
         try {
             logManager.readConfiguration(in);

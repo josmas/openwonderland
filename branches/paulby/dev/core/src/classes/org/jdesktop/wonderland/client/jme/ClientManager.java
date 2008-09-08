@@ -194,7 +194,7 @@ public class ClientManager {
             CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
             if (cell!=null && rend!=null) {
                 if (rend instanceof CellRendererJME) {
-                    System.out.println("FOUND PARENT ENTITY on CELL "+cell.getName());
+//                    System.out.println("FOUND PARENT ENTITY on CELL "+cell.getName());
                     return ((CellRendererJME)rend).getEntity();
                 }
             }

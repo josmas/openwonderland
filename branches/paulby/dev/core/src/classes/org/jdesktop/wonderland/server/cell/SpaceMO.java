@@ -24,6 +24,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.TimeManager;
@@ -55,6 +56,8 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
     protected Vector3f position;
     private SpaceID spaceID;
     
+    private final static Logger logger = Logger.getLogger(SpaceMO.class.getName());
+    
     SpaceMO(BoundingVolume bounds, Vector3f position, SpaceID spaceID) {
         this.position = new Vector3f(position);
         this.worldBounds = bounds.clone(null);
@@ -71,17 +74,25 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
     /**
      * Add the cell to this space. Called from CellMO.addToSpace
      * 
+     * NOTE, a cells parent MUST have been added to the list previously.
+     * 
      * @param cell
      */
     void addCell(CellMO cell) {
-        System.out.println("Space "+spaceID+"  adding Cell "+cell.getName()+" "+cell.getCellID());
-//        Thread.dumpStack();
+        logger.info("Space "+spaceID+"  adding Cell "+cell.getName()+" "+cell.getCellID());
         CellListMO cellList;
         if (!cell.isMovable()) {
             cellList = staticCellList;
         } else {
             cellList = dynamicCellList;
         }
+        
+        // debug test (TODO deleteme)
+        CellID parentID = cell.getParent().getCellID();
+        if (!parentID.equals(CellManagerMO.getRootCellID()) && !(cell instanceof RootCellMO) && !cellList.contains(parentID)) {
+            throw new RuntimeException("CELL PARENT IS NOT IN SPACE LIST child "+cell.getCellID()+"  parent "+parentID);
+        }
+        // End debug test
         
         CellDescription cellDesc = cellList.addCell(cell);
         
@@ -162,7 +173,16 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
         return worldBounds.clone(result);
     }
     
-    
+    /**
+     * Returns the list of dynamic cells within the specified bounds.
+     * The list is sorted so that a cell parent always proceeds it in the list.
+     * 
+     * @param spaces
+     * @param bounds
+     * @param results
+     * @param stats
+     * @return
+     */
     public CellListMO getDynamicCells(Collection<ManagedReference<SpaceMO>> spaces, 
                                       BoundingVolume bounds, 
                                       CellListMO results, 

@@ -119,11 +119,11 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                 logger.log(Level.SEVERE, "Failed to load cell", ex);
             }
         } else {
-            logger.warning("loadCell - Cell parent is null");
+            logger.warning("loadCell - Cell parent is null "+parentCellID);
         }
         cell.setLocalBounds(localBounds);
         cell.setLocalTransform(cellTransform);
-        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
+//        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
 
         synchronized(cells) {
             cells.put(cellId, cell);
