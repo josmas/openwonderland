@@ -765,14 +765,14 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      * Return a new cell update message. Indicates that the content of the cell
      * has changed.
      */
-    public static CellHierarchyMessage newContentUpdateCellMessage(CellMO cellMO, ClientCapabilities capabilities) {
+    public static CellHierarchyMessage newConfigureCellMessage(CellMO cellMO, ClientCapabilities capabilities) {
         CellID parentID = null;
         if (cellMO.getParent() != null) {
             parentID = cellMO.getParent().getCellID();
         }
         
         /* Return a new CellHiearchyMessage class, with populated data fields */
-        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.UPDATE_CELL_CONTENT,
+        return new CellHierarchyMessage(CellHierarchyMessage.ActionType.CONFIGURE_CELL,
             cellMO.getClientCellClassName(null,capabilities),
             cellMO.getLocalBounds(),
             cellMO.getCellID(),
@@ -780,6 +780,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cellMO.getLocalTransform(null),
             cellMO.getClientStateData(null, capabilities),
             cellMO.getName()
+            
             );
     }
 }
