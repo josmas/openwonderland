@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.common.cell.state.BasicCellState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
@@ -583,7 +583,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Get the setupdata for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    protected BasicCellState getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
         return null;
     }
     

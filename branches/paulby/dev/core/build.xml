@@ -347,6 +347,7 @@
     <import file="${build-import.dir}/run-jmf.xml"/>
     <import file="${build-import.dir}/run-config.xml"/>
 
+<!--
 <taskdef resource="checkstyletask.properties"
          classpath="../build-tools/checkstyle-4.4/checkstyle-all-4.4.jar"/>
 
@@ -357,6 +358,7 @@
   <formatter type="xml" toFile="build/checkstyle_errors.xml"/>
 </checkstyle>
 </target>
+-->
 
 
 </project>

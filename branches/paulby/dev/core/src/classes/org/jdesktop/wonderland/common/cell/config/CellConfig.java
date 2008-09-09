@@ -15,15 +15,15 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.cell.state;
+package org.jdesktop.wonderland.common.cell.config;
 
 import java.io.Serializable;
 
 /**
- * The BasicCellState class is the base class of all state information
+ * The CellConfig class is the base class of all state information
  * communicated between the client and Darkstar server nodes.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public abstract class BasicCellState implements Serializable {
+public abstract class CellConfig implements Serializable {
 }

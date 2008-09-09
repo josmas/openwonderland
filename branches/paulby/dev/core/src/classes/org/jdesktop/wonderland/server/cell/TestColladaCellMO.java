@@ -25,8 +25,8 @@ import org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.BasicCellState;
-import org.jdesktop.wonderland.common.cell.state.StaticModelCellState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.config.StaticModelCellConfig;
 import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -55,8 +55,8 @@ public class TestColladaCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public BasicCellState getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new StaticModelCellState(this.modelURI);
+    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+        return new StaticModelCellConfig(this.modelURI);
     }
 
     @Override

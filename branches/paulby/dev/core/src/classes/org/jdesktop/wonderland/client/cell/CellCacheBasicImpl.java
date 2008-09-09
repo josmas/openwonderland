@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.common.cell.state.BasicCellState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * A basic implementation of core cell cache features. This is a convenience class
@@ -103,7 +103,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          BoundingVolume localBounds, 
                          CellID parentCellID, 
                          CellTransform cellTransform, 
-                         BasicCellState setup,
+                         CellConfig setup,
                          String cellName) {
         logger.info("-----> creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
@@ -134,7 +134,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             }
 
             if (setup!=null)
-                cell.setupCell(setup);
+                cell.configure(setup);
 
             // if the cell has a channel, notify it of the CellChannelConnection
             ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
