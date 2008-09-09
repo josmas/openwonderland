@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
-import org.jdesktop.wonderland.common.cell.state.BasicCellState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -496,26 +496,13 @@ public class Cell {
     }
     
     /**
-     * Called once after the cell is instantiated, for cells that require
-     * setup data. This method is called once the cell has been placed in
-     * the cell tree hierarchy.
+     * Called when the cell is initially created and any time there is a 
+     * major configuration change. The cell will already be attached to it's parent
+     * before the initial call of this method
      * 
      * @param setupData
      */
-    public void setupCell(BasicCellState setupData) {
-        
-    }
-    
-    /**
-     * Called occasioanally by the server if the cell needs to reconfigure
-     * it's internal state. This is intended to be a heavyweight operation
-     * not for continous changes.
-     * 
-     * Example use is when the wfs world is reloaded
-     * 
-     * @param updateData
-     */
-    public void reconfigureCell(BasicCellState updateData) {
+    public void configure(CellConfig setupData) {
         
     }
     

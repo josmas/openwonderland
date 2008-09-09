@@ -41,7 +41,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.state.BasicCellState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 
 /**
@@ -121,7 +121,7 @@ public class ClientManager {
                 BoundingVolume localBounds, 
                 CellID parentCellID, 
                 CellTransform cellTransform, 
-                BasicCellState setup,
+                CellConfig setup,
                 String cellName) {
             Cell ret = super.loadCell(cellID, 
                                className, 
