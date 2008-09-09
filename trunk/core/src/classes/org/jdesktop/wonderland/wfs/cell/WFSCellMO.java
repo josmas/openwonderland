@@ -24,7 +24,7 @@ import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.BasicCellState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
 /**
@@ -68,7 +68,7 @@ public class WFSCellMO extends CellMO implements ManagedObject, Serializable {
     }
     
     @Override
-    public BasicCellState getClientStateData(ClientSession clientSession,ClientCapabilities capabilities) {
+    public CellConfig getClientStateData(ClientSession clientSession,ClientCapabilities capabilities) {
         return null;
     }
 }
