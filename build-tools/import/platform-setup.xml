@@ -30,6 +30,10 @@
 	<os name="Mac OS X" arch="i386"/>
     </condition>
 
+    <condition property="system.type" value="macos-x86">
+	<os name="Mac OS X" arch="x86_64"/>
+    </condition>
+
     <condition property="system.type" value="macos-ppc">
 	<os name="Mac OS X" arch="ppc"/>
     </condition>

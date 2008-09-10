@@ -44,6 +44,7 @@ import org.jdesktop.wonderland.common.comms.SessionInternalConnectionType;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.DetachClientMessage;
+import org.jdesktop.wonderland.common.comms.messages.SessionInitializationMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -113,6 +114,13 @@ public class WonderlandSessionListener
                     SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_TYPE);
         ((SessionInternalConnectionHandler) internalRef.get()).setListener(this);
         handlers.put(SESSION_INTERNAL_CLIENT_ID, internalRef);
+        
+        // send an initialization message to the client over the internal
+        // connection.  The client's unique ID is the ID of the ClientSession
+        // managed object.  This id is guaranteed by Darkstar to be unique
+        // across the whole Darkstar cluster.
+        Message sim = new SessionInitializationMessage(sessionRef.getId());
+        sendToSession(SESSION_INTERNAL_CLIENT_ID, sim);
     }
         
     /**
