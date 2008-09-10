@@ -48,6 +48,7 @@ public class ModuleUtils {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             URL url = new URL(BASE_URL + uniqueName + "/repository");
+            System.out.println("url = " + url.toExternalForm());
             return RepositoryList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             // log an error

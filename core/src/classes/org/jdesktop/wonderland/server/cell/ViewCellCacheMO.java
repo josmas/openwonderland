@@ -455,6 +455,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             CellSessionProperties prop = cell.addSession(sessionRef.get(), capabilities);
 //            cellRef.setCellSessionProperties(prop);
                     
+            logger.info("Sending NEW CELL to Client: " + cell.getCellID().toString());
             sendMessage(newCreateCellMessage(cell, capabilities));
         }
     }

@@ -21,20 +21,22 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.light.PointLight;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
+import com.jme.scene.TriMesh;
+import com.jme.scene.shape.Box;
+import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
+import com.jme.scene.state.WireframeState;
 import com.jme.scene.state.ZBufferState;
-import java.util.logging.Logger;
-import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -66,7 +68,8 @@ public class StaticModelRenderer extends BasicRenderer {
         Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        return createFloorEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);        
+        //return createFloorEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);
+        return createWireframeEntity();
     }
 
     public Node createFloorEntity(String name, float xoff, float yoff, float zoff, 
@@ -104,5 +107,48 @@ public class StaticModelRenderer extends BasicRenderer {
         ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
         return ret;
+    }
+    
+    /**
+     * Creates a wireframe box or sphere with the same size as the bounds.
+     */
+    public Node createWireframeEntity() {
+        /* Fetch the basic info about the cell */
+        String name = cell.getCellID().toString();
+        CellTransform transform = cell.getLocalTransform();
+        Vector3f translation = transform.getTranslation(null);
+        Vector3f scaling = transform.getScaling(null);
+        Quaternion rotation = transform.getRotation(null);
+        
+        /* Create the new object -- either a Box or Sphere */
+        TriMesh mesh = null;
+        if (cell.getLocalBounds() instanceof BoundingBox) {
+            Vector3f extent = ((BoundingBox)cell.getLocalBounds()).getExtent(null);
+            mesh = new Box(name, new Vector3f(), extent.x, extent.y, extent.z);
+        }
+        else if (cell.getLocalBounds() instanceof BoundingSphere) {
+            float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
+            mesh = new Sphere(name, new Vector3f(), 10, 10, radius);
+        }
+        else {
+            logger.warning("Unsupported Bounds type " +cell.getLocalBounds().getClass().getName());
+            return new Node();
+        }
+        
+        /* Create the scene graph object and set its wireframe state */
+        Node node = new Node();
+        node.attachChild(mesh);
+        node.setModelBound(new BoundingBox());
+        node.updateModelBound();
+        node.setLocalTranslation(translation);
+        node.setLocalScale(scaling);
+        node.setLocalRotation(rotation);
+
+        WireframeState wiState = (WireframeState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
+        wiState.setEnabled(true);
+        node.setRenderState(wiState);
+        node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
+
+        return node;
     }
 }

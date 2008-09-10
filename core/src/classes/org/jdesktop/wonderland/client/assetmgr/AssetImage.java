@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.datamgr;
+package org.jdesktop.wonderland.client.assetmgr;
 
 import java.io.File;
 import org.jdesktop.wonderland.common.AssetType;
@@ -26,11 +26,13 @@ import org.jdesktop.wonderland.common.AssetType;
  */
 public class AssetImage extends Asset<File> {
 
-    public AssetImage(Repository r, 
-            String filename) {
-        super(r,filename);
+    /**
+     * @{inherit-javadoc}
+     */
+    public AssetImage(AssetID assetID) {
+        super(assetID);
         type = AssetType.IMAGE;
-    }
+    } 
     
     @Override
     public File getAsset() {

@@ -26,8 +26,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.config.StaticModelCellConfig;
+import org.jdesktop.wonderland.common.cell.config.ColladaCellConfig;
 import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.cell.setup.ColladaCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -56,13 +57,13 @@ public class TestColladaCellMO extends CellMO implements BeanSetupMO {
 
     @Override
     public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new StaticModelCellConfig(this.modelURI);
+        return new ColladaCellConfig(this.modelURI);
     }
 
     @Override
     public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
-        this.modelURI = ((StaticModelCellSetup)setup).getModel();
+        this.modelURI = ((ColladaCellSetup)setup).getModel();
     }
 
     @Override
@@ -79,7 +80,7 @@ public class TestColladaCellMO extends CellMO implements BeanSetupMO {
      */
     public BasicCellSetup getCellMOSetup() {
         /* Create a new BasicCellState and populate its members */
-        StaticModelCellSetup setup = new StaticModelCellSetup();
+        ColladaCellSetup setup = new ColladaCellSetup();
         setup.setModel(this.modelURI);
         
         /* Set the bounds of the cell */

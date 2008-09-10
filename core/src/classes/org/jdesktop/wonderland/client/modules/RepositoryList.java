@@ -18,12 +18,11 @@
 
 package org.jdesktop.wonderland.client.modules;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
+import java.util.LinkedList;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -33,6 +32,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlValue;
 
 
 /**
@@ -59,17 +59,20 @@ public class RepositoryList implements Serializable {
     private String[] resources = null;
     
     /* The hostname of the master asset server for this repository */
-    @XmlElement(name="master") private String master = null;
+    @XmlElement(name="master") private Repository master = null;
   
     /* An array of hostnames that serve as mirrors for serving the assets */
     @XmlElements({
         @XmlElement(name = "mirror")
     })
-    private String[] mirrors   = null;
+    private Repository[] mirrors = null;
     
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
     private static Unmarshaller unmarshaller = null;
+    
+    /* An ordered linked list of Repository classes for each of the entries */
+    private LinkedList<Repository> repositoryList = null;
     
     /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
     static {
@@ -82,14 +85,41 @@ public class RepositoryList implements Serializable {
             System.out.println(excp.toString());
         }
     }
+
+    /**
+     * The Repository static inner class simply stores the base URL of the
+     * repository and whether it is located on the web server itself (if it is,
+     * then there is no need to check the checksums). 
+     */
+    public static class Repository {
+        /* The base URL */
+        @XmlValue
+        public String url = null;
+        
+        /* Whether it is the server */
+        @XmlAttribute(name="isServer")
+        public boolean isServer = false;
+        
+        /** Default constructor */
+        public Repository() {}
+        
+        /** Constructor, takes an existing Repository as an argument */
+        public Repository(Repository repository) {
+            this.url = repository.url;
+            this.isServer = repository.isServer;
+        }
+    }
     
     /** Default constructor */
     public RepositoryList() {}
     
     /** Constructor that takes an existing ModuleRepository and makes a copy */
     public RepositoryList(RepositoryList repository) {
-        this.master = (repository.getMaster() != null) ? new String(repository.getMaster()) : null;
-        this.mirrors = (repository.getMirrors() != null) ? new String[repository.getMirrors().length] : null;
+        /* Set the name of the master repository and add to the list (if not null */
+        this.master = (repository.getMaster() != null) ? new Repository(repository.getMaster()) : null;
+        
+        /* Add the list of mirrors, if not null */
+        this.mirrors = (repository.getMirrors() != null) ? new Repository[repository.getMirrors().length] : null;
         if (this.mirrors != null) {
             for (int i = 0; i < this.mirrors.length; i++) {
                 this.mirrors[i] = mirrors[i];
@@ -101,18 +131,56 @@ public class RepositoryList implements Serializable {
                 this.resources[i] = resources[i];
             }
         }
+        this.updateRepositoryList();
     }
     
     /* Setters and getters */
     @XmlTransient public String[] getResources() { return this.resources; }
     public void setResources(String[] resources) { this.resources = resources; }
-    @XmlTransient public String getMaster() { return this.master; }
-    public void setMaster(String master) { this.master = master; }
-    @XmlTransient public String[] getMirrors() { return this.mirrors; }
-    public void setMirrors(String[] mirrors) { this.mirrors = mirrors; }
     
-        /**
-     * Returns the version as a string: <major>.<minor>
+    @XmlTransient public Repository getMaster() { return this.master; }
+    public void setMaster(Repository master) {
+        this.master = master;
+        this.updateRepositoryList();
+    }
+    
+    @XmlTransient public Repository[] getMirrors() { return this.mirrors; }
+    public void setMirrors(Repository[] mirrors) {
+        this.mirrors = mirrors;
+        this.updateRepositoryList();
+    }
+
+    /**
+     * Returns the set of repository as an array of Repository objects
+     * 
+     * @return An array of Repository objects
+     */
+    public Repository[] getAllRepositories() {
+        return this.repositoryList.toArray(new Repository[] {});
+    }
+    
+    /**
+     * Updates the internal linked list of repository objects. This is invoked
+     * whenever the set of master and mirror repositories changes.
+     */
+    private void updateRepositoryList() {
+        this.repositoryList = new LinkedList();
+        
+        /* Add the master if not null */
+        if (this.getMaster() != null) {
+            repositoryList.addFirst(new Repository(master));
+        }
+        
+        /* Add the mirrors if not null */
+        if (this.getMirrors() != null) {
+            for (Repository mirror : this.getMirrors()) {
+                repositoryList.addLast(new Repository(mirror));
+            }
+        }
+    }
+    
+    /**
+     * Returns the list of repositories encoded as a string
      */
     @Override
     public String toString() {
@@ -120,8 +188,8 @@ public class RepositoryList implements Serializable {
         str.append("Master:\n  " + this.getMaster() + "\n");
         str.append("Mirrors:\n");
         if (this.mirrors != null) {
-            for (String mirror : mirrors) {
-                str.append("  " + mirror + "\n");
+            for (Repository mirror : mirrors) {
+                str.append("  " + mirror.url + "\n");
             }
         }
         if (this.resources != null) {
@@ -142,7 +210,9 @@ public class RepositoryList implements Serializable {
      * @throw JAXBException Upon error reading the XML file
      */
     public static RepositoryList decode(Reader r) throws JAXBException {
-        return (RepositoryList)RepositoryList.unmarshaller.unmarshal(r);        
+        RepositoryList list = (RepositoryList)RepositoryList.unmarshaller.unmarshal(r);
+        list.updateRepositoryList();
+        return list;
     }
     
     /**
@@ -163,5 +233,15 @@ public class RepositoryList implements Serializable {
      */
     public void encode(OutputStream os) throws JAXBException {
         RepositoryList.marshaller.marshal(this, os);
+    }
+    
+    /**
+     * Strips the trailing '/' if it exists on the string.
+     */
+    private String stripTrailingSlash(String str) {
+        if (str.endsWith("/") == true) {
+            return str.substring(0, str.length() - 1);
+        }
+        return str;
     }
 }

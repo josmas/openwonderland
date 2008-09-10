@@ -78,9 +78,9 @@ public class ModuleCache {
                  * to load the module's information if we haven't checked 
                  * previously.
                  */
-                if (this.modulesNotFound.contains(uniqueName) == true) {
-                    return null;
-                }
+//                if (this.modulesNotFound.contains(uniqueName) == true) {
+//                    return null;
+//                }
             
                 /*
                  * Otherwise, load in the module identity from the server. If
@@ -122,9 +122,9 @@ public class ModuleCache {
                  * to load the module's checksums if we haven't checked 
                  * previously.
                  */
-                if (this.modulesNotFound.contains(uniqueName) == true) {
-                    return null;
-                }
+//                if (this.modulesNotFound.contains(uniqueName) == true) {
+//                    return null;
+//                }
             
                 /*
                  * Otherwise, load in the module checksums from the server. If
@@ -166,9 +166,10 @@ public class ModuleCache {
                  * to load the module's repository list if we haven't checked 
                  * previously.
                  */
-                if (this.modulesNotFound.contains(uniqueName) == true) {
-                    return null;
-                }
+//                if (this.modulesNotFound.contains(uniqueName) == true) {
+//                    System.out.println("module name not found: " + uniqueName);
+//                    return null;
+//                }
             
                 /*
                  * Otherwise, load in the module repositories from the server. If

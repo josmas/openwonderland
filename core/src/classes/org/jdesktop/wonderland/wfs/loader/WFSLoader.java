@@ -21,16 +21,17 @@ package org.jdesktop.wonderland.wfs.loader;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.wfs.cell.CellMOFactory;
-import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
 import org.jdesktop.wonderland.wfs.utils.WFSCellList;
 import org.jdesktop.wonderland.wfs.utils.WFSCellList.Cell;
 import org.jdesktop.wonderland.wfs.utils.WFSCellMap;
@@ -101,22 +102,24 @@ public class WFSLoader {
         for (String rootName : wfsRoots.getRoots()) {
             logger.info("WFSLoader: loading the WFS root " + rootName);
         
-            /*
-             * Attempt to create a new MO based upon the WFS root. We need to setup
-             * some basic properties about the cell by hand (e.g.name).
-             */
-            WFSCellMO mo = new WFSCellMO(rootName);
-            mo.setName(rootName);
-
-            try {
-                AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
-                CellManagerMO.getCellManager().insertCellInWorld(mo);
-            } catch (java.lang.Exception excp) {
-                logger.severe("Unable to load WFS into world: " + excp.toString());
-            }
+//            /*
+//             * Attempt to create a new MO based upon the WFS root. We need to setup
+//             * some basic properties about the cell by hand (e.g.name).
+//             */
+//            WFSCellMO mo = new WFSCellMO(rootName);
+//            mo.setName(rootName);
+//
+//            try {
+//                AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
+//                WonderlandContext.getCellManager().insertCellInWorld(mo);
+//            } catch (java.lang.Exception excp) {
+//                logger.severe("Unable to load WFS into world: " + excp.toString());
+//            }
+//            logger.info("WFSLoader: WFSCellMO (ID=" + mo.getCellID().toString() +
+//                    ") name=" + rootName);
             
             /* Load in the cells in the WFS based upon this root */
-            this.loadWFSRoot(mo, rootName);
+            this.loadWFSRoot(rootName);
         }
     }
     
@@ -124,10 +127,9 @@ public class WFSLoader {
      * Loads a WFS root into the world, based in the given WFSCellMO with a
      * unique root name.
      * 
-     * @param wfsCellMO The WFSCellMO object in which this WFS is based
      * @param rootName The unique root name of the WFS
      */
-    private void loadWFSRoot(WFSCellMO wfsCellMO, String rootName) {
+    private void loadWFSRoot(String rootName) {
         /* A queue (last-in, first-out) containing a list of cell to search down */
         LinkedList<WFSCellList> children = new LinkedList<WFSCellList>();
 
@@ -157,7 +159,7 @@ public class WFSLoader {
             logger.info("WFSLoader: processing children in " + childdir.getRelativePath());
             
             /* Recursively load the cells for this child */
-            this.loadCells(wfsCellMO, rootName, childdir, children);
+            this.loadCells(rootName, childdir, children);
         }
         
         /*
@@ -184,7 +186,7 @@ public class WFSLoader {
      * @param dir The current directory of children to load
      * @param children A list of child directories remaining to be loaded
      */
-    private void loadCells(WFSCellMO wfsCellMO, String root, WFSCellList dir, LinkedList<WFSCellList> children) {
+    private void loadCells(String root, WFSCellList dir, LinkedList<WFSCellList> children) {
         /*
          * Fetch an array of the names of the child cells. Check this is not
          * null, although this getChildren() should return an empty array
@@ -213,16 +215,7 @@ public class WFSLoader {
                 logger.warning("WFSLoader: null relative path for cell " + child.name);
                 continue;
             }
-            
-            /* Fetch the parent cell reference. If null, return the WFSCellMO */
             ManagedReference<CellMO> parentRef = this.getParentCellReference(relativePath);
-            CellMO parentMO = null;
-            if (parentRef == null) {
-                parentMO = wfsCellMO;
-            }
-            else {
-                parentMO = parentRef.get();
-            }
             
             /*
              * Download and parse the cell configuration information. Create a
@@ -265,9 +258,26 @@ public class WFSLoader {
                 continue;
             }
             
-            /* Add the child to the cell hierarchy */
+            /*
+             * Add the child to the cell hierarchy. If the cell has no parent,
+             * then we insert it directly into the world
+             */
             try {
-                parentMO.addChild(cellMO);
+                if (parentRef == null) {
+                    WonderlandContext.getCellManager().insertCellInWorld(cellMO);
+                }
+                else {
+                    logger.info("WFSLoader: Adding child (ID=" + cellMO.getCellID().toString() +
+                            ") to parent (ID=" + parentRef.get().getCellID().toString() + ")");
+                    parentRef.get().addChild(cellMO);
+                    logger.info("WFSLoader: Parent Cell ID=" + cellMO.getParent().getCellID().toString());
+                    Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
+                    Iterator<ManagedReference<CellMO>> it = refs.iterator();
+                    while (it.hasNext() == true) {
+                        logger.info("WFSLoader: Child Cell=" + it.next().get().getCellID().toString());
+                    }
+                    logger.info("WFSLoader: Cell Live: " + cellMO.isLive());
+                }
             } catch (MultipleParentException excp) {
                 logger.log(Level.WARNING, "Attempting to add a new cell with " +
                         "multiple parents: " + cellMO.getName());
@@ -283,7 +293,7 @@ public class WFSLoader {
             ManagedReference<CellMO> cellRef = AppContext.getDataManager().createReference(cellMO);
             this.cellMOMap.put(cellPath, cellRef);
             this.cellModifiedMap.put(cellPath, child.lastModified);
-            logger.info("WFSLoader: putting " + cellPath + " into map with " + child.lastModified);
+            logger.info("WFSLoader: putting " + cellPath + " (ID=" + cellMO.getCellID().toString() + ") into map with " + child.lastModified);
             logger.info(setup.toString());
             
             /*
