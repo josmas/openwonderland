@@ -1,7 +1,9 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * $RCSfile: AssetDB.java,v $
+ *
+ * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,59 +13,92 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * $Revision: 1.15 $
+ * $Date: 2007/08/07 17:01:12 $
+ * $State: Exp $
  */
-package org.jdesktop.wonderland.client.datamgr;
+package org.jdesktop.wonderland.client.assetmgr;
 
 import java.io.File;
 import java.util.ArrayList;
-import org.jdesktop.wonderland.client.datamgr.AssetManager.AssetReadyListener;
-import org.jdesktop.wonderland.client.datamgr.AssetManager.Checksum;
+import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetReadyListener;
+import org.jdesktop.wonderland.client.modules.Checksum;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * An asset in the system
- * 
+ * The Asset class represents an asset (e.g. artwork) in the system. An asset
+ * is uniquely identified by a combination of its URI (see AssetURI class) and
+ * an optional checksum. Assets with no checksum are considered the same asset.
+ * <p>
+ * Each asset has a type: typically, either file, image, or model and given by
+ * the AssetType enumeration.
+ * <p>
+ * Each asset 
+ * The url gives the full URL from which the asset was downloaded
+ * <p>
  * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
 public abstract class Asset<T> {
     protected AssetType type=null;
-    protected Repository r=null;
-    protected String filename=null;
+    protected AssetURI assetURI=null;
+    protected String url=null;
     protected File localCacheFile=null;
-    protected Checksum localChecksum=null;
+    protected String checksum=null;
     
     protected ArrayList<AssetReadyListener> listeners = null;
     
     protected String failureInfo = null;
     
-    public Asset(Repository r, 
-            String filename) {
-        this.r = r;
-        this.filename = filename;
+    /**
+     * Constructor that takes the unique URI as an argument.
+     * 
+     * @param assetURI The unique identifying asset URI.
+     */
+    public Asset(AssetID assetID) {
+        this.assetURI = assetID.getAssetURI();
+        this.checksum = assetID.getChecksum();
     }
 
+    /**
+     * Returns the asset type, typically either a file, image, or model.
+     * 
+     * @return The type of asset
+     */
     public AssetType getType() {
         return type;
     }
 
-    public Repository getRepository() {
-        return r;
-    }
-
     /**
-     * Path and filename of the asset. This is appended to the URL
-     * so use / not File.seperator
-     * @return
+     * Returns the unique URI describing the asset.
+     * 
+     * @return The unique URI describing the asset
      */
-    public String getFilename() {
-        return filename;
+    public AssetURI getAssetURI() {
+        return this.assetURI;
     }
-
+    
+    /**
+     * Returns the URL from which the asset was downloaded
+     * 
+     * @return The absolute URL from which the asset was downloaded
+     */
+    public String getURL() {
+        return this.url;
+    }
+    
+    /**
+     * Sets the URL from which the asset was downloaded
+     * 
+     * @param url The absolute URL from which the asset was downloaded
+     */
+    public void setURL(String url) {
+        this.url = url;
+    }
+    
     /**
      * Return the file containing the local cache of the asset
      * 
@@ -81,12 +116,16 @@ public abstract class Asset<T> {
      * Get the checksum of this file in the local cache.
      * @return
      */
-    public Checksum getLocalChecksum() {
-        return localChecksum;
+    public String getChecksum() {
+        return checksum;
     }
 
-    void setLocalChecksum(Checksum checksum) {
-        this.localChecksum = checksum;
+    void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+    
+    public String toString() {
+        return "(" + this.getAssetURI().toString() + " @ " + this.checksum + ")";
     }
     
     /**
@@ -157,6 +196,5 @@ public abstract class Asset<T> {
 
     public void setFailureInfo(String failureInfo) {
         this.failureInfo = failureInfo;
-    }
-    
+    }  
 }

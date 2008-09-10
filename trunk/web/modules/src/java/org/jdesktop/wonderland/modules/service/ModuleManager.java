@@ -662,11 +662,5 @@ public class ModuleManager {
     
     public static void main(String args[]) {
         ModuleManager mm = ModuleManager.getModuleManager();
-        
-        AddedModule am = mm.getAddModule("mpk20");
-        mm.add(am);
-        
-        PendingModule pm = mm.getPendingModule("mpk20");
-        mm.install(pm);
     }
 }

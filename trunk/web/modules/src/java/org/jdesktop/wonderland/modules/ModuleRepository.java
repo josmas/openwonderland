@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlValue;
 
 
 /**
@@ -76,14 +77,6 @@ public class ModuleRepository implements Serializable {
      */
     public static final String WL_SERVER = "%WLSERVER%";
     
-    /*
-     * An attribute saying whether or not to insert the server at the end of
-     * the list of mirrors if it does not already exist in the list of asset
-     * servers somewhere.
-     */
-    @XmlAttribute(name="server_fallback")
-    private boolean useServer = true;
-    
     /* An array of module resources, as relative paths within the module */
     @XmlElements({
         @XmlElement(name="resource")
@@ -91,13 +84,13 @@ public class ModuleRepository implements Serializable {
     private String[] resources = null;
     
     /* The hostname of the master asset server for this repository */
-    @XmlElement(name="master") private String master = null;
+    @XmlElement(name="master") private Repository master = null;
   
     /* An array of hostnames that serve as mirrors for serving the assets */
     @XmlElements({
         @XmlElement(name = "mirror")
     })
-    private String[] mirrors   = null;
+    private Repository[] mirrors   = null;
     
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
@@ -115,14 +108,36 @@ public class ModuleRepository implements Serializable {
         }
     }
     
+    /**
+     * The Repository static inner class simply stores the base URL of the
+     * repository and whether it is located on the web server itself (if it is,
+     * then there is no need to check the checksums). 
+     */
+    public static class Repository {
+        /* The base URL */
+        @XmlValue
+        public String url = null;
+        
+        /* Whether it is the server */
+        @XmlAttribute(name="isServer")
+        public boolean isServer = false;
+        
+        /** Default constructor */
+        public Repository() {}
+        
+        /** Constructor, takes an existing Repository as an argument */
+        public Repository(Repository repository) {
+            this.url = repository.url;
+            this.isServer = repository.isServer;
+        }
+    }
     /** Default constructor */
     public ModuleRepository() {}
     
     /** Constructor that takes an existing ModuleRepository and makes a copy */
     public ModuleRepository(ModuleRepository repository) {
-        this.useServer = repository.isUseServer();
-        this.master = (repository.getMaster() != null) ? new String(repository.getMaster()) : null;
-        this.mirrors = (repository.getMirrors() != null) ? new String[repository.getMirrors().length] : null;
+        this.master = (repository.getMaster() != null) ? new Repository(repository.getMaster()) : null;
+        this.mirrors = (repository.getMirrors() != null) ? new Repository[repository.getMirrors().length] : null;
         if (this.mirrors != null) {
             for (int i = 0; i < this.mirrors.length; i++) {
                 this.mirrors[i] = mirrors[i];
@@ -139,12 +154,10 @@ public class ModuleRepository implements Serializable {
     /* Setters and getters */
     @XmlTransient public String[] getResources() { return this.resources; }
     public void setResources(String[] resources) { this.resources = resources; }
-    @XmlTransient public String getMaster() { return this.master; }
-    public void setMaster(String master) { this.master = master; }
-    @XmlTransient public String[] getMirrors() { return this.mirrors; }
-    public void setMirrors(String[] mirrors) { this.mirrors = mirrors; }
-    @XmlTransient public boolean isUseServer() { return this.useServer; }
-    public void setUseServer(boolean useServer) { this.useServer = useServer; }
+    @XmlTransient public Repository getMaster() { return this.master; }
+    public void setMaster(Repository master) { this.master = master; }
+    @XmlTransient public Repository[] getMirrors() { return this.mirrors; }
+    public void setMirrors(Repository[] mirrors) { this.mirrors = mirrors; }
     
         /**
      * Returns the version as a string: <major>.<minor>
@@ -152,12 +165,11 @@ public class ModuleRepository implements Serializable {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder("Module Repository:\n");
-        str.append("Use Server: " + this.isUseServer());
         str.append("Master:\n  " + this.getMaster() + "\n");
         str.append("Mirrors:\n");
         if (this.mirrors != null) {
-            for (String mirror : mirrors) {
-                str.append("  " + mirror + "\n");
+            for (Repository mirror : mirrors) {
+                str.append("  " + mirror.url + "\n");
             }
         }
         if (this.resources != null) {
@@ -199,20 +211,5 @@ public class ModuleRepository implements Serializable {
      */
     public void encode(OutputStream os) throws JAXBException {
         ModuleRepository.marshaller.marshal(this, os);
-    }
-    
-    /**
-     * Main method which writes a sample WFSVersion class to disk
-     */
-    public static void main(String args[]) {
-        try {
-            ModuleRepository rep = new ModuleRepository();
-            rep.setMaster("http://www.arts.com/");
-            rep.setMirrors(new String[] { "http://www.foo.com" });
-            rep.setResources(new String[] { "mpk20/models/building.j3s.gz"});
-            rep.encode(new FileWriter(new File("/Users/jordanslott/module-wlm/repository.xml")));
-        } catch (java.lang.Exception excp) {
-            System.out.println(excp.toString());
-        }
     }
 }

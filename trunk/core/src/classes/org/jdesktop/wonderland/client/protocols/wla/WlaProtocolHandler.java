@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.protocols.wltexture;
+package org.jdesktop.wonderland.client.protocols.wla;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,16 +23,17 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
 /**
- * Handler for the wltexture: protocol
+ * The WlaProtocolHandler class handles all URL connections made to a URL with
+ * a 'wla' protocol. This is used for Wonderland assets.
  * 
  * @author paulby
  */
-public class Handler extends URLStreamHandler {
+public class WlaProtocolHandler extends URLStreamHandler {
 
     @Override
     protected URLConnection openConnection(URL url) throws IOException {
-        assert(url.getProtocol().equalsIgnoreCase("wltexture"));
-        return new WlTextureURLConnection(url);
+        assert(url.getProtocol().equalsIgnoreCase("wla"));
+        return new WlaURLConnection(url);
     }
 
 }

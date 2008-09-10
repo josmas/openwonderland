@@ -22,12 +22,12 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.config.StaticModelCellConfig;
+import org.jdesktop.wonderland.common.cell.config.ColladaCellConfig;
+import org.jdesktop.wonderland.server.cell.setup.ColladaCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -59,13 +59,13 @@ public class RoomTestCellMO extends CellMO
 
     @Override
     public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new StaticModelCellConfig(this.filename);
+        return new ColladaCellConfig(this.filename);
     }
 
     @Override
     public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
-        this.filename = ((StaticModelCellSetup)setup).getModel();
+        this.filename = ((ColladaCellSetup)setup).getModel();
     }
 
     @Override
@@ -82,7 +82,7 @@ public class RoomTestCellMO extends CellMO
      */
     public BasicCellSetup getCellMOSetup() {
         /* Create a new BasicCellSetup and populate its members */
-        StaticModelCellSetup setup = new StaticModelCellSetup();
+        ColladaCellSetup setup = new ColladaCellSetup();
         setup.setModel(this.filename);
         
         /* Set the bounds of the cell */

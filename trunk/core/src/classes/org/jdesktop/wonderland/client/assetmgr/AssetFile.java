@@ -1,7 +1,9 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * $RCSfile: AssetDB.java,v $
+ *
+ * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,11 +13,11 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * $Revision: 1.15 $
+ * $Date: 2007/08/07 17:01:12 $
+ * $State: Exp $
  */
-package org.jdesktop.wonderland.client.datamgr;
+package org.jdesktop.wonderland.client.assetmgr;
 
 import java.io.File;
 import org.jdesktop.wonderland.common.AssetType;
@@ -26,9 +28,11 @@ import org.jdesktop.wonderland.common.AssetType;
  */
 public class AssetFile extends Asset<File> {
 
-    public AssetFile(Repository r, 
-            String filename) {
-        super(r,filename);
+    /**
+     * @{inherit-javadoc}
+     */
+    public AssetFile(AssetID assetID) { 
+        super(assetID);
         type = AssetType.FILE;
     }
     

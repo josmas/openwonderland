@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.datamgr;
+package org.jdesktop.wonderland.client.assetmgr;
 
 import java.io.BufferedInputStream;
 import java.io.FilterInputStream;

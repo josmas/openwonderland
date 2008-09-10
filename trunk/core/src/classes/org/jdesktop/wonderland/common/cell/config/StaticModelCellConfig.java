@@ -24,33 +24,8 @@ package org.jdesktop.wonderland.common.cell.config;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class StaticModelCellConfig extends CellConfig {
-    /* The unique URL that describes the model data */
-    private String modelURI = null;
     
     /** Default constructor */
     public StaticModelCellConfig() {
-    }
-    
-    /** Constructor, takes the model URI */
-    public StaticModelCellConfig(String modelURI) {
-        this.modelURI = modelURI;
-    }
-    
-    /**
-     * Returns the unique model URI, null if none.
-     * 
-     * @return The unique model URI
-     */
-    public String getModelURI() {
-        return this.modelURI;
-    }
-    
-    /**
-     * Sets the unique model URI, null for none.
-     * 
-     * @param modelURI The unique model URI
-     */
-    public void setModelURI(String modelURI) {
-        this.modelURI = modelURI;
     }
 }

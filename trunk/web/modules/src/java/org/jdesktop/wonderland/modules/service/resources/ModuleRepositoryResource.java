@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.jdesktop.wonderland.modules.ModuleRepository;
+import org.jdesktop.wonderland.modules.ModuleRepository.Repository;
 import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 
@@ -80,7 +81,6 @@ public class ModuleRepositoryResource {
          * If there are any entries with %WL_SERVER%, then replace with the
          * server path to the asset.
          */
-        boolean replaced = false;
         UriBuilder artBuilder = context.getBaseUriBuilder();
         artBuilder = artBuilder.path(moduleName).path("art");
         String hostname = artBuilder.build().toString();
@@ -96,7 +96,10 @@ public class ModuleRepositoryResource {
             logger.warning("ModuleManager: null repository for module: " + moduleName);
             logger.warning("ModuleManager: sending this server as fallback: " + hostname);
             ModuleRepository newRepository = new ModuleRepository();
-            newRepository.setMaster(hostname);
+            Repository rep = new Repository();
+            rep.url = hostname;
+            rep.isServer = true;
+            newRepository.setMaster(rep);
  
             /* Write the XML encoding to a writer and return it */
             StringWriter sw = new StringWriter();
@@ -117,36 +120,25 @@ public class ModuleRepositoryResource {
         ModuleRepository newRepository = new ModuleRepository(mr);
         
         /* Replace the master if its string is the special %WL_SERVER% */
-        if (newRepository.getMaster() != null && newRepository.getMaster().compareTo(ModuleRepository.WL_SERVER) == 0) {
-            newRepository.setMaster(hostname);
-            replaced = true;
+        if (newRepository.getMaster() != null && newRepository.getMaster().url.compareTo(ModuleRepository.WL_SERVER) == 0) {
+            Repository rep = new Repository();
+            rep.url = hostname;
+            rep.isServer = true;
+            newRepository.setMaster(rep);
         }
         
         /* Replace the mirrors if its string is the special %WL_SERVER% */
-        String mirrors[] = newRepository.getMirrors();
+        Repository mirrors[] = newRepository.getMirrors();
         if (mirrors != null) {
             for (int i = 0; i < mirrors.length; i++) {
-                if (mirrors[i] != null && mirrors[i].compareTo(ModuleRepository.WL_SERVER) == 0) {
-                    mirrors[i] = hostname;
-                    replaced = true;
+                if (mirrors[i] != null && mirrors[i].url.compareTo(ModuleRepository.WL_SERVER) == 0) {
+                    Repository rep = new Repository();
+                    rep.url = hostname;
+                    rep.isServer = true;
+                    mirrors[i] = rep;
                 }
             }
             newRepository.setMirrors(mirrors);
-        }
-        
-        /*
-         * We may want to add the WL server to the end of the mirrors, if we
-         * have not yet replaced an entry already and if use_server does not
-         * equal false.
-         */
-        if (replaced == false && newRepository.isUseServer() == true) {
-            /* First copy the old array (if it exists) into the new array */
-            String newMirrors[] = (mirrors != null) ? new String[mirrors.length + 1] : new String[1];
-            for (int i = 0; i < newMirrors.length - 1; i++) {
-                newMirrors[i] = mirrors[i];
-            }
-            newMirrors[newMirrors.length - 1] = hostname;
-            newRepository.setMirrors(newMirrors);
         }
         
         /* Write the XML encoding to a writer and return it */
