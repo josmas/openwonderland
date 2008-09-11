@@ -64,13 +64,14 @@ public class ModuleUtils {
      * @param uniqueName The unique name of a module
      * @return The checksum information for a module
      */
-    public static ModuleChecksums fetchModuleChecksums(String uniqueName) {
+    public static ChecksumList fetchModuleChecksums(String uniqueName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             URL url = new URL(BASE_URL + uniqueName + "/checksums");
-            return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
+            return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             // log an error
+            System.out.println(excp.toString());
             return null;
         }
     }

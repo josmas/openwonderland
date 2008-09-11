@@ -26,8 +26,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.client.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
+import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.wfs.InvalidWFSException;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSFactory;
@@ -174,10 +174,9 @@ public class FileModuleUtil {
         File file = new File(root, Module.MODULE_CHECKSUMS);
         try {
             return ModuleChecksums.decode(new FileReader(file));
-        } catch (java.io.IOException excp) {
+        } catch (Exception excp) {
             // log an error and continue
-        } catch (javax.xml.bind.JAXBException excp) {
-            // log an error and continue
+            ModuleManager.getLogger().warning(excp.toString());
         }
         return null;
     }

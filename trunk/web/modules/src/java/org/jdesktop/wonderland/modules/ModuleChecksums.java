@@ -16,36 +16,36 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.modules;
+package org.jdesktop.wonderland.modules;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.Serializable;
 import java.io.Writer;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup.HashMapEntry;
 
 /**
- * The ModuleChecksums class represents a collection of checkums for a given
+ * The ChecksumList class represents a collection of checkums for a given
  * repository in one file. It can be generated automatically by the static
  * generate() utility method.
  * <p>
@@ -60,11 +60,11 @@ public class ModuleChecksums {
     /* The SHA-1 checksum algorithm */
     public final static String SHA1_CHECKSUM_ALGORITHM = "SHA-1";
     
-    /* A hashtable to resource path name-checksum entries */
-    @XmlElements({ 
+    /* A list of checksum entries */
+    @XmlElements({
         @XmlElement(name="checksum")
     })
-    public ChecksumsHashMap checksums = new ChecksumsHashMap();
+    public LinkedList<Checksum> checksums = new LinkedList<Checksum>();
 
     /*
      * The internal representation of the checksums as a hashed map. The HashMap
@@ -81,7 +81,7 @@ public class ModuleChecksums {
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(Checksum.class);
+            JAXBContext jc = JAXBContext.newInstance(ModuleChecksums.class);
             ModuleChecksums.unmarshaller = jc.createUnmarshaller();
             ModuleChecksums.marshaller = jc.createMarshaller();
             ModuleChecksums.marshaller.setProperty("jaxb.formatted.output", true);
@@ -89,34 +89,37 @@ public class ModuleChecksums {
             System.out.println(excp.toString());
         }
     }
+  
+    public static class Checksum {
+        /* The hex-encoded checksum string */
+        @XmlElement(name = "checksum-hex-encoded")
+        public String checksum = null;
 
-    /**
-     * A wrapper class for hashmaps, because JAXB does not correctly support
-     * the HashMap class.
-     */
-    public static class ChecksumsHashMap implements Serializable {
-        /* A list of entries */
-        @XmlElements( {
-            @XmlElement(name="entry")
-        })
-        public List<HashMapEntry> entries = new ArrayList<HashMapEntry>();
+        /* The time the resource was last modified on disk, millisecs since epoch */
+        @XmlElement(name = "last-modified")
+        public long lastModified = 0;
 
+        /* The relative name of the resource in the repository */
+        @XmlElement(name = "resource-path")
+        public String pathName = null;
+        
         /** Default constructor */
-        public ChecksumsHashMap() {
+        public Checksum() {
         }
-    }
-    
-    /**
-     * A wrapper class for hashmap entries, because JAXB does not correctly
-     * support the HashMap class
-     */
-    public static class HashMapEntry implements Serializable {
-        /* The key and values */
-        @XmlAttribute public String key;
-        @XmlAttribute public Checksum value;
-
-        /** Default constructor */
-        public HashMapEntry() {
+        
+        /**
+         * Converts the checksum given as an array of bytes into a hex-encoded
+         * string.
+         * 
+         * @param bytes The checksum as an array of bytes
+         * @return The checksum as a hex-encoded string
+         */
+        public static String toHexString(byte bytes[]) {
+            StringBuffer ret = new StringBuffer();
+            for (int i = 0; i < bytes.length; ++i) {
+                ret.append(Integer.toHexString(0x0100 + (bytes[i] & 0x00FF)).substring(1));
+            }
+            return ret.toString();
         }
     }
     
@@ -138,16 +141,17 @@ public class ModuleChecksums {
      * 
      * @return An array of Checksum objects
      */
+    @XmlTransient
     public HashMap<String, Checksum> getChecksums() {
         return this.internalChecksums;
     }
     
     /**
      * Takes the input reader of the XML file and instantiates an instance of
-     * the ModuleChecksums class
+     * the ChecksumList class
      * <p>
      * @param r The input reader of the version XML file
-     * @throw ClassCastException If the input file does not map to ModuleChecksums
+     * @throw ClassCastException If the input file does not map to ChecksumList
      * @throw JAXBException Upon error reading the XML file
      */
     public static ModuleChecksums decode(Reader r) throws JAXBException {
@@ -155,11 +159,11 @@ public class ModuleChecksums {
         
         /* Convert metadata to internal representation */
         if (rc.checksums != null) {
-            ListIterator<HashMapEntry> iterator = rc.checksums.entries.listIterator();
+            Iterator<Checksum> iterator = rc.checksums.iterator();
             rc.internalChecksums = new HashMap<String, Checksum>();
             while (iterator.hasNext() == true) {
-                HashMapEntry entry = iterator.next();
-                rc.internalChecksums.put(entry.key, entry.value);
+                Checksum c = iterator.next();
+                rc.internalChecksums.put(c.pathName, c);
             }
         }
         else {
@@ -169,7 +173,7 @@ public class ModuleChecksums {
     }
     
     /**
-     * Writes the ModuleChecksums class to an output writer.
+     * Writes the ChecksumList class to an output writer.
      * <p>
      * @param w The output writer to write to
      * @throw JAXBException Upon error writing the XML file
@@ -177,12 +181,9 @@ public class ModuleChecksums {
     public void encode(Writer w) throws JAXBException {
         /* Convert internal checksum hash to one suitable for serialization */
         if (this.internalChecksums != null) {
-            this.checksums = new ChecksumsHashMap();
+            this.checksums = new LinkedList<Checksum>();
             for (Map.Entry<String, Checksum> e : this.internalChecksums.entrySet()) {
-                HashMapEntry entry = new HashMapEntry();
-                entry.key = e.getKey();
-                entry.value = e.getValue();
-                this.checksums.entries.add(entry);
+                this.checksums.add(e.getValue());
             }
         }
         else {
@@ -192,7 +193,7 @@ public class ModuleChecksums {
     }
 
     /**
-     * Writes the ModuleChecksums class to an output stream.
+     * Writes the ChecksumList class to an output stream.
      * <p>
      * @param os The output stream to write to
      * @throw JAXBException Upon error writing the XML file
@@ -200,12 +201,9 @@ public class ModuleChecksums {
     public void encode(OutputStream os) throws JAXBException {
         /* Convert internal checksum hash to one suitable for serialization */
         if (this.internalChecksums != null) {
-            this.checksums = new ChecksumsHashMap();
+            this.checksums = new LinkedList<Checksum>();
             for (Map.Entry<String, Checksum> e : this.internalChecksums.entrySet()) {
-                HashMapEntry entry = new HashMapEntry();
-                entry.key = e.getKey();
-                entry.value = e.getValue();
-                this.checksums.entries.add(entry);
+                this.checksums.add(e.getValue());
             }
         }
         else {
@@ -262,7 +260,7 @@ public class ModuleChecksums {
         File[] files = dir.listFiles();
         for (File file : files) {
             /* If a directory, then recursively descend and append */
-            if (file.isDirectory() == true) {
+            if (file.isDirectory() == true && file.isHidden() == false) {
                 HashMap<String, Checksum> rList = ModuleChecksums.generateChecksumForDirectory(
                         root, file, digest, includes, excludes);
                 list.putAll(rList);
@@ -294,13 +292,15 @@ public class ModuleChecksums {
                          * The relative path name is the absolute path name of the
                          * file, stripping off the absolute path name of the root
                          */
-                        String name = file.getAbsolutePath().substring((int) (root.length() + 1));
+                        System.out.println("root length=" + root.getAbsolutePath().length());
+                        System.out.println("file length=" + file.getAbsolutePath().length());
+                        String name = file.getAbsolutePath().substring((int) (root.getAbsolutePath().length() + 1));
 
                         /* Create a new checksum object and add to the list */
                         Checksum c = new Checksum();
-                        c.setLastModified(file.lastModified());
-                        c.setPathName(name);
-                        c.setChecksum(Checksum.toHexString(byteChecksum));
+                        c.lastModified = file.lastModified();
+                        c.pathName = name;
+                        c.checksum = Checksum.toHexString(byteChecksum);
                         list.put(name, c);
                     } catch (java.io.IOException excp) {
                         // ignore for now
@@ -353,5 +353,30 @@ public class ModuleChecksums {
             }
         }
         return true;
+    }
+    
+    /**
+     * Generates the checksum file for a given directory (given as the first
+     * argument) and writes it out to a file (given as the second argument)
+     */
+    public static void main(String args[]) throws NoSuchAlgorithmException, JAXBException, IOException {
+//        /* Sanity check on the arguments given */
+//        if (args.length < 2) {
+//            System.out.println("usage: java ModuleChecksums <dir> <checksum file>");
+//            System.exit(0);
+//        }
+//     
+//        /* Fetch the arguments */
+//        File root = new File(args[0]);
+//        File file = new File(args[1]);
+
+        File root = new File("/Users/jordanslott/wonderland/trunk/web/examples/modules/installed/mpk20/art");
+        File file = new File("checksums.xml");
+        /* Generate the checksums */
+        String includes[] = new String[0];
+        String excludes[] = new String[0];
+        
+        ModuleChecksums checksums = ModuleChecksums.generate(root, SHA1_CHECKSUM_ALGORITHM, includes, excludes);
+        checksums.encode(new FileWriter(file));
     }
 }

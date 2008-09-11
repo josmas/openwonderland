@@ -25,7 +25,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.jdesktop.wonderland.client.modules.ModuleChecksums;
 import org.jdesktop.wonderland.utils.ArchiveManifest;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSFactory;
