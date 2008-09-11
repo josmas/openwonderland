@@ -184,13 +184,13 @@ public class ModuleJarWriter {
          * Write out each of the WFSs. Loop through the map, and write the
          * directory structure to the JAR file
          */
-        Map<String, WFS> wfsMap = module.getModuleWFSs();
-        Iterator<String> it = wfsMap.keySet().iterator();
-        while (it.hasNext() == true) {
-            String wfsName = it.next();
-            WFS wfs = wfsMap.get(wfsName);
-            wfs.writeTo(jos);
-        }
+//        Map<String, WFS> wfsMap = module.getModuleWFSs();
+//        Iterator<String> it = wfsMap.keySet().iterator();
+//        while (it.hasNext() == true) {
+//            String wfsName = it.next();
+//            WFS wfs = wfsMap.get(wfsName);
+//            wfs.writeTo(jos);
+//        }
     }
     
     /**

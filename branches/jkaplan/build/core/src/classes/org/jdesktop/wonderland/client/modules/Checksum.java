@@ -25,7 +25,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
@@ -40,7 +39,6 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author paulby
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@XmlRootElement(name="checksum")
 public class Checksum {
     /* The hex-encoded checksum string */
     @XmlElement(name="checksum-hex-encoded")

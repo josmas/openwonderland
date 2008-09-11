@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.client.assetmgr.TrackingInputStream.ProgressListe
 import org.jdesktop.wonderland.client.modules.Checksum;
 import org.jdesktop.wonderland.client.modules.ModuleCache;
 import org.jdesktop.wonderland.client.modules.ModuleCacheList;
-import org.jdesktop.wonderland.client.modules.ModuleChecksums;
+import org.jdesktop.wonderland.client.modules.ChecksumList;
 import org.jdesktop.wonderland.client.modules.RepositoryList;
 import org.jdesktop.wonderland.client.modules.RepositoryList.Repository;
 import org.jdesktop.wonderland.client.modules.RepositoryUtils;
@@ -89,7 +89,7 @@ public class AssetManager {
      * MAX_REPOSITORY_CHECKSUMS. This list is synchronized so that multiple
      * threads may interact with it safely
      */
-    private Map<Repository, ModuleChecksums> checksums = null;
+    private Map<Repository, ChecksumList> checksums = null;
     private static final int MAX_REPOSITORY_CHECKSUMS = 100;
     
     /*
@@ -123,7 +123,7 @@ public class AssetManager {
         assetDB = new AssetDB();
         
         /* Create a synchronized list of cached checksums information */
-        this.checksums = Collections.synchronizedMap(new LinkedHashMap<Repository, ModuleChecksums>());
+        this.checksums = Collections.synchronizedMap(new LinkedHashMap<Repository, ChecksumList>());
         
         /* Open the cache directory */
         cacheDir = new File(this.getCacheDirectory());
@@ -191,8 +191,9 @@ public class AssetManager {
         String uri = assetURI.toString();
         
         /* Log a bunch of informative messages */
-        logger.fine("[ASSET] GET asset: " + uri + " [" + assetType + "]");
-        logger.fine("[ASSET] GET module name: " + assetURI.getModuleName());
+        logger.fine("[ASSET] GET asset " + uri + " [" + assetType + "]");
+        logger.fine("[ASSET] GET module name " + assetURI.getModuleName());
+        logger.fine("[ASSET] GET module relative path " + assetURI.getRelativePath());
         
         /*
          * First construct an Asset object that represents the asset we want.
@@ -201,9 +202,10 @@ public class AssetManager {
         String checksum = null;
         ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache("server");
         if (cache != null) {
-            ModuleChecksums checksums = cache.getModuleChecksums(assetURI.getModuleName());
+            ChecksumList checksums = cache.getModuleChecksums(assetURI.getModuleName());
+            logger.fine("[ASSET] GET checksums for module " + checksums);
             if (checksums != null) {
-                Checksum c = checksums.getChecksums().get(uri);
+                Checksum c = checksums.getChecksums().get(assetURI.getRelativePath());
                 if (c != null) {
                     checksum = c.getChecksum();
                 }
@@ -214,6 +216,16 @@ public class AssetManager {
         /* Log a bunch of informative messages */
         logger.fine("[ASSET] GET module cache: " + cache);
         logger.fine("[ASSET] GET checksum for asset: " + checksum);
+        
+        /*
+         * If the asset does not have a checksum, it means the module is bad.
+         * Print an error message here -- we cannot load the asset.
+         */
+        if (checksum == null) {
+            logger.warning("[ASSET] GET Checksum is null for asset");
+            logger.warning("[ASSET] GET Unable to load, recheck module installation");
+            return null;
+        }
         
         // XXX Some profiling shows this method takes a while -- hmmm, is it
         // because of the synchronized calls? Can we do this better?
@@ -444,7 +456,7 @@ public class AssetManager {
          */
         for (Repository repository : list.getAllRepositories()) {
             /* Log a message for this attempt to download from the next source */
-            System.out.println("Attempting to load from location, url=" + repository.toString());
+            logger.fine("[ASSET] FETCH Attempting to load from location, url=" + repository.toString());
 
             /*
              * See if the checksum of the asset stored in the repository matches
@@ -453,7 +465,7 @@ public class AssetManager {
              * the same server that hosts the module
              */
             if (repository.isServer == false) {
-                ModuleChecksums mc = this.getChecksums(repository);
+                ChecksumList mc = this.getChecksums(repository);
                 if (mc == null) {
                     continue;
                 }
@@ -471,7 +483,7 @@ public class AssetManager {
              * a message and continue to the next one.
              */
             if (getAssetFromServer(asset, url, null) == false) {
-                System.out.println("Loading of asset url=" + url + " failed");
+                logger.warning("[ASSET] FETCH Loading of asset url=" + url + " failed");
                 continue;
             }
 
@@ -499,7 +511,7 @@ public class AssetManager {
      */
     private boolean getAssetFromServer(Asset asset, String url, ProgressListener progressListener) {        
         try {
-            System.out.println("Downloading: " + url.toString());
+            logger.fine("[ASSET] DOWNLOAD " + url.toString());
             
             /* Open up all of the connections to the remote server */
             URLConnection connection = new URL(url).openConnection();
@@ -513,12 +525,9 @@ public class AssetManager {
             
             /* Open the cache file, create directories if necessary */
             String cacheFile = this.getAssetCacheFileName(asset.getAssetURI());
-            System.out.println("AssetManager: Writing asset to local cache file: " + cacheFile);
             File file = new File(cacheFile);
-            System.out.println("Can write file? " + file.canWrite());
             if (!file.canWrite())
                 makeDirectory(file);
-            System.out.println("Does dir exsit? " + file.getAbsolutePath());
 
             /* Create the output stream, through a digest to compute the checksum */
             byte[] buf = new byte[AssetManager.NETWORK_CHUNK_SIZE];
@@ -543,6 +552,9 @@ public class AssetManager {
 
             /* Point the asset to the local cache file */
             asset.setLocalCacheFile(file);
+            asset.setURL(url);
+            
+            logger.fine("[ASSET] DOWNLOAD done " + url.toString());
             return true;
         } catch(java.lang.Exception ex) {
             /* Log an error and return false */
@@ -577,7 +589,7 @@ public class AssetManager {
      * @return True upon success, false upon failure
      */
     private boolean getAssetFromCache(Asset asset) {
-        System.out.println("Fetching asset from cache, file=" + asset.getLocalCacheFile().getAbsolutePath());
+        logger.fine("[ASSET] CACHE FETCH " + asset.getLocalCacheFile().getAbsolutePath());
         try {
             /* Attempt to load the asset, return false if we cannot */
             if (asset.loadLocal() == false) {
@@ -609,7 +621,7 @@ public class AssetManager {
      * @param repository The repository to look for checksums
      * @return The collection of checksums for the repository
      */
-    private ModuleChecksums getChecksums(Repository repository) {
+    private ChecksumList getChecksums(Repository repository) {
         /*
          * First check whether the checksum information is cached for the
          * repository. Note that we do not make this entire method atomic. If
@@ -629,7 +641,7 @@ public class AssetManager {
          */
         try {
             URL url = new URL(RepositoryUtils.getChecksumURL(repository));
-            ModuleChecksums c = ModuleChecksums.decode(new InputStreamReader(url.openStream()));
+            ChecksumList c = ChecksumList.decode(new InputStreamReader(url.openStream()));
             if (c != null) {
                 this.checksums.put(repository, c);
             }
@@ -708,7 +720,7 @@ public class AssetManager {
                 String uri = this.asset.getAssetURI().toString();
 
                 /* Log a message when this asynchronous task kicks off */
-                System.out.println("[ASSET] CALL fetch asset: " + uri + " [" + this.server + "]");
+                logger.fine("[ASSET] CALL fetch asset: " + uri + " [" + this.server + "]");
 
                 /*
                  * First see if we wish to load the asset from the local cache. If
@@ -718,16 +730,16 @@ public class AssetManager {
                 if (this.server == false) {
                     /* If we can load the asset, then all is well and return */
                     if (getAssetFromCache(this.asset) == true) {
-                        System.out.println("Loaded asset from local cache, uri=" + uri);
+                        logger.warning("[ASSET] CALL Loaded asset from local cache, uri=" + uri);
                         this.asset.setFailureInfo(null);
                         this.asset.notifyAssetReadyListeners();
                         return this.asset;
                     }
 
                     /* Otherwise, log a warning and try to load from the server */
-                    System.out.println("Unable to load asset from local cache, uri=" + uri);
+                    logger.fine("[ASSET] CALL Unable to load asset from local cache, uri=" + uri);
                     if (getAssetFromRepository(this.asset) == false) {
-                        System.out.println("Loading asset from repository failed, uri=" + uri);
+                        logger.warning("[ASSET] CALL Loading asset from repository failed, uri=" + uri);
                         this.asset.setFailureInfo(new String("Failed to load asset from repository, uri=" + uri));
                         this.asset.notifyAssetReadyListeners();
                         return this.asset;
@@ -747,7 +759,7 @@ public class AssetManager {
                     
                     /* Load the asset from the remote repository */
                     if (getAssetFromRepository(this.asset) == false) {
-                        System.out.println("Loading asset from repository failed, uri=" + uri);
+                        logger.warning("[ASSET] CALL Loading asset from repository failed, uri=" + uri);
                         this.asset.setFailureInfo(new String("Failed to load asset from repository, uri=" + uri));
                         this.asset.notifyAssetReadyListeners();
                         return this.asset;

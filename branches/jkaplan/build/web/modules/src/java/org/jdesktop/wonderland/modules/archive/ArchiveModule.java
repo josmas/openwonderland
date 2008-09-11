@@ -26,16 +26,15 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.jdesktop.wonderland.client.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
+import org.jdesktop.wonderland.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.ModulePlugin;
 import org.jdesktop.wonderland.modules.ModuleRepository;
 import org.jdesktop.wonderland.modules.ModuleRequires;
 import org.jdesktop.wonderland.modules.ModuleResource;
 import org.jdesktop.wonderland.utils.ArchiveManifest;
-import org.jdesktop.wonderland.wfs.WFS;
 
 /**
  * The ArchiveModule class extends the Module abstract base class and represents
@@ -81,7 +80,7 @@ public class ArchiveModule extends Module {
         ModuleRepository repository = ArchiveModuleUtil.parseModuleRepository(this.manifest);
         HashMap<String, ModuleArtResource> artwork = ArchiveModuleUtil.parseModuleArt(this.manifest);
         ModuleChecksums checksums = ArchiveModuleUtil.parseModuleChecksums(this.manifest);
-        HashMap<String, WFS> wfs = ArchiveModuleUtil.parseModuleWFS(this.manifest);
+        HashMap<String, String> wfs = ArchiveModuleUtil.parseModuleWFS(this.manifest);
         HashMap<String, ModulePlugin> plugins = ArchiveModuleUtil.parseModulePlugins(this.manifest);
 
 

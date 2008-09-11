@@ -389,14 +389,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     <!--
                 COMPILATION SECTION
             -->
-    <target depends="init" if="no.dist.ear.dir" name="deps-module-jar" unless="no.deps">
-        <ant antfile="${project.wonderland-core}/build.xml" inheritall="false" target="jar"/>
-        <ant antfile="${project.wonderland-web-utils}/build.xml" inheritall="false" target="jar"/>
-    </target>
-    <target depends="init" if="dist.ear.dir" name="deps-ear-jar" unless="no.deps">
-        <ant antfile="${project.wonderland-core}/build.xml" inheritall="false" target="jar"/>
-        <ant antfile="${project.wonderland-web-utils}/build.xml" inheritall="false" target="jar"/>
-    </target>
+    <target depends="init" if="no.dist.ear.dir" name="deps-module-jar" unless="no.deps"/>
+    <target depends="init" if="dist.ear.dir" name="deps-ear-jar" unless="no.deps"/>
     <target depends="init, deps-module-jar, deps-ear-jar" name="deps-jar" unless="no.deps"/>
     <target depends="init,deps-jar" name="-pre-pre-compile">
         <mkdir dir="${build.classes.dir}"/>
@@ -535,31 +529,22 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest" name="do-dist"/>
     <target depends="init" if="dist.ear.dir" name="library-inclusion-in-manifest">
-        <basename file="${reference.wonderland-core.jar.1.libfile.3}" property="included.lib.reference.wonderland-core.jar.1.3"/>
-        <basename file="${reference.wonderland-core.jar.1.libfile.2}" property="included.lib.reference.wonderland-core.jar.1.2"/>
-        <basename file="${reference.wonderland-core.jar.1.libfile.1}" property="included.lib.reference.wonderland-core.jar.1.1"/>
-        <copy-ear-war file="${reference.wonderland-core.jar.1.libfile.3}" propname="included.lib.reference.wonderland-core.jar.1.3.X"/>
-        <copy-ear-war file="${reference.wonderland-core.jar.1.libfile.2}" propname="included.lib.reference.wonderland-core.jar.1.2.X"/>
-        <copy-ear-war file="${reference.wonderland-core.jar.1.libfile.1}" propname="included.lib.reference.wonderland-core.jar.1.1.X"/>
-        <basename file="${reference.wonderland-core.jar.2.libfile.3}" property="included.lib.reference.wonderland-core.jar.2.3"/>
-        <basename file="${reference.wonderland-core.jar.2.libfile.2}" property="included.lib.reference.wonderland-core.jar.2.2"/>
-        <basename file="${reference.wonderland-core.jar.2.libfile.1}" property="included.lib.reference.wonderland-core.jar.2.1"/>
-        <copy-ear-war file="${reference.wonderland-core.jar.2.libfile.3}" propname="included.lib.reference.wonderland-core.jar.2.3.X"/>
-        <copy-ear-war file="${reference.wonderland-core.jar.2.libfile.2}" propname="included.lib.reference.wonderland-core.jar.2.2.X"/>
-        <copy-ear-war file="${reference.wonderland-core.jar.2.libfile.1}" propname="included.lib.reference.wonderland-core.jar.2.1.X"/>
+        <basename file="${file.reference.wonderland-common.jar}" property="included.lib.file.reference.wonderland-common.jar"/>
+        <copy-ear-war file="${file.reference.wonderland-common.jar}" propname="included.lib.file.reference.wonderland-common.jar.X"/>
+        <basename file="${file.reference.wonderland-web-utils.jar}" property="included.lib.file.reference.wonderland-web-utils.jar"/>
+        <copy-ear-war file="${file.reference.wonderland-web-utils.jar}" propname="included.lib.file.reference.wonderland-web-utils.jar.X"/>
+        <basename file="${file.reference.wonderland-server.jar}" property="included.lib.file.reference.wonderland-server.jar"/>
+        <copy-ear-war file="${file.reference.wonderland-server.jar}" propname="included.lib.file.reference.wonderland-server.jar.X"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${included.lib.reference.wonderland-core.jar.1.1.X} ${included.lib.reference.wonderland-core.jar.1.2.X} ${included.lib.reference.wonderland-core.jar.1.3.X} ${included.lib.reference.wonderland-core.jar.2.1.X} ${included.lib.reference.wonderland-core.jar.2.2.X} ${included.lib.reference.wonderland-core.jar.2.3.X} "/>
+            <attribute name="Class-Path" value="${included.lib.file.reference.wonderland-common.jar} ${included.lib.file.reference.wonderland-web-utils.jar} ${included.lib.file.reference.wonderland-server.jar} "/>
         </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
     <target depends="init" name="library-inclusion-in-archive" unless="dist.ear.dir">
-        <copy file="${reference.wonderland-core.jar.1.libfile.3}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${reference.wonderland-core.jar.1.libfile.2}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${reference.wonderland-core.jar.1.libfile.1}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${reference.wonderland-core.jar.2.libfile.3}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${reference.wonderland-core.jar.2.libfile.2}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${reference.wonderland-core.jar.2.libfile.1}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.wonderland-common.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.wonderland-web-utils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.wonderland-server.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest" name="do-ear-dist">
         <dirname file="${dist.ear.war}" property="dist.jar.dir"/>
@@ -842,10 +827,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 
                 CLEANUP SECTION
             -->
-    <target depends="init" if="no.dist.ear.dir" name="deps-clean" unless="no.deps">
-        <ant antfile="${project.wonderland-core}/build.xml" inheritall="false" target="clean"/>
-        <ant antfile="${project.wonderland-web-utils}/build.xml" inheritall="false" target="clean"/>
-    </target>
+    <target depends="init" if="no.dist.ear.dir" name="deps-clean" unless="no.deps"/>
     <target depends="init" name="do-clean">
         <condition property="build.dir.to.clean" value="${build.web.dir}">
             <isset property="dist.ear.dir"/>

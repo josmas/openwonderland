@@ -10,7 +10,7 @@
     <import file="${setup.build-scripts.dir}/run-setup.xml"/>
    
     <!-- import runtime properties -->
-    <property file="${core.build-scripts.dir}/run-server.properties"/>
+    <property file="${core.run-scripts.dir}/run-server.properties"/>
     
     <!-- setup the server -->
     <target name="-core-setup-server" depends="-core-server-setup-bdb-platform,

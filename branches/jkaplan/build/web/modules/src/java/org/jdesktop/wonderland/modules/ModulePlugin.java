@@ -35,6 +35,9 @@ import java.util.LinkedList;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ModulePlugin {
+    /* The unique name of the plugin */
+    private String name = null;
+    
     /* The types of plugins */
     public static final String CLIENT_JAR = "client/";
     public static final String SERVER_JAR = "server/";
@@ -46,10 +49,20 @@ public class ModulePlugin {
     private LinkedList<String> commonJars = new LinkedList<String>();
     
     /** Default constructor, takes collections of JARs */
-    public ModulePlugin(String[] client, String[] server, String[] common) {
+    public ModulePlugin(String name, String[] client, String[] server, String[] common) {
+        this.name = name;
         this.serverJars.addAll(Arrays.asList(server));
         this.clientJars.addAll(Arrays.asList(client));
         this.commonJars.addAll(Arrays.asList(common));
+    }
+    
+    /**
+     * Returns the unique name of the plugin.
+     * 
+     * @return The plugin name
+     */
+    public String getName() {
+        return this.name;
     }
     
     /**
@@ -77,5 +90,19 @@ public class ModulePlugin {
      */
     public Collection<String> getCommonsJars() {
         return this.commonJars;
+    }
+    
+    /**
+     * Returns a string representation of the plugin
+     */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getName() + " ");
+        sb.append(this.getClientJars().toString());
+        sb.append(this.getCommonsJars().toString());
+        sb.append(this.getServerJars().toString());
+        
+        return sb.toString();
     }
 }
