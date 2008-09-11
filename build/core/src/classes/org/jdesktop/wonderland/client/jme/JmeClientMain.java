@@ -58,7 +58,7 @@ public class JmeClientMain {
     private static WorldManager worldManager;
     
     public JmeClientMain(String[] args) {
-        props = loadProperties("run.properties");
+        props = loadProperties("run-client.properties");
    
         String serverName = props.getProperty(SERVER_NAME_PROP,
                                               SERVER_NAME_DEFAULT);

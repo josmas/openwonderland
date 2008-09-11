@@ -63,4 +63,14 @@
     nbproject/build-impl.xml file. 
 
     -->
+    
+    <target name="-post-dist">
+        <jar jarfile="${dist.dir}/wonderland-wfs.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="**"/>
+                <exclude name="org/jdesktop/wonderland/wfs/service/**"/>
+                <exclude name="org/jdesktop/wonderland/wfs/test/**"/>
+            </fileset>
+        </jar>
+    </target>
 </project>

@@ -74,8 +74,8 @@
 
     <property name="sgs.javaext.dir" location="${javaext.dir}/sgs"/>
 <!--    <property name="sgs.version" value="0.9.5.1-r3730"/>-->
-    <property name="sgs.version" value="0.9.6-r4193"/>
-    <property name="sgs.server.dir" location="${sgs.javaext.dir}/sgs-${sgs.version}"/>
+    <property name="sgs.version" value="0.9.6.3"/>
+    <property name="sgs.server.dir" location="${sgs.javaext.dir}/sgs-server-${sgs.version}"/>
     <property name="sgs.bdb.dir" location="${sgs.javaext.dir}/bdb-4.5.20"/>
 
     <property name="wonderland.bin.dir" location="${os.javaext.dir}/bin"/>
@@ -202,7 +202,8 @@
     </pathconvert>
     
     <pathconvert property="darkstar.server.classpath">
-	<path location="${sgs.javaext.dir}/sgs-${sgs.version}/lib/sgs.jar"/>
+	<path location="${sgs.javaext.dir}/sgs-server-${sgs.version}/lib/sgs-server.jar"/>
+        <path location="${sgs.javaext.dir}/sgs-server-${sgs.version}/lib/sgs-shared-1.0.jar"/>
 	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
 	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
 	<path location="${sgs.bdb.dir}/db.jar"/>
@@ -212,6 +213,7 @@
 
      <pathconvert property="darkstar.client.classpath">
 	<path location="${sgs.javaext.dir}/sgs-client-${sgs.version}/lib/sgs-client.jar"/>
+        <path location="${sgs.javaext.dir}/sgs-client-${sgs.version}/lib/sgs-shared-1.0.jar"/>
 	<path location="${sgs.javaext.dir}/mina-1.1/mina-core-1.1.jar"/>
 	<path location="${sgs.javaext.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
         <path location="${common.javaext.dir}/smack.jar"/>
