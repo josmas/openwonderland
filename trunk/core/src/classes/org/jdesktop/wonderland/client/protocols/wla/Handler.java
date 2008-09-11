@@ -23,12 +23,12 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
 /**
- * The WlaProtocolHandler class handles all URL connections made to a URL with
+ * The Handler class handles all URL connections made to a URL with
  * a 'wla' protocol. This is used for Wonderland assets.
  * 
  * @author paulby
  */
-public class WlaProtocolHandler extends URLStreamHandler {
+public class Handler extends URLStreamHandler {
 
     @Override
     protected URLConnection openConnection(URL url) throws IOException {

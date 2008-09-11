@@ -192,18 +192,19 @@
     </target>
     
     <target name="run-dbtest" depends="jar">
-        <java classname="org.jdesktop.wonderland.client.datamgr.AssetDB" fork="true">
+        <java classname="org.jdesktop.wonderland.client.assetmgr.AssetDB" fork="true">
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
 	    </classpath>
+	    <syspropertyset refid="wonderland.properties"/>
         </java>
-	<syspropertyset refid="wonderland.properties"/>
     </target>
     
     <target name="run" depends="jar">
         <!--<java classname="org.jdesktop.wonderland.client.WorldClient" fork="true">-->
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
             <!--<jvmarg value="-Djava.library.path=${javaext.dir}/jme20/lib/lwjgl/native/${ostype}"/>-->
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
             
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>

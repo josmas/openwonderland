@@ -224,7 +224,7 @@ public class FileModuleUtil {
         File[] files = dir.listFiles();
         for (File file : files) {
             /* If a directory, then recursively descend and append */
-            if (file.isDirectory() == true) {
+            if (file.isDirectory() == true && file.isHidden() == false) {
                 HashMap<String, ModuleArtResource> rHashMap = FileModuleUtil.listModuleArt(root, file);
                 hashMap.putAll(rHashMap);
             }
