@@ -70,6 +70,6 @@ public class ColladaCellSetup extends BasicCellSetup implements Serializable {
      */
     @Override
     public String toString() {
-        return super.toString();
+        return super.toString() + " [ColladCellSetup] model: " + this.model;
     }
 }

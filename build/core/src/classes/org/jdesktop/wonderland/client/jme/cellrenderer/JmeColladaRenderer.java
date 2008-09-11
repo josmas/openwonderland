@@ -19,8 +19,6 @@
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
 import com.jme.light.PointLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
@@ -31,13 +29,11 @@ import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.cell.TestColladaCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
@@ -69,7 +65,7 @@ public class JmeColladaRenderer extends BasicRenderer {
 
         Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
-        return loadCollada(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState);        
+        return loadColladaAsset(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState);        
     }
 
     public Node loadCollada(String name, float xoff, float yoff, float zoff, 
@@ -106,4 +102,38 @@ public class JmeColladaRenderer extends BasicRenderer {
         return ret;
     }
     
+    /**
+     * Loads a collada cell from the asset managergiven an asset URL
+     */
+    public Node loadColladaAsset(String name, float xoff, float yoff, float zoff, 
+            ZBufferState buf, LightState ls) {        
+        Node ret;
+        MaterialState matState = null;
+
+        try {
+            URL url = new URL(((TestColladaCell)cell).getModelURI());
+            InputStream input = url.openStream();
+            System.out.println("Resource stream "+input);
+            ColladaImporter.load(input, "Test");
+            ret = ColladaImporter.getModel();
+            ColladaImporter.cleanUp();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error loading Collada file", e);
+            ret = new Node();
+        }
+        
+        
+        ret.setModelBound(new BoundingBox());
+        ret.updateModelBound();
+
+        matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+//        node.setRenderState(matState);
+        ret.setRenderState(buf);
+//        node.setRenderState(ls);
+        ret.setLocalTranslation(xoff, yoff, zoff);
+        
+        ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
+
+        return ret;
+    }
 }

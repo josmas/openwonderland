@@ -98,7 +98,8 @@ public abstract class BasicCellSetup implements Serializable {
     static {
         try {
             JAXBContext jc = JAXBContext.newInstance(
-                        org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup.class
+                    org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup.class,
+                    org.jdesktop.wonderland.server.cell.setup.ColladaCellSetup.class
             );
 
             BasicCellSetup.unmarshaller = jc.createUnmarshaller();

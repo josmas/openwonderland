@@ -6,7 +6,7 @@
 -->
 <project basedir="." default="package" name="wonderland-core">
     <!-- current directory needed in all scripts -->
-    <property name="current.dir" value="."/>
+    <dirname property="current.dir" file="${ant.file.wonderland-core}"/>
     
     <!-- import the core build script -->
     <import file="build-tools/build-scripts/core-build.xml"/>
@@ -47,10 +47,10 @@
        </java>
     </target>
     
-    <target name="run" depends="jar" description="Build core jars">
-        <!--<java classname="org.jdesktop.wonderland.client.WorldClient" fork="true">-->
+    <target name="run" depends="jar" description="Run the Wonderland client">
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
             
             <classpath>
 		<pathelement path="${core-client.classpath}"/>

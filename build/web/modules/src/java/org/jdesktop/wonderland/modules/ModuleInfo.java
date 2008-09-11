@@ -113,9 +113,9 @@ public class ModuleInfo implements Serializable {
      */
     @Override
     public String toString() {
-        return "Module Info: " + this.getName() + "(v" +
+        return this.getName() + "(v" +
                 Integer.toString(this.getMajor()) + "." +
-                Integer.toString(this.getMinor()) + ")\n";
+                Integer.toString(this.getMinor()) + ")";
     }
     
     /**

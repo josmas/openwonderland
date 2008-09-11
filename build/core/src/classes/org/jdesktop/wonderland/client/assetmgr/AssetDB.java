@@ -308,11 +308,14 @@ public class AssetDB {
         boolean isSaved = false;
         synchronized(stmtSaveNewRecord) {
             try {
-                logger.fine("AssetDB: Saving asset to database, uri=" + asset.getAssetURI().toString());
+                String checksum = (asset.getChecksum() == null) ? "" : asset.getChecksum();
+                logger.fine("[ASSET DB] ADD " + asset.getAssetURI().toString() + " [" + checksum + "]");
+                logger.fine("[ASSET DB] ADD url: " + asset.getURL());
+                logger.fine("[ASSET DB] ADD type: " + asset.getType().toString());
                 stmtSaveNewRecord.clearParameters();
                 stmtSaveNewRecord.setString(1, asset.getAssetURI().toString());
-                stmtSaveNewRecord.setString(2, asset.getChecksum().toString());
-                stmtSaveNewRecord.setString(3, asset.getURL());
+                stmtSaveNewRecord.setString(2, checksum);
+                stmtSaveNewRecord.setString(3, "" /*asset.getURL()*/);
                 stmtSaveNewRecord.setString(4, asset.getType().toString());
                 stmtSaveNewRecord.setLong(5, System.currentTimeMillis());
                 stmtSaveNewRecord.setLong(6, 0 /* XXX */);
@@ -439,16 +442,19 @@ public class AssetDB {
         boolean bEdited = false;
         synchronized(stmtUpdateExistingRecord) {
             try {
+                String checksum = (asset.getChecksum() == null) ? "" : asset.getChecksum();
+                logger.fine("[ASSET DB] UPDATE " + asset.getAssetURI().toString() + " [" + checksum + "]");
+
                 stmtUpdateExistingRecord.clearParameters();
 
                 stmtUpdateExistingRecord.setString(1, asset.getAssetURI().toString());
-                stmtUpdateExistingRecord.setString(2, asset.getChecksum().toString());
+                stmtUpdateExistingRecord.setString(2, checksum);
                 stmtUpdateExistingRecord.setString(3, asset.getURL());
                 stmtUpdateExistingRecord.setString(4, asset.getType().toString());
                 stmtUpdateExistingRecord.setLong(5, System.currentTimeMillis());
                 stmtUpdateExistingRecord.setLong(6, 0 /* XXX */);
                 stmtUpdateExistingRecord.setString(7, asset.getAssetURI().toString());
-                stmtUpdateExistingRecord.setString(8, asset.getChecksum().toString());
+                stmtUpdateExistingRecord.setString(8, checksum);
 
                 stmtUpdateExistingRecord.executeUpdate();
                 bEdited = true;
@@ -471,9 +477,10 @@ public class AssetDB {
         boolean bDeleted = false;
         synchronized(stmtDeleteAsset) {
             try {
+                String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
                 stmtDeleteAsset.clearParameters();
                 stmtDeleteAsset.setString(1, assetID.getAssetURI().toString());
-                stmtDeleteAsset.setString(2, assetID.getChecksum());
+                stmtDeleteAsset.setString(2, checksum);
                 stmtDeleteAsset.executeUpdate();
                 bDeleted = true;
             } catch (SQLException sqle) {
@@ -495,9 +502,11 @@ public class AssetDB {
         Asset asset = null;
         synchronized(stmtGetAsset) {
             try {
+                String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
+                logger.fine("[ASSET DB] GET " + assetID.getAssetURI().toString() + " [" + checksum + "]");
                 stmtGetAsset.clearParameters();
                 stmtGetAsset.setString(1, assetID.getAssetURI().toString());
-                stmtGetAsset.setString(2, assetID.getChecksum());
+                stmtGetAsset.setString(2, checksum);
                 ResultSet result = stmtGetAsset.executeQuery();
                 if (result.next() == true) {
                     /* Fetch the information from the database */
@@ -514,7 +523,17 @@ public class AssetDB {
                      */
                     asset = AssetManager.getAssetManager().assetFactory(assetType, assetID);
                     asset.setURL(url);
-                    asset.setChecksum(cksum);
+                    
+                    /*
+                     * In the database, a null checksum is an empty string (""),
+                     * but in the code, a null checksum is null
+                     */
+                    if (cksum.compareTo("") == 0) {
+                        asset.setChecksum(null);
+                    }
+                    else {
+                        asset.setChecksum(cksum);
+                    }
                 }
             } catch(SQLException sqle) {
                 sqle.printStackTrace();
@@ -522,7 +541,9 @@ public class AssetDB {
         }
         
         /* Update the time the asset was last accessed */
-        this.updateLastAccessed(assetID);
+        if (asset != null) {
+            this.updateLastAccessed(assetID);
+        }
         return asset;
     }
 
@@ -533,10 +554,13 @@ public class AssetDB {
     private void updateLastAccessed(AssetID assetID) {
         synchronized(stmtUpdateLastAccessed) {
             try {
+                String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
+                logger.fine("[ASSET DB] UPDATE LAST " + assetID.getAssetURI().toString() + " [" + checksum + "]");
+                
                 stmtUpdateLastAccessed.clearParameters();
                 stmtUpdateLastAccessed.setLong(1, System.currentTimeMillis());
                 stmtUpdateLastAccessed.setString(2, assetID.getAssetURI().toString());
-                stmtUpdateLastAccessed.setString(3, assetID.getChecksum());
+                stmtUpdateLastAccessed.setString(3, checksum);
                 stmtUpdateLastAccessed.executeUpdate();
             } catch(SQLException sqle) {
                 logger.log(Level.SEVERE, "AssetDB: SQL Error updating last accessed for " + assetID.getAssetURI());
@@ -572,21 +596,22 @@ public class AssetDB {
     /**
      * Prints out all of the assets to stdout
      */
-    private void listAssets() {
+    public void listAssets() {
         try {
             Statement queryStatement = dbConnection.createStatement();
             ResultSet result = queryStatement.executeQuery(strGetListEntries);
-            logger.fine("AssetDB: listing assets in database");
+            logger.fine("[ASSET DB] LIST");
             while(result.next()) {
-                System.out.print(result.getString("ASSET_URI") + "\t");
-                System.out.print(result.getString("CHECKSUM") + "\t");
-                System.out.print(result.getString("URL")+"\t");
-                System.out.print(result.getString("TYPE") + "\t");
-                System.out.print(result.getLong("LAST_ACCESSED") + "\t");
-                System.out.print(result.getLong("SIZE"));
-                System.out.println();
+                StringBuilder sb = new StringBuilder();
+                sb.append(result.getString("ASSET_URI") + "\t");
+                sb.append(result.getString("CHECKSUM") + "\t");
+                sb.append(result.getString("URL")+"\t");
+                sb.append(result.getString("TYPE") + "\t");
+                sb.append(result.getLong("LAST_ACCESSED") + "\t");
+                sb.append(result.getLong("SIZE") + "\n");
+                logger.fine(sb.toString());
             }
-            logger.fine("AssetDB: Done listing assets in database");
+            logger.fine("[ASSET DB] DONE LIST");
         } catch(SQLException sqle) {
             sqle.printStackTrace();
         }
@@ -608,6 +633,11 @@ public class AssetDB {
         logger.fine("AssetDB: Database URL:      " + db.getDatabaseUrl());
         logger.fine("AssetDB: Is Connected?      " + db.isConnected());
 
+//        AssetID assetID = new AssetID(new AssetURI("wla://mpk20/sphere2.dae"), "4d92377dbd58f3ba2908354d2b9618f06303d5e9");
+//        Asset asset = db.getAsset(assetID);
+//        asset = new AssetFile(assetID);
+//        db.addAsset(asset);
+        
         /* List the assets in the database */
         db.listAssets();
         
