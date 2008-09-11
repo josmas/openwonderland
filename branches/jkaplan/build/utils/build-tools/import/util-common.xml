@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="servertest-common" basedir="...">
-    <property name="core.dir" location="${top.dir}/core"/>
+<project name="util.common" basedir="...">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="util.build-scripts.dir" file="${ant.file.util.common}"/>
+    <property name="util.dir" location="${util.build-scripts.dir}/../.."/>
+    <property name="top.dir" location="${core.dir}/.."/>
+    
+    <!-- import the main setup file -->
+    <import file="${top.dir}/build-tools/build-scripts/build-setup.xml"/>
     
     <!-- Use my-build.properties to override default values in build.properties -->
     <property file="${current.dir}/my.build.properties"/>
@@ -8,19 +14,6 @@
     <property file="${core.dir}/build.properties"/>
     
     <property name="project.name" value="${ant.project.name}"/>
-
-    <taskdef resource="net/sf/antcontrib/antlib.xml">
-        <classpath>
-            <pathelement location="${build-import.dir}/ant-contrib.jar"/>
-        </classpath>
-    </taskdef>
-    
-    <!-- Do platform/x11/environment specific setup common to all tasks -->
-    <import file="${build-import.dir}/build-setup.xml"/>
-    
-    <!-- core directory -->
-    <property name="core.platform.dir" value="${core.dir}/build/${build.location}"/>
-    <property name="core.lib.dir" location="${core.platform.dir}/lib"/>
     
     <!-- Initialization - make dirs, unpack ext stuff... -->
     <target name="init">
@@ -35,9 +28,6 @@
             </compile-classes>
             
             <compile-classpath>
-		<pathelement path="${wonderland-common-compile.classpath}"/>
-                <pathelement path="${core.lib.dir}/wonderland-server.jar"/>
-                <pathelement path="${core.lib.dir}/wonderland-client.jar"/>
 	    </compile-classpath>
         </wl-compile>
     </target>
