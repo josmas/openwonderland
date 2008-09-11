@@ -127,12 +127,13 @@ public class AssetURI {
     }
     
     /**
-     * Returns the relative path of the resource specified by the URI.
+     * Returns the relative path of the resource specified by the URI. The
+     * relative path does not being with any forward "/".
      * 
      * @return The relative path within the URI
      */
     public String getRelativePath() {
-        return this.uri.getPath();
+        return this.stripLeadingSlash(this.uri.getPath());
     }
     
     /**
@@ -176,5 +177,15 @@ public class AssetURI {
     @Override
     public String toString() {
         return this.uri.toString();
+    }
+    
+    /**
+     * Strips off the leading "/", if there is one and returns the new string
+     */
+    private String stripLeadingSlash(String path) {
+        if (path.startsWith("/") == true) {
+            return path.substring(1);
+        }
+        return path;
     }
 }

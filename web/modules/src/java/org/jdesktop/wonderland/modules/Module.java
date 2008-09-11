@@ -21,7 +21,6 @@ package org.jdesktop.wonderland.modules;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.jdesktop.wonderland.client.modules.ModuleChecksums;
 import org.jdesktop.wonderland.wfs.WFS;
 
 /**
@@ -51,7 +50,7 @@ public abstract class Module {
     public static final String MODULE_REQUIRES   = "requires.xml";
     public static final String MODULE_REPOSITORY = "repository.xml";
     public static final String MODULE_ART        = "art";
-    public static final String MODULE_CHECKSUMS  = MODULE_ART + "/checksums.xml";
+    public static final String MODULE_CHECKSUMS  = "checksums.xml";
     public static final String MODULE_WFS        = "wfs";
     public static final String MODULE_PLUGINS    = "plugins";
     

@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.client.assetmgr.TrackingInputStream.ProgressListe
 import org.jdesktop.wonderland.client.modules.Checksum;
 import org.jdesktop.wonderland.client.modules.ModuleCache;
 import org.jdesktop.wonderland.client.modules.ModuleCacheList;
-import org.jdesktop.wonderland.client.modules.ModuleChecksums;
+import org.jdesktop.wonderland.client.modules.ChecksumList;
 import org.jdesktop.wonderland.client.modules.RepositoryList;
 import org.jdesktop.wonderland.client.modules.RepositoryList.Repository;
 import org.jdesktop.wonderland.client.modules.RepositoryUtils;
@@ -89,7 +89,7 @@ public class AssetManager {
      * MAX_REPOSITORY_CHECKSUMS. This list is synchronized so that multiple
      * threads may interact with it safely
      */
-    private Map<Repository, ModuleChecksums> checksums = null;
+    private Map<Repository, ChecksumList> checksums = null;
     private static final int MAX_REPOSITORY_CHECKSUMS = 100;
     
     /*
@@ -123,7 +123,7 @@ public class AssetManager {
         assetDB = new AssetDB();
         
         /* Create a synchronized list of cached checksums information */
-        this.checksums = Collections.synchronizedMap(new LinkedHashMap<Repository, ModuleChecksums>());
+        this.checksums = Collections.synchronizedMap(new LinkedHashMap<Repository, ChecksumList>());
         
         /* Open the cache directory */
         cacheDir = new File(this.getCacheDirectory());
@@ -191,9 +191,10 @@ public class AssetManager {
         String uri = assetURI.toString();
         
         /* Log a bunch of informative messages */
-        logger.fine("[ASSET] GET asset: " + uri + " [" + assetType + "]");
-        logger.fine("[ASSET] GET module name: " + assetURI.getModuleName());
-
+        logger.fine("[ASSET] GET asset " + uri + " [" + assetType + "]");
+        logger.fine("[ASSET] GET module name " + assetURI.getModuleName());
+        logger.fine("[ASSET] GET module relative path " + assetURI.getRelativePath());
+        
         /*
          * First construct an Asset object that represents the asset we want.
          * This consists of both the Asset URI and the desired checksum.
@@ -201,9 +202,10 @@ public class AssetManager {
         String checksum = null;
         ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache("server");
         if (cache != null) {
-            ModuleChecksums checksums = cache.getModuleChecksums(assetURI.getModuleName());
+            ChecksumList checksums = cache.getModuleChecksums(assetURI.getModuleName());
+            logger.fine("[ASSET] GET checksums for module " + checksums);
             if (checksums != null) {
-                Checksum c = checksums.getChecksums().get(uri);
+                Checksum c = checksums.getChecksums().get(assetURI.getRelativePath());
                 if (c != null) {
                     checksum = c.getChecksum();
                 }
@@ -214,6 +216,16 @@ public class AssetManager {
         /* Log a bunch of informative messages */
         logger.fine("[ASSET] GET module cache: " + cache);
         logger.fine("[ASSET] GET checksum for asset: " + checksum);
+        
+        /*
+         * If the asset does not have a checksum, it means the module is bad.
+         * Print an error message here -- we cannot load the asset.
+         */
+        if (checksum == null) {
+            logger.warning("[ASSET] GET Checksum is null for asset");
+            logger.warning("[ASSET] GET Unable to load, recheck module installation");
+            return null;
+        }
         
         // XXX Some profiling shows this method takes a while -- hmmm, is it
         // because of the synchronized calls? Can we do this better?
@@ -453,7 +465,7 @@ public class AssetManager {
              * the same server that hosts the module
              */
             if (repository.isServer == false) {
-                ModuleChecksums mc = this.getChecksums(repository);
+                ChecksumList mc = this.getChecksums(repository);
                 if (mc == null) {
                     continue;
                 }
@@ -609,7 +621,7 @@ public class AssetManager {
      * @param repository The repository to look for checksums
      * @return The collection of checksums for the repository
      */
-    private ModuleChecksums getChecksums(Repository repository) {
+    private ChecksumList getChecksums(Repository repository) {
         /*
          * First check whether the checksum information is cached for the
          * repository. Note that we do not make this entire method atomic. If
@@ -629,7 +641,7 @@ public class AssetManager {
          */
         try {
             URL url = new URL(RepositoryUtils.getChecksumURL(repository));
-            ModuleChecksums c = ModuleChecksums.decode(new InputStreamReader(url.openStream()));
+            ChecksumList c = ChecksumList.decode(new InputStreamReader(url.openStream()));
             if (c != null) {
                 this.checksums.put(repository, c);
             }

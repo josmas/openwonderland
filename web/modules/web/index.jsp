@@ -16,7 +16,7 @@
     <body>
         <h3>Module System</h3>
         <table>
-            <%@ page import="org.jdesktop.wonderland.service.modules.ModuleManager" %>
+            <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
             <% String modules[] = ModuleManager.getModuleManager().getInstalledModules(); %>
             <% for (String module : modules) { %>
             <tr>
