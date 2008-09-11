@@ -164,18 +164,13 @@ public class ModuleRepository implements Serializable {
      */
     @Override
     public String toString() {
-        StringBuilder str = new StringBuilder("Module Repository:\n");
-        str.append("Master:\n  " + this.getMaster() + "\n");
-        str.append("Mirrors:\n");
+        StringBuilder str = new StringBuilder();
+        String masterName = (this.getMaster() != null) ? this.getMaster().url : (null);
+        str.append("\t[master] " + masterName + "\n");
+        str.append("\t[mirrors] ");
         if (this.mirrors != null) {
             for (Repository mirror : mirrors) {
-                str.append("  " + mirror.url + "\n");
-            }
-        }
-        if (this.resources != null) {
-            str.append("Resources:\n");
-            for (String resource : resources) {
-                str.append("  " + resource + "\n");
+                str.append(mirror.url + " ");
             }
         }
         return str.toString();

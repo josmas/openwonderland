@@ -662,6 +662,15 @@ public class ModuleManager {
     }
     
     public static void main(String args[]) {
+        System.setProperty("wonderland.webserver.modules.root", "/Users/jordanslott/wonderland/trunk/web/examples/modules");
         ModuleManager mm = ModuleManager.getModuleManager();
+        
+        /* Write out the installed modules */
+        StringBuilder sb = new StringBuilder("Installed Modules\n");
+        for (String im : mm.getInstalledModules()) {
+            InstalledModule module = mm.getInstalledModule(im);
+            sb.append(module.toString());
+        }
+        logger.info(sb.toString());
     }
 }

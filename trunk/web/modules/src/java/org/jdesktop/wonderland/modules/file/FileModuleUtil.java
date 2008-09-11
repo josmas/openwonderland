@@ -24,13 +24,11 @@ import java.io.FileReader;
 import org.jdesktop.wonderland.modules.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
-import org.jdesktop.wonderland.wfs.InvalidWFSException;
-import org.jdesktop.wonderland.wfs.WFS;
-import org.jdesktop.wonderland.wfs.WFSFactory;
 
 /**
  * The ModuleFileUtil class contains a collection is utility routines to help
@@ -133,32 +131,29 @@ public class FileModuleUtil {
      * @param root The module's root directory
      * @return A HashMap of the module's WFSs.
      */
-    public static HashMap<String, WFS> parseModuleWFS(File root) {
+    public static HashMap<String, String> parseModuleWFS(File root) {
         /* Find the "wfs/" subdirectory and list just the topmost entries */
         File wfsFile = new File(root, Module.MODULE_WFS);
         if (wfsFile.exists() == false || wfsFile.isDirectory() == false) {
             // print error message
             return null;
         }
-        HashMap<String, WFS> wfsMap = new HashMap<String, WFS>();
+        HashMap<String, String> wfsMap = new HashMap<String, String>();
         
         /* List all of the files, take only directories ending in -wfs */
         File[] files = wfsFile.listFiles();
         for (File file : files) {
             /* If a directory, then recursively descend and append */
             String name = file.getName();
-            if (file.isDirectory() == true && name.endsWith(WFS.WFS_DIRECTORY_SUFFIX) == true) {
+            if (file.isDirectory() == true && name.endsWith("-wfs") == true) {
+                /* Strip off the name of the wfs from the path */
                 try {
-                    WFS wfs = WFSFactory.open(file.toURL());
-                    wfsMap.put(wfs.getName(), wfs);
-                } catch (java.io.IOException excp) {
-                    // log an error and continue
-                } catch (InvalidWFSException excp) {
-                    // log an error and continue
-                } catch (JAXBException excp) {
+                    name = name.substring(0, name.length() - 4);
+                    wfsMap.put(name, file.toURL().toExternalForm());
+                } catch (MalformedURLException excp) {
                     // log an error and continue
                 }
-            }
+            } 
         }
         return wfsMap;
     }
@@ -235,7 +230,6 @@ public class FileModuleUtil {
                  */
                 String name = file.getAbsolutePath().substring(rootPathName.length() + 1);
                 hashMap.put(name, new ModuleArtResource(name));
-                System.out.println("art=" + name);
             }
         }
         return hashMap;
@@ -274,6 +268,7 @@ public class FileModuleUtil {
              */
             if (file.isDirectory() == true && file.isHidden() == false) {
                 /* Create file objects for each of the subdirectories */
+                String name = file.getName();
                 File clientFile = new File(file, ModulePlugin.CLIENT_JAR);
                 File serverFile = new File(file, ModulePlugin.SERVER_JAR);
                 File commonFile = new File(file, ModulePlugin.COMMON_JAR);
@@ -289,8 +284,8 @@ public class FileModuleUtil {
                 common = (common != null) ? common : new String[] {};
                 
                 /* Create the ModulePlugin object, add, and continue */
-                ModulePlugin p = new ModulePlugin(client, server, common);
-                plugins.put(file.getName(), p);
+                ModulePlugin p = new ModulePlugin(name, client, server, common);
+                plugins.put(name, p);
             }
         }
         return plugins;

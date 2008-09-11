@@ -20,8 +20,8 @@ package org.jdesktop.wonderland.modules;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import org.jdesktop.wonderland.wfs.WFS;
 
 /**
  * The Module class represents a single module within Wonderland. A module
@@ -61,8 +61,8 @@ public abstract class Module {
     /* A map of unique artwork resource names to their resource objects */
     private HashMap<String, ModuleArtResource> moduleArtwork = null;
     
-    /* A map of unique WFS names to their WFS objects */
-    private HashMap<String, WFS> moduleWFS = null;
+    /* A map of unique WFS names to their URLs */
+    private HashMap<String, String> moduleWFS = null;
     
     /* A map of plugin names to the plugin object */
     private HashMap<String, ModulePlugin> modulePlugins = null;
@@ -172,7 +172,7 @@ public abstract class Module {
      *
      * @return A map of WFS entries within the module
      */
-    public Map<String, WFS> getModuleWFSs() {
+    public Map<String, String> getModuleWFSs() {
         return this.moduleWFS;
     }
     
@@ -182,7 +182,7 @@ public abstract class Module {
      * 
      * @param wfs A map of WFS entries within the module
      */
-    public void setModuleWFSs(HashMap<String, WFS> wfs) {
+    public void setModuleWFSs(HashMap<String, String> wfs) {
         this.moduleWFS = wfs;
     }
 
@@ -249,7 +249,31 @@ public abstract class Module {
      */
     @Override
     public String toString() {
-        return this.getModuleInfo().toString() + this.getModuleRequires().toString() +
-            this.getModuleRepository().toString()/* + this.getModuleArtwork().toString()*/;
+        StringBuilder sb = new StringBuilder();
+        sb.append("---------------------------------------------------------------------------\n");
+        sb.append(this.getModuleInfo().toString() + "\n");
+        sb.append("Depends upon " + this.getModuleRequires().toString() + "\n");
+        sb.append("Repositories\n" + this.getModuleRepository().toString() + "\n");
+        sb.append("\nPlugins\n");
+        Iterator<String> it = this.getModulePlugins().keySet().iterator();
+        while (it.hasNext() == true) {
+            ModulePlugin plugin = this.getModulePlugins().get(it.next());
+            sb.append("\t" + plugin.toString() + "\n");
+        }
+        sb.append("\nArtwork resources\n");
+        Iterator<String> it2 = this.getModuleArtwork().keySet().iterator();
+        while (it2.hasNext() == true) {
+            ModuleArtResource art = this.getModuleArtwork().get(it2.next());
+            sb.append("\t" + art.getPathName() + "\n");
+        }
+        sb.append("\nWFS\n");
+        Iterator<String> it3 = this.getModuleWFSs().keySet().iterator();
+        while (it3.hasNext() == true) {
+            String name = it3.next();
+            String wfs = this.getModuleWFSs().get(name);
+            sb.append("\t" + name + " " + wfs + "\n");
+        }
+        sb.append("---------------------------------------------------------------------------\n");
+        return sb.toString();
     }
 }
