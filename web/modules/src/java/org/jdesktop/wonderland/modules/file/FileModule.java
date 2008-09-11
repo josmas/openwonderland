@@ -30,7 +30,6 @@ import org.jdesktop.wonderland.modules.ModulePlugin;
 import org.jdesktop.wonderland.modules.ModuleRepository;
 import org.jdesktop.wonderland.modules.ModuleRequires;
 import org.jdesktop.wonderland.modules.ModuleResource;
-import org.jdesktop.wonderland.wfs.WFS;
 
 /**
  * The FileModule class extends the Module abstract base class and represents
@@ -65,7 +64,7 @@ public class FileModule extends Module {
         ModuleRequires requires = FileModuleUtil.parseModuleRequires(this.root);
         ModuleRepository repository = FileModuleUtil.parseModuleRepository(this.root);
         HashMap<String, ModuleArtResource> artwork = FileModuleUtil.parseModuleArt(this.root);
-        HashMap<String, WFS> wfs = FileModuleUtil.parseModuleWFS(this.root);
+        HashMap<String, String> wfs = FileModuleUtil.parseModuleWFS(this.root);
         HashMap<String, ModulePlugin> plugins = FileModuleUtil.parseModulePlugins(this.root);
         ModuleChecksums checksums = FileModuleUtil.parseModuleChecksums(this.root);
         

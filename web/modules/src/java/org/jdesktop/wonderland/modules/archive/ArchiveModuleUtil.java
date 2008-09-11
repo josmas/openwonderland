@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.utils.ArchiveManifest;
-import org.jdesktop.wonderland.wfs.WFS;
-import org.jdesktop.wonderland.wfs.WFSFactory;
 
 /**
  * The ModuleArchiveUtil class contains a collection is utility routines to help
@@ -236,9 +234,9 @@ public class ArchiveModuleUtil {
      * @param manifest The archive file manifest
      * @return A HashSet of the module's WFSs
      */
-    public static HashMap<String, WFS> parseModuleWFS(ArchiveManifest manifest) {
+    public static HashMap<String, String> parseModuleWFS(ArchiveManifest manifest) {
         /* Create the hash map to store all of the WFS objects */
-        HashMap<String, WFS> wfsMap = new HashMap<String, WFS>();
+        HashMap<String, String> wfsMap = new HashMap<String, String>();
         
         /*
          * Fetch all of the directories beneath the "wfs/" directory. See if
@@ -253,15 +251,16 @@ public class ArchiveModuleUtil {
              * the archive. Creation of the WFS object will tell us whether
              * it is valid or not
              */
-            String entryName = it.next();
-            WFS wfs = null;
-            try {
-                URL url = new URL(manifest.getURL().toExternalForm() + entryName);
-                wfs = WFSFactory.create(url);
-                wfsMap.put(wfs.getName(), wfs);
-            } catch (Exception excp) {
-                // print log warning
-                continue;
+            String name = it.next();
+            if (name.endsWith("-wfs/") == true) {
+                try {
+                    URL url = new URL(manifest.getURL().toExternalForm() + name);
+                    name = name.substring(0, name.length() - 3);
+                    wfsMap.put(name, url.toExternalForm());
+                } catch (Exception excp) {
+                    // print log warning
+                    continue;
+                }
             }
         }
         return wfsMap;
@@ -290,8 +289,8 @@ public class ArchiveModuleUtil {
              * subdirectories, and in each, fetch the names of the JAR files
              * in each.
              */
-            String moduleName = it.next();
-            String baseDir = Module.MODULE_PLUGINS + "/" + moduleName + "/";
+            String pluginName = it.next();
+            String baseDir = Module.MODULE_PLUGINS + "/" + pluginName + "/";
             LinkedList<String> commonJARs = manifest.getEntries(baseDir + ModulePlugin.COMMON_JAR);
             LinkedList<String> clientJARs = manifest.getEntries(baseDir + ModulePlugin.CLIENT_JAR);
             LinkedList<String> serverJARs = manifest.getEntries(baseDir + ModulePlugin.SERVER_JAR);
@@ -302,8 +301,8 @@ public class ArchiveModuleUtil {
             String[] server = serverJARs.toArray(new String[] {});
             
             /* Create the ModulePlugin object, add, and continue */
-            ModulePlugin p = new ModulePlugin(client, server, common);
-            plugins.put(moduleName, p);
+            ModulePlugin p = new ModulePlugin(pluginName, client, server, common);
+            plugins.put(pluginName, p);
         }
         return plugins;
     }

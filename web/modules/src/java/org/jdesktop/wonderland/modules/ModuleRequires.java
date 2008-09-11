@@ -75,9 +75,9 @@ public class ModuleRequires {
      */
     @Override
     public String toString() {
-        StringBuilder str = new StringBuilder("Module Dependencies:\n");
+        StringBuilder str = new StringBuilder();
         for (ModuleInfo info : requires) {
-            str.append("  " + info.toString() + "\n");
+            str.append("  " + info.toString() + " ");
         }
         return str.toString();
     }
