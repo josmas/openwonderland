@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-web" default="all" basedir=".">
-    <target name="all" depends="build, jar"/>
+    
+    <property name="j2ee.platform.classpath" value=""/>
+    
+    <target name="all">
+       <ant dir="utils" target="jar"/>
+       <ant dir="wfs" target="default" inheritall="true"/>
+       <ant dir="modules" target="default" inheritall="true"/>
+       <ant dir="server" target="jar"/>
+    </target>
     
     <target name="build">
     </target>
