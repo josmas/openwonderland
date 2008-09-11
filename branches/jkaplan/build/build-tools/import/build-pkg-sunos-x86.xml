@@ -1,0 +1,47 @@
+<project basedir="." default="..." name="wonderland.build-pkg-sunos-x86">
+    <dirname property="imported.basedir" file="${ant.file.build-pkg-sunos-x86}"/>
+
+    <property name="solpkg.name" value="LG3DWonderland"/>
+
+    <property name="release.solpkg.dir" location="${release.dir}/solpkg"/>
+
+    <target name="pkg-platform" depends="pkg-stage" description="Create Solaris package">
+        <mkdir dir="${release.solpkg.dir}"/>
+
+        <copy todir="${release.solpkg.dir}" overwrite="true">
+	    <fileset dir="${build-solpkg.dir}" includes="copyright,depend,pkginfo,prototype"/>
+            <filterset>
+                <filter token="VERSION" value="${build.version}"/>
+                <filter token="OS_ARCH" value="${arch}"/>
+                <filter token="SOLPKG_NAME" value="${solpkg.name}"/>
+                <filter token="LICENSE_FILE" value="/opt/${release.pkgname}/ALL-LICENSES.txt"/>
+            </filterset>
+	</copy>
+
+	<exec executable="pkgproto" output="${release.solpkg.dir}/prototype" append="true">
+            <arg value="${release.platform.dir}=${release.pkgname}"/>
+        </exec>
+
+	<replaceregexp file="${release.solpkg.dir}/prototype" match="^.*-bundle-readme.txt.*$" replace="" byline="true"/>
+	<replaceregexp file="${release.solpkg.dir}/prototype" match=" ${user.name} [a-z]+$" replace=" root bin" byline="true"/>
+
+	<exec executable="pkgmk" dir="${release.solpkg.dir}">
+            <arg line="-o -d ."/>
+        </exec>
+
+	<exec executable="pkgtrans" dir="${release.solpkg.dir}">
+            <arg line="-o -s . ${solpkg.name}.pkg ${solpkg.name}"/>
+        </exec>
+
+	<exec executable="${build-solpkg.dir}/genzip" dir="${release.solpkg.dir}">
+            <arg value="${build-solpkg.dir}"/>
+            <arg value="${release.pkg.filename}"/>
+            <arg value="${release.platform.dir}/ALL-LICENSES.txt"/>
+            <arg value="${solpkg.name}"/>
+        </exec>
+    </target>
+
+    <target name="pkg-platform-clean">
+	<delete dir="${release.solpkg.dir}"/>
+    </target>
+</project>
