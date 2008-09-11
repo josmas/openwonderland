@@ -39,6 +39,6 @@ public class JarFileFilter implements FilenameFilter {
      */
     public boolean accept(File dir, String name) {
         File file = new File(dir, name);
-        return file.isFile() == true && name.endsWith(".jar") == true;
+        return file.isFile() == true && file.isHidden() == false && name.endsWith(".jar") == true;
     }
 }

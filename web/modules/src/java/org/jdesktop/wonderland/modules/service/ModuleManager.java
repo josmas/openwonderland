@@ -488,7 +488,7 @@ public class ModuleManager {
         File[] files = this.addDirectory.listFiles();
         for (File entry : files) {
             /* Check if it is a directory, if so, then skip */
-            if (entry.isDirectory() == true) {
+            if (entry.isDirectory() == true || entry.isHidden() == true) {
                 continue;
             }
             
@@ -520,7 +520,7 @@ public class ModuleManager {
         File[] files = this.pendingDirectory.listFiles();
         for (File entry : files) {
             /* Check if it is a directory, if so, then skip */
-            if (entry.isDirectory() == true) {
+            if (entry.isDirectory() == true || entry.isHidden() == true) {
                 continue;
             }
             
@@ -552,11 +552,12 @@ public class ModuleManager {
         File[] files = this.installedDirectory.listFiles();
         for (File entry : files) {
             /* Check if it is a directory, if not, then skip */
-            if (entry.isDirectory() == false) {
+            if (entry.isDirectory() == false || entry.isHidden() == true) {
                 continue;
             }
             
             /* Try to open it as a module */
+            logger.info("[MODULES] INSTALLED " + entry.getName());
             InstalledModule module = InstalledModule.getInstalledModule(entry);
             if (module != null) {
                 this.installedModules.put(module.getModuleInfo().getName(), module);
