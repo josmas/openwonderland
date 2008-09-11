@@ -354,6 +354,16 @@ public class ModuleManager {
     public AddedModule getAddModule(String uniqueName) {
         return this.addModules.get(uniqueName);
     }
+
+    /**
+     * Returns an array of strings of the names of all pending modules.
+     * Returns an empty array if no pending modules exists.
+     * 
+     * @param An array of pending module names
+     */
+    public String[] getPendingModules() {
+        return this.pendingModules.keySet().toArray(new String[] {});
+    }
     
     /**
      * Returns the pending module given its unique name, null if the module
