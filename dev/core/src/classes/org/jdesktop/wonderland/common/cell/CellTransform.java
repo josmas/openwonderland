@@ -213,26 +213,29 @@ public class CellTransform implements Serializable {
     
     @Override
     public boolean equals(Object o) {
-        boolean ret = false;
+        boolean ret = true;
         
         if (o instanceof CellTransform) {
             CellTransform e = (CellTransform)o;
             
-            if (e.rotation!=null && e.rotation.equals(rotation))
-                ret |= true;
-            else if (e.rotation==null && rotation==null)
-                ret |= true;
+            if (e.rotation!=null && !e.rotation.equals(rotation))
+                ret = false;
+            else if (e.rotation==null && rotation!=null)
+                ret = false;
             
-            if (e.translation!=null && e.translation.equals(translation))
-                ret |= true;
-            else if (e.translation==null && translation==null)
-                ret |= true;
+            if (e.translation!=null && !e.translation.equals(translation))
+                ret = false;
+            else if (e.translation==null && translation!=null)
+                ret = false;
             
-            if (e.scale!=null && e.scale.equals(scale))
-                ret |= true;
-            else if (e.scale==null && scale==null)
-                ret |= true;
+            if (e.scale!=null && !e.scale.equals(scale))
+                ret = false;
+            else if (e.scale==null && scale!=null)
+                ret = false;
+        } else {
+            ret = false;
         }
+        
         
         return ret;
     }
