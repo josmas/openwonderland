@@ -264,24 +264,26 @@ public class Client3DSim
         public void cellMoved(CellTransform transform, CellMoveSource arg1) {
             Long sendTime = messageTimes.remove(transform);
             
-            if (sendTime==null)
+            if (sendTime==null) {
                 logger.warning("Unable to find record of data send");
+            } else {
             
-            long time = ((System.nanoTime())-sendTime)/1000000;
-            
-            min = Math.min(min, time);
-            max = Math.max(max, time);
-            timeSum += time;
-            count++;
-            
-            if (System.nanoTime()-lastReport > REPORT_INTERVAL*1000000) {
-                long avg = timeSum/count;
-                logger.info("Roundtrip time avg "+avg + "ms "+name+" min "+min+" max "+max);
-                timeSum=0;
-                lastReport = System.nanoTime();
-                count = 0;
-                min = Long.MAX_VALUE;
-                max = 0;            
+                long time = ((System.nanoTime())-sendTime)/1000000;
+
+                min = Math.min(min, time);
+                max = Math.max(max, time);
+                timeSum += time;
+                count++;
+
+                if (System.nanoTime()-lastReport > REPORT_INTERVAL*1000000) {
+                    long avg = timeSum/count;
+                    logger.info("Roundtrip time avg "+avg + "ms "+name+" min "+min+" max "+max);
+                    timeSum=0;
+                    lastReport = System.nanoTime();
+                    count = 0;
+                    min = Long.MAX_VALUE;
+                    max = 0;            
+                }
             }
         }
         
