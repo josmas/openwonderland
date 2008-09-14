@@ -15,13 +15,12 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.comms;
+package org.jdesktop.wonderland.comms.client;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.Serializable;
 import java.io.Serializable;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

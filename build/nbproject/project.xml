@@ -10,9 +10,9 @@
             </properties>
             <folders>
                 <source-folder>
-                    <label>core/src</label>
+                    <label>core/src/classes</label>
                     <type>java</type>
-                    <location>core/src</location>
+                    <location>core/src/classes</location>
                 </source-folder>
             </folders>
             <ide-actions>
@@ -23,8 +23,8 @@
             <view>
                 <items>
                     <source-folder style="packages">
-                        <label>core/src</label>
-                        <location>core/src</location>
+                        <label>core/src/classes</label>
+                        <location>core/src/classes</location>
                     </source-folder>
                     <source-file>
                         <location>build.xml</location>
@@ -38,7 +38,7 @@
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
-                <package-root>core/src</package-root>
+                <package-root>core/src/classes</package-root>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

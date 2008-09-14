@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.comms;
+package org.jdesktop.wonderland.comms.client;
 
 import javax.swing.JButton;
 
