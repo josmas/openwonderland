@@ -1,6 +1,6 @@
-<project basedir="." default="..." name="web.setup">
+<project basedir="." default="..." name="web.build">
     <!-- set the build-scripts directory to the current directory -->
-    <dirname property="web.build-scripts.dir" file="${ant.file.web.setup}"/>
+    <dirname property="web.build-scripts.dir" file="${ant.file.web.build}"/>
     
     <!-- import the web setup file -->
     <import file="${web.build-scripts.dir}/web-setup.xml"/>
