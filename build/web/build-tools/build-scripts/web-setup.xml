@@ -13,11 +13,4 @@
     <!-- import core classpath -->
     <import file="${web.build-scripts.dir}/classpath.xml"/>
     
-    <!-- unpack zips -->
-    <target name="unpack-web-libs">
-    </target>
-
-   
-    <target name="clean-web-libs" description="Clean external libraries">
-    </target>    
 </project>
