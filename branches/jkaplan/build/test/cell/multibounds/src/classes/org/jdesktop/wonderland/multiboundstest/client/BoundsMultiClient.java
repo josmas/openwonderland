@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.multiboundstest.client;
 
-import org.jdesktop.wonderland.client.comms.CellClientSession;
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -26,8 +25,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.ClientContext3D;
-import org.jdesktop.wonderland.client.avatar.LocalAvatar;
+import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -103,7 +102,6 @@ public class BoundsMultiClient
         
         // login
         CellClientSession session = new CellClientSession(server);
-        ClientContext3D.registerCellCache(session.getCellCache(), session);
         session.addSessionStatusListener(this);
         session.login(login);
         

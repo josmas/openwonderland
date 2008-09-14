@@ -16,7 +16,8 @@
     <target name="-core-setup-server" depends="-core-server-setup-bdb-platform,
                                                -core-server-setup-assertions,
                                                -core-server-setup-no-assertions,
-                                               -core-server-setup-multinode">
+                                               -core-server-setup-multinode,
+                                               -core-server-setup-classpath">
         
         <!-- remove and re-create the data directory -->
         <delete dir="${sgs.data.dir}" failonerror="false"/>
@@ -101,7 +102,7 @@
         </propertyset>
     </target>
     
-     <target name="-core-server-setup-multinode-appnode">
+    <target name="-core-server-setup-multinode-appnode">
         <property name="com.sun.sgs.node.type" value="appNode"/>
         <property name="com.sun.sgs.server.host" value="${sgs.server}"/>
         
@@ -109,6 +110,14 @@
             <propertyref name="com.sun.sgs.node.type"/>
             <propertyref name="com.sun.sgs.server.host"/>
         </propertyset>
+    </target>
+    
+    <!-- setup the classpath to run the server with.  Clients can override
+         this method to give an alternate classpath -->
+    <target name="-core-server-setup-classpath">
+        <pathconvert property="core.server.run.classpath">
+            <path path="${core-server.classpath}"/>
+        </pathconvert>
     </target>
     
     <target name="core-run-server" depends="-core-setup-server" 
@@ -120,9 +129,9 @@
             <jvmarg value="-Djava.util.logging.config.file=${sgs.data.dir}/sgs-logging.properties"/>
             
             <classpath>
-		<pathelement path="${core-server.classpath}"/>
+                <pathelement path="${core.server.run.classpath}"/>
             </classpath>
-            
+                
             <!-- override the reference to enabled assertions -->
             <assertions refid="sgs.assertions"/>
             

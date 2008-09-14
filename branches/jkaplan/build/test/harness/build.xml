@@ -1,81 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="testharness" default="build" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-serverprotocoltest}"/>
+    <property name="test.dir" location="${current.dir}/.."/>
     
-    <property name="top.dir" location="../.."/>
-    <property name="current.dir" location="."/>
-
-    <!-- Use my-build.properties to override default values in build.properties.
-         You can specify an alternate build.properties override file by
-         running with "ant -Dbuild.properties.file=<file>" -->
-    <property name="build.properties.file" location="my.build.properties"/>
-    <property file="${build.properties.file}"/>
-    <property file="build.properties"/>
-
-    <property name="project.name" value="${ant.project.name}"/>
-    
-    <property name="javasrc.dir" value="src/classes"/>
-    
-    <property name="core.lib.dir" value="${top.dir}/core/build/current/debug/lib"/>
-    
-    <!-- Location of test-specific JAR files -->
-    <property name="test.ext.dir" value="ext"/>
-
     <!--Runtime Class Path for JTRunner -->
+    <property name="harness.lib.dir" value="${current.dir}/ext"/>
     <pathconvert property="jtr.runtime.classpath">
-        <fileset dir="${test.ext.dir}/common/jtr" includes="*.jar"/>
+        <fileset dir="${harness.lib.dir}/common/jtr" includes="*.jar"/>
     </pathconvert>
 
-    <taskdef resource="net/sf/antcontrib/antlib.xml">
-        <classpath>
-            <pathelement location="${build-import.dir}/ant-contrib.jar"/>
-        </classpath>
-    </taskdef>
-    
-    <import file="${build-import.dir}/build-setup.xml"/>
-    
+    <!-- import common build file -->
+    <import file="${test.dir}/build-tools/build-scripts/test-build.xml"/>
+
+    <!-- import our properties.  Clients can override these in
+         my.build.properties.  The logic to include my.build.properties is
+         in test-setup.xml
+    -->
+    <property file="${current.dir}/build.properties"/>
+
     <target name="build" depends="compile-master, jar-slave, jar-jtr-slave">
     </target>
     
-    <!-- Initialization - make dirs, unpack ext stuff... -->
-    <target name="init" description="Initial set-up">
-        <mkdir dir="${build.classes.dir}"/>
-        <mkdir dir="${build.lib.dir}"/>
-    </target>
-    
-    <target name="compile-common" depends="init">
+    <target name="compile-common" depends="-test-init">
         <wl-compile>
             <compile-classes>
                 <include name="org/jdesktop/wonderland/testharness/common/**"/>
             </compile-classes>
             
             <compile-classpath>
-                <pathelement path="${wonderland-common-compile.classpath}"/>
+                <pathelement path="${core-common.classpath}"/>
             </compile-classpath>
         </wl-compile>
     </target>
     
-    <target name="compile-manager-common">
-        <mkdir dir="${build.classes.dir}"/>
+    <target name="compile-manager-common" depends="-test-init">
         <wl-compile>
             <compile-classes>
                 <include name="org/jdesktop/wonderland/testharness/manager/common/**"/>
             </compile-classes>
             
             <compile-classpath>
-                <pathelement path="${wonderland-common-compile.classpath}"/>
+                <pathelement path="${core-common.classpath}"/>
             </compile-classpath>
         </wl-compile>
     </target>
     
     <target name="compile-manager-ui" depends="compile-manager-common">
-        <mkdir dir="${build.classes.dir}"/>
         <wl-compile>
             <compile-classes>
                 <include name="org/jdesktop/wonderland/testharness/manager/ui/**"/>
             </compile-classes>
             
             <compile-classpath>
-                <pathelement path="${wonderland-common-compile.classpath}"/>
+                <pathelement path="${core-client.classpath}"/>
             </compile-classpath>
         </wl-compile>
     </target>
@@ -87,7 +65,7 @@
             </compile-classes>
             
             <compile-classpath>
-                <pathelement path="${wonderland-common-compile.classpath}"/>
+                <pathelement path="${core-common.classpath}"/>
                 <!-- include manager common jar-->
             </compile-classpath>
         </wl-compile>
@@ -100,10 +78,8 @@
             </compile-classes>
             
             <compile-classpath>
-                <path location="${core.lib.dir}/wonderland-client.jar"/>
-                <path location="${core.lib.dir}/wonderland-common.jar"/>
-                <path location="${test.ext.dir}/common/jtr/jtr.jar"/>
-		<pathelement path="${wonderland-client.classpath}"/>
+                <pathelement path="${jtr.runtime.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>
             </compile-classpath>
         </wl-compile>
     </target>
@@ -112,7 +88,7 @@
         <java classname="org.jdesktop.wonderland.testharness.master.MasterMain" fork="true">
             <classpath>
                 <path location="${build.classes.dir}"/>
-		<pathelement path="${wonderland-client.classpath}"/>  <!-- for vecmath-->
+		<pathelement path="${core-client.classpath}"/>  <!-- for vecmath-->
             </classpath>    
             
             <arg value="${harness.master.port}"/>
@@ -125,9 +101,7 @@
             <classpath>
                 <path location="${build.lib.dir}/testharness-slave.jar"/>
                 <path location="${build.lib.dir}/testharness-common.jar"/>
-                <path location="${core.lib.dir}/wonderland-client.jar"/>
-                <path location="${core.lib.dir}/wonderland-common.jar"/>
-		<pathelement path="${wonderland-client.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>
             </classpath>  
             
             <arg value="${harness.master.hostname}"/>
@@ -141,11 +115,8 @@
             <classpath>
                 <path location="${build.lib.dir}/testharness-slave.jar"/>
                 <path location="${build.lib.dir}/testharness-common.jar"/>
-                <path location="${core.lib.dir}/wonderland-client.jar"/>
-                <path location="${core.lib.dir}/wonderland-common.jar"/>
-                <path location="${test.ext.dir}/common/jtr/jtr.jar"/>
                 <pathelement path="${jtr.runtime.classpath}"/>
-		<pathelement path="${wonderland-client.classpath}"/>             
+		<pathelement path="${core-client.classpath}"/>             
             </classpath>
             
             <!-- JTR standard properties -->
@@ -165,9 +136,7 @@
         <java classname="org.jdesktop.wonderland.testharness.manager.ui.HarnessManagerUI" fork="true">
             <classpath>
                 <path location="${build.classes.dir}"/>
-                <path location="${core.lib.dir}/wonderland-client.jar"/>
-                <path location="${core.lib.dir}/wonderland-common.jar"/>
-		<pathelement path="${wonderland-client.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>
             </classpath>    
         </java>
     </target>
@@ -199,9 +168,5 @@
         </jar>
     </target>
 
-    <target name="clean" description="Clean the build">
-        <delete dir="${build.platform.dir}"/>
-        <delete dir="${release.dir}"/>
-        <delete dir="$(release.javadoc.dir)"/>
-    </target>
+    <target name="clean" depends="-test-clean"/>
 </project>

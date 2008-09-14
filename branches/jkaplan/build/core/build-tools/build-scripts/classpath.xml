@@ -45,9 +45,13 @@
     </pathconvert>
     
     <pathconvert property="core-common-compile.classpath">
-	<path path="${darkstar.client.classpath}"/>
 	<path path="${jme.classpath}"/>
         <path path="${jaxb.classpath}"/>
+    </pathconvert>
+    
+    <pathconvert property="core-common.classpath">
+	<path path="${core-common-compile.classpath}"/>
+	<path location="${core.build.lib.dir}/wonderland-common.jar"/>
     </pathconvert>
     
     <pathconvert property="core-client-compile.classpath">
@@ -58,8 +62,8 @@
 
     <pathconvert property="core-client.classpath">
 	<path path="${core-client-compile.classpath}"/>
-	<path location="${build.lib.dir}/wonderland-client.jar"/>
-	<path location="${build.lib.dir}/wonderland-common.jar"/>
+	<path location="${core.build.lib.dir}/wonderland-client.jar"/>
+	<path location="${core.build.lib.dir}/wonderland-common.jar"/>
     </pathconvert>
 
     <pathconvert property="core-server-compile.classpath">
@@ -70,7 +74,7 @@
 
     <pathconvert property="core-server.classpath">
 	<path path="${core-server-compile.classpath}"/>
-	<path location="${build.lib.dir}/wonderland-server.jar"/>
-	<path location="${build.lib.dir}/wonderland-common.jar"/>
+	<path location="${core.build.lib.dir}/wonderland-server.jar"/>
+	<path location="${core.build.lib.dir}/wonderland-common.jar"/>
     </pathconvert>
 </project>

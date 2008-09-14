@@ -8,10 +8,9 @@
     <property name="current.dir" value="core"/>
 
     <!-- override properties -->
-    <property name="build.lib.dir" location="core/lib"/>
+    <property name="core.build.lib.dir" location="core/lib"/>
     <property name="core.lib.dir" location="core/lib"/>
 
-    
     <!-- import the core build script -->
     <import file="core/build-tools/run-scripts/run-server.xml"/>
     
