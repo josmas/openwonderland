@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.modules.ModuleRepository;
 import org.jdesktop.wonderland.modules.ModuleRepository.Repository;
 import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModuleRepositoryResource class is a Jersey RESTful service that returns
@@ -69,7 +70,7 @@ public class ModuleRepositoryResource {
         
         /* Fetch the module from the module manager */
         ModuleManager mm = ModuleManager.getModuleManager();
-        InstalledModule im = mm.getInstalledModule(moduleName);
+        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
         if (im == null) {
             /* Log an error and return an error response */
             logger.warning("ModuleManager: unable to locate module " + moduleName);
@@ -81,8 +82,7 @@ public class ModuleRepositoryResource {
          * If there are any entries with %WL_SERVER%, then replace with the
          * server path to the asset.
          */
-        UriBuilder artBuilder = context.getBaseUriBuilder();
-        artBuilder = artBuilder.path(moduleName).path("art");
+        UriBuilder artBuilder = context.getBaseUriBuilder().path(moduleName).path("art");
         String hostname = artBuilder.build().toString();
         
         /* Fetch the module repository, return an error if it does not exist */

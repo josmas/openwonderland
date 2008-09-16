@@ -25,12 +25,12 @@ package org.jdesktop.wonderland.modules.service;
  */
 public class ModuleRequiredCheck {
     /* The module name we are current checking the dependencies for */
-    private RemovedModule module = null;
+    private String moduleName = null;
     
     
     /** Constructor that takes module to check */
-    public ModuleRequiredCheck(RemovedModule module) {
-        this.module = module;
+    public ModuleRequiredCheck(String moduleName) {
+        this.moduleName = moduleName;
     }
     
     /**
@@ -42,11 +42,10 @@ public class ModuleRequiredCheck {
      * @return True if the module is still required by the system
      */
     public boolean checkRequired() {
-        String uniqueName = this.module.getModuleInfo().getName();
         ModuleManager mm = ModuleManager.getModuleManager();
         
         /* See if this module is required */
-        if (mm.isModuleRequired(uniqueName) != null) {
+        if (mm.isModuleRequired(this.moduleName) != null) {
             // print something to the log XXX
             return true;
         }
