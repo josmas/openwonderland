@@ -292,8 +292,6 @@ public class ModuleChecksums {
                          * The relative path name is the absolute path name of the
                          * file, stripping off the absolute path name of the root
                          */
-                        System.out.println("root length=" + root.getAbsolutePath().length());
-                        System.out.println("file length=" + file.getAbsolutePath().length());
                         String name = file.getAbsolutePath().substring((int) (root.getAbsolutePath().length() + 1));
 
                         /* Create a new checksum object and add to the list */

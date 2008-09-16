@@ -20,8 +20,12 @@ package org.jdesktop.wonderland.modules.file;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.LinkedList;
+import org.apache.commons.io.FileUtils;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.modules.ModuleChecksums;
@@ -44,38 +48,29 @@ public class FileModule extends Module {
 
     
     /** Default constructor, takes a reference to the module directory root */
-    public FileModule(File root) {
+    public FileModule(File root, String name) {
         super();
-        this.root = root;
+        this.root = new File(root, name);
     }
     
     /**
-     * Opens the module by reading its contents.
+     * Returns the file root for the module.
+     * 
+     * @return The File root for the module
      */
-    @Override
-    public void open() {
-        /* Fetch and parse the three XML files: info, requires, and repository */
-        ModuleInfo info = FileModuleUtil.parseModuleInfo(this.root);
-        if (info == null) {
-            // print error message XXX
-        }
-        
-        /* Read in the module */
-        ModuleRequires requires = FileModuleUtil.parseModuleRequires(this.root);
-        ModuleRepository repository = FileModuleUtil.parseModuleRepository(this.root);
-        HashMap<String, ModuleArtResource> artwork = FileModuleUtil.parseModuleArt(this.root);
-        HashMap<String, String> wfs = FileModuleUtil.parseModuleWFS(this.root);
-        HashMap<String, ModulePlugin> plugins = FileModuleUtil.parseModulePlugins(this.root);
-        ModuleChecksums checksums = FileModuleUtil.parseModuleChecksums(this.root);
-        
-        /* Create a new module based upon what has been parsed */
-        this.setModuleInfo(info);
-        this.setModuleRequires(requires);
-        this.setModuleRepository(repository);
-        this.setModuleArtwork(artwork);
-        this.setModuleChecksums(checksums);
-        this.setModuleWFSs(wfs);
-        this.setModulePlugins(plugins);
+    public File getRoot() {
+        return this.root;
+    }
+    
+    /**
+     * Returns the name of the module given its file object.
+     * 
+     * @param file The file pointing to the module
+     * @return The name of the module
+     */
+    public static String getModuleName(File file) {
+        /* Just return the name of the file */
+        return file.getName();
     }
     
     /**
@@ -86,7 +81,7 @@ public class FileModule extends Module {
      */
     public InputStream getInputStreamForResource(ModuleResource resource) {
         try {
-            String resourcePath = "art/" + resource.getPathName();
+            String resourcePath = Module.MODULE_ART + "/" + resource.getPathName();
             File entry = new File(this.root, resourcePath);
             return new FileInputStream(entry);
         } catch (java.io.IOException excp) {
@@ -112,5 +107,160 @@ public class FileModule extends Module {
             // print stack trace
             return null;
         }
+    }
+
+    @Override
+    public ModuleInfo getModuleInfo() {
+        try {
+            /* Fetch the entry, return null if it does not exist */
+            File entry = new File(root, Module.MODULE_INFO);
+            return ModuleInfo.decode(new FileReader(entry));
+        } catch (java.lang.Exception excp) {
+            // print stack trace
+            return null;
+        }
+    }
+
+    @Override
+    public ModuleRequires getModuleRequires() {
+         try {
+            /* Fetch the entry, return null if it does not exist */
+            File entry = new File(root, Module.MODULE_REQUIRES);
+            return ModuleRequires.decode(new FileReader(entry));
+        } catch (java.lang.Exception excp) {
+            // print stack trace
+            return null;
+        }
+    }
+
+    @Override
+    public ModuleRepository getModuleRepository() {
+         try {
+            /* Fetch the entry, return null if it does not exist */
+            File entry = new File(root, Module.MODULE_REPOSITORY);
+            return ModuleRepository.decode(new FileReader(entry));
+        } catch (java.lang.Exception excp) {
+            // print stack trace
+            return null;
+        }
+    }
+
+    
+    @Override
+    public ModuleChecksums getModuleChecksums() {
+        try {
+            /* Fetch the entry, return null if it does not exist */
+            File entry = new File(root, Module.MODULE_CHECKSUMS);
+            return ModuleChecksums.decode(new FileReader(entry));
+        } catch (java.lang.Exception excp) {
+            // print stack trace
+            return null;
+        }
+    }
+    
+    @Override
+    public Collection<String> getModuleArtResources() {
+        /* Find the "art/" subdirectory and recursively list */
+        File artFile = new File(root, Module.MODULE_ART);
+        if (artFile.exists() == false || artFile.isDirectory() == false) {
+            // print error message
+            return null;
+        }
+        return FileModuleUtil.listModuleArt(artFile, artFile);
+    }
+
+    @Override
+    public ModuleArtResource getModuleArtResource(String path) {
+        File file = new File(this.root, Module.MODULE_ART + "/" + path);
+        if (file.exists() == true && file.isFile() == true && file.canRead() == true) {
+            return new ModuleArtResource(path);
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<String> getModuleWFSs() {
+        /* Find the "wfs/" subdirectory and list just the topmost entries */
+        File wfsFile = new File(root, Module.MODULE_WFS);
+        if (wfsFile.exists() == false || wfsFile.isDirectory() == false) {
+            // print error message
+            return null;
+        }
+        LinkedList<String> wfsList = new LinkedList<String>();
+        
+        /* List all of the files, take only directories ending in -wfs */
+        File[] files = wfsFile.listFiles();
+        for (File file : files) {
+            /* If a directory, then recursively descend and append */
+            String name = file.getName();
+            if (file.isDirectory() == true && file.isHidden() == false && name.endsWith("-wfs") == true) {
+                /* Strip off the name of the wfs from the path */
+                name = name.substring(0, name.length() - 4);
+                wfsList.addLast(name);
+            } 
+        }
+        return wfsList;
+    }
+
+    @Override
+    public Collection<String> getModulePlugins() {
+         /* Find the "plugins/" subdirectory and list just the topmost entries */
+        File pluginFile = new File(root, Module.MODULE_PLUGINS);
+        if (pluginFile.exists() == false || pluginFile.isDirectory() == false) {
+            // print error message
+            return null;
+        }
+        LinkedList<String> pluginList = new LinkedList<String>();
+        
+        /* List all of the files, take only directories ending in -wfs */
+        File[] files = pluginFile.listFiles();
+        for (File file : files) {
+            /* If a directory and is not hidden then is it ok */
+            if (file.isDirectory() == true && file.isHidden() == false) {
+              pluginList.addLast(file.getName());
+            } 
+        }
+        return pluginList;
+    }
+
+    @Override
+    public ModulePlugin getModulePlugin(String name) {
+        /* Filter for only files ending in .jar */
+        JarFileFilter filter = new JarFileFilter();
+        
+        /* Construct the directory in which the module resides, check it exists */
+        File file = new File(this.root, Module.MODULE_PLUGINS + "/" + name);
+        if (file.exists() == false || file.canRead() == false || file.isDirectory() == false) {
+            return null;
+        }
+        
+        /* Fetch all of its jar entries in client/, common/, and server/. */
+        File clientFile = new File(file, ModulePlugin.CLIENT_JAR);
+        File serverFile = new File(file, ModulePlugin.SERVER_JAR);
+        File commonFile = new File(file, ModulePlugin.COMMON_JAR);
+
+        /* List each of the JAR files */
+        String[] client = clientFile.list(filter);
+        String[] server = serverFile.list(filter);
+        String[] common = commonFile.list(filter);
+
+        /* Make sure each are not null */
+        client = (client != null) ? client : new String[]{};
+        server = (server != null) ? server : new String[]{};
+        common = (common != null) ? common : new String[]{};
+
+        /* Create the ModulePlugin object, add, and continue */
+        return new ModulePlugin(name, client, server, common);
+    }
+
+    @Override
+    public boolean delete() {
+        return FileUtils.deleteQuietly(this.root);
+    }
+
+    @Override
+    public String getName() {
+        /* Just return the name of the directory */
+        return FileModule.getModuleName(this.root);
     }
 }
