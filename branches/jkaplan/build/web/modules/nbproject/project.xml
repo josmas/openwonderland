@@ -35,6 +35,9 @@
                     <file>${file.reference.wonderland-web-utils.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
+                <library files="1">
+                    <file>${file.reference.ant.jar}</file>
+                </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>

@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="wonderland-serverprotocoltest" default="jar" basedir=".">
-    <property name="top.dir" location="../.."/>
-    <property name="current.dir" location="."/>
+<project name="wonderland-doclet" default="jar" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-doclet}"/>
+    <property name="utils.dir" location="${current.dir}/.."/>
     
     <property name="util.src" value="org/jdesktop/wonderland/utils/doclet"/>
     <property name="util.jarname" value="wonderland-doclet"/>
     
-    <import file="${top.dir}/utils/build-tools/import/util-common.xml"/>
+    <!-- import common build file -->
+    <import file="${utils.dir}/build-tools/build-scripts/utils-build.xml"/>
+       
+    <target name="build" depends="-utils-init, -utils-compile"/>
+    <target name="jar" depends="build, -utils-jar"/>
     
-    <target name="build" depends="init, -do-compile"/>
-    <target name="jar" depends="build, -do-jar"/>
-    <target name="clean" depends="-do-clean">
+    <target name="clean" depends="-utils-clean">
         <delete dir="dist"/>
     </target>
     
