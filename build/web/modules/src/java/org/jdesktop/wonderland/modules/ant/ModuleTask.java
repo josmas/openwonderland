@@ -41,7 +41,7 @@ public class ModuleTask extends Jar {
         this.name = name;
     }
     
-    public void setMajorVersion(int majorVersion) {
+    public void setVersion(int majorVersion) {
         this.majorVersion = majorVersion;
     }
     
@@ -156,19 +156,19 @@ public class ModuleTask extends Jar {
     }
     
     private void writePlugin(Plugin p) {
-        if (p.clientJars != null) {
-            p.clientJars.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/");
-            super.addFileset(p.clientJars);
+        for (ZipFileSet jar : p.clientJars) {
+            jar.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/client/");
+            super.addFileset(jar);
         }
         
-        if (p.commonJars != null) {
-            p.commonJars.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/");
-            super.addFileset(p.commonJars);
+        for (ZipFileSet jar : p.commonJars) {
+            jar.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/common/");
+            super.addFileset(jar);
         }
         
-        if (p.serverJars != null) {
-            p.serverJars.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/");
-            super.addFileset(p.serverJars);
+        for (ZipFileSet jar : p.serverJars) {
+            jar.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/server/");
+            super.addFileset(jar);
         }
     }
     
@@ -181,7 +181,7 @@ public class ModuleTask extends Jar {
             this.name = name;
         }
     
-        public void setMajorVersion(int majorVersion) {
+        public void setVersion(int majorVersion) {
             this.majorVersion = majorVersion;
         }
     
@@ -192,24 +192,24 @@ public class ModuleTask extends Jar {
     
     public static class Plugin {
         private String name;
-        private ZipFileSet clientJars;
-        private ZipFileSet commonJars;
-        private ZipFileSet serverJars;
-        
+        private List<ZipFileSet> clientJars = new ArrayList<ZipFileSet>();
+        private List<ZipFileSet> commonJars = new ArrayList<ZipFileSet>();
+        private List<ZipFileSet> serverJars = new ArrayList<ZipFileSet>();
+         
         public void setName(String name) {
             this.name = name;
         }
         
-        public void addClient(ZipFileSet clientJars) {
-            this.clientJars = clientJars;
+        public void addClient(ZipFileSet clientJar) {
+            clientJars.add(clientJar);
         }
         
-        public void addCommon(ZipFileSet commonJars) {
-            this.commonJars = commonJars;
+        public void addCommon(ZipFileSet commonJar) {
+            commonJars.add(commonJar);
         }
         
-        public void addServer(ZipFileSet serverJars) {
-            this.serverJars = serverJars;
+        public void addServer(ZipFileSet serverJar) {
+            serverJars.add(serverJar);
         }
     }
 }
