@@ -121,9 +121,8 @@
             windowtitle="Wonderland Platform"
             overview="${top.dir}/core/doc/overview.html">
             <classpath>
-		<pathelement path="${wonderland-server.classpath}"/>
-		<pathelement path="${wonderland-client.classpath}"/>
-                <pathelement path="${module-client.classpath}"/>
+		<pathelement path="${core-server.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>
             </classpath>
             
             <doctitle><![CDATA[<h1>Project Wonderland</h1>]]></doctitle>
@@ -146,9 +145,8 @@
             overview="${top.dir}/core/doc/overview.html">
                 
             <classpath>
-		<pathelement path="${wonderland-server.classpath}"/>
-		<pathelement path="${wonderland-client.classpath}"/>
-                <pathelement path="${module-client.classpath}"/>
+		<pathelement path="${core-server.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>
             </classpath>
             
             <doclet name="org.jdesktop.wonderland.utils.doclet.WonderlandDoclet"
