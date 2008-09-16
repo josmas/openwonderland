@@ -36,7 +36,7 @@ public class ModuleUtils {
     public static String getPluginNames(Module module) {
         StringBuilder sb = new StringBuilder();
         if (module.getModulePlugins() != null) {
-            Iterator<String> it = module.getModulePlugins().keySet().iterator();
+            Iterator<String> it = module.getModulePlugins().iterator();
             while (it.hasNext() == true) {
                 sb.append(it.next() + " ");
             }
@@ -53,7 +53,7 @@ public class ModuleUtils {
     public static String getWFSNames(Module module) {
         StringBuilder sb = new StringBuilder();
         if (module.getModuleWFSs() != null) {
-            Iterator<String> it = module.getModuleWFSs().keySet().iterator();
+            Iterator<String> it = module.getModuleWFSs().iterator();
             while (it.hasNext() == true) {
                 sb.append(it.next() + " ");
             }

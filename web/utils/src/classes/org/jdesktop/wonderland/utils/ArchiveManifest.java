@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
@@ -51,16 +52,29 @@ public class ArchiveManifest {
      * Each of the entries contains a String key of a directory path component,
      * and a linked-list of entries (files or directories) in that path.
      */
-    private HashMap<String, LinkedList<String>> fileMap;
+    private HashMap<String, LinkedList<String>> fileMap = null;
     
-    /* A linked list of all entries in the archive. */
-    private LinkedList<String> entryList;
+    /* An ordered linked list of all entries in the archive. */
+    private LinkedList<String> entryList = null;
    
     /* The JAR file object association with this JAR file */
     private JarFile jarfile;
     
     /**
      * Creates a new instance of ArchiveManifest, takes the JAR file as an
+     * argument, parses the manifest into a tree structure.
+     * 
+     * @param file The File of the JAR file
+     * @throw IOException Upon failure to open the JAR file
+     */
+    public ArchiveManifest(File file) throws IOException {
+        this.url = file.toURL();
+        this.jarfile = new JarFile(file);
+        this.createArchiveMap(jarfile);
+    }
+    
+    /**
+     * Creates a new instance of ArchiveManifest, takes the JAR URL as an
      * argument, parses the manifest into a tree structure.
      *
      * @param url The URL of the JAR file
@@ -231,6 +245,7 @@ public class ArchiveManifest {
     private void createArchiveMap(JarFile jarfile) {
         /* Initialize the tree map */
         this.fileMap = new HashMap<String, LinkedList<String>>();
+        this.entryList = new LinkedList<String>();
         
         /*
          * Fetch the entries from the manifest file. Iterate over each of the
@@ -245,19 +260,21 @@ public class ArchiveManifest {
             /* Split the path name into a path and file name part */
             String entryName = entry.getName();
             String paths[] = this.splitEntry(entryName);
-
+            
             /* Add the entry to the map, if it does not already exist */
             LinkedList<String> fnames = this.fileMap.get(paths[0]);
             if (fnames == null) {
                 fnames = new LinkedList<String>();
                 this.fileMap.put(paths[0], fnames);
-                this.entryList.addLast(entryName);
             }
             
             /* Add the entry in the map so long as it is not empty */
             if (paths[1].equals("") == false) {
                 fnames.add(paths[1]);
             }
+            
+            /* Always add the entry to the ordered list of entries */
+            this.entryList.addLast(entryName);
         }
     }
 }

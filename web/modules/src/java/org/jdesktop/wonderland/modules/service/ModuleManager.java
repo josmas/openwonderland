@@ -19,14 +19,15 @@
 package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.jdesktop.wonderland.modules.Module;
+import org.jdesktop.wonderland.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.ModuleInfo;
 
 /**
@@ -41,47 +42,38 @@ import org.jdesktop.wonderland.modules.ModuleInfo;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ModuleManager {
-    /* The definition of important file locations within the module directory */
-    public static final String ADD_DIR         = "add/";
-    public static final String PENDING_DIR     = "pending/";
-    public static final String INSTALLED_DIR   = "installed/";
-    public static final String REMOVE_DIR      = "remove/";
-    public static final String UNINSTALL_DIR   = "uninstall/";
-    
+    /* An enumeration of module states, with their correlated directories */
+    public enum State {
+        ADD       ("add/"),
+        PENDING   ("pending/"),
+        INSTALLED ("installed/"),
+        REMOVE    ("remove/"),
+        UNINSTALL ("uninstall/");
+
+        /* The directory in which the modules are found for the state */
+        private String directory = null;
+        
+        /** Constructor, takes the directory as an argument */
+        State(String directory) {
+            this.directory = directory;
+        }
+        
+        /**
+         * Returns the directory associated with the state
+         */
+        public String dir() {
+            return this.directory;
+        }
+    }
+
     /* The base module directory */
     private File root = null;
     
-    /* File roots forstatic each of the important module directories */
-    private File addDirectory = null;
-    private File pendingDirectory = null;
-    private File installedDirectory = null;
-    private File removeDirectory = null;
-    private File uninstallDirectory = null;
-    
-    /*
-     * Hash maps of modules that are installed, pending to be installed, and
-     * pending to be removed.
-     */
-    private HashMap<String, AddedModule>  addModules = null;
-    private HashMap<String, PendingModule> pendingModules = null;
-    private HashMap<String, InstalledModule> installedModules = null;
-    private HashMap<String, RemovedModule> removeModules = null;
-    private HashMap<String, UninstalledModule> uninstallModules = null;
-
-    
     /* The logger for the module manager */
     private static final Logger logger = Logger.getLogger(ModuleManager.class.getName());
-
     
     /** Constructor */
     private ModuleManager() {
-        /* Initialize some member variables and the like */
-        this.addModules = new HashMap<String, AddedModule>();
-        this.pendingModules = new HashMap<String, PendingModule>();
-        this.installedModules = new HashMap<String, InstalledModule>();
-        this.removeModules = new HashMap<String, RemovedModule>();
-        this.uninstallModules = new HashMap<String, UninstalledModule>();
-        
         /* Find the base modules/ directory in which all modules exist */
         String baseDir = ModuleManager.getModuleDirectory();
         if (baseDir == null) {
@@ -99,25 +91,6 @@ public class ModuleManager {
             logger.severe("ModuleManager: unable to create module root: " + this.root.getAbsolutePath());
             System.exit(1);
         }
-                
-        /* Create the file roots for each important directory */
-        try {
-            this.addDirectory = this.getModuleRoot(ModuleManager.ADD_DIR);
-            this.pendingDirectory = this.getModuleRoot(ModuleManager.PENDING_DIR);
-            this.installedDirectory = this.getModuleRoot(ModuleManager.INSTALLED_DIR);
-            this.removeDirectory = this.getModuleRoot(ModuleManager.REMOVE_DIR);
-            this.uninstallDirectory = this.getModuleRoot(ModuleManager.UNINSTALL_DIR);
-        } catch (java.io.IOException excp) {
-            logger.severe("ModuleManager: unable to create module subdir: " + excp.toString());
-            System.exit(1);
-        }
-        
-        /* Go ahead and read all of the modules */
-        this.readAddModules();
-        this.readPendingModules();
-        this.readInstalledModules();
-        this.readRemoveModules();
-        this.readUninstalledModules();
     }
     
     /**
@@ -145,9 +118,15 @@ public class ModuleManager {
     public static Logger getLogger() {
         return ModuleManager.logger;
     }
-   
+
     /**
-     * TBD.
+     * Adds a module to be installed. The added module is simply a properly
+     * formatted jar file. This step makes sure that the prerequisites have
+     * been met and generates a checksum file for the artwork resources in the
+     * module. Returns true upon success, false upon failure.
+     * 
+     * @param module The module to add
+     * @return True upon success, false upon failure
      */
     public boolean add(AddedModule module) {
         /*
@@ -158,31 +137,82 @@ public class ModuleManager {
         if (check.checkDependencies() == false) {
             logger.warning("ModuleManager: dependencies not satisfied for: " +
                     module.getModuleInfo().getName());
-        }
-        
-        /*
-         * If we have reached here, it means that we can safely install the
-         * module. Move the module archive file from the add/ directory to the
-         * pending/ directory
-         */
-        String name = module.getFile().getName();
-        File pendingFile = new File(this.pendingDirectory, name);
-        try {
-            FileUtils.moveFile(module.getFile(), pendingFile);
-        } catch (java.io.IOException excp) {
-            /* Log an error and return false to indicate step failed */
-            logger.warning("ModuleManager: Unable to move " +
-                    module.getFile().getAbsolutePath() + " to " +
-                    pendingFile.getAbsolutePath());
             return false;
         }
         
-        /* Remove from the list modules to add, add to pending list */
-        PendingModule pm = PendingModule.getPendingModule(pendingFile);
-        this.addModules.remove(module.getModuleInfo().getName());
-        this.pendingModules.put(module.getModuleInfo().getName(), pm);
+        /*
+         * Expand the contents of the module to the installed/ directory. First
+         * create a directory holding the module (but check first if it already
+         * exists and log a warning message).
+         */
+        String moduleName = module.getName();
+        File pending = null;
+        try {
+            pending = new File(this.getModuleRoot(State.PENDING), moduleName);
+        } catch (java.io.IOException excp) {
+            logger.severe("ModuleManager: unable to create pending dir for module: " + moduleName);
+            return false;
+        }
         
+        if (pending.exists() == true) {
+            /* Log an error, and try to delete the existing directory */
+            logger.warning("ModuleManager: Pending module already exists in " + pending.toString());
+            try {
+                FileUtils.deleteDirectory(pending);
+            } catch (java.io.IOException excp) {
+                /* If we cannot delete the existing directory, this is fatal */
+                logger.severe("ModuleManager: Unable to remove existing dir: " + pending.toString());
+                return false;
+            }
+        }
+        
+        /* Now go ahead and recreate the directory */
+        try {
+            pending.mkdir();
+        } catch (java.lang.SecurityException excp) {
+            logger.severe("ModuleManager: Unable to create install: " + pending.toString());
+            return false;
+        }
+        
+        /* Next, expand the contents of the module into this directory */
+        try {
+            module.expand(pending);
+        } catch (java.io.IOException excp) {
+            logger.severe("ModuleManager: Unable to write to install: " + pending.toString());
+            logger.severe("ModuleManager: " + excp.toString());
+            return false;
+        }
+        
+        /* Compile the artwork checksums, overwrite any existing file */
+        try {
+            File artRoot = new File(pending, Module.MODULE_ART);
+            File chkFile = new File(pending, Module.MODULE_CHECKSUMS);
+            ModuleChecksums cks = ModuleChecksums.generate(artRoot, ModuleChecksums.SHA1_CHECKSUM_ALGORITHM, new String[0], new String[0]);
+            cks.encode(new FileWriter(chkFile));
+        } catch (java.lang.Exception excp) {
+            logger.severe("ModuleManager: Failed to create checksums: " + excp.toString());
+            return false;
+        }
+
+        /* Remove the added file */
+        if (module.delete() == false) {
+            logger.warning("ModuleManager: Unable to remove from added: " + module.getName());
+            return false;
+        }
         return true;
+    }
+    
+    /**
+     * Installs all of the pending modules.
+     */
+    public void installAll() {
+        Iterator<String> it = this.getModules(State.PENDING).iterator();
+        while (it.hasNext() == true) {
+            PendingModule pm = (PendingModule)this.getModule(it.next(), State.PENDING);
+            if (this.install(pm) == false) {
+                logger.warning("[MODULES] Failed to install pending module " + pm.getName());
+            }
+        }
     }
     
     /**
@@ -200,12 +230,19 @@ public class ModuleManager {
      */
     public boolean install(PendingModule pending) {
         /*
-         * Expand the contents of the module to the installed/ directory. First
+         * Copy the contents of the module to the installed/ directory. First
          * create a directory holding the module (but check first if it already
          * exists and log a warning message).
          */
         String moduleName = pending.getModuleInfo().getName();
-        File installed = new File(this.root, ModuleManager.INSTALLED_DIR + moduleName);
+        File installed = null;
+        try {
+            installed = new File(this.getModuleRoot(State.INSTALLED), moduleName);
+        } catch (java.io.IOException excp) {
+            logger.warning("ModuleManager: Unable to create install file: " + moduleName);
+            return false;
+        }
+        
         if (installed.exists() == true) {
             /* Log an error, and try to delete the existing directory */
             logger.warning("ModuleManager: Pending module already exists in " + installed.toString());
@@ -226,22 +263,20 @@ public class ModuleManager {
             return false;
         }
         
-        /* Next, expand the contents of the module into this directory */
+        /* Next, copy the contents of the module into this directory */
         try {
-            pending.expand(installed);
+            File pendingFile = pending.getRoot();
+            FileUtils.copyDirectory(pendingFile, installed);
         } catch (java.io.IOException excp) {
             logger.severe("ModuleManager: Unable to write to install: " + installed.toString());
             return false;
         }
         
-        /* Remove the pending file and update the lists */
-        if (pending.getFile().delete() == false) {
+        /* Remove the pending module */
+        if (pending.delete() == false) {
             logger.warning("ModuleManager: Unable to remove from pending: " + installed.toString());
+            return false;
         }
-        
-        InstalledModule im = InstalledModule.getInstalledModule(installed);
-        this.pendingModules.remove(moduleName);
-        this.installedModules.put(moduleName, im);
         return true;
     }
   
@@ -254,19 +289,29 @@ public class ModuleManager {
      * failure include: some installed module depends upon this module, so this
      * module cannot be uninstalled.
      * 
-     * @param module The module to remove (prepare for uninstall)
+     * @param moduleInfo The module to remove (prepare for uninstall)
      * @return True upon success, false upon error.
      */
-    public boolean remove(RemovedModule module) {
+    public boolean remove(ModuleInfo moduleInfo) {
+        /*
+         * Fetch the module that is installed. If not installed, then there is
+         * no reason to remove it.
+         */
+        InstalledModule im = (InstalledModule)this.getModule(moduleInfo.getName(), State.INSTALLED);
+        if (im == null) {
+            logger.warning("[MODULES] REMOVE Installed module does not exist " + moduleInfo.getName());
+            return false;
+        }
+        
         /*
          * Check to see that the module can be safely removed by making sure that
          * no other installed module (or one waiting to be installed) depends
          * upon it.
          */
-        ModuleRequiredCheck check = new ModuleRequiredCheck(module);
+        ModuleRequiredCheck check = new ModuleRequiredCheck(im.getName());
         if (check.checkRequired() == true) {
-            logger.warning("ModuleManager: module still required: " +
-                    module.getModuleInfo().getName());
+            logger.warning("[MODULES] REMOVE module still required: " + im.getName());
+            return false;
         }
         
         /*
@@ -274,22 +319,25 @@ public class ModuleManager {
          * module. Move the module.xml file from the remove/ directory to the
          * uninstall/ directory
          */
-        String name = module.getModuleXML().getName();
-        File uninstall = new File(this.uninstallDirectory, name);
+        File file = null;
         try {
-            FileUtils.moveFile(module.getModuleXML(), uninstall);
-        } catch (java.io.IOException excp) {
-            /* Log an error and return false to indicate step failed */
-            logger.warning("ModuleManager: Unable to move " +
-                    module.getModuleXML().getAbsolutePath() + " to " +
-                    uninstall.getAbsolutePath());
+            file = new File(this.getModuleRoot(State.UNINSTALL), moduleInfo.getName() + ".xml");
+            moduleInfo.encode(new FileWriter(file));
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] REMOVE cannot move module.xml to " + file.getAbsolutePath());
+            logger.warning("[MODULES] REMOVE " + excp.toString());
             return false;
         }
         
-        // add to the list of uninstalled modules XXXX
-        UninstalledModule um = new UninstalledModule(uninstall, module.getModuleInfo());
-        this.removeModules.remove(name);
-        this.uninstallModules.put(name, um);
+        /* Remove the module.xml file from the remove/ directory (if it exists) */
+        try {
+            File removeFile = new File(this.getModuleRoot(State.REMOVE), moduleInfo.getName() + ".xml");
+            removeFile.delete();
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] REMOVE cannot remove module.xml from remove/");
+            logger.warning("[MODULES] REMOVE " + excp.toString());
+            return false;
+        }
         return true;
     }
 
@@ -306,117 +354,78 @@ public class ModuleManager {
      * directory does not exist. Neither of these should happen under normal
      * circumstances
      *
-     * @param module The module to uninstall entirely
+     * @param moduleInfo The module to uninstall entirely
      * @return True upon success, false upon failure
      */
-    public boolean uninstall(UninstalledModule module) {
+    public boolean uninstall(ModuleInfo moduleInfo) {
         /*
-         * See if the directory exists, if so, remove it.
+         * Try to delete the existing directory. If we cannot, then we log
+         * an error and leave the module.xml in uninstalled/ just in case
+         * a future attempt will clear things up.
          */
-        String moduleName = module.getModuleInfo().getName();
-        File installed = new File(this.installedDirectory, moduleName);
-        if (installed.exists() == true) {
-            /*
-             * Try to delete the existing directory. If we cannot, then we log
-             * an error and leave the module.xml in uninstalled/ just in case
-             * a future attempt will clear things up.
-             */
-            try {
-                FileUtils.deleteDirectory(installed);
-            } catch (java.io.IOException excp) {
-                /* If we cannot delete the existing directory, log a warning */
-                logger.warning("ModuleManager: Unable to remove installed dir: " + installed.toString());
-                return false;
-            }
+        File installed = null;
+        try {
+            installed = new File(this.getModuleRoot(State.INSTALLED), moduleInfo.getName());
+            FileUtils.deleteDirectory(installed);
+        } catch (java.io.IOException excp) {
+            /* If we cannot delete the existing directory, log a warning */
+            logger.warning("[MODULE] UNINSTALL Unable to remove directory " + installed.toString());
+            return false;
         }
-        
+
         /*
          * Remove the file in the uninstalled/ directory.
          */
+        File file = null;
         try {
-            return module.getModuleXML().delete();
-        } catch (java.lang.SecurityException excp) {
-            logger.warning("ModuleManager: Unable to remove module.xml to uinstalled: " + module.getModuleXML().getAbsolutePath());
+            file = new File(this.getModuleRoot(State.UNINSTALL), moduleInfo.getName() + ".xml");
+            file.delete();
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULE] UNINSTALL Unable to remove " + file.getAbsolutePath());
+            return false;
         }
         
-        /* Remove from the list of uninstalled modules */
-        this.uninstallModules.remove(moduleName);
         return true;
     }
     
     /**
-     * Returns the added module given its unique name, null if the module
-     * does not exist.
-     *
-     * @param moduleName The unique module name
-     * @return The added module
-     */
-    public AddedModule getAddModule(String uniqueName) {
-        return this.addModules.get(uniqueName);
-    }
-
-    /**
-     * Returns an array of strings of the names of all pending modules.
-     * Returns an empty array if no pending modules exists.
+     * Returns a collection of module names for the given state. If there are no
+     * modules present in the given state, then this method returns an empty
+     * connection.
      * 
-     * @param An array of pending module names
+     * @param state The module state (ADD, PENDING, INSTALLED, REMOVE)
+     * @return An collection of unique module names in the given state
      */
-    public String[] getPendingModules() {
-        return this.pendingModules.keySet().toArray(new String[] {});
+    public Collection<String> getModules(State state) {
+        LinkedList<String> list = new LinkedList<String>();
+        try {
+            /*
+             * Loop through each file and check that it is potentially valid.
+             * If so, add its name to the list of module names
+             */
+            File[] files = this.getModuleRoot(state).listFiles();
+            for (File file : files) {
+                if (this.isValidModule(file, state) == true) {
+                    list.addLast(this.getModuleName(file, state));
+                }
+            }
+            return list;
+        } catch (java.io.IOException excp) {
+            logger.warning("ModuleManager: Unable to access module directory: " + excp.toString());
+            return list;
+        }
     }
     
     /**
-     * Returns the pending module given its unique name, null if the module
-     * does not exist.
-     *
-     * @param moduleName The unique module name
-     * @return The pending module
-     */
-    public PendingModule getPendingModule(String uniqueName) {
-        return this.pendingModules.get(uniqueName);
-    }
-    
-    /**
-     * Returns the installed module given its unique name, null if the module
-     * does not exist.
-     *
-     * @param moduleName The unique module name
-     * @return The installed modules
-     */
-    public InstalledModule getInstalledModule(String uniqueName) {
-        return this.installedModules.get(uniqueName);
-    }
-    
-    /**
-     * Returns an array of strings of the names of all installed modules.
-     * Returns an empty array if no installed modules exists.
+     * Returns a module given its unique name and state. If the module name
+     * does not exist, this method returns null.
      * 
-     * @param An array of installed module names
+     * @param uniqueName The name of the module
+     * @param state The module state (ADD, PENDING, INSTALLED, REMOVE)
+     * @return The module
      */
-    public String[] getInstalledModules() {
-        return this.installedModules.keySet().toArray(new String[] {});
-    }
-    
-    /**
-     * Returns the removed module given its unique name, null if the module
-     * does not exist.
-     *
-     * @param moduleName The unique module name
-     * @return The removed modules
-     */
-    public RemovedModule getRemoveModule(String uniqueName) {
-        return this.removeModules.get(uniqueName);
-    }
-        
-    /**
-     * Returns the uninstalled module given its unique name, null if the module
-     * does not exist.
-     *
-     * @param moduleName The unique module name
-     * @return The uninstalled modules
-     */
-    public UninstalledModule getUninstalledModule(String uniqueName) {
-        return this.uninstallModules.get(uniqueName);
+    public Module getModule(String uniqueName, State state) {
+        return this.moduleFactory(uniqueName, state);
     }
 
     /**
@@ -432,17 +441,17 @@ public class ModuleManager {
         Module module = null;
         
         /* If waiting to be removed, then return null */
-        if (this.getUninstalledModule(uniqueName) != null) {
+        if (this.getModule(uniqueName, State.REMOVE) != null) {
             return null;
         }
         
         /* If installed, then return it */
-        if ((module = this.getInstalledModule(uniqueName)) != null) {
+        if ((module = this.getModule(uniqueName, State.INSTALLED)) != null) {
             return module;
         }
         
         /* If about to be installed, then return true */
-        if ((module = this.getPendingModule(uniqueName)) != null) {
+        if ((module = this.getModule(uniqueName, State.PENDING)) != null) {
             return module;
         }
         
@@ -460,13 +469,13 @@ public class ModuleManager {
      */
     public Module isModuleRequired(String uniqueName) {
         /* Loop through all installed (but not uninstalled) modules */
-        Collection<InstalledModule> installed = this.installedModules.values();
-        Iterator<InstalledModule> iterator = installed.iterator();
-        while (iterator.hasNext() == true) {
-            InstalledModule im = iterator.next();
+        Iterator<String> it = this.getModules(State.INSTALLED).iterator();
+        while (it.hasNext() == true) {
+            String installedName = it.next();
+            InstalledModule im = (InstalledModule)this.getModule(uniqueName, State.INSTALLED);
             
             /* Do not look at uninstalled modules */
-            if (this.getUninstalledModule(im.getModuleInfo().getName()) == null) {
+            if (this.getModule(installedName, State.REMOVE) == null) {
                 if (im.getModuleRequires().isRequired(uniqueName) == true) {
                     return im;
                 }
@@ -474,175 +483,15 @@ public class ModuleManager {
         }
         
         /* Loop through all of the pending modules */
-        Collection<PendingModule> pending = this.pendingModules.values();
-        Iterator<PendingModule> iterator2 = pending.iterator();
-        while (iterator2.hasNext() == true) {
-            PendingModule pm = iterator2.next();
+        Iterator<String> it2 = this.getModules(State.PENDING).iterator();
+        while (it2.hasNext() == true) {
+            PendingModule pm = (PendingModule)this.getModule(it2.next(), State.PENDING);
             if (pm.getModuleRequires().isRequired(uniqueName) == true) {
                 return pm;
             }
         }
         
         return null;
-    }
-    
-    /**
-     * TBD
-     */
-    private void readAddModules() {
-        /*
-         * List all of the directories underneath this base level directory and
-         * try to open it as a module. If successful, add it to the hash of
-         * the unique module name and its Module entry.
-         */
-        File[] files = this.addDirectory.listFiles();
-        for (File entry : files) {
-            /* Check if it is a directory, if so, then skip */
-            if (entry.isDirectory() == true || entry.isHidden() == true) {
-                continue;
-            }
-            
-            /* If its suffix is not .jar or .zip then skip */
-            String name = entry.getName();
-            if (name.endsWith(".zip") == false && name.endsWith(".jar") == false) {
-                continue;
-            }
-            
-            /*
-             * Try to open it as a module. If unable, then just skip
-             */
-            AddedModule module = AddedModule.getAddModule(entry);
-            if (module != null) {
-                this.addModules.put(module.getModuleInfo().getName(), module);
-            }
-        }
-    }
-    
-    /**
-     * TBD
-     */
-    private void readPendingModules() {
-        /*
-         * List all of the directories underneath this base level directory and
-         * try to open it as a module. If successful, add it to the hash of
-         * the unique module name and its Module entry.
-         */
-        File[] files = this.pendingDirectory.listFiles();
-        for (File entry : files) {
-            /* Check if it is a directory, if so, then skip */
-            if (entry.isDirectory() == true || entry.isHidden() == true) {
-                continue;
-            }
-            
-            /* If its suffix is not .jar or .zip then skip */
-            String name = entry.getName();
-            if (name.endsWith(".zip") == false && name.endsWith(".jar") == false) {
-                continue;
-            }
-            
-            /*
-             * Try to open it as a module. If unable, then just skip
-             */
-            PendingModule module = PendingModule.getPendingModule(entry);
-            if (module != null) {
-                this.pendingModules.put(module.getModuleInfo().getName(), module);
-            }
-        }
-    } 
-    
-    /**
-     * TBD
-     */
-    private void readInstalledModules() {
-        /*
-         * List all of the directories underneath this base level directory and
-         * try to open it as a module. If successful, add it to the hash of
-         * the unique module name and its Module entry.
-         */
-        File[] files = this.installedDirectory.listFiles();
-        for (File entry : files) {
-            /* Check if it is a directory, if not, then skip */
-            if (entry.isDirectory() == false || entry.isHidden() == true) {
-                continue;
-            }
-            
-            /* Try to open it as a module */
-            logger.info("[MODULES] INSTALLED " + entry.getName());
-            InstalledModule module = InstalledModule.getInstalledModule(entry);
-            if (module != null) {
-                this.installedModules.put(module.getModuleInfo().getName(), module);
-            }
-        }
-    }
-    
-    /**
-     * TBD
-     */
-    private void readRemoveModules() {
-        /*
-         * List all of the files underneath this base level directory, each
-         * should be a version of the module.xml file. Ignore anything but
-         * .xml files.
-         */
-        File[] files = this.removeDirectory.listFiles();
-        for (File entry : files) {
-            /* Check if it is a directory or does not end in .xml */
-            if (entry.isDirectory() == true || entry.getName().endsWith(".xml") == false) {
-                continue;
-            }
-
-            /*
-             * Try to parse the file as an ModuleInfo class. If we canont, then
-             * we just skip it. Otherwise, create a new RemoveModule class, with
-             * just the ModuleInfo set.
-             */
-            try {
-                ModuleInfo info = ModuleInfo.decode(new FileReader(entry));
-                RemovedModule rm = new RemovedModule(entry, info);
-                this.removeModules.put(info.getName(), rm);
-            } catch (java.io.FileNotFoundException excp) {
-                /* Log an error and simply continue to the next entry */
-                logger.warning("ModuleManager: invalid xml file in remove: " + entry.getAbsolutePath());
-            } catch (javax.xml.bind.JAXBException excp) {
-                /* Log an error and simply continue to the next entry */
-                logger.warning("ModuleManager: invalid xml file in remove: " + entry.getAbsolutePath());
-            }
-        }
-    }
-    
-    /**
-     * TBD
-     */
-    private void readUninstalledModules() {
-        /*
-         * List all of the files underneath this base level directory, each
-         * should be a version of the module.xml file. Ignore anything but
-         * .xml files.
-         */
-        File[] files = this.uninstallDirectory.listFiles();
-        for (File entry : files) {
-            /* Check if it is a directory or does not end in .xml */
-            if (entry.isDirectory() == true || entry.getName().endsWith(".xml") == false) {
-                continue;
-            }
-
-            /*
-             * Try to parse the file as an ModuleInfo class. If we canont, then
-             * we just skip it. Otherwise, create a new RemoveModule class, with
-             * just the ModuleInfo set.
-             */
-            try {
-                ModuleInfo info = ModuleInfo.decode(new FileReader(entry));
-                UninstalledModule um = new UninstalledModule(entry, info);
-                this.uninstallModules.put(info.getName(), um);
-            } catch (java.io.FileNotFoundException excp) {
-                /* Log an error and simply continue to the next entry */
-                logger.warning("ModuleManager: invalid xml file in remove: " + entry.getAbsolutePath());
-            } catch (javax.xml.bind.JAXBException excp) {
-                /* Log an error and simply continue to the next entry */
-                logger.warning("ModuleManager: invalid xml file in remove: " + entry.getAbsolutePath());
-            }
-        }
     }
 
     /**
@@ -658,17 +507,80 @@ public class ModuleManager {
      * system. Creates the directory if it does not exist. Throws IOException
      * if it cannot.
      */
-    private File getModuleRoot(String subdir) throws IOException {
+    public File getModuleRoot(State state) throws IOException {
         try {
-            File file = new File(this.root, subdir);
+            File file = new File(this.root, state.dir());
             if (file.exists() == false) {
                 file.mkdir();
             }
             return file;
         } catch (java.lang.SecurityException excp) {
-            logger.severe("ModuleManager: Unable to create module subdir: " + subdir);
+            logger.severe("ModuleManager: Unable to create module subdir: " + state.dir());
             throw new IOException(excp.toString());
         }
+    }
+    
+    /**
+     * Returns true if an entry in the module directory is a potentially valid
+     * module, false if not. An entry is potentially valid if is follows the
+     * proper naming conventions, but does not necessarily have to be a well-
+     * formed module.
+     * 
+     * @param file The file in the module directory
+     * @param state The module state
+     * @return True if the entry is a potentially valid module, false if not.
+     */
+    private boolean isValidModule(File file, State state) {
+        switch (state) {
+            case ADD:
+                return AddedModule.isValidFile(file);
+                
+            case PENDING:
+                return PendingModule.isValidFile(file);
+                
+            case INSTALLED:
+                return InstalledModule.isValidFile(file);
+                
+            case REMOVE:
+                return file.isFile() && file.getName().endsWith(".xml");
+        }
+        return false;
+    }
+
+    /**
+     * Returns an instance of a module given its file root and state.
+     * 
+     * @param name The unique name of the module
+     * @param state The state of the module (ADD, PENDING, INSTALLED, REMOVE)
+     * @return The Module object.
+     */
+    private Module moduleFactory(String name, State state) {
+        try {
+            switch (state) {
+                case ADD:       return new AddedModule(this.getModuleRoot(state), name);
+                case PENDING:   return new PendingModule(this.getModuleRoot(state), name);
+                case INSTALLED: return new InstalledModule(this.getModuleRoot(state), name);
+            }
+        } catch (java.io.IOException excp) {
+            logger.warning("ModuleManager: cannot create module: " + excp.toString());
+        }
+        return null;
+    }
+    
+    /**
+     * Returns the name of the module given its file root
+     * 
+     * @param file The file pointin to the module directory or jar file
+     * @param state The state of the module (ADD, PENDING, INSTALLED, REMOVE)
+     * @return The name of the module
+     */
+    private String getModuleName(File file, State state) {
+        switch (state) {
+            case ADD:       return AddedModule.getModuleName(file);
+            case PENDING:   return PendingModule.getModuleName(file);
+            case INSTALLED: return InstalledModule.getModuleName(file);
+        }
+        return null;
     }
     
     public static void main(String args[]) {
@@ -677,10 +589,20 @@ public class ModuleManager {
         
         /* Write out the installed modules */
         StringBuilder sb = new StringBuilder("Installed Modules\n");
-        for (String im : mm.getInstalledModules()) {
-            InstalledModule module = mm.getInstalledModule(im);
+        Iterator<String> it = mm.getModules(State.INSTALLED).iterator();
+        while (it.hasNext() == true) {
+            Module module = mm.getModule(it.next(), State.INSTALLED);
             sb.append(module.toString());
         }
         logger.info(sb.toString());
+        
+        Collection<String> added = mm.getModules(State.ADD);
+        System.out.println(added);
+        AddedModule am = (AddedModule)mm.getModule("mpk20", State.ADD);
+        mm.add(am);
+        
+        PendingModule pm = (PendingModule)mm.getModule("mpk20", State.PENDING);
+        mm.install(pm);
+        
     }
 }

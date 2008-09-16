@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModuleChecksumsResource class is a Jersey RESTful service that returns the
@@ -63,7 +64,7 @@ public class ModuleChecksumsResource {
         
         /* Fetch the module from the module manager */
         ModuleManager mm = ModuleManager.getModuleManager();
-        InstalledModule im = mm.getInstalledModule(moduleName);
+        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
         if (im == null) {
             /* Log an error and return an error response */
             logger.warning("ModuleManager: unable to locate module " + moduleName);
