@@ -19,8 +19,6 @@
 package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.zip.ZipFile;
 import org.jdesktop.wonderland.modules.archive.ArchiveModule;
 
 /**
@@ -30,50 +28,23 @@ import org.jdesktop.wonderland.modules.archive.ArchiveModule;
  */
 public class AddedModule extends ArchiveModule {
 
-    /* The File object of the archive */
-    private File file = null;
-    
     /**
      * Constructor TBD
      * @param root
      */
-    public AddedModule(File file) throws IOException {
-        super(file.toURL());
-        this.file = file;
+    public AddedModule(File root, String name) {
+        super(root, name);
     }
     
     /**
-     * Returns the file associated with the archive
-     *
-     * @return The file associated with the archive
-     */
-    public File getFile() {
-        return this.file;
-    }
-
-    /**
-     * Opens the module by reading its contents.
-     */
-    @Override
-    public void open() {
-        super.open();
-    }
-    
-    /**
-     * Opens a pending module given its file, returns a new instance of this
-     * class.
+     * Returns true if the given file is potentially a valid module, false if
+     * not.
      * 
-     * @param root The base directory of the module
-     * @return The module object
+     * @param file The File to check if it is a potentially valid module
+     * @return True If the file is potentially valid, false if not.
      */
-    public static final AddedModule getAddModule(File file) {
-        try {
-            AddedModule im = new AddedModule(file);
-            im.open();
-            return im;
-        } catch (java.io.IOException excp) {
-            // log an error XXX
-            return null;
-        }
+    public static boolean isValidFile(File file) {
+        System.out.println("module name: " + file.getName());
+        return file.getName().endsWith(".jar");
     }
 }

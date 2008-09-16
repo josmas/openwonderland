@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -108,6 +109,18 @@ public class ModuleRequires {
      */
     public static ModuleRequires decode(InputStream is) throws JAXBException {
         return (ModuleRequires)ModuleRequires.unmarshaller.unmarshal(is);        
+    }
+
+        /**
+     * Takes the input reader of the XML file and instantiates an instance of
+     * the ModuleRequires class
+     * <p>
+     * @param r The input reader of the requires XML file
+     * @throw ClassCastException If the input file does not map to ModuleRequires
+     * @throw JAXBException Upon error reading the XML file
+     */
+    public static ModuleRequires decode(Reader r) throws JAXBException {
+        return (ModuleRequires)ModuleRequires.unmarshaller.unmarshal(r);        
     }
     
     /**

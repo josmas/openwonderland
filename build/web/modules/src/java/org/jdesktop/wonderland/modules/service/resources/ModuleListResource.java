@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.service.resources;
 
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,6 +29,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.modules.util.ModuleList;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModuleListResource class is a Jersey RESTful service that returns the
@@ -67,8 +69,8 @@ public class ModuleListResource {
          * object, encoding and return
          */
         try {
-            String[] modules = ModuleManager.getModuleManager().getInstalledModules();
-            ModuleList moduleList = new ModuleList(modules);
+            Collection<String> modules = ModuleManager.getModuleManager().getModules(State.INSTALLED);
+            ModuleList moduleList = new ModuleList(modules.toArray(new String[] {}));
             StringWriter sw = new StringWriter();
             moduleList.encode(sw);
             ResponseBuilder rb = Response.ok(sw.toString());

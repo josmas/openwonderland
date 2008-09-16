@@ -18,10 +18,10 @@
 
 package org.jdesktop.wonderland.modules;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * The Module class represents a single module within Wonderland. A module
@@ -54,105 +54,51 @@ public abstract class Module {
     public static final String MODULE_WFS        = "wfs";
     public static final String MODULE_PLUGINS    = "plugins";
     
-    private ModuleInfo       moduleInfo       = null; /* Basic module info   */
-    private ModuleRequires   moduleRequires   = null; /* Module dependencies */
-    private ModuleRepository moduleRepository = null; /* Module repository   */
-    
-    /* A map of unique artwork resource names to their resource objects */
-    private HashMap<String, ModuleArtResource> moduleArtwork = null;
-    
-    /* A map of unique WFS names to their URLs */
-    private HashMap<String, String> moduleWFS = null;
-    
-    /* A map of plugin names to the plugin object */
-    private HashMap<String, ModulePlugin> modulePlugins = null;
-    
-    /* A single table of checkums for all of the resources */
-    private ModuleChecksums checksums = null;
-    
     /** Default constructor */
     protected Module() {}
     
     /**
-     * Opens the module by reading its contents. This method is overridden by
-     * subclasses.
+     * Returns the name of the module.
+     * 
+     * @return The module's name
      */
-    protected abstract void open();
+    public abstract String getName();
+    
+    /**
+     * Removes the module entirely. Returns true upon success, false upon
+     * failure.
+     * 
+     * @return True if the module was successfully deleted, false if not.
+     */
+    public abstract boolean delete();
     
     /**
      * Returns the basic information about a module: its name and version.
      * <p>
      * @return The basic module information
      */
-    public ModuleInfo getModuleInfo() {
-        return this.moduleInfo;
-    }
-    
-    /**
-     * Sets the basic information about a module, assumes the given argument
-     * is not null.
-     * <p>
-     * @param moduleInfo The basic module information
-     */
-    public void setModuleInfo(ModuleInfo moduleInfo) {
-        this.moduleInfo = moduleInfo;
-    }
+    public abstract ModuleInfo getModuleInfo();
     
     /**
      * Returns the module's dependencies.
      * <p>
      * @return The module's dependencies
      */
-    public ModuleRequires getModuleRequires() {
-        return this.moduleRequires;
-    }
-    
-    /**
-     * Sets the module's dependencies, assumes the given argument is not null.
-     * <p>
-     * @param moduleRequires The module dependencies
-     */
-    public void setModuleRequires(ModuleRequires moduleRequires) {
-        this.moduleRequires = moduleRequires;
-    }
-    
+    public abstract ModuleRequires getModuleRequires();
+
     /**
      * Returns the module's repository information.
      * <p>
      * @return The module's repository information
      */
-    public ModuleRepository getModuleRepository() {
-        return this.moduleRepository;
-    }
-    
-    /**
-     * Sets the module's repository information, assumes the argument is not
-     * null.
-     * <p>
-     * @param moduleRepository The module's repository information
-     */
-    public void setModuleRepository(ModuleRepository moduleRepository) {
-        this.moduleRepository = moduleRepository;
-    }
-    
-    /**
-     * Sets the module's collection of artwork resources, assumes the argument
-     * is not null.
-     * <p>
-     * @param moduleArtwork The module's artwork
-     */
-    public void setModuleArtwork(HashMap<String, ModuleArtResource> moduleArtwork) {
-        this.moduleArtwork = moduleArtwork;
-    }
-    
+    public abstract ModuleRepository getModuleRepository();
+
     /**
      * Returns the module's collection of artwork resources.
      * <p>
      * @return The module's collection of artwork
      */
-    public HashMap<String, ModuleArtResource> getModuleArtwork() {
-        return this.moduleArtwork;
-    }
+    public abstract Collection<String> getModuleArtResources();
 
     /**
      * Returns the module artwork resource given its relative path, or null if
@@ -160,9 +106,7 @@ public abstract class Module {
      * 
      * @return The module's artwork or null if it does not exist
      */
-    public ModuleArtResource getModuleArtResource(String path) {
-        return this.moduleArtwork.get(path);
-    }
+    public abstract ModuleArtResource getModuleArtResource(String path);
 
     /**
      * Returns a map of WFS objects for all WFSs contained within the module.
@@ -172,19 +116,7 @@ public abstract class Module {
      *
      * @return A map of WFS entries within the module
      */
-    public Map<String, String> getModuleWFSs() {
-        return this.moduleWFS;
-    }
-    
-    /**
-     * Sets the map of WFS objects for. This method assumes that the argument
-     * is not null; for no WFS objects, pass an empty set.
-     * 
-     * @param wfs A map of WFS entries within the module
-     */
-    public void setModuleWFSs(HashMap<String, String> wfs) {
-        this.moduleWFS = wfs;
-    }
+    public abstract Collection<String> getModuleWFSs();
 
     /**
      * Returns a map of ModulePlugin objects for all plugins contained within
@@ -194,37 +126,23 @@ public abstract class Module {
      *
      * @return A map of plugin entries within the module
      */
-    public Map<String, ModulePlugin> getModulePlugins() {
-        return this.modulePlugins;
-    }
-    
+    public abstract Collection<String> getModulePlugins();
+
     /**
-     * Sets the map of plugin objects for this module. This method assumes that
-     * the argument is not null; for no plugin objects, pass an empty set.
+     * Returns a module's plugin given its name, null if the plugin does not
+     * exists.
      * 
-     * @param plugins A map of WFS entries within the module
+     * @param name The unique name of the plugin
+     * @return The ModulePlugin object
      */
-    public void setModulePlugins(HashMap<String, ModulePlugin> plugins) {
-        this.modulePlugins = plugins;
-    }
-    
-    /**
-     * Sets the list of checksums for the resources in the module.
-     * 
-     * @param checksums The collection of checksums for the resources
-     */
-    public void setModuleChecksums(ModuleChecksums checksums) {
-        this.checksums = checksums;
-    }
-    
+    public abstract ModulePlugin getModulePlugin(String name);
+
     /**
      * Returns a collection of checksums for the resources in the module.
      * 
      * @returns The collection of resource checksums
      */
-    public ModuleChecksums getModuleChecksums() {
-        return this.checksums;
-    }
+    public abstract ModuleChecksums getModuleChecksums();
     
     /**
      * Returns an input stream for the given resource, null upon error.
@@ -255,23 +173,22 @@ public abstract class Module {
         sb.append("Depends upon " + this.getModuleRequires().toString() + "\n");
         sb.append("Repositories\n" + this.getModuleRepository().toString() + "\n");
         sb.append("\nPlugins\n");
-        Iterator<String> it = this.getModulePlugins().keySet().iterator();
+        Iterator<String> it = this.getModulePlugins().iterator();
         while (it.hasNext() == true) {
-            ModulePlugin plugin = this.getModulePlugins().get(it.next());
+            ModulePlugin plugin = this.getModulePlugin(it.next());
             sb.append("\t" + plugin.toString() + "\n");
         }
         sb.append("\nArtwork resources\n");
-        Iterator<String> it2 = this.getModuleArtwork().keySet().iterator();
+        Iterator<String> it2 = this.getModuleArtResources().iterator();
         while (it2.hasNext() == true) {
-            ModuleArtResource art = this.getModuleArtwork().get(it2.next());
+            ModuleArtResource art = this.getModuleArtResource(it2.next());
             sb.append("\t" + art.getPathName() + "\n");
         }
         sb.append("\nWFS\n");
-        Iterator<String> it3 = this.getModuleWFSs().keySet().iterator();
+        Iterator<String> it3 = this.getModuleWFSs().iterator();
         while (it3.hasNext() == true) {
             String name = it3.next();
-            String wfs = this.getModuleWFSs().get(name);
-            sb.append("\t" + name + " " + wfs + "\n");
+            sb.append("\t" + name + "\n");
         }
         sb.append("---------------------------------------------------------------------------\n");
         return sb.toString();

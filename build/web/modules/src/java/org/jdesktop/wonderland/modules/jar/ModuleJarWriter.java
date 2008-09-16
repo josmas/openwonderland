@@ -30,7 +30,6 @@ import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
 import org.jdesktop.wonderland.modules.ModulePlugin;
-import org.jdesktop.wonderland.wfs.WFS;
 
 /**
  * The ModuleJarWriter class streams a Module to a JAR archive file. For
@@ -113,12 +112,11 @@ public class ModuleJarWriter {
          * resources, ask the listener for the input stream for each resource
          * and write out to the jar output stream.
          */
-        Map<String, ModuleArtResource> resourceMap = module.getModuleArtwork();
-        Iterator<String> resourceIterator = resourceMap.keySet().iterator();
+        Iterator<String> resourceIterator = module.getModuleArtResources().iterator();
         while (resourceIterator.hasNext() == true) {
             /* Fetch the resource and an input stream to fetch the resource */
             String resourceName = resourceIterator.next();
-            ModuleArtResource resource = resourceMap.get(resourceName);
+            ModuleArtResource resource = module.getModuleArtResource(resourceName);
             InputStream is = this.resourceListener.getInputStreamForResource(resourceName);
             
             /* Does every directory need an entry? XXX */
@@ -135,12 +133,11 @@ public class ModuleJarWriter {
          * Write out each of the plugins. Loop through each of the plugins and
          * ask the listener to write out each jar
          */
-        Map<String, ModulePlugin> pluginMap = module.getModulePlugins();
-        Iterator<String> pluginIterator = pluginMap.keySet().iterator();
+        Iterator<String> pluginIterator = module.getModulePlugins().iterator();
         while (pluginIterator.hasNext() == true) {
             /* Write an entry for the directory */
             String pluginName = pluginIterator.next();
-            ModulePlugin plugin = pluginMap.get(pluginName);
+            ModulePlugin plugin = module.getModulePlugin(pluginName);
             jos.putNextEntry(new ZipEntry(Module.MODULE_PLUGINS + "/" + pluginName + "/"));
             
             /* Create entries for the client/, server/, and common/ directories */
