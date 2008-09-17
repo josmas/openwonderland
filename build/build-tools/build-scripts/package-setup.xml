@@ -24,7 +24,7 @@
             </zipfileset>
             
             <!-- include ant-contrib tasks -->
-            <zipfileset dir="${setup.build-scripts.dir}/../import" prefix="build-tools/import">
+            <zipfileset dir="${setup.build-scripts.dir}/../ant-tasks" prefix="build-tools/ant-tasks">
                 <include name="ant-contrib.jar"/>
             </zipfileset>
         </zip> 
