@@ -15,7 +15,7 @@
     <!-- extended ant tasks -->
     <taskdef resource="${antcontrib.taskdef.resource}">
         <classpath>
-            <pathelement location="${setup.build-scripts.dir}/../import/ant-contrib.jar"/>
+            <pathelement location="${setup.build-scripts.dir}/../ant-tasks/ant-contrib.jar"/>
             <pathelement location="${setup.build-scripts.dir}"/>
         </classpath>
     </taskdef>
