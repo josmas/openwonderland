@@ -282,18 +282,21 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 generateLoadMessages(dynamicCellList);
             }
             
+            
+            StringBuffer statsOut = new StringBuffer();
+    
             if (staticStats!=null) {
-                System.out.println("Static ");
-                staticStats.report();                
+                statsOut.append("Static\n");
+                staticStats.report(statsOut);                
             }
             
             if (dynamicStats!=null) {
-                System.out.println("Dynamic ");
-                dynamicStats.report();
+                statsOut.append("Dynamic\n");
+                dynamicStats.report(statsOut);
             }
             
             if (dynamicStats!=null || staticStats!=null) {
-                System.out.println("----------------------------");               
+                logger.info(statsOut.toString());
             }
                    
             lastRevalidationTimestamp = TimeManager.getWonderlandTime();
@@ -330,8 +333,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             if (!allCells.contains(cellDescription)) {
                 // schedule the add operation
 
-                if (true || logger.isLoggable(Level.FINER)) 
-                    logger.warning("Entering cell " + cellDescription.getCellID() +
+                if (logger.isLoggable(Level.FINER)) 
+                    logger.finer("Entering cell " + cellDescription.getCellID() +
                                  " cellcache for user "+username);
                 
                 allCells.addCell(cellDescription);
