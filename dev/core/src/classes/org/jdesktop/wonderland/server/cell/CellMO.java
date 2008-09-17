@@ -462,6 +462,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
 //                BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
             }
+            if (localBounds==null)
+                throw new IllegalStateException("localBounds must not be null");
+            if (transform==null)
+                throw new IllegalStateException("transform must not be null");
+        
             calcLocal2World();
             calcWorldBounds();
             
