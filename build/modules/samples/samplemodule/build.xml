@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-sample-module" default="all" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.wonderland-serverprotocoltest}"/>
+    <dirname property="current.dir" file="${ant.file.wonderland-sample-module}"/>
     <property name="modules.dir" location="${current.dir}/../.."/>
         
     <property name="module.src" value="org/jdesktop/wonderland/modules/sample"/>
