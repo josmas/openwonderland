@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.testharness.slave.client3D;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,12 +78,13 @@ public class Client3DSim
         avatar.addViewCellConfiguredListener(new LocalAvatar.ViewCellConfiguredListener() {
             public void viewConfigured(LocalAvatar localAvatar) {
                 ((MovableComponent)avatar.getViewCell().getComponent(MovableComponent.class)).addServerCellMoveListener(messageTimer);
+                
+                // Start the userSim once the view is fully configured
+                userSim.start();
             }
         });
                       
-        userSim = new UserSimulator(avatar);
-        
-        userSim.start();
+        userSim = new UserSimulator(avatar);        
     }
     
     public void processRequest(TestRequest request) {
@@ -147,6 +149,7 @@ public class Client3DSim
         private Semaphore semaphore;
                 
         public UserSimulator(LocalAvatar avatar) {
+            super("UserSimulator");
             this.avatar = avatar;
             semaphore = new Semaphore(0);
         }
@@ -250,7 +253,7 @@ public class Client3DSim
         
         private static final long REPORT_INTERVAL = 5000; // Report time in ms
         
-        private HashMap<CellTransform, Long> messageTimes = new HashMap();
+        private LinkedList<MessageTime> messageTimes = new LinkedList();
         
         public MessageTimer() {
             lastReport = System.nanoTime();
@@ -262,33 +265,54 @@ public class Client3DSim
          * @param arg1
          */
         public void cellMoved(CellTransform transform, CellMoveSource arg1) {
-            Long sendTime = messageTimes.remove(transform);
+            long sendTime;
             
-            if (sendTime==null) {
-                logger.warning("Unable to find record of data send");
-            } else {
-            
-                long time = ((System.nanoTime())-sendTime)/1000000;
-
-                min = Math.min(min, time);
-                max = Math.max(max, time);
-                timeSum += time;
-                count++;
-
-                if (System.nanoTime()-lastReport > REPORT_INTERVAL*1000000) {
-                    long avg = timeSum/count;
-                    logger.info("Roundtrip time avg "+avg + "ms "+name+" min "+min+" max "+max);
-                    timeSum=0;
-                    lastReport = System.nanoTime();
-                    count = 0;
-                    min = Long.MAX_VALUE;
-                    max = 0;            
+            MessageTime mt=null;
+            synchronized(messageTimes) {
+                mt = messageTimes.getFirst();
+                if (!mt.cellTransform.equals(transform)) {
+//                    System.out.println("Transform does not match, no time available");
+                    // Handle messages from the server, which were not originated on this client
+                    return;
                 }
+                messageTimes.removeFirst();
+            }
+            
+            sendTime = mt.sendTime;
+
+            long time = ((System.nanoTime())-sendTime)/1000000;
+
+            min = Math.min(min, time);
+            max = Math.max(max, time);
+            timeSum += time;
+            count++;
+
+            if (System.nanoTime()-lastReport > REPORT_INTERVAL*1000000) {
+                long avg = timeSum/count;
+                logger.info("Roundtrip time avg "+avg + "ms "+name+" min "+min+" max "+max);
+                timeSum=0;
+                lastReport = System.nanoTime();
+                count = 0;
+                min = Long.MAX_VALUE;
+                max = 0;            
             }
         }
         
         public void messageSent(CellTransform transform) {
-            messageTimes.put(transform, System.nanoTime());
+            synchronized(messageTimes) {
+                messageTimes.add(new MessageTime(transform, System.nanoTime()));
+            }
         }
+    }
+    
+    class MessageTime {
+        public CellTransform cellTransform;
+        public long sendTime;
+        
+        public MessageTime(CellTransform cellTransformIn, long sendTime) {
+            cellTransform = cellTransformIn.clone(null);
+            this.sendTime = sendTime;
+        }
+
     }
 }
