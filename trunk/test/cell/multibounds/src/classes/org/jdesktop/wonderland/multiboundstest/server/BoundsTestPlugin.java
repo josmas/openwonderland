@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.multiboundstest.server;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
@@ -28,7 +27,6 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -92,8 +90,9 @@ public class BoundsTestPlugin implements ServerPlugin {
         public TestTask(MovableCellMO cell, MovableCellMO c2) {
             this.cellRef = AppContext.getDataManager().createReference(cell);
             this.cell2Ref = AppContext.getDataManager().createReference(c2);
-            pos = cell.getLocalTransform().getTranslation(null);
-            pos2 = cell.getLocalTransform().getTranslation(null);
+           
+            pos = cell.getLocalTransform(null).getTranslation(null);
+            pos2 = cell.getLocalTransform(null).getTranslation(null);
         }
 
         public void run() throws Exception {
@@ -102,8 +101,8 @@ public class BoundsTestPlugin implements ServerPlugin {
             if (pos.x > 40 || pos.x < 2) {
                 dir = -dir;
             }
-            cellRef.get().getComponent(MovableComponentMO.class).setTransform(new CellTransform(null, pos));
-            cell2Ref.get().getComponent(MovableComponentMO.class).setTransform(new CellTransform(null, pos2));
+            cellRef.get().getComponent(MovableComponentMO.class).moveRequest(new CellTransform(null, pos));
+            cell2Ref.get().getComponent(MovableComponentMO.class).moveRequest(new CellTransform(null, pos2));
         }
     }
 }

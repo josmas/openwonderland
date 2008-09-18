@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="wonderland-utils" default="all" basedir=".">
+<project name="wonderland-utils" default="jar" basedir=".">
     <target name="all" depends="build, jar"/>
     
     <target name="build">

@@ -1,7 +1,0 @@
-#!/bin/sh
-#
-# Remove some files that are created when running wonderland...
-#
-instdir=/usr/share/lg3d-wonderland
-/bin/rm -rf ${instdir}/data/Wonderland/dsdb ${instdir}/log
-/bin/rm -f ${instdir}/ext/darkstar/WonderlandMain.cfg ${instdir}/SipCommunicatordebuglog.txt

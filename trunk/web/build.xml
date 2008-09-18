@@ -5,9 +5,9 @@
     
     <target name="build">
        <ant dir="utils" target="jar"/>
-       <ant dir="wfs" target="default" inheritall="true"/>
-       <ant dir="modules" target="default" inheritall="true"/>
-       <ant dir="server" target="jar"/>
+       <ant dir="wfs" target="dist" inheritall="false"/>
+       <ant dir="modules" target="dist" inheritall="false"/>
+       <ant dir="server" target="jar" inheritall="false"/>
     </target>
     
     <target name="run-web" depends="build">
@@ -18,5 +18,9 @@
     </target>
     
     <target name="clean">
+       <ant dir="utils" target="clean"/>
+       <ant dir="wfs" target="clean" inheritall="false"/>
+       <ant dir="modules" target="clean" inheritall="false"/>
+       <ant dir="server" target="clean" inheritall="false"/>
     </target>
 </project>

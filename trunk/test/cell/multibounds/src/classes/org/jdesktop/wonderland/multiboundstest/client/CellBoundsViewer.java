@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.multiboundstest.client;
 
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -33,18 +35,20 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.client.ClientContext3D;
-import org.jdesktop.wonderland.client.avatar.LocalAvatar;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
 import org.jdesktop.wonderland.client.cell.CellManager;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.RootCell;
+import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -52,7 +56,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  *
@@ -121,7 +125,6 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 return boundsPanel;
             }
         };
-        ClientContext3D.registerCellCache(boundsPanel, session);
         
         boundsPanel.setSession(session);
         
@@ -257,7 +260,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     }//GEN-LAST:event_forwardBActionPerformed
     
     
-    class BoundsPanel extends JPanel implements CellCacheConnection.CellCacheMessageListener, CellCache, CellManager.CellMoveListener {
+    class BoundsPanel extends JPanel implements CellCacheConnection.CellCacheMessageListener, CellCache, MovableComponent.CellMoveListener {
         private Vector3f center = new Vector3f();  // Temporary variable
         private Vector3f extent = new Vector3f();   // Temporary variable
         private float scale = 20f;
@@ -271,7 +274,6 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         private Point mousePress = null;
         
         public BoundsPanel() {
-            CellManager.getCellManager().addCellMoveListener(this);
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseDragged(MouseEvent e) {
@@ -331,9 +333,9 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             if (cell instanceof RootCell)
                 return;
             
-            drawBounds(cell.getCachedVWBounds(), g);
+            drawBounds(cell.getWorldBounds(), g);
             
-            Vector3f cellPos = cell.getLocalToVWorld().getTranslation(null);
+            Vector3f cellPos = cell.getLocalToWorldTransform().getTranslation(null);
             g.drawString(cell.getName(), cellPos.x*scale, cellPos.z*scale);
         }
         
@@ -372,7 +374,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 BoundingVolume localBounds, 
                 CellID parentCellID, 
                 CellTransform cellTransform, 
-                CellSetup setup,
+                CellConfig setup,
                 String cellName) {
             System.out.println("LOAD CELL "+cellID);
             Cell ret = cacheImpl.loadCell(cellID, 
@@ -383,6 +385,14 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                                setup,
                                cellName);
             repaint();
+            
+            // add a move listener
+            MovableComponent mc = ret.getComponent(MovableComponent.class);
+            if (mc != null) {
+                mc.addServerCellMoveListener(this);
+            }
+            
+            
             return ret;
         }
 
@@ -419,17 +429,23 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             return cacheImpl.getCell(cellId);
         }
 
+        public Collection<Cell> getRootCells() {
+            return cacheImpl.getRootCells();
+        }
+        
+        public void setViewCell(ViewCell viewCell) {
+            cacheImpl.setViewCell(viewCell);
+        }
+
+        public ViewCell getViewCell() {
+            return cacheImpl.getViewCell();
+        }
         
         /*************************************************
          * End CellCache implementation
          *************************************************/
-        
-        /**
-         * ${inheritDoc}
-         * @param cell
-         * @param fromServer
-         */
-        public void cellMoved(Cell cell, boolean fromServer) {
+
+        public void cellMoved(CellTransform transform, CellMoveSource source) {
 //            System.out.println("Cell moved "+cell.getLocalToVWorld().getTranslation(null)+"  "+cell);
             repaint();
         }
