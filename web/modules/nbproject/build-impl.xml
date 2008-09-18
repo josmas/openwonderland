@@ -529,28 +529,25 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest" name="do-dist"/>
     <target depends="init" if="dist.ear.dir" name="library-inclusion-in-manifest">
+        <basename file="${file.reference.wonderland-wfs.jar}" property="included.lib.file.reference.wonderland-wfs.jar"/>
+        <copy-ear-war file="${file.reference.wonderland-wfs.jar}" propname="included.lib.file.reference.wonderland-wfs.jar.X"/>
+        <basename file="${file.reference.wonderland-common.jar}" property="included.lib.file.reference.wonderland-common.jar"/>
+        <copy-ear-war file="${file.reference.wonderland-common.jar}" propname="included.lib.file.reference.wonderland-common.jar.X"/>
         <basename file="${file.reference.wonderland-server.jar}" property="included.lib.file.reference.wonderland-server.jar"/>
         <copy-ear-war file="${file.reference.wonderland-server.jar}" propname="included.lib.file.reference.wonderland-server.jar.X"/>
         <basename file="${file.reference.wonderland-web-utils.jar}" property="included.lib.file.reference.wonderland-web-utils.jar"/>
         <copy-ear-war file="${file.reference.wonderland-web-utils.jar}" propname="included.lib.file.reference.wonderland-web-utils.jar.X"/>
-        <basename file="${file.reference.wonderland-client.jar}" property="included.lib.file.reference.wonderland-client.jar"/>
-        <copy-ear-war file="${file.reference.wonderland-client.jar}" propname="included.lib.file.reference.wonderland-client.jar.X"/>
-        <basename file="${file.reference.commons-io-1.4.jar}" property="included.lib.file.reference.commons-io-1.4.jar"/>
-        <copy-ear-war file="${file.reference.commons-io-1.4.jar}" propname="included.lib.file.reference.commons-io-1.4.jar.X"/>
-        <basename file="${file.reference.gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar}" property="included.lib.file.reference.gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar"/>
-        <copy-ear-war file="${file.reference.gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar}" propname="included.lib.file.reference.gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar.X"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${included.lib.file.reference.wonderland-server.jar} ${included.lib.file.reference.wonderland-web-utils.jar} ${included.lib.file.reference.wonderland-client.jar} ${included.lib.file.reference.commons-io-1.4.jar} ${included.lib.file.reference.gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar} "/>
+            <attribute name="Class-Path" value="${included.lib.file.reference.wonderland-wfs.jar} ${included.lib.file.reference.wonderland-common.jar} ${included.lib.file.reference.wonderland-server.jar} ${included.lib.file.reference.wonderland-web-utils.jar} "/>
         </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
     <target depends="init" name="library-inclusion-in-archive" unless="dist.ear.dir">
+        <copy file="${file.reference.wonderland-wfs.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.wonderland-common.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-server.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-web-utils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.wonderland-client.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.commons-io-1.4.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest" name="do-ear-dist">
         <dirname file="${dist.ear.war}" property="dist.jar.dir"/>

@@ -529,17 +529,20 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest" name="do-dist"/>
     <target depends="init" if="dist.ear.dir" name="library-inclusion-in-manifest">
+        <basename file="${file.reference.wonderland-common.jar}" property="included.lib.file.reference.wonderland-common.jar"/>
+        <copy-ear-war file="${file.reference.wonderland-common.jar}" propname="included.lib.file.reference.wonderland-common.jar.X"/>
         <basename file="${file.reference.wonderland-web-utils.jar}" property="included.lib.file.reference.wonderland-web-utils.jar"/>
         <copy-ear-war file="${file.reference.wonderland-web-utils.jar}" propname="included.lib.file.reference.wonderland-web-utils.jar.X"/>
         <basename file="${file.reference.wonderland-server.jar}" property="included.lib.file.reference.wonderland-server.jar"/>
         <copy-ear-war file="${file.reference.wonderland-server.jar}" propname="included.lib.file.reference.wonderland-server.jar.X"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${included.lib.file.reference.wonderland-web-utils.jar} ${included.lib.file.reference.wonderland-server.jar} "/>
+            <attribute name="Class-Path" value="${included.lib.file.reference.wonderland-common.jar} ${included.lib.file.reference.wonderland-web-utils.jar} ${included.lib.file.reference.wonderland-server.jar} "/>
         </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
     <target depends="init" name="library-inclusion-in-archive" unless="dist.ear.dir">
+        <copy file="${file.reference.wonderland-common.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-web-utils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-server.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>

@@ -1,0 +1,30 @@
+<project basedir="." default="..." name="web.classpath">
+    
+    <!-- core classpaths -->
+   
+    <!-- jme -->
+    <pathconvert property="web.apache.classpath">
+	<path location="${web.apache.dir}/commons-io-1.4.jar"/>
+    </pathconvert>
+    
+    <!-- Other wonderland specific supporting jars -->
+    <pathconvert property="web.restlib.classpath">
+        <path location="${web.restlib.dir}/grizzly-servlet-webserver-1.7.3.2.jar"/>
+        <path location="${web.restlib.dir}/http.jar"/>
+        <path location="${web.restlib.dir}/jaxws-api.jar"/>
+        <path location="${web.restlib.dir}/jdom-1.0.jar"/>
+        <path location="${web.restlib.dir}/jersey.jar"/>
+        <path location="${web.restlib.dir}/jettison-1.0-RC1.jar"/>
+        <path location="${web.restlib.dir}/jsr250-api.jar"/>
+        <path location="${web.restlib.dir}/jsr311-api.jar"/>
+        <path location="${web.restlib.dir}/rome-0.9.jar"/>
+        <path location="${web.restlib.dir}/wadl2java.jar"/>
+    </pathconvert>
+    
+    
+    <pathconvert property="web.classpath">
+        <path path="${jaxb.classpath}"/>
+	<path path="${web.apache.classpath}"/>
+	<path path="${web.restlib.classpath}"/>
+    </pathconvert>
+</project>

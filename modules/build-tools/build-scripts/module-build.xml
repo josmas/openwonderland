@@ -1,0 +1,123 @@
+<project basedir="." default="..." name="module.build">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="module.build-scripts.dir" file="${ant.file.module.build}"/>
+    
+    <!-- import the web setup file -->
+    <import file="${module.build-scripts.dir}/module-setup.xml"/>
+    
+    <!-- import the global build setup -->
+    <import file="${setup.build-scripts.dir}/build-setup.xml"/>
+    
+    <!-- 
+        import the core setup files.  This will include the core classpaths,
+        which we depend on.
+    -->
+    <import file="${top.dir}/core/build-tools/build-scripts/core-setup.xml"/>
+    
+    <!-- Initialization - make dirs, unpack ext stuff... -->
+    <target name="-module-init" depends="-module-ant-task">
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${build.lib.dir}"/>
+        
+        <!-- default paths.  Override to add test-specific paths -->
+        <property name="module-common.classpath" value=""/>
+        <property name="module-client.classpath" value=""/>
+        <property name="module-server.classpath" value=""/>
+    </target>
+   
+    <!-- include the module ant task -->
+    <target name="-module-ant-task">
+        <taskdef name="module"
+                  classname="org.jdesktop.wonderland.modules.ant.ModuleTask">
+            <classpath>
+                <pathelement location="${top.dir}/web/modules/dist/wonderland-modules-api.jar"/>
+                <pathelement path="${jaxb.classpath}"/>
+            </classpath>
+        </taskdef>
+    </target>
+   
+    <target name="-module-compile-common" depends="-module-init">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/common/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+		<pathelement path="${core-common.classpath}"/>
+                <pathelement path="${module-common.classpath}"/>
+	    </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="-module-compile-server" depends="-module-init, -module-compile-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/server/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+		<pathelement path="${core-server.classpath}"/>
+                <pathelement path="${module-server.classpath}"/>
+	    </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="-module-compile-client" depends="-module-init, -module-compile-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/client/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+		<pathelement path="${core-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+	    </compile-classpath>
+        </wl-compile>
+    </target>
+            
+    <target name="-module-jar-server" depends="-module-compile-server, 
+                                               -module-jar-server-noplugins, 
+                                               -module-jar-server-plugins"/>
+    
+    <target name="-module-jar-server-plugins" if="module.plugins">
+        <wl-services dir="${build.dir}/${module.jarname}"
+                     type="org.jdesktop.wonderland.server.ServerPlugin">
+            <providers>
+                ${module.packagename}.server.${module.plugins}
+            </providers>
+        </wl-services>
+        
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/${module.jarname}-server.jar">   
+            <fileset dir="${build.classes.dir}">
+		<include name="${module.src}/common/**"/>
+                <include name="${module.src}/server/**"/>
+	    </fileset>
+            <fileset dir="${build.dir}/${module.jarname}">
+                <include name="**"/>
+            </fileset>
+        </jar>
+    </target>
+    
+    <target name="-module-jar-server-noplugins" unless="module.plugins">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/${module.jarname}-server.jar">   
+            <fileset dir="${build.classes.dir}">
+		<include name="${module.src}/common/**"/>
+                <include name="${module.src}/server/**"/>
+	    </fileset>
+        </jar>
+    </target>
+    
+    <target name="-module-jar-client" depends="-module-compile-client">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/${module.jarname}-client.jar">
+            <fileset dir="${build.classes.dir}">
+		<include name="${module.src}/common/**"/>
+                <include name="${module.src}/client/**"/>
+	    </fileset>
+        </jar>
+    </target>
+    
+    <target name="-module-clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${module.dist.dir}"/>
+    </target>
+</project>

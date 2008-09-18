@@ -1,21 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="jar-all" name="wonderland">
+<project basedir="." default="package" name="wonderland">
 
-    <property name="top.dir" location="."/>
-    
-<target name="jar-all" description="Jar Everything">
-    <ant dir="core" target="jar"/>
+<target name="package" description="Create packages">
+    <!-- build areas in correct order, use default build target -->
+    <ant dir="utils"   inheritall="false"/>
+    <ant dir="core"    inheritall="false"/>
+    <ant dir="web"     inheritall="false"/>
+    <ant dir="modules" inheritall="false"/>
 </target>
 
 <target name="javadoc" description="Build javadoc">
     <ant dir="core" target="javadoc"/>
 </target>
 
-<target name="scrub" description="Clean all rebuildable stuff.">
-    <ant dir="core" target="scrub"/>
+<target name="clean" description="Clean all rebuildable stuff.">
+    <ant dir="utils"   target="clean" inheritall="false"/>
+    <ant dir="core"    target="clean" inheritall="false"/>
+    <ant dir="web"     target="clean" inheritall="false"/>
+    <ant dir="modules" target="clean" inheritall="false"/>
 </target>
 
-<target name="release" depends="jar-all, javadoc" description="Build release">
+<target name="release" depends="package, javadoc" description="Build release">
 </target>
 
 <target name="daily-build" depends="release" description="Do the daily build">
