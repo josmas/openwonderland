@@ -120,6 +120,12 @@ public class ClientManager {
             logger.log(Level.SEVERE, "Login Failure", ex);
         }
         
+	/* TODO
+	// Give the SAS user client for this session ownership of the GUI
+	// TODO: is this the right place for this? Will probably change 
+	// when we implement federation
+	ClientContext.getSasUserClient(session).setPrimary();
+	*/
     }
     
     void nodeMoved(Node node) {
