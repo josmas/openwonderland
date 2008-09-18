@@ -23,7 +23,7 @@
                          
         <!-- jogl -->
         <unpack-lib-zip pkgname="jogl"
-                        srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}"/>
+                        srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
     </target>
 
    
