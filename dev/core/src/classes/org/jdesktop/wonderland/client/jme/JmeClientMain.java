@@ -82,6 +82,12 @@ public class JmeClientMain {
         
         createUI(worldManager);  
 //        createCameraEntity(worldManager);        
+
+/* TODO: temporary
+	// Test whiteboard
+       	try { Thread.sleep(20000); } catch (InterruptedException ex) {}
+        AppTypeCell.userLaunchLocalApp(appTypeName, appName, command, bestView, bounds, origin, pixelScale);
+*/	
     }
     
     static WorldManager getWorldManager() {
@@ -119,6 +125,8 @@ public class JmeClientMain {
         frame.setLocationRelativeTo(null);
         // show frame
         frame.setVisible(true);
+
+	// Initialize the input manager
+	InputManager3D.getInputManager().initialize(frame.getCanvas());
     }
-    
 }
