@@ -17,30 +17,9 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
-import com.jme.light.PointLight;
-import com.jme.math.Vector3f;
-import com.jme.renderer.ColorRGBA;
-import com.jme.scene.Node;
-import com.jme.scene.shape.Box;
-import com.jme.scene.shape.Teapot;
-import com.jme.scene.state.LightState;
-import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
-import com.jme.scene.state.ZBufferState;
 import org.jdesktop.wonderland.common.cell.CellID;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.RotationProcessor;
-import org.jdesktop.mtgame.SceneComponent;
-import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.PrivateAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.client.jme.cellrenderer.JmeColladaRenderer;
 
 /**
  * A cell that can move
@@ -62,4 +41,18 @@ class MovableCell extends Cell {
         addComponent(new MovableComponent(this));
     }
 
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        CellRenderer ret = null;
+        switch(rendererType) {
+            case RENDERER_2D :
+                // No 2D Renderer yet
+                break;
+            case RENDERER_JME :
+                ret= new JmeColladaRenderer(this);
+                break;                
+        }
+        
+        return ret;
+    }
 }

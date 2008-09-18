@@ -58,6 +58,7 @@ public class ProximityComponent extends CellComponent {
     private BoundingVolume[] localProxBounds = null;
     private BoundingVolume[] worldProxBounds = null;
     private ViewTransformListener viewTransformListener=null;
+    private CellTransformListener  cellTransformListener=null;
     private HashSet<ProximityListener> proximityListeners = null;
     
     /**
@@ -140,14 +141,19 @@ public class ProximityComponent extends CellComponent {
         
         switch(status) {
             case ACTIVE :
-                if (viewTransformListener==null)
+                if (viewTransformListener==null) {
                     viewTransformListener = new ViewTransformListener();
+                    cellTransformListener = new CellTransformListener();
+                }
                 updateWorldBounds();
                 cell.getCellCache().getViewCell().addTransformChangeListener(viewTransformListener);
+                cell.addTransformChangeListener(cellTransformListener);
                 break;
             case DISK :
-                if (viewTransformListener!=null)
+                if (viewTransformListener!=null) {
                     cell.getCellCache().getViewCell().removeTransformChangeListener(viewTransformListener);
+                    cell.removeTransformChangeListener(cellTransformListener);
+                }
                 break;
         }
     }
@@ -201,6 +207,21 @@ public class ProximityComponent extends CellComponent {
                     currentlyInIndex = nowInIndex;
                 }
             }
+        }
+        
+    }
+    
+    /**
+     * Listen for the cell to which this component is attached moving. When
+     * notified update the bounds
+     */
+    class CellTransformListener implements TransformChangeListener {
+
+        public void transformChanged(Cell cell) {
+            updateWorldBounds();
+            
+            // TODO check if this has caused and enter/exit event
+            // PROBLEM, we don't have the view cell
         }
         
     }

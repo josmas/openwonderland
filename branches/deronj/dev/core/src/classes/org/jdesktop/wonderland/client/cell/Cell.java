@@ -18,24 +18,19 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -75,6 +70,8 @@ public class Cell {
     public Cell(CellID cellID, CellCache cellCache) {
         this.cellID = cellID;
         this.cellCache = cellCache;
+        
+        logger.info("Cell: Creating new Cell ID=" + cellID);
     }
     
     /**
@@ -129,6 +126,25 @@ public class Cell {
     }
     
     /**
+     * Remove the specified cell from the set of children of this cell.
+     * Returns silently if the supplied cell is not a child of this cell.
+     * 
+     * TODO Test me
+     * 
+     * @param child
+     */
+    public void removeChild(Cell child) {
+        if (children==null)
+            return;
+        
+        synchronized(children) {
+            if (children.remove(child)) {
+                child.setParent(null);
+            }            
+        }
+    }
+    
+    /**
      * If this cell supports the capabilities of cellComponent then
      * return an instance of cellComponent associated with this cell. Otherwise
      * return null.
@@ -159,6 +175,17 @@ public class Cell {
     }
     
     /**
+     * Remove the cell component of the specified class
+     * TODO Test me
+     *  
+     * @param componentClass
+     */
+    public void removeComponent(Class<? extends CellComponent> componentClass) {
+        CellComponent component = components.remove(componentClass);
+        component.setStatus(CellStatus.DISK);
+    }
+    
+    /**
      * Return a collection of all the components in this cell.
      * The collection is a clone of the internal data structure, so this is a
      * snapshot of the component set.
@@ -170,11 +197,10 @@ public class Cell {
     }
     
     /**
-     * Set the parent of this cell, called from addChild
+     * Set the parent of this cell, called from addChild and removeChild
      * @param parent
      */
     void setParent(Cell parent) {
-        assert(this.parent==null);
         this.parent = parent;
     }
     
@@ -186,7 +212,10 @@ public class Cell {
     public int getNumChildren() {
         if (children==null)
             return 0;
-        return children.size();
+        
+        synchronized(children) {
+            return children.size();
+        }
     }
     
     /**
@@ -467,26 +496,13 @@ public class Cell {
     }
     
     /**
-     * Called once after the cell is instantiated, for cells that require
-     * setup data. This method is called once the cell has been placed in
-     * the cell tree hierarchy.
+     * Called when the cell is initially created and any time there is a 
+     * major configuration change. The cell will already be attached to it's parent
+     * before the initial call of this method
      * 
      * @param setupData
      */
-    public void setupCell(CellSetup setupData) {
-        
-    }
-    
-    /**
-     * Called occasioanally by the server if the cell needs to reconfigure
-     * it's internal state. This is intended to be a heavyweight operation
-     * not for continous changes.
-     * 
-     * Example use is when the wfs world is reloaded
-     * 
-     * @param updateData
-     */
-    public void reconfigureCell(CellSetup updateData) {
+    public void configure(CellConfig setupData) {
         
     }
     

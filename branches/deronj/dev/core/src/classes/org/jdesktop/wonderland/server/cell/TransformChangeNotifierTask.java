@@ -27,15 +27,16 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * has occured to a cells transform
  * 
  * @author paulby
+ * @deprecated
  */
 class TransformChangeNotifierTask implements Task, Serializable {
 
-    private ManagedReference<TransformChangeListenerMO> listenerRef;
+    private ManagedReference<TransformChangeListenerSrv> listenerRef;
     private ManagedReference<CellMO> cellRef;
     private CellTransform local;
     private CellTransform local2VW;
     
-    TransformChangeNotifierTask(ManagedReference<TransformChangeListenerMO> listenerRef, 
+    TransformChangeNotifierTask(ManagedReference<TransformChangeListenerSrv> listenerRef, 
                                 ManagedReference<CellMO> cellRef,
                                 CellTransform local, 
                                 CellTransform local2VW) {

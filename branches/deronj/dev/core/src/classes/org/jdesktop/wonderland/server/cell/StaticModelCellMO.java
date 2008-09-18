@@ -21,26 +21,24 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.setup.ModelCellSetup;
-import org.jdesktop.wonderland.server.ChecksumManagerMO;
-import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
-import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.config.StaticModelCellConfig;
+import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
-import org.jdesktop.wonderland.server.setup.CellMOSetup;
+
 
 /**
  * A cell for static models.
  * @author paulby
+ * @deprecated
  */
 @ExperimentalAPI
-public class StaticModelCellMO extends CellMO
-    implements BeanSetupMO { 
-    
-    private String filename;
-    private String baseUrl;
+public class StaticModelCellMO extends CellMO implements BeanSetupMO { 
     	
     /** Default constructor, used when cell is created via WFS */
     public StaticModelCellMO() {
@@ -55,54 +53,43 @@ public class StaticModelCellMO extends CellMO
     }
 
     @Override
-    public ModelCellSetup getClientSetupData(ClientSession clientSession, ClientCapabilities capabilities) {
-	String checksum = ChecksumManagerMO.getChecksum(filename);
-	return new ModelCellSetup(baseUrl, filename, checksum);
+    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+        return new StaticModelCellConfig();
     }
 
-    public void setupCell(CellMOSetup setupData) {
-        BasicCellMOSetup<ModelCellSetup> setup =
-            (BasicCellMOSetup<ModelCellSetup>) setupData;
-
+    @Override
+    public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
-
-        this.filename = setup.getCellSetup().getModelFile();
     }
 
-    public void reconfigureCell(CellMOSetup setupData) {
-        BasicCellMOSetup<ModelCellSetup> setup =
-            (BasicCellMOSetup<ModelCellSetup>) setupData;
-
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
         super.reconfigureCell(setup);
-    
         setupCell(setup);
     }
 
      /**
-     * Return a new CellMOSetup Java bean class that represents the current
+     * Return a new BasicCellSetup Java bean class that represents the current
      * state of the cell.
      * 
      * @return a JavaBean representing the current state
      */
-    public CellMOSetup getCellMOSetup() {
-        /* Create a new BasicCellMOSetup and populate its members */
-        BasicCellMOSetup<ModelCellSetup> setup = new BasicCellMOSetup<ModelCellSetup>();
-        setup.setCellMOClassName(this.getClass().getName());
-        setup.setCellSetup(this.getClientSetupData(null, null));
+    public BasicCellSetup getCellMOSetup() {
+        /* Create a new BasicCellState and populate its members */
+        StaticModelCellSetup setup = new StaticModelCellSetup();
         
         /* Set the bounds of the cell */
         BoundingVolume bounds = this.getLocalBounds();
         if (bounds != null) {
-            setup.setBoundsType(BasicCellMOHelper.getBoundsType(bounds));
-            setup.setBoundsRadius(BasicCellMOHelper.getBoundsRadius(bounds));
+            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
         }
-        
+
         /* Set the origin, scale, and rotation of the cell */
         CellTransform transform = this.getLocalTransform(null);
         if (transform != null) {
-            setup.setOrigin(BasicCellMOHelper.getTranslation(transform));
-            setup.setRotation(BasicCellMOHelper.getRotation(transform));
-            setup.setScale(BasicCellMOHelper.getScaling(transform));
+            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
+            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
+            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
         }
         return setup;
     }

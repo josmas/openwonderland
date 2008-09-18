@@ -56,7 +56,7 @@ public class MovableComponent extends CellComponent {
          switch(status) {
             case DISK :
                 if (msgReceiver!=null) {
-                    channelComp.removeMessageRecevier(MovableMessage.class);
+                    channelComp.removeMessageReceiver(MovableMessage.class);
                     msgReceiver = null;
                 }
                 break;

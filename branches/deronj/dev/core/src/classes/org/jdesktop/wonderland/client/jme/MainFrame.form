@@ -7,14 +7,14 @@
         <Menu class="javax.swing.JMenu" name="jMenu3">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/client/resources/bundle.properties" key="File" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="" key="File" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="exitMI">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/client/resources/bundle.properties" key="Exit" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="" key="Exit" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <Events>
@@ -26,21 +26,21 @@
         <Menu class="javax.swing.JMenu" name="jMenu4">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/client/resources/bundle.properties" key="Edit" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="" key="Edit" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Menu>
         <Menu class="javax.swing.JMenu" name="toolsMenu">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/jdesktop/wonderland/client/resources/bundle.properties" key="Tools" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="" key="Tools" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="modelImportMI">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/jdesktop/wonderland/client/resources/bundle.properties" key="Model_Importer..." replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="" key="Model_Importer..." replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <Events>

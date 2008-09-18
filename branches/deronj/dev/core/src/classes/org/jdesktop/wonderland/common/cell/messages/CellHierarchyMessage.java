@@ -20,8 +20,8 @@ package org.jdesktop.wonderland.common.cell.messages;
 import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -39,7 +39,7 @@ public class CellHierarchyMessage extends Message {
     private BoundingVolume computedBounds;
     private String cellClassName;
     private CellTransform cellTransform;
-    private CellSetup setupData;
+    private CellConfig setupData;
     private String avatarID;
     private String cellName;
     
@@ -49,8 +49,8 @@ public class CellHierarchyMessage extends Message {
      * SET_VIEW - client informs server which avatar to use for a cell cache
      * LOAD_CLIENT_AVATAR - server informs client to load its avatar
      */
-    public enum ActionType { LOAD_CELL, UNLOAD_CELL, MOVE_CELL, CHANGE_PARENT,
-        DELETE_CELL, UPDATE_CELL_CONTENT, SET_VIEW, LOAD_CLIENT_AVATAR};
+    public enum ActionType { LOAD_CELL, UNLOAD_CELL, CHANGE_PARENT,
+        DELETE_CELL, CONFIGURE_CELL, SET_VIEW, LOAD_CLIENT_AVATAR};
     
     /**
      * Creates a new instance of CellHierarchyMessage 
@@ -64,7 +64,7 @@ public class CellHierarchyMessage extends Message {
                                 CellID cellID, 
                                 CellID parentID,
                                 CellTransform cellTransform,
-                                CellSetup setupData,
+                                CellConfig setupData,
                                 String cellName) {
         this.msgType = msgType;
         this.cellClassName = cellClassName;
@@ -115,7 +115,7 @@ public class CellHierarchyMessage extends Message {
         return cellTransform;
     }
 
-    public CellSetup getSetupData() {
+    public CellConfig getSetupData() {
         return setupData;
     }
 

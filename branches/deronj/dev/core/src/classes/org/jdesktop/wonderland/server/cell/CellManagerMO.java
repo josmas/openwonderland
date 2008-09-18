@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
+import org.jdesktop.wonderland.wfs.loader.WFSLoader;
 
 /**
  *
@@ -46,15 +47,16 @@ import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
 public class CellManagerMO implements ManagedObject, Serializable {
 
     // Used to generate unique cell ids
-    private long cellCounter=0;
+    private long cellCounter=CellID.getFirstCellID();
     
     private ManagedReference<CellMO> rootCellRef;
-    private CellID rootCellID;
     
     private static final String BINDING_NAME=CellManagerMO.class.getName();
     private static final Logger logger = Logger.getLogger(CellManagerMO.class.getName());
     
     private SpaceManager spaceManager = new SpaceManagerGridImpl();
+    
+    private static CellID rootCellID;
     
     /**
      * Creates a new instance of CellManagerMO
@@ -81,7 +83,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * a single root on the server, but the client can support multiple roots.
      * @return
      */
-    CellID getRootCellID() {
+    static CellID getRootCellID() {
         return rootCellID;
     }
     
@@ -139,24 +141,15 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
         rootCellRef.getForUpdate().addChild(cell);
-        SpaceMO[] space = getEnclosingSpace(cell.getLocalTransform(null).getTranslation(null));
-        if (space[0]==null) {
-            logger.severe("Unable to find space to contain cell at "+cell.getLocalTransform(null).getTranslation(null) +" aborting addCell");
-            return;
-        }
-        Collection<ManagedReference<SpaceMO>> inSpaces = space[0].getSpaces(cell.getWorldBounds());
-        for(ManagedReference<SpaceMO> spaceRef : inSpaces) {
-            cell.addToSpace(spaceRef.get());
-        }
     }        
     
     /**
      * For testing.....
      */
     public void loadWorld() {
-        //buildWFSWorld();
+        buildWFSWorld();
         
-        test();
+        //test();
     }
 
     public void test() {
@@ -178,7 +171,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
 
             CellMO c4 = new MovableCellMO(
                     new BoundingSphere(0.5f, new Vector3f()),
-                    new CellTransform(null, new Vector3f(0, 0, 0)));
+                    new CellTransform(null, new Vector3f(1, 0, 0)));
             c4.setName("c4");
 
             c3.addChild(c4);
@@ -193,20 +186,19 @@ public class CellManagerMO implements ManagedObject, Serializable {
                 }
             }
 
-//            WonderlandContext.getCellManager().insertCellInWorld(c2);
-//            WonderlandContext.getCellManager().insertCellInWorld(c3);
-//            WonderlandContext.getCellManager().insertCellInWorld(s0);
-//            WonderlandContext.getCellManager().insertCellInWorld(s1);
-//            WonderlandContext.getCellManager().insertCellInWorld(s2);
-//            WonderlandContext.getCellManager().insertCellInWorld(s3);
+            WonderlandContext.getCellManager().insertCellInWorld(c2);
+            WonderlandContext.getCellManager().insertCellInWorld(c3);
 
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
-//            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
+            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
+            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
+            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
+            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
 
             
             Task t = new TestTask(c3, c2);
 
-//            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
+            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
 
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
@@ -245,21 +237,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * wonderland.wfs.root
      */
     private void buildWFSWorld() {
-        /*
-         * Attempt to create a new MO based upon the WFS root. We need to setup
-         * some basic properties about the cell by hand (e.g. transform, name).
-         */
-        WFSCellMO mo = new WFSCellMO();
-        mo.setLocalTransform(new CellTransform(null, null, null));
-        mo.setName("root");
-        mo.setLocalBounds(new BoundingSphere(Float.POSITIVE_INFINITY, new Vector3f()));
-        
-        try {
-            AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
-            this.insertCellInWorld(mo);
-        } catch (java.lang.Exception excp) {
-            logger.severe("Unable to load WFS into world: " + excp.toString());
-        }
+        new WFSLoader().load();
     }
     
     /**

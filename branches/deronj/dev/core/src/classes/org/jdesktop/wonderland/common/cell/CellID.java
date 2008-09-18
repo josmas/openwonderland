@@ -33,6 +33,9 @@ public class CellID implements Serializable {
     private long id;
     private transient String str=null;
     
+    private static CellID invalidCellID = new CellID(Long.MIN_VALUE);
+    private static long firstCellID = 0;
+    
     /**
      * Creates a new instance of CellID. Users should never call this, CellIDs
      * are only created by 
@@ -63,4 +66,19 @@ public class CellID implements Serializable {
         return str;
     }
 
+    /**
+     * Get the first cell ID that should be assigned to cells
+     * @return
+     */
+    public static long getFirstCellID() {
+        return firstCellID;
+    }
+    
+    /**
+     * Returns a cellID that represents an invalid cell
+     * @return
+     */
+    public static CellID getInvalidCellID() {
+        return invalidCellID;
+    }
 }

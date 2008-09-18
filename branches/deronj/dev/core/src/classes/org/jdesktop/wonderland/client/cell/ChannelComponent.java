@@ -21,12 +21,17 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.ClientConnection.Status;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
  *
+ * A Component that provides a cell specific communication channel with 
+ * the server.
+ * 
  * @author paulby
  */
+@ExperimentalAPI
 public class ChannelComponent extends CellComponent {
     
     private HashMap<Class, ComponentMessageReceiver> messageReceivers = new HashMap();
@@ -65,7 +70,7 @@ public class ChannelComponent extends CellComponent {
      * Remove the message receiver listening on the specifed message class
      * @param msgClass
      */
-    public void removeMessageRecevier(Class<? extends CellMessage> msgClass) {
+    public void removeMessageReceiver(Class<? extends CellMessage> msgClass) {
         messageReceivers.remove(msgClass);
     }
     

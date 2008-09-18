@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.server.setup;
 
+import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+
 /**
  * This interface is used by cell GLOs that can read and write their state
  * to JavaBeans.  This capability can be used to persist a cell's state
@@ -35,18 +37,18 @@ public interface BeanSetupMO {
      *
      * @param setup the Java bean to read setup information from
      */
-    public void setupCell(CellMOSetup setup);
+    public void setupCell(BasicCellSetup setup);
     
     /**
      * Called when the properties of a cell have changed.
      * 
      * @param setup a Java bean with updated properties
      */
-    public void reconfigureCell(CellMOSetup setup);
+    public void reconfigureCell(BasicCellSetup setup);
     
     /**
      * Write the cell's current state to a JavaBean.
      * @return a JavaBean representing the current state
      */
-    public CellMOSetup getCellMOSetup();
+    public BasicCellSetup getCellMOSetup();
 }

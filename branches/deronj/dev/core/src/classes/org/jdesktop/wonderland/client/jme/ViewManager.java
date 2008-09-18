@@ -20,19 +20,25 @@ package org.jdesktop.wonderland.client.jme;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
-import org.jdesktop.mtgame.AWTEventListenerComponent;
+import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
-import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
+ * 
+ * Manages the view into the 3D world. The JME Camera is internal to this
+ * class, it is associated with a Cell and a CameraProcessor is defined which
+ * specified how the camera tracks the cell. For example ThirdPersonCameraProcessor
+ * makes the camera follow the origin of the cell from behind and above the origin
+ * giving a third person view.
+ * 
+ * TODO currently the camera processor is hardcoded to ThirdPerson
  *
  * @author paulby
  */
@@ -71,22 +77,25 @@ public class ViewManager {
      * @param cell
      */
     public void attach(Cell cell) {
-        if (attachCell!=null)
-            throw new RuntimeException("View already attached to cell");
+        if (attachCell!=null) {
+            System.err.println("VIEW ALREADY ATTACHED TO CELL (BUT CONTINUE ANYWAY)");
+            return;
+//            throw new RuntimeException("View already attached to cell");
+        }
         
         Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
 
         if (eventProcessor==null) {
             // Create the input listener and process to control the avatar
             WorldManager wm = JmeClientMain.getWorldManager();
-            AWTEventListenerComponent eventListener = new AWTEventListenerComponent();
+            AWTInputComponent eventListener = (AWTInputComponent) wm.getInputManager().createInputComponent();
             eventProcessor = new SimpleAvatarControls(eventListener, cell, wm);
             eventProcessor.setRunInRenderer(true);
             
             // Chaining the camera here does not seem to work...
 //            eventProcessor.addToChain(cameraProcessor);
-            wm.addAWTKeyListener(eventProcessor);
-            wm.addAWTMouseListener(eventProcessor);    
+            wm.getInputManager().addAWTKeyListener(eventListener);
+            wm.getInputManager().addAWTMouseListener(eventListener);    
         }
         
         entity.addComponent(ProcessorComponent.class, eventProcessor);
@@ -114,7 +123,7 @@ public class ViewManager {
      * Set the processor used to position the camera. Examples would be
      * First and Third person.
      */
-    public void setCameraProcessor(Object todo) {
+    public void setCameraProcessor(CameraProcessor cameraProcessor) {
         throw new RuntimeException("Not Implemented yet");
     }
     
