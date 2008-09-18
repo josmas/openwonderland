@@ -18,27 +18,12 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.scene.Node;
-import com.jme.scene.CameraNode;
-import com.jme.scene.state.ZBufferState;
-import com.jme.light.PointLight;
-import com.jme.renderer.ColorRGBA;
-import com.jme.scene.state.LightState;
-import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
-import com.jme.scene.shape.Teapot;
-import com.jme.scene.shape.Box;
-import com.jme.bounding.BoundingBox;
-import com.jme.math.*;
-import org.jdesktop.mtgame.AWTEventListenerComponent;
-import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.FPSCameraProcessor;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.NodeListener;
-import org.jdesktop.mtgame.ProcessorCollectionComponent;
-import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.RotationProcessor;
-import org.jdesktop.mtgame.SceneComponent;
-import org.jdesktop.mtgame.Space;
 import org.jdesktop.mtgame.WorldManager;
 
 /**
@@ -46,11 +31,19 @@ import org.jdesktop.mtgame.WorldManager;
  */
 public class JmeClientMain {
     
-    /**
-     * The CameraNode
-     */
-    private static CameraNode cameraNode = null;
-        
+    // properties
+    private Properties props;
+    
+    // standard properties
+    private static final String SERVER_NAME_PROP = "sgs.server";
+    private static final String SERVER_PORT_PROP = "sgs.port";
+    private static final String USER_NAME_PROP   = "cellboundsviewer.username";
+    
+    // default values
+    private static final String SERVER_NAME_DEFAULT = "localhost";
+    private static final String SERVER_PORT_DEFAULT = "1139";
+    private static final String USER_NAME_DEFAULT   = "jmetest";
+   
     /**
      * The desired frame rate
      */
@@ -61,27 +54,33 @@ public class JmeClientMain {
      */
     private int width = 800;
     private int height = 600;
-    private float aspect = 800.0f/600.0f;
     
     private static WorldManager worldManager;
     
     public JmeClientMain(String[] args) {
-        final ClientManager clientManager = new ClientManager();
+        props = loadProperties("run.properties");
+   
+        String serverName = props.getProperty(SERVER_NAME_PROP,
+                                              SERVER_NAME_DEFAULT);
+        String serverPort = props.getProperty(SERVER_PORT_PROP,
+                                              SERVER_PORT_DEFAULT);
+        String userName   = props.getProperty(USER_NAME_PROP,
+                                              USER_NAME_DEFAULT);
+        
+        
         worldManager = new WorldManager("Wonderland");
         
-        worldManager.addNodeListener(new NodeListener() {
-
-            public void nodeMoved(Node arg0) {
-                clientManager.nodeMoved(arg0);
-            }
-            
-        });
+        ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
+        worldManager.addNodeListener(new NodeMoveListener(clientManager));
+        
+        // Low level Federation testing
+//        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
+//        worldManager.addNodeListener(new NodeMoveListener(clientManager2));
         
         processArgs(args);
-        worldManager.setDesiredFrameRate(desiredFrameRate);
+        worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
         
         createUI(worldManager);  
-//        createCameraEntity(worldManager);        
 
 /* TODO: temporary
 	// Test whiteboard
@@ -128,5 +127,35 @@ public class JmeClientMain {
 
 	// Initialize the input manager
 	InputManager3D.getInputManager().initialize(frame.getCanvas());
+    }
+    private static Properties loadProperties(String fileName) {
+        // start with the system properties
+        Properties props = new Properties(System.getProperties());
+    
+        // load the given file
+        if (fileName != null) {
+            try {
+                props.load(new FileInputStream(fileName));
+            } catch (IOException ioe) {
+                Logger.getLogger(JmeClientMain.class.getName()).log(Level.WARNING, "Error reading properties from " +
+                           fileName, ioe);
+            }
+        }
+        
+        return props;
+    }
+    
+    class NodeMoveListener implements NodeListener {
+
+        private ClientManager clientManager;
+        
+        public NodeMoveListener(ClientManager clientManager) {
+            this.clientManager = clientManager;
+        }
+        
+        public void nodeMoved(Node arg0) {
+            clientManager.nodeMoved(arg0);
+        }
+        
     }
 }

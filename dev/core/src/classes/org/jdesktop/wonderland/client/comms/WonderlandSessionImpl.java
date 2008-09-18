@@ -24,6 +24,7 @@ import com.sun.sgs.client.simple.SimpleClientListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.PasswordAuthentication;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import org.jdesktop.wonderland.common.comms.WonderlandProtocolVersion;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.DetachClientMessage;
+import org.jdesktop.wonderland.common.comms.messages.SessionInitializationMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -95,6 +97,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
     private Map<ConnectionType, ClientRecord> clients;
     private Map<Short, ClientRecord> clientsByID;
     
+    /** the unique id of this session */
+    private BigInteger sessionID;
+    
     /**
      * Create a new client to log in to the given server
      * @param server the server to connect to
@@ -117,7 +122,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         // add the internal client, which handles traffic over the session
         // channel
-        SessionInternalHandler internal = new SessionInternalHandler();
+        SessionInternalHandler internal = new SessionInternalHandler(this);
         ClientRecord internalRecord = addClientRecord(internal);
         setClientID(internalRecord, 
                     SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_ID);
@@ -204,6 +209,15 @@ public class WonderlandSessionImpl implements WonderlandSession {
     
     public void logout() {
         getSimpleClient().logout(true);
+    }
+    
+    public synchronized BigInteger getID() {
+        if (getStatus() != WonderlandSession.Status.CONNECTED) {
+            throw new IllegalArgumentException("ID is only valid when the " +
+                                               "session is connected.");
+        }
+        
+        return sessionID;
     }
     
     public void connect(final ClientConnection client) 
@@ -543,6 +557,15 @@ public class WonderlandSessionImpl implements WonderlandSession {
     }
     
     /**
+     * Set the session ID.  Called when a SessionInitializationMessage
+     * is received from the server.
+     * @param sessionID the new sessionID
+     */
+    private synchronized void setID(BigInteger sessionID) {
+        this.sessionID = sessionID;
+    }
+    
+    /**
      * Start a new login attempt.
      * @param params the login parameters to login with
      */
@@ -719,6 +742,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
            ResponseListener rl = new OKErrorResponseListener() {
                 @Override
                 public void onSuccess(MessageID messageID) {
+                    // move to the next phase
                     setProtocolSuccess();
                 }
 
@@ -738,6 +762,30 @@ public class WonderlandSessionImpl implements WonderlandSession {
          * Set success in the protocol selection phase.
          */
         public synchronized void setProtocolSuccess() {
+            SessionInitializationMessage initMessage = null;
+            
+            try {
+                initMessage = getInternalClient().waitForInitialization();
+            } catch (InterruptedException ie) {
+                // ignore -- treat as a null init message
+            }
+            
+            if (initMessage == null) {
+                // no initialization message means there has been a login
+                // problem of some sort
+                setFailure("No initialization message.");
+            } else {
+                // we got an initialization message.  Read the session id
+                // and then notify everyone that login has succeeded
+                setID(initMessage.getSessionID());
+                setSessionInitialized();
+            }
+        }
+        
+        /**
+         * Called when we receive a session initialization message
+         */
+        public synchronized void setSessionInitialized() {
             loginComplete = true;
             loginSuccess = true;
             finishLogin(Status.CONNECTED);
@@ -859,17 +907,68 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * Handle traffic over the session channel
      */
     protected static class SessionInternalHandler extends BaseConnection {
+        private WonderlandSessionImpl session;
+        private SessionInitializationMessage initMessage;
+        
+        public SessionInternalHandler(WonderlandSessionImpl session) {
+            this.session = session;
+            
+            // notify anyone waiting for initialization messages if the
+            // status becomes disconnected.
+            session.addSessionStatusListener(new SessionStatusListener() {
+                public void sessionStatusChanged(WonderlandSession session, 
+                                                 WonderlandSession.Status status) 
+                {
+                    if (status == WonderlandSession.Status.DISCONNECTED) {
+                        synchronized (SessionInternalHandler.this) {
+                            SessionInternalHandler.this.notifyAll();
+                        }
+                    }
+                }
+            });
+        }
+        
         public ConnectionType getConnectionType() {
             // only used internally
             return INTERNAL_CLIENT_TYPE;
         }
 
         public void handleMessage(Message message) {
-            // unhandled session messages?
-            logger.warning("Unhandled message: " + message);
-        }   
+            if (message instanceof SessionInitializationMessage) {
+                synchronized (this) {
+                    this.initMessage = (SessionInitializationMessage) message;
+                    notifyAll();
+                }
+            } else {
+                
+                // unhandled session messages?
+                logger.warning("Unhandled message: " + message);
+            }
+        }
+        
+        /**
+         * Wait for a session initialization message to be sent to the internal
+         * handler.  This method will return the most recent initialization
+         * message received, or block if no message has been received.
+         * <p>
+         * When a client disconnects, the message will be reset to null.
+         * Clients waiting at that point will be woken with a null response.
+         * @return the most recent message, or null if the client is
+         * disconnected.
+         */
+        public synchronized SessionInitializationMessage waitForInitialization() 
+            throws InterruptedException
+        {
+            while (initMessage == null && 
+                    session.getStatus() != WonderlandSession.Status.DISCONNECTED) 
+            {
+                wait();
+            }
+            
+            return initMessage;
+        }
     }
-     
+    
     /**
      * Listen for responses to the connect() message.
      */

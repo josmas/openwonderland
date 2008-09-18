@@ -18,14 +18,7 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.util.resource.ResourceLocator;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.datamgr.Asset;
-import org.jdesktop.wonderland.client.datamgr.AssetManager;
-import org.jdesktop.wonderland.client.datamgr.Repository;
-import org.jdesktop.wonderland.common.AssetType;
 
 /**
  * Resource Locator for wonderland.
@@ -36,38 +29,39 @@ import org.jdesktop.wonderland.common.AssetType;
  */
 public class WonderlandResourceLocator implements ResourceLocator {
 
-    private Repository repository;
+//    private Repository repository;
 
     public WonderlandResourceLocator() {
-        try {
-//                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models"));
-//                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core"));
-            repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
-        } catch (MalformedURLException ex) {
-            Logger.getAnonymousLogger().log(Level.SEVERE, null, ex);
-        }
+//        try {
+////                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/lg3d/trunk/lg3d-wonderland-art/compiled_models"));
+////                repository = new Repository(new URL("file:///home/paulby/local-code/java.net/wonderland/branches/bringup/core"));
+//            repository = new Repository(new URL("http://192.18.37.42/compiled_models/"));
+//        } catch (MalformedURLException ex) {
+//            Logger.getAnonymousLogger().log(Level.SEVERE, null, ex);
+//        }
     }
 
     public URL locateResource(String filename) {
-        URL ret;
-
-        int trim = 0;
-        while(filename.charAt(trim)=='/')
-            trim++;
-        if (trim!=0)
-            filename = filename.substring(trim);
-
-        AssetManager assetManager = AssetManager.getAssetManager();
-        Asset asset = assetManager.getAsset(AssetType.IMAGE, repository, filename, null);
-
-        try {
-            ret = new URL("wltexture://"+repository.getOriginalRepository().getHost()+"/"+filename+"#"+repository.getOriginalRepository().getFile());
-        } catch (MalformedURLException ex) {
-            Logger.getAnonymousLogger().log(Level.SEVERE, null, ex);
-            ret = null;
-        }
-
-        return ret;              
+//        URL ret;
+//
+//        int trim = 0;
+//        while(filename.charAt(trim)=='/')
+//            trim++;
+//        if (trim!=0)
+//            filename = filename.substring(trim);
+//
+//        AssetManager assetManager = AssetManager.getAssetManager();
+//        Asset asset = assetManager.getAsset(AssetType.IMAGE, repository, filename, null);
+//
+//        try {
+//            ret = new URL("wltexture://"+repository.getOriginalRepository().getHost()+"/"+filename+"#"+repository.getOriginalRepository().getFile());
+//        } catch (MalformedURLException ex) {
+//            Logger.getAnonymousLogger().log(Level.SEVERE, null, ex);
+//            ret = null;
+//        }
+//
+//        return ret;     
+        return null;
     }
 
 }

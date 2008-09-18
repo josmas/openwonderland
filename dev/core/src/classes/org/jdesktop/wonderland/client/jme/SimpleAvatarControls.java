@@ -21,18 +21,17 @@ import com.jme.math.Vector3f;
 import com.jme.math.Matrix3f;
 import com.jme.math.Quaternion;
 import com.jme.scene.Node;
-import com.jme.scene.shape.Sphere;
-import com.jme.intersection.TriangleCollisionResults;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
-import org.jdesktop.mtgame.AWTEventListenerComponent;
-import org.jdesktop.mtgame.AWTEventProcessorComponent;
+import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.AwtEventCondition;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.NodeListener;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
+import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.AWTEventProcessorComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
@@ -129,12 +128,15 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent implements 
     
     private boolean updateRotations = false;
     
+    private AWTInputComponent listener;
+    
     /**
      * The default constructor
      */
-    public SimpleAvatarControls(AWTEventListenerComponent listener, Cell viewCell,
+    public SimpleAvatarControls(AWTInputComponent listener, Cell viewCell,
             WorldManager wm) {
         super(listener);
+        this.listener = listener;
         target = viewCell;
         movableComponent = viewCell.getComponent(MovableComponent.class);
         worldManager = wm;
@@ -153,9 +155,9 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent implements 
     
     @Override
     public void compute(ProcessorArmingCollection collection) {
-        Object[] events = getEvents();
+        Object[] events = listener.getEvents();
         updateRotations = false;
-
+        
         for (int i=0; i<events.length; i++) {
             if (events[i] instanceof MouseEvent) {
                 MouseEvent me = (MouseEvent) events[i];
@@ -259,9 +261,6 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent implements 
                 break;  
         }
         
-//        if (state != STOPPED) {
-//            worldManager.nodeMoved(target);   
-//        }
     }
     /**
      * The commit methods

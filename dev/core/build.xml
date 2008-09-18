@@ -39,6 +39,7 @@
     <target name="init" depends="unpack-ext" description="Initial set-up">
         <mkdir dir="${build.classes.dir}"/>
         <mkdir dir="${build.lib.dir}"/>
+        <mkdir dir="log"/>
     </target>
     
     <!-- compile Wonderland -->
@@ -110,7 +111,8 @@
             </fileset>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.png"/>
             <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.jpg"/>
-            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.properties"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/resources/**/*.dae"/>
+            <fileset dir="${javasrc.dir}/" includes="org/jdesktop/wonderland/client/jme/resources/**/*.properties"/>
          </jar>
      </target>
         
@@ -190,18 +192,19 @@
     </target>
     
     <target name="run-dbtest" depends="jar">
-        <java classname="org.jdesktop.wonderland.client.datamgr.AssetDB" fork="true">
+        <java classname="org.jdesktop.wonderland.client.assetmgr.AssetDB" fork="true">
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
 	    </classpath>
+	    <syspropertyset refid="wonderland.properties"/>
         </java>
-	<syspropertyset refid="wonderland.properties"/>
     </target>
     
     <target name="run" depends="jar">
         <!--<java classname="org.jdesktop.wonderland.client.WorldClient" fork="true">-->
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
-            <jvmarg value="-Djava.library.path=${javaext.dir}/jme20/lib/lwjgl/native/${ostype}"/>
+            <!--<jvmarg value="-Djava.library.path=${javaext.dir}/jme20/lib/lwjgl/native/${ostype}"/>-->
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
             
             <classpath>
 		<pathelement path="${wonderland-client.classpath}"/>
@@ -345,6 +348,7 @@
     <import file="${build-import.dir}/run-jmf.xml"/>
     <import file="${build-import.dir}/run-config.xml"/>
 
+<!--
 <taskdef resource="checkstyletask.properties"
          classpath="../build-tools/checkstyle-4.4/checkstyle-all-4.4.jar"/>
 
@@ -355,6 +359,7 @@
   <formatter type="xml" toFile="build/checkstyle_errors.xml"/>
 </checkstyle>
 </target>
+-->
 
 
 </project>

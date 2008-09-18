@@ -20,33 +20,28 @@ package org.jdesktop.wonderland.client.jme;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
-import org.jdesktop.wonderland.client.cell.CellCacheConnection;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 
 /**
@@ -57,19 +52,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 public class ClientManager {
     private static final Logger logger = Logger.getLogger(ClientManager.class.getName());
     
-    // properties
-    private Properties props;
-    
-    // standard properties
-    private static final String SERVER_NAME_PROP = "sgs.server";
-    private static final String SERVER_PORT_PROP = "sgs.port";
-    private static final String USER_NAME_PROP   = "cellboundsviewer.username";
-    
-    // default values
-    private static final String SERVER_NAME_DEFAULT = "localhost";
-    private static final String SERVER_PORT_DEFAULT = "1139";
-    private static final String USER_NAME_DEFAULT   = "jmetest";
-   
     private CellClientSession session;
     
     private LocalAvatar localAvatar;
@@ -81,19 +63,10 @@ public class ClientManager {
     private Vector3f previousPos = new Vector3f();
     private Quaternion previousRot = new Quaternion();
     
-    public ClientManager() {
-        props = loadProperties("run.properties");
-   
-        String serverName = props.getProperty(SERVER_NAME_PROP,
-                                              SERVER_NAME_DEFAULT);
-        String serverPort = props.getProperty(SERVER_PORT_PROP,
-                                              SERVER_PORT_DEFAULT);
-        String userName   = props.getProperty(USER_NAME_PROP,
-                                              USER_NAME_DEFAULT);
-        
+    public ClientManager(String serverName, int serverPort, String userName) {
         
         WonderlandServerInfo server = new WonderlandServerInfo(serverName,
-                                                  Integer.parseInt(serverPort));
+                                                  serverPort);
         
         LoginParameters loginParams = new LoginParameters(userName, 
                                                           "test".toCharArray());
@@ -154,7 +127,7 @@ public class ClientManager {
                 BoundingVolume localBounds, 
                 CellID parentCellID, 
                 CellTransform cellTransform, 
-                CellSetup setup,
+                CellConfig setup,
                 String cellName) {
             Cell ret = super.loadCell(cellID, 
                                className, 
@@ -167,16 +140,28 @@ public class ClientManager {
             
             CellRenderer rend = ret.getCellRenderer(Cell.RendererType.RENDERER_JME);
             if (ret!=null && rend!=null) {
-//                logger.warning("Got entity "+rend);
-                if (rend instanceof CellRendererJME)
-                    // TODO find parent entity (traverse up graph), if found add this entity as a child, else add to root
-                    // Note the next code drop of mtgame will add an attach point for subentities in RenderComonent
+                if (rend instanceof CellRendererJME) {
+                    Entity parentEntity= findParentEntity(ret.getParent());
+                    Entity thisEntity = ((CellRendererJME)rend).getEntity();
                     
-                    JmeClientMain.getWorldManager().addEntity(((CellRendererJME)rend).getEntity());
-                else
+                    // TODO When subentities work uncomment this if test
+//                    if (parentEntity!=null)
+//                        parentEntity.addEntity(thisEntity);
+//                    else
+                        JmeClientMain.getWorldManager().addEntity(thisEntity);
+                    
+                    if (parentEntity!=null && thisEntity!=null) {                        
+                        RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+                        RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
+                        if (parentRendComp!=null && parentRendComp.getSceneRoot()!=null && thisRendComp!=null) {
+                            thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
+                        }
+                    }
+                    
+                } else
                     logger.warning("Unexpected renderer class "+rend.getClass().getName());
             } else {
-                logger.warning("No Entity for Cell "+ret.getClass().getName());
+                logger.info("No Entity for Cell "+ret.getClass().getName());
             }
             return ret;
         }
@@ -202,23 +187,28 @@ public class ClientManager {
             super.setViewCell(viewCell);
             ClientContextJME.getViewManager().attach(viewCell);
         }
-    }
-    
-    private static Properties loadProperties(String fileName) {
-        // start with the system properties
-        Properties props = new Properties(System.getProperties());
-    
-        // load the given file
-        if (fileName != null) {
-            try {
-                props.load(new FileInputStream(fileName));
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error reading properties from " +
-                           fileName, ioe);
-            }
-        }
         
-        return props;
+        /**
+         * Traverse up the cell hierarchy and return the first Entity
+         * @param cell
+         * @return
+         */
+        private Entity findParentEntity(Cell cell) {
+            if (cell==null)
+                return null;
+            
+            CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+            if (cell!=null && rend!=null) {
+                if (rend instanceof CellRendererJME) {
+//                    System.out.println("FOUND PARENT ENTITY on CELL "+cell.getName());
+                    return ((CellRendererJME)rend).getEntity();
+                }
+            }
+            
+            return findParentEntity(cell.getParent());
+        }
     }
+    
+
    
 }

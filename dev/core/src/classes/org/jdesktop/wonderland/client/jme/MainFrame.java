@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
+import org.jdesktop.wonderland.common.LogControl;
 
 /**
  * The Main JFrame for the wonderland jme client
@@ -39,7 +40,7 @@ import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
  * @author  paulby
  */
 public class MainFrame extends javax.swing.JFrame {
-    private static final ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/resources/bundle", Locale.getDefault());
+    private static final ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle", Locale.getDefault());
 
     JPanel mainPanel = new JPanel();
     Canvas canvas = null;
@@ -49,46 +50,40 @@ public class MainFrame extends javax.swing.JFrame {
     private ImportSessionFrame importSessionFrame = null;
     private CellViewerFrame cellViewerFrame = null;
     
+    static {
+        new LogControl(MainFrame.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
+    }
+    
     /** Creates new form MainFrame */
     public MainFrame(WorldManager wm, int width, int height) {
-        System.out.println("bundle "+bundle);
         initComponents();
-            // make the canvas:
-            canvas = wm.createCanvas(width, height);
-            canvas.setVisible(true);
-            wm.setFrameRateListener(new FrameRateListener() {
-                public void currentFramerate(float framerate) {
-                    fpsLabel.setText("FPS: "+framerate);
-                }                
-            }, 100);
+        
+        // make the canvas:
+        canvas = wm.getRenderManager().createCanvas(width, height);
+        canvas.setVisible(true);
+        wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
+            public void currentFramerate(float framerate) {
+                fpsLabel.setText("FPS: "+framerate);
+            }                
+        }, 100);
+        wm.getRenderManager().setCurrentCanvas(canvas);
 
-            contentPane = (JPanel) this.getContentPane();
-            contentPane.setLayout(new BorderLayout());
-            mainPanel.setLayout(new GridBagLayout());
-            setTitle("DUCK!");
+        contentPane = (JPanel) this.getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        mainPanel.setLayout(new GridBagLayout());
+        setTitle("Wonderland");
 
-            // make the canvas:
-            canvas = wm.createCanvas(width, height);
-            canvas.setVisible(true);
-            wm.setFrameRateListener(new FrameRateListener() {
+        contentPane.add(mainPanel, BorderLayout.NORTH);
+        mainPanel.add(fpsLabel,
+                new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER,
+                GridBagConstraints.HORIZONTAL, new Insets(5, 5, 0,
+                5), 0, 0));
 
-                public void currentFramerate(float framerate) {
-                    fpsLabel.setText("FPS: "+framerate);
-                }
-                
-            }, 100);
+        canvas.setBounds(0, 0, width, height);
+        contentPane.add(canvas, BorderLayout.CENTER);
 
-            contentPane.add(mainPanel, BorderLayout.NORTH);
-            mainPanel.add(fpsLabel,
-                    new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER,
-                    GridBagConstraints.HORIZONTAL, new Insets(5, 5, 0,
-                    5), 0, 0));
-
-            canvas.setBounds(0, 0, width, height);
-            contentPane.add(canvas, BorderLayout.CENTER);
-
-            pack();
+        pack();
     }
 
     /**

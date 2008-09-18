@@ -25,7 +25,6 @@ import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,13 +35,13 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.setup.BasicCellMOHelper;
-import org.jdesktop.wonderland.server.setup.BasicCellMOSetup;
+import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
 /**
  * Superclass for all server side representation of a cell
@@ -57,6 +56,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private CellTransform transform = null;
     protected CellID cellID;
     private BoundingVolume localBounds;
+    private CellID parentCellID;
     
     // a check if there is a bounds change that has not been committed.  If
     // there are uncommitted bounds changes, certain operations (like 
@@ -82,13 +82,14 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
-    private boolean isMovable=false;
-    private HashSet<ManagedReference<TransformChangeListenerMO>> transformChangeListeners=null;
+    private boolean isMovable=false;            // Is this cell movable
+    private boolean isParentMovable = false;    // Is a parent of this cell movable
+    private HashSet<TransformChangeListenerSrv> transformChangeListeners=null;
     
     /** Default constructor, used when the cell is created via WFS */
     public CellMO() {
         this.localBounds = null;
-        this.transform = null;
+        this.transform = null;        
         this.cellID = WonderlandContext.getCellManager().createCellID(this);
     }
     
@@ -177,7 +178,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     public CellTransform getLocalToWorld(CellTransform result) {
         if (!live)
-            throw new IllegalStateException("Unsupported Operation, only valid for a live Cell");
+            throw new IllegalStateException("Unsupported Operation, only valid for a live Cell "+this.getClass().getName());
         
 //        if (boundsChanged) {
 //            logger.warning("LocalBounds have been changed, "
@@ -211,7 +212,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (childCellRefs==null)
             childCellRefs = new ArrayList<ManagedReference<CellMO>>();
         
-        child.setParent(AppContext.getDataManager().createReference(this));
+        child.setParent(this);
         
         childCellRefs.add(AppContext.getDataManager().createReference(child));
         
@@ -283,14 +284,24 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
     
     /**
+     * Return the cellID of the parent.  This method was added for debugging
+     * and is used by SpaceMO to check that the lists are ordered correctly.
+     * 
+     * TODO remove
+     * 
+     * @return
+     */
+    CellID getParentCellID() {
+        return parentCellID;
+    }
+    
+    /**
      * Detach this cell from its parent
      */
     public void detach() {
         CellMO parent = getParent();
         if (parent==null)
             return;
-        
-        notifySpacesDetach(TimeManager.getWonderlandTime());
         
         parent.removeChild(this);
     }
@@ -299,14 +310,20 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Set the parent of this cell. Package private because the parent is
      * controlled through add and remove child.
      * 
-     * @param parentRef
+     * @param parent the parent cell
      * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
      */
-    void setParent(ManagedReference newParentRef) throws MultipleParentException {
-        if (newParentRef!=null && parentRef!=null)
+    void setParent(CellMO parent) throws MultipleParentException {
+        if (parent!=null && parentRef!=null)
             throw new MultipleParentException();
         
-        this.parentRef = newParentRef;
+        if (parent==null) {
+            this.parentRef = null;
+            this.parentCellID = CellID.getInvalidCellID();
+        } else {
+            this.parentRef = AppContext.getDataManager().createReference(parent);
+            this.parentCellID = parent.getCellID();
+        }
     }
     
     /**
@@ -336,25 +353,43 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //        }
         
         if (live) {
-            processTransformChange();
-            notifySpacesTransformChanged(transform, TimeManager.getWonderlandTime());
+            long timestamp = TimeManager.getWonderlandTime();
+            processTransformChange(timestamp);
+            notifySpacesTransformChanged(transform, timestamp);
         }
     }
     
     /**
-     * Notify children that the transform of the parent node has changed
+     * Notify children that the transform of this node has changed, as this
+     * call recurses down into the children the processParentTransformChange
+     * method is called. This is to allow different handling of space notification.
+     * 
+     * For changes to this cell, both the transform and world bounds are updated
+     * in the space, for children only the world bounds is updated in the space
+     * 
      * @param parent
      */
-    private void processTransformChange() {
+    private void processTransformChange(long timestamp) {
         calcLocal2World();
         calcWorldBounds();
             
+        
+        
         Collection<ManagedReference<CellMO>> childrenRef = getAllChildrenRefs();
         for(ManagedReference<CellMO> childRef : childrenRef) {
-            childRef.getForUpdate().processTransformChange();
+            childRef.getForUpdate().processParentTransformChange(timestamp);
         }
         
         notifyTransformChangeListeners();
+    }
+    
+    /**
+     * 
+     * @param timestamp
+     */
+    private void processParentTransformChange(long timestamp) {
+        processTransformChange(timestamp);
+        notifySpacesWorldBoundsChanged(TimeManager.getWonderlandTime());
     }
     
     /**
@@ -429,9 +464,29 @@ public abstract class CellMO implements ManagedObject, Serializable {
             }
             calcLocal2World();
             calcWorldBounds();
+            
+            if (!(this instanceof RootCellMO)) {
+                // Find the space in which the center of cell is located
+                SpaceMO[] space = CellManagerMO.getCellManager().getEnclosingSpace(transform.getTranslation(null));
+                if (space[0]==null) {
+                    logger.severe("Unable to find space to contain cell at "+transform.getTranslation(null) +" aborting addCell");
+                    this.live = false;
+                    return;
+                }
+
+                // Now search all nearby spaces to find spaces which intersect or encapsulate the cells bounds
+                Collection<ManagedReference<SpaceMO>> spaces = space[0].getSpaces(vwBounds);
+                for(ManagedReference<SpaceMO> spaceRef : spaces) {
+                    addToSpace(spaceRef.get());
+                }
+            }
         } else {
 //            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
 //            BoundsManager.get().removeBounds(this);
+            if (!(this instanceof RootCellMO)) {
+                notifySpacesDetach(TimeManager.getWonderlandTime());
+            }
+        
         }
         
         // Notify all components of new live state
@@ -484,7 +539,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(session, capabilities),
-                getClientSetupData(session, capabilities));
+                getClientStateData(session, capabilities));
     }
     
     /**
@@ -500,7 +555,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                                                ClientCapabilities capabilities) {
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(session, capabilities),
-                getClientSetupData(session, capabilities));
+                getClientStateData(session, capabilities));
         
     }
     
@@ -528,7 +583,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Get the setupdata for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    protected CellSetup getClientSetupData(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
         return null;
     }
     
@@ -545,9 +600,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Set up the cell from the given properties
      * @param setup the properties to setup with
      */
-    public void setupCell(BasicCellMOSetup<?> setup) {
-        setLocalTransform(BasicCellMOHelper.getCellTransform(setup));
-        setLocalBounds(BasicCellMOHelper.getCellBounds(setup));
+    public void setupCell(BasicCellSetup setup) {
+        setLocalTransform(BasicCellSetupHelper.getCellTransform(setup));
+        setLocalBounds(BasicCellSetupHelper.getCellBounds(setup));
     }
     
     /**
@@ -555,7 +610,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * calls <code>setupCell()</code>.
      * @param setup the properties to setup with
      */
-    public void reconfigureCell(BasicCellMOSetup<?> setup) {
+    public void reconfigureCell(BasicCellSetup setup) {
         // just call setupCell, since there is nothing to do differently
         // if this is a change
         setupCell(setup);
@@ -662,10 +717,32 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param isMovable
      */
     public void setMovable(boolean isMovable) {
-        if (isLive()) 
-            throw new RuntimeException("Changing staic state of live cells is not currently supported");
+        if (this.isMovable = isMovable)
+            return;
+        
+        if (isLive()) {
+            if (!isMovable)
+                throw new RuntimeException("Changing state to isMovable=false is not currently supported");
+            
+            for(SpaceInfo spaceInfo : inSpaces) {
+                spaceInfo.getSpaceRef().getForUpdate().setCellDynamic(this, isMovable);
+            }
+        }
         
         this.isMovable = isMovable;
+        
+        // Mark all children as movable
+        for(ManagedReference<CellMO> cellRef : childCellRefs) {
+            cellRef.getForUpdate().setParentMovable(isMovable | isParentMovable);
+        }
+    }
+    
+    /**
+     * A parent of this cell is movable
+     * @param isParentMovable
+     */
+    private void setParentMovable(boolean isParentMovable) {
+        this.isParentMovable = isParentMovable;
     }
     
     /**
@@ -733,23 +810,35 @@ public abstract class CellMO implements ManagedObject, Serializable {
         }
     }
     
+    private void notifySpacesWorldBoundsChanged(long timestamp) {
+        for(SpaceInfo spaceInfo : inSpaces) {
+            spaceInfo.getSpaceRef().getForUpdate().notifyCellWorldBoundsChanged(this, timestamp);
+        }
+    }
+    
     /**
      * Add a TransformChangeListener to this cell. The listener will be
-     * called for any changes to the cells transform
+     * called for any changes to the cells transform. The listener can either
+     * be a Serialized object, or an instance of ManagedReference. Both types
+     * are handled correctly.
+     * 
+     * Listeners should generally execute quickly, if they take a long time
+     * it is recommended that the listener schedules a new task to service
+     * the callback.
      * 
      * @param listener to add
      */
-    public void addTransformChangeListener(TransformChangeListenerMO listener) {
+    public void addTransformChangeListener(TransformChangeListenerSrv listener) {
         if (transformChangeListeners==null)
             transformChangeListeners = new HashSet();
-        transformChangeListeners.add(AppContext.getDataManager().createReference(listener));
+        transformChangeListeners.add(listener);
     }
     
     /**
      * Remove the specified listener.
      * @param listener to be removed
      */
-    public void removeTransformChangeListener(TransformChangeListenerMO listener) {
+    public void removeTransformChangeListener(TransformChangeListenerSrv listener) {
         transformChangeListeners.remove(listener);
     }
     
@@ -762,8 +851,13 @@ public abstract class CellMO implements ManagedObject, Serializable {
         CellTransform newLocal = (CellTransform) transform.clone(null);
         CellTransform newL2VW = (CellTransform) local2VWorld.clone(null);
         
-        for(final ManagedReference<TransformChangeListenerMO> listenerRef : transformChangeListeners) {
-            AppContext.getTaskManager().scheduleTask(new TransformChangeNotifierTask(listenerRef, thisRef, newLocal, local2VWorld));
+        for(TransformChangeListenerSrv listenerRef : transformChangeListeners) {
+            if (listenerRef instanceof ManagedReference) {
+                ((ManagedReference<TransformChangeListenerSrv>)listenerRef).get().transformChanged(thisRef, newLocal, newL2VW);
+            } else {
+                listenerRef.transformChanged(thisRef, newLocal, newL2VW);
+            }
+                
         }
     }
     

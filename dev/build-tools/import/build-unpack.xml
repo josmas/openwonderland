@@ -33,7 +33,7 @@
     <!--<target name="unpack-j3d"> <unpack-java-ext pkgname="j3d"/> </target>-->
     <target name="unpack-jai"> <unpack-java-ext pkgname="jai"/> </target>
     <target name="unpack-jai-iio"> <unpack-java-ext pkgname="jai_iio"/> </target>
-    <!--<target name="unpack-jogl"> <unpack-java-ext pkgname="jogl"/> </target>-->
+    <target name="unpack-jogl"> <unpack-java-ext pkgname="jogl"/> </target>
     <target name="unpack-joal"> <unpack-java-ext pkgname="joal"/> </target>
     <target name="unpack-jmf"> <unpack-java-ext pkgname="jmf"/> </target>
     <target name="unpack-fobs"> <unpack-java-ext pkgname="fobs"/> </target>
@@ -76,7 +76,7 @@
     </target>
 
     <target name="unpack-ext"
-	depends="unpack-jme, unpack-jai,unpack-jai-iio,unpack-jmf,unpack-joal,unpack-jinput,unpack-fobs,unpack-xremwin,unpack-xvfb-xorg,unpack-xorgxset,unpack-sgs,unpack-escher,unpack-audio-jar">
+	depends="unpack-jme, unpack-jogl, unpack-jai,unpack-jai-iio,unpack-jmf,unpack-joal,unpack-jinput,unpack-fobs,unpack-xremwin,unpack-xvfb-xorg,unpack-xorgxset,unpack-sgs,unpack-escher,unpack-audio-jar">
 	<chmod perm="ugo+x" dir="${os.javaext.dir}/bin" includes="*"/>
     </target>
 

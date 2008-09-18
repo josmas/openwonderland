@@ -51,9 +51,6 @@ public class AvatarJME extends BasicRenderer {
         Entity ret = super.createEntity();
         WorldManager wm = ClientContextJME.getWorldManager();
                
-        // Avatars are movable so create a move processor
-        moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
-        ret.addComponent(ProcessorComponent.class, moveProcessor);
                                 
         return ret;
     }
@@ -62,7 +59,7 @@ public class AvatarJME extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         ColorRGBA color = new ColorRGBA();
         
-        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_ZBUFFER);
+        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
         buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
@@ -71,7 +68,7 @@ public class AvatarJME extends BasicRenderer {
         light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
         light.setLocation(new Vector3f(100, 100, 100));
         light.setEnabled(true);
-        LightState lightState = (LightState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_LIGHT);
+        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
         lightState.setEnabled(true);
         lightState.attach(light);
 
@@ -94,7 +91,7 @@ public class AvatarJME extends BasicRenderer {
         ret.setLocalTranslation(xoff, yoff, zoff);
         ret.attachChild(teapot);
 
-        matState = (MaterialState) ClientContextJME.getWorldManager().createRendererState(RenderState.RS_MATERIAL);
+        matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
         matState.setDiffuse(color);
         ret.setRenderState(matState);
         ret.setRenderState(buf);
