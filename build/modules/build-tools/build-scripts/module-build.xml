@@ -28,8 +28,12 @@
     <!-- include the module ant task -->
     <target name="-module-ant-task">
         <taskdef name="module"
-                  classname="org.jdesktop.wonderland.modules.ant.ModuleTask"
-                  classpath="${top.dir}/web/modules/dist/wonderland-modules-api.jar"/>
+                  classname="org.jdesktop.wonderland.modules.ant.ModuleTask">
+            <classpath>
+                <pathelement location="${top.dir}/web/modules/dist/wonderland-modules-api.jar"/>
+                <pathelement path="${jaxb.classpath}"/>
+            </classpath>
+        </taskdef>
     </target>
    
     <target name="-module-compile-common" depends="-module-init">

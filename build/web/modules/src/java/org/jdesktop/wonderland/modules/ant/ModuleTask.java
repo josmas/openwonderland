@@ -36,7 +36,7 @@ public class ModuleTask extends Jar {
     private int minorVersion = ModuleInfo.VERSION_UNSET;
     private List<Requires> requires = new ArrayList<Requires>();
     private List<Plugin> plugins = new ArrayList<Plugin>();
-    
+   
     public void setName(String name) {
         this.name = name;
     }
@@ -99,9 +99,22 @@ public class ModuleTask extends Jar {
             }
         }
         
+        // remember the context classloader
+        ClassLoader contextCL = Thread.currentThread().getContextClassLoader();
+        
         // now write the relevant xml files, by creating temp files
         // and adding those temp files to parent .jar
         try {
+            
+            // workaround for JAXB issue.  The JAXB ContextFinder uses the
+            // context classloader to load the correct JAXBContext instance.
+            // Make sure the context classloader is the one that loaded
+            // this task (which has the JAXB classpath).  Otherwsise,
+            // the default ant classloader will be used, which doesn't
+            // have the JAXB classes.  Also make sure to set the
+            // context classloader back after this try block.            
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+            
             // first write the module info
             writeModuleInfo();
             
@@ -116,6 +129,9 @@ public class ModuleTask extends Jar {
             throw new BuildException(ioe);
         } catch (JAXBException je) {
             throw new BuildException(je);
+        } finally {
+            // reset the classloader
+            Thread.currentThread().setContextClassLoader(contextCL);
         }
         
         // TODO calculate checksums?        
