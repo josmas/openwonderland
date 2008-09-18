@@ -34,7 +34,8 @@ public class ClientContext {
 
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
     private static WonderlandSessionManager sessionManager = null;
-    
+    // TODO: private static HashMap<WonderlandSession, SasUserClient> sasUserClients = null;
+
     /**
      * Return the CellCache if the session has one, otherwise
      * return null
@@ -46,6 +47,17 @@ public class ClientContext {
         return cellCaches.get(session);
     }
     
+    /**
+     * Return the SAS user client if the session has one, otherwise return null
+     */
+    /* TODO
+    public static UserClient getUserClient(WonderlandSession session) {
+        if (sasUserClients==null)
+            return null;
+        return sasUserClients.get(session);
+    }
+    */
+
     /**
      * Register the implementation of CellCache for the session. This
      * call can only be made once. If you attempt to call this method more
@@ -63,6 +75,26 @@ public class ClientContext {
             throw new RuntimeException("registerCellCache can only be called once");
     }
     
+    /**
+     * Register the implementation of the SAS UserClient for the session. This
+     * call can only be made once. If you attempt to call this method more
+     * than once a RuntimeException will be thrown;
+     * @param sasUserClient 
+     */
+    /* TODO
+    public static void registerSasUserClient(SasUserClient sasUserClient, WonderlandSession session) {
+
+        if (sasUserClients==null) {
+	    sasUserCaches = new HashMap<WonderlandSession, UserClient>();
+        }
+        
+        SasUserClient previous = sasUserClients.put(session, sasUserClient);
+        
+        if (previous!=null)
+            throw new RuntimeException("registerSasUserClient can only be called once per session");
+    }
+    */
+
     /**
      * Return the WonderlandSessionManager for this client
      * 
