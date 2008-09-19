@@ -36,10 +36,11 @@
                     <file>${file.reference.ant.jar}</file>
                 </library>
                 <library files="1">
-                    <file>${file.reference.wonderland-client.jar}</file>
+                    <file>${file.reference.commons-io-1.4.jar}</file>
                 </library>
                 <library files="1">
-                    <file>${file.reference.commons-io-1.4.jar}</file>
+                    <file>${file.reference.wonderland-client.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library files="1">
                     <file>${file.reference.gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar}</file>
