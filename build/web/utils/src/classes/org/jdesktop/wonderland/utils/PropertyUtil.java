@@ -17,35 +17,50 @@
  */
 package org.jdesktop.wonderland.utils;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.ServletContext;
 
 /**
- * Common utilities used by servlets
+ * Common utilities for reading in property values, including simple
+ * substitution based on a configurable set of handlers.
  * @author jkaplan
  */
-public class WonderlandServletUtil {
+public class PropertyUtil {
     /** pattern for substitution */
     private static final Pattern subst = Pattern.compile("\\$\\{.+?\\}");
             
     /**
      * Read a property with null as the default value.  
+     * @param prop the property to read
+     * @param resolver the property resolver to look it up in
      * @see getProperty(String, ServletContext, String)
      */
     public static String getProperty(final String prop,
-                                     final ServletContext context)
+                                     final PropertyResolver resolver)
     {
-        return getProperty(prop, context, null);
+        return getProperty(prop, resolver, null);
     }
     
     /**
-     * Read a property in a servlet.  The properties are read in the
-     * following order: 
-     * <ul><li>System.getProperty()
-     *     <li>ServletContext.getInitParameter()
-     *     <li>The supplied default
-     * </ul>
+     * Read a property with a given default value.  
+     * @param prop the property to read
+     * @param resolver the property resolver to look it up in
+     * @param default the default value
+     * @see getProperty(String, ServletContext, String)
+     */
+    public static String getProperty(final String prop,
+                                     final PropertyResolver resolver,
+                                     final String defVal)
+    {
+        return getProperty(prop, Collections.singletonList(resolver), null);
+    }
+    
+    /**
+     * Read a property from a list of resolvers.  The resolvers are tried in
+     * the order they are given, until one does not return null.  If all
+     * resolvers return null, the default value will be used below.
      * <p>
      * Further, for any non-null return value, substitution will be 
      * peformed as follows:
@@ -61,25 +76,53 @@ public class WonderlandServletUtil {
      * value can be found for the given property
      */
     public static String getProperty(final String prop,
-                                     final ServletContext context,
+                                     final List<PropertyResolver> resolvers,
                                      final String defVal) 
     {
-        // first try a system property
-        String out = System.getProperty(prop);
-
-        // next try a servlet config parameter
-        if (out == null) {
-            out = context.getInitParameter(prop);
+        return getProperty(prop, resolvers, defVal, true);
+    }
+    
+    /**
+     * Read a property from a list of resolvers.  The resolvers are tried in
+     * the order they are given, until one does not return null.  If all
+     * resolvers return null, the default value will be used below.
+     * <p>
+     * Further, for any non-null return value, substitution will be 
+     * peformed as follows if the substitute argument is true:
+     * <p>
+     * For an occurence of ${property}, the value of property will be
+     * substituted using a call to this method, using the same rules
+     * as above.
+     * 
+     * @param prop the name of the property
+     * @param context the context to check for the property in
+     * @param defVal the default value of the property
+     * @param substitute if true, perform substitution
+     * @return the value of the given property, or the supplied default if no
+     * value can be found for the given property
+     */
+    public static String getProperty(final String prop,
+                                     final List<PropertyResolver> resolvers,
+                                     final String defVal,
+                                     final boolean substitute) 
+    {
+        // try the resolvers in order
+        String out = null;
+        for (PropertyResolver resolver : resolvers) {
+            out = resolver.getValue(prop);
+            if (out != null) {
+                break;
+            }
         }
-
-        // finally, try the default value
+        
+        // if no resolver found our value, use the default
         if (out == null) {
             out = defVal;
         }
         
         // substitute
-        if (out != null) {
-            out = substitute(out, context);
+        if (out != null && substitute) {
+            out = substitute(out, resolvers);
         }
         
         // return what we found
@@ -98,11 +141,13 @@ public class WonderlandServletUtil {
      * pattern.
      * 
      * @param str the string to subsitute in
-     * @param context the ServletContext used for calls to
+     * @param resolvers the property resolvers to use
      * <code>getProperty</code>
      * @return the string after substitution
      */
-    public static String substitute(String str, ServletContext context) {
+    public static String substitute(String str, 
+                                    List<PropertyResolver> resolvers) 
+    {
         Matcher m = subst.matcher(str);
         StringBuffer buf = new StringBuffer();
         
@@ -122,8 +167,9 @@ public class WonderlandServletUtil {
                 defVal = vals[1];
             }
             
-            // resolve the result as a system property
-            String res = getProperty(expr, context, defVal);
+            // resolve the result as a system property -- don't do recursive
+            // substitution
+            String res = getProperty(expr, resolvers, defVal, false);
             if (res == null && defVal != null) {
                 // use the default
                 res = defVal;
@@ -142,5 +188,15 @@ public class WonderlandServletUtil {
         m.appendTail(buf);
         
         return buf.toString();
+    }
+    
+    /** Something that resolves key/value queries */
+    public static interface PropertyResolver {
+        /**
+         * Given a key, return a value or null
+         * @param key the key to look up
+         * @return the value, if one matching key is found, or null
+         */
+        public String getValue(String key);
     }
 }

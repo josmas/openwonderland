@@ -4,14 +4,11 @@
        <ant dir="utils" target="jar"/>
        <ant dir="wfs" target="dist" inheritall="false"/>
        <ant dir="modules" target="dist" inheritall="false"/>
-       <ant dir="server" target="jar" inheritall="false"/>
+       <ant dir="server" target="package" inheritall="false"/>
     </target>
     
     <target name="run-web" depends="build">
-        <java dir="server" jar="${basedir}/server/build/lib/Wonderland.jar" fork="true">
-            <jvmarg value="-Dwonderland.webserver.wfs.root=${basedir}/examples/wfs"/>
-            <jvmarg value="-Dwonderland.webserver.modules.root=${basedir}/examples/modules"/>
-        </java>
+        <java dir="server" jar="${basedir}/server/build/lib/Wonderland.jar" fork="true"/>
     </target>
     
     <target name="clean">

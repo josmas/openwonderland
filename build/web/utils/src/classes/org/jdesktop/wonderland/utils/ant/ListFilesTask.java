@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.webserver.ant;
+package org.jdesktop.wonderland.utils.ant;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,7 +18,8 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
 /**
- *
+ * Ant task that lists files in a subdirectory of a jar file, and puts them
+ * into and output file.
  * @author jkaplan
  */
 public class ListFilesTask extends Task {

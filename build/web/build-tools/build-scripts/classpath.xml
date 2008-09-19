@@ -25,10 +25,16 @@
         <path location="${web.restlib.dir}/wadl2java.jar"/>
     </pathconvert>
 
+    <!-- web utlities -->
+    <pathconvert property="web.utils.classpath">
+        <path location="${web.utils.dir}/wonderland-web-utils.jar"/>
+    </pathconvert>
+
     <pathconvert property="web.classpath">
         <path path="${jaxb.classpath}"/>
         <path path="${web.glassfish.classpath}"/>
         <path path="${web.apache.classpath}"/>
 	<path path="${web.restlib.classpath}"/>
+        <path path="${web.utils.classpath}"/>
     </pathconvert>
 </project>
