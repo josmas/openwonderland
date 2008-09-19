@@ -19,11 +19,14 @@
 package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.jdesktop.wonderland.modules.Module;
@@ -42,13 +45,18 @@ import org.jdesktop.wonderland.modules.ModuleInfo;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ModuleManager {
+    /* The file name corresponding to the collection of modules to prepare to remove */
+    private static final String REMOVE_XML = "remove.xml";
+    
+    /* The fine name corresponding to the collection of modules to actually uninstall */
+    private static final String UNINSTALL_XML = "uninstall.xm";
+    
     /* An enumeration of module states, with their correlated directories */
     public enum State {
         ADD       ("add/"),
         PENDING   ("pending/"),
-        INSTALLED ("installed/"),
-        REMOVE    ("remove/"),
-        UNINSTALL ("uninstall/");
+        INSTALLED ("installed/");
+
 
         /* The directory in which the modules are found for the state */
         private String directory = null;
@@ -119,6 +127,230 @@ public class ModuleManager {
         return ModuleManager.logger;
     }
 
+    /**
+     * Returns an array of ModuleInfo objects of modules to prepare to remove.
+     * If no such modules exist, the method returns an empty array
+     * 
+     * @return An array of modules to prepare to remove
+     */
+    public ModuleInfo[] getRemovedModuleInfos() {
+        File file = new File(this.root, ModuleManager.REMOVE_XML);
+        try {
+            ModuleInfoList list = ModuleInfoList.decode(new FileReader(file));
+            return list.getModuleInfos();
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] GET REMOVED Failed to read " + file.getAbsolutePath());
+            logger.warning("[MODULES] GET REMOVED " + excp.toString());
+            return new ModuleInfo[] {};
+        }
+    }
+    
+    /**
+     * Adds a module information to the list of modules to prepare to be removed.
+     * If the module already exists, this method throws IllegalArgumentException.
+     * Upon other error, this method throws IOException
+     * 
+     * @param moduleInfo The new module info to add the list of modules to be removed
+     * @throw IllegalArgumentException If the module already exists
+     * @throw IOException Upon general I/O error
+     */
+    public void addRemoveModuleInfo(ModuleInfo moduleInfo) throws IllegalArgumentException, IOException {
+        /*
+         * We first need to de-serialized the object from disk. If it is not
+         * there, then create a new one.
+         */
+        ModuleInfoList list = null;
+        File file = new File(this.root, ModuleManager.REMOVE_XML);
+        try {
+            list = ModuleInfoList.decode(new FileReader(file));
+        } catch (java.lang.Exception excp) {
+            logger.info("[MODULES] ADD REMOVED unable to read remove.xml file, not necessarily a big deal.");
+            logger.info("[MODULES] ADD REMOVED will just create a new one.");
+            logger.info("[MODULES] ADD REMOVED " + excp.toString());
+            list = new ModuleInfoList();
+        }
+        
+        /*
+         * Fetch the current list of modules, check if ours exists already. We
+         * check that the module name and version matches.
+         */
+        List<ModuleInfo> infoCollection = Arrays.asList(list.getModuleInfos());
+        if (infoCollection.contains(moduleInfo) == true) {
+            logger.info("[MODULES] ADD REMOVED remove.xml already has the entry " + moduleInfo.toString());
+            return;
+        }
+            
+        infoCollection.add(moduleInfo);
+        list.setModuleInfos(infoCollection.toArray(new ModuleInfo[] {}));
+        
+        /* Write the list back out to the file */
+        try {
+            list.encode(new FileWriter(file));
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] ADD REMOVED unable to save remove.xml file");
+            logger.warning("[MODULES] " + excp.toString());
+        }
+    }
+ 
+    /**
+     * Removes a module information to the list of modules to prepare to be
+     * removed. If the module does not exist, this method throws
+     * IllegalArgumentException. Upon other error, this method throws
+     * IOException
+     * 
+     * @param moduleInfo The new module info to remove from the list of modules to be removed
+     * @throw IllegalArgumentException If the module already exists
+     * @throw IOException Upon general I/O error
+     */
+    public void removeRemoveModuleInfo(ModuleInfo moduleInfo) throws IllegalArgumentException, IOException {
+        /*
+         * We first need to de-serialized the object from disk. If it is not
+         * there, then create a new one.
+         */
+        ModuleInfoList list = null;
+        File file = new File(this.root, ModuleManager.REMOVE_XML);
+        try {
+            list = ModuleInfoList.decode(new FileReader(file));
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] ADD REMOVED unable to read remove.xml file. This should exist.");
+            logger.warning("[MODULES] ADD REMOVED " + excp.toString());
+            list = new ModuleInfoList();
+        }
+        
+        /*
+         * Fetch the current list of modules, check if ours exists already. We
+         * check that the module name and version matches.
+         */
+        List<ModuleInfo> infoCollection = Arrays.asList(list.getModuleInfos());
+        if (infoCollection.contains(moduleInfo) == false) {
+            logger.warning("[MODULES] ADD REMOVED remove.xml does not have the entry " + moduleInfo.toString());
+            return;
+        }
+            
+        infoCollection.remove(moduleInfo);
+        list.setModuleInfos(infoCollection.toArray(new ModuleInfo[] {}));
+        
+        /* Write the list back out to the file */
+        try {
+            list.encode(new FileWriter(file));
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] ADD REMOVED unable to save remove.xml file");
+            logger.warning("[MODULES] " + excp.toString());
+        }
+    }
+    
+    /**
+     * Returns an array of ModuleInfo objects of modules to uninstall. If no
+     * such modules exist, the method returns an empty array
+     * 
+     * @return An array of modules to prepare to remove
+     */
+    public ModuleInfo[] getUninstalledModuleInfos() {
+        File file = new File(this.root, ModuleManager.UNINSTALL_XML);
+        try {
+            ModuleInfoList list = ModuleInfoList.decode(new FileReader(file));
+            return list.getModuleInfos();
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] GET UNINSTALL Failed to read " + file.getAbsolutePath());
+            logger.warning("[MODULES] GET UNINSTALL " + excp.toString());
+            return new ModuleInfo[] {};
+        }
+    }
+    
+    /**
+     * Adds a module information to the list of modules to uninstall. If the
+     * module already exists, this method throws IllegalArgumentException. Upon
+     * other error, this method throws IOException
+     * 
+     * @param moduleInfo The new module info to add the list of modules to be removed
+     * @throw IllegalArgumentException If the module already exists
+     * @throw IOException Upon general I/O error
+     */
+    public void addUninstalledModuleInfo(ModuleInfo moduleInfo) throws IllegalArgumentException, IOException {
+        /*
+         * We first need to de-serialized the object from disk. If it is not
+         * there, then create a new one.
+         */
+        ModuleInfoList list = null;
+        File file = new File(this.root, ModuleManager.UNINSTALL_XML);
+        try {
+            list = ModuleInfoList.decode(new FileReader(file));
+        } catch (java.lang.Exception excp) {
+            logger.info("[MODULES] ADD UNINSTALL unable to read remove.xml file, not necessarily a big deal.");
+            logger.info("[MODULES] ADD UNINSTALL will just create a new one.");
+            logger.info("[MODULES] ADD UNINSTALL " + excp.toString());
+            list = new ModuleInfoList();
+        }
+        
+        /*
+         * Fetch the current list of modules, check if ours exists already. We
+         * check that the module name and version matches.
+         */
+        List<ModuleInfo> infoCollection = Arrays.asList(list.getModuleInfos());
+        if (infoCollection.contains(moduleInfo) == true) {
+            logger.info("[MODULES] ADD UNINSTALL uninstall.xml already has the entry " + moduleInfo.toString());
+            return;
+        }
+            
+        infoCollection.add(moduleInfo);
+        list.setModuleInfos(infoCollection.toArray(new ModuleInfo[] {}));
+        
+        /* Write the list back out to the file */
+        try {
+            list.encode(new FileWriter(file));
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] ADD UNINSTALL unable to save uninstall.xml file");
+            logger.warning("[MODULES] " + excp.toString());
+        }
+    }
+ 
+    /**
+     * Removes a module information to the list of modules to uninstall. If the
+     * module does not exist, this method throws IllegalArgumentException. Upon
+     * other error, this method throws
+     * IOException
+     * 
+     * @param moduleInfo The new module info to remove from the list of modules to uninstall
+     * @throw IllegalArgumentException If the module already exists
+     * @throw IOException Upon general I/O error
+     */
+    public void removeUninstalledModuleInfo(ModuleInfo moduleInfo) throws IllegalArgumentException, IOException {
+        /*
+         * We first need to de-serialized the object from disk. If it is not
+         * there, then create a new one.
+         */
+        ModuleInfoList list = null;
+        File file = new File(this.root, ModuleManager.UNINSTALL_XML);
+        try {
+            list = ModuleInfoList.decode(new FileReader(file));
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] ADD UNINSTALL unable to read remove.xml file. This should exist.");
+            logger.warning("[MODULES] ADD UNINSTALL " + excp.toString());
+            list = new ModuleInfoList();
+        }
+        
+        /*
+         * Fetch the current list of modules, check if ours exists already. We
+         * check that the module name and version matches.
+         */
+        List<ModuleInfo> infoCollection = Arrays.asList(list.getModuleInfos());
+        if (infoCollection.contains(moduleInfo) == false) {
+            logger.warning("[MODULES] ADD UNINSTALL uninstall.xml does not have the entry " + moduleInfo.toString());
+            return;
+        }
+            
+        infoCollection.remove(moduleInfo);
+        list.setModuleInfos(infoCollection.toArray(new ModuleInfo[] {}));
+        
+        /* Write the list back out to the file */
+        try {
+            list.encode(new FileWriter(file));
+        } catch (java.lang.Exception excp) {
+            logger.warning("[MODULES] ADD UNINSTALL unable to save uninstall.xml file");
+            logger.warning("[MODULES] " + excp.toString());
+        }
+    }
+    
     /**
      * Adds a module to be installed. The added module is simply a properly
      * formatted jar file. This step makes sure that the prerequisites have
@@ -212,6 +444,16 @@ public class ModuleManager {
             if (this.install(pm) == false) {
                 logger.warning("[MODULES] Failed to install pending module " + pm.getName());
             }
+        }
+    }
+ 
+    /**
+     * Uninstalls all of the modules waiting to be uninstalled.
+     */
+    public void uninstallAll() {
+        ModuleInfo[] uninstallInfos = this.getUninstalledModuleInfos();
+        for (ModuleInfo info : uninstallInfos) {
+            this.uninstall(info);
         }
     }
     
@@ -316,28 +558,28 @@ public class ModuleManager {
         
         /*
          * If we have reached here, it means that we can safely uninstall the
-         * module. Move the module.xml file from the remove/ directory to the
-         * uninstall/ directory
+         * module. Add the module info to the uninstall.xml file.
          */
-        File file = null;
         try {
-            file = new File(this.getModuleRoot(State.UNINSTALL), moduleInfo.getName() + ".xml");
-            moduleInfo.encode(new FileWriter(file));
+            this.addUninstalledModuleInfo(moduleInfo);
         } catch (java.lang.Exception excp) {
-            logger.warning("[MODULES] REMOVE cannot move module.xml to " + file.getAbsolutePath());
+            logger.warning("[MODULES] REMOVE unable to add to the list of modules to uninstall " + moduleInfo.toString());
+            logger.warning("[MODULES] REMOVE will leave in the remove.xml file");
             logger.warning("[MODULES] REMOVE " + excp.toString());
             return false;
         }
-        
-        /* Remove the module.xml file from the remove/ directory (if it exists) */
-        try {
-            File removeFile = new File(this.getModuleRoot(State.REMOVE), moduleInfo.getName() + ".xml");
-            removeFile.delete();
+
+        /*
+         * Remove from the list of modules to prepare to uninstall
+         */
+         try {
+            this.removeRemoveModuleInfo(moduleInfo);
         } catch (java.lang.Exception excp) {
-            logger.warning("[MODULES] REMOVE cannot remove module.xml from remove/");
+            logger.warning("[MODULES] REMOVE unable to add to the list of modules to uninstall " + moduleInfo.toString());
+            logger.warning("[MODULES] REMOVE will leave in the remove.xml file");
             logger.warning("[MODULES] REMOVE " + excp.toString());
             return false;
-        }
+        }        
         return true;
     }
 
@@ -346,7 +588,7 @@ public class ModuleManager {
      * Uninstalls a removed that has been uninstalled. At this point, all of
      * the necessary configuration has happened to the system and the files just
      * need to be removed from the installed/ directory. This method removes the
-     * module.xml file from the uinstalled/ directory when complete.
+     * moduleInfo file from the uinstall.xml directory when complete.
      * <p>
      * This method returns true upon success and false upon failure, however,
      * failure should only occur very rarely. It should only occur for things
@@ -374,17 +616,15 @@ public class ModuleManager {
         }
 
         /*
-         * Remove the file in the uninstalled/ directory.
+         * Remove from the list of modules to uninstall
          */
-        File file = null;
-        try {
-            file = new File(this.getModuleRoot(State.UNINSTALL), moduleInfo.getName() + ".xml");
-            file.delete();
+         try {
+            this.removeUninstalledModuleInfo(moduleInfo);
         } catch (java.lang.Exception excp) {
-            logger.warning("[MODULE] UNINSTALL Unable to remove " + file.getAbsolutePath());
+            logger.warning("[MODULES] UNINSTALL unable to remove from the list of modules to uninstall " + moduleInfo.toString());
+            logger.warning("[MODULES] UNINSTALL " + excp.toString());
             return false;
-        }
-        
+        }        
         return true;
     }
     
@@ -435,24 +675,27 @@ public class ModuleManager {
      * the PENDING state. This method is used to verify a module's dependencies
      * are met before installation.
      * 
-     * @return True if the module is either installed or pending installation
+     * @return The module information is the module is "present", null if not.
      */
-    public Module isModulePresent(String uniqueName) {
+    public ModuleInfo isModulePresent(String uniqueName) {
         Module module = null;
         
         /* If waiting to be removed, then return null */
-        if (this.getModule(uniqueName, State.REMOVE) != null) {
-            return null;
+        ModuleInfo[] removedModuleInfos = this.getRemovedModuleInfos();
+        for (ModuleInfo info : removedModuleInfos) {
+            if (uniqueName.compareTo(info.getName()) == 0) {
+                return info;
+            }
         }
         
         /* If installed, then return it */
         if ((module = this.getModule(uniqueName, State.INSTALLED)) != null) {
-            return module;
+            return module.getModuleInfo();
         }
         
         /* If about to be installed, then return true */
         if ((module = this.getModule(uniqueName, State.PENDING)) != null) {
-            return module;
+            return module.getModuleInfo();
         }
         
         /* Otherwise, it is not present */
@@ -469,14 +712,15 @@ public class ModuleManager {
      */
     public Module isModuleRequired(String uniqueName) {
         /* Loop through all installed (but not uninstalled) modules */
+        ModuleInfo[] uninstallModuleInfos = this.getUninstalledModuleInfos();
         Iterator<String> it = this.getModules(State.INSTALLED).iterator();
         while (it.hasNext() == true) {
             String installedName = it.next();
             InstalledModule im = (InstalledModule)this.getModule(uniqueName, State.INSTALLED);
             
             /* Do not look at uninstalled modules */
-            if (this.getModule(installedName, State.REMOVE) == null) {
-                if (im.getModuleRequires().isRequired(uniqueName) == true) {
+            for (ModuleInfo info : uninstallModuleInfos) {
+                if (im.getModuleRequires().isRequired(info.getName()) == true) {
                     return im;
                 }
             }
@@ -527,22 +771,14 @@ public class ModuleManager {
      * formed module.
      * 
      * @param file The file in the module directory
-     * @param state The module state
+     * @param state The module state (ADD, PENDING, INSTALLED)
      * @return True if the entry is a potentially valid module, false if not.
      */
     private boolean isValidModule(File file, State state) {
         switch (state) {
-            case ADD:
-                return AddedModule.isValidFile(file);
-                
-            case PENDING:
-                return PendingModule.isValidFile(file);
-                
-            case INSTALLED:
-                return InstalledModule.isValidFile(file);
-                
-            case REMOVE:
-                return file.isFile() && file.getName().endsWith(".xml");
+            case ADD:       return AddedModule.isValidFile(file);
+            case PENDING:   return PendingModule.isValidFile(file);
+            case INSTALLED: return InstalledModule.isValidFile(file);
         }
         return false;
     }
@@ -551,7 +787,7 @@ public class ModuleManager {
      * Returns an instance of a module given its file root and state.
      * 
      * @param name The unique name of the module
-     * @param state The state of the module (ADD, PENDING, INSTALLED, REMOVE)
+     * @param state The state of the module (ADD, PENDING, INSTALLED)
      * @return The Module object.
      */
     private Module moduleFactory(String name, State state) {

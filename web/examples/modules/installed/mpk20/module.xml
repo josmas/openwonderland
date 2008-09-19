@@ -5,4 +5,5 @@
         <major>5</major>
         <minor>2</minor>
     </version>
+    <description>The MPK20 module contains the demo space provided with Project Wonderland.</description>
 </wonderland-module>
