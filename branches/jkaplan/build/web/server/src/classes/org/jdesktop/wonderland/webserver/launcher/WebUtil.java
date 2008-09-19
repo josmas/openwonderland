@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  *
@@ -48,23 +49,33 @@ public class WebUtil {
      */
     public synchronized static File getTempBaseDir() {
         if (baseDir == null) {
+            // first try a property
+            String baseDirProp = SystemPropertyUtil.getProperty(WebServerLauncher.RUN_DIR_PROP);
+            
             try {
-                // create a new temp directory
-                baseDir = File.createTempFile("wonderlandweb", ".tmp");
-                baseDir.delete();
-                baseDir.mkdirs();
+               
+                if (baseDirProp != null) {
+                    baseDir = new File(baseDirProp);
+                    baseDir.mkdirs();
+                } else {
+                    // create a temp directory
+                    // create a new temp directory
+                    baseDir = File.createTempFile("wonderlandweb", ".tmp");
+                    baseDir.delete();
+                    baseDir.mkdirs();
                 
-                // remove it on exit.  Only do this if we create a directory
-                // in /tmp!!
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-                    @Override
-                    public void run() {
-                        logger.info("Cleaning up Wonderland temp directory.");
-                        deleteDir(baseDir);
-                    }
-                });
+                    // remove it on exit.  Only do this if we create a directory
+                    // in /tmp!!
+                    Runtime.getRuntime().addShutdownHook(new Thread() {
+                        @Override
+                        public void run() {
+                            logger.info("Cleaning up Wonderland temp directory.");
+                            deleteDir(baseDir);
+                        }
+                    });
+                }
             } catch (IOException ioe) {
-                logger.warning("Unable to create base temporary directory.");
+                logger.warning("Unable to create run directory: " + baseDir);
                 baseDir = new File(".");
             }
         }

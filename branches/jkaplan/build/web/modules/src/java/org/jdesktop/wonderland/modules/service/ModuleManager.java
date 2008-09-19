@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  * The ModuleManager class manages the modules on the Wonderland server. It
@@ -743,7 +744,7 @@ public class ModuleManager {
      * property.
      */
     private static String getModuleDirectory() {
-        return System.getProperty("wonderland.webserver.modules.root");
+        return SystemPropertyUtil.getProperty("wonderland.webserver.modules.root");
     }
     
     /**

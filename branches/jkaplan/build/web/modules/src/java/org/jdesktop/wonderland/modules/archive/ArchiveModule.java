@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleArtResource;
@@ -69,7 +70,9 @@ public class ArchiveModule extends Module {
             this.root = new File(root, name + ".jar");
             this.manifest = new ArchiveManifest(this.root);
         } catch (java.io.IOException excp) {
-            ModuleManager.getLogger().warning("ModuleManager: invalid URL for module: " + root.getAbsolutePath());
+            ModuleManager.getLogger().log(Level.WARNING,
+                "ModuleManager: invalid URL for module: " + 
+                this.root.getAbsolutePath(), excp);
         }
     }
 
