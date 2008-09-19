@@ -57,6 +57,10 @@ public class ModuleInfo implements Serializable {
     @XmlElement(name="version")
     private Version version = new ModuleInfo.Version();
     
+    /* A textual description of the module */
+    @XmlElement(name="description")
+    private String description = null;
+    
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
     private static Unmarshaller unmarshaller = null;
@@ -87,6 +91,32 @@ public class ModuleInfo implements Serializable {
         
         /** Default constructor */
         public Version() {}
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Version other = (Version) obj;
+            if (this.major != other.major) {
+                return false;
+            }
+            if (this.minor != other.minor) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 71 * hash + this.major;
+            hash = 71 * hash + this.minor;
+            return hash;
+        }
     }
     
     /** Default constructor */
@@ -107,6 +137,8 @@ public class ModuleInfo implements Serializable {
     public void setMajor(int major) { this.version.major = major; }
     @XmlTransient public int getMinor() { return this.version.minor; }
     public void setMinor(int minor) { this.version.minor = minor; }
+    @XmlTransient public String getDescription() { return this.description; }
+    public void setDescription(String description) { this.description = description; }
     
     /**
      * Returns the version as a string: <major>.<minor>
@@ -148,6 +180,32 @@ public class ModuleInfo implements Serializable {
      */
     public void encode(OutputStream os) throws JAXBException {
         ModuleInfo.marshaller.marshal(this, os);
+    }
+    
+    /**
+     * Returns true if both the module name and version matches, false if not
+     */
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ModuleInfo)) {
+            return false;
+        }
+        ModuleInfo info = (ModuleInfo)object;
+        if (this.getName().equals(info.getName()) == false) {
+            return false;
+        }
+        if (this.version.equals(info.version) == false) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 13 * hash + (this.version != null ? this.version.hashCode() : 0);
+        return hash;
     }
     
     /**
