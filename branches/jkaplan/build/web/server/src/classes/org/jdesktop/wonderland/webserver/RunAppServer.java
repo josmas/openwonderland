@@ -6,7 +6,6 @@ package org.jdesktop.wonderland.webserver;
 
 import org.jdesktop.wonderland.webserver.launcher.WebUtil;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
-import com.sun.enterprise.v3.server.ServerEnvironmentImpl;
 import com.sun.hk2.component.InhabitantsParser;
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,6 +15,7 @@ import java.io.InputStreamReader;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embed.App;
 import org.glassfish.embed.AppServer;
+import org.glassfish.server.ServerEnvironmentImpl;
 
 /**
  *

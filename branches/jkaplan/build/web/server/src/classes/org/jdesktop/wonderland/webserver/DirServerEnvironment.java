@@ -1,9 +1,9 @@
 package org.jdesktop.wonderland.webserver;
 
 import org.jdesktop.wonderland.webserver.launcher.WebUtil;
-import com.sun.enterprise.v3.server.ServerEnvironmentImpl;
 import java.io.File;
 import java.util.logging.Logger;
+import org.glassfish.server.ServerEnvironmentImpl;
 
 /**
  * Workaround to put server files in directory of our choice
