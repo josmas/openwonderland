@@ -64,10 +64,10 @@ public class ModuleDependencyCheck {
          * version is acceptable.
          */
         for (ModuleInfo moduleRequired : requires) {
-            Module candidate = mm.isModulePresent(uniqueName);
+            ModuleInfo candidate = mm.isModulePresent(uniqueName);
             if (candidate != null) {
                 /* Check to see if the version number has been satisfied */
-                if (this.isSatisfied(candidate.getModuleInfo(), moduleRequired) == true) {
+                if (this.isSatisfied(candidate, moduleRequired) == true) {
                     this.requirements.remove(moduleRequired);
                 }
             }
