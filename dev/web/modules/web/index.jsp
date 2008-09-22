@@ -29,8 +29,7 @@
                 <tr class="header">
                     <td width="15%" class="installed"><b>Module Name</b></td>
                     <td width="15%" class="installed"><b>Module Version</b></td>
-                    <td width="35%" class="installed"><b>Plugins</b></td>
-                    <td width="35%" class="installed"><b>WFSs</b></td>
+                    <td width="70%" class="installed"><b>Description</b></td>
                 </tr>
                 <%@ page import="org.jdesktop.wonderland.modules.ModuleUtils" %>
                 <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
@@ -42,9 +41,8 @@
                 <% InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);%>
                 <tr class="installed_a">
                     <td width="15%" class="installed"><%= moduleName%></td>
-                    <td width="15%" class="installed"><%= im.getModuleInfo().toString()%></td>
-                    <td width="35%" class="installed"><%= ModuleUtils.getPluginNames(im)%></td>
-                    <td width="35%" class="installed"><%= ModuleUtils.getWFSNames(im)%></td>
+                    <td width="15%" class="installed">v<%= im.getModuleInfo().getMajor()%>.<%= im.getModuleInfo().getMinor()%></td>
+                    <td width="70%" class="installed"><%= im.getModuleInfo().getDescription()%></td>
                 </tr>
                 <% }%>
             </table>
@@ -54,17 +52,15 @@
                 <tr class="header">
                     <td width="15%" class="installed"><b>Module Name</b></td>
                     <td width="15%" class="installed"><b>Module Version</b></td>
-                    <td width="35%" class="installed"><b>Plugins</b></td>
-                    <td width="35%" class="installed"><b>WFSs</b></td>
+                    <td width="70%" class="installed"><b>Description</b></td>
                 </tr>
                 <%@ page import="org.jdesktop.wonderland.modules.service.PendingModule" %>
                 <% for (String pendingModuleName : mm.getModules(State.PENDING).toArray(new String[] {})) {%>
                 <% PendingModule pm = (PendingModule)mm.getModule(pendingModuleName, State.PENDING);%>
                 <tr class="installed_a">
                     <td width="15%" class="installed"><%= pendingModuleName%></td>
-                    <td width="15%" class="installed"><%= pm.getModuleInfo().toString()%></td>
-                    <td width="35%" class="installed"><%= ModuleUtils.getPluginNames(pm)%></td>
-                    <td width="35%" class="installed"><%= ModuleUtils.getWFSNames(pm)%></td>
+                    <td width="15%" class="installed">v<%= pm.getModuleInfo().getMajor()%>.<%= pm.getModuleInfo().getMinor()%></td>
+                    <td width="70%" class="installed"><%= pm.getModuleInfo().getDescription()%></td>
                 </tr>
                 <% }%>
             </table>
@@ -74,15 +70,14 @@
                 <tr class="header">
                     <td width="15%" class="installed"><b>Module Name</b></td>
                     <td width="15%" class="installed"><b>Module Version</b></td>
-                    <td width="35%" class="installed"><b>Plugins</b></td>
-                    <td width="35%" class="installed"><b>WFSs</b></td>
+                    <td width="70%" class="installed"><b>Descrption</b></td>
                 </tr>
-                <% for (String pendingModuleName : mm.getModules(State.REMOVE)) {%>
+                <%@ page import="org.jdesktop.wonderland.modules.ModuleInfo" %>
+                <% for (ModuleInfo info : mm.getRemovedModuleInfos()) {%>
                 <tr class="installed_a">
-                    <td width="15%" class="installed"><%= pendingModuleName%></td>
-                    <td width="15%" class="installed">TBD</td>
-                    <td width="35%" class="installed">N/A</td>
-                    <td width="35%" class="installed">N/A</td>
+                    <td width="15%" class="installed"><%= info.getName()%></td>
+                    <td width-"15%" class="installed">v<%= info.getMajor()%>.<%= info.getMinor()%>/td>
+                    <td width="70%" class="installed"><%= info.getDescription()%></td>
                 </tr>
                 <% }%>
             </table>
