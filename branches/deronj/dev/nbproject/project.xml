@@ -39,6 +39,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>core/src</package-root>
+                <classpath mode="compile">core/ext/common/mtgame.jar:core/ext/jme/jme/jme.jar:core/ext/jme/jme/jme-audio.jar:core/ext/jme/jme/jme-awt.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
