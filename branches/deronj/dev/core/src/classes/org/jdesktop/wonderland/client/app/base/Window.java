@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.app.base;
 
 import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The generic app window superclass.

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.app.base;
 
 import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The generic 2D application superclass. All 2D apps in Wonderland have this

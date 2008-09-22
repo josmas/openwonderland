@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.common.InternalAPI;
+
 /**
  * The attach point for event listeners on an entity.
  *
@@ -24,22 +29,53 @@ package org.jdesktop.wonderland.client.input;
  */
 
 @InternalAPI
-class EventListenerCollection extends LinkedList<EventListener> {
+class EventListenerCollection extends EntityComponent {
+
+    private LinkedList<EventListener> listeners = new LinkedList<EventListener>();
+
+    /**
+     * Returns true if the given event listener if it is in the collection. Otherwise return false.
+     * @param listener The event listener.
+     */
+    boolean contains (EventListener listener) {
+	synchronized (listeners) {
+	    return listeners.contains(listener);
+	}
+    }
 
     /**
      * Add an event listener, if the listener isn't already added.
      * @param listener The listener to add.
      */
-    void synchronized addListener (EventListener listener) {
-	if (get(listener) != null) return;
-	add(listener);
+    void add (EventListener listener) {
+	synchronized (listeners) {
+	    if (listeners.contains(listener)) return;
+	    listeners.add(listener);
+	}
     }
 
     /**
      * Remove an event listener.
      * @param listener The listener to remove.
+     * @return Returns true if the listener was in the list.
      */
-    void synchronized removeListener (EventListener listener) {
-	remove(listener);
+    boolean remove (EventListener listener) {
+	synchronized (listeners) {
+	    return listeners.remove(listener);
+	}
+    }
+
+    /**
+     * Return the number of listeners in the collection.
+     */
+    int size () {
+	return listeners.size();
+    }
+
+    /**
+     * Return an iterator over the collection.
+     */
+    Iterator<EventListener> iterator () {
+	return listeners.iterator();
     }
 }

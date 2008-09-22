@@ -18,10 +18,10 @@
 package org.jdesktop.wonderland.client.app.base;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.client.cell.CellCache;
 
 /**
  * The generic application cell superclass. Created with a subclass-specific constructor.
@@ -71,14 +71,6 @@ public abstract class AppCell extends Cell {
     public abstract AppType getAppType ();
 
     /**
-     * Returns the cell local scene graph.
-     * TODO: whither
-     */
-    public BranchGroup getCellLocal () {
-	return cellLocal;
-    }
-
-    /**
      * Associate the app with a cell. May only be called one time.
      *
      * @param app The world cell containing the app.
@@ -116,8 +108,7 @@ public abstract class AppCell extends Cell {
 	if (app == null) {
 	    return;
 	}
-	// TODO
-	setBounds(app.getBounds());
+	//TODO: How do we do this?
     }
 
     /**

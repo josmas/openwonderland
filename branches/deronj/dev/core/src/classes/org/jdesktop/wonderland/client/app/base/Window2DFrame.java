@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.app.base;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The generic root class of all WindowFrame2D objects.

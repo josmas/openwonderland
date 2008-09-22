@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An event which indicates that the mouse entered or exited a 3D object.
  *
@@ -24,7 +29,7 @@ package org.jdesktop.wonderland.client.jme.input;
  */
 
 @ExperimentalAPI
-class MouseEnterExitvent3D extends MouseEvent3D {
+public class MouseEnterExitEvent3D extends MouseEvent3D {
 
     static {
 	/** Allocate this event type's ID. */
@@ -35,7 +40,7 @@ class MouseEnterExitvent3D extends MouseEvent3D {
     private boolean userGenerated;
 
     /**
-     * Create a new instance of user generated MouseEnterExitEvent3D with a null pickData.
+     * Create a new instance of user generated MouseEnterExitEvent3D with a null pickDetails.
      * @param awtEvent The AWT event.
      */
     MouseEnterExitEvent3D (MouseEvent awtEvent) {
@@ -43,7 +48,7 @@ class MouseEnterExitvent3D extends MouseEvent3D {
     }
 
     /**
-     * Create a new instance of MouseEnterExitEvent3D with a null pickData.
+     * Create a new instance of MouseEnterExitEvent3D with a null pickDetails.
      * @param awtEvent The AWT event.
      * @param userGenerated Whether this event was generated as a result of an interactive user event.
      */
@@ -55,10 +60,10 @@ class MouseEnterExitvent3D extends MouseEvent3D {
      * Create a new instance of MouseEnterExitEvent3D.
      * @param awtEvent The AWT event.
      * @param userGenerated Whether this event was generated as a result of an interactive user event.
-     * @param pickData The pick data for the event.
+     * @param pickDetails The pick data for the event.
      */
-    MouseEnterExitEvent3D (MouseEvent awtEvent, boolean userGenerated, PickData pickData) {
-        super(awtEvent, pickData);
+    MouseEnterExitEvent3D (MouseEvent awtEvent, boolean userGenerated, PickDetails pickDetails) {
+        super(awtEvent, pickDetails);
 	this.userGenerated = userGenerated;
     }
 

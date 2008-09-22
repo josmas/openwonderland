@@ -17,6 +17,20 @@
  */
 package org.jdesktop.wonderland.server.app.base;
 
+import java.io.Serializable;
+import java.util.Properties;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.app.base.AppConventionalConnectionType;
+import org.jdesktop.wonderland.common.app.base.AppConventionalMessage;
+import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.server.WonderlandContext;
+
 /**
  * Handler for app base conventional connections.
  *
@@ -49,7 +63,7 @@ class AppConventionalConnectionHandler implements ClientConnectionHandler, Seria
     public void messageReceived (WonderlandClientSender sender, ClientSession session, Message message)
     {
         if (message instanceof AppConventionalMessage) {
-            messageReceived(sender, session, (AppBaseMessage) message);
+            messageReceived(sender, session, (AppConventionalMessage) message);
         } else {
             sender.send(session, new ErrorMessage(message.getMessageID(), 
 						  "Unexpected message type: " + message.getClass()));
@@ -62,7 +76,7 @@ class AppConventionalConnectionHandler implements ClientConnectionHandler, Seria
      * @session The client session
      * @param message The app base message
      */
-    public void messageReceived (WonderlandClientSender sender, ClientSession session, AppBaseMessage message)
+    public void messageReceived (WonderlandClientSender sender, ClientSession session, AppConventionalMessage message)
     {        
         switch(message.getActionType()) {
 

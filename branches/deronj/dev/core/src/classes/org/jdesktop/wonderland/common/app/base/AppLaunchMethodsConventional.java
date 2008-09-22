@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.common.app.base;
 
 import java.util.HashSet;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A Conventional app is a is a 2D app type which was written for a traditional 2D system.

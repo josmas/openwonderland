@@ -24,9 +24,9 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.WritableRaster;
-import javax.media.j3d.ImageComponent2D;
-import javax.media.j3d.ImageComponent2D.Updater;
+import java.nio.ByteBuffer;
 import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A window object for a 2D conventional type of application. This kind of window provides main two ways
@@ -56,21 +56,6 @@ public abstract class WindowConventional extends WindowGraphics2D {
     /** The border width of the window */
     protected int borderWidth;
 
-    /** A synchronization object for by-reference image updates */
-    protected Updater imageUpdater = new MyImageUpdater();;
-
-    /** Used during image updates: the type of update to perform */
-    protected boolean doDisplayPixels;
-
-    /** Used during image display pixel updates: the source pixels */
-    protected int[] imageUpdateSrcPixels;
-
-    /** Used during image copy area updates: the source of X of the copy */
-    protected int imageUpdateCopySrcX;
-
-    /** Used during image copy area updates: the source of Y of the copy */
-    protected int imageUpdateCopySrcY;
-    
     /** 
      * Create a new instance of WindowConventional.
      *
@@ -85,7 +70,8 @@ public abstract class WindowConventional extends WindowGraphics2D {
     public WindowConventional (App app, int width, int height, boolean topLevel, int borderWidth, Vector2f pixelScale)
 	throws InstantiationException
     {
-	super(app, width, height, topLevel, pixelScale);
+	super(app, width, height, topLevel, pixelScale, 
+	      new DrawingSurface(width + 2 * borderWidth, height + 2 * borderHeight));
 	this.borderWidth = borderWidth;
 	appConventional = (AppConventional) app;
     }
@@ -95,8 +81,6 @@ public abstract class WindowConventional extends WindowGraphics2D {
      */
     public void cleanup () {
 	super.cleanup();
-	imageUpdater = null;
-	imageUpdateSrcPixels = null;
     }
 
 

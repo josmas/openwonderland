@@ -21,6 +21,8 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.app.base.Window2DView;
 import org.jdesktop.wonderland.client.app.base.Window2D;
 import org.jdesktop.wonderland.client.app.base.AppCell;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A view onto a window which exists in the 3D world.
@@ -80,7 +82,7 @@ public class Window2DViewNull extends Window2DView {
      * Returns whether the window of the view is top-level.
      */
     public boolean getTopLevel () {
-	return null;
+	return true;
     }
 
     /**

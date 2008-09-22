@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * The generic view type for 2D and 3D windows.
  *

@@ -25,6 +25,8 @@ import java.util.logging.Logger;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import javax.swing.JOptionPane;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 
 /**
  * The generic application superclass. All apps in Wonderland have this
@@ -176,10 +178,10 @@ public class App {
      * Calculate and return the current bounds for this window. This is the 
      * union of the bounds of all of the app windows.
      */
-    synchronized BoundingVolum getBounds () {
-	BoundingVolum union = new BoundingBox();
+    synchronized BoundingVolume getBounds () {
+	BoundingVolume union = new BoundingBox();
 	for (Window window : windows) {
-	    union.combine(window.getBounds());
+	    union.merge(window.getBounds());
 	}
 	return union;
     }

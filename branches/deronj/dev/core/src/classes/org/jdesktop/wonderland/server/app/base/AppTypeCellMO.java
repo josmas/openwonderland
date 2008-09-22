@@ -25,8 +25,16 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.app.base.AppTypeCellSetup;
+import org.jdesktop.wonderland.common.app.base.AppTypeCellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
+import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * TEMPORARY: 0.3 Only: This class is a way to get around the fact that WFS doesn't support 
@@ -41,11 +49,8 @@ import org.jdesktop.wonderland.server.cell.CellMO;
  * @author deronj
  */
 
-// TODO: the way that baseUrl is handled here is very unclean
-// Because super.baseUrl is final it can't be overridden in by the wlc file
-
 @ExperimentalAPI
-public class AppTypeCellMO extends CellMO implements BeanSetupMO {
+public class AppTypeCellMO extends CellMO {
 
     // A name-keyed map of all modular app types which have been loaded
     private static HashMap<String,AppTypeMO> nameToAppType = new HashMap<String,AppTypeMO>();
@@ -56,7 +61,7 @@ public class AppTypeCellMO extends CellMO implements BeanSetupMO {
     private String serverJar;
     private String clientJar;
 
-    // The effective base URL. This is super.baseUrl unless it is overridden.
+    // The effective base URL. 
     private String effBaseUrl;
 
     // The app type loaded
@@ -70,30 +75,38 @@ public class AppTypeCellMO extends CellMO implements BeanSetupMO {
 	super();
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getClientCellClassName() {
+    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.app.base.AppTypeCell";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public AppTypeCellSetup getClientSetupData() {
+    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
 	// Only client information is needed by client cells
-	return new AppTypeCellSetup(effBaseUrl, null, appTypeClientClassName, null, clientJar);
+	return new AppTypeCellConfig(effBaseUrl, null, appTypeClientClassName, null, clientJar);
     }
 
-    public void setupCell(CellMOSetup setupData) {
-        BasicCellMOSetup<AppTypeCellSetup> setup = (BasicCellMOSetup<AppTypeCellSetup>) setupData;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setupCell (BasicCellSetup setupData) {
+        super.setupCell(setupData);
 
-        super.setupCell(setup);
-
-        appTypeServerClassName = setup.getCellSetup().getAppTypeServerClassName();
-        appTypeClientClassName = setup.getCellSetup().getAppTypeClientClassName();
-	effBaseUrl = baseUrl;
-	serverJar = setup.getCellSetup().getServerJar();
-	clientJar = setup.getCellSetup().getClientJar();
+	AppTypeCellSetup setup = (AppTypeCellSetup) setupData;
+        appTypeServerClassName = setup.getAppTypeServerClassName();
+        appTypeClientClassName = setup.getAppTypeClientClassName();
+	serverJar = setup.getServerJar();
+	clientJar = setup.getClientJar();
 
 	// This is only for testing app modules using a local WFS world 
-	String baseUrlDebug = setup.getCellSetup().getBaseUrl();
+	String baseUrlDebug = setup.getBaseUrl();
 	if (baseUrlDebug != null) {
 	    effBaseUrl = baseUrlDebug;
 	}
@@ -162,40 +175,40 @@ public class AppTypeCellMO extends CellMO implements BeanSetupMO {
 	nameToAppType.put(appTypeName, appType);
     }
 
-    public void reconfigureCell(CellMOSetup setupData) {
-        BasicCellMOSetup<AppTypeCellSetup> setup =
-            (BasicCellMOSetup<AppTypeCellSetup>) setupData;
-
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
         super.reconfigureCell(setup);
-    
         setupCell(setup);
     }
 
-     /**
-     * Return a new CellMOSetup Java bean class that represents the current
-     * state of the cell.
-     * 
-     * @return a JavaBean representing the current state
+    /**
+     * {@inheritDoc}
      */
-    public CellMOSetup getCellMOSetup() {
+    public BasicCellSetup getCellMOSetup() {
+
         /* Create a new BasicCellMOSetup and populate its members */
-        BasicCellMOSetup<ModelCellSetup> setup = new BasicCellMOSetup<ModelCellSetup>();
-        setup.setCellMOClassName(this.getClass().getName());
-        setup.setCellSetup(this.getClientSetupData());
-        
+        AppTypeCellSetup setup = new AppTypeCellSetup();
+	setup.setAppTypeServerClassName(appTypeServerClassName);
+	setup.setAppTypeClientClassName(appTypeClientClassName);
+	setup.setServerJar(serverJar);
+	setup.setClientJar(clientJar);
+	setup.setBaseUrl(effBaseUrl);
+
         /* Set the bounds of the cell */
         BoundingVolume bounds = this.getLocalBounds();
         if (bounds != null) {
-            setup.setBoundsType(BasicCellMOHelper.getBoundsType(bounds));
-            setup.setBoundsRadius(BasicCellMOHelper.getBoundsRadius(bounds));
+            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
         }
-        
+
         /* Set the origin, scale, and rotation of the cell */
         CellTransform transform = this.getLocalTransform(null);
         if (transform != null) {
-            setup.setOrigin(BasicCellMOHelper.getTranslation(transform));
-            setup.setRotation(BasicCellMOHelper.getRotation(transform));
-            setup.setScale(BasicCellMOHelper.getScaling(transform));
+            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
+            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
+            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
         }
         return setup;
     }

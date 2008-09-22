@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import java.nio.ByteBuffer;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An interface used by conventional view world objects provided by the gui factory.
  *

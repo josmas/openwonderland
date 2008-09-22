@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import java.io.Serializable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
@@ -24,10 +25,18 @@ import com.jme.bounding.BoundingVolume;
 import javax.swing.JOptionPane;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.app.base.AppConventionalCellCreateMessage;
-import org.jdesktop.wonderland.common.app.base.AppConventionalCellCreateReplyMessage;
 import org.jdesktop.wonderland.common.app.base.AppConventionalMessage;
 import org.jdesktop.wonderland.common.app.base.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.client.apps.utils.net.NetworkAddress;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An abstract 2D conventional application.
@@ -57,20 +66,22 @@ public abstract class AppConventional extends App2D {
     private boolean initInBestView;
 
     /** The app conventional connection to the server */
-    protected AppConventionalConnection connection;
+    protected static AppConventionalConnection connection;
 
     /** The session of the Wonderland server with which the app is associated */
-    protected WonderlandSession session;
+    protected static WonderlandSession session;
 
     /**
      * Initialize a connection to use to create conventional app cells.
      * @throws ConnectionFailureException if could not create the connection.
      */
     static public void initializeConnection () throws ConnectionFailureException {
-	connection = AppConventionalConnection.getConnection();
-	WonderlandServerInfo serverInfo = ClientContxt.getWonderlandSessionManager().getPrimaryServer();
-	session = ClientContext.getWonderlandSessionManager().getSession(serverInfo);
-	connection.connect(session);
+	if (connection != null) {
+	    connection = new AppConventionalConnection();
+	    WonderlandServerInfo serverInfo = ClientContext.getWonderlandSessionManager().getPrimaryServer();
+	    session = ClientContext.getWonderlandSessionManager().getSession(serverInfo);
+	    connection.connect(session);
+	}
     }
 
     /**
@@ -129,7 +140,7 @@ public abstract class AppConventional extends App2D {
 				      ProcessReporter reporter) {
 	
 	// Next, make sure we can start up the app. 
-	AppTypeConventional.ExecuteMasterProgramReturn empr = appType.executeMasterProgram(appType, appName, command, 
+	AppTypeConventional.ExecuteMasterProgramReturn empr = appType.executeMasterProgram(appName, command, 
 											   pixelScale, reporter);
 	if (empr == null) {
 	    return;
@@ -171,7 +182,7 @@ public abstract class AppConventional extends App2D {
 
 	String masterHost = NetworkAddress.getDefaultHostAddress();
 	
-        AppConventionalCellCreateMessage msg = AppConventionalMessage.newAppConventionalCellCreateMessage(
+        AppConventionalCellCreateMessage msg = AppConventionalMessage.newCellCreateMessage(
             appTypeName, masterHost, appName, appId, bestView, bounds, transform, pixelScale, connectionInfo);
 
 	CellID cellID = createCellWithMessage(msg);
@@ -195,8 +206,10 @@ public abstract class AppConventional extends App2D {
 	    return null;
 	}
 
-	AppConventionalResponseMessage resp = (AppConventionalResponseMessage) response;
-	return resp.getCellID();
+	// TODO:
+	//AppConventionalResponseMessage resp = (AppConventionalResponseMessage) response;
+	//return resp.getCellID();
+	return null;
     }
 
     /**

@@ -17,19 +17,20 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
-import javax.vecmath.Matrix4d;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
-import org.jdesktop.wonderland.common.app.base.App2DCellSetup;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.app.base.App2DCellConfig;
+import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * The generic 2D application setup superclass. It's only extra attribute is the
+ * The generic 2D application superclass. It's only extra attribute is the
  * pixel scale for all app windows created in the cell. The pixel scale is a Vector2f. 
  * The x component specifies the size (in local cell coordinates) of the windows along 
  * the local cell X axis. The y component specifies the same along the local cell 
- * Y axis. The pixel scale is in the cell setup data (which must be of type 
- * <code>App2DCellSetup</code>) sent by the server when it instantiates this cell.
+ * Y axis. The pixel scale is in the cell config data (which must be of type 
+ * <code>App2DCellConfig</code>) sent by the server when it instantiates this cell.
  *
  * @author deronj
  */ 
@@ -62,9 +63,9 @@ public abstract class App2DCell extends AppCell {
      * {@inheritDoc}
      */
     @Override
-    public void setup(CellSetup setupData) {
-	App2DCellSetup appSetupData = (App2DCellSetup) setupData;
-	pixelScale = appSetupData.getPixelScale();
+    public void configure(CellConfig configData) {
+	App2DCellConfig appConfigData = (App2DCellConfig) configData;
+	pixelScale = appConfigData.getPixelScale();
     }
 
     /**

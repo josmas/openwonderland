@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.common.app.base.AppLaunchMethods;
 import org.jdesktop.wonderland.common.app.base.AppLaunchMethodsDefault;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The client-side class which describes a unique type of Wonderland application. For example, a PDF 

@@ -18,11 +18,15 @@
 package org.jdesktop.wonderland.client.input;
 
 import java.awt.Canvas;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.KeyListener;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * A singleton container for all of the processor objects in the Wonderland input subsystem.
@@ -46,89 +50,78 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 // TODO: generate 3D enter/exit events for canvas enter exit
 
-@InternalAPI
+@ExperimentalAPI
 public abstract class InputManager 
     implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener
 {
     /* TODO: the non-embedded swing case is for prototyping only. Eventually this should be true */
-    private static ENABLE_EMBEDDED_SWING = false;
+    private static boolean ENABLE_EMBEDDED_SWING = false;
 
     /** The singleton input manager */
-    private static InputManager inputManager;
+    protected static InputManager inputManager;
 
-    /** The singleton entity resolver. (Used only in non-embedded swing case). */
-    protected EntityResolver entityResolver;
+    /** The singleton input picker. (Used only in non-embedded swing case). */
+    protected InputPicker inputPicker;
 
     /** The singleton event distributor. */
     protected EventDistributor eventDistributor;
+
+    /** The canvas from which this input manager should receive events. */
+    protected Canvas canvas;
 
     /** The global event mode type. */
     public static enum EventMode { WORLD, APP };
 
     /**
-     * Returns the input manager singleton. You must initialize the input manager 
-     * in order to start it processing input events.
+     * Return the input manager singleton.
      */
-    public static InputManager getInputManager () {
-	if (inputManager == null) {
-	    inputManager = new InputManager();
-	}
-	return inputManager;
+    static InputManager inputManager () {
+        return inputManager;
     }
-    
+
     /**
      * Returns the current event mode. By default, event mode is WORLD.
      * @return The current event mode.
      */
-    public static EventMode getEventMode () {
-	if (eventDistributor == null) {
-	    initializeEventDistributor();
-	}
+    public EventMode getEventMode () {
 	return eventDistributor.getEventMode();
     }
-
 
     /**
      * Returns true if the event mode is currently WORLD.
      */
-    public static isWorldMode () {
+    public boolean isWorldMode () {
 	return getEventMode() == EventMode.WORLD;
     }
 
     /**
      * Returns true if the event mode is currently APP.
      */
-    public static isAppMode () {
+    public boolean isAppMode () {
 	return getEventMode() == EventMode.APP;
     }
 
     /**
      * Sets the event mode.
-     * @param The new event mode.
+     * @param eventMode The new event mode.
      */
-    public static void setEventMode (EventMode eventMode) {
-	if (eventDistributor == null) {
-	    eventDistributor = EventDistributor.getEventDistributor();
-	}
+    public void setEventMode (EventMode eventMode) {
 	eventDistributor.setEventMode(eventMode);
     }
 
     
     /** 
-     *
      * Initialize the input manager to receive input events from the given AWT canvas
-     * and start the input manager running.
+     * and start the input manager running. This routine can only be called once.
      *
      * @param canvas The AWT canvas which generates AWT user events.
      */
     public void initialize (Canvas canvas) {
-	this.canvas = canvas;
-
-	// Initialize the input system subcomponents
-	initalizeEntityResolver();
-	if (eventDistributor == null) {
-	    initializeEventDistributor();
+	if (canvas != null) {
+	    throw new IllegalStateException("initialize has already been called for this InputManager");
 	}
+	this.canvas = canvas;
+	inputPicker.setCanvas(canvas);
 
 	canvas.addKeyListener(this);
 
@@ -138,125 +131,164 @@ public abstract class InputManager
 	    canvas.addMouseMotionListener(this);
 	    canvas.addMouseWheelListener(this);
 	}
+
+	injectInitialMouseEvent();
     }
 
     /**
+     * This sends an initial, synthetic mouse event through the input system. The event position is the center
+     * of the canvas. This is done for two reasons:
+     * <br><br>
+     * 1. To initialize the keyboard focus.
+     * <br><br>
+     * 2. To send out the initial enter event.
+     * <br><br>
+     * TODO: this is currently weak: it is only effective if called *AFTER* the scene graph is initialized.
+     * This will be rectified when we implement synthetic event injection (repick) on scene graph change.
+     */
+    private void injectInitialEvent () {
+	MouseEvent me = new MouseEvent(canvas, MouseEvent.MOUSE_MOVED, 0, 0, 
+                                       canvas.getWidth()/2, canvas.getHeight()/2, 0, false, MouseEvent.NOBUTTON);
+	mouseMoved(me);
+    }
+
+    /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
+     * <br><br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseClicked(MouseEvent e) {
-	entityResolver.resolveMouseEventNonSwing(e);
+	inputPicker.pickMouseEventNonSwing(e);
     }
     
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
+     * <br><br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseEntered(MouseEvent e) {
-	entityResolver.resolveMouseEventNonSwing(e);
+	inputPicker.pickMouseEventNonSwing(e);
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
+     * <br><br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseExited(MouseEvent e) {
-	entityResolver.resolveMouseEventNonSwing(e);
+	inputPicker.pickMouseEventNonSwing(e);
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
+     * <br><br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mousePressed(MouseEvent e) {
-	entityResolver.resolveMouseEventNonSwing(e);
+	inputPicker.pickMouseEventNonSwing(e);
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
+     * <br><br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseReleased(MouseEvent e) {
-	entityResolver.resolveMouseEventNonSwing(e);
+	inputPicker.pickMouseEventNonSwing(e);
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
+     * <br><br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseDragged(MouseEvent e) {
-	entityResolver.resolveMouseEventNonSwing(e);
+	inputPicker.pickMouseEventNonSwing(e);
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
+     * <br><br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseMoved(MouseEvent e) {
-	entityResolver.resolveMouseEventNonSwing(e);
+	inputPicker.pickMouseEventNonSwing(e);
     }
     
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
+     * <br><br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseWheelMoved(MouseWheelEvent e) {
-	entityResolver.resolveMouseEventNonSwing(e);
+	inputPicker.pickMouseEventNonSwing(e);
     }
     
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
      */
     @InternalAPI
     public void keyPressed(KeyEvent e) {
 	if (ENABLE_EMBEDDED_SWING) {
-	    entityResolver.resolveKeyEventSwing(e);
+	    inputPicker.pickKeyEventSwing(e);
 	} else {
-	    entityResolver.resolveKeyEventNonSwing(e);
+	    inputPicker.pickKeyEventNonSwing(e);
 	}
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
      */
     @InternalAPI
     public void keyReleased(KeyEvent e) {
 	if (ENABLE_EMBEDDED_SWING) {
-	    entityResolver.resolveKeyEventSwing(e);
+	    inputPicker.pickKeyEventSwing(e);
 	} else {
-	    entityResolver.resolveKeyEventNonSwing(e);
+	    inputPicker.pickKeyEventNonSwing(e);
 	}
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * <@inheritDoc>
      */
     @InternalAPI
     public void keyTyped(KeyEvent e) {
 	if (ENABLE_EMBEDDED_SWING) {
-	    entityResolver.resolveKeyEventSwing(e);
+	    inputPicker.pickKeyEventSwing(e);
 	} else {
-	    entityResolver.resolveKeyEventNonSwing(e);
+	    inputPicker.pickKeyEventNonSwing(e);
 	}
     }
-
-    /**
-     * Subclass-specific initialization of the entity resolver component.
-     */
-    protected abstract void initializeEntityResolver ();
-
-    /**
-     * Subclass-specific initialization of the event distributor component.
-     */
-    protected abstract void initializeEventDistributor ();
 
     /**
      * Add an event listener to be tried once per event. This global listener can be added only once.
@@ -265,14 +297,10 @@ public abstract class InputManager
      * Note: It is not a good idea to call this from inside EventListener.computeEvent function.
      * However, it is okay to call this from inside EventListener.commitEvent function if necessary.
      *
-     * @param Listener The global event listener to be added.
+     * @param listener The global event listener to be added.
      */
     public void addGlobalEventListener (EventListener listener) {
-	if (eventDistributor == null) {
-	    initializeEventDistributor();
-	}
-	return eventDistributor.addGlobalEventListener(listener);
-	
+	eventDistributor.addGlobalEventListener(listener);
     }
 
     /**
@@ -281,10 +309,9 @@ public abstract class InputManager
      * Note: It is not a good idea to call this from inside EventListener.computeEvent function.
      * However, it is okay to call this from inside EventListener.commitEvent function if necessary.
      *
-     * @param The entity to which to attach this event listener.
+     * @param listener The entity to which to attach this event listener.
      */
     public void removeGlobalEventListener (EventListener listener) {
-	if (eventDistributor == null) return;
-	eventDistributor.removeGlobalListener(listener);
+	eventDistributor.removeGlobalEventListener(listener);
     }
 }

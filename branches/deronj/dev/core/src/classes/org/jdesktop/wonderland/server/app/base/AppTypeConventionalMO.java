@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.server.app.base;
 
 import java.util.UUID;
 import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A conventional app type on the server side. 

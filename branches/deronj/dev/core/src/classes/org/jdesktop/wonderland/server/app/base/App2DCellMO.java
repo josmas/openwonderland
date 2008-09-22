@@ -19,8 +19,9 @@ package org.jdesktop.wonderland.server.app.base;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.app.base.AppType;
-import org.jdesktop.wonderland.common.app.base.App2DCellSetup;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An abstract server-side app.base cell for 2D apps. 
@@ -32,6 +33,7 @@ import org.jdesktop.wonderland.common.app.base.App2DCellSetup;
 @ExperimentalAPI
 public abstract class App2DCellMO extends AppCellMO { 
 
+    /** The pixel scale. */
     protected Vector2f pixelScale;
 
     /** Default constructor, used when the cell is created via WFS */
@@ -46,8 +48,8 @@ public abstract class App2DCellMO extends AppCellMO {
      * @param localBounds the bounds of the new cell, must not be null.
      * @param transform the transform for this cell, must not be null.
      */
-    public AppCellMO (BoundingVolume localBounds, CellTransform transform) {
-        super(localBounds, CellTransform transform);
+    public App2DCellMO (BoundingVolume localBounds, CellTransform transform) {
+        super(localBounds, transform);
     }
 
     /**

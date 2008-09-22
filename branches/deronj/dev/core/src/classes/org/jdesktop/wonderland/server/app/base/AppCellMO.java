@@ -18,16 +18,17 @@
 package org.jdesktop.wonderland.server.app.base;
 
 import com.jme.bounding.BoundingVolume;
-import javax.vecmath.AxisAngle4d;
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Matrix4d;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.app.base.AppCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.app.base.AppCellConfig;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.darkstar.server.setup.BeanSetupGLO;
-import org.jdesktop.wonderland.darkstar.server.setup.BasicCellGLOSetup;
-import org.jdesktop.wonderland.darkstar.server.setup.CellGLOSetup;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
+
 
 /**
  * A server-side <code>app.base</code> app cell.
@@ -38,9 +39,6 @@ import org.jdesktop.wonderland.darkstar.server.setup.CellGLOSetup;
 @ExperimentalAPI
 public abstract class AppCellMO extends CellMO { 
 
-    /** Contains all of the properties defined in the cell's WFS wlc file */
-    private BasicCellMOSetup<AppCellSetup> beanSetup;
-    
     /** Default constructor, used when the cell is created via WFS */
     public AppCellMO() {
 	super();
@@ -54,7 +52,7 @@ public abstract class AppCellMO extends CellMO {
      * @param transform the transform for this cell, must not be null.
      */
     public AppCellMO (BoundingVolume localBounds, CellTransform transform) {
-        super(localBounds, CellTransform transform);
+        super(localBounds, transform);
     }
     
     /** 
@@ -62,66 +60,52 @@ public abstract class AppCellMO extends CellMO {
      */
     public abstract AppTypeMO getAppType ();
 
-    /**
-     * Get the server-to-client setup data for this cell.
-     *
-     * @return The cell server-to-client setup data
-     * TODO: 0.5: the term setup is used for multiple purposes here
-     * and it is confusing! There is both JavaBean setup data and 
-     * server-to-client setup data!
+    /** 
+     * {@inheritDoc}
      */
     @Override
-    // TODO: whither
-    public CellSetup getSetupData() {
-        return beanSetup.getCellSetup();
+    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+        return new AppCellConfig();
     }
-    
-    /**
-     * Set up the properties of this cell MO from a JavaBean.  After calling
-     * this method, the state of the cell MO should contain all the information
-     * represented in the given cell properties file.
-     *
-     * @param setupData The Java bean to read setup information from
+
+    /** 
+     * {@inheritDoc}
      */
-    // TODO: whither
-    public void setupCell(CellMOSetup setupData) {
-        beanSetup = (BasicCellMOSetup<AppCellSetup>) setupData;
-        
-	System.err.println("beanSetup = " + beanSetup);
-        AxisAngle4d aa = new AxisAngle4d(beanSetup.getRotation());
-        Matrix3d rot = new Matrix3d();
-        rot.set(aa);
-        Vector3f origin = new Vector3f(beanSetup.getOrigin());
-        
-        Matrix4d o = new Matrix4d(rot, origin, beanSetup.getScale() );
-        setOrigin(o);
-        
-        if (beanSetup.getBoundsType().equals("SPHERE")) {
-            setBounds(createBoundingSphere(origin, (float)beanSetup.getBoundsRadius()));
-        } else {
-            throw new RuntimeException("Unimplemented bounds type");
-        }
+    @Override
+    public void setupCell(BasicCellSetup setupData) {
+        super.setupCell(setupData);
     }
-    
-    /**
-     * Called when the properties of a cell have changed.
-     *
-     * @param setupData A Java bean with updated properties
+
+    /** 
+     * {@inheritDoc}
      */
-    // TODO: whither
-    public void reconfigureCell(CellMOSetup setupData) {
-        setupCell(setupData);
+    @Override
+    public void reconfigureCell (BasicCellSetup setup) {
+        setupCell(setup);
     }
-    
+
     /**
-     * Write the cell's current state to a JavaBean.
-     *
+     * Return a new CellMOSetup Java bean class that represents the current state of the cell.
+     * 
      * @return a JavaBean representing the current state
      */
-    // TODO: whither
-    public CellMOSetup getCellMOSetup() {
-        return new BasicCellMOSetup<AppCellSetup>(getBounds(),
-                getOrigin(), getClass().getName(),
-                (AppCellSetup)getSetupData());
+    public BasicCellSetup getCellMOSetup() {
+        /* Create a new BasicCellSetup and populate its members */
+        BasicCellSetup setup = new AppCellSetup();
+        
+        /* Set the bounds of the cell */
+        BoundingVolume bounds = this.getLocalBounds();
+        if (bounds != null) {
+            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
+        }
+
+        /* Set the origin, scale, and rotation of the cell */
+        CellTransform transform = this.getLocalTransform(null);
+        if (transform != null) {
+            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
+            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
+            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
+        }
+        return setup;
     }
 }

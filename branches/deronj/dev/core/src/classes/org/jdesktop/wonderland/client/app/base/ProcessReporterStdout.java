@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.app.base;
 
 import java.util.HashMap;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An process reporter which reports to the Wonderland client stdout using the App logger.

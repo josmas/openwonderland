@@ -648,7 +648,7 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     ResourceLocatorTool.TYPE_TEXTURE, new ImporterResourceLocator(
                             dir.toURI()));
 
-            System.out.println("Looking for texutres in " + dir.toURL());
+            System.out.println("Looking for textures in " + dir.toURL());
         } catch (MalformedURLException ex) {
             Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
         }

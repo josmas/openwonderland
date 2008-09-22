@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An event which indicates that a mouse move action occurred. 
  *
@@ -24,7 +29,7 @@ package org.jdesktop.wonderland.client.jme.input;
  */
 
 @ExperimentalAPI
-class MouseMovedEvent3D extends MouseMotionEvent3D {
+public class MouseMovedEvent3D extends MouseEvent3D {
 
     static {
 	/** Allocate this event type's ID. */
@@ -32,7 +37,7 @@ class MouseMovedEvent3D extends MouseMotionEvent3D {
     }
 
     /**
-     * Create a new instance of MouseMovedEvent3D with a null pickData.
+     * Create a new instance of MouseMovedEvent3D with a null pickDetails.
      * @param event The AWT event.
      */
     MouseMovedEvent3D (MouseEvent awtEvent) {
@@ -41,9 +46,9 @@ class MouseMovedEvent3D extends MouseMotionEvent3D {
     /**
      * Create a new instance of MouseMovedEvent3D.
      * @param event The AWT event.
-     * @param pickData The pick data for the event.
+     * @param pickDetails The pick data for the event.
      */
-    MouseMovedEvent3D (MouseEvent awtEvent, PickData pickData) {
-        super(awtEvent, pickData);
+    MouseMovedEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
+        super(awtEvent, pickDetails);
     }
 }

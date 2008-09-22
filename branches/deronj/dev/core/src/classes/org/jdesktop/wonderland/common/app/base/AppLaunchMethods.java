@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.common.app.base;
 
 import java.util.HashSet;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * When you are implementing an app module you must implement the <code>getLaunchMethods</code> methods

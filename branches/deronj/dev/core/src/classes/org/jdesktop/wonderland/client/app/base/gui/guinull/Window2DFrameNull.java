@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.app.base.ControlArb;
 import org.jdesktop.wonderland.client.app.base.Window2DFrame;
 import org.jdesktop.wonderland.client.app.base.Window2DView;
 import org.jdesktop.wonderland.client.app.base.WindowView;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A null implementation of Window2DFrame which renders nothing.

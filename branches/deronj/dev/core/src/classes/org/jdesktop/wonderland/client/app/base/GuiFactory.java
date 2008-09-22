@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * A factory object used for creating the user-visible objects of an app. There are two such objects:
  * <br><br>

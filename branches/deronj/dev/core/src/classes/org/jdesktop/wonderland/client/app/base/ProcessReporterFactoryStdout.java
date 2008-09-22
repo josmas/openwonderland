@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * This process reporter factory creates process reporters that report to stdout.
  *
