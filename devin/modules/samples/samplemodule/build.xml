@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-sample-module" default="all" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-sample-module}"/>
+    <property name="modules.dir" location="${current.dir}/../.."/>
+        
+    <property name="module.src" value="org/jdesktop/wonderland/modules/sample"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.sample"/>
+    <property name="module.jarname" value="samplemodule"/>
+    
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+    <target name="jar" depends="build, -module-jar-server, 
+                                       -module-jar-client"/>
+                                       
+    <target name="package" depends="jar">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="sample" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar">
+            <plugin name="sample">
+                <client file="${build.lib.dir}/${module.jarname}-client.jar"/>
+                <server file="${build.lib.dir}/${module.jarname}-server.jar"/>
+            </plugin>
+        </module>
+    </target>                                  
+                                           
+    <target name="clean" depends="-module-clean"/>
+</project>
