@@ -17,6 +17,14 @@
  */
 package org.jdesktop.wonderland.common.app.base;
 
+import org.jdesktop.wonderland.common.messages.Message;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import java.io.Serializable;
+import java.util.UUID;
+import org.jdesktop.wonderland.common.InternalAPI;
+
 /**
  * Superclass for messages that the App Base uses to communicate between the client and server
  * about conventional cells.
@@ -79,13 +87,14 @@ public abstract class AppConventionalMessage extends Message {
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master and slave.
      * @return Returns a new CELL_CREATE message.
      */
-    public static AppConventionalCellCreateMessage newCreateCellMessage (String appTypeName, String masterHost, 
+    public static AppConventionalCellCreateMessage newCellCreateMessage (String appTypeName, String masterHost, 
 								 String appName, UUID appId, boolean bestView, 
 								 BoundingVolume bounds, CellTransform transform, 
-								 Vector2d pixelScale, Serializable connectionInfo) {
-        AppBaseMessage ret = new AppBaseCellCreateMessage(ActionType.CELL_CREATE, appTypeName, masterHost, appName, 
-							  appId, bestView, bounds, transform, pixelScale, 
-							  connectionInfo);
+								 Vector2f pixelScale, Serializable connectionInfo) {
+        AppConventionalCellCreateMessage ret = new AppConventionalCellCreateMessage(ActionType.CELL_CREATE, appTypeName, 
+									  masterHost, appName, appId, bestView, 
+									  bounds, transform, pixelScale, 
+									  connectionInfo);
         return ret;
     }
 }

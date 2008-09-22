@@ -17,11 +17,14 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
- * A convenience class for event listeners which operate only when the
- * global event mode is WORLD. <code>consumeEvent</code> rejects events when the
- * global event mode is not WORLD. 
- *
+ * A convenience super class for event listeners which operate only when the
+ * global event mode is <code>WORLD</code>. <code>consumeEvent</code> rejects events when the
+ * global event mode is not <code>WORLD</code>. 
+ * 
  * @author deronj
  */
 
@@ -30,8 +33,18 @@ public class WorldEventListener extends EventListenerBaseImpl  {
 
     /**
      * {@inheritDoc}
+     * <br><br>    
+     * Note on subclassing: subclasses should call the following code as the first statement in the
+     * overridden method:
+     * <br><br>
+     * <code>
+     * if (!super.consumeEvent(event, entity)) { return false; }
+     * </code>
+     * <br><br>
+     * This will make sure that the event mode is properly checked.
      */
-    public boolean consumeEvent (Event event) {
-	return InputManager.isWorldMode();
+    @Override
+    public boolean consumeEvent (Event event, Entity entity) {
+	return InputManager.inputManager().isWorldMode();
     }
 }

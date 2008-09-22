@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.app.base;
 
 //TODO: import org.jdesktop.wonderland.client.app.base.gui.guidefault.Gui2DFactory;
 import org.jdesktop.wonderland.client.app.base.gui.guinull.Gui2DFactory;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The client-side description of a type of Wonderland or Conventional 2D application. For example,

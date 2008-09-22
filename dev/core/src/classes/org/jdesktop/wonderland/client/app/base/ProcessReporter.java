@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An process reporter receives process output and exit status from a ProcessMonitor and reports it to the user
  * via an implementation method chosen by the concrete subclass. A ProcessReporter is created using the create

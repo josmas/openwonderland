@@ -17,6 +17,15 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventDistributor;
+import org.jdesktop.mtgame.PickInfo;
+import org.jdesktop.mtgame.PickDetails;
+import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.input.InputPicker;
+import org.jdesktop.wonderland.common.InternalAPI;
+
 /**
  * The part of the input subsystem which distributes events throughout the scene graph 
  * according to the information provided by the entity event listeners.
@@ -25,34 +34,53 @@ package org.jdesktop.wonderland.client.jme.input;
  */
 
 @InternalAPI
-public class EntityDistributor3D implements Runnable {
+public class EventDistributor3D extends EventDistributor implements Runnable {
 
-    private PropagationState propState = new PropagationState();
+    private static final Logger logger = Logger.getLogger(EventDistributor3D.class.getName());
 
-    private static EventDistributor getEventDistributor () {
+    private EventDistributor.PropagationState propState = new PropagationState();
+
+    /** The pick info for the last mouse event */
+    private PickInfo mousePickDetailsPrev;
+
+    /** The singleton event distributor */
+    private static EventDistributor eventDistributor;
+    
+    /** Return the event distributor singleton */
+    static EventDistributor getEventDistributor () {
 	if (eventDistributor == null) {
 	    eventDistributor = new EventDistributor3D();
-	    eventDistributor.start();
+	    ((EventDistributor3D)eventDistributor).start();
 	}
 	return eventDistributor;
     }
 
-    protected abstract processEvent (Event event, PickResults pickResults) {
-	if (entry.event instanceof MouseEnterExitEvent3D) {
-	    processEnterExitEvent(entry.event, entry.pickResults);
-	} else if (entry.event instanceof MouseEvent3D) {
-	    processMouseEvent(entry.event, entry.pickResults);
-	} if (entry.event instanceof KeyEvent3D) {
-	    processKeyEvent(entry.event);
+    protected void processEvent (Event event, PickInfo pickInfo) {
+	if (event instanceof MouseEnterExitEvent3D) {
+	    processEnterExitEvent(event, pickInfo);
+	} else if (event instanceof MouseEvent3D) {
+	    processMouseKeyboardEvent(event, pickInfo);
+	} if (event instanceof KeyEvent3D) {
+	    if (mousePickDetailsPrev != null) {
+		processMouseKeyEvent(event, mousePickDetailsPrev);
+	    }
 	} else {
-	    logger.warning("Invalid event type encountered, event = " + entry.event);
+	    logger.warning("Invalid event type encountered, event = " + event);
 	}
     }
 
-    protected void processMouseEvent (Event event, PickResults pickResults) {
+    protected void processMouseKeyboardEvent (Event event, PickInfo pickInfo) {
+	logger.info("Distributor: received event = " + event + ", pickInfo = " + pickInfo);
 
+	// Track the last mouse pick info for focus-follows-mouse keyboard focus policy
+	if (event instanceof MouseEvent3D) {
+	    mousePickDetailsPrev = pickInfo;
+	}
+	
 	// First try the global event listeners
-	event.setPickData(null);
+	if (event instanceof MouseEvent3D) {
+	    ((MouseEvent3D)event).setPickDetails(null);
+	}
 	tryGlobalListeners(event);
 
 	// Start out the entity search assuming no propagation to unders
@@ -60,7 +88,8 @@ public class EntityDistributor3D implements Runnable {
 
 	// Walk through successive depth levels, as long as propagateToUnder is true,
 	// searching up the parent chain in each level
-	PickData pickData = pickResults.getPickData(0);
+	PickDetails pickDetails = pickInfo.get(0);
+	logger.fine("pickDetails = " + pickDetails);
 	int idx = 0;
 	while (true) {
 	    
@@ -68,12 +97,16 @@ public class EntityDistributor3D implements Runnable {
 	    propState.toParent = false; 
 
 	    // See whether the picked entity wants the event.
-	    event.setPickData(pickData);
-	    Entity entity = EventResolver.pickDataToEntity(pickData);
+	    if (event instanceof MouseEvent3D) {
+		((MouseEvent3D)event).setPickDetails(pickDetails);
+		
+	    }
+	    Entity entity = InputPicker.pickDetailsToEntity(pickDetails);
 	    tryListenersForEntity(entity, event, propState);
 
 	    // See whether any of the picked entity's parents want the event
 	    if (propState.toParent) {
+		logger.fine("Propogating to parents");
 		tryListenersForEntityParents(/* TODO: notyet: entity.getParent()*/ null, event, propState);
 	    }
 
@@ -82,21 +115,21 @@ public class EntityDistributor3D implements Runnable {
 		break;
 	    }
 
+	    logger.fine("Propagate to next under");
+
 	    idx++;
-	    if (idx >= pickResults.getNumber()) {
+	    if (idx >= pickInfo.size()) {
 		// No more picked objects underneath. We're done.
 		break;
 	    }
 	    
-	    pickData = restPickResults.getPickData(idx);
+	    pickDetails = pickInfo.get(idx);
+	    logger.fine("pickDetails = " + pickDetails);
 	}
     }
 
-    private void processEnterExitEvent (Event event, PickResults pickResults) {
+    private void processEnterExitEvent (Event event, PickInfo pickInfo) {
 	// TODO
     }
 
-    private void processKeyEvent (Event event) {
-	// TODO
-    }
 }

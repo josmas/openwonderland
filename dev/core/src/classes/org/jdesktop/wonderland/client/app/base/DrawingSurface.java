@@ -19,6 +19,11 @@
 package org.jdesktop.wonderland.client.app.base;
 
 import java.awt.Graphics2D;
+import com.jmex.awt.swingui.ImageGraphics;
+import com.jme.math.Vector2f;
+import com.jme.renderer.ColorRGBA;
+import java.awt.Color;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A rectangular, pixel-based drawing surface onto which 2D graphics
@@ -34,7 +39,7 @@ import java.awt.Graphics2D;
  */
 
 @ExperimentalAPI
-public class DrawingSurfaceSimple implements DrawingSurface {
+public class DrawingSurface {
     
     /* The ImageGraphics onto which drawing for this surface is rendered */
     protected ImageGraphics imageGraphics;
@@ -55,19 +60,19 @@ public class DrawingSurfaceSimple implements DrawingSurface {
     protected int surfaceHeight;
     
     /** 
-     * Create an instance of DrawingSurfaceSimple.
+     * Create an instance of DrawingSurface.
      * <br>
      * Note: You must do a setSize before using a surface created in this way.
      */
-    public DrawingSurfaceSimple () {}
+    public DrawingSurface () {}
 
     /** 
-     * Create an instance of DrawingSurfaceSimple.
+     * Create an instance of DrawingSurface.
      * 
      * @param width The width of the surface in pixels.
      * @param height The height of the surface in pixels.
      */
-    public DrawingSurfaceSimple (int width, int height) {
+    public DrawingSurface (int width, int height) {
 	setSize(width, height);
     }
     
@@ -84,7 +89,6 @@ public class DrawingSurfaceSimple implements DrawingSurface {
         surfaceHeight = height;
 
 	// Erase new surface to all white
-        Graphics2D g = (Graphics2D)newSurface.getGraphics();
         imageGraphics.setBackground(Color.WHITE);
         imageGraphics.setColor(Color.WHITE);
         imageGraphics.fillRect(0, 0, width,height);
@@ -111,11 +115,11 @@ public class DrawingSurfaceSimple implements DrawingSurface {
      * Draw the cursor onto the surface at the current pen position.
      */
     protected void renderCursor() {
-        Graphics2D g = (Graphics2D)image.getGraphics();
-        g.setXORMode(cursorColor);
-        g.translate(penX, penY);
-        g.drawLine(-5, 0, 5, 0);
-        g.drawLine(0,-5, 0, 5);
+        imageGraphics.setXORMode(cursorColor);
+        imageGraphics.translate(penX, penY);
+        imageGraphics.drawLine(-5, 0, 5, 0);
+        imageGraphics.drawLine(0,-5, 0, 5);
+        imageGraphics.translate(penX, penY);
     }
     
     /**
@@ -125,11 +129,11 @@ public class DrawingSurfaceSimple implements DrawingSurface {
      *
      * @return The corresponding pixel location in the image.
      */
-    protected Point computePoint(float x, float y) {
+    protected Vector2f computePoint(float x, float y) {
         int pX = surfaceWidth / 2 + (int)((x * surfaceWidth) / 2);
         int pY = surfaceHeight / 2 + (int)((y * surfaceHeight) / 2);
         
-        return new Point(pX, pY);
+        return new Vector2f(pX, pY);
     }
     
     /**

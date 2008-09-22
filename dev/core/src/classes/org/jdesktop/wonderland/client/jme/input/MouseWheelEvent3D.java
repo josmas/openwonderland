@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.event.MouseWheelEvent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An event which indicates that a mouse wheel rotation occurred. 
  *
@@ -32,20 +37,20 @@ public class MouseWheelEvent3D extends MouseEvent3D {
     }
 
     /**
-     * Create a new instance of MouseWheelEvent3D will a null pickData.
-     * @param event The AWT event.
+     * Create a new instance of MouseWheelEvent3D will a null pickDetails.
+     * @param awtEvent The AWT event.
      */
-    public MouseWheelEvent3D (MouseWheelEvent awtEvent) {
+    MouseWheelEvent3D (MouseWheelEvent awtEvent) {
         this(awtEvent, null);
     }
     
     /**
      * Create a new instance of MouseWheelEvent3D.
-     * @param event The AWT event.
-     * @param pickData The pick data for the event.
+     * @param awtEvent The AWT event.
+     * @param pickDetails The pick data for the event.
      */
-    public MouseWheelEvent3D (MouseWheelEvent awtEvent, PickData pickData) {
-        super(awtEvent, pickData);
+    MouseWheelEvent3D (MouseWheelEvent awtEvent, PickDetails pickDetails) {
+        super(awtEvent, pickDetails);
     }
     
     /**

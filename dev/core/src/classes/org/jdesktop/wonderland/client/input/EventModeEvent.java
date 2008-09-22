@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An InputManager-internal event which is used to switch event modes in a safe manner.
  *
@@ -27,20 +29,20 @@ package org.jdesktop.wonderland.client.input;
 class EventModeEvent extends Event {
 
     /** The new event mode. */
-    private EventMode eventMode;
+    private InputManager.EventMode eventMode;
 
     /**
      * Create a new instance of EventModeEvent.
      * @param eventMode The new event mode.
      */
-    EventModeEvent (EventMode eventMode) {
+    EventModeEvent (InputManager.EventMode eventMode) {
 	this.eventMode = eventMode;
     }
 
     /**
      * Returns the new event mode of this event.
      */
-    EventMode getEventMode () {
+    InputManager.EventMode getEventMode () {
 	return eventMode;
     }
 }

@@ -17,8 +17,8 @@
  */
 package org.jdesktop.wonderland.common.app.base;
 
-import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * The connection type the App Base uses to communicate with the Wonderland server about conventional cells.
@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 public class AppConventionalConnectionType extends ConnectionType {
 
     /** The client type */
-    public static final ConnectionType CLIENT_TYPE = new AppBaseConnectionType("__AppBaseConventional");
+    public static final ConnectionType CLIENT_TYPE = new AppConventionalConnectionType("__AppBaseConventional");
     
     private AppConventionalConnectionType (String type) {
         super(type);

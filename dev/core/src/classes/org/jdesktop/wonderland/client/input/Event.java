@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.client.input;
 
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.utils.SmallIntegerAllocator;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The base class for all Wonderland events and actions.
@@ -28,10 +30,10 @@ import java.util.logging.Logger;
 @ExperimentalAPI
 public abstract class Event implements java.io.Serializable {
 
-    /** This event's ID. All concrete subclasses should call Event.allocateEventID to allocate this. */
-    public static final int EVENT_ID;
+    /** This event's ID. All concrete subclasses should call <code>Event.allocateEventID</code> to allocate this. */
+    public static int EVENT_ID;
 
-    private static final Logger logger = Logger.getLogger(ClientManager.class.getName());
+    private static final Logger logger = Logger.getLogger(Event.class.getName());
 
     private static SmallIntegerAllocator idAllocator = new SmallIntegerAllocator();
 
@@ -45,10 +47,16 @@ public abstract class Event implements java.io.Serializable {
 	return EVENT_ID;
     }
 
+    /**
+     * Allocate a unique event ID.
+     */
     protected static int allocateEventID () {
 	return idAllocator.allocate();
     }
 
+    /**
+     * Free an already allocated event ID.
+     */
     protected static void free (int eventID) {
 	idAllocator.free(eventID);
     }

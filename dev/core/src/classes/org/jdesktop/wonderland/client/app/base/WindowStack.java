@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.app.base;
 
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The stack of visible windows. The top window is first in the list.

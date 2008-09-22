@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.client.jme.input;
 
 import java.awt.event.InputEvent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The abstract and super class for all the input events.
@@ -28,6 +30,9 @@ import java.awt.event.InputEvent;
 @ExperimentalAPI
 abstract class InputEvent3D extends Event {
 
+    /**
+     * Enum values which indicate which modifiers keys are held down for this event.
+     */
     public enum ModifierId {
         ALT, ALT_GRAPH, CTRL, META, SHIFT, BUTTON1, BUTTON2, BUTTON3,
     };
@@ -103,8 +108,8 @@ abstract class InputEvent3D extends Event {
         ModifierId modifier3D;
         
         ModifierConvTable(int awtModifier, ModifierId modifier3D) {
-            this.awtModifier = awtModifier
-		this.modifier3D = modifier3D;
+            this.modifierAwt = awtModifier;
+            this.modifier3D = modifier3D;
         }
     }
 }

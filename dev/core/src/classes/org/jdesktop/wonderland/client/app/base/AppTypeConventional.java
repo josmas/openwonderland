@@ -17,8 +17,10 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import java.io.Serializable;
 import java.util.UUID;
 import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Describes the type of a conventional 2D application.
@@ -48,7 +50,9 @@ public abstract class AppTypeConventional extends AppType2D {
      * @param appName A short name describing the app instance.
      * @param command The platform command to execute in order to start the app.
      * @param pixelScale The size of the window pixels.
+     * @param reporter The reporter with which to report to the user. If null, a default reporter is used.
      * @return An instance of ExecuteMasterProgramReturn which contains information about the new app.
      */
-    public abstract ExecuteMasterProgramReturn executeMasterProgram (String appName, String command, Vector2f pixelScale);
+    public abstract ExecuteMasterProgramReturn executeMasterProgram (String appName, String command, 
+								     Vector2f pixelScale, ProcessReporter reporter);
 }

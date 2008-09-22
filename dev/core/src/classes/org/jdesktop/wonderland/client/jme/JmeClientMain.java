@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.NodeListener;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 
 /**
  *
@@ -126,7 +127,9 @@ public class JmeClientMain {
         frame.setVisible(true);
 
 	// Initialize the input manager
-	InputManager3D.getInputManager().initialize(frame.getCanvas());
+	// TODO: CameraComponent cameraComp = ViewManager.getCameraComponent();
+	CameraComponent cameraComp = null;
+	InputManager3D.getInputManager().initialize(frame.getCanvas(), cameraComp);
     }
     private static Properties loadProperties(String fileName) {
         // start with the system properties

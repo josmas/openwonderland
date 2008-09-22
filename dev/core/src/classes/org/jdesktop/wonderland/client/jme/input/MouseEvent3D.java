@@ -17,12 +17,21 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.wonderland.client.input.InputPicker;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
+
 /**
  * The abstract super class for all Wonderland mouse events.
  *
  * @author deronj
  */
 
+@ExperimentalAPI
 public abstract class MouseEvent3D extends InputEvent3D {
 
     /** The supported button codes. */
@@ -31,17 +40,20 @@ public abstract class MouseEvent3D extends InputEvent3D {
     /** The originating AWT mouse event. */
     protected MouseEvent awtEvent;
 
-    /** The pick data for the event */
-    private PickData pickData;
+    /** The pick details for the event */
+    private PickDetails pickDetails;
+
+    /** A temporary used for getIntersectionPointLocal */
+    Matrix4f world2local = new Matrix4f();
 
     /**
      * Convert MouseEvent into a MouseEvent3D and change the event id to newID
      * @param awtEvent The originating AWT mouse event
-     * @param pickData The pick info for the event.
+     * @param pickDetails The pick details for the event.
      */
-    public MouseEvent3D (MouseEvent awtEvent, PickData pickData) {
+    public MouseEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
 	this.awtEvent = awtEvent;
-	this.pickData = pickData;
+	this.pickDetails = pickDetails;
     }
     
     /**
@@ -52,24 +64,27 @@ public abstract class MouseEvent3D extends InputEvent3D {
     }
     
     /**
-     * Returns the pick data of the event.
+     * Returns the pick details of the event.
      */
-    public PickData getPickData () {
-	return pickData;
+    public PickDetails getPickDetails () {
+	return pickDetails;
     }
 
     /**
-     * Sets the pick data of the event.
+     * INTERNAL ONLY
+     * <br><br>
+     * Sets the pick details of the event.
      */
-    void setPickData (PickData pickData) {
-	this.pickData = pickData;
+    @InternalAPI
+    public void setPickDetails (PickDetails pickDetails) {
+	this.pickDetails = pickDetails;
     }
 
     /**
      * Returns the entity hit by the event.
      */
     public Entity getEntity () {
-	return EntityResolver.pickDataToEntity(pickData);
+	return InputPicker.pickDetailsToEntity(pickDetails);
     }
 
     /**
@@ -97,6 +112,45 @@ public abstract class MouseEvent3D extends InputEvent3D {
 	return ret;
     }
 
-    // TODO: add utilities for getting at things inside the pick data, such as local and world intersection point
-    // and the window coordinates
+    /**
+     * Returns the distance from the eye to the intersection point. (This distance is in world coordinates).
+     * If event has no pick details, 0 is returned.
+     */
+    public float getDistance () {
+	if (pickDetails == null) {
+	    return 0f;
+	} else {
+	    return pickDetails.getDistance();
+	}
+    }
+
+    /**
+     * Returns the intersection point in world coordinates.
+     */
+    public Vector3f getIntersectionPointWorld () {
+	if (pickDetails == null) {
+	    return null;
+	} else {
+	    return pickDetails.getPosition();
+	}
+    }
+
+    /**
+     * Returns the intersection point in object (node) local coordinates.
+     */
+    public Vector3f getIntersectionPointLocal () {
+	if (pickDetails == null) {
+	    return null;
+	} else {
+	    Vector3f posWorld = pickDetails.getPosition();
+	    if (posWorld == null) return null;
+	    CollisionComponent cc = pickDetails.getCollisionComponent();
+	    Node node = cc.getNode();
+	    synchronized (world2local) {
+		node.getLocalToWorldMatrix(null);
+		world2local.invert();
+		return world2local.mult(pickDetails.getPosition(), new Vector3f());
+	    }
+	}
+    }
 }

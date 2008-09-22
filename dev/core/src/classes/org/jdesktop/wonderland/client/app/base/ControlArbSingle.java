@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.app.base;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A user input control arbiter which allows only one user to have control at a time. This policy is

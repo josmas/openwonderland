@@ -28,15 +28,17 @@ import java.util.logging.Logger;
 import java.util.UUID;
 import com.jme.bounding.BoundingVolume;
 import javax.swing.JOptionPane;
-import javax.vecmath.Matrix4d;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.client.app.base.AppType;
 import org.jdesktop.wonderland.common.app.base.AppLaunchMethods;
 import org.jdesktop.wonderland.common.app.base.AppLaunchMethodsConventional;
-import org.jdesktop.wonderland.common.app.base.AppTypeCellSetup;
+import org.jdesktop.wonderland.common.app.base.AppTypeCellConfig;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * TEMPORARY: 0.3 Only: This provides for the plug-in loading of different types
@@ -60,18 +62,18 @@ public class AppTypeCell extends Cell {
     private AppType appType;
 
     public AppTypeCell (CellID cellID, CellCache cellCache) {
-        super(cellID, CellCache cellCache);
+        super(cellID, cellCache);
     }
 
     @Override
-    public void setup(CellSetup setupData) {
-	System.err.println("*********************** Call AppTypeCell.setup");
+    public void configure (CellConfig configData) {
+	System.err.println("*********************** Call AppTypeCell.config");
 
-        AppTypeCellSetup setup = (AppTypeCellSetup) setupData;
+        AppTypeCellConfig config = (AppTypeCellConfig) configData;
 
-	baseUrl = setup.getBaseUrl();
-        appTypeClassName = setup.getAppTypeClientClassName();
-	jar = setup.getClientJar();
+	baseUrl = config.getBaseUrl();
+        appTypeClassName = config.getAppTypeClientClassName();
+	jar = config.getClientJar();
 
 	logger.severe("Loaded new app type client cell");
 	logger.severe("baseUrl = " + baseUrl);

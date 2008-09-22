@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.app.base;
 
 import java.util.HashMap;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A process reporter factory is a singleton which creates process 

@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.common.app.base;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * The default launch methods for an app is a single launch method
  * to launch a Wonderland app from the World.

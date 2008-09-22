@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.app.base;
 
 import java.util.HashMap;
 import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An app which creates windows that can be drawn on by a Graphics2D.
@@ -51,6 +52,6 @@ public class AppGraphics2D extends App2D {
 	throws InstantiationException
     {
 	return new WindowGraphics2D(this, width, height, topLevel, pixelScale,
-				    new DrawingSurfaceSimple(width, height));
+				    new DrawingSurface(width, height));
     }
 }

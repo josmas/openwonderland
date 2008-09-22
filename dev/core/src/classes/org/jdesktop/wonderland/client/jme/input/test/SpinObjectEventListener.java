@@ -17,34 +17,47 @@
  */
 package org.jdesktop.wonderland.client.jme.input.test;
 
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RotationProcessor;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.WorldEventListener;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import com.jme.scene.Node;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An event listener which toggles the spinning state of an object when an button press event occurs over it.
  * In addition the global event mode must be WORLD. To use this in a scene just add this to any entities you 
- * wish to make input sensitive via this.addToEntity.
- * 
+ * wish to make input sensitive via <code>this.addToEntity</code>.
+ * <br><br>
  * Example Usage:
- *
+ * <br><br>
+ * <code>
  * SpinObjectEventListener spinListener = new SpinObjectEventListener();
+ * <br>
  * spinListener.addToEntity(entity);
+ * </code>
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public interface SpinObjectEventListener extends WorldEventListener {
+public class SpinObjectEventListener extends WorldEventListener {
 
     /**
      * {@inheritDoc}
      */
     @Override
     public boolean consumeEvent (Event event, Entity entity) {
-	if (super.consumeEvent(event, entity)) {
+	if (!super.consumeEvent(event, entity)) {
 	    return false;
 	}
 	if (event.getID() != MouseButtonEvent3D.EVENT_ID) {
 	    return false;
 	}
-	return ((MouseButtonEvent3D)buttonEvent).isPressed();
+	return ((MouseButtonEvent3D)event).isPressed();
     }
 
     // Note: we don't override computeEvent because we don't do any computation in this listener.
@@ -53,9 +66,8 @@ public interface SpinObjectEventListener extends WorldEventListener {
      * {@inheritDoc}
      */
     public void commitEvent (Event event, Entity entity) {
-	(MouseButtonEvent3D) buttonEvent = (MouseButtonEvent3D);
-	Entity entity = buttonEvent.getEntity();
-	if (entity.getComponent(SpinProcessor.class)) {
+        MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
+	if (entity.getComponent(SpinProcessor.class) != null) {
 	    // Stop the spinning
 	    entity.removeComponent(SpinProcessor.class);
 	} else {
@@ -71,20 +83,20 @@ public interface SpinObjectEventListener extends WorldEventListener {
     /** 
      * A component which animates an object to spin around the Y axis.
      */
-    private class SpinProcessor extends RotationProcessor {
-
+    private static class SpinProcessor extends RotationProcessor {
+        
 	SpinProcessor (Entity entity) throws InstantiationException {
-	    super("Spinner", WorldManager.getWorldManager(), getNode(), 10);
+	    super("Spinner", ClientContextJME.getWorldManager(), getNode(entity), 10);
 	}
 
-	Node getNode () throws InstantiationException {
-	    RenderComponent renderComp = entity.getComponent(RenderComponent.class);
+	static Node getNode (Entity entity) throws InstantiationException {
+	    RenderComponent renderComp = (RenderComponent) entity.getComponent(RenderComponent.class);
 	    if (renderComp == null) {
-		throw InstantiationException();
+		throw new InstantiationException("Enity has no render component");
 	    }
 	    Node node = renderComp.getSceneRoot();
 	    if (node == null) {
-		throw InstantiationException();
+		throw new InstantiationException("Entity has no scene graph");
 	    }
 	    return node;
 	}

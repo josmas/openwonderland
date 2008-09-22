@@ -17,14 +17,16 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import java.io.Serializable;
 import java.util.UUID;
 import javax.swing.JOptionPane;
-import javax.vecmath.Matrix4d;
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.common.app.base.AppConventionalCellSetup;
+import org.jdesktop.wonderland.common.app.base.AppConventionalCellConfig;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.client.apps.utils.net.NetworkAddress;
+import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The client-side cell for an 2D conventional application.
@@ -61,23 +63,23 @@ public abstract class AppConventionalCell extends App2DCell {
      * {@inheritDoc}
      */
     @Override
-    public void setup (CellSetup setupData) {
-	super.setup(setupData);
+    public void configure (CellConfig configData) {
+	super.configure(configData);
 
-	AppConventionalCellSetup setup = (AppConventionalCellSetup) setupData;
-	masterHost = setup.getMasterHost();
-	appName = setup.getAppName();
-	pixelScale = setup.getPixelScale();
-	connectionInfo = setup.getConnectionInfo();
+	AppConventionalCellConfig config = (AppConventionalCellConfig) configData;
+	masterHost = config.getMasterHost();
+	appName = config.getAppName();
+	pixelScale = config.getPixelScale();
+	connectionInfo = config.getConnectionInfo();
 
 	if (masterHost.equals(NetworkAddress.getDefaultHostAddress())) {
 
 	    // App Master case
-    	    boolean bestView = setup.isBestView();
+    	    boolean bestView = config.isBestView();
 
 	    // Master User launch case: See if app has already been executed on this host 
-	    if (setup.isUserLaunched()) {
-		UUID appId = setup.getAppId();
+	    if (config.isUserLaunched()) {
+		UUID appId = config.getAppId();
 		App appToAttach = AppConventional.findDisembodiedApp(appId);
 		if (appToAttach == null) {
 		    App.logger.severe("Cannot find master app to attach to cell");
@@ -94,7 +96,7 @@ public abstract class AppConventionalCell extends App2DCell {
 	    } else {
 
 		// World launch case: execute the app now. 
-		startMaster(setup.getCommand(), false);
+		startMaster(config.getCommand(), false);
 	    }
 
 	} else {

@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An event which indicates that a mouse button action occurred. 
  *
@@ -24,7 +29,7 @@ package org.jdesktop.wonderland.client.jme.input;
  */
 
 @ExperimentalAPI
-class MouseButtonEvent3D extends MouseEvent3D {
+public class MouseButtonEvent3D extends MouseEvent3D {
 
     static {
 	/** Allocate this event type's ID. */
@@ -32,7 +37,7 @@ class MouseButtonEvent3D extends MouseEvent3D {
     }
 
     /**
-     * Create a new MouseWheelEvent3D from the AWT mouse event with a null pickData.
+     * Create a new MouseWheelEvent3D from the AWT mouse event with a null pickDetails.
      * @param evt the AWT event
      */
     MouseButtonEvent3D (MouseEvent awtEvent) {
@@ -42,14 +47,16 @@ class MouseButtonEvent3D extends MouseEvent3D {
     /**
      * Create a new MouseWheelEvent3D from the AWT mouse event
      * @param evt the AWT event
-     * @param pickData The pick data for the event.
+     * @param pickDetails The pick data for the event.
      */
-    MouseButtonEvent3D (MouseEvent awtEvent, PickData pickData) {
-        super(awtEvent, pickData);
+    MouseButtonEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
+        super(awtEvent, pickDetails);
 
+        /* TODO
 	if (isPressed()) {
 	    MouseDraggedEvent3D.setPressPointScreen(awtEvent.getX(), awtEvent.getY());
 	}
+        */
     }
     
     /**

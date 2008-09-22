@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.app.base;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A user input control arbiter in which all user's have 

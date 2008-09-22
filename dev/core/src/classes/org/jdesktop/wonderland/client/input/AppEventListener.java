@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
- * A convenience class for event listeners which operate only when the
- * global event mode is APP. <code>consumeEvent</code> rejects events when the
- * global event mode is not APP. 
+ * A convenience super class for event listeners which operate only when the
+ * global event mode is <code>APP</code>. <code>consumeEvent</code> rejects events when the
+ * global event mode is not <code>APP</code>. 
  *
  * @author deronj
  */
@@ -30,8 +33,18 @@ public class AppEventListener extends EventListenerBaseImpl  {
 
     /**
      * {@inheritDoc}
+     * <br><br>
+     * Note on subclassing: subclasses should call the following code as the first statement in the
+     * overridden method:
+     * <br><br>
+     * <code>
+     * if (!super.consumeEvent(event, entity)) { return false; }
+     * </code>
+     * <br><br>
+     * This will make sure that the event mode is properly checked.
      */
-    public boolean consumeEvent (Event event) {
-	return InputManager.isAppMode();
+    @Override
+    public boolean consumeEvent (Event event, Entity entity) {
+	return InputManager.inputManager().isAppMode();
     }
 }

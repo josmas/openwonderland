@@ -21,6 +21,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.LinkedList;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A user input control arbiter. Implementations of this interface
@@ -109,9 +111,9 @@ public abstract class ControlArb {
      * Note: depending on the implementation, this may cause other users with control 
      * to lose it.
      */
-    public abstract void takeControl () {
+    public void takeControl () {
 	if (!hasControl()) {
-	    InputManager.setEventMode(InputManager.EventMode.APP);
+	    InputManager3D.getInputManager().setEventMode(InputManager3D.EventMode.APP);
 	    appControl = true;
 	    updateControl();
 	}
@@ -122,7 +124,7 @@ public abstract class ControlArb {
      */
     public void releaseControl () {
 	if (!hasControl()) {
-	    InputManager.setEventMode(InputManager.EventMode.WORLD);
+	    InputManager3D.getInputManager().setEventMode(InputManager3D.EventMode.WORLD);
 	    appControl = false;
 	    updateControl();
 	}
@@ -133,7 +135,7 @@ public abstract class ControlArb {
      */
     public static void releaseControlAll () {
 	for (ControlArb controlArb : controlArbs) {
-	    controlArb.releaseControl(null);
+	    controlArb.releaseControl();
 	}
     }
 

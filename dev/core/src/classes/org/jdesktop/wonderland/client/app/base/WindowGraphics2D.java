@@ -24,6 +24,7 @@ import com.jme.util.TextureManager;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A window that provides a drawing surface (a buffered image) that can be drawn on by a Graphics2D. 
@@ -108,7 +109,7 @@ public class WindowGraphics2D extends Window2D {
 	texture.setImage(image);
 
 	// For debug
-      	texture.setApply(Texture.AM_MODULATE);
+      	texture.setApply(Texture.ApplyMode.Modulate);
     }
 
     /**

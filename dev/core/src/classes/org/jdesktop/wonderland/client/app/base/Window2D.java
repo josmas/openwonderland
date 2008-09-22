@@ -28,12 +28,14 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.jdesktop.wonderland.client.app.base.gui.guidefault.Window2DViewWorld;
+import org.jdesktop.wonderland.client.app.base.Window2DViewWorld;
 import com.jme.image.Image;
 import com.jme.image.Texture;
+import com.jme.image.Texture2D;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.util.geom.BufferUtils;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
@@ -330,7 +332,7 @@ public abstract class Window2D extends Window {
     /** 
      * Returns the primary world view of this window
      */
-    public Window2DView getPrimaryWorldView () {
+    public Window2DViewWorld getPrimaryWorldView () {
 	return viewWorld;
     }
 
@@ -653,14 +655,14 @@ public abstract class Window2D extends Window {
 	// Create the buffered image using dummy data to initialize it
 	// TODO: change this after by ref textures are implemented
 	ByteBuffer data = BufferUtils.createByteBuffer(roundedWidth * roundedHeight * 4);
-	Image image = new Image(Image.RGBA8888, roundedWidth, roundedHeight, data);
+	Image image = new Image(Image.Format.RGB8, roundedWidth, roundedHeight, data);
 
 	// Create the texture which wraps the image 
-	texture = new Texture();
+	texture = new Texture2D();
 	texture.setImage(image);
-        texture.setFilter(Texture.FM_LINEAR);
-        texture.setMipmapState(Texture.MM_LINEAR);
-	texture.setApply(Texture.AM_REPLACE);
+        texture.setMagnificationFilter(Texture.MagnificationFilter.Bilinear);
+        texture.setMinificationFilter(Texture.MinificationFilter.BilinearNoMipMaps);
+	texture.setApply(Texture.ApplyMode.Replace);
 	
 	/* TODO: NOTYET: set anisotropic filtering
         // This improves texture filtering when the texture is close up from the side,

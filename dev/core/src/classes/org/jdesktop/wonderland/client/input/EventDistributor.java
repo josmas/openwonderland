@@ -17,6 +17,14 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import java.util.concurrent.LinkedBlockingQueue;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.input.InputManager.EventMode;
+import org.jdesktop.mtgame.PickInfo;
+import java.util.Iterator;
+import org.jdesktop.wonderland.common.InternalAPI;
+import java.util.logging.Logger;
+
 /**
  * The abstract base class for an Event Distributor singleton. The Entity Distributor is part of the input 
  * subsystem which distributes events throughout the scene graph according to the information provided by 
@@ -27,41 +35,45 @@ package org.jdesktop.wonderland.client.input;
  * @author deronj
  */
 
-@ExperimentalAPI
-class EntityDistributor implements Runnable {
+@InternalAPI
+public abstract class EventDistributor implements Runnable {
+
+    private static final Logger logger = Logger.getLogger(EventDistributor.class.getName());
 
     /** The current event mode */
-    private static eventMode = EventMode.WORLD;
+    private static InputManager.EventMode eventMode = EventMode.WORLD;
     
     /** The base input queue entry. */
-    private abstract static class Entry {
+    private static class Entry {
 	/** The Wonderland event. */
 	Event event;
-	/** The pick results for the event */
-	PickResults pickResults;
-        Entry (Event event, PickResults pickResults) {
+	/** The pick info for the event */
+	PickInfo pickInfo;
+        Entry (Event event, PickInfo pickInfo) {
 	    this.event = event;
-	    this.pickResults = pickResults
+	    this.pickInfo = pickInfo;
 	}
+    }
+
+    /** The state of the propagation state during the traversal. */
+    public class PropagationState {
+	public boolean toParent;
+	public boolean toUnder;
     }
 
     private Thread thread;
 
     private LinkedBlockingQueue<Entry> inputQueue = new LinkedBlockingQueue<Entry>();
 
-    private static EventDistributor eventDistributor;
-
     private EventListenerCollection globalEventListeners = new EventListenerCollection();
 
-    abstract static EventDistributor getEventDistributor ();
-
-    private void start () {
+    protected void start () {
 	thread = new Thread(this, "EventDistributor");
 	thread.start();
     }
 
     /**
-     * Add a Wonderland event to the event distribution queue, with null pick results.
+     * Add a Wonderland event to the event distribution queue, with null pick info.
      * @param event The event to enqueue.
      */
     void enqueueEvent (Event event) {
@@ -71,10 +83,10 @@ class EntityDistributor implements Runnable {
     /**
      * Add a Wonderland event to the event distribution queue.
      * @param event The event to enqueue.
-     * @param pickResults The pick results for the event.
+     * @param pickInfo The pick info for the event.
      */
-    void enqueueEvent (Event event, PickResults pickResults) {
-	inputQueue.add(new Entry(event, pickResults));
+    void enqueueEvent (Event event, PickInfo pickInfo) {
+	inputQueue.add(new Entry(event, pickInfo));
     }
 
     /**
@@ -82,11 +94,14 @@ class EntityDistributor implements Runnable {
      */
     public void run () {
 	while (true) {
-	    Entry entry = inputQueue.take();
+	    Entry entry = null;
+            try {
+                entry = inputQueue.take();
+            } catch (InterruptedException ex) {}
 	    if (entry.event instanceof EventModeEvent) {
 		processEventModeEvent(entry.event);
 	    } else {
-		processEvent(entry.event, entry.pickResults);
+		processEvent(entry.event, entry.pickInfo);
 	    }
 	}
     }
@@ -94,38 +109,63 @@ class EntityDistributor implements Runnable {
     /** 
      * The responsibility for determining how to process individual event types is delegated to the subclass.
      * @param event The event to try to deliver to event listeners.
-     * @param pickResults The pick results associated with the event.
+     * @param pickInfo The pick info associated with the event.
      */
-    protected abstract processEvent (Event event, PickResults pickResults);
+    protected abstract void processEvent (Event event, PickInfo pickInfo);
 
-    /** The state of the propagation state during the traversal. */
-    protected class PropagationState {
-	private boolean toParent;
-	private boolean toUnder;
+    /** 
+     * Traverse the list of global listeners to see whether the event should be delivered to any of them. 
+     * Post the event to willing consumers. Note: the return values of propagateToParent() and propagateToUnder() 
+     * for global listeners are ignored.
+     */
+    protected void tryGlobalListeners (Event event) {
+	logger.fine("tryGlobalListeners event = " + event);
+	synchronized (globalEventListeners) {
+            Iterator<EventListener> it = globalEventListeners.iterator();
+	    while (it.hasNext()) {
+                EventListener listener = it.next();
+		if (listener.isEnabled()) {
+		    logger.fine("Calling consume for listener " + listener);
+		    if (listener.consumeEvent(event, null)) {
+			logger.fine("CONSUMED.");
+			listener.postEvent(event);
+		    }
+		}
+	    }
+	}
     }
-
+	
     /** 
      * See if any of the enabled event listeners for the given entity are willing to consume the given event.
      * Post the event to willing consumers. Also, returns the OR of propagateToParent for all enabled listeners 
      * and the OR of propagateToUnder for all enabled listeners in propState.
      */
-    private void tryListenersForEntity (Entity entity, Event event, PropagationState propState) {
-	EventListenerCollection listeners = entity.getComponent(EventListenerCollection.class);
+    protected void tryListenersForEntity (Entity entity, Event event, PropagationState propState) {
+	logger.fine("tryListenersForEntity, entity = " + entity + ", event = " + event);
+	EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
 	if (listeners == null) { 
+	    logger.fine("Entity has no listeners");
 	    // propagateToParent is true, so OR makes no change to its accumulator
 	    // propagateToUnder is false, so OR makes its accumulator is false
 	    propState.toUnder = false;
 	} else {
-	    for (EventListener listener : listeners) {
-		if (listener.enabled()) {
+	    Iterator<EventListener> it = listeners.iterator();
+	    while (it.hasNext()) {
+		EventListener listener = it.next();
+		if (listener.isEnabled()) {
+		    logger.fine("Calling consume for listener " + listener);
 		    if (listener.consumeEvent(event, entity)) {
+			logger.fine("CONSUMED.");
 			listener.postEvent(event);
 		    }
 		    propState.toParent |= listener.propagateToParent(event, entity);
 		    propState.toUnder |= listener.propagateToUnder(event, entity);
+		    logger.finer("Listener prop state, toParent = " + propState.toParent + 
+				", toUnder = " + propState.toUnder);
 		}
 	    }
 	}
+	logger.fine("Cumulative prop state, toParent = " + propState.toParent + ", toUnder = " + propState.toUnder);
     }
 
     /** 
@@ -134,39 +174,22 @@ class EntityDistributor implements Runnable {
      * Post the event to willing consumers. Also, returns the OR of propagateToParent for all enabled listeners 
      * and the OR of propagateToUnder for all enabled listeners in propState.
      */
-    private void tryListenersForEntityParents (Entity entity, Event event, PropagationState propState) {
+    protected void tryListenersForEntityParents (Entity entity, Event event, PropagationState propState) {
 	while (entity != null) {
 	    tryListenersForEntity(entity, event, propState);
 	    if (!propState.toParent) {
 		// No more propagation to parents. We're done with this loop.
 		break;
 	    }
+	    logger.fine("Propagate to next parent");
 	    entity = /* TODO: notyet: entity.getParent()*/ null;
 	}
     }
 	
-    /** 
-     * Traverse the list of global listeners to see whether the event should be delivered to any of them. 
-     * Post the event to willing consumers. Note: the return values of propagateToParent() and propagateToUnder() 
-     * for global listeners are ignored.
-     */
-    private void tryGlobalListeners (Event event) {
-	synchronized (globalEventListeners) {
-	    for (EventListener listener : globalEventListeners) {
-		if (listener.enabled()) {
-		    if (listener.consumeEvent(event, null)) {
-			listener.postEvent(event);
-		    }
-		}
-	    }
-	}
-    }
-	
-
     /**
      * Returns the current event mode.
      */
-    static EventMode getEventMode () {
+    InputManager.EventMode getEventMode () {
 	synchronized (eventMode) {
 	    return eventMode;
 	}
@@ -175,7 +198,7 @@ class EntityDistributor implements Runnable {
     /**
      * Returns the current event mode.
      */
-    static void setEventMode (EventMode eventMode) {
+    void setEventMode (InputManager.EventMode eventMode) {
 	enqueueEvent(new EventModeEvent(eventMode));
     }
 
@@ -185,21 +208,22 @@ class EntityDistributor implements Runnable {
 	synchronized (eventMode) {
 	    eventMode = newMode;
 	}	
+	logger.info("New event mode = " + eventMode);
     }
 
     /**
      * Add an event listener to be tried once per event. This global listener can be added only once.
      * Subsequent attempts to add it will be ignored.
-     *
+     * <br><br>
      * Note: It is not a good idea to call this from inside EventListener.computeEvent function.
      * However, it is okay to call this from inside EventListener.commitEvent function if necessary.
      *
-     * @param Listener The global event listener to be added.
+     * @param listener The global event listener to be added.
      */
     public void addGlobalEventListener (EventListener listener) {
 	synchronized (globalEventListeners) {
-	    if (globalEventListeners.get(listener) != null) {
-		return null;
+	    if (globalEventListeners.contains(listener)) {
+		return;
 	    } else {
 		globalEventListeners.add(listener);
 	    }
@@ -208,11 +232,11 @@ class EntityDistributor implements Runnable {
 
     /**
      * Remove this global event listener.
-     *
+     * <br><br>
      * Note: It is not a good idea to call this from inside EventListener.computeEvent function.
      * However, it is okay to call this from inside EventListener.commitEvent function if necessary.
      *
-     * @param The entity to which to attach this event listener.
+     * @param listener The global event listener to be removed.
      */
     public void removeGlobalEventListener (EventListener listener) {
 	synchronized (globalEventListeners) {

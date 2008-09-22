@@ -17,7 +17,8 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
-import org.jdesktop.lg3d.wg.internal.j3d.j3dnodes.J3dLgBranchGroup;
+//TODO: import org.jdesktop.lg3d.wg.internal.j3d.j3dnodes.J3dLgBranchGroup;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * Generic app event handler for 2D and 3D window views.
@@ -69,5 +70,5 @@ public abstract class Gui {
      * Initialize event handling for the given event node.
      * @param eventNode The event node for which to initialize event handling.
      */
-    public abstract void initEventHandling (J3dLgBranchGroup eventNode);
+    // TODO: public abstract void initEventHandling (J3dLgBranchGroup eventNode);
 }

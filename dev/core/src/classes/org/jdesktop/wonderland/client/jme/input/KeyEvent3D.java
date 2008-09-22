@@ -19,19 +19,17 @@ package org.jdesktop.wonderland.client.jme.input;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An event which indicates that a keystroke occurred in a component.
- *
- * REMINDER: we may introduce KeyTypedEvent3D and KeyPressedEvent3D
- * that are subclass of this class and implement getKeyChar() and 
- * getKeyCode() respectively.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-class KeyEvent3D extends InputEvent3D {
+public class KeyEvent3D extends InputEvent3D {
 
     static {
 	/** Allocate this event type's ID. */
@@ -42,7 +40,7 @@ class KeyEvent3D extends InputEvent3D {
     private KeyEvent awtEvent;
     
     /** 
-     * Create a new instance of KeyEvent3D.
+     * Create a new instance of <code>KeyEvent3D</code>.
      * @param awtEvent The originating AWT key event.
      */
     KeyEvent3D (KeyEvent awtEvent) {
@@ -79,28 +77,28 @@ class KeyEvent3D extends InputEvent3D {
     
     /**
      * Returns the character associated with the key in this event.
-     * For example, the KEY_TYPED event for shift + "a" returns
+     * For example, the <code>KEY_TYPED</code> event for shift + "a" returns
      * the value for "A".
      *
-     * KEY_PRESSED and KEY_RELEASED events are not intended for 
+     * <code>KEY_PRESSED</code> and <code>KEY_RELEASED</code> events are not intended for 
      * reporting of character input. Therefore, the values returned
      * by this method are guaranteed to be meaningful only for
-     * KEY_TYPED events.
+     * <code>KEY_TYPED</code> events.
      *
      * @return the Unicode character defined for this key event.
      * If no valid Unicode character exists for this key event,
-     * CHAR_UNDEFINED is returned.
+     * <code>CHAR_UNDEFINED</code> is returned.
      */
     public char getKeyChar () {
         return awtEvent.getKeyChar();
     }
     
     /**
-     * Returns the integer keyCode associated with the key in this event.
-     * The keyCode is the same as that of the originating AWT event.
+     * Returns the integer key code associated with the key in this event.
+     * The key code is the same as that of the originating AWT event.
      *
      * @return the integer code for an actual key on the keyboard.
-     * (For KEY_TYPED events, the keyCode is VK_UNDEFINED.)
+     * (For <code>KEY_TYPED events</code>, the key code is <code>VK_UNDEFINED</code>.)
      */
     public int getKeyCode () {
         return awtEvent.getKeyCode();

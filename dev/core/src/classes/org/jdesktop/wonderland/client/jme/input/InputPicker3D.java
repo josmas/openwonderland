@@ -17,8 +17,20 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.AWTEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.InputPicker;
+import org.jdesktop.wonderland.common.InternalAPI;
+
 @InternalAPI
 public class InputPicker3D extends InputPicker {
+
+    /** The input picker singleton */
+    private static InputPicker inputPicker;
+
 
     /**
      * Returns the entity resolver singleton.
@@ -33,8 +45,8 @@ public class InputPicker3D extends InputPicker {
     /**
      * {@inheritDoc}
      */
-    protected abstract Event createWonderlandEvent (AWTEvent awtEvent) {
-	Event event;
+    protected Event createWonderlandEvent (AWTEvent awtEvent) {
+	Event event = null;
 
 	if (awtEvent instanceof KeyEvent) {
 	    event = new KeyEvent3D((KeyEvent)awtEvent);
@@ -42,22 +54,24 @@ public class InputPicker3D extends InputPicker {
 	    event = new MouseWheelEvent3D((MouseWheelEvent)awtEvent);
 	} else if (awtEvent instanceof MouseEvent) {
 	    switch (awtEvent.getID()) {
-	    case MOUSE_CLICKED:
-	    case MOUSE_RELEASED:
-	    case MOUSE_PRESSED:
+	    case MouseEvent.MOUSE_CLICKED:
+	    case MouseEvent.MOUSE_RELEASED:
+	    case MouseEvent.MOUSE_PRESSED:
 		event = new MouseButtonEvent3D((MouseEvent)awtEvent);
 		break;
-	    case MOUSE_ENTERED:
-	    case MOUSE_EXITED:
+	    case MouseEvent.MOUSE_ENTERED:
+	    case MouseEvent.MOUSE_EXITED:
 		event = new MouseEnterExitEvent3D((MouseEvent)awtEvent);
 		break;
-	    case MOUSE_MOVED:
+	    case MouseEvent.MOUSE_MOVED:
 		event = new MouseMovedEvent3D((MouseEvent)awtEvent);
 		break;
-	    case MOUSE_DRAGGED:
+	    case MouseEvent.MOUSE_DRAGGED:
 		event = new MouseDraggedEvent3D((MouseEvent)awtEvent);
 		break;
-	    }
+            default:
+	        logger.warning("Invalid AWT event type");
+            }
 	}
 
 	return event;

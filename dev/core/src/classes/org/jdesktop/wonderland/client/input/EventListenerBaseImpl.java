@@ -17,14 +17,24 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import java.util.concurrent.LinkedBlockingQueue;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorArmingCollection;
+import org.jdesktop.mtgame.PostEventCondition;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
+
 /**
- * The base implementation of a Wonderland event listener.
+ * The base implementation of a Wonderland event listener. Almost all custom event listeners should
+ * extend this class.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class EventListenerBaseImpl extends Processor implements EventListener  {
+public class EventListenerBaseImpl extends ProcessorComponent implements EventListener  {
 
     /** The mtgame event used to wake up the this collection for computation on the Event */
     // TODO: need a way to ensure this is unique throughout the client
@@ -37,7 +47,7 @@ public class EventListenerBaseImpl extends Processor implements EventListener  {
     protected boolean enabled = true;
 
     /** The number of entities to which the listener is attached */
-    private numEntitiesAttached;
+    private int numEntitiesAttached;
 
     /** The last event for which computeEvent was called */
     private Event lastComputedEvent;
@@ -54,7 +64,7 @@ public class EventListenerBaseImpl extends Processor implements EventListener  {
      * {@inheritDoc}
      */
     public void setEnable (boolean enable) {
-	this.enable = enable;
+	this.enabled = enabled;
 
 	if (enabled && numEntitiesAttached > 0) {
 	    // Make sure listener is armed if it is enabled and attached.
@@ -72,40 +82,40 @@ public class EventListenerBaseImpl extends Processor implements EventListener  {
 
     /**
      * {@inheritDoc}
-     *
+     * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean consumeEvent (Event event) {
+    public boolean consumeEvent (Event event, Entity entity) {
 	return true;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean propagateToParent (Event event) {
+    public boolean propagateToParent (Event event, Entity entity) {
 	return true;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean propagateToUnder (Event event) {
+    public boolean propagateToUnder (Event event, Entity entity) {
 	return false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void computeEvent (Event event) {};
+    public void computeEvent (Event event, Entity entity) {}
 
     /**
      * {@inheritDoc}
      */
-    public void commitEvent (Event event, Object computeData) {};
+    public void commitEvent (Event event, Entity entity) {}
 
     /**
      * {@inheritDoc}
@@ -113,18 +123,18 @@ public class EventListenerBaseImpl extends Processor implements EventListener  {
     public void addToEntity (Entity entity) {
 
 	// Make sure that the entity has an event listener collection to use as an attach point.
-	EventListenerCollection collection = entity.getComponent(EventListenerCollection.class);
+	EventListenerCollection collection = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
 	if (collection == null) {
 	    collection = new EventListenerCollection();
-	    entity.addComponent(EventListenerCollection.class);
+	    entity.addComponent(EventListenerCollection.class, collection);
 	} else {
 
 	    // See if listener is already attached to this entity
-	    if (collection.get(this) != null) {
+	    if (collection.contains(this)) {
 		return;
 	    }
 
-	    collection.addListener(this);
+	    collection.add(this);
 	}	
 
 	numEntitiesAttached++;
@@ -140,14 +150,13 @@ public class EventListenerBaseImpl extends Processor implements EventListener  {
      */
     public void removeFromEntity (Entity entity) {
 
-	if (!attached)
-	EventListenerCollection collection = entity.getComponent(EventListenerCollection.class);
+	EventListenerCollection collection = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
 	if (collection == null) {
 	    return;
 	}
 
 	// Remove listener from collection, seeing if listener was attached to this entity
-	if (collection.remove(this) == null) {
+	if (!collection.remove(this)) {
 	    // Listener was not in this collection
 	}
 	
@@ -164,40 +173,56 @@ public class EventListenerBaseImpl extends Processor implements EventListener  {
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * Deliver the given event to this collection. This is only ever called by the EventDeliverer.
      */
     @InternalAPI
-    void postEvent (Event event) {
-	if (!enable) return;
+    public void postEvent (Event event) {
+	if (!enabled) return;
 	inputQueue.add(event);
-	JmeClientMain.getWorldManager().postEvent(MTGAME_EVENT_ID);
+	ClientContextJME.getWorldManager().postEvent(MTGAME_EVENT_ID);
     }
 
     /**
      * {@inheritDoc}
+     */
+    public void initialize() {}
+    
+    /**
+     * INTERNAL ONLY
+     * <br><br>
+     * {@inheritDoc}
+     * <br><br>
      * Called when there is new event in the input queue.
      */
     @InternalAPI
     public void compute (ProcessorArmingCollection collection) {
-	Event event = inputQueue.take();
+	Event event = null;
+        try {
+            event = inputQueue.take();
+        } catch (Exception ex) {}
 	if (event == null) return;
-	computeEvent(event);
+	computeEvent(event, getEntity());
 	lastComputedEvent = event;
     }
 
     /**
+     * INTERNAL ONLY
+     * <br><br>
      * {@inheritDoc}
+     * <br><br>
      * Called in the render loop to allow this collection to commit the 
-     * compute() calculations to alter the scene graph.
+     * <code>compute()</code> calculations to alter the scene graph.
      */
     @InternalAPI
     public void commit (ProcessorArmingCollection collection) {
-	commitEvent(lastComputedEvent);
+	commitEvent(lastComputedEvent, getEntity());
     }
 
     /** Arm the processor */
     private void arm () {
-	setArmingCondition(new ProcessorArmingCondition(this, new long[] { MTGAME_EVENT_ID}));
+	setArmingCondition(new PostEventCondition(this, new long[] { MTGAME_EVENT_ID}));
     }
 
     /** Disarm the processor */

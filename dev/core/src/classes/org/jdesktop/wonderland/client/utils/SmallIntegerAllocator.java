@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.utils;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * Allocates a small integer which is different from all the other small integers which have been allocated 
  * in this program run. The numbers start from 0. Numbers should be freed when they are no longer in use.

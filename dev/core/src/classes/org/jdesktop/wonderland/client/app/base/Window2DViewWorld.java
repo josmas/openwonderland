@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
 /**
  * An interface used by view world objects provided by the gui factory.
  *
@@ -42,9 +44,7 @@ public interface Window2DViewWorld {
     /**
      * Returns the height of the window.
      */
-    public float getHeight () { 
-	return height; 
-    }
+    public float getHeight ();
 
     /**
      * Specify whether the view is top-level. Don't forget to also
@@ -57,9 +57,7 @@ public interface Window2DViewWorld {
     /**
      * Returns whether the window of the view is top-level.
      */
-    public boolean getTopLevel () {
-	return topLevel;
-    }
+    public boolean getTopLevel ();
 
     /**
      * Sets the visibility of the view (independent of the window).

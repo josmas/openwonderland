@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
-import org.jdesktop.lg3d.wg.event.MouseEvent3D;
+//TODO: import org.jdesktop.lg3d.wg.event.MouseEvent3D;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import com.jme.image.Texture;
 
 /**
  * A window view is a visual representation of a window. A window can
@@ -88,5 +90,5 @@ public abstract class Window2DView extends WindowView {
      * @param window The window this view displays.
      * @param me3d The 3D mouse event to deliver.
      */
-    public abstract void deliverEvent (Window2D window, MouseEvent3D me3d);
+    // TODO: public abstract void deliverEvent (Window2D window, MouseEvent3D me3d);
 }
