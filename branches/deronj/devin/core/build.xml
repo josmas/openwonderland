@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$
+     $Revision$
+     $Date$
+     $Author$
+-->
+<project basedir="." default="package" name="wonderland-core">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-core}"/>
+    
+    <!-- import the core build script -->
+    <import file="build-tools/build-scripts/core-build.xml"/>
+    
+    <!-- compile Wonderland -->
+    <target name="compile" depends="-core-compile"/>
+    
+    <!-- build wonderland jars -->
+    <target name="jar" depends="-core-jar"/>
+
+    <!-- package -->
+    <target name="package" depends="-core-package"/>
+
+    <!-- javadoc -->
+    <target name="javadoc" depends="javadoc-api, javadoc-all" description="Javadoc for Wonderland"/>
+    <target name="javadoc-api" depends="-core-javadoc-api"/>
+    <target name="javadoc-all" depends="-core-javadoc-all"/>
+    
+    
+    <!-- run targets -->
+    <target name="run-manager" depends="jar" description="Run manager UI">
+        <java classname="org.jdesktop.lg3d.wonderland.management.ManagerUI" fork="true">
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+           
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run-scripttest" depends="jar" description="Run script test">
+        <java classname="org.jdesktop.wonderland.client.scripting.ScriptTest" fork="true">
+           
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run" depends="jar" description="Run the Wonderland client">
+        <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
+            <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+            
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+            
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+
+    <!-- run the server -->
+    <target name="run-server" depends="package" description="Build core packages">
+        <!-- unzip the distributed packages into the run directory -->
+        <mkdir dir="${core.run.dir}"/>
+        <unzip src="${dist.dir}/wonderland-setup-dist.zip" dest="${core.run.dir}"/>
+        <unzip src="${dist.dir}/wonderland-server-dist.zip" dest="${core.run.dir}"/>
+        
+        <!-- run -->
+        <ant antfile="${core.run.dir}/run.xml" inheritall="false">
+            <property name="antcontrib.taskdef.resource" value="noop.xml"/>
+        </ant>
+    </target>
+    
+    <!-- clean -->
+    <target name="clean" depends="-core-clean" description="Clean core directories"/>
+</project>

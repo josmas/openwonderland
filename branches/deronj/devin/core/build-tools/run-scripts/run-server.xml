@@ -1,0 +1,152 @@
+<project basedir="." default="..." name="core.run-server">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="core.run-scripts.dir" file="${ant.file.core.run-server}"/>
+    <property name="core.build-scripts.dir" location="${core.run-scripts.dir}/../build-scripts"/>
+    
+    <!-- import common setup -->
+    <import file="${core.build-scripts.dir}/core-setup.xml"/>
+   
+    <!-- import global run setup -->
+    <import file="${setup.build-scripts.dir}/run-setup.xml"/>
+   
+    <!-- import runtime properties -->
+    <property file="${core.run-scripts.dir}/run-server.properties"/>
+    
+    <!-- setup the server -->
+    <target name="-core-setup-server" depends="-core-server-setup-bdb-platform,
+                                               -core-server-setup-assertions,
+                                               -core-server-setup-no-assertions,
+                                               -core-server-setup-multinode,
+                                               -core-server-setup-classpath">
+        
+        <!-- remove and re-create the data directory -->
+        <delete dir="${sgs.data.dir}" failonerror="false"/>
+        <mkdir dir="${sgs.data.dir}"/>
+        <mkdir dir="${sgs.data.dir}/dsdb"/>
+        
+        <!-- copy the config file to the right place -->
+        <copy file="${current.dir}/WonderlandMain.cfg" 
+              tofile="${sgs.data.dir}/WonderlandMain.cfg" overwrite="true">
+            <filterset>
+                <filter token="SGS_ROOT_DIR" value="${sgs.data.dir}"/>
+                <filter token="SGS_PORT" value="${sgs.port}"/>
+                <filter token="SGS_SERVICES" value=""/>
+                <filter token="SGS_MANAGERS" value=""/>
+            </filterset>            
+        </copy>
+    
+        <!-- copy logging properties also -->
+        <copy file="${core.sgs.server.dir}/sgs-logging.properties"
+              tofile="${sgs.data.dir}/sgs-logging.properties"/>
+    </target>
+        
+    <target name="-core-server-setup-bdb-platform">    
+         <!-- setup bdb for the correct platform -->
+        <switch value="${system.type}">
+            <case value="windows-x86">
+                <property name="sgs.bdb.platform" value="win32-x86"/>
+            </case>
+
+            <case value="linux-i386">
+                <property name="sgs.bdb.platform" value="linux-x86"/>
+            </case>
+            <case value="linux-amd64">
+                <property name="sgs.bdb.platform" value="linux-x86_64"/>
+            </case>
+
+            <case value="sunos-x86">
+                <property name="sgs.bdb.platform" value="solaris-x86"/>
+            </case>
+            <case value="sunos-sparc">
+                <property name="sgs.bdb.platform" value="solaris-sparc"/>
+            </case>
+
+            <case value="macos-x86">
+                <property name="sgs.bdb.platform" value="macosx-x86"/>
+	    </case>
+            <case value="macos-ppc">
+                <property name="sgs.bdb.platform" value="macosx-ppc"/>
+	    </case>
+        
+            <default>
+                <fail message="Platform ${system.type} not supported!"/>
+            </default>
+        </switch>
+        
+    </target>
+
+    <target name="-core-server-setup-assertions" if="use.assertions">
+        <assertions id="sgs.assertions">
+            <enable/>
+        </assertions>
+    </target>
+    
+    <target name="-core-server-setup-no-assertions" unless="use.assertions">
+        <assertions id="sgs.assertions">
+            <disable/>
+        </assertions>
+    </target>
+    
+    <!-- setup default values for multinode propertysets.  If these have
+         been set by previous calls to -setup-multinode-master or
+         -setup-multinode-appnode, those values will override these -->
+    <target name="-core-server-setup-multinode">
+        <propertyset id="master.props"/>
+        <propertyset id="appnode.props"/>
+    </target>
+    
+    <target name="-core-server-setup-multinode-master">
+        <property name="com.sun.sgs.node.type" value="coreServerNode"/>
+        <propertyset id="master.props">
+            <propertyref name="com.sun.sgs.node.type"/>
+        </propertyset>
+    </target>
+    
+    <target name="-core-server-setup-multinode-appnode">
+        <property name="com.sun.sgs.node.type" value="appNode"/>
+        <property name="com.sun.sgs.server.host" value="${sgs.server}"/>
+        
+        <propertyset id="appnode.props">
+            <propertyref name="com.sun.sgs.node.type"/>
+            <propertyref name="com.sun.sgs.server.host"/>
+        </propertyset>
+    </target>
+    
+    <!-- setup the classpath to run the server with.  Clients can override
+         this method to give an alternate classpath -->
+    <target name="-core-server-setup-classpath">
+        <pathconvert property="core.server.run.classpath">
+            <path path="${core-server.classpath}"/>
+        </pathconvert>
+    </target>
+    
+    <target name="core-run-server" depends="-core-setup-server" 
+            description="Run Sun Game Server for Project Wonderland">
+           
+        <!-- run server -->
+        <java classname="com.sun.sgs.impl.kernel.Kernel" fork="true">
+            <jvmarg value="-Djava.library.path=${sgs.bdb.dir}/${sgs.bdb.platform}"/>
+            <jvmarg value="-Djava.util.logging.config.file=${sgs.data.dir}/sgs-logging.properties"/>
+            
+            <classpath>
+                <pathelement path="${core.server.run.classpath}"/>
+            </classpath>
+                
+            <!-- override the reference to enabled assertions -->
+            <assertions refid="sgs.assertions"/>
+            
+            <env key="${env.path.name}" path="${env.path.defvalue}"/>
+	    
+            <syspropertyset refid="master.props"/>
+            <syspropertyset refid="appnode.props"/>
+            
+            <arg value="${sgs.data.dir}/WonderlandMain.cfg"/>
+        </java>
+    </target>
+    
+    <!-- run as a master in a multinode setup -->
+    <target name="core-run-server-master" depends="-core-server-setup-multinode-master, core-run-server"/>
+    
+    <!-- run as an appnode in a multinode setup -->
+    <target name="core-run-server-appnode" depends="-core-server-setup-multinode-appnode, core-run-server"/>
+</project>
