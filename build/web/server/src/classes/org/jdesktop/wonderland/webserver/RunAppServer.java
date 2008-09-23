@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embed.App;
 import org.glassfish.embed.AppServer;
@@ -83,23 +85,20 @@ public class RunAppServer {
         InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/module.jars");
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
     
-        File moduleDir = ModuleManager.getModuleManager().getModuleRoot(ModuleManager.State.ADD);
+        // extract modules to a directory, and make a list of the extracted
+        // modules
+        File moduleDir = ModuleManager.getModuleManager().getModuleStateDirectory(ModuleManager.State.ADD);
+        Collection<AddedModule> modules = new ArrayList<AddedModule>();
         
         String line;
         while ((line = in.readLine()) != null) {
             File f = RunUtil.extract(getClass(), line, moduleDir);
-            
-            // Take the ".jar" off the end of the jar name to get the module
-            // name.  So for example "/modules/samplemodule.jar" should be
-            // "samplemodule".  I think this gets replaced by the actual name later
-            // in the process.
-            String fileName = line.substring(line.lastIndexOf("/"),
-                                             line.lastIndexOf("."));
-            AddedModule am = new AddedModule(f.getParentFile(), fileName);
-                     
-            // add the module to the manager
-            ModuleManager.getModuleManager().add(am);
+            modules.add(new AddedModule(f));
         }
+        
+        // add all modules at once to the module manager.  This will ensure
+        // that dependency checks take all modules into account.
+        ModuleManager.getModuleManager().addAll(modules, true);
     }
     
     // get the main instance
