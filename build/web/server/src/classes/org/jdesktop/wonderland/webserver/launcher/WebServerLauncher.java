@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.webserver.launcher;
 
+import org.jdesktop.wonderland.utils.RunUtil;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -43,7 +44,6 @@ import java.util.logging.Logger;
 public class WebServerLauncher {
     // properties
     public static final String WEBSERVER_PORT_PROP = "wonderland.webserver.port";
-    public static final String RUN_DIR_PROP = "wonderland.run.dir";
     
     private static final Logger logger = 
             Logger.getLogger(WebServerLauncher.class.getName());
@@ -79,13 +79,13 @@ public class WebServerLauncher {
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
         
             // extract to a webserver directory in the default temp dir
-            File webDir = new File(WebUtil.getTempBaseDir(), "webserver");
+            File webDir = new File(RunUtil.getRunDir(), "webserver");
             webDir.mkdirs();
             
             String line;
             List<URL> urls = new ArrayList<URL>();
             while ((line = in.readLine()) != null) {
-                File f = WebUtil.extract(line, webDir);
+                File f = RunUtil.extract(WebServerLauncher.class, line, webDir);
                 System.out.println("Adding URL " + f.toURL());
                 urls.add(f.toURL());
             }
@@ -151,7 +151,7 @@ public class WebServerLauncher {
             System.setProperty(WEBSERVER_PORT_PROP, port);
         }
         if (directory != null) {
-            System.setProperty(RUN_DIR_PROP, directory);
+            System.setProperty(RunUtil.RUN_DIR_PROP, directory);
         }
         
         return true;

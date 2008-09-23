@@ -1,10 +1,23 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
 package org.jdesktop.wonderland.webserver;
 
-import org.jdesktop.wonderland.webserver.launcher.WebUtil;
+import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
 import com.sun.hk2.component.InhabitantsParser;
 import java.io.BufferedReader;
@@ -37,7 +50,7 @@ public class RunAppServer {
     
     public RunAppServer() throws IOException {
         // first deploy any web apps
-        //deployWebApps();
+        deployWebApps();
         
         // now install the default modules
         installModules();
@@ -51,12 +64,12 @@ public class RunAppServer {
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
 
         // write to a subdirectory of the default temp directory
-        File deployDir = new File(WebUtil.getTempBaseDir(), "deploy");
+        File deployDir = new File(RunUtil.getRunDir(), "deploy");
         deployDir.mkdirs();
         
         String line;
         while ((line = in.readLine()) != null) {
-            File f = WebUtil.extractJar(line, deployDir);
+            File f = RunUtil.extractJar(getClass(), line, deployDir);
             try {
                 as.deploy(f);
             } catch (Exception excp) {
@@ -74,7 +87,7 @@ public class RunAppServer {
         
         String line;
         while ((line = in.readLine()) != null) {
-            File f = WebUtil.extract(line, moduleDir);
+            File f = RunUtil.extract(getClass(), line, moduleDir);
             
             // Take the ".jar" off the end of the jar name to get the module
             // name.  So for example "/modules/samplemodule.jar" should be
