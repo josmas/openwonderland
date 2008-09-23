@@ -18,37 +18,76 @@
 
 package org.jdesktop.wonderland.modules.service;
 
+import java.util.HashSet;
+import java.util.Set;
+import org.jdesktop.wonderland.modules.ModuleInfo;
+
 /**
- * TBD
+ * The ModuleRequiredCheck helps track whether or not a module is still
+ * required by other modules currently installed (or about to be installed).
+ * This class is typically used when we are preparing to remove modules from
+ * the system.
+ * <p>
+ * This class is used as follows: for each module being checked whether it is
+ * still required, an instance of this class stores the ModuleInfo classes of
+ * the module's that require it. If the list of ModuleInfo classes is empty,
+ * then it is no longer required.
+ * <p>
+ * Typically, the initial set of ModuleInfo classes that require the module is
+ * set to the list of pending and installed modules, minus those modules to be
+ * uninstalled (for sure) during the next restart. Some of these may be removed
+ * as we discover modules that can be safely removed.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ModuleRequiredCheck {
-    /* The module name we are current checking the dependencies for */
-    private String moduleName = null;
+    /* The module information for the class we are checking */
+    private ModuleInfo moduleInfo = null;
+    
+    /* A set of module information classes that require this module */
+    private Set<ModuleInfo> requires = new HashSet<ModuleInfo>();
     
     
-    /** Constructor that takes module to check */
-    public ModuleRequiredCheck(String moduleName) {
-        this.moduleName = moduleName;
+    /** Default constructor */
+    public ModuleRequiredCheck(ModuleInfo moduleInfo) {
+        this.moduleInfo = moduleInfo;
+    }
+
+    /**
+     * Returns the module information of the module we are checking.
+     * 
+     * @return The information for the module we are checking
+     */
+    public ModuleInfo getCheckedModuleInfo() {
+        return this.moduleInfo;
     }
     
     /**
-     * Checks whether the module is required in the system. This method is
-     * implemented in the most simple way possible: iterate over all of the
-     * installed or pending for installation modules and see if they require
-     * the given module.
+     * Adds a new module information class that requires this module.
      * 
-     * @return True if the module is still required by the system
+     * @param moduleInfo A new module that requires this module.
      */
-    public boolean checkRequired() {
-        ModuleManager mm = ModuleManager.getModuleManager();
-        
-        /* See if this module is required */
-        if (mm.isModuleRequired(this.moduleName) != null) {
-            // print something to the log XXX
-            return true;
-        }
-        return false;
+    public void addRequiresModuleInfo(ModuleInfo moduleInfo) {
+        this.requires.add(moduleInfo);
+    }
+    
+    /**
+     * Returns true if this module has no more modules that require it, false
+     * if not.
+     * 
+     * @return True if no other modules require this module, false if not
+     */
+    public boolean isRequired() {
+        return this.requires.isEmpty() == false;
+    }
+    
+    /**
+     * Checks whether the module is required by the given module and removes the
+     * requirement if so. If not, this method does nothing.
+     * 
+     * @return moduleInfo Check if the module requires this module
+     */
+    public void checkRequired(ModuleInfo moduleInfo) {
+        this.requires.remove(moduleInfo);
     }
 }

@@ -48,9 +48,9 @@ public class FileModule extends Module {
 
     
     /** Default constructor, takes a reference to the module directory root */
-    public FileModule(File root, String name) {
+    public FileModule(File root) {
         super();
-        this.root = new File(root, name);
+        this.root = root;
     }
     
     /**
