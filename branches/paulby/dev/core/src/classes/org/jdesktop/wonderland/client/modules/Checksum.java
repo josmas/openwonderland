@@ -25,7 +25,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * The Checksum class represents an individual checksum for a resource. A checksum
@@ -39,7 +39,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author paulby
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@XmlRootElement(name="checksum")
 public class Checksum {
     /* The hex-encoded checksum string */
     @XmlElement(name="checksum-hex-encoded")
@@ -74,6 +73,13 @@ public class Checksum {
     }
 
     /**
+     * Constructor, takes the string checksum
+     */
+    public Checksum (String checksum) {
+        this.checksum = checksum;
+    }
+    
+    /**
      * Returns true if the given checksum is equal to this checksum, false if
      * not.
      * 
@@ -101,6 +107,7 @@ public class Checksum {
      * 
      * @return The hex-encoded checksum string
      */
+    @XmlTransient
     public String getChecksum() {
         return this.checksum;
     }
@@ -121,6 +128,7 @@ public class Checksum {
      * 
      * @return The time the resource was last modified
      */
+    @XmlTransient
     public long getLastModified() {
         return this.lastModified;
     }
@@ -139,6 +147,7 @@ public class Checksum {
      * 
      * @return The relative resource path name
      */
+    @XmlTransient
     public String getPathName() {
         return this.pathName;
     }

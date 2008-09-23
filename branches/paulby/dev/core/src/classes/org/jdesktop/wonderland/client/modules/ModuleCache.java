@@ -39,7 +39,7 @@ public class ModuleCache {
     /* Maps of the unique module names and info (identity, checksum, etc). */
     private HashMap<String, ModuleIdentity> identities = new HashMap();
     private HashMap<String, RepositoryList> repositories = new HashMap();
-    private HashMap<String, ModuleChecksums> checksums = new HashMap();
+    private HashMap<String, ChecksumList> checksums = new HashMap();
 
     /* A hashmap of module names already searched and not found */
     private Set<String> modulesNotFound = null;
@@ -78,9 +78,9 @@ public class ModuleCache {
                  * to load the module's information if we haven't checked 
                  * previously.
                  */
-                if (this.modulesNotFound.contains(uniqueName) == true) {
-                    return null;
-                }
+//                if (this.modulesNotFound.contains(uniqueName) == true) {
+//                    return null;
+//                }
             
                 /*
                  * Otherwise, load in the module identity from the server. If
@@ -108,13 +108,13 @@ public class ModuleCache {
      * @param uniqueName The unique name of the module
      * @return The module checksum information
      */
-    public ModuleChecksums getModuleChecksums(String uniqueName) {
+    public ChecksumList getModuleChecksums(String uniqueName) {
         /*
          * First check to see whether the information already exists, and if
          * so, return it.
          */
         synchronized (this.checksums) {
-            ModuleChecksums checksums = this.checksums.get(uniqueName);
+            ChecksumList checksums = this.checksums.get(uniqueName);
             if (checksums == null) {
                 /*
                  * If the module does not exist, see if we have already checked
@@ -122,9 +122,9 @@ public class ModuleCache {
                  * to load the module's checksums if we haven't checked 
                  * previously.
                  */
-                if (this.modulesNotFound.contains(uniqueName) == true) {
-                    return null;
-                }
+//                if (this.modulesNotFound.contains(uniqueName) == true) {
+//                    return null;
+//                }
             
                 /*
                  * Otherwise, load in the module checksums from the server. If
@@ -166,9 +166,10 @@ public class ModuleCache {
                  * to load the module's repository list if we haven't checked 
                  * previously.
                  */
-                if (this.modulesNotFound.contains(uniqueName) == true) {
-                    return null;
-                }
+//                if (this.modulesNotFound.contains(uniqueName) == true) {
+//                    System.out.println("module name not found: " + uniqueName);
+//                    return null;
+//                }
             
                 /*
                  * Otherwise, load in the module repositories from the server. If

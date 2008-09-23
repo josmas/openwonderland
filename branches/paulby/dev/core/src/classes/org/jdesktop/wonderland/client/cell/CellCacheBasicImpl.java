@@ -105,7 +105,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          CellTransform cellTransform, 
                          CellConfig setup,
                          String cellName) {
-        logger.info("-----> creating cell "+className+" "+cellId);
+        logger.fine("creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
             return null;     // Instantiation failed, error has already been logged

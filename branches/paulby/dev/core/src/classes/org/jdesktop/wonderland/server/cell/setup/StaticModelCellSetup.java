@@ -19,63 +19,22 @@
 package org.jdesktop.wonderland.server.cell.setup;
 
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * The StaticModelCellSetup class is the cell component setup information that
- * describes model geomtetry to be loaded into the world. Cell setup classes
- * include this via the setCellSetupComponents() method on BasicCellSetup.
- * <p>
- * Within the XML file, this setup information appears as:
- * <static-model-component>
- *   <model>fubar</model>
- * </static-model-comoponent>
+ * The StaticModelCellSetup class is the cell that renders a static cell in
+ * world.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="static-model")
 public class StaticModelCellSetup extends BasicCellSetup implements Serializable {
 
-    /* The URI of the static model file */
-    @XmlElement(name="model")
-    public String model = null;
-    
     /** Default constructor */
     public StaticModelCellSetup() {
     }
     
-    /**
-     * Returns the model URI.
-     * 
-     * @return The model URI specification
-     */
-    @XmlTransient public String getModel() {
-        return this.model;
-    }
-    
-    /**
-     * Sets the model URI. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param model The model URI
-     */
-    public void setModel(String model) {
-        this.model = model;
-    }
-    
     public String getServerClassName() {
         return "org.jdesktop.wonderland.server.cell.StaticModelCellMO";
-    }
-    
-    /**
-     * Returns a string representation of this class
-     *
-     * @return The setup information as a string
-     */
-    @Override
-    public String toString() {
-        return super.toString() + "\n[StaticModuleCellSetup] module=" + this.getModel();
     }
 }

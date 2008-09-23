@@ -98,7 +98,8 @@ public abstract class BasicCellSetup implements Serializable {
     static {
         try {
             JAXBContext jc = JAXBContext.newInstance(
-                        org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup.class
+                    org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup.class,
+                    org.jdesktop.wonderland.server.cell.setup.ColladaCellSetup.class
             );
 
             BasicCellSetup.unmarshaller = jc.createUnmarshaller();
@@ -146,9 +147,9 @@ public abstract class BasicCellSetup implements Serializable {
      */
     public static class Scaling implements Serializable {
         /* The (x, y, z) scaling components */
-        @XmlElement(name="x") public double x = 0;  
-        @XmlElement(name="y") public double y = 0;
-        @XmlElement(name="z") public double z = 0;
+        @XmlElement(name="x") public double x = 1;  
+        @XmlElement(name="y") public double y = 1;
+        @XmlElement(name="z") public double z = 1;
         
         /** Default constructor */
         public Scaling() {

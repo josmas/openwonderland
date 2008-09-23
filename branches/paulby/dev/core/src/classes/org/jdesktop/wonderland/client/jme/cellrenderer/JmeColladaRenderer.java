@@ -1,3 +1,4 @@
+
 /**
  * Project Wonderland
  *
@@ -18,9 +19,8 @@
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
 import com.jme.light.PointLight;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
@@ -30,14 +30,13 @@ import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.cell.TestColladaCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A cell renderer that uses the JME Collada loader
@@ -68,7 +67,7 @@ public class JmeColladaRenderer extends BasicRenderer {
 
         Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
-        return loadCollada(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState);        
+        return loadColladaAsset(cell.getCellID().toString(), buf);        
     }
 
     public Node loadCollada(String name, float xoff, float yoff, float zoff, 
@@ -105,4 +104,39 @@ public class JmeColladaRenderer extends BasicRenderer {
         return ret;
     }
     
+    /**
+     * Loads a collada cell from the asset managergiven an asset URL
+     */
+    public Node loadColladaAsset(String name, ZBufferState buf) {        
+        Node node = null;
+
+        /* Fetch the basic info about the cell */
+        CellTransform transform = cell.getLocalTransform();
+        Vector3f translation = transform.getTranslation(null);
+        Vector3f scaling = transform.getScaling(null);
+        Quaternion rotation = transform.getRotation(null);
+        
+        try {
+            URL url = new URL(((TestColladaCell)cell).getModelURI());
+            InputStream input = url.openStream();
+            System.out.println("Resource stream "+input);
+            ColladaImporter.load(input, "Test");
+            node = ColladaImporter.getModel();
+            ColladaImporter.cleanUp();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error loading Collada file", e);
+            node = new Node();
+        }
+        
+        /* Create the scene graph object and set its wireframe state */
+        node.setModelBound(new BoundingBox());
+        node.updateModelBound();
+        node.setLocalTranslation(translation);
+        node.setLocalScale(scaling);
+        node.setLocalRotation(rotation);
+        node.setRenderState(buf);
+        node.setName(name);
+
+        return node;
+    }
 }

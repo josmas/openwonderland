@@ -66,6 +66,7 @@ public class CellTransform implements Serializable {
     private CellTransform(CellTransform orig) {
         this.rotation = new Quaternion(orig.rotation);
         this.translation = new Vector3f(orig.translation);
+        this.scale = new Vector3f(orig.scale);
     }
     
     public CellTransform clone(CellTransform result) {

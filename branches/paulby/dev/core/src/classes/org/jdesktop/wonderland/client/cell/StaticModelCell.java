@@ -30,6 +30,7 @@ public class StaticModelCell extends Cell {
     
     public StaticModelCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        addComponent(new ChannelComponent(this));
     }
     
     @Override

@@ -50,6 +50,8 @@ public class ViewManager {
 
     private CameraNode cameraNode;
     private CameraProcessor cameraProcessor = null;
+    private CameraComponent cameraComponent = null;
+            
     /**
      * The width and height of our 3D window
      */
@@ -133,10 +135,10 @@ public class ViewManager {
         
         // Add the camera
         Entity camera = new Entity("DefaultCamera");
-        CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cameraNode, width, height, 45.0f, aspect, 1.0f, 1000.0f, true);
-        cc.setCameraSceneGraph(cameraSG);
-        cc.setCameraNode(cameraNode);
-        camera.addComponent(CameraComponent.class, cc);
+        cameraComponent = wm.getRenderManager().createCameraComponent(cameraSG, cameraNode, width, height, 45.0f, aspect, 1.0f, 1000.0f, true);
+        cameraComponent.setCameraSceneGraph(cameraSG);
+        cameraComponent.setCameraNode(cameraNode);
+        camera.addComponent(CameraComponent.class, cameraComponent);
         
         cameraProcessor = new ThirdPersonCameraProcessor(cameraNode, wm);
         camera.addComponent(ProcessorComponent.class, cameraProcessor);
@@ -144,7 +146,15 @@ public class ViewManager {
         wm.addEntity(camera);         
     }
     
-    
+    /**
+     * Return the CameraComponent. This is an internal api.
+     * 
+     * @return
+     * @InternalAPI
+     */
+    public CameraComponent getCameraComponent() {
+        return cameraComponent;
+    }
     
     private Node createCameraGraph(WorldManager wm) {
         Node cameraSG = new Node("MyCamera SG");        
