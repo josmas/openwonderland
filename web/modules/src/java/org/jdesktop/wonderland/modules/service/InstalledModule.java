@@ -23,20 +23,46 @@ import org.jdesktop.wonderland.modules.file.FileModule;
 
 /**
  * The InstalledModule class represents a module that has been installed and
- * unpacked in the proper system directory of a running Wonderland server. An
- * installed module differs from a module that exists as a JAR file in several
- * ways:
- * <p>
- * 1. It contents are unpacked and expanded on disk.
- * 2. Any JAR that needs to be included in the server-side class path is placed
- *    within a special directory.
+ * unpacked in the proper system directory of a running Wonderland server.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class InstalledModule extends FileModule {
 
+    /**
+     * Constructor, takes the installed module file object. Throws IOException
+     * upon general I/O error reading the added module.
+     * 
+     * @param file The File object of the installed module
+     * @throw IOException Upon general I/O error
+     */
+    public InstalledModule(File file) {
+        super(file);
+        
+    }
+    
+    /**
+     * Constructor, takes the base directory and name of the module as
+     * arguments.
+     * 
+     * @param root The base directory of the module
+     * @param name The unique name of the module
+     */
     public InstalledModule(File root, String name) {
-        super(root, name);
+        super(new File(root, name));
+    }
+    
+    /**
+     * Returns true if the module exists in the given directory with the
+     * given unique name, false if not.
+     * 
+     * @param dir The directory in which the module may exist
+     * @param uniqueName The name of the module
+     * @return True if the module exists, false if not
+     */
+    public static boolean isExists(File dir, String uniqueName) {
+        File file = new File(dir, uniqueName);
+        return file.exists() == true && file.isDirectory() == true && file.isHidden() == false;
     }
     
     /**

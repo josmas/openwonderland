@@ -31,10 +31,41 @@ import org.jdesktop.wonderland.modules.file.FileModule;
  */
 public class PendingModule extends FileModule {
 
+    /**
+     * Constructor, takes the pending module file object. Throws IOException
+     * upon general I/O error reading the added module.
+     * 
+     * @param file The File object of the pending module
+     * @throw IOException Upon general I/O error
+     */
+    public PendingModule(File file) {
+        super(file);
+    }
+    
+    /**
+     * Constructor, takes the base directory and name of the module as
+     * arguments.
+     * 
+     * @param root The base directory of the module
+     * @param name The unique name of the module
+     */
     public PendingModule(File root, String name) {
-        super(root, name);
+        super(new File(root, name));
     }
 
+    /**
+     * Returns true if the module exists in the given directory with the
+     * given unique name, false if not.
+     * 
+     * @param dir The directory in which the module may exist
+     * @param uniqueName The name of the module
+     * @return True if the module exists, false if not
+     */
+    public static boolean isExists(File dir, String uniqueName) {
+        File file = new File(dir, uniqueName);
+        return file.exists() == true && file.isDirectory() == true && file.isHidden() == false;
+    }
+    
     /**
      * Returns true if the given file is potentially a valid module, false if
      * not.
