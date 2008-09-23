@@ -38,6 +38,11 @@
                     <location>comms/serialization/src/classes</location>
                 </source-folder>
                 <source-folder>
+                    <label>comms/sessionid/src/classes</label>
+                    <type>java</type>
+                    <location>comms/sessionid/src/classes</location>
+                </source-folder>
+                <source-folder>
                     <label>cell/multibounds/src/classes</label>
                     <type>java</type>
                     <location>cell/multibounds/src/classes</location>
@@ -87,6 +92,10 @@
                         <location>comms/serialization/src/classes</location>
                     </source-folder>
                     <source-folder style="packages">
+                        <label>comms/sessionid/src/classes</label>
+                        <location>comms/sessionid/src/classes</location>
+                    </source-folder>
+                    <source-folder style="packages">
                         <label>cell/multibounds/src/classes</label>
                         <location>cell/multibounds/src/classes</location>
                     </source-folder>
@@ -114,9 +123,10 @@
                 <package-root>comms/serverlistener/src/classes</package-root>
                 <package-root>comms/serverprotocol/src/classes</package-root>
                 <package-root>comms/serialization/src/classes</package-root>
+                <package-root>comms/sessionid/src/classes</package-root>
                 <package-root>cell/multibounds/src/classes</package-root>
                 <package-root>harness/src/classes</package-root>
-                <classpath mode="compile">../core/ext/sgs/sgs-0.9.6-r4193/lib/sgs.jar:../core/ext/sgs/sgs-client-0.9.6-r4193/lib/sgs-client.jar:../core/build/current/debug/lib/wonderland-server.jar:../core/build/current/debug/lib/wonderland-client.jar:../core/build/current/debug/lib/wonderland-utils.jar:../core/build/current/debug/lib/wonderland-common.jar:../core/ext/jme/jme/jme.jar:../core/ext/voicelib/voicelib.jar:../build-tools/import/junit-4.4.jar:../core/ext/common/swing-layout-1.0.jar</classpath>
+                <classpath mode="compile">../core/ext/sgs/sgs-client-0.9.6.3/lib/sgs-client.jar:../core/ext/sgs/sgs-client-0.9.6.3/lib/sgs-shared-1.0.jar:../core/ext/sgs/sgs-server-0.9.6.3/lib/sgs-server.jar:../core/build/lib/wonderland-client.jar:../core/build/lib/wonderland-common.jar:../core/build/lib/wonderland-server.jar:../build-tools/import/junit-4.4.jar:../core/ext/common/swing-layout-1.0.jar:../core/ext/jme20/target/jme.jar:../lib/jaxb/jaxb-api.jar:../lib/jaxb/jsr173_1.0_api.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

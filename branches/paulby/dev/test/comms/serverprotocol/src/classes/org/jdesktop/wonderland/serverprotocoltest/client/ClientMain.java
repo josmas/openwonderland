@@ -17,12 +17,27 @@
  */
 package org.jdesktop.wonderland.serverprotocoltest.client;
 
+import com.sun.sgs.client.ClientChannel;
+import com.sun.sgs.client.ClientChannelListener;
+import com.sun.sgs.client.simple.SimpleClient;
+import com.sun.sgs.client.simple.SimpleClientListener;
+import java.io.IOException;
+import java.net.PasswordAuthentication;
+import java.nio.ByteBuffer;
+import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.comms.LoginFailureException;
-import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.common.comms.ProtocolVersion;
+import org.jdesktop.wonderland.common.comms.SessionInternalConnectionType;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.messages.MessagePacker;
+import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
+import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
+import org.jdesktop.wonderland.common.messages.OKMessage;
+import org.jdesktop.wonderland.common.messages.ProtocolSelectionMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.serverprotocoltest.common.BadProtocolVersion;
 import org.jdesktop.wonderland.serverprotocoltest.common.TestProtocolVersion;
 
@@ -34,12 +49,8 @@ public class ClientMain {
 
     /** logger */
     private static final Logger logger =
-            Logger.getLogger(ClientMain.class.getName());
-    
-    // the server info
-    private WonderlandServerInfo serverInfo;
-    
-    // whether we are done
+            Logger.getLogger(ClientMain.class.getName());    // the server info
+    private WonderlandServerInfo serverInfo;    // whether we are done
     boolean finished = false;
 
     /**
@@ -61,43 +72,58 @@ public class ClientMain {
         testGoodSession(username, password);
         testBadSession(username, password);
     }
-    
-    public void testGoodSession(String username, String password)
-        throws LoginFailureException
+
+    public void testGoodSession(final String username, final String password)
+            throws IOException, InterruptedException
     {
         logger.info("Test good session");
-        
-        // create the client & login
-        GoodSession session = new GoodSession(serverInfo);
-        session.login(new LoginParameters(username, password.toCharArray()));
 
-        logger.info("Good login suceeded");
-    
-        session.logout();
+        // create the client & login
+        GoodSessionListener listener = new GoodSessionListener(username, password);
+        SimpleClient sc = new SimpleClient(listener);
+        listener.setSession(sc);
+        
+        // log in
+        Properties props = new Properties();
+        props.setProperty("host", serverInfo.getHostname());
+        props.setProperty("port", Integer.toString(serverInfo.getSgsPort()));
+        sc.login(props);
+
+        boolean success = listener.waitForLogin();
+        assert success : "Good login failed";
+        
+        sc.logout(true);
     }
-    
-    public void testBadSession(String username, String password) {
+
+    public void testBadSession(String username, String password) 
+        throws IOException, InterruptedException
+    {
         logger.info("Test bad session");
         
         // create the client & login
-        BadSession session = new BadSession(serverInfo);
+        BadSessionListener listener = new BadSessionListener(username, password);
+        SimpleClient sc = new SimpleClient(listener);
+        listener.setSession(sc);
         
-        try {
-            session.login(new LoginParameters(username, password.toCharArray()));
-            assert false : "Bad login should have failed";
-        } catch (LoginFailureException lfe) {
-            logger.info("Bad login failed");
-        }
-    
-        session.logout();
+        // log in
+        Properties props = new Properties();
+        props.setProperty("host", serverInfo.getHostname());
+        props.setProperty("port", Integer.toString(serverInfo.getSgsPort()));
+        sc.login(props);
+
+        boolean success = listener.waitForLogin();
+        assert !success : "Bad login succeeded";
+        
+        sc.logout(true);
     }
 
-    class GoodSession extends WonderlandSessionImpl {
-
-        public GoodSession(WonderlandServerInfo serverInfo) {
-            super (serverInfo);
-        }
+    
+    class GoodSessionListener extends TestListener {
         
+        public GoodSessionListener(String username, String password) {
+            super (username, password);
+        }
+
         @Override
         protected String getProtocolName() {
             return TestProtocolVersion.PROTOCOL_NAME;
@@ -109,12 +135,12 @@ public class ClientMain {
         }
     }
 
-    class BadSession extends WonderlandSessionImpl {
-
-        public BadSession(WonderlandServerInfo serverInfo) {
-            super (serverInfo);
-        }
+     class BadSessionListener extends TestListener {
         
+        public BadSessionListener(String username, String password) {
+            super (username, password);
+        }
+
         @Override
         protected String getProtocolName() {
             return BadProtocolVersion.PROTOCOL_NAME;
@@ -123,6 +149,111 @@ public class ClientMain {
         @Override
         protected ProtocolVersion getProtocolVersion() {
             return BadProtocolVersion.VERSION;
+        }
+    }
+    
+    abstract class TestListener implements SimpleClientListener {
+        private SimpleClient session;  
+        private String username;
+        private String password;
+        private boolean loginInProgress = true;
+        private boolean loginSuccess = false;
+        private MessageID messageID;
+        
+        public TestListener(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+        
+        public void setSession(SimpleClient session) {
+            this.session = session;
+        }
+        
+        protected SimpleClient getSession() {
+            return session;
+        }
+        
+        public synchronized boolean waitForLogin() throws InterruptedException {
+            while (loginInProgress) {
+                wait();
+            }
+            
+            return loginSuccess;
+        }
+        
+        protected abstract String getProtocolName();
+        protected abstract ProtocolVersion getProtocolVersion();
+        
+        public PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(username, password.toCharArray());
+        }
+
+        public void loggedIn() {
+            // send the protocol selection message
+            ProtocolSelectionMessage psm = 
+                    new ProtocolSelectionMessage(getProtocolName(),
+                                                 getProtocolVersion());
+            messageID = psm.getMessageID();
+            
+            try {
+                getSession().send(MessagePacker.pack(psm, 
+                        SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_ID));
+            } catch (PackerException pe) {
+                logger.log(Level.WARNING, "Error packing message", pe);
+                loginFailed("Error packing message");
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error sending message", ioe);
+                loginFailed("Error sending message");
+            }
+        }
+
+        public synchronized void loginFailed(String reason) {
+            loginInProgress = false;
+            loginSuccess = false;
+            notifyAll();
+        }
+
+        public synchronized void disconnected(boolean force, String reason) {
+            loginInProgress = false;
+            loginSuccess = false;
+            notifyAll();
+        }
+        
+        public ClientChannelListener joinedChannel(ClientChannel channel) {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        public void receivedMessage(ByteBuffer message) { 
+            Message m = null;
+            
+            try {
+                ReceivedMessage rm = MessagePacker.unpack(message);
+                m = rm.getMessage();
+           
+                // check the response
+                assert m instanceof ResponseMessage : "Received invalid response " + m; 
+                assert m.getMessageID().equals(messageID) : "Bad ID in response " + m;
+            } catch (PackerException pe) {
+                logger.log(Level.WARNING, "Error unpacking", pe);
+                assert false : "Error unpacking message";
+            }
+            
+            synchronized (this) {
+                loginInProgress = false;
+                
+                // figure out if we succeeded
+                loginSuccess = (m instanceof OKMessage);
+                
+                notifyAll();
+            }
+        }
+
+        public void reconnecting() {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        public void reconnected() {
+            throw new UnsupportedOperationException("Not supported.");
         }
     }
     

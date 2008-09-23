@@ -29,6 +29,6 @@ public class HelloWorldPlugin implements ServerPlugin {
             Logger.getLogger(HelloWorldPlugin.class.getName());
     
     public void initialize() {
-        logger.info("Hello world plugin");
+        logger.warning("Hello world plugin");
     }
 }

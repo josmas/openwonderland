@@ -1,54 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-serializationtest" default="all" basedir=".">
-    <property name="top.dir" location="../../.."/>
-    <property name="current.dir" location="."/>
-    <property name="core.dir" location="${top.dir}/core"/>
+     <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-serializationtest}"/>
+    <property name="test.dir" location="${current.dir}/../.."/>
     
-    <!-- Use my-build.properties to override default values in build.properties -->
-    <property file="my.build.properties"/>
-    <property file="${core.dir}/my.build.properties"/>
-    <property file="build.properties"/>
-    <property file="${core.dir}/build.properties"/>
+    <property name="servertest.src" value="org/jdesktop/wonderland/comms"/>
+    <property name="servertest.packagename" value="org.jdesktop.wonderland.comms"/>
+    <property name="servertest.jarname" value="serializationtest"/>
     
-    <property name="project.name" value="${ant.project.name}"/>
-
-    <taskdef resource="net/sf/antcontrib/antlib.xml">
-        <classpath>
-            <pathelement location="${build-import.dir}/ant-contrib.jar"/>
-        </classpath>
-    </taskdef>
-    
-    <echo message="IMPORT DIR ${build-import.dir}"/>
-    
-    <!-- Do platform/x11/environment specific setup common to all tasks -->
-    <import file="${build-import.dir}/build-setup.xml"/>
-    
-    <!-- core directory -->
-    <property name="core.platform.dir" value="${core.dir}/build/${build.location}"/>
-    <property name="core.lib.dir" location="${core.platform.dir}/lib"/>
-    
-    <!-- Initialization - make dirs, unpack ext stuff... -->
-    <target name="init">
-        <mkdir dir="${build.classes.dir}"/>
-        <mkdir dir="${build.lib.dir}"/>
-    </target>
-    
-    <target name="build" depends="init">
-        <wl-compile>
-            <compile-classes>
-                <include name="org/jdesktop/wonderland/**"/>
-            </compile-classes>
-            
-            <compile-classpath>
-		<pathelement path="${wonderland-client-compile.classpath}"/>
-                <pathelement path="${core.lib.dir}/wonderland-client.jar"/>
-                <pathelement path="${core.lib.dir}/wonderland-common.jar"/>
-                <pathelement path="${build-import.dir}/junit-4.4.jar"/>
-	    </compile-classpath>
-        </wl-compile>
-    </target>
-    
-    <target name="jar" depends="build"/>
+    <!-- import common build file -->
+    <import file="${test.dir}/build-tools/build-scripts/test-build.xml"/>
+       
+    <!-- extra classpath -->
+    <pathconvert property="test-client.classpath">
+        <path location="${setup.build-scripts.dir}/../import/junit-4.4.jar"/>
+    </pathconvert>   
+       
+    <target name="build" depends="-test-init, -test-compile-client"/>
+    <target name="jar" depends="build, -test-jar-client"/>
+    <target name="clean" depends="-test-clean"/>
         
     <target name="run-test" depends="jar">
 <!--        <junit fork="yes" haltonfailure="true">
@@ -64,20 +34,13 @@
         
         <java fork="yes" classname="org.junit.runner.JUnitCore">
             
-            <arg value="org.jdesktop.wonderland.comms.SerializationTest"/>
+            <arg value="org.jdesktop.wonderland.comms.client.SerializationTest"/>
             <classpath>
-		<pathelement path="${wonderland-client-compile.classpath}"/>
-                <pathelement path="${core.lib.dir}/wonderland-client.jar"/>
-                <pathelement path="${core.lib.dir}/wonderland-common.jar"/>
-                <pathelement location="${build-import.dir}/junit-4.4.jar"/>
+		<pathelement path="${core-client.classpath}"/>
+                <pathelement location="${test-client.classpath}"/>
                 <pathelement path="${build.classes.dir}"/>
 	    </classpath>
         </java>
         
-    </target>
-    
-    <target name="clean">
-        <delete dir="${build.dir}"/>
-        <delete dir="data"/>
     </target>
 </project>

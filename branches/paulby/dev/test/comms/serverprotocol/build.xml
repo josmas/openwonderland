@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-serverprotocoltest" default="all" basedir=".">
-    <property name="top.dir" location="../../.."/>
-    <property name="current.dir" location="."/>
-    <property name="test.import.dir" location="${top.dir}/test/build-tools/import"/>
-        
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-serverprotocoltest}"/>
+    <property name="test.dir" location="${current.dir}/../.."/>
+    
     <property name="servertest.src" value="org/jdesktop/wonderland/serverprotocoltest"/>
     <property name="servertest.packagename" value="org.jdesktop.wonderland.serverprotocoltest"/>
     <property name="servertest.jarname" value="serverprotocoltest"/>
     <property name="servertest.plugins" value="TestProtocolPlugin"/>
     
-    <import file="${test.import.dir}/servertest-common.xml"/>
-    
-    <target name="build" depends="init, compile-common, compile-server, compile-client"/>
-    <target name="jar" depends="build, jar-server, jar-client"/>
-    <target name="run-client" depends="-do-run-client"/>
-    <target name="run-server" depends="-do-run-server"/>
-    <target name="clean" depends="-do-clean"/>
+    <!-- import common build file -->
+    <import file="${test.dir}/build-tools/build-scripts/test-build.xml"/>
+       
+    <target name="build" depends="-test-init, -test-compile-common, 
+                                              -test-compile-server,
+                                              -test-compile-client"/>
+    <target name="jar" depends="build, -test-jar-server, -test-jar-client"/>
+    <target name="run-client" depends="-test-run-client"/>
+    <target name="run-server" depends="-test-run-server"/>
+    <target name="clean" depends="-test-clean"/>
 </project>

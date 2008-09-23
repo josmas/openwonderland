@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-webserver" default="all" basedir=".">
-    <property name="top.dir" location="../.."/>
-    <property name="current.dir" location="."/>
-    <property name="web.import.dir" location="${top.dir}/web/build-tools/import"/>
-        
+       <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-webserver}"/>
+    
     <!-- Use my-build.properties to override default values in build.properties.
          You can specify an alternate build.properties override file by
          running with "ant -Dbuild.properties.file=<file>" -->
@@ -12,9 +11,23 @@
     <property file="build.properties"/>
     <property name="web.src" value="org/jdesktop/wonderland/webserver"/>
     
-    <import file="${web.import.dir}/web-common.xml"/>
+    <import file="../build-tools/build-scripts/web-build.xml"/>
     
-    <target name="build" depends="-do-compile-server"/>
+    <target name="build" depends="-web-build-init">
+        <!-- compile -->
+        <wl-compile>
+            <compile-classes>
+                <include name="${web.src}/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${web.classpath}"/>
+                <fileset dir="lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </compile-classpath>
+        </wl-compile>
+    </target>
     
     <target name="-declare-ant-task">
          <taskdef name="listfiles"
@@ -47,6 +60,7 @@
             <zipfileset dir="${top.dir}/lib/jaxb" prefix="webserver"/>
             <zipfileset dir="${top.dir}/web/lib/restlib" prefix="webserver"/>
             <zipfileset dir="${top.dir}/web/lib/apache" prefix="webserver"/>
+            <zipfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
             
             <!-- wars to deploy -->
             <zipfileset dir="${top.dir}/web/wfs/dist" prefix="deploy"/>
@@ -78,5 +92,5 @@
         <java jar="${build.dir}/lib/Wonderland.jar"/>
     </target>
     
-    <target name="clean" depends="-do-clean"/>
+    <target name="clean" depends="-web-clean"/>
 </project>
