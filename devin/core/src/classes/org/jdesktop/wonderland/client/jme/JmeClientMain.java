@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.NodeListener;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 
 /**
  *
@@ -116,6 +118,12 @@ public class JmeClientMain {
         MainFrame frame = new MainFrame(wm, width, height);
         // center the frame
         frame.setLocationRelativeTo(null);
+
+	// Initialize the input manager
+	// TODO: CameraComponent cameraComp = ViewManager.getCameraComponent();
+	CameraComponent cameraComp = null;
+	InputManager3D.getInputManager().initialize(frame.getCanvas(), cameraComp);
+
         // show frame
         frame.setVisible(true);
     }
