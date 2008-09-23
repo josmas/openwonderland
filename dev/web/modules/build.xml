@@ -63,4 +63,21 @@
     nbproject/build-impl.xml file. 
 
     -->
+    
+    <target name="-post-dist">
+        <jar jarfile="${dist.dir}/wonderland-modules-api.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="org/jdesktop/wonderland/modules/*.class"/>
+                <include name="org/jdesktop/wonderland/modules/ant/**"/>
+            </fileset>
+        </jar>
+        
+        <jar jarfile="${dist.dir}/wonderland-modules-core.jar">
+            <fileset dir="${build.classes.dir}">
+                <exclude name="org/jdesktop/wonderland/modules/ant/**"/>
+                <exclude name="org/jdesktop/wonderland/modules/service/resources/**"/>
+                <exclude name="org/jdesktop/wonderland/modules/servlets/**"/>
+            </fileset>
+        </jar>
+    </target>
 </project>

@@ -35,28 +35,18 @@ import org.jdesktop.wonderland.modules.file.FileModule;
  */
 public class InstalledModule extends FileModule {
 
-    public InstalledModule(File root) {
-        super(root);
+    public InstalledModule(File root, String name) {
+        super(root, name);
     }
     
     /**
-     * Opens the module by reading its contents.
-     */
-    @Override
-    public void open() {
-        super.open();
-    }
-    
-    /**
-     * Opens an installed module given its file, returns a new instance of this
-     * class.
+     * Returns true if the given file is potentially a valid module, false if
+     * not.
      * 
-     * @param resource
-     * @return
+     * @param file The File to check if it is a potentially valid module
+     * @return True If the file is potentially valid, false if not.
      */
-    public static final InstalledModule getInstalledModule(File root) {
-        InstalledModule im = new InstalledModule(root);
-        im.open();
-        return im;
+    public static boolean isValidFile(File file) {
+        return file.isDirectory() == true && file.isHidden() == false;
     }
 }

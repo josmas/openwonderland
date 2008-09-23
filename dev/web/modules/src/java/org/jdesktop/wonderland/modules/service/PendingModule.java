@@ -19,10 +19,7 @@
 package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import org.jdesktop.wonderland.modules.ModuleResource;
-import org.jdesktop.wonderland.modules.archive.ArchiveModule;
+import org.jdesktop.wonderland.modules.file.FileModule;
 
 /**
  * A pending module is one that has been compiled, configured, and has had its
@@ -32,53 +29,20 @@ import org.jdesktop.wonderland.modules.archive.ArchiveModule;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class PendingModule extends ArchiveModule {
-    
-    /* The File object of the archive */
-    private File file = null;
-    
-    public PendingModule(File root) throws IOException {
-        super(root.toURL());
-        this.file = root;
+public class PendingModule extends FileModule {
+
+    public PendingModule(File root, String name) {
+        super(root, name);
     }
-    
+
     /**
-     * Returns the file associated with the archive
-     *
-     * @return The file associated with the archive
-     */
-    public File getFile() {
-        return this.file;
-    }
-    
-    @Override
-    public InputStream getInputStreamForResource(ModuleResource resource) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    /**
-     * Opens the module by reading its contents.
-     */
-    @Override
-    public void open() {
-        super.open();
-    }
-    
-    /**
-     * Opens a pending module given its file, returns a new instance of this
-     * class.
+     * Returns true if the given file is potentially a valid module, false if
+     * not.
      * 
-     * @param root The base directory of the module
-     * @return The module object
+     * @param file The File to check if it is a potentially valid module
+     * @return True If the file is potentially valid, false if not.
      */
-    public static final PendingModule getPendingModule(File root) {
-        try {
-            PendingModule im = new PendingModule(root);
-            im.open();
-            return im;
-        } catch (java.io.IOException excp) {
-            // log an error
-        }
-        return null;
+    public static boolean isValidFile(File file) {
+        return file.isDirectory() == true && file.isHidden() == false;
     }
 }

@@ -48,8 +48,10 @@ public class WFSCellMO extends CellMO implements ManagedObject, Serializable {
          * These bounds may not entirely be correct -- a WFSCellGLO should simply
          * assume the bounds of its parent.
          */
-        super(new BoundingBox(new Vector3f(), Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
-                new CellTransform(null, null, null));
+//        super(new BoundingBox(new Vector3f(), Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
+//                new CellTransform(null, null, null));
+        super(new BoundingBox(new Vector3f(), (float)2.0, (float)2.0, (float)2.0), new CellTransform(null, new Vector3f((float)0.0, (float)0.0, (float)0.0)));
+
         this.rootName = rootName;
     }
     

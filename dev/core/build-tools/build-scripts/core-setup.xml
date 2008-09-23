@@ -1,0 +1,34 @@
+<project basedir="." default="..." name="core.setup">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="core.build-scripts.dir" file="${ant.file.core.setup}"/>
+    <property name="core.dir" location="${core.build-scripts.dir}/../.."/>
+    <property name="top.dir" location="${core.dir}/.."/>
+    
+    <!-- import the main setup file -->
+    <import file="${top.dir}/build-tools/build-scripts/setup.xml"/>
+    
+    <!-- import core properties -->
+    <property file="${core.build-scripts.dir}/core.properties"/>
+    
+    <!-- import core classpath -->
+    <import file="${core.build-scripts.dir}/classpath.xml"/>
+    
+    <!-- unpack zips -->
+    <target name="unpack-core-libs">
+        <!-- darkstar -->
+   	<unpack-lib-zip pkgname="sgs-server"
+			srcdir="${core.lib.zip.dir}" destdir="${core.sgs.dir}"/>
+	<unpack-lib-zip pkgname="sgs-client"
+			srcdir="${core.lib.zip.dir}" destdir="${core.sgs.dir}"/>
+                         
+        <!-- jogl -->
+        <unpack-lib-zip pkgname="jogl"
+                        srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
+    </target>
+
+   
+    <target name="clean-core-libs" description="Clean external libraries">
+        <delete dir="core.sgs.dir"/>
+        <delete dir="core.lib.os.dir"/>
+    </target>    
+</project>
