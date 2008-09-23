@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.cell.view;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.ArrayList;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -37,6 +38,8 @@ public class LocalAvatar implements ClientView {
     private String viewID = "DEFAULT";
     private ViewCell viewCell = null;
     private WonderlandSession session;
+    
+    private ArrayList<ViewCellConfiguredListener> configListeners = null;
     
     public LocalAvatar(WonderlandSession session) {
         this.session = session;
@@ -68,6 +71,29 @@ public class LocalAvatar implements ClientView {
 //        System.out.println("******************* viewCellConfigured");
         viewCell = (ViewCell) ClientContext.getCellCache(session).getCell(cellID);
         ClientContext.getCellCache(session).setViewCell(viewCell);
+        notifyViewCellConfiguredListeners();
+    }
+    
+    /**
+     * Add a listener which will be notified when the cell is configured for this localAvatar
+     * @param listener
+     */
+    public void addViewCellConfiguredListener(ViewCellConfiguredListener listener) {
+        synchronized(this) {
+            if (configListeners==null)
+                configListeners = new ArrayList();
+            configListeners.add(listener);
+        }
+    }
+    
+    private void notifyViewCellConfiguredListeners() {
+        if (configListeners==null)
+            return;
+        
+        synchronized(this) {
+            for(ViewCellConfiguredListener l : configListeners)
+                l.viewConfigured(this);
+        }
     }
     
     /**
@@ -80,5 +106,11 @@ public class LocalAvatar implements ClientView {
         return viewCell;
     }
 
-    
+    /**
+     * A listener interface for notification when the ViewCell is attached
+     * to this LocalAvatar
+     */
+    public interface ViewCellConfiguredListener {
+        public void viewConfigured(LocalAvatar localAvatar);
+    }
 }

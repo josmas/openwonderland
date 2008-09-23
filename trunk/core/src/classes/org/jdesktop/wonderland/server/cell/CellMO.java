@@ -212,6 +212,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (childCellRefs==null)
             childCellRefs = new ArrayList<ManagedReference<CellMO>>();
         
+        System.out.println("************* "+getCellID()+" adding child "+child.getCellID());
+        
         child.setParent(this);
         
         childCellRefs.add(AppContext.getDataManager().createReference(child));
