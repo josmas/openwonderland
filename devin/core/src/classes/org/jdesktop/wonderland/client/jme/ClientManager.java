@@ -95,7 +95,7 @@ public class ClientManager {
         
     }
     
-    void nodeMoved(Node node) {
+//    void nodeMoved(Node node) {
 //        if (node instanceof CameraNode) {
 //            Vector3f v3f = node.getWorldTranslation();
 //            Quaternion rot = node.getWorldRotation();
@@ -105,7 +105,7 @@ public class ClientManager {
 //                previousRot.set(rot);
 //            }
 //        }
-    }
+//    }
     
     class JmeCellCache extends CellCacheBasicImpl {
                 

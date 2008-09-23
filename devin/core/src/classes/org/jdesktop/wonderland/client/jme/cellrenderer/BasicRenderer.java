@@ -118,7 +118,6 @@ public abstract class BasicRenderer implements CellRendererJME {
 //                    System.err.println("BasicRenderer.cellMoved "+tmpV3f+" "+tmpQuat);
                     dirty = false;
                     worldManager.addToUpdateList(node);
-                    worldManager.nodeMoved(node);
                 }
             }
         }

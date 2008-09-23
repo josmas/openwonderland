@@ -241,17 +241,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Creates a bounding box with the specified dimensions,centered at 0,0,0
-     */
-//    public static BoundingBox createBoundingBox(float xDim, float yDim, float zDim) {
-//        BoundingBox cellBounds = new BoundingBox(
-//                new Point3d(-xDim/2f, -yDim/2f, -zDim/2f), 
-//                new Point3d(xDim/2f, yDim/2f, zDim/2f));
-//        return cellBounds;
-//    }
-    
-    
-    /**
      * Returns a unique cell id and registers the cell with the system
      * @return
      */
