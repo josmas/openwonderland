@@ -4,6 +4,7 @@
        <ant dir="utils" target="jar"/>
        <ant dir="wfs" target="dist" inheritall="false"/>
        <ant dir="modules" target="dist" inheritall="false"/>
+       <ant dir="runner" target="dist" inheritall="false"/>
        <ant dir="server" target="package" inheritall="false"/>
     </target>
     
@@ -15,6 +16,7 @@
        <ant dir="utils" target="clean"/>
        <ant dir="wfs" target="clean" inheritall="false"/>
        <ant dir="modules" target="clean" inheritall="false"/>
+       <ant dir="runner" target="clean" inheritall="false"/>
        <ant dir="server" target="clean" inheritall="false"/>
     </target>
 </project>
