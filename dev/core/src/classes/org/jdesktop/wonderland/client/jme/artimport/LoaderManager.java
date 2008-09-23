@@ -21,8 +21,9 @@ import com.jme.scene.Node;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import org.jdesktop.wonderland.kmzloadermodule.client.LoaderKmz;
 
 /**
  * Manage the various loaders available to the system
@@ -36,7 +37,17 @@ public class LoaderManager {
     private static LoaderManager loaderManager;
     
     private LoaderManager() {
-        registerLoader(new LoaderKmz());
+        try {
+            Class clazz = Class.forName("org.jdesktop.wonderland.modules.kmzloader.client.LoaderKmz");
+            ModelLoader loader = (ModelLoader) clazz.newInstance();
+            registerLoader(loader);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(LoaderManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(LoaderManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(LoaderManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public static LoaderManager getLoaderManager() {
