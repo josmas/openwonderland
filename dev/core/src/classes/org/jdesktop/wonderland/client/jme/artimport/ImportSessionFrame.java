@@ -49,8 +49,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
@@ -61,6 +65,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
@@ -655,21 +663,28 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         Node modelBG=null;
         
-        InputStream in = new FileInputStream(model.getOrigModel());
         
-        if (model.getOrigModel().endsWith("dae")) {
-            ColladaImporter.load(in, model.getOrigModel());
-            modelBG = ColladaImporter.getModel();
-
-            ColladaImporter.cleanUp();
-        } else if (model.getOrigModel().endsWith("wlm")) {
-            Savable s = BinaryImporter.getInstance().load(in);
-            System.out.println("LOADED "+s);
-            modelBG = (Node) s;
-        } else {
-            logger.severe("Unrecognised file extension "+model.getOrigModel());
-            return null;
-        }
+//        if (model.getOrigModel().endsWith("dae")) {
+//            InputStream in = new FileInputStream(model.getOrigModel());
+//            ColladaImporter.load(in, model.getOrigModel());
+//            modelBG = ColladaImporter.getModel();
+//
+//            ColladaImporter.cleanUp();
+//            in.close();
+//        } else if (model.getOrigModel().endsWith("kmz")) {
+//            modelBG = load(new File(model.getOrigModel()));
+//        } else if (model.getOrigModel().endsWith("wlm")) {
+//            InputStream in = new FileInputStream(model.getOrigModel());
+//            Savable s = BinaryImporter.getInstance().load(in);
+//            System.out.println("LOADED "+s);
+//            modelBG = (Node) s;
+//            in.close();
+//        } else {
+//            logger.severe("Unrecognised file extension "+model.getOrigModel());
+//            return null;
+//        }
+        
+        modelBG = LoaderManager.getLoaderManager().load(new File(model.getOrigModel()));
         
         rootBG.attachChild(modelBG);
         
@@ -715,7 +730,7 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         return entity;
     }
-    
+      
      // This gimble locks, but good enough for now...
     public static Matrix3f calcRotationMatrix(float x, float y, float z) {
         Matrix3f m3f = new Matrix3f();

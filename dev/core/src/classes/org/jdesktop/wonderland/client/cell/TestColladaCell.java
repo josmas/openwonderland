@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.client.cell;
 
 import org.jdesktop.wonderland.client.jme.cellrenderer.JmeColladaRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.config.ColladaCellConfig;
 
 /**
  * Client side cell for rendering JME content
@@ -27,8 +29,24 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class TestColladaCell extends Cell {
     
+    /* The URI of the model asset */
+    private String modelURI = null;
+    
     public TestColladaCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+    }
+    
+    /**
+     * Called when the cell is initially created and any time there is a 
+     * major configuration change. The cell will already be attached to it's parent
+     * before the initial call of this method
+     * 
+     * @param setupData
+     */
+    @Override
+    public void configure(CellConfig setupData) {
+        ColladaCellConfig colladaConfig = (ColladaCellConfig)setupData;
+        this.modelURI = colladaConfig.getModelURI();
     }
     
     @Override
@@ -46,5 +64,12 @@ public class TestColladaCell extends Cell {
         return ret;
     }
     
-
+    /**
+     * Returns the URI of the model asset.
+     * 
+     * @return The asset URI
+     */
+    public String getModelURI() {
+        return this.modelURI;
+    }
 }

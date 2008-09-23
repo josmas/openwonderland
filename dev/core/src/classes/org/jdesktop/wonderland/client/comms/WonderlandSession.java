@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.comms;
 
 import com.sun.sgs.client.simple.SimpleClient;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Properties;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -77,6 +78,21 @@ public interface WonderlandSession {
      * Logout from the server.
      */
     public void logout();
+    
+    /**
+     * Get the ID of this session.  The ID is a unique identifier for this
+     * particular session that is globally unique across all sessions
+     * attached to the same server.  
+     * <p>
+     * The ID is only valid when the client
+     * status is CONNECTED.  Attempting to read the ID when the status is
+     * anything else will cause an IllegalStateException.
+     * <p>
+     * The ID is generated on the server and communicated as part of the
+     * login process.  It is available at the time that the client is
+     * notified of the state change.
+     */
+    public BigInteger getID();
     
     /**
      * Connect a new client to this session, with no properties. This is

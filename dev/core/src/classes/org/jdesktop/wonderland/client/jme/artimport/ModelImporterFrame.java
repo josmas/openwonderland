@@ -187,7 +187,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JFileChooser chooser = new JFileChooser();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(new String[] {"dae", "wlm"});
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(LoaderManager.getLoaderManager().getLoaderExtensions());
                 chooser.setFileFilter(filter);
                 chooser.setCurrentDirectory(lastModelDir);
                 int returnVal = chooser.showOpenDialog(ModelImporterFrame.this);

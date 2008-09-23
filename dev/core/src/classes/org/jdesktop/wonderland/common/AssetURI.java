@@ -36,7 +36,7 @@ import java.net.URISyntaxException;
  * If the asset refers to a definite asset located over the internet, then the
  * AssetURI takes the form of a well-formed URL. That is, it has a well-known
  * scheme such as 'http', 'ftp', or 'file'. The isDefinite() method returns true
- * in this instance (equivalent to isAbsolute() == true && getScheme() != 'wlm').
+ * in this instance (equivalent to isAbsolute() == true && getScheme() != 'wla').
  * 
  * <h3>A relative URL</h3>
  * 
@@ -49,7 +49,7 @@ import java.net.URISyntaxException;
  * <h3>A Wonderland module URI</h3>
  * 
  * If the asset refers to an asset found in a Wonderland module, then the
- * AssetURI takes the form of an absolute URI with a getScheme() == 'wlm'. The
+ * AssetURI takes the form of an absolute URI with a getScheme() == 'wla'. The
  * actual location of the asset is obtained by taking the name of the module
  * (returned by getModuleName() method) and the path (returned by getPath()).
  *
@@ -61,7 +61,7 @@ public class AssetURI {
     private URI uri = null;
     
     /* The protocol name for assets stored in Wonderland modules */
-    public static final String WLM_PROTOCOL = "wlm";
+    public static final String WLM_PROTOCOL = "wla";
     
     /**
      * Constructor which takes the string represents of the URI.
@@ -127,12 +127,13 @@ public class AssetURI {
     }
     
     /**
-     * Returns the relative path of the resource specified by the URI.
+     * Returns the relative path of the resource specified by the URI. The
+     * relative path does not being with any forward "/".
      * 
      * @return The relative path within the URI
      */
     public String getRelativePath() {
-        return this.uri.getPath();
+        return this.stripLeadingSlash(this.uri.getPath());
     }
     
     /**
@@ -176,5 +177,15 @@ public class AssetURI {
     @Override
     public String toString() {
         return this.uri.toString();
+    }
+    
+    /**
+     * Strips off the leading "/", if there is one and returns the new string
+     */
+    private String stripLeadingSlash(String path) {
+        if (path.startsWith("/") == true) {
+            return path.substring(1);
+        }
+        return path;
     }
 }

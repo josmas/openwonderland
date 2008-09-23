@@ -59,7 +59,7 @@ public class JmeClientMain {
     private static WorldManager worldManager;
     
     public JmeClientMain(String[] args) {
-        props = loadProperties("run.properties");
+        props = loadProperties("run-client.properties");
    
         String serverName = props.getProperty(SERVER_NAME_PROP,
                                               SERVER_NAME_DEFAULT);
@@ -72,11 +72,9 @@ public class JmeClientMain {
         worldManager = new WorldManager("Wonderland");
         
         ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
-//        worldManager.addNodeListener(new NodeMoveListener(clientManager));
         
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
-//        worldManager.addNodeListener(new NodeMoveListener(clientManager2));
         
         processArgs(args);
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);

@@ -33,6 +33,7 @@ import com.sun.sgs.app.TaskManager;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,6 @@ import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
-import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -105,6 +105,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private boolean showStats = false;
     
     private CellTransform cellTransformTmp = new CellTransform(new Quaternion(), new Vector3f());
+    
+    private HashSet<ViewCellCacheRevalidationListener> revalidationsListeners = new HashSet();
     
     /**
      * Creates a new instance of ViewCellCacheMO
@@ -298,6 +300,13 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             if (dynamicStats!=null || staticStats!=null) {
                 logger.info(statsOut.toString());
             }
+            
+            // Notify the cache revalidation listeners
+            synchronized(revalidationsListeners) {
+                for(ViewCellCacheRevalidationListener rl : revalidationsListeners) {
+                    rl.cacheRevalidate(cellTransformTmp);
+                }
+            }
                    
             lastRevalidationTimestamp = TimeManager.getWonderlandTime();
             
@@ -307,7 +316,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             monitor.setException(true);
             
             if (logger.isLoggable(Level.WARNING)) {
-                logger.log(Level.WARNING, "Rethrowing exception", e.getMessage());
+                logger.log(Level.WARNING, "Rethrowing exception", e);
             }
             
             throw e;
@@ -319,6 +328,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     
     private void generateLoadMessages(CellListMO visCellList) {
         
+        ManagedReference<ViewCellCacheMO> viewCellCacheRef = AppContext.getDataManager().createReference(this);
         Collection<CellDescription> cellInfoList = visCellList.getCells();
         for(CellDescription cellDescription : cellInfoList) {
             // find the cell in our current list of cells
@@ -340,6 +350,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 allCells.addCell(cellDescription);
                 CellLoadOp op = new CellLoadOp(cellDescription,
                                              sessionRef,
+                                             viewCellCacheRef,
                                              capabilities);
                 scheduler.schedule(op);
              } else {
@@ -353,6 +364,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     
     private void generateUnloadMessages(CellListMO removeList) {
 
+        ManagedReference<ViewCellCacheMO> viewCellCacheRef = AppContext.getDataManager().createReference(this);
         Collection<CellDescription> removeCells = removeList.getCells();
         // oldCells contains the set of cells to be removed from client memory
         for(CellDescription ref : removeCells) {
@@ -364,13 +376,24 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             // schedule the add operation
             CellUnloadOp op = new CellUnloadOp(ref,
                                                sessionRef,
+                                               viewCellCacheRef,
                                                capabilities);
             scheduler.schedule(op);
         }
         
     }
     
-    /**
+    private void addRevalidationListener(ViewCellCacheRevalidationListener listener) {
+        // Called from the scheduler via a reference so does not need synchronization
+        revalidationsListeners.add(listener);
+    }
+    
+    private void removeRevalidationListener(ViewCellCacheRevalidationListener listener) {
+        // Called from the scheduler via a reference so does not need synchronization
+        revalidationsListeners.remove(listener);
+    }
+    
+     /**
      * Utility method to mark ourself for update
      */
     private void markForUpdate() {
@@ -400,6 +423,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     {
         protected CellDescription desc;
         protected ManagedReference<ClientSession> sessionRef;
+        protected ManagedReference<ViewCellCacheMO> viewCellCacheRef;
         protected ClientCapabilities capabilities;
         
         // optional message list.  If the list is not null, messages will
@@ -414,10 +438,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     
         public CellOp(CellDescription desc,
                       ManagedReference<ClientSession> sessionRef, 
+                      ManagedReference<ViewCellCacheMO> viewCellCacheRef,
                       ClientCapabilities capabilities) 
         {
             this.desc = desc;
             this.sessionRef = sessionRef;
+            this.viewCellCacheRef = viewCellCacheRef;
             this.capabilities = capabilities;
         }
         
@@ -446,8 +472,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private static class CellLoadOp extends CellOp {
         public CellLoadOp(CellDescription desc,
                          ManagedReference<ClientSession> sessionRef, 
+                         ManagedReference<ViewCellCacheMO> viewCellCacheRef,
                          ClientCapabilities capabilities) {
-            super (desc, sessionRef, capabilities);
+            super (desc, sessionRef, viewCellCacheRef, capabilities);
         }
         
         public void run() {
@@ -456,8 +483,14 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                           
             //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
             CellSessionProperties prop = cell.addSession(sessionRef.get(), capabilities);
+            
+            ViewCellCacheRevalidationListener listener = prop.getViewCellCacheRevalidationListener();
+            if (listener!=null) {
+                viewCellCacheRef.getForUpdate().addRevalidationListener(listener);
+            }
 //            cellRef.setCellSessionProperties(prop);
                     
+            logger.info("Sending NEW CELL to Client: " + cell.getCellID().toString());
             sendMessage(newCreateCellMessage(cell, capabilities));
         }
     }
@@ -468,9 +501,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private static class CellUnloadOp extends CellOp {
         public CellUnloadOp(CellDescription desc,
                          ManagedReference<ClientSession> sessionRef, 
-                         ClientCapabilities capabilities)
-        {
-            super (desc, sessionRef, capabilities);
+                         ManagedReference<ViewCellCacheMO> viewCellCacheRef,
+                         ClientCapabilities capabilities) {
+            super (desc, sessionRef, viewCellCacheRef, capabilities);
         }
         
         public void run() {
@@ -481,6 +514,13 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             try {
                 CellMO cell = CellManagerMO.getCellManager().getCell(desc.getCellID());
 
+                cell.removeSession(sessionRef.get());
+
+                ViewCellCacheRevalidationListener listener = cell.getViewCellCacheRevalidationListener();
+                if (listener!=null) {
+                    viewCellCacheRef.getForUpdate().removeRevalidationListener(listener);
+                }
+            
                 // get suceeded, so cell is just inactive
                 msg = newUnloadCellMessage(cell);
                 cell.removeSession(sessionRef.get());

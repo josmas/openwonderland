@@ -39,9 +39,6 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
  */
 @ExperimentalAPI
 public class StaticModelCellMO extends CellMO implements BeanSetupMO { 
-    
-    /* The unique model URI */
-    private String modelURI = null;
     	
     /** Default constructor, used when cell is created via WFS */
     public StaticModelCellMO() {
@@ -57,13 +54,12 @@ public class StaticModelCellMO extends CellMO implements BeanSetupMO {
 
     @Override
     public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new StaticModelCellConfig(this.modelURI);
+        return new StaticModelCellConfig();
     }
 
     @Override
     public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
-        this.modelURI = ((StaticModelCellSetup)setup).getModel();
     }
 
     @Override
@@ -81,7 +77,6 @@ public class StaticModelCellMO extends CellMO implements BeanSetupMO {
     public BasicCellSetup getCellMOSetup() {
         /* Create a new BasicCellState and populate its members */
         StaticModelCellSetup setup = new StaticModelCellSetup();
-        setup.setModel(this.modelURI);
         
         /* Set the bounds of the cell */
         BoundingVolume bounds = this.getLocalBounds();

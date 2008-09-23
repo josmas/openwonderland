@@ -90,7 +90,7 @@ public class MovableComponent extends CellComponent {
     public void localMoveRequest(CellTransform transform, 
                                  final CellMoveModifiedListener listener) {
     
-//        CellManager.getCellManager().notifyCellMoved(cell, false);        
+//        CellManager.getCellManager().notifyCellMoved(cell, false);  
         
         // make sure we are connected to the server
         if (channelComp == null || 
