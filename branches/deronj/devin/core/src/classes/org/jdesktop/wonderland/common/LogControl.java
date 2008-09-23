@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.io.IOException;
 
 /**
- * Read the log configuration from the jar
+ * Read the log configuration from the jar as a resource
  * 
  * This class is used via the command line logging property
  *

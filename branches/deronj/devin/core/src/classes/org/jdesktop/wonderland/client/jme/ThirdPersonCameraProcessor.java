@@ -51,7 +51,6 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
             if (commitRequired) {
                 cameraNode.setLocalRotation(rotation);
                 cameraNode.setLocalTranslation(translation);
-                wm.nodeMoved(cameraNode);
                 wm.addToUpdateList(cameraNode);
                 commitRequired = false;
             }
