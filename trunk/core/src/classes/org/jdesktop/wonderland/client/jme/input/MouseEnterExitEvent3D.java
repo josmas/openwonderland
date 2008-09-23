@@ -1,0 +1,84 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
+ */
+package org.jdesktop.wonderland.client.jme.input;
+
+import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+/**
+ * An event which indicates that the mouse entered or exited a 3D object.
+ *
+ * @author deronj
+ */
+
+@ExperimentalAPI
+public class MouseEnterExitEvent3D extends MouseEvent3D {
+
+    static {
+	/** Allocate this event type's ID. */
+	EVENT_ID = Event.allocateEventID();
+    }
+
+    /** Whether this event was generated as a result of an interactive user event. */
+    private boolean userGenerated;
+
+    /**
+     * Create a new instance of user generated MouseEnterExitEvent3D with a null pickDetails.
+     * @param awtEvent The AWT event.
+     */
+    MouseEnterExitEvent3D (MouseEvent awtEvent) {
+	this(awtEvent, true);
+    }
+
+    /**
+     * Create a new instance of MouseEnterExitEvent3D with a null pickDetails.
+     * @param awtEvent The AWT event.
+     * @param userGenerated Whether this event was generated as a result of an interactive user event.
+     */
+    MouseEnterExitEvent3D (MouseEvent awtEvent, boolean userGenerated) {
+        this(awtEvent, userGenerated, null);
+    }
+
+    /**
+     * Create a new instance of MouseEnterExitEvent3D.
+     * @param awtEvent The AWT event.
+     * @param userGenerated Whether this event was generated as a result of an interactive user event.
+     * @param pickDetails The pick data for the event.
+     */
+    MouseEnterExitEvent3D (MouseEvent awtEvent, boolean userGenerated, PickDetails pickDetails) {
+        super(awtEvent, pickDetails);
+	this.userGenerated = userGenerated;
+    }
+
+    /**
+     * Returns true if this event indicates a mouse enter. Otherwise returns
+     * false to indicate a mouse exit.
+     */
+    public boolean isEnter () {
+        return awtEvent.getID() == MouseEvent.MOUSE_ENTERED;
+    }
+
+    /**
+     * Returns whether this event was generated as a result of an interactive user event.
+     */
+    public boolean isUserGenerated () {
+	return userGenerated;
+    }
+}

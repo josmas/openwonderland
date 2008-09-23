@@ -19,7 +19,6 @@
 package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
-import java.io.IOException;
 import org.jdesktop.wonderland.modules.archive.ArchiveModule;
 
 /**
@@ -30,40 +29,11 @@ import org.jdesktop.wonderland.modules.archive.ArchiveModule;
 public class AddedModule extends ArchiveModule {
 
     /**
-     * Constructor, takes the added module file object. Throws IOException upon
-     * general I/O error reading the added module.
-     * 
-     * @param file The File object of the added module
-     * @throw IOException Upon general I/O error
+     * Constructor TBD
+     * @param root
      */
-    public AddedModule(File file) throws IOException {
-        super(file);
-    }
-    
-    /**
-     * Constructor, takes the added module directory and its name (without the
-     * .jar extension). Throws IOException upon general I/O error reading the
-     * added module.
-     * 
-     * @param root The directory in which the archive module is contained
-     * @param name The name of the module (witnout the .jar extension)
-     * @throw IOException Upon general I/O error reading the module
-     */
-    public AddedModule(File root, String name) throws IOException {
-        super(new File(root, name + ".jar"));
-    }
-    
-    /**
-     * Returns true if the module exists in the given directory with the
-     * given unique name, false if not.
-     * 
-     * @param dir The directory in which the module may exist
-     * @param uniqueName The name of the module
-     * @return True if the module exists, false if not
-     */
-    public static boolean isExists(File dir, String uniqueName) {
-        File file = new File(dir, uniqueName + ".jar");
-        return file.exists() == true && file.isDirectory() == false && file.isHidden() == false;
+    public AddedModule(File root, String name) {
+        super(root, name);
     }
     
     /**
@@ -74,6 +44,7 @@ public class AddedModule extends ArchiveModule {
      * @return True If the file is potentially valid, false if not.
      */
     public static boolean isValidFile(File file) {
-        return file.getName().endsWith(".jar") && file.isDirectory() == false && file.isHidden() == false;
+        System.out.println("module name: " + file.getName());
+        return file.getName().endsWith(".jar");
     }
 }

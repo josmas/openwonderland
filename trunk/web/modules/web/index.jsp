@@ -25,32 +25,28 @@
         </div>
         <div id="contents">
             <h3>Installed Modules</h3>
-            <form action="removeAll.jsp">
-                <table class="installed">
-                    <tr class="header">
-                        <td width="5%" class="installed"></td>
-                        <td width="15%" class="installed"><b>Module Name</b></td>
-                        <td width="15%" class="installed"><b>Module Version</b></td>
-                        <td width="65%" class="installed"><b>Description</b></td>
-                    </tr>
-                    <%@ page import="org.jdesktop.wonderland.modules.ModuleUtils" %>
-                    <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
-                    <%@ page import="org.jdesktop.wonderland.modules.service.InstalledModule" %>
-                    <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager.State" %>
-                    <% ModuleManager mm = ModuleManager.getModuleManager();%>
-                    <% String modules[] = mm.getModules(State.INSTALLED).toArray(new String[]{});%>
-                    <% for (String moduleName : modules) {%>
-                    <% InstalledModule im = (InstalledModule) mm.getModule(moduleName, State.INSTALLED);%>
-                    <tr class="installed_a">
-                        <td width="5%" class="installed"><input type="checkbox" name="remove" value="<%= moduleName%>"/></td>
-                        <td width="15%" class="installed"><%= moduleName%></td>
-                        <td width="15%" class="installed">v<%= im.getModuleInfo().getMajor()%>.<%= im.getModuleInfo().getMinor()%></td>
-                        <td width="65%" class="installed"><%= im.getModuleInfo().getDescription()%></td>
-                    </tr>
-                    <% }%>
-                </table>
-                <input type="submit" value="Remove Selected Modules">
-            </form>
+            <table class="installed">
+                <tr class="header">
+                    <td width="15%" class="installed"><b>Module Name</b></td>
+                    <td width="15%" class="installed"><b>Module Version</b></td>
+                    <td width="70%" class="installed"><b>Description</b></td>
+                </tr>
+                <%@ page import="org.jdesktop.wonderland.modules.ModuleUtils" %>
+                <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
+                <%@ page import="org.jdesktop.wonderland.modules.service.InstalledModule" %>
+                <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager.State" %>
+                <% ModuleManager mm = ModuleManager.getModuleManager(); %>
+                <% String modules[] = mm.getModules(State.INSTALLED).toArray(new String[] {});%>
+                <% for (String moduleName : modules) {%>
+                <% InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);%>
+                <tr class="installed_a">
+                    <td width="15%" class="installed"><%= moduleName%></td>
+                    <td width="15%" class="installed">v<%= im.getModuleInfo().getMajor()%>.<%= im.getModuleInfo().getMinor()%></td>
+                    <td width="70%" class="installed"><%= im.getModuleInfo().getDescription()%></td>
+                </tr>
+                <% }%>
+            </table>
+            <br>
             <h3>Pending Modules (will be installed during next restart)</h3>
             <table class="installed">
                 <tr class="header">
@@ -77,10 +73,10 @@
                     <td width="70%" class="installed"><b>Descrption</b></td>
                 </tr>
                 <%@ page import="org.jdesktop.wonderland.modules.ModuleInfo" %>
-                <% for (ModuleInfo info : mm.getUninstalledModuleInfos()) {%>
+                <% for (ModuleInfo info : mm.getRemovedModuleInfos()) {%>
                 <tr class="installed_a">
                     <td width="15%" class="installed"><%= info.getName()%></td>
-                    <td width="15%" class="installed">v<%= info.getMajor()%>.<%= info.getMinor()%></td>
+                    <td width-"15%" class="installed">v<%= info.getMajor()%>.<%= info.getMinor()%>/td>
                     <td width="70%" class="installed"><%= info.getDescription()%></td>
                 </tr>
                 <% }%>
@@ -94,15 +90,7 @@
             <form method="post" enctype="multipart/form-data" action="ModuleUploadServlet">
                 Module JAR file: <input type="file" name="moduleJAR">
                 <input type="submit" value="INSTALL">
-            </form>
-            <br>
-            <h3>Test Buttons, just for fun</h3>
-            <form action="installAll.jsp">
-                <input type="submit" value="INSTALL ALL">
-            </form>
-            <form action="uninstallAll.jsp">
-                <input type="submit" value="UNINSTALL ALL">
-            </form>
+            </form>            
         </div>
     </body>
 </html>
