@@ -211,4 +211,42 @@ public class CellTransform implements Serializable {
     public void setScaling(Vector3f scale) {
         this.scale = new Vector3f(scale);
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        boolean ret = true;
+        
+        if (o instanceof CellTransform) {
+            CellTransform e = (CellTransform)o;
+            
+            if (e.rotation!=null && !e.rotation.equals(rotation))
+                ret = false;
+            else if (e.rotation==null && rotation!=null)
+                ret = false;
+            
+            if (e.translation!=null && !e.translation.equals(translation))
+                ret = false;
+            else if (e.translation==null && translation!=null)
+                ret = false;
+            
+            if (e.scale!=null && !e.scale.equals(scale))
+                ret = false;
+            else if (e.scale==null && scale!=null)
+                ret = false;
+        } else {
+            ret = false;
+        }
+        
+        
+        return ret;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 13 * hash + (this.rotation != null ? this.rotation.hashCode() : 0);
+        hash = 13 * hash + (this.translation != null ? this.translation.hashCode() : 0);
+        hash = 13 * hash + (this.scale != null ? this.scale.hashCode() : 0);
+        return hash;
+    }
 }

@@ -27,7 +27,6 @@ import java.awt.event.KeyEvent;
 import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.AwtEventCondition;
 import org.jdesktop.mtgame.NewFrameCondition;
-import org.jdesktop.mtgame.NodeListener;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
@@ -44,7 +43,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * 
  * @author Doug Twilleager
  */
-public class SimpleAvatarControls extends AWTEventProcessorComponent implements NodeListener {
+public class SimpleAvatarControls extends AWTEventProcessorComponent {
     /**
      * The arming conditions for this processor
      */
@@ -140,12 +139,11 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent implements 
         target = viewCell;
         movableComponent = viewCell.getComponent(MovableComponent.class);
         worldManager = wm;
-        worldManager.addNodeListener(this);
+//        worldManager.addNodeListener(this);
         
         collection = new ProcessorArmingCollection(this);
         collection.addCondition(new AwtEventCondition(this));
         collection.addCondition(new NewFrameCondition(this));
-
     }
     
     @Override

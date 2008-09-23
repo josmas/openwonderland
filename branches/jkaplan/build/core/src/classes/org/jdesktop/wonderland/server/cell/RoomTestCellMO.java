@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.config.ColladaCellConfig;
+import org.jdesktop.wonderland.common.cell.config.StaticModelCellConfig;
 import org.jdesktop.wonderland.server.cell.setup.ColladaCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -59,7 +59,7 @@ public class RoomTestCellMO extends CellMO
 
     @Override
     public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new ColladaCellConfig(this.filename);
+        return new StaticModelCellConfig(this.filename);
     }
 
     @Override

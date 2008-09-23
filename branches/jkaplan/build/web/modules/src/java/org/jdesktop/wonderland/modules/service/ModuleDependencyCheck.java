@@ -18,7 +18,8 @@
 
 package org.jdesktop.wonderland.modules.service;
 
-import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleInfo;
@@ -33,56 +34,60 @@ import org.jdesktop.wonderland.modules.ModuleInfo;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ModuleDependencyCheck {
-    /* The module we are current checking the dependencies for */
-    private Module module = null;
-    
+
     /* A list of module requirements, removed as the dependencies are met. */
-    private List<ModuleInfo> requirements = null;
+    private List<ModuleInfo> requirements = new LinkedList<ModuleInfo>();
     
     /** Constructor that takes module to check */
     public ModuleDependencyCheck(Module module) {
-        this.module = module;
-        this.requirements = Arrays.asList(module.getModuleRequires().getRequires());
+        for (ModuleInfo info : module.getModuleRequires().getRequires()) {
+            requirements.add(info);
+        }
     }
     
     /**
-     * Checks the module's dependencies. This method is implemented in the most
-     * simple way possible: iterate over the entire requirement set, and remove
-     * a requirement when it has been met. If we iterate over the entire list
-     * without having satisified an additional requirement, then we know the
-     * requirements have not been met.
+     * Returns true if all dependencies have been met, false if not.
      * 
-     * @return True if the module has all of its dependencies satisfied
+     * @return True if all dependencies have been met
      */
-    public boolean checkDependencies() {
-        String uniqueName = this.module.getModuleInfo().getName();
-        ModuleManager mm = ModuleManager.getModuleManager();
-        ModuleInfo[] requires = this.requirements.toArray(new ModuleInfo[] {});
-        
+    public boolean isDependenciesMet() {
+        return this.requirements.isEmpty();
+    }
+    
+    /**
+     * Potentially remove a dependency from this collection of dependencies.
+     * This checks whether the module info given meets a dependencies and
+     * removes it if so. If not, this method does nothing. Returns true if at
+     * least one requirement was satisfied, false if not.
+     * 
+     * @param potentialDependency Information about a module that could satify a requirement
+     * @return True if the module satisfied a requirement, false if not
+     */
+    public boolean checkDependency(ModuleInfo potentialDependency) {
         /*
-         * Loop through and ask if the module is present. If so, then see if the
-         * version is acceptable.
+         * For all requirements, check to see if the dependency is met, if so,
+         * remove it
          */
-        for (ModuleInfo moduleRequired : requires) {
-            ModuleInfo candidate = mm.isModulePresent(uniqueName);
-            if (candidate != null) {
-                /* Check to see if the version number has been satisfied */
-                if (this.isSatisfied(candidate, moduleRequired) == true) {
-                    this.requirements.remove(moduleRequired);
-                }
+        boolean found = false;
+        Iterator<ModuleInfo> it = this.requirements.iterator();
+        while (it.hasNext() == true) {
+            ModuleInfo requirement = it.next();
+            if (this.isSatisfied(potentialDependency, requirement) == true) {
+                /*
+                 * We remove from the iterator so that it also removes from the
+                 * underlying list is an iterator-safe fashion.
+                 */
+                it.remove();
+                found = true;
             }
         }
-
-        
-        /* Make a check to see if the set is empty, which determines success */
-        return this.requirements.isEmpty();
+        return found;
     }
 
     /**
      * Takes two ModuleInfo class and checks whether the first (provider) is
-     * satisfied as a requirement of the second (requirer). This method assumes
-     * they already share the same unique module name and simply checks the
-     * version. Returns true if the requirement is satisfied, false if not.
+     * satisfied as a requirement of the second (requirer). Returns true if the
+     * requirement is satisfied, false if not.
      * 
      * @param provider The module info that could satisfy the requirement
      * @param requirer The module info that specifies the requirement
@@ -90,7 +95,14 @@ public class ModuleDependencyCheck {
      */
     private boolean isSatisfied(ModuleInfo provider, ModuleInfo requirer) {
         /*
-         * First check if the requirer needs a version. If major is -1, then
+         * First check that both modules have the same name
+         */
+        if (provider.getName().compareTo(requirer.getName()) != 0) {
+            return false;
+        }
+        
+        /*
+         * Next check if the requirer needs a version. If major is -1, then
          * there is no requirement and all satisfy it.
          */
         if (requirer.getMajor() == ModuleInfo.VERSION_UNSET) {

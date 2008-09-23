@@ -17,14 +17,18 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.scene.GeometricUpdateListener;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.NodeListener;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 
 /**
  *
@@ -71,11 +75,9 @@ public class JmeClientMain {
         worldManager = new WorldManager("Wonderland");
         
         ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
-        worldManager.addNodeListener(new NodeMoveListener(clientManager));
         
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
-//        worldManager.addNodeListener(new NodeMoveListener(clientManager2));
         
         processArgs(args);
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
@@ -116,6 +118,14 @@ public class JmeClientMain {
         MainFrame frame = new MainFrame(wm, width, height);
         // center the frame
         frame.setLocationRelativeTo(null);
+
+	/* TODO: not yet
+	// Initialize the input manager
+	// TODO: CameraComponent cameraComp = ViewManager.getCameraComponent();
+	CameraComponent cameraComp = null;
+	InputManager3D.getInputManager().initialize(frame.getCanvas(), cameraComp);
+	*/
+
         // show frame
         frame.setVisible(true);
     }
@@ -137,17 +147,17 @@ public class JmeClientMain {
         return props;
     }
     
-    class NodeMoveListener implements NodeListener {
-
-        private ClientManager clientManager;
-        
-        public NodeMoveListener(ClientManager clientManager) {
-            this.clientManager = clientManager;
-        }
-        
-        public void nodeMoved(Node arg0) {
-            clientManager.nodeMoved(arg0);
-        }
-        
-    }
+//    class NodeMoveListener implements GeometricUpdateListener {
+//
+//        private ClientManager clientManager;
+//        
+//        public NodeMoveListener(ClientManager clientManager) {
+//            this.clientManager = clientManager;
+//        }
+//        
+//        public void geometricDataChanged(Spatial arg0) {
+//            clientManager.nodeMoved(arg0);
+//        }
+//        
+//    }
 }
