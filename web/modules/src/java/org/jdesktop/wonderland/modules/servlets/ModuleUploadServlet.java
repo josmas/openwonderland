@@ -9,9 +9,7 @@ package org.jdesktop.wonderland.modules.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -97,7 +95,7 @@ public class ModuleUploadServlet extends HttpServlet {
              */
             File file = null;
             try {
-                file = new File(manager.getModuleStateDirectory(State.ADD), moduleJar);
+                file = new File(manager.getModuleRoot(State.ADD), moduleJar);
                 item.write(file);
                 logger.info("[MODULE] UPLOAD Wrote added module to " + file.getAbsolutePath());
             } catch (java.lang.Exception excp) {
@@ -122,10 +120,8 @@ public class ModuleUploadServlet extends HttpServlet {
                 return;
             }
             
-            Collection<AddedModule> modules = new LinkedList<AddedModule>();
-            modules.add(am);
-            Collection<String> result = manager.addAll(modules, true);
-            if (result.contains(moduleName) == false) {
+            boolean result = manager.add(am);
+            if (result == false) {
                 /* Log an error to the log and write an error message back */
                 logger.warning("[MODULE] UPLOAD Failed to install module " + moduleName);
                 writer.println("Unable to install module for some reason. Press the ");

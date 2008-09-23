@@ -61,7 +61,6 @@
             <zipfileset dir="${top.dir}/web/lib/restlib" prefix="webserver"/>
             <zipfileset dir="${top.dir}/web/lib/apache" prefix="webserver"/>
             <zipfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
-            <zipfileset file="${web.dir}/utils/dist/wonderland-web-utils.jar" prefix="webserver"/>
             
             <!-- wars to deploy -->
             <zipfileset dir="${top.dir}/web/wfs/dist" prefix="deploy"/>
