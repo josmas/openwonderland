@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -36,7 +35,6 @@ import org.jdesktop.wonderland.modules.ModulePlugin;
 import org.jdesktop.wonderland.modules.ModuleRepository;
 import org.jdesktop.wonderland.modules.ModuleRequires;
 import org.jdesktop.wonderland.modules.ModuleResource;
-import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.utils.ArchiveManifest;
 
 /**
@@ -57,20 +55,16 @@ public class ArchiveModule extends Module {
     private static final int CHUNK_SIZE = (8 * 1024);
             
     /**
-     * Constructor, takes a URL to the archive file. Throws IOException upon
-     * general I/O error reading the archive module
+     * Constructor, takes File of the module jar. Throws IOException upon
+     * general I/O error reading the archive module.
      * 
-     * @param file The archive module file
+     * @param file The archive module File object
+     * @throw IOException Upon general I/O exception readin the module
      */
-    public ArchiveModule(File root, String name) {
+    public ArchiveModule(File file) throws IOException {
         super();
-        
-        try {
-            this.root = new File(root, name + ".jar");
-            this.manifest = new ArchiveManifest(this.root);
-        } catch (java.io.IOException excp) {
-            ModuleManager.getLogger().warning("ModuleManager: invalid URL for module: " + root.getAbsolutePath());
-        }
+        this.root = file;
+        this.manifest = new ArchiveManifest(this.root);
     }
 
     /**
