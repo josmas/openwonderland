@@ -79,7 +79,7 @@ public abstract class SpaceMO implements ManagedObject, Serializable {
      * @param cell
      */
     void addCell(CellMO cell) {
-        logger.info("Space "+spaceID+"  adding Cell "+cell.getName()+" "+cell.getCellID());
+        logger.warning("Space "+spaceID+"  adding Cell "+cell.getName()+" "+cell.getCellID());
         CellListMO cellList;
         if (!cell.isMovable()) {
             cellList = staticCellList;
