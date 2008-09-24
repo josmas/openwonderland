@@ -90,26 +90,6 @@ public abstract class BasicCellSetup implements Serializable {
     @XmlTransient
     public HashMap<String, String> internalMetaData = new HashMap<String, String>();
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all setup classes */
-    static {
-        try {
-            JAXBContext jc = JAXBContext.newInstance(
-                    org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup.class,
-                    org.jdesktop.wonderland.server.cell.setup.ColladaCellSetup.class
-            );
-
-            BasicCellSetup.unmarshaller = jc.createUnmarshaller();
-            BasicCellSetup.marshaller = jc.createMarshaller();
-            BasicCellSetup.marshaller.setProperty("jaxb.formatted.output", true);
-        } catch (javax.xml.bind.JAXBException excp) {
-            System.out.println(excp.toString());
-        }
-    }
-    
     /**
      * The Origin static inner class simply stores (x, y, z) cell origin.
      */
@@ -340,7 +320,8 @@ public abstract class BasicCellSetup implements Serializable {
      */
     public static BasicCellSetup decode(Reader r) throws JAXBException {
         /* Read from XML */
-        BasicCellSetup setup = (BasicCellSetup)BasicCellSetup.unmarshaller.unmarshal(r);
+        Unmarshaller u = CellSetupFactory.getUnmarshaller();
+        BasicCellSetup setup = (BasicCellSetup)u.unmarshal(r);
         
         /* Convert metadata to internal representation */
         if (setup.metadata != null) {
@@ -379,7 +360,8 @@ public abstract class BasicCellSetup implements Serializable {
         }
 
         /* Write out as XML */
-        BasicCellSetup.marshaller.marshal(this, w);
+        Marshaller m = CellSetupFactory.getMarshaller();
+        m.marshal(this, w);
     }
     
     /**
