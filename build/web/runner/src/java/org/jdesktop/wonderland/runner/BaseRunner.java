@@ -178,8 +178,9 @@ public abstract class BaseRunner implements Runner {
             cmd.add("org.apache.tools.ant.launch.Launcher");
             
             // add in the properties we were given
-            for (String propName : props.stringPropertyNames()) {
-                cmd.add("-D" + propName + "=" + props.getProperty(propName));
+            for (Object propName : props.keySet()) {
+                cmd.add("-D" + propName + "=" + 
+                        props.getProperty((String) propName));
             }
             
             cmd.add("-f");

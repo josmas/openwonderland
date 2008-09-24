@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.webserver.launcher;
 import org.jdesktop.wonderland.utils.RunUtil;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,9 +58,10 @@ public class WebServerLauncher {
             // copy properties into System properties only if they don't already
             // exist.  The means that people can override the defaults by
             // passing an argument like "-Dmy.prop=xxxx" at the command line.
-            for (String prop : props.stringPropertyNames()) {
+            for (Object prop : props.keySet()) {
                 if (!System.getProperties().containsKey(prop)) {
-                    System.setProperty(prop, props.getProperty(prop));
+                    System.setProperty((String) prop, 
+                                       props.getProperty((String) prop));
                 }
             }
         } catch (Exception ex) {
@@ -138,7 +139,7 @@ public class WebServerLauncher {
         // first load the properties file, if any
         if (propsFile != null) {
             try {
-                System.getProperties().load(new FileReader(propsFile));
+                System.getProperties().load(new FileInputStream(propsFile));
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Error reading props file " + propsFile,
                            ioe);
