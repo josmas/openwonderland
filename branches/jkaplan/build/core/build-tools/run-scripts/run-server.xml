@@ -115,8 +115,20 @@
     <!-- setup the classpath to run the server with.  Clients can override
          this method to give an alternate classpath -->
     <target name="-core-server-setup-classpath">
+        <!-- override the core.server.run.classpath to specify an
+             alternate run classpath -->
         <pathconvert property="core.server.run.classpath">
             <path path="${core-server.classpath}"/>
+        </pathconvert>
+        
+        <!-- override the core.server.module.classpath to specify an
+             alternate module classpath -->
+        <pathconvert property="core.server.module.classpath">
+            <path>
+                <fileset dir="${top.dir}">
+                    <include name="modules/**"/>
+                </fileset>
+            </path>
         </pathconvert>
     </target>
     
@@ -130,6 +142,7 @@
             
             <classpath>
                 <pathelement path="${core.server.run.classpath}"/>
+                <pathelement path="${core.server.module.classpath}"/>
             </classpath>
                 
             <!-- override the reference to enabled assertions -->

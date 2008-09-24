@@ -18,7 +18,17 @@
 
 package org.jdesktop.wonderland.runner;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.Module;
+import org.jdesktop.wonderland.modules.ModulePlugin;
+import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
  * An extension of <code>BaseRunner</code> to launch the Darkstar server.
@@ -28,13 +38,17 @@ public class DarkstarRunner extends BaseRunner {
     /** the default name if none is specified */
     private static final String DEFAULT_NAME = "Darkstar Server";
     
+    /** the logger */
+    private static final Logger logger =
+            Logger.getLogger(DarkstarRunner.class.getName());
+    
     /**
-     * Configure this runner.  This method uses the module manager to find
-     * the set of server modules, and deploys them to the run directory.
+     * Configure this runner.  This method sets values to the default for the
+     * Darkstar server.
      * 
      * @param props the properties to deploy with
      * @throws RunnerConfigurationException if there is an error configuring
-     * the module
+     * the runner
      */
     @Override
     public void configure(Properties props) 
@@ -46,7 +60,106 @@ public class DarkstarRunner extends BaseRunner {
         if (!props.containsKey("runner.name")) {
             setName(DEFAULT_NAME);
         }
+    }
+
+    /**
+     * Start the Darkstar server with the given properties.  This method first
+     * manages deploying any modules specified by the module manager.
+     * 
+     * @param props the properties to run with
+     * @throws RunnerException if there is an error starting the server
+     */
+    @Override
+    public synchronized void start(Properties props) throws RunnerException {
+        ModuleManager mm = ModuleManager.getModuleManager();
         
-        // TODO module stuff
+        // first tell the module manager to remove any modules scheduled for
+        // removal
+        mm.uninstallAll();
+        
+        // next tell the module manager to install any pending modules
+        mm.installAll();
+        
+        // now clear any existing modules
+        File moduleDir = getModuleDir();
+        if (moduleDir.exists()) {
+            RunUtil.deleteDir(moduleDir);
+        }
+        
+        // write all new modules to the module directory
+        moduleDir.mkdirs();
+        Collection<String> moduleNames = mm.getModules(ModuleManager.State.INSTALLED);
+        for (String moduleName : moduleNames) {
+            Module m = mm.getModule(moduleName, ModuleManager.State.INSTALLED);
+            
+            try {
+                writePlugins(m, moduleDir);
+            } catch (IOException ioe) {
+                // skip this module and keep going
+                logger.log(Level.WARNING, "Error writing plugins for " + m.getName(),
+                           ioe);
+            }
+        }
+        
+        super.start(props);
+    }
+    
+    /**
+     * Get the Darkstar server module directory
+     * @return the server module directory
+     */
+    protected File getModuleDir() {
+        return new File(getRunDir(), "modules");
+    }
+
+    /**
+     * Write a module's plugins to the module directory
+     * @param module the module to write plugins for
+     * @param moduleDir the directory to write to
+     */
+    protected void writePlugins(Module module, File moduleDir)
+        throws IOException
+    {
+        File moduleSpecificDir = new File(moduleDir, module.getName());
+        moduleSpecificDir.mkdirs();
+        
+        // got through each plugin
+        Collection<String> pluginNames = module.getModulePlugins();
+        for (String pluginName : pluginNames) {
+            // create a directory to put the data int
+            File pluginDir = new File(moduleSpecificDir, pluginName);
+            pluginDir.mkdirs();
+            
+            // get the plugin
+            ModulePlugin mp = module.getModulePlugin(pluginName);
+            
+            // extract server jars
+            Collection<String> serverJars = mp.getServerJars();
+            if (!serverJars.isEmpty()) {
+                File serverDir = new File(pluginDir, "server");
+                serverDir.mkdirs();
+            
+                for (String serverJar : serverJars) {
+                    InputStream is = 
+                        module.getInputStreamForPlugin(pluginName, serverJar,
+                                                       "server/");
+                    RunUtil.writeToFile(is, new File(serverDir, serverJar));
+                }
+            }
+            
+            // extract common jars
+            Collection<String> commonJars = mp.getCommonsJars();
+            if (!commonJars.isEmpty()) {
+                File commonDir = new File(pluginDir, "common");
+                commonDir.mkdirs();
+            
+                for (String commonJar : commonJars) {
+                    InputStream is = 
+                        module.getInputStreamForPlugin(pluginName, commonJar,
+                                                       "common/");
+                    RunUtil.writeToFile(is, new File(commonDir, commonJar));
+                }
+            }
+        }
     }
 }

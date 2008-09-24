@@ -16,6 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,13 +32,22 @@ import org.jdesktop.wonderland.runner.RunnerFactory;
  *
  * @author jkaplan
  */
-public class RunnerServlet extends HttpServlet {
+public class RunnerServlet extends HttpServlet implements ServletContextListener {
     /** a logger */
     private static final Logger logger =
             Logger.getLogger(RunnerServlet.class.getName());
     
     @Override
     public void init(ServletConfig config) throws ServletException {
+        // Add a listener that will stop all active processes when the
+        // container shuts down
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                stopAll();
+            }
+        });
+        
         // Add a new Darkstar runner and start it.
         // TODO this should read an XML file describing all the components
         // to deploy, and then execute that deployment plan by creating
@@ -44,7 +55,8 @@ public class RunnerServlet extends HttpServlet {
         try {
             Runner r = RunnerFactory.create(DarkstarRunner.class.getName(), 
                                         new Properties());
-            RunManager.getInstance().add(r);
+            r = RunManager.getInstance().add(r);
+            r.start(new Properties());
         } catch (Exception ex) {
             throw new ServletException(ex);
         }
@@ -193,4 +205,20 @@ public class RunnerServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    public void contextInitialized(ServletContextEvent sce) {
+        // do nothing
+    }
+
+    public void contextDestroyed(ServletContextEvent sce) {
+        stopAll();
+    }
+    
+    private static void stopAll() {
+        logger.info("[RUNNERSERVLET] Stopping all apps");
+        // stop all active applications
+        Collection<Runner> runners = RunManager.getInstance().getAll();
+        for (Runner runner : runners) {
+            runner.stop();
+        }
+    }
 }
