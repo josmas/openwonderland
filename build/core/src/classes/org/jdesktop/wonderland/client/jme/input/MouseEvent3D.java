@@ -76,7 +76,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
 
     /**
      * INTERNAL ONLY
-     * <br><br>
+     * <br>
      * Sets the pick details of the event.
      */
     @InternalAPI
