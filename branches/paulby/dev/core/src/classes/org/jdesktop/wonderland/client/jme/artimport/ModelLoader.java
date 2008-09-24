@@ -21,7 +21,10 @@ import com.jme.scene.Node;
 import java.io.File;
 
 /**
- *
+ * Interface for Model loader code. Provides support for inital import of the 
+ * model from its original art files, deployment of the assets into a module 
+ * and runtime load of the assets from the module
+ * 
  * @author paulby
  */
 public interface ModelLoader {
@@ -32,12 +35,19 @@ public interface ModelLoader {
     public String getFileExtension();
     
     /**
-     * Load the specified model
+     * Import the model from it's original source
      * 
      * @param file
      * @return
      */
-    public Node load(File file);
+    public Node importModel(File file);
+    
+//    public void deployToModule();
+    
+    /**
+     * Runtime load of the model from a module
+     */
+//    public Node loadModel(URL url);
     
     /**
      * 
@@ -45,5 +55,9 @@ public interface ModelLoader {
      */
     public boolean isEnabled();
 
-    public void setEnabled(boolean b);
+    /**
+     * Set whether or not this loader is enabled.
+     * @param b
+     */
+    public void setEnabled(boolean enabled);
 }

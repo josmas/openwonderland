@@ -78,7 +78,7 @@ public class LoaderManager {
             JOptionPane.showMessageDialog(null, "No Loader for "+getFileExtension(file.getName()));
             return null;
         } else {
-            return loader.load(file);
+            return loader.importModel(file);
         }
     }
     

@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
  * @deprecated
  * @author paulby
  */
-public class MovableCellMO extends CellMO {
+public class MovableCellMO extends TestColladaCellMO {
 
     public MovableCellMO(BoundingVolume bounds, CellTransform transform) {
         super(bounds, transform);

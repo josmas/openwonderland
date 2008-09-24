@@ -47,6 +47,8 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 /**
  * Manage the connection between this client and the wonderland server
  * 
+ * TODO RENAME, there must be a better name for this class !
+ * 
  * @author paulby
  */
 public class ClientManager {
@@ -60,8 +62,8 @@ public class ClientManager {
 //    private static final float STEP = 2f;
     private JmeCellCache cellCache = null;
     
-    private Vector3f previousPos = new Vector3f();
-    private Quaternion previousRot = new Quaternion();
+//    private Vector3f previousPos = new Vector3f();
+//    private Quaternion previousRot = new Quaternion();
     
     public ClientManager(String serverName, int serverPort, String userName) {
         
@@ -139,9 +141,9 @@ public class ClientManager {
                     Entity thisEntity = ((CellRendererJME)rend).getEntity();
                     
                     // TODO When subentities work uncomment this if test
-//                    if (parentEntity!=null)
-//                        parentEntity.addEntity(thisEntity);
-//                    else
+                    if (parentEntity!=null)
+                        parentEntity.addEntity(thisEntity);
+                    else
                         JmeClientMain.getWorldManager().addEntity(thisEntity);
                     
                     if (parentEntity!=null && thisEntity!=null) {                        

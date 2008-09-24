@@ -71,7 +71,7 @@ public class Cell {
         this.cellID = cellID;
         this.cellCache = cellCache;
         
-        logger.info("Cell: Creating new Cell ID=" + cellID);
+        logger.fine("Cell: Creating new Cell ID=" + cellID);
     }
     
     /**
@@ -261,7 +261,6 @@ public class Cell {
                 cachedVWBounds = localBounds.clone(cachedVWBounds);
                 local2VW.transform(cachedVWBounds);                
             } else if (this instanceof RootCell) {
-                System.out.println("SETTING ROOT");
                 local2VW = (CellTransform) localTransform.clone(null);
                 cachedVWBounds = localBounds.clone(cachedVWBounds);               
             }
@@ -270,7 +269,7 @@ public class Cell {
         }
         
         if (cachedVWBounds==null) {
-            System.out.println("********** NULL cachedVWBounds "+getName() +"  "+localBounds+"  "+localTransform);
+            logger.warning("********** NULL cachedVWBounds "+getName() +"  "+localBounds+"  "+localTransform);
             Thread.dumpStack();
         }
                 
