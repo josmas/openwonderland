@@ -67,9 +67,12 @@ public class TestColladaCell extends Cell {
     /**
      * Returns the URI of the model asset.
      * 
+     * TODO shouldn't this be a URL instead of a String ?
+     * 
      * @return The asset URI
      */
     public String getModelURI() {
+        System.out.println("URL "+modelURI);
         return this.modelURI;
     }
 }

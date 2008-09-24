@@ -133,7 +133,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 boolean models = importTable.getModel().getRowCount() > 0;
                 localB.setEnabled(models);
                 serverB.setEnabled(models && 
-                        ModelUploader.uploadAvailable(baseURLTF.getText()));
+                        ModelUploader.uploadAvailable(targetModuleTF.getText()));
             }
         });
         
@@ -189,7 +189,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
             }
         }
         
-        baseURLTF.setText(WonderlandConfig.getBaseURL());
+        targetModuleTF.setText("../modules/samples/arttest");
         
         importFrame = new ModelImporterFrame(this, lastModelDir);
  
@@ -241,10 +241,11 @@ public class ImportSessionFrame extends javax.swing.JFrame
         editB = new javax.swing.JButton();
         removeB = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        baseURLTF = new javax.swing.JTextField();
+        targetModuleTF = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         localB = new javax.swing.JButton();
         doneButton = new javax.swing.JButton();
+        moduleChooseB = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         loadImportGroupMI = new javax.swing.JMenuItem();
@@ -403,11 +404,10 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         jLabel1.setText("Model List");
 
-        baseURLTF.setEditable(false);
-        baseURLTF.setText("jTextField1");
-        baseURLTF.setToolTipText("The base URL of the art server");
+        targetModuleTF.setText("jTextField1");
+        targetModuleTF.setToolTipText("The module into which this model will be added");
 
-        jLabel3.setText("Art Base URL :");
+        jLabel3.setText("Target Module :");
 
         localB.setText("Save to local system...");
         localB.setToolTipText("Save the loaded models to your local system");
@@ -422,6 +422,15 @@ public class ImportSessionFrame extends javax.swing.JFrame
         doneButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 doneButtonActionPerformed(evt);
+            }
+        });
+
+        moduleChooseB.setText("Choose");
+        moduleChooseB.setToolTipText("Choose the target module");
+        moduleChooseB.setEnabled(false);
+        moduleChooseB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moduleChooseBActionPerformed(evt);
             }
         });
 
@@ -452,54 +461,52 @@ public class ImportSessionFrame extends javax.swing.JFrame
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(localB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(serverB))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(layout.createSequentialGroup()
-                            .add(12, 12, 12)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(layout.createSequentialGroup()
-                                    .add(jLabel3)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(baseURLTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE))
-                                .add(jLabel1)))
-                        .add(layout.createSequentialGroup()
-                            .add(36, 36, 36)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE))))
+                    .add(layout.createSequentialGroup()
+                        .add(12, 12, 12)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel1)
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel3)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(targetModuleTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(removeB)
+                    .add(doneButton)
                     .add(editB)
                     .add(importModelB)
-                    .add(doneButton))
-                .addContainerGap())
+                    .add(removeB)
+                    .add(moduleChooseB))
+                .add(17, 17, 17))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(4, 4, 4)
+                .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(importModelB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeB))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)))
-                .add(18, 18, 18)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
-                    .add(baseURLTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                    .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(moduleChooseB))
+                .add(76, 76, 76)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverB)
                     .add(localB)
@@ -540,7 +547,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
     private void serverBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverBActionPerformed
         // upload to server
-        String baseURL = baseURLTF.getText();
+        String baseURL = targetModuleTF.getText();
         ModelUploader uploader = new ModelUploader(this);
         
         try {
@@ -601,7 +608,7 @@ private void localSaveCancelBActionPerformed(java.awt.event.ActionEvent evt) {//
 
 private void localSaveOKBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localSaveOKBActionPerformed
         String compiledDirName = compiledModelsTF.getText();
-        String baseURL = baseURLTF.getText();
+        String baseURL = targetModuleTF.getText();
 
         ModelCompiler compiler = new ModelCompiler(this);
         
@@ -623,6 +630,10 @@ private void compiledModelsTFFocusGained(java.awt.event.FocusEvent evt) {//GEN-F
 private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         setVisible(false);
 }//GEN-LAST:event_doneButtonActionPerformed
+
+private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleChooseBActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_moduleChooseBActionPerformed
     
     private void checkLocalSaveButtons() {
         boolean okEnabled = false;
@@ -847,7 +858,6 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField baseURLTF;
     private javax.swing.JButton chooseLocalDirB;
     private javax.swing.JTextField compiledModelsTF;
     private javax.swing.JButton doneButton;
@@ -869,11 +879,13 @@ private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton localSaveCancelB;
     private javax.swing.JDialog localSaveDialog;
     private javax.swing.JButton localSaveOKB;
+    private javax.swing.JButton moduleChooseB;
     private javax.swing.JButton removeB;
     private javax.swing.JMenuItem removePMI;
     private javax.swing.JMenuItem saveImportGroupMI;
     private javax.swing.JButton serverB;
     private javax.swing.JPopupMenu tablePopupMenu;
+    private javax.swing.JTextField targetModuleTF;
     // End of variables declaration//GEN-END:variables
    
     /**
