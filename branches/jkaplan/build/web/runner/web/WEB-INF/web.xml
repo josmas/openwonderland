@@ -9,7 +9,7 @@
         <servlet-name>RunServlet</servlet-name>
         <servlet-class>org.jdesktop.wonderland.runner.servlet.RunnerServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
-        </servlet>
+    </servlet>
     <servlet-mapping>
         <servlet-name>RunServlet</servlet-name>
         <url-pattern>/run</url-pattern>
@@ -19,7 +19,12 @@
             30
         </session-timeout>
     </session-config>
-    <welcome-file-list>
-        <welcome-file>/run</welcome-file>
+    <welcome-file-list>     
+        <welcome-file>run</welcome-file>
+        <welcome-file>RunServlet</welcome-file>
     </welcome-file-list>
+    <taglib>
+        <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
+        <taglib-location>/WEB-INF/tlds/c.tld</taglib-location>
+    </taglib>
 </web-app>

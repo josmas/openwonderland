@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.RunnerException;
 import org.jdesktop.wonderland.runner.RunnerFactory;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  *
@@ -37,16 +38,22 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
     private static final Logger logger =
             Logger.getLogger(RunnerServlet.class.getName());
     
+    /** the properties for starting and stopping */
+    private static final String START_PROP = "wonderland.runner.autostart";
+    private static final String STOP_PROP  = "wonderland.runner.autostop";
+    
     @Override
     public void init(ServletConfig config) throws ServletException {
-        // Add a listener that will stop all active processes when the
-        // container shuts down
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                stopAll();
-            }
-        });
+        if (Boolean.parseBoolean(SystemPropertyUtil.getProperty(STOP_PROP))) {
+            // Add a listener that will stop all active processes when the
+            // container shuts down
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    stopAll();
+                }
+            });
+        }
         
         // Add a new Darkstar runner and start it.
         // TODO this should read an XML file describing all the components
@@ -56,7 +63,10 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
             Runner r = RunnerFactory.create(DarkstarRunner.class.getName(), 
                                         new Properties());
             r = RunManager.getInstance().add(r);
-            r.start(new Properties());
+            
+            if (Boolean.parseBoolean(SystemPropertyUtil.getProperty(START_PROP))) {
+                r.start(new Properties());
+            }
         } catch (Exception ex) {
             throw new ServletException(ex);
         }
@@ -218,7 +228,9 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
         // stop all active applications
         Collection<Runner> runners = RunManager.getInstance().getAll();
         for (Runner runner : runners) {
-            runner.stop();
+            if (runner.getStatus() == Runner.Status.RUNNING) {
+                runner.stop();
+            }
         }
     }
 }
