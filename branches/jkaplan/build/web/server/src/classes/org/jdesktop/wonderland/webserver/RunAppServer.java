@@ -51,11 +51,11 @@ public class RunAppServer {
     }
     
     public RunAppServer() throws IOException {
-        // first deploy any web apps
-        deployWebApps();
-        
-        // now install the default modules
+        // install the default modules
         installModules();
+        
+        // now deploy web apps
+        deployWebApps();
     }
 
     private void deployWebApps() throws IOException {
