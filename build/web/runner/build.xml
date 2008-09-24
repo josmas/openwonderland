@@ -68,10 +68,6 @@
     nbproject/build-impl.xml file. 
 
     -->
-    <target name="-pre-dist">
-        <copy file="${current.dir}/src/conf/c.tld" todir="${build.web.dir}/META-INF"/>
-    </target>
-    
     <target name="-post-dist">
         <mkdir dir="${build.dir}/pkg/META-INF/deploy"/>
         <echo file="${build.dir}/pkg/META-INF/deploy/org.jdesktop.wonderland.runner.DarkstarRunner">

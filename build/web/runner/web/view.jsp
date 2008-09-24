@@ -10,7 +10,7 @@
 
 <%@ page import="org.jdesktop.wonderland.runner.Runner" %>
 
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="/WEB-INF/tlds/c.tld" prefix="c" %>
 
 <link href="runner.css" rel="stylesheet" type="text/css" media="screen" />
 <html>
