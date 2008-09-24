@@ -37,6 +37,9 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library files="1">
+                    <file>${file.reference.glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar}</file>
+                </library>
+                <library files="1">
                     <file>${file.reference.ant.jar}</file>
                 </library>
                 <library files="1">
