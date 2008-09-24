@@ -258,6 +258,13 @@ public class ModuleChecksums {
          * the file name satisfies the includes and excludes list.
          */
         File[] files = dir.listFiles();
+        if (files == null) {
+            /*
+             * No files or directory doesn't exist.  Just return an empty
+             * map.
+             */
+            return list;
+        }
         for (File file : files) {
             /* If a directory, then recursively descend and append */
             if (file.isDirectory() == true && file.isHidden() == false) {

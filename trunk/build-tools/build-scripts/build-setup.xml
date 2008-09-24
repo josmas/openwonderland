@@ -4,11 +4,11 @@
    
     <taskdef name="pack200" 
              classname="com.sun.tools.apache.ant.pack200.Pack200Task" 
-             classpath="${setup.build-scripts.dir}/../ant-tasks/Pack200Task.jar"/>
+             classpath="${top.dir}/lib/ant/Pack200Task.jar"/>
 
     <taskdef name="unpack200" 
              classname="com.sun.tools.apache.ant.pack200.Unpack200Task" 
-             classpath="${setup.build-scripts.dir}/../ant-tasks/Pack200Task.jar"/>
+             classpath="${top.dir}/lib/ant/Pack200Task.jar"/>
    
     <!-- 
         Use my.properties to override default values in *.properties.

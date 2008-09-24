@@ -11,4 +11,10 @@
         <path location="${wonderland.lib.dir}/jaxb/jaxb1-impl.jar"/>
         <path location="${wonderland.lib.dir}/jaxb/jsr173_1.0_api.jar"/>
     </pathconvert>
+    
+    <!-- ant jars -->
+    <pathconvert property="ant.classpath">
+        <path location="${wonderland.lib.dir}/ant/ant.jar"/>
+        <path location="${wonderland.lib.dir}/ant/ant-launcher.jar"/>
+    </pathconvert>
 </project>

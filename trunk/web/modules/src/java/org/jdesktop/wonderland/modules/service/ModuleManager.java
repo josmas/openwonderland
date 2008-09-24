@@ -22,18 +22,19 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.modules.ModuleRequires;
 
 /**
@@ -464,7 +465,7 @@ public class ModuleManager {
      * property.
      */
     private static String getModuleDirectory() {
-        return System.getProperty("wonderland.webserver.modules.root");
+        return SystemPropertyUtil.getProperty("wonderland.webserver.modules.root");
     }
  
     /**
@@ -590,7 +591,7 @@ public class ModuleManager {
             ModuleChecksums cks = ModuleChecksums.generate(artRoot, ModuleChecksums.SHA1_CHECKSUM_ALGORITHM, new String[0], new String[0]);
             cks.encode(new FileWriter(chkFile));
         } catch (java.lang.Exception excp) {
-            logger.severe("ModuleManager: Failed to create checksums: " + excp.toString());
+            logger.log(Level.SEVERE, "ModuleManager: Failed to create checksums", excp);
             return false;
         }
 
