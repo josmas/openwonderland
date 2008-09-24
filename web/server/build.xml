@@ -22,6 +22,8 @@
             
             <compile-classpath>
                 <pathelement path="${web.classpath}"/>
+                <pathelement location="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+                
                 <fileset dir="lib">
                     <include name="**/*.jar"/>
                 </fileset>
@@ -31,8 +33,8 @@
     
     <target name="-declare-ant-task">
          <taskdef name="listfiles"
-                  classname="org.jdesktop.wonderland.webserver.ant.ListFilesTask"
-                  classpath="${build.classes.dir}"/>
+                  classname="org.jdesktop.wonderland.utils.ant.ListFilesTask"
+                  classpath="${web.classpath}"/>
 
     </target>
     
@@ -43,29 +45,46 @@
         <jar destfile="${build.dir}/lib/wonderland-webserver.jar">
             <fileset dir="${build.classes.dir}">
                 <include name="**"/>
-                <exclude name="org/jdesktop/wonderland/webserver/ant/**"/>
                 <exclude name="org/jdesktop/wonderland/webserver/launcher/**"/>
             </fileset>
         </jar>
-        
+    </target>
+    
+    <target name="package" depends="jar, -web-server-build-modules">
         <jar destfile="${build.dir}/lib/Wonderland.jar">
             <!-- classes -->
             <fileset dir="${build.classes.dir}" >
                 <include name="org/jdesktop/wonderland/webserver/launcher/**"/>
             </fileset>
             
+            <!-- include utility classes at top level as well -->
+            <zipfileset src="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
+            
+            <!-- include the default properties file -->
+            <fileset file="${current.dir}/web-default.properties"/>
+            
             <!-- files that are needed for the web server classpath -->
-            <zipfileset dir="lib" prefix="webserver"/>
+            <zipfileset dir="${web.dir}/lib/glassfish" prefix="webserver"/>
             <zipfileset file="${build.dir}/lib/wonderland-webserver.jar" prefix="webserver"/>
             <zipfileset dir="${top.dir}/lib/jaxb" prefix="webserver"/>
-            <zipfileset dir="${top.dir}/web/lib/restlib" prefix="webserver"/>
-            <zipfileset dir="${top.dir}/web/lib/apache" prefix="webserver"/>
+            <zipfileset dir="${web.dir}/lib/restlib" prefix="webserver"/>
+            <zipfileset dir="${web.dir}/lib/apache" prefix="webserver"/>
             <zipfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
-            <zipfileset file="${web.dir}/utils/dist/wonderland-web-utils.jar" prefix="webserver"/>
+            <zipfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
             
             <!-- wars to deploy -->
-            <zipfileset dir="${top.dir}/web/wfs/dist" prefix="deploy"/>
-            <zipfileset dir="${top.dir}/web/modules/dist" prefix="deploy"/>
+            <zipfileset dir="${top.dir}/web/wfs/dist" prefix="deploy">
+                <include name="**/*.war"/>
+            </zipfileset>
+            <zipfileset dir="${top.dir}/web/modules/dist" prefix="deploy">
+                <include name="**/*.war"/>
+            </zipfileset>
+            <zipfileset dir="${top.dir}/web/runner/dist" prefix="deploy">
+                <include name="**/*.war"/>
+            </zipfileset>
+            
+            <!-- modules -->
+            <zipfileset dir="${top.dir}/modules/dist" prefix="modules"/>
             
             <manifest>
                 <attribute name="Main-Class" value="org.jdesktop.wonderland.webserver.launcher.WebServerLauncher"/>
@@ -81,6 +100,8 @@
                    output="${build.dir}/tmp/META-INF/deploy.jars"/>
         <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="webserver" 
                    output="${build.dir}/tmp/META-INF/webserver.jars"/>
+        <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="modules" 
+                   output="${build.dir}/tmp/META-INF/module.jars"/>
                    
         <jar destfile="${build.dir}/lib/Wonderland.jar" update="true">
             <fileset dir="${build.dir}/tmp"/>
@@ -89,8 +110,31 @@
         <delete dir="${build.dir}/tmp"/>
     </target>
     
-    <target name="run" depends="jar">
+    <target name="-web-server-build-modules" unless="webserver.nomodules">
+        <ant dir="${top.dir}/modules" inheritall="false"/>
+    </target>
+    
+    <target name="run" depends="package">
         <java jar="${build.dir}/lib/Wonderland.jar"/>
+    </target>
+    
+    <target name="debug" depends="package">
+        <!--nbjpdastart addressproperty="jpda.address" name="wonderland-webserver" transport="dt_socket">
+            <classpath>
+                <pathelement path="${build.classes.dir}"/>
+                <pathelement path="${web.classpath}"/>
+                <pathelement location="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+            </classpath>
+        </nbjpdastart-->
+
+        <java jar="${build.dir}/lib/Wonderland.jar">
+            <!--start debug-->
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890"/>
+            <!--end debug-->
+        </java>
     </target>
     
     <target name="clean" depends="-web-clean"/>

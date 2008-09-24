@@ -1,26 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-web" default="build" basedir=".">
-    
-    <property name="j2ee.platform.classpath" value=""/>
-    
     <target name="build">
        <ant dir="utils" target="jar"/>
        <ant dir="wfs" target="dist" inheritall="false"/>
        <ant dir="modules" target="dist" inheritall="false"/>
-       <ant dir="server" target="jar" inheritall="false"/>
+       <ant dir="runner" target="dist" inheritall="false"/>
+       <ant dir="server" target="package" inheritall="false"/>
     </target>
     
     <target name="run-web" depends="build">
-        <java dir="server" jar="${basedir}/server/build/lib/Wonderland.jar" fork="true">
-            <jvmarg value="-Dwonderland.webserver.wfs.root=${basedir}/examples/wfs"/>
-            <jvmarg value="-Dwonderland.webserver.modules.root=${basedir}/examples/modules"/>
-        </java>
+        <java dir="server" jar="${basedir}/server/build/lib/Wonderland.jar" fork="true"/>
     </target>
     
     <target name="clean">
        <ant dir="utils" target="clean"/>
        <ant dir="wfs" target="clean" inheritall="false"/>
        <ant dir="modules" target="clean" inheritall="false"/>
+       <ant dir="runner" target="clean" inheritall="false"/>
        <ant dir="server" target="clean" inheritall="false"/>
     </target>
 </project>

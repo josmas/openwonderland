@@ -23,6 +23,7 @@ import java.io.FilenameFilter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.wfs.WFS;
 import org.jdesktop.wonderland.wfs.WFSFactory;
 
@@ -109,7 +110,7 @@ public class WFSManager {
      */
     private void loadWFSs() {
         /* Find the directory in which the roots exist */
-        String baseDir = System.getProperty("wonderland.webserver.wfs.root");
+        String baseDir = SystemPropertyUtil.getProperty("wonderland.webserver.wfs.root");
         if (baseDir == null) {
             logger.warning("WFSManager: No value for wonderland.webserver.wfs.root");
             return;
