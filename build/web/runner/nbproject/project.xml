@@ -12,6 +12,9 @@
                 <library files="1">
                     <file>${file.reference.wonderland-web-utils.jar}</file>
                 </library>
+                <library files="1">
+                    <file>${file.reference.glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar}</file>
+                </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>
