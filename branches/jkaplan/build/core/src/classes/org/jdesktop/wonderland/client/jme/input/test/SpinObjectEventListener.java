@@ -21,7 +21,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.processor.RotationProcessor;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.WorldEventListener;
+import org.jdesktop.wonderland.client.input.WorldEventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import com.jme.scene.Node;
@@ -44,20 +44,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class SpinObjectEventListener extends WorldEventListener {
+public class SpinObjectEventListener extends WorldEventClassListener {
 
     /**
-     * {@inheritDoc}
+     * Consume only mouse button events.
      */
-    @Override
-    public boolean consumeEvent (Event event, Entity entity) {
-	if (!super.consumeEvent(event, entity)) {
-	    return false;
-	}
-	if (event.getID() != MouseButtonEvent3D.EVENT_ID) {
-	    return false;
-	}
-	return ((MouseButtonEvent3D)event).isPressed();
+    public Class[] eventClassesToConsume () {
+	return new Class[] { MouseButtonEvent3D.class };
     }
 
     // Note: we don't override computeEvent because we don't do any computation in this listener.
@@ -67,6 +60,9 @@ public class SpinObjectEventListener extends WorldEventListener {
      */
     public void commitEvent (Event event, Entity entity) {
         MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
+	if (!buttonEvent.isPressed()) {
+	    return;
+	}
 	if (entity.getComponent(SpinProcessor.class) != null) {
 	    // Stop the spinning
 	    entity.removeComponent(SpinProcessor.class);

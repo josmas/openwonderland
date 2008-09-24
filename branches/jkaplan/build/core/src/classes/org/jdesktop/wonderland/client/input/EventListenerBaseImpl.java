@@ -173,8 +173,8 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     }
 
     /**
-     * INTERNAL ONLY
-     * <br><br>
+     * INTERNAL ONLY.
+     * <br>
      * Deliver the given event to this collection. This is only ever called by the EventDeliverer.
      */
     @InternalAPI
@@ -190,10 +190,8 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     public void initialize() {}
     
     /**
-     * INTERNAL ONLY
-     * <br><br>
-     * {@inheritDoc}
-     * <br><br>
+     * INTERNAL ONLY.
+     * <br>
      * Called when there is new event in the input queue.
      */
     @InternalAPI
@@ -209,9 +207,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * {@inheritDoc}
-     * <br><br>
+     * <br>
      * Called in the render loop to allow this collection to commit the 
      * <code>compute()</code> calculations to alter the scene graph.
      */
