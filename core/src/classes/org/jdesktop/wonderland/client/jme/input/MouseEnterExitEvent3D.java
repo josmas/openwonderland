@@ -81,4 +81,16 @@ public class MouseEnterExitEvent3D extends MouseEvent3D {
     public boolean isUserGenerated () {
 	return userGenerated;
     }
+
+    public String toString () {
+       	return "Mouse " + enterAction() + ", userGen=" + isUserGenerated();
+    }
+
+    private String enterAction () {
+	if (isEnter()) {
+	    return "ENTER";
+	} else {
+	    return "EXIT";
+	}
+    }
 }

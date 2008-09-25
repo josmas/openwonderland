@@ -28,7 +28,7 @@ import java.awt.event.MouseWheelEvent;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
-
+import java.util.logging.Logger;
 /**
  * A singleton container for all of the processor objects in the Wonderland input subsystem.
  *
@@ -60,6 +60,8 @@ import org.jdesktop.wonderland.common.InternalAPI;
 public abstract class InputManager 
     implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener
 {
+    private static final Logger logger = Logger.getLogger(InputManager.class.getName());
+
     /* TODO: the non-embedded swing case is for prototyping only. Eventually this should be true */
     private static boolean ENABLE_EMBEDDED_SWING = false;
 
@@ -137,7 +139,7 @@ public abstract class InputManager
      * @param cameraComp The mtgame camera component to use for picking operations.
      */
     public void initialize (Canvas canvas, CameraComponent cameraComp) {
-	if (canvas != null) {
+	if (this.canvas != null) {
 	    throw new IllegalStateException("initialize has already been called for this InputManager");
 	}
 	this.canvas = canvas;
@@ -147,14 +149,19 @@ public abstract class InputManager
 
 	canvas.addKeyListener(this);
 
-	if (!ENABLE_EMBEDDED_SWING) {
+	if (ENABLE_EMBEDDED_SWING) {
+	    logger.info("Input System init: Embedded Swing case.");
+	} else {
 	    // When not using Embedded Swing the input manager receives events directly from the AWT canvas.
+	    logger.info("Input System init: Non Swing case.");
 	    canvas.addMouseListener(this);
 	    canvas.addMouseMotionListener(this);
 	    canvas.addMouseWheelListener(this);
 	}
 
 	injectInitialMouseEvent();
+
+	logger.info("Input System initialization complete.");
     }
 
     /**

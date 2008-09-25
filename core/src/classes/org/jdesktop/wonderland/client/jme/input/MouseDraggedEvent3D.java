@@ -178,4 +178,9 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
         return ret;
     }
     */
+
+    public String toString () {
+	// TODO: add internal state when drag methods are added
+	return "Mouse Drag";
+    }
 }
