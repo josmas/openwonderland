@@ -42,7 +42,7 @@ public abstract class ProcessReporterFactory {
     public static ProcessReporterFactory getFactory () {
 	if (reporterFactory == null) {
 	    // TODO: eventually replace with one which uses swing
-	    reporterFactory = new ProcessReporterFactoryStdout();
+	    reporterFactory = new ProcessReporterFactoryLogger();
 	}
 	return reporterFactory;
     }

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.app.base.gui.guidefault;
 
 import com.jme.image.Texture;
 import com.jme.math.Vector3f;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -115,7 +116,7 @@ public class FrameLabel extends /*TODO: FrameTranspTexRect */ FrameTexRect {
 	try {
             update();
         } catch (InstantiationException ex) {
-            Gui2DFactoryDefault.logger.warning("Cannot update FrameLabel component");
+            logger.warning("Cannot update FrameLabel component");
         }
     }
 
@@ -155,7 +156,7 @@ public class FrameLabel extends /*TODO: FrameTranspTexRect */ FrameTexRect {
 	/**/
         TextTextureGenerator ttg = new TextTextureGenerator(text, texWidth, texHeight);
         texture = ttg.getTexture();
-	texture.setApply(Texture.AM_MODULATE);
+	texture.setApply(Texture.ApplyMode.Modulate);
 	/**/
 
 	/*-------------- 

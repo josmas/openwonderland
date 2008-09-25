@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
-import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.app.base.AppTypeCellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -33,6 +32,7 @@ import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import com.sun.sgs.app.ClientSession;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
@@ -51,6 +51,8 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 @ExperimentalAPI
 public class AppTypeCellMO extends CellMO {
+
+    private static final Logger logger = Logger.getLogger(AppTypeCellMO.class.getName());
 
     // A name-keyed map of all modular app types which have been loaded
     private static HashMap<String,AppTypeMO> nameToAppType = new HashMap<String,AppTypeMO>();
@@ -170,8 +172,8 @@ public class AppTypeCellMO extends CellMO {
 	    throw new RuntimeException("App type " + appTypeName + " is already defined");
 	}
 
-	System.err.println("************ appTypeName = " + appTypeName);
-	System.err.println("************ appType = " + appType);
+	logger.severe("************ appTypeName = " + appTypeName);
+	logger.severe("************ appType = " + appType);
 	nameToAppType.put(appTypeName, appType);
     }
 

@@ -17,12 +17,9 @@
  */
 package org.jdesktop.wonderland.client.app.base.gui.guidefault;
 
-import com.jme.math.Rectangle;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
-import org.jdesktop.wonderland.client.app.base.App;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.app.base.Window2D;
 import org.jdesktop.wonderland.client.app.base.Window2DViewWorldConventional;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -36,7 +33,17 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public class ViewWorldConventionalDefault extends ViewWorldDefault implements Window2DViewWorldConventional {
 
-    private static final Logger logger = Logger.getLogger(ViewWorldConventional.class.getName());
+    private static final Logger logger = Logger.getLogger(ViewWorldConventionalDefault.class.getName());
+
+    /** The window. */
+    private Window2D window;
+
+    /**
+     * Create a new instance of ViewWorldConventionalDefault.
+     */
+    public ViewWorldConventionalDefault (Window2D window) {
+	super(window);
+    }
 
     /**
      * Insert the given pixels into the window's image into a subrectangle starting at (x, y) 
@@ -49,17 +56,20 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
      * @param pixels An array which contains the pixels. It must be of length w x h.
      */
     public void displayPixels (int x, int y, int w, int h, ByteBuffer pixels) {
+	/*
 	Rectangle rect = new Rectangle(x + borderWidth, y + borderWidth, w, h);
 	clipRectangle(rect);
 
 	// TODO: imageComp.updateData(imageUpdater, rect.x, rect.y, rect.width, rect.height);
+	*/
     }
-
+    
     /** 
      * Clip the given rectangle to the boundary of this image.
      *
      * @param r The rectangle whose attributes are to be clipped.
      */
+    /*
     private void clipRectangle (Rectangle r) {
 	int texWidth = getTextureWidth();
 	int texHeight = getTextureHeight();
@@ -82,7 +92,8 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
 	r.width = xmax - r.x + 1;
 	r.height = ymax - r.y + 1;
     }
-
+*/
+    
     /**
      * Called inside the updateData critical section to deposit the given pixels into the image at the given location.
      *
@@ -93,7 +104,8 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
      * @param height The height of the image subrectangle which is to be updated.
      * @param pixels An array which contains the pixels. It must be of length width x height.
      */
-    private void performDisplayPixels (ImageComponent2D imageComp, int dstX, int dstY, int width, int height, 
+/*
+ private void performDisplayPixels (ImageComponent2D imageComp, int dstX, int dstY, int width, int height, 
 				       int[] pixels) {
 
 	BufferedImage bi = imageComp.getImage();
@@ -103,7 +115,6 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
 	DataBufferInt dataBuf = (DataBufferInt) ras.getDataBuffer();
 	int[] dstPixels = dataBuf.getData();
 
-	/*
 	logger.warning("performDisplayPixels");
 	logger.warning("dstX = " + dstX);
 	logger.warning("dstY = " + dstY);
@@ -111,7 +122,6 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
 	logger.warning("height = " + height);
 	logger.warning("dstWidth = " + dstWidth);
 	logger.warning("dstHeight = " + dstHeight);
-	*/
 
 	int srcIdx = 0;
 	int dstIdx = dstY * dstWidth + dstX;
@@ -122,11 +132,11 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
 
 	    for (int i = 0; i < width; i++) {
 		if (dstPixels == null) {
-		    App.logger.severe("bailing out because dstPixels is null");
+		    logger.severe("bailing out because dstPixels is null");
 		    return;
 		}
 		if (pixels == null) {
-		    App.logger.severe("bailing out because pixels is null");
+		    logger.severe("bailing out because pixels is null");
 		    return;
 		}
 		dstPixels[dstIdx++] = pixels[srcIdx++];
@@ -135,7 +145,8 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
 	    dstIdx = dstNextLineIdx;
 	}
     }
-
+*/
+        
     /**
      * Called inside the updateData critical section to copy pixels from one part of the image to another.
      *
@@ -147,7 +158,8 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
      * @param dstX The X coordinate of the top left corner of the destination subrectangle.
      * @param dstX The Y coordinate of the top left corner of the destination subrectangle.
      */
-    private void performCopyArea (ImageComponent2D imageComp, int srcX, int srcY, int width, int height, 
+/*
+ private void performCopyArea (ImageComponent2D imageComp, int srcX, int srcY, int width, int height, 
 				  int dstX, int dstY) {
 
 	//logger.warning("FSI.copyArea, srcXY = " + srcX + ", " + srcY +
@@ -164,7 +176,8 @@ public class ViewWorldConventionalDefault extends ViewWorldDefault implements Wi
 
 	performDisplayPixels(imageComp, dstX, dstY, width, height, pixels);
     }
-
+*/
+    
     /**
      * Copies a rectangle of pixels from the given source array to the given destination array.
      * The top left corner of the rectangle is at (x, y) and the dimensions of the rectangle are

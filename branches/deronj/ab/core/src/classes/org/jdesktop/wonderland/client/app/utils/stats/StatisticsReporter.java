@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.app.utils.stats;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.StableAPI;
 
 /**
@@ -28,6 +30,12 @@ import org.jdesktop.wonderland.common.StableAPI;
 
 @StableAPI
 public class StatisticsReporter implements Runnable {
+
+    private static final Logger logger = Logger.getLogger(StatisticsReporter.class.getName());
+
+    static {
+	logger.setLevel(Level.INFO);
+    }
 
     // By default report statistics every 30 sec
     private static final int REPORT_PERIOD_MS = 30000; 
@@ -68,7 +76,7 @@ public class StatisticsReporter implements Runnable {
 
     public void start () {
 	thread = new Thread(this, name + " Statistics Reporter");
-	System.err.println("Starting " + name + " Statistics Reporter");
+	logger.warning("Starting " + name + " Statistics Reporter");
 	thread.start();
     }
 
@@ -106,30 +114,30 @@ public class StatisticsReporter implements Runnable {
 	    if (period.hasTriggered() ||
 		max.hasTriggered() ||
 		cumulative.hasTriggered()) {
-		printStats();
+		logStats();
 	    }
 
 	    period.reset();
 	}	    
 
-	System.err.println();
-	System.err.println("Stopped " + name + " Statistics Reporter");
+	logger.warning("Stopped " + name + " Statistics Reporter");
     }
 
-    private void printStats () {
-	System.err.println("--------------------------------------------------------");
-	System.err.println();
-	System.err.println(name + " statistics for last period (" + 
-			   probeIntervalSecs + " secs)");
-	period.printStatsAndRates(probeIntervalSecs);
+    private void logStats () {
+	StringBuffer sb = new StringBuffer();
+	sb.append("--------------------------------------------------------\n");
+	sb.append(name + " statistics for last period (" + probeIntervalSecs + " secs)\n");
+	period.appendStatsAndRates(sb, probeIntervalSecs);
 
-	System.err.println();
-	System.err.println(name + " statistics maximums");
-	max.printStats();
+	sb.append("\n");
+	sb.append(name + " statistics maximums\n");
+	max.appendStats(sb);
 
-	System.err.println();
-	System.err.println(name + " statistics cumulative");
-	cumulative.printStatsAndRates(totalSecs);
+	sb.append("\n");
+	sb.append(name + " statistics cumulative\n");
+	cumulative.appendStatsAndRates(sb, totalSecs);
+
+	logger.info(sb.toString());
     }
 }
 

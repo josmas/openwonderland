@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.app.base.gui.guidefault;
 
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 

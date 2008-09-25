@@ -23,7 +23,7 @@ import com.jme.math.Vector2f;
 import com.jme.util.TextureManager;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -34,6 +34,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 @ExperimentalAPI
 public class WindowGraphics2D extends Window2D {
+
+    private static final Logger logger = Logger.getLogger(WindowGraphics2D.class.getName());
 
     /** The surface the client on which subclasses should draw */
     private DrawingSurface surface;
@@ -88,7 +90,7 @@ public class WindowGraphics2D extends Window2D {
         */
         
 	// For debug
-	System.err.println("WindowGraphics2D: load test image");
+	logger.warning("WindowGraphics2D: load test image");
 	java.awt.Image bi = Toolkit.getDefaultToolkit().getImage(
 		              "/home/dj/jme/cvs/jme/src/jmetest/data/images/Monkey.jpg");
 

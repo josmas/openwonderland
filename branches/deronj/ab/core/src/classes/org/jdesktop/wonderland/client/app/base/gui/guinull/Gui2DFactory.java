@@ -34,8 +34,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public class Gui2DFactory implements GuiFactory {
 
-   /** The logger for gui.guinull */
-    static final Logger logger = Logger.getLogger("wl.app.base.gui.guinull");
+    private static final Logger logger = Logger.getLogger(Gui2DFactory.class.getName());
 
     /** The singleton gui factory */
     private static GuiFactory guiFactory;

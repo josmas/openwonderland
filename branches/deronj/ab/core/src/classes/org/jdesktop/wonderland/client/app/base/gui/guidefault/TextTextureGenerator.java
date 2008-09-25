@@ -26,6 +26,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -74,7 +75,8 @@ class TextTextureGenerator {
     
     private Texture createTexture (String text, int texWidth, int texHeight) {
 	BufferedImage bi = createTextureImage(text, texWidth, texHeight);
-	return TextureManager.loadTexture(bi, Texture.MM_LINEAR, Texture.FM_LINEAR, false);
+	return TextureManager.loadTexture(bi, Texture.MinificationFilter.Trilinear, 
+                    Texture.MagnificationFilter.Bilinear, false);
     }
     
     private BufferedImage createTextureImage(String text, int texWidth, int texHeight) {

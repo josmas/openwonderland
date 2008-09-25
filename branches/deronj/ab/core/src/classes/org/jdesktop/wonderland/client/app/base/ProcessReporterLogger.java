@@ -17,24 +17,26 @@
  */
 package org.jdesktop.wonderland.client.app.base;
 
-import java.util.HashMap;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * An process reporter which reports to the Wonderland client stdout using the App logger.
+ * An process reporter which reports to the Wonderland client logger.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class ProcessReporterStdout extends ProcessReporter {
+public class ProcessReporterLogger extends ProcessReporter {
     
+    private static final Logger logger = Logger.getLogger(ProcessReporterLogger.class.getName());
+
     /** 
      * Create a new instance of ProcessReporter.
      *
      * @param processName The name of the process on which to report.
      */
-    ProcessReporterStdout (String processName) {
+    ProcessReporterLogger (String processName) {
 	super(processName);
     }
 
@@ -42,14 +44,14 @@ public class ProcessReporterStdout extends ProcessReporter {
      * {@inheritDoc}
      */
     public void output (String str) {
-	App.logger.info("Output from app " + processName + ": " + str);
+	logger.info("Output from app " + processName + ": " + str);
     }
 
     /** 
      * {@inheritDoc}
      */
     public void exitValue (int value) {
-	App.logger.info("Process " + processName + "exitted.");
-	App.logger.info("exitValue = " + value);
+	logger.info("Process " + processName + "exitted.");
+	logger.info("exitValue = " + value);
     }
 }

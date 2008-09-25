@@ -21,8 +21,10 @@ import com.jme.image.Texture;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
 import com.jme.system.DisplaySystem;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.WindowView;
 import org.jdesktop.wonderland.client.jme.utils.TexturedQuad;
+import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -37,6 +39,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 @ExperimentalAPI
 public class FrameTexRect extends FrameRect {
+
+    private static final Logger logger = Logger.getLogger(FrameTexRect.class.getName());
 
     /** The texture of the component. */
     protected Texture texture;
@@ -71,7 +75,7 @@ public class FrameTexRect extends FrameRect {
 	try {
 	    update();
         } catch (InstantiationException ex) {
-            Gui2DFactoryDefault.logger.warning("Cannot update FrameTexRect component");
+            logger.warning("Cannot update FrameTexRect component");
         }
 	setTexture(texture);
     }

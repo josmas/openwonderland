@@ -22,6 +22,7 @@ import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.awt.Button;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.Window2DView;
 import org.jdesktop.wonderland.client.app.base.ControlArb;
 import org.jdesktop.wonderland.client.app.base.Window2D;
@@ -258,7 +259,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
                 updateGeometrySize();
                 updateTexture();
             } catch (InstantiationException ex) {
-                Gui2DFactoryDefault.logger.warning("Instantiation exception while updating view size");
+                logger.warning("Instantiation exception while updating view size");
 		ex.printStackTrace();
                 return;
             }
@@ -361,7 +362,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	
 	if (visible && !connectedToCell) {
 	    if (cell == null) {
-		Gui2DFactoryDefault.logger.warning("View is not attached to cell. Cannot make it visible");
+		logger.warning("View is not attached to cell. Cannot make it visible");
 	    } else {
 // TODO		cell.attachLocalChild(viewNode);
 		connectedToCell = true;
@@ -475,6 +476,16 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 			     (int)((y / heightWorld) * window2D.getHeight()));
 	}
         */
+
+	/**
+	 * Returns the texture width.
+	 */
+	public abstract int getTextureWidth ();
+
+	/**
+	 * Returns the texture height.
+	 */
+	public abstract int getTextureHeight ();
     }
 
     /** 
@@ -562,14 +573,14 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 * Returns the texture width.
 	 */
 	public int getTextureWidth () {
-	    return texture.getWidth();
+	    return quad.getTexture().getImage().getWidth();
 	}
 
 	/**
 	 * Returns the texture height.
 	 */
 	public int getTextureHeight () {
-	    return texture.getHeight();
+	    return quad.getTexture().getImage().getHeight();
 	}
     }
 
