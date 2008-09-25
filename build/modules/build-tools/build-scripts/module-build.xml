@@ -74,48 +74,7 @@
 	    </compile-classpath>
         </wl-compile>
     </target>
-            
-    <target name="-module-jar-server" depends="-module-compile-server, 
-                                               -module-jar-server-noplugins, 
-                                               -module-jar-server-plugins"/>
-    
-    <target name="-module-jar-server-plugins" if="module.plugins">
-        <wl-services dir="${build.dir}/${module.jarname}"
-                     type="org.jdesktop.wonderland.server.ServerPlugin">
-            <providers>
-                ${module.packagename}.server.${module.plugins}
-            </providers>
-        </wl-services>
-        
-        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/${module.jarname}-server.jar">   
-            <fileset dir="${build.classes.dir}">
-		<include name="${module.src}/common/**"/>
-                <include name="${module.src}/server/**"/>
-	    </fileset>
-            <fileset dir="${build.dir}/${module.jarname}">
-                <include name="**"/>
-            </fileset>
-        </jar>
-    </target>
-    
-    <target name="-module-jar-server-noplugins" unless="module.plugins">
-        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/${module.jarname}-server.jar">   
-            <fileset dir="${build.classes.dir}">
-		<include name="${module.src}/common/**"/>
-                <include name="${module.src}/server/**"/>
-	    </fileset>
-        </jar>
-    </target>
-    
-    <target name="-module-jar-client" depends="-module-compile-client">
-        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/${module.jarname}-client.jar">
-            <fileset dir="${build.classes.dir}">
-		<include name="${module.src}/common/**"/>
-                <include name="${module.src}/client/**"/>
-	    </fileset>
-        </jar>
-    </target>
-    
+                
     <target name="-module-clean">
         <delete dir="${build.dir}"/>
         <delete dir="${module.dist.dir}"/>
