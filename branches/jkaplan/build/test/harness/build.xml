@@ -46,6 +46,15 @@
         </wl-compile>
     </target>
     
+     <target name="jar-manager-common" depends="jar-common, compile-manager-common" 
+            description="Build manager common jar">
+       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-manager-common.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/manager/common/**"/>
+            </fileset>
+         </jar>
+    </target>
+    
     <target name="compile-manager-ui" depends="compile-manager-common">
         <wl-compile>
             <compile-classes>
@@ -66,6 +75,7 @@
             
             <compile-classpath>
                 <pathelement path="${core-common.classpath}"/>
+                <path location="${core.lib.dir}/wonderland-common.jar"/>
                 <!-- include manager common jar-->
             </compile-classpath>
         </wl-compile>
@@ -84,11 +94,14 @@
         </wl-compile>
     </target>
     
-    <target name="run-master" depends="compile-master">
+    <target name="run-master" depends="jar-master, jar-manager-common">
         <java classname="org.jdesktop.wonderland.testharness.master.MasterMain" fork="true">
             <classpath>
-                <path location="${build.classes.dir}"/>
+                <path location="${build.lib.dir}/testharness-master.jar"/>
+                <path location="${build.lib.dir}/testharness-common.jar"/>
+                <path location="${build.lib.dir}/testharness-manager-common.jar"/>
 		<pathelement path="${core-client.classpath}"/>  <!-- for vecmath-->
+                <path location="${core.lib.dir}/wonderland-common.jar"/>
             </classpath>    
             
             <arg value="${harness.master.port}"/>
@@ -151,14 +164,29 @@
     </target>
     
      <target name="jar-slave" depends="jar-common, compile-slave" 
-            description="Build common jar">
+            description="Build slave jar">
        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-slave.jar">    
             <fileset dir="${build.classes.dir}/">
                 <include name="org/jdesktop/wonderland/testharness/slave/**"/>
             </fileset>
+            <fileset dir="${javasrc.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/slave/resources/**"/>
+            </fileset>
          </jar>
     </target>
     
+     <target name="jar-master" depends="jar-common, compile-master" 
+            description="Build master jar">
+       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-master.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/master/**"/>
+            </fileset>
+            <fileset dir="${javasrc.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/master/resources/**"/>
+            </fileset>
+         </jar>
+    </target>
+
     <!-- Packages up files that we need to drop onto the JTR save machines -->
     <target name="jar-jtr-slave" depends="jar-common, compile-slave" description="Build JTR Slave jar">
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/jtr-slave-dummy.jar">

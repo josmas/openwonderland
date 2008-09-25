@@ -29,4 +29,13 @@ public class RootCell extends Cell {
     public RootCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
+    
+    /**
+     * Create the renderer for this cell
+     */
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        // Overloaded to prevent log message wrt null rederer
+        return null;
+    }
 }

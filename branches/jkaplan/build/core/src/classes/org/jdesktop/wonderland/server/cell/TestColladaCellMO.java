@@ -21,12 +21,11 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
-import org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.config.StaticModelCellConfig;
+import org.jdesktop.wonderland.common.cell.config.ColladaCellConfig;
 import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.cell.setup.ColladaCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
@@ -51,13 +50,17 @@ public class TestColladaCellMO extends CellMO implements BeanSetupMO {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
     }
     
+    public TestColladaCellMO(BoundingVolume bounds, CellTransform transform) {
+        super(bounds, transform);
+    }
+    
     @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.TestColladaCell";
     }
 
     @Override
-    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new StaticModelCellConfig(this.modelURI);
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
+        return new ColladaCellConfig(this.modelURI);
     }
 
     @Override
