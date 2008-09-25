@@ -22,15 +22,19 @@ import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -41,6 +45,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
+import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
@@ -55,17 +60,23 @@ import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.PlacemarkType;
  * 
  * @author paulby
  */
-class LoaderKmzImpl {
+class LoaderKmz implements ModelLoader {
 
-    private static final Logger logger = Logger.getLogger(LoaderKmzImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(LoaderKmz.class.getName());
         
+    private HashMap<URL, ZipEntry> textureFiles = new HashMap();
+    
+    // The original file the user loaded
+    private File origFile;
+    
     /**
      * Load a SketchUP KMZ file and return the graph root
      * @param file
      * @return
      */
-    Node load(File file) {
+    public Node importModel(File file) {
         Node ret = null;
+        origFile = file;
         
         try {
             ZipFile zipFile = new ZipFile(file);
@@ -133,7 +144,7 @@ class LoaderKmzImpl {
     }
     
     /**
-     * Search folders adding any ModelTypes found to the models list
+     * Search kmz folders adding any ModelTypes found to the models list
      * @param models
      * @param folder
      */
@@ -158,6 +169,109 @@ class LoaderKmzImpl {
         }
     }
     
+    public void deployToModule(File moduleArtRootDir) {
+        deployTextures(moduleArtRootDir);
+        deployModels(moduleArtRootDir);
+    }
+    
+    /**
+     * KMZ files keep all the models in the /models directory, copy all the
+     * models into the module
+     * @param moduleArtRootDir
+     */
+    private void deployModels(File moduleArtRootDir) {
+        
+        // TODO update collada files with module relative texture paths
+        
+        try {
+            String modelName = origFile.getName();
+            ZipFile zipFile = new ZipFile(origFile);
+
+            String targetDirName = moduleArtRootDir.getAbsolutePath() + File.separator + modelName;
+            File targetDir = new File(targetDirName);
+            targetDir.mkdir();
+            
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while(entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (entry.getName().endsWith(".dae")) {
+                    File target = new File(targetDirName+File.separator+entry.getName());
+                    target.getParentFile().mkdirs();
+                    target.createNewFile();
+                    
+                    copyAsset(zipFile, entry, target);
+                }
+            }
+            
+            
+        } catch (ZipException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
+    /**
+     * Deploys the textures into the art directory, placing them in a directory
+     * with the name of the original model.
+     * @param moduleArtRootDir
+     */
+    private void deployTextures(File moduleArtRootDir) {
+        try {
+            // TODO generate checksums to check for image duplication
+            String modelName = origFile.getName();
+            ZipFile zipFile = new ZipFile(origFile);
+
+            String targetDirName = moduleArtRootDir.getAbsolutePath() + File.separator + modelName;
+//            logger.fine("TargetDir "+moduleArtRootDir);
+            File targetDir = new File(targetDirName);
+            targetDir.mkdir();
+
+            for (Map.Entry<URL, ZipEntry> t : textureFiles.entrySet()) {
+                File target = new File(targetDirName + File.separator + t.getKey().getPath());
+                target.getParentFile().mkdirs();
+                target.createNewFile();
+//                logger.fine("Texture file " + target.getAbsolutePath());
+                copyAsset(zipFile, t.getValue(), target);
+            }
+        } catch (ZipException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Copy the asset from the zipEntry to the target file
+     * @param zipFile the zipFile that contains the zipEntry
+     * @param zipEntry entry to copy from
+     * @param target file to copy to
+     */
+    private void copyAsset(ZipFile zipFile, ZipEntry zipEntry, File target) {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+            out = new BufferedOutputStream(new FileOutputStream(target));
+            
+            org.jdesktop.wonderland.common.FileUtils.copyFile(in, out);
+            
+            
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (in!=null)
+                    in.close();
+                if (out!=null)
+                    out.close();
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
     class ZipResourceLocator implements ResourceLocator {
 
         private String zipHost;
@@ -173,6 +287,9 @@ class LoaderKmzImpl {
             if (filename.startsWith("../")) {
                 filename = filename.substring(3);
             }
+            if (filename.startsWith("/")) {
+                filename = filename.substring(1);
+            }
             
             ZipEntry entry = zipFile.getEntry(filename);
             if (entry==null) {
@@ -181,9 +298,11 @@ class LoaderKmzImpl {
             }
             
             try {
-                return new URL("wlzip", zipHost, filename);
+                URL url = new URL("wlzip", zipHost, "/"+filename);
+                textureFiles.put(url, entry);
+                return url;
             } catch (MalformedURLException ex) {
-                Logger.getLogger(LoaderKmzImpl.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(LoaderKmz.class.getName()).log(Level.SEVERE, null, ex);
             }
             return null;
         }
