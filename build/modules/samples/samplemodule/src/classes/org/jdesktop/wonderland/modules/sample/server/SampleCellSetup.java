@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.sample.server;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.cell.setup.spi.CellSetupSPI;
 
 /**
  * The SampleCellSetup class is the cell that renders a sample cell in
@@ -29,7 +30,8 @@ import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
  * @author jkaplan
  */
 @XmlRootElement(name="sample")
-public class SampleCellSetup extends BasicCellSetup implements Serializable {
+public class SampleCellSetup extends BasicCellSetup 
+        implements Serializable, CellSetupSPI {
 
     /** Default constructor */
     public SampleCellSetup() {
