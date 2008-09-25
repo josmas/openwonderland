@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.6.0-dp" class="java.beans.XMLDecoder"> 
+ <object class="org.jdesktop.wonderland.server.setup.BasicCellMOSetup"> 
+  <void property="boundsRadius"> 
+   <double>100000.0</double> 
+  </void> 
+  <void property="boundsType"> 
+   <string>BOX</string> 
+  </void> 
+  <void property="cellMOClassName"> 
+   <string>org.jdesktop.wonderland.server.cell.AppTypeCellMO</string> 
+  </void> 
+
+  <void property="cellSetup"> 
+   <object class="org.jdesktop.lg3d.wonderland.common.app.base.AppTypeCellSetup"> 
+    <void property="appTypeServerClassName"> 
+     <string>org.jdesktop.lg3d.wonderland.modules.simplewhiteboard.serverWhiteboardAppTypeMO</string> 
+    </void> 
+    <void property="appTypeClientClassName"> 
+     <string>org.jdesktop.lg3d.wonderland.modules.simplewhiteboard.clientWhiteboardAppType</string> 
+    </void> 
+
+    <!-- TODO: For local testing. Until whiteboard module becomes part of the standard art -->
+    <void property="baseUrl"> 
+     <string>file:/home/dj/wl/svn/branches/deronj/dev/core</string> 
+    </void> 
+
+    <void property="serverJar"> 
+     <string>modules/simplewhiteboard/build/lib/simplewhiteboard-server.jar</string> 
+    </void> 
+    <void property="clientJar"> 
+     <string>modules/simplewhiteboard/build/lib/simplewhiteboard-client.jar</string> 
+    </void> 
+   </object> 
+  </void> 
+
+  <void property="origin"> 
+    <void index="0"> <double>50.0</double> </void> 
+    <void index="1"> <double>0.0</double> </void> 
+    <void index="2"> <double>50.0</double> </void> 
+  </void> 
+ </object> 
+</java> 
+
+
+
+ </object> 
+</java> 
