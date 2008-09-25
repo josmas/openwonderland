@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * kept short.
  * <br><br>
  * In general, the programmer should not make any assumptions about the order in which methods of different 
- * event listeners methods are called for a single event. Nor should the programmer make any assumptions about
+ * event listeners are called for a single event. Nor should the programmer make any assumptions about
  * the order or number of times methods are called for a single event listener for a single event. One 
  * guarantee which is provided is that for a given event an enabled listener's <code>computeEvent</code>
  * will be called once (if <code>consumeEvent</code> returned true) and, sometime later, the <code>commitEvent</code> routine will be called. Also, another 
@@ -104,7 +104,7 @@ public interface EventListener  {
     public boolean consumeEvent (Event event, Entity entity);
 
     /**
-     * Returns whether the event should also be propagated to its parent for possible delivery.
+     * Returns whether the event should also be propagated to the entity's parent for possible delivery.
      * Computations in this method should be kept reasonably short as they occur in
      * AWT Event Dispatch thread. This method is only called for entity-attached event listeners.
      *
@@ -171,8 +171,10 @@ public interface EventListener  {
     public void removeFromEntity (Entity entity);
 
     /**
+     * INTERNAL ONLY.
+     * <br>
      * Deliver the given event to this collection. This is only ever called by the <code>EventDeliverer</code>.
      */
     @InternalAPI
-    void postEvent (Event event);
+    public void postEvent (Event event);
 }

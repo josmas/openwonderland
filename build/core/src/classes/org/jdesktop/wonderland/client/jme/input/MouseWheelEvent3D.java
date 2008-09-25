@@ -63,4 +63,8 @@ public class MouseWheelEvent3D extends MouseEvent3D {
     public int getWheelRotation() {
         return ((MouseWheelEvent)awtEvent).getWheelRotation();
     }
+
+    public String toString () {
+       	return "Mouse Wheel, rot=" + getWheelRotation();
+    }
 }

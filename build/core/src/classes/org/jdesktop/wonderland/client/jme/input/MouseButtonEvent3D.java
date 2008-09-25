@@ -87,13 +87,18 @@ public class MouseButtonEvent3D extends MouseEvent3D {
     public int getClickCount() {
         return awtEvent.getClickCount();
     }
-    
-    /**
-     * Returns a string representation of the object.
-     */
+
     public String toString () {
-	String str = "[" + super.toString(); 
-	str += "]";
-	return str;
+	return "Mouse Button " + butAction();
+    }
+
+    private String butAction () {
+	if (isPressed()) {
+	    return "PRESS";
+	} else if (isReleased()) {
+	    return "RELEASE";
+	} else {
+	    return "CLICK";
+	}
     }
 }

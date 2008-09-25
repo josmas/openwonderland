@@ -52,7 +52,7 @@ import org.jdesktop.wonderland.client.modules.RepositoryList;
 import org.jdesktop.wonderland.client.modules.RepositoryList.Repository;
 import org.jdesktop.wonderland.client.modules.RepositoryUtils;
 import org.jdesktop.wonderland.common.AssetType;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.ResourceURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 
@@ -187,7 +187,7 @@ public class AssetManager {
      * @param assetURI The unique URI of the asset to load
      * @param assetType The type of the asset being loaded
      */
-    public Asset getAsset(AssetURI assetURI, AssetType assetType) {
+    public Asset getAsset(ResourceURI assetURI, AssetType assetType) {
         String uri = assetURI.toString();
         
         /* Log a bunch of informative messages */
@@ -265,7 +265,7 @@ public class AssetManager {
                  * Otherwise, fetch from the local cache.
                  */
                 logger.info("[ASSET] GET asset is in local cache: " + uri);
-                asset.setLocalCacheFile(new File(this.getAssetCacheFileName(assetURI)));
+                asset.setLocalCacheFile(new File(this.getAssetCacheFileName(assetID)));
                 AssetLoader loader = new AssetLoader(asset, false);
                 loadingAssets.put(assetID, loader);
 
@@ -294,14 +294,20 @@ public class AssetManager {
                 loader = loadingAssets.get(assetID);
             }
 
-            logger.fine("Waiting for asset: loader=" + loader);
+            /*
+             * Fetch the class that is currently loading an asset. If it is null,
+             * there is none, so return true. This is situation is a bit odd,
+             * but happens when the asset has already been downloaded. Hence
+             * we return true.
+             */
+            logger.fine("[ASSET] WAIT Waiting for Loader " + loader);
             if (loader == null) {
                 return true;
             }
             
             Object o = loader.getFuture().get();
-            logger.fine("Finished waiting for asset, o=" + o);
-            
+            logger.fine("[ASSET] WAIT Finished got " + o);
+           
             if (o==null) {
                 // Load failed
                 return false;
@@ -416,17 +422,18 @@ public class AssetManager {
     }
     
     /**
-     * Given the unique URI for the asset, return the name of its cache file.
+     * Given the unique ID for the asset, return the name of its cache file.
      * This method accounts for the structure of the cache imposed because of
      * different sorts of uri's. For example, all assets part of some module
      * should be cached in a subdirectory pertaining only to that module, so
      * that the file does not conflict with similarly-named files in other
      * modules.
      */
-    private String getAssetCacheFileName(AssetURI assetURI) {
-        String relativePath = assetURI.getRelativeCachePath();
-        String cacheFile = cacheDir.getAbsolutePath() + File.separator + relativePath;
-        return cacheFile;
+    private String getAssetCacheFileName(AssetID assetID) {
+        String basePath = cacheDir.getAbsolutePath();
+        String relativePath = assetID.getAssetURI().getRelativeCachePath();
+        String checksum = assetID.getChecksum();
+        return basePath + File.separator + relativePath + "/" + checksum;
     }
     
     /**
@@ -524,7 +531,8 @@ public class AssetManager {
             }
             
             /* Open the cache file, create directories if necessary */
-            String cacheFile = this.getAssetCacheFileName(asset.getAssetURI());
+            AssetID assetID = new AssetID(asset.getAssetURI(), asset.getChecksum());
+            String cacheFile = this.getAssetCacheFileName(assetID);
             File file = new File(cacheFile);
             if (!file.canWrite())
                 makeDirectory(file);
@@ -742,7 +750,7 @@ public class AssetManager {
                         logger.warning("[ASSET] CALL Loading asset from repository failed, uri=" + uri);
                         this.asset.setFailureInfo(new String("Failed to load asset from repository, uri=" + uri));
                         this.asset.notifyAssetReadyListeners();
-                        return this.asset;
+                        return null;
                     }
 
                     /*
@@ -762,7 +770,7 @@ public class AssetManager {
                         logger.warning("[ASSET] CALL Loading asset from repository failed, uri=" + uri);
                         this.asset.setFailureInfo(new String("Failed to load asset from repository, uri=" + uri));
                         this.asset.notifyAssetReadyListeners();
-                        return this.asset;
+                        return null;
                     }
 
                     /*

@@ -103,4 +103,18 @@ public class KeyEvent3D extends InputEvent3D {
     public int getKeyCode () {
         return awtEvent.getKeyCode();
     }
+
+    public String toString () {
+	return "Key " + keyAction() + ": keyCode=" + getKeyCode() + ", keyChar=" + getKeyChar(); 
+    }
+
+    private String keyAction () {
+	if (isPressed()) {
+	    return "PRESS";
+	} else if (isReleased()) {
+	    return "RELEASE";
+	} else {
+	    return "CLICK";
+	}
+    }
 }
