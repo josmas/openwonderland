@@ -48,12 +48,17 @@
     </target>
     
     <target name="run" depends="jar" description="Run the Wonderland client">
+        <mkdir dir="log"/>
+
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+
             
             <classpath>
 		<pathelement path="${core-client.classpath}"/>
+		<pathelement path="../modules/world/kmzloader/build/lib/kmzloader-client.jar"/>
+		<!--<pathelement path="../modules/world/testcells/build/lib/testcells-client.jar"/>-->
 	    </classpath>
             
 	    <env key="${env.path.name}" path="${env.path.defvalue}"/>

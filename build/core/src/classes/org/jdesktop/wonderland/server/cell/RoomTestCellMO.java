@@ -58,7 +58,7 @@ public class RoomTestCellMO extends CellMO
     }
 
     @Override
-    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return new StaticModelCellConfig(this.filename);
     }
 

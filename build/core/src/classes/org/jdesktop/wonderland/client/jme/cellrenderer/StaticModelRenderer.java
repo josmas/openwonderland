@@ -68,8 +68,8 @@ public class StaticModelRenderer extends BasicRenderer {
         Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        //return createFloorEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);
-        return createWireframeEntity();
+        return createFloorEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);
+//        return createWireframeEntity();
     }
 
     public Node createFloorEntity(String name, float xoff, float yoff, float zoff, 

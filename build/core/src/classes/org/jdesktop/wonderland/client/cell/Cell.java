@@ -18,11 +18,14 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -71,7 +74,7 @@ public class Cell {
         this.cellID = cellID;
         this.cellCache = cellCache;
         
-        logger.info("Cell: Creating new Cell ID=" + cellID);
+        logger.fine("Cell: Creating new Cell ID=" + cellID);
     }
     
     /**
@@ -261,7 +264,6 @@ public class Cell {
                 cachedVWBounds = localBounds.clone(cachedVWBounds);
                 local2VW.transform(cachedVWBounds);                
             } else if (this instanceof RootCell) {
-                System.out.println("SETTING ROOT");
                 local2VW = (CellTransform) localTransform.clone(null);
                 cachedVWBounds = localBounds.clone(cachedVWBounds);               
             }
@@ -270,7 +272,7 @@ public class Cell {
         }
         
         if (cachedVWBounds==null) {
-            System.out.println("********** NULL cachedVWBounds "+getName() +"  "+localBounds+"  "+localTransform);
+            logger.warning("********** NULL cachedVWBounds "+getName() +"  "+localBounds+"  "+localTransform);
             Thread.dumpStack();
         }
                 
@@ -500,10 +502,36 @@ public class Cell {
      * major configuration change. The cell will already be attached to it's parent
      * before the initial call of this method
      * 
-     * @param setupData
+     * @param configData the configuration data for the cell
      */
-    public void configure(CellConfig setupData) {
-        
+    public void configure(CellConfig configData) {
+                
+        // Install the CellComponents
+        for(String compClassname : configData.getClientComponentClasses()) {
+            try {
+                Class compClazz = Class.forName(compClassname);
+                if (!components.containsKey(compClazz)) {
+                    logger.warning("Installing component "+compClassname);
+                    Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
+                    addComponent(constructor.newInstance(this));
+                }
+            } catch (InstantiationException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (IllegalArgumentException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (NoSuchMethodException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (SecurityException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+            
+        }
     }
     
     /**

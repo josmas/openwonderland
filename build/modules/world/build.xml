@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="package" name="world-moduless">  
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.world-modules}"/>
+    
+    <!-- all projects -->
+    <fileset dir="${current.dir}" id="all.projects">
+        <include name="*/**/build.xml"/>
+    </fileset>
+    
+    <!-- setup -->
+    <target name="init">
+    </target>
+    
+    <!-- build all subprojects -->
+    <target name="compile" depends="init">
+        <build-subprojects fileset="all.projects" target="build"/>
+    </target>
+    
+    <!-- jar all subprojects -->
+    <target name="package" depends="compile">
+        <build-subprojects fileset="all.projects" target="package"/>
+    </target>
+    
+    <!-- clean all sub-projects -->
+    <target name="clean">
+        <!-- clean sub-projects -->
+        <build-subprojects fileset="all.projects" target="clean"/>       
+    </target>
+    
+    <!-- macro to iterate across all subprojects -->
+    <macrodef name="build-subprojects">
+        <!-- the reference id of the fileset to iterate over -->
+        <attribute name="fileset"/>
+        
+        <!-- the build target to run -->
+        <attribute name="target"/>
+        <sequential>
+            <subant target="@{target}" inheritall="false">
+                <fileset refid="@{fileset}"/>
+            </subant>
+        </sequential>
+    </macrodef>
+</project>

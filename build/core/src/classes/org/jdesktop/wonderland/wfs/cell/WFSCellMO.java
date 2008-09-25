@@ -70,7 +70,7 @@ public class WFSCellMO extends CellMO implements ManagedObject, Serializable {
     }
     
     @Override
-    public CellConfig getClientStateData(ClientSession clientSession,ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(ClientSession clientSession,ClientCapabilities capabilities) {
         return null;
     }
 }

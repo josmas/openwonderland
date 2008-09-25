@@ -25,9 +25,12 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.common.LogControl;
 import org.jdesktop.wonderland.testharness.common.LoginRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 import org.jdesktop.wonderland.testharness.slave.client3D.Client3DSim;
@@ -43,6 +46,10 @@ public class SlaveMain {
     
     private HashMap<String, Client3DSim> clientSim = new HashMap();
     private boolean done = false;
+    
+    static {
+        new LogControl(SlaveMain.class, "/org/jdesktop/wonderland/testharness/slave/resources/logging.properties");
+    }
     
     public SlaveMain(String[] args) {
         
@@ -62,6 +69,10 @@ public class SlaveMain {
             System.out.println("Opening streams");
             out = new ObjectOutputStream(s.getOutputStream());
             in = new ObjectInputStream(s.getInputStream());
+            
+            // Register the output stream with the log handler
+            SlaveLogHandler.setOutputStream(out);
+            
             do {
                 try {
                     System.out.println("Waiting for request...");

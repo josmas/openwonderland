@@ -34,7 +34,7 @@ public class LogControl {
     public LogControl(Class refClass, String loggingProperties) {
         LogManager logManager = LogManager.getLogManager();
         InputStream in = refClass.getResourceAsStream(loggingProperties);
-//        System.out.println("************************ LOADING LOG config from resource/logging.properties");
+//        System.out.println("************************ LOADING LOG config from "+in);
         try {
             logManager.readConfiguration(in);
         } catch(IOException e) {

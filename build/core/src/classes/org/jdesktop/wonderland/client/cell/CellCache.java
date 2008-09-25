@@ -64,4 +64,10 @@ public interface CellCache {
      * @return the RootCells for this cache
      */
     public Collection<Cell> getRootCells();
+    
+    /**
+     * Get the CellChannelConnection
+     * @return
+     */
+    public CellChannelConnection getCellChannelConnection();
 }

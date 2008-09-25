@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.LogControl;
 import org.jdesktop.wonderland.testharness.manager.common.CommsHandler;
 import org.jdesktop.wonderland.testharness.manager.common.CommsHandler.MessageListener;
 import org.jdesktop.wonderland.testharness.manager.common.ManagerMessage;
@@ -70,6 +71,12 @@ public class MasterMain {
     
     private ManagerController manager;
     
+    private int slaveID = 0;
+    
+    static {
+        new LogControl(MasterMain.class, "/org/jdesktop/wonderland/testharness/master/resources/logging.properties");
+    }
+    
     public MasterMain(String[] args) {
         masterMain = this;
         if (args.length<2) {
@@ -94,7 +101,7 @@ public class MasterMain {
             ServerSocket serverSocket = new ServerSocket(masterPort);
             while(true) {
                 Socket s = serverSocket.accept();
-                SlaveConnection slaveController = new SlaveConnection(s); 
+                SlaveConnection slaveController = new SlaveConnection(s, slaveID++); 
                 if (director.slaveJoined(slaveController)) {
                     // Director is using the slave
                     synchronized(activeSlaves) {

@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * For cells that are expected to move frequently
@@ -31,7 +32,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
  * @deprecated
  * @author paulby
  */
-public class MovableCellMO extends CellMO {
+public class MovableCellMO extends TestColladaCellMO {
 
     public MovableCellMO(BoundingVolume bounds, CellTransform transform) {
         super(bounds, transform);
@@ -44,6 +45,16 @@ public class MovableCellMO extends CellMO {
         return "org.jdesktop.wonderland.client.cell.MovableCell";
     }
     
+    @Override
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
+        CellConfig ret = super.getCellConfig(clientSession, capabilities);
+        ret.addClientComponentClasses(new String[] {
+            "org.jdesktop.wonderland.client.cell.ChannelComponent",
+            "org.jdesktop.wonderland.client.cell.MovableComponent"
+        });
+        
+        return ret;
+    }
 
 
 }

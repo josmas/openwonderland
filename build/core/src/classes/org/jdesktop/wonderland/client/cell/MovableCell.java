@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.JmeColladaRenderer;
  * @author paulby
  * @deprecated
  */
-class MovableCell extends Cell {
+class MovableCell extends TestColladaCell {
 //    private CellChannelConnection cellChannelConnection;
     
     private static Logger logger = Logger.getLogger(MovableCell.class.getName());
@@ -37,22 +37,17 @@ class MovableCell extends Cell {
     
     public MovableCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponent(this));
-        addComponent(new MovableComponent(this));
+//        addComponent(new ChannelComponent(this));
+//        addComponent(new MovableComponent(this));
     }
 
+    /**
+     * Returns the URI of the model asset.
+     * 
+     * @return The asset URI
+     */
     @Override
-    protected CellRenderer createCellRenderer(RendererType rendererType) {
-        CellRenderer ret = null;
-        switch(rendererType) {
-            case RENDERER_2D :
-                // No 2D Renderer yet
-                break;
-            case RENDERER_JME :
-                ret= new JmeColladaRenderer(this);
-                break;                
-        }
-        
-        return ret;
+    public String getModelURI() {
+        return getClass().getClassLoader().getResource("org/jdesktop/wonderland/client/resources/jme/sphere2.dae").toExternalForm();
     }
 }

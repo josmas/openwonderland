@@ -23,13 +23,15 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.net.Socket;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 
 /**
- *
+ * 
  * @author paulby
  */
 public class SlaveConnection extends Thread {
@@ -39,9 +41,14 @@ public class SlaveConnection extends Thread {
     private ObjectInputStream in;
     private TestDirector director;
     private boolean done = false;
+    private int slaveID;
+    
+    private static final Logger logger = Logger.getLogger(SlaveConnection.class.getName());
 
-    SlaveConnection(Socket socket) {
-        System.out.println("New Slave Controller");
+    SlaveConnection(Socket socket, int slaveID) {
+        this.slaveID = slaveID;
+        
+        System.out.println("New Slave Controller "+slaveID);
         this.socket = socket;
         try {
             in = new ObjectInputStream(socket.getInputStream());
@@ -65,7 +72,14 @@ public class SlaveConnection extends Thread {
     public void run() {
         while(!done) {
             try {
-                in.readObject();
+                Object msg = in.readObject();
+                if (msg instanceof LogRecord) {
+                    LogRecord logR = (LogRecord)msg;
+                    logger.log(logR.getLevel(), "slave"+slaveID+":"+logR.getMessage(), logR.getThrown());
+                }
+            } catch(OptionalDataException e) {
+                System.out.println("Exception length "+((OptionalDataException)e).length);
+                Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, null, e);
             } catch(EOFException eof) {
                 done=true;
                 MasterMain.getMaster().slaveLeft(this);
