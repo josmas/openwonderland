@@ -21,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -31,6 +30,7 @@ import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.ResourceURI;
 
 /**
  * The WlaURLConnection class is the URL connection to URLs that have the 'wla'
@@ -67,8 +67,8 @@ public class WlaURLConnection extends URLConnection {
         try {
             /* Forms an AssetURI given the URL and fetches from the asset manager */
             AssetURI uri = new AssetURI(this.url.toExternalForm());
-            Asset asset = AssetManager.getAssetManager().getAsset(uri, AssetType.IMAGE);
-            if (AssetManager.getAssetManager().waitForAsset(asset) == false) {
+            Asset asset = AssetManager.getAssetManager().getAsset(uri, AssetType.FILE);
+            if (asset == null || AssetManager.getAssetManager().waitForAsset(asset) == false) {
                 return null;
             }
             return new FileInputStream(asset.getLocalCacheFile());

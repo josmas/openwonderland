@@ -89,7 +89,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">lib/gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar</classpath>
+                <classpath mode="compile">../lib/glassfish/glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar:../utils/dist/wonderland-web-utils.jar:../modules/dist/wonderland-modules-core.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

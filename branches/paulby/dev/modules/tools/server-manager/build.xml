@@ -21,7 +21,8 @@
     <target name="package" depends="jar">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="servermanager" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar">
+        <module name="servermanager" version="1" minorversion="1"
+                jarfile="${module.dist.dir}/${module.jarname}.jar">
             <plugin name="servermanager">
                 <client file="${build.lib.dir}/${module.jarname}-client.jar"/>
                 <server file="${build.lib.dir}/${module.jarname}-server.jar"/>

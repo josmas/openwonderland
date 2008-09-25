@@ -48,6 +48,8 @@
     </target>
     
     <target name="run" depends="jar" description="Run the Wonderland client">
+        <mkdir dir="log"/>
+
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>

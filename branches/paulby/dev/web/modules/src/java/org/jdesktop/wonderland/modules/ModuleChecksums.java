@@ -222,21 +222,25 @@ public class ModuleChecksums {
      * string, all files will be included. If the list of regular expressions
      * to exclude is either null or an empty string, no files are excluded.
      * 
-     * @param root The root directory to search
+     * @param root The root directory from which to start
+     * @param dirs The directories to search
      * @param algorithm The checksum algorithm
      * @param includes An array of regular expressions of files to include
      * @throws NoSuchAlgorithmException If the given checksum algorithm is invalid
      * @throws PatternSynaxException If either includes or excludes is invalid
      */
-    public static ModuleChecksums generate(File root, String algorithm,
+    public static ModuleChecksums generate(File root, String[] dirs, String algorithm,
             String[] includes, String excludes[]) throws NoSuchAlgorithmException {
         
         /* Try creating hte message digest, throws NoSuchAlgorithmException */
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         
         /* Recursively generate checksums, then convert list to an array */
-        HashMap<String, Checksum> list = ModuleChecksums.generateChecksumForDirectory(
-                root, root, digest, includes, excludes);
+        HashMap<String, Checksum> list = new HashMap<String, Checksum>();
+        for (String dir : dirs) {
+            File file = new File(root, dir);
+            list.putAll(ModuleChecksums.generateChecksumForDirectory(root, file, digest, includes, excludes));
+        }
         ModuleChecksums rc = new ModuleChecksums();
         rc.setChecksums(list);
         return rc;
@@ -258,6 +262,13 @@ public class ModuleChecksums {
          * the file name satisfies the includes and excludes list.
          */
         File[] files = dir.listFiles();
+        if (files == null) {
+            /*
+             * No files or directory doesn't exist.  Just return an empty
+             * map.
+             */
+            return list;
+        }
         for (File file : files) {
             /* If a directory, then recursively descend and append */
             if (file.isDirectory() == true && file.isHidden() == false) {
@@ -368,13 +379,14 @@ public class ModuleChecksums {
 //        File root = new File(args[0]);
 //        File file = new File(args[1]);
 
-        File root = new File("/Users/jordanslott/wonderland/trunk/web/examples/modules/installed/mpk20/art");
+        File root = new File("/Users/jordanslott/wonderland/trunk/web/examples/modules/installed/mpk20/");
         File file = new File("checksums.xml");
+        
         /* Generate the checksums */
         String includes[] = new String[0];
         String excludes[] = new String[0];
         
-        ModuleChecksums checksums = ModuleChecksums.generate(root, SHA1_CHECKSUM_ALGORITHM, includes, excludes);
+        ModuleChecksums checksums = ModuleChecksums.generate(root, new String[] { "art", "plugins"}, SHA1_CHECKSUM_ALGORITHM, includes, excludes);
         checksums.encode(new FileWriter(file));
     }
 }

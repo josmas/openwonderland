@@ -9,7 +9,7 @@
             <name>wonderland-web-modules</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
-                <library files="16">
+                <library files="14">
                     <file>${libs.restlib.classpath}</file>
                 </library>
                 <library>
@@ -29,8 +29,15 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library files="1">
+                    <file>${file.reference.wonderland-client.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library files="1">
                     <file>${file.reference.wonderland-web-utils.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library files="1">
+                    <file>${file.reference.glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar}</file>
                 </library>
                 <library files="1">
                     <file>${file.reference.ant.jar}</file>
@@ -39,11 +46,7 @@
                     <file>${file.reference.commons-io-1.4.jar}</file>
                 </library>
                 <library files="1">
-                    <file>${file.reference.wonderland-client.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
-                </library>
-                <library files="1">
-                    <file>${file.reference.gf-embedded-api-1.0-alpha-5-SNAPSHOT-with-full-v3.jar}</file>
+                    <file>${file.reference.commons-fileupload-1.2.1.jar}</file>
                 </library>
             </web-module-libraries>
             <web-module-additional-libraries/>

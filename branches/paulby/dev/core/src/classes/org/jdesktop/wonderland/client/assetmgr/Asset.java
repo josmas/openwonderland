@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetReadyListener;
 import org.jdesktop.wonderland.client.modules.Checksum;
 import org.jdesktop.wonderland.common.AssetType;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.ResourceURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The Asset class represents an asset (e.g. artwork) in the system. An asset
- * is uniquely identified by a combination of its URI (see AssetURI class) and
+ * is uniquely identified by a combination of its URI (see ResourceURI class) and
  * an optional checksum. Assets with no checksum are considered the same asset.
  * <p>
  * Each asset has a type: typically, either file, image, or model and given by
@@ -44,7 +44,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public abstract class Asset<T> {
     protected AssetType type=null;
-    protected AssetURI assetURI=null;
+    protected ResourceURI assetURI=null;
     protected String url=null;
     protected File localCacheFile=null;
     protected String checksum=null;
@@ -77,7 +77,7 @@ public abstract class Asset<T> {
      * 
      * @return The unique URI describing the asset
      */
-    public AssetURI getAssetURI() {
+    public ResourceURI getAssetURI() {
         return this.assetURI;
     }
     
