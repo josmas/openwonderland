@@ -7,15 +7,14 @@
     <property environment="env"/>
 
     <!-- load custom ant tasks -->
-     <!-- the library to load antcontrib tasks from.  When building from a 
+    
+    <!-- the library to load antcontrib tasks from.  When building from a 
          build file where these tasks have already been loaded, this
          property can be set to "noop.xml" to skip loading the resources -->
     <property name="antcontrib.taskdef.resource" value="net/sf/antcontrib/antlib.xml"/>
-    
-    <!-- extended ant tasks -->
     <taskdef resource="${antcontrib.taskdef.resource}">
         <classpath>
-            <pathelement location="${setup.build-scripts.dir}/../ant-tasks/ant-contrib.jar"/>
+            <pathelement location="${top.dir}/lib/ant/ant-contrib.jar"/>
             <pathelement location="${setup.build-scripts.dir}"/>
         </classpath>
     </taskdef>

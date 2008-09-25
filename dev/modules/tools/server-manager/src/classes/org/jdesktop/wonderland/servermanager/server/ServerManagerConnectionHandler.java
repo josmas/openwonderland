@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import com.sun.sgs.app.ClientSession;
+import java.io.Serializable;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.servermanager.common.ServerManagerConnectionType;
@@ -31,7 +32,9 @@ import org.jdesktop.wonderland.servermanager.common.ServerManagerConnectionType;
  * 
  * @author paulby
  */
-public class ServerManagerConnectionHandler implements ClientConnectionHandler {
+public class ServerManagerConnectionHandler 
+        implements ClientConnectionHandler, Serializable
+{
     private static final Logger logger =
             Logger.getLogger(ServerManagerConnectionHandler.class.getName());
     
@@ -44,7 +47,7 @@ public class ServerManagerConnectionHandler implements ClientConnectionHandler {
     }
 
     public void registered(WonderlandClientSender sender) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        logger.info("Sever manager connection registered");
     }
 
     public void clientConnected(WonderlandClientSender sender, ClientSession session, Properties properties) {

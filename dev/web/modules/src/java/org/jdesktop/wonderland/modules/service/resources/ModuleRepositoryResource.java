@@ -82,8 +82,8 @@ public class ModuleRepositoryResource {
          * If there are any entries with %WL_SERVER%, then replace with the
          * server path to the asset.
          */
-        UriBuilder artBuilder = context.getBaseUriBuilder().path(moduleName).path("art");
-        String hostname = artBuilder.build().toString();
+        UriBuilder uriBuilder = context.getBaseUriBuilder().path(moduleName);
+        String hostname = uriBuilder.build().toString();
         
         /* Fetch the module repository, return an error if it does not exist */
         ModuleRepository mr = im.getModuleRepository();

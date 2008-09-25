@@ -86,7 +86,12 @@ public class MainFrame extends javax.swing.JFrame {
         pack();
     }
 
-    
+    /**
+     * Returns the canvas of the frame.
+     */
+    public Canvas getCanvas () {
+	return canvas;
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.

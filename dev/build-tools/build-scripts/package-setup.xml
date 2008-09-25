@@ -10,6 +10,7 @@
             <!-- include entire Darkstar server .zip -->
             <zipfileset dir="${wonderland.lib.dir}" prefix="lib">
                 <include name="jaxb/**"/>
+                <include name="ant/**"/>
             </zipfileset>
             
             <!-- include ant files -->
@@ -21,11 +22,6 @@
                 <include name="run-setup.xml"/>
                 <include name="unpack.xml"/>
                 <include name="noop.xml"/>
-            </zipfileset>
-            
-            <!-- include ant-contrib tasks -->
-            <zipfileset dir="${setup.build-scripts.dir}/../ant-tasks" prefix="build-tools/ant-tasks">
-                <include name="ant-contrib.jar"/>
             </zipfileset>
         </zip> 
     </target>

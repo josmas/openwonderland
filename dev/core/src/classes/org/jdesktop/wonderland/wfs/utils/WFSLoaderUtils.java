@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.wfs.loader.WFSLoader;
 
 /**
  * The WFSLoaderUtils contains a collection of static utility methods to load
- * WFS information from the WFS web service
+ * WFS information from the WFS web service.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -37,7 +37,8 @@ public class WFSLoaderUtils {
     
     /**
      * Returns the list of cells in the WFS as a hashmap. The list of cells
-     * is ordered so that parent cells appear before child cells.
+     * is ordered so that parent cells appear before child cells. Takes the WFS
+     * URI of the WFS root.
      */
     public static WFSCellList getWFSCells(String root, boolean reload) {
         /*
