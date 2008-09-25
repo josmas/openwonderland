@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- JTRunner is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2, or (at your option)
+    any later version. -->
+
+<!-- GPL Disclaimer
+     For the avoidance of doubt, except that if any license choice other 
+     than GPL or LGPL is available it will apply instead, Sun elects to 
+     use only the General Public License version 2 (GPLv2) at this time 
+     for any software where a choice of GPL license versions is made 
+     available with the language indicating that GPLv2 or any later 
+     version may be used, or where a choice of which version of the GPL 
+     is applied is otherwise unspecified. -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    xmlns="http://jtrunner.sourceforge.net"
+    targetNamespace="http://jtrunner.sourceforge.net">
+
+    <xs:element name="test">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="factories" type="factories" />
+                <xs:element name="nodes" type="nodes" minOccurs="0" maxOccurs="1" />
+                <xs:element name="runner" type="runner" minOccurs="1" maxOccurs="unbounded" />
+                <xs:element name="enterprise" type="enterprise" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="jms" type="jms" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="bindings" type="bindings" minOccurs="0" maxOccurs="1" />
+                <xs:element name="webservice" type="webservice" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+            <xs:attribute name="runs" type="xs:integer" use="required" />
+            <xs:attribute name="enterprise" type="xs:string" use="optional" />
+            <xs:attribute name="jms" type="xs:string" use="optional" />
+            <xs:attribute name="binding" type="xs:string" use="optional" />
+            <xs:attribute name="webservice" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="factories">
+        <xs:sequence>
+            <xs:element name="factory" minOccurs="6" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string" use="required" />
+                    <xs:attribute name="fqn" type="xs:string" use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="nodes">
+        <xs:sequence>
+            <xs:element name="node" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="host" type="xs:string" use="required" />
+                    <xs:attribute name="port" type="xs:positiveInteger" use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="runner">
+        <xs:sequence>
+            <xs:element name="runner-fqn" type="xs:string" />
+            <xs:element name="instance-count" type="xs:integer" />
+            <!-- Note: this might be restricted to cyclic | indexed 
+                but this would tie developers' hands requiring further
+                modification to this XSD for gearing it to the new
+                set of assignment policies
+            -->
+            <xs:element name="parameters-assignment-policy" type="policyEnum" />
+            <xs:element name="parameters" type="parameters" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="runs" type="xs:integer" use="required" />
+        <xs:attribute name="sleepTime" type="xs:positiveInteger" />
+        <xs:attribute name="enterprise" type="xs:string" />
+        <xs:attribute name="jms" type="xs:string" />
+        <xs:attribute name="binding" type="xs:string" />
+        <xs:attribute name="webservice" type="xs:string" />
+    </xs:complexType>
+    
+    <xs:simpleType name="policyEnum">
+        <xs:restriction base="xs:string">
+            <xs:whiteSpace value="collapse"/>
+            <xs:enumeration value="indexed" />
+            <xs:enumeration value="cyclic" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="parameters">
+        <xs:sequence>
+            <xs:element name="param" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string" use="required" />
+                    <xs:attribute name="type" type="xs:string" />
+                    <xs:attribute name="value" type="xs:string" use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="enterprise">
+        <xs:sequence>
+            <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string" use="required" />
+                    <xs:attribute name="value" type="xs:string" use="required" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="uniqueName" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="jms">
+        <xs:sequence>
+            <xs:element name="destinations">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="queues" minOccurs="0" maxOccurs="1">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="queue" minOccurs="1" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                            <xs:attribute name="property" type="xs:string" use="required" />
+                                            <xs:attribute name="jndi" type="xs:string" use="required" />
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="topics" minOccurs="0" maxOccurs="1">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="topic" minOccurs="1" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                            <xs:attribute name="property" type="xs:string" use="required" />
+                                            <xs:attribute name="jndi" type="xs:string" use="required" />
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="conn-factories">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="conn-factory" minOccurs="1" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="connections">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="connection" minOccurs="1" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                        <xs:sequence>
+                                                            <xs:element name="sessions">
+                                                                <xs:complexType>
+                                                                    <xs:sequence>
+                                                                        <xs:element name="session" minOccurs="1" maxOccurs="unbounded">
+                                                                            <xs:complexType>
+                                                                                <xs:attribute name="type" type="sessionEnum" use="required" />
+                                                                                <xs:attribute name="property" type="xs:string" use="required" />
+                                                                                <xs:attribute name="transacted" type="xs:boolean" use="required" />
+                                                                                <xs:attribute name="ackMode" type="ackModeEnum" use="required" />
+                                                                            </xs:complexType>
+                                                                        </xs:element>
+                                                                    </xs:sequence>
+                                                                </xs:complexType>
+                                                            </xs:element>
+                                                        </xs:sequence>
+                                                        <xs:attribute name="type" type="connectionEnum" use="required" />
+                                                        <xs:attribute name="property" type="xs:string" use="required" />
+                                                        <xs:attribute name="userName" type="xs:string" />
+                                                        <xs:attribute name="password" type="xs:string" />
+                                                        <xs:attribute name="clientId" type="xs:string" />
+                                                        <xs:attribute name="shared" type="xs:boolean" />
+                                                    </xs:complexType>
+                                                </xs:element>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                                <xs:attribute name="property" type="xs:string" use="required" />
+                                <xs:attribute name="jndi" type="xs:string" use="required" />
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="uniqueName" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:simpleType name="connectionEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="queue" />
+            <xs:enumeration value="topic" />
+            <xs:enumeration value="xaQueue" />
+            <xs:enumeration value="xaTopic" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="sessionEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="generic" />
+            <xs:enumeration value="queue" />
+            <xs:enumeration value="topic" />
+            <xs:enumeration value="xa" />
+            <xs:enumeration value="xaQueue" />
+            <xs:enumeration value="xaTopic" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ackModeEnum">
+        <!-- 1,2,3 respectively AUTO_ACKNOWLEDGE, CLIENT_ACKNOWLEDGE, DUPS_OK_ACKNOWLEDGE -->
+        <xs:restriction base="xs:positiveInteger">
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+            <xs:enumeration value="3" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="serviceModeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="MESSAGE" />
+            <xs:enumeration value="PAYLOAD" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="bindings">
+        <xs:sequence>
+            <xs:element name="binding" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="uniqueName" type="xs:string" use="required" />
+                    <xs:attribute name="serviceNameSpace" type="xs:string" use="required" />
+                    <xs:attribute name="serviceName" type="xs:string" use="required" />
+                    <xs:attribute name="portName" type="xs:string" use="required" />
+                    <xs:attribute name="operationName" type="xs:string" use="required" />
+                    <xs:attribute name="wsdlLoc" type="xs:anyURI" use="optional" />
+                    <xs:attribute name="serviceMode" type="serviceModeEnum" use="optional" />
+                    <xs:attribute name="jaxbObjectFactory" type="xs:string" use="optional" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="webservice">
+        <xs:sequence>
+            <xs:element name="services">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="service" minOccurs="1" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="typeMappings" minOccurs="0" maxOccurs="1">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="typeMapping" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                        <xs:attribute name="nameSpace" type="xs:string" use="required" />
+                                                        <xs:attribute name="name" type="xs:string" use="required" />
+                                                        <xs:attribute name="javaClassName" type="xs:string" use="required" />
+                                                    </xs:complexType>
+                                                </xs:element>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="portTypes">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="portType" minOccurs="1" maxOccurs="1">
+                                                    <xs:complexType>
+                                                        <xs:attribute name="nameSpace" type="xs:string" use="required" />
+                                                        <xs:attribute name="name" type="xs:string" use="required" />
+                                                    </xs:complexType>
+                                                </xs:element>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="ports">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="port" minOccurs="1" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                        <xs:sequence>
+                                                            <xs:element name="operations">
+                                                                <xs:complexType>
+                                                                    <xs:sequence>
+                                                                        <xs:element name="operation" minOccurs="1" maxOccurs="unbounded">
+                                                                            <xs:complexType>
+                                                                                <xs:sequence>
+                                                                                    <xs:element name="inputMsg">
+                                                                                        <xs:complexType>
+                                                                                            <xs:attribute name="name" type="xs:string" use="required" />
+                                                                                            <!-- The valid part names separator is the character ',' (coma) -->
+                                                                                            <xs:attribute name="partNames" type="xs:string" use="required" />
+                                                                                        </xs:complexType>
+                                                                                    </xs:element>
+                                                                                    <xs:element name="outputMsg">
+                                                                                        <xs:complexType>
+                                                                                            <xs:attribute name="name" type="xs:string" use="required" />
+                                                                                            <!-- The valid part names separator is the character ',' (coma) -->
+                                                                                            <xs:attribute name="partNames" type="xs:string" use="required" />
+                                                                                        </xs:complexType>
+                                                                                    </xs:element>
+                                                                                    <xs:element name="faultMsg">
+                                                                                        <xs:complexType>
+                                                                                            <xs:attribute name="name" type="xs:string" use="optional" />
+                                                                                            <!-- The valid part names separator is the character ',' (coma) -->
+                                                                                            <xs:attribute name="partNames" type="xs:string" use="required" />
+                                                                                        </xs:complexType>
+                                                                                    </xs:element>
+                                                                                </xs:sequence>
+                                                                                <xs:attribute name="name" type="xs:string" use="required" />
+                                                                            </xs:complexType>
+                                                                        </xs:element>
+                                                                    </xs:sequence>
+                                                                </xs:complexType>
+                                                            </xs:element>
+                                                        </xs:sequence>
+                                                        <xs:attribute name="name" type="xs:string" use="required" />
+                                                    </xs:complexType>
+                                                </xs:element>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                                <xs:attribute name="nameSpace" type="xs:string" use="required" />
+                                <xs:attribute name="name" type="xs:string" use="required" />
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="uniqueName" type="xs:string" use="required" />
+        <xs:attribute name="wsdlLocation" type="xs:string" use="required" />
+    </xs:complexType>
+    
+</xs:schema>
