@@ -51,4 +51,9 @@ public class MouseMovedEvent3D extends MouseEvent3D {
     MouseMovedEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent, pickDetails);
     }
+
+    public String toString () {
+	// TODO: add internal state when drag methods are added
+	return "Mouse Move: xy = " + awtEvent.getX() + "," + awtEvent.getY();
+    }
 }
