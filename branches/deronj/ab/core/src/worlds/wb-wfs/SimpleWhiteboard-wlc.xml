@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.6.0-dp" class="java.beans.XMLDecoder"> 
+    <object class="org.jdesktop.wonderlandserver.setup.BasicCellMOSetup"> 
+        <void property="cellMOClassName"> 
+            <string>org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardCellMO</string> 
+        </void> 
+	<!-- This is information that is used by clients -->
+        <void property="cellSetup"> 
+            <object class="org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellSetup"> 
+                <void property="preferredWidth"> 
+                    <int>1024</int>
+                </void> 
+                <void property="preferredHeight"> 
+                    <int>768</int>
+                </void> 
+                <void property="pixelScaleX"> 
+                    <double>0.01</double>
+                </void> 
+                <void property="pixelScaleY"> 
+                    <double>0.01</double>
+                </void> 
+            </object>
+        </void>
+	<!-- This is information that is used by the server -->
+        <void property="origin"> 
+            <void index="0"> 
+                <double>50.0</double> 
+            </void> 
+            <void index="1"> 
+                <double>2.49</double> 
+            </void> 
+            <void index="2"> 
+                <double>52.72</double> 
+            </void> 
+        </void> 
+        <void property="rotation"> 
+            <void index="1"> 
+                <double>1.0</double> 
+            </void> 
+            <void index="2"> 
+                <double>0.0</double> 
+            </void> 
+            <void index="3"> 
+                <double>4.7</double> 
+            </void> 
+        </void> 
+    </object> 
+</java> 
