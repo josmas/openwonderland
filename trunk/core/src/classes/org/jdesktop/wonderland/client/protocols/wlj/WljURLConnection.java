@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.protocols.wla;
+package org.jdesktop.wonderland.client.protocols.wlj;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,31 +29,34 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.common.AssetType;
-import org.jdesktop.wonderland.common.AssetURI;
-import org.jdesktop.wonderland.common.ResourceURI;
+import org.jdesktop.wonderland.common.JarURI;
 
 /**
- * The WlaURLConnection class is the URL connection to URLs that have the 'wla'
- * protocol. This is used for Wonderland assets and interfaces with the asset
+ * The WljURLConnection class is the URL connection to URLs that have the 'wlj'
+ * protocol. This is used for Wonderland plugin JARs and interfaces with the asset
  * manager to properly load resources.
  * <p>
  * The format of the URL is:
  * <p>
- * wla://<module name>/<asset path>
+ * wlj://<module name>/<jar path>
  * <p>
  * where <module name> is the name of the module that contains the asset, and
- * <asset path> is the relative asset within the module
+ * <jar path> is the relative path of the jar within the module and has the
+ * form: <plugin name>/<jar type>/<jar name>, where <plugin name> is the unique
+ * name of the plugin, <jar type> is either "client", "server", or "common",
+ * and <jar name> is the name of the jar file (with the .jar extension)
  * 
  * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WlaURLConnection extends URLConnection {
+public class WljURLConnection extends URLConnection {
 
     /**
-     * Constructor, takes the 'wla' protocol URL as an argument
+     * Constructor, takes the 'wlj' protocol URL as an argument
      * 
-     * @param url A URL with a 'wla' protocol
+     * @param url A URL with a 'wlj' protocol
      */
-    public WlaURLConnection(URL url) {
+    public WljURLConnection(URL url) {
         super(url);
     }
     
@@ -65,17 +68,18 @@ public class WlaURLConnection extends URLConnection {
     @Override
     public InputStream getInputStream() {
         try {
-            /* Forms an AssetURI given the URL and fetches from the asset manager */
-            AssetURI uri = new AssetURI(this.url.toExternalForm());
+            /* Forms an ResourceURI given the URL and fetches from the asset manager */
+            JarURI uri = new JarURI(this.url.toExternalForm());
+            System.out.println("OPENING URI " + uri.toString());
             Asset asset = AssetManager.getAssetManager().getAsset(uri, AssetType.FILE);
             if (asset == null || AssetManager.getAssetManager().waitForAsset(asset) == false) {
                 return null;
             }
             return new FileInputStream(asset.getLocalCacheFile());
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(WlaURLConnection.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(WljURLConnection.class.getName()).log(Level.SEVERE, null, ex);
         } catch (URISyntaxException excp) {
-            Logger.getLogger(WlaURLConnection.class.getName()).log(Level.SEVERE, null, excp);
+            Logger.getLogger(WljURLConnection.class.getName()).log(Level.SEVERE, null, excp);
         }
         return null;
         
