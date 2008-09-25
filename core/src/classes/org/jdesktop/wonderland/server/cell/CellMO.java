@@ -212,8 +212,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (childCellRefs==null)
             childCellRefs = new ArrayList<ManagedReference<CellMO>>();
         
-        System.out.println("************* "+getCellID()+" adding child "+child.getCellID());
-        
         child.setParent(this);
         
         childCellRefs.add(AppContext.getDataManager().createReference(child));
@@ -464,6 +462,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
 //                BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
             }
+            if (localBounds==null)
+                throw new IllegalStateException("localBounds must not be null");
+            if (transform==null)
+                throw new IllegalStateException("transform must not be null");
+        
             calcLocal2World();
             calcWorldBounds();
             
@@ -541,7 +544,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(session, capabilities),
-                getClientStateData(session, capabilities));
+                getCellConfig(session, capabilities));
     }
     
     /**
@@ -557,7 +560,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                                                ClientCapabilities capabilities) {
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(session, capabilities),
-                getClientStateData(session, capabilities));
+                getCellConfig(session, capabilities));
         
     }
     
@@ -582,10 +585,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
     protected abstract String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities);
     
     /**
-     * Get the setupdata for this cell. Subclasses should overload to
+     * Get the cellconfig for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    protected CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return null;
     }
     

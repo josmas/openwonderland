@@ -45,12 +45,12 @@ public class CacheStats {
         data.addCellIntersect(cellDesc);
     }
     
-    void report() {
+    void report(StringBuffer str) {
         long totalTime = System.nanoTime() - startTime;
         for(SpaceData d : spaceInfo.values()) {
-            d.report();
+            d.report(str);
         }
-        System.out.println("Total time = "+totalTime/1000000+" ms.");
+        str.append("\nTotal time = "+totalTime/1000000+" ms.\n");
     }
 
     class SpaceData { 
@@ -65,12 +65,12 @@ public class CacheStats {
             cellIntersects.add(cellDesc);
         }
         
-        void report() {
+        void report(StringBuffer str) {
             System.out.print(spaceID+" : ");
             for(CellDescription desc : cellIntersects) {
-                System.out.print(desc.getCellID()+" ");
+                str.append(desc.getCellID()+" ");
             }
-            System.out.println();
+            str.append("\n");
         }
     }
 }

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.common.cell.config;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * The CellConfig class is the base class of all state information
@@ -26,4 +27,33 @@ import java.io.Serializable;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public abstract class CellConfig implements Serializable {
+    
+    private ArrayList<String> clientComponentClasses = null;
+    
+    /**
+     * Returns the class names of all the client CellComponents which should
+     * be added to the cell at config time
+     * 
+     * @return
+     */
+    public String[] getClientComponentClasses() {
+        if (clientComponentClasses==null)
+            return new String[0];
+        return clientComponentClasses.toArray(new String[clientComponentClasses.size()]);
+    }
+    
+    /**
+     * Set the CellComponent class names that will be installed in the client
+     * cell
+     * @param cellComponenClasses the array of class names for client CellComponents
+     */
+    public void addClientComponentClasses(String[] cellComponenClasses) {
+        if (cellComponenClasses.length>0 && clientComponentClasses==null)
+            clientComponentClasses = new ArrayList();
+        
+        if (cellComponenClasses!=null) {        
+            for(String s : cellComponenClasses)
+                clientComponentClasses.add(s);
+        }
+    }
 }

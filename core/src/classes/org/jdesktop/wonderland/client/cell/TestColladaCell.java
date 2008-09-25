@@ -44,8 +44,9 @@ public class TestColladaCell extends Cell {
      * @param setupData
      */
     @Override
-    public void configure(CellConfig setupData) {
-        ColladaCellConfig colladaConfig = (ColladaCellConfig)setupData;
+    public void configure(CellConfig config) {
+        super.configure(config);
+        ColladaCellConfig colladaConfig = (ColladaCellConfig)config;
         this.modelURI = colladaConfig.getModelURI();
     }
     
@@ -67,9 +68,12 @@ public class TestColladaCell extends Cell {
     /**
      * Returns the URI of the model asset.
      * 
+     * TODO shouldn't this be a URL instead of a String ?
+     * 
      * @return The asset URI
      */
     public String getModelURI() {
+        System.out.println("URL "+modelURI);
         return this.modelURI;
     }
 }

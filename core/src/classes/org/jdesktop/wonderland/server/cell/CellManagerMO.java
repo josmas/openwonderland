@@ -176,9 +176,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
 
             c3.addChild(c4);
             
-            float cellSize = 20;
-            int xMax = 80;
-            int zMax = 4;
+            float cellSize = 5;
+            int xMax = 10;
+            int zMax = 10;
             
             for(int x=0; x<cellSize*xMax; x+=cellSize) {
                 for(int z=0; z<cellSize*zMax; z+=cellSize) {
@@ -190,9 +190,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
             WonderlandContext.getCellManager().insertCellInWorld(c3);
 
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
-            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
-            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
-            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
 
             
