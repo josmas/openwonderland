@@ -43,8 +43,11 @@ public class CellClientSession extends WonderlandSessionImpl {
     private CellCache cellCache;
     
     public CellClientSession(WonderlandServerInfo serverInfo) {
-        super (serverInfo);
-        
+        this (serverInfo, null);
+    }
+    
+    public CellClientSession(WonderlandServerInfo serverInfo, ClassLoader loader) {
+        super (serverInfo, loader);
         
         localAvatar = new LocalAvatar(this);
  
@@ -131,7 +134,8 @@ public class CellClientSession extends WonderlandSessionImpl {
         // create the cell cache and arrange for it to get messages
         // whenever a new cell is created
         CellCacheBasicImpl cacheImpl = 
-                new CellCacheBasicImpl(this, cellCacheConnection, cellChannelConnection);
+                new CellCacheBasicImpl(this, getClassLoader(),
+                                       cellCacheConnection, cellChannelConnection);
         cellCacheConnection.addListener(cacheImpl);
         return cacheImpl;
     }
