@@ -17,7 +17,10 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.net.URL;
 import org.jdesktop.wonderland.client.jme.cellrenderer.StaticModelRenderer;
+import org.jdesktop.wonderland.client.modules.ModulePluginList;
+import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
@@ -30,6 +33,26 @@ public class StaticModelCell extends Cell {
     
     public StaticModelCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        
+//        ModulePluginList list = ModuleUtils.fetchPluginJars();
+//        if (list == null) {
+//            System.out.println("NULL PLUGIN LIST");
+//            return;
+//        }
+//        for (String uri : list.getJarURIs()) {
+//            System.out.println("PLUGIN " + uri);
+//            try {
+//                URL url = new URL(uri);
+//                url.openStream();
+//            } catch (Exception excp) {
+//                excp.printStackTrace();
+//            }
+//        }
+//        try {
+//            URL url = new URL("wla://mpk20/sphere2.dae");
+//            url.openStream();
+//        } catch (Exception excp) {
+//        }
     }
     
     @Override

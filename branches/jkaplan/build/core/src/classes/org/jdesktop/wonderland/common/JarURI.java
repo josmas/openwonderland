@@ -23,12 +23,12 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 /**
- * The AssetURI class uniquely identifies an art resource within the sytem.
+ * The JarURI class uniquely identifies a plugin jar resource within the sytem.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public class AssetURI extends ResourceURI {
+public class JarURI extends ResourceURI {
     
     /**
      * Constructor which takes the string represents of the URI.
@@ -36,7 +36,7 @@ public class AssetURI extends ResourceURI {
      * @param uri The string URI representation
      * @throw URISyntaxException If the URI is not well-formed
      */
-    public AssetURI(String uri) throws URISyntaxException {
+    public JarURI(String uri) throws URISyntaxException {
         super(uri);
     }
 
@@ -47,7 +47,7 @@ public class AssetURI extends ResourceURI {
      * @return The relative path within the URI
      */
     public String getRelativePath() {
-        return "art" + this.getURI().getPath();
+        return "plugins" + this.getURI().getPath();
     }
     
     /**

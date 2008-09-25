@@ -97,11 +97,12 @@ public class WFSLoader {
         
         /*
          * Iterator through all of the roots. For each, create a new WFSCellMO
-         * class and load in its cells
+         * class and load in its cells. Just take the first one for now!
          */
-        for (String rootName : wfsRoots.getRoots()) {
-            logger.info("WFSLoader: loading the WFS root " + rootName);
-        
+        String rootName = wfsRoots.getRoots()[0];
+//        for (String rootName : wfsRoots.getRoots()) {
+//            logger.info("WFSLoader: loading the WFS root " + rootName);
+//        
 //            /*
 //             * Attempt to create a new MO based upon the WFS root. We need to setup
 //             * some basic properties about the cell by hand (e.g.name).
@@ -120,7 +121,7 @@ public class WFSLoader {
             
             /* Load in the cells in the WFS based upon this root */
             this.loadWFSRoot(rootName);
-        }
+//        }
     }
     
     /**
@@ -226,6 +227,7 @@ public class WFSLoader {
                 logger.info("WFSLoader: unable to read cell setup info " + relativePath + "/" + child.name);
                 continue;
             }
+            logger.info(setup.toString());
             
             /*
              * If the cell is at the root, then the relative path will be "/"
