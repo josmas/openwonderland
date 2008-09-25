@@ -67,7 +67,7 @@ public class AppTypeCell extends Cell {
 
     @Override
     public void configure (CellConfig configData) {
-	System.err.println("*********************** Call AppTypeCell.config");
+	logger.warning("*********************** Call AppTypeCell.config");
 
         AppTypeCellConfig config = (AppTypeCellConfig) configData;
 

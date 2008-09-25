@@ -20,13 +20,13 @@ package org.jdesktop.wonderland.client.app.base;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * This process reporter factory creates process reporters that report to stdout.
+ * This process reporter factory creates process reporters that report to the Wonderland client logger.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class ProcessReporterFactoryStdout extends ProcessReporterFactory {
+public class ProcessReporterFactoryLogger extends ProcessReporterFactory {
     
     /**
      * Create a new reporter of this type.
@@ -37,7 +37,7 @@ public class ProcessReporterFactoryStdout extends ProcessReporterFactory {
     public ProcessReporter create (String processName) {
 	ProcessReporter reporter = reporterMap.get(processName);
 	if (reporter == null) {
-	    reporter = new ProcessReporterStdout(processName);
+	    reporter = new ProcessReporterLogger(processName);
 	    reporterMap.put(processName, reporter);
 	}
 	return reporter;

@@ -23,6 +23,7 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.util.TextureManager;
 import java.net.URL;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.Window2DFrame;
 import org.jdesktop.wonderland.client.app.base.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -177,13 +178,14 @@ public class FrameCloseButton extends FrameComponent {
 	    throw new InstantiationException("Cannot find resource: " + IMAGE_RESOURCE_NAME);
 	}
 
-	texture = TextureManager.loadTexture(buttonImageUrl, Texture.MM_LINEAR_LINEAR, Texture.FM_LINEAR);
+	texture = TextureManager.loadTexture(buttonImageUrl, Texture.MinificationFilter.Trilinear, 
+					     Texture.MagnificationFilter.Bilinear);
 	if (texture == null) {
 	    //throw new InstantiationException("Allocation of image resource failed: " + buttonImageUrl);
 	    throw new InstantiationException("Allocation of image resource failed");
 	}
 
-	texture.setApply(Texture.AM_DECAL);
+	texture.setApply(Texture.ApplyMode.Decal);
     }
 
     /**

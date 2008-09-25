@@ -18,12 +18,12 @@
 package org.jdesktop.wonderland.client.app.base;
 
 import java.io.Serializable;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 import com.jme.bounding.BoundingVolume;
 import javax.swing.JOptionPane;
 import com.jme.math.Vector2f;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.app.base.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.common.app.base.AppConventionalMessage;
 import org.jdesktop.wonderland.common.app.base.AppConventionalCellCreateMessage;
@@ -46,6 +46,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 @ExperimentalAPI
 public abstract class AppConventional extends App2D {
+ 
+    private static final Logger logger = Logger.getLogger(AppConventional.class.getName());
 
     /** A list of apps without cells that are awaiting attachment to their cells. This map is keyed on the app ID */
     protected static HashMap<UUID,App> disembodiedApps = new HashMap<UUID,App>();
@@ -94,7 +96,7 @@ public abstract class AppConventional extends App2D {
      */
     public AppConventional (AppType appType, String appName, ControlArb controlArb, Vector2f pixelScale) {
 	super(appType, controlArb, pixelScale);
-	App.logger.severe("AppConventional: appType = " + appType);
+	logger.severe("AppConventional: appType = " + appType);
 	this.appName = appName;
     }
 

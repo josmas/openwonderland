@@ -19,8 +19,8 @@ package org.jdesktop.wonderland.client.app.base;
 
 import java.io.Serializable;
 import java.util.UUID;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.app.base.AppConventionalCellConfig;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
@@ -36,6 +36,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 @ExperimentalAPI
 public abstract class AppConventionalCell extends App2DCell {
+
+    private static final Logger logger = Logger.getLogger(AppConventionalCell.class.getName());
 
     /** The server-determined host on which the master is to run */
     protected String masterHost;
@@ -82,7 +84,7 @@ public abstract class AppConventionalCell extends App2DCell {
 		UUID appId = config.getAppId();
 		App appToAttach = AppConventional.findDisembodiedApp(appId);
 		if (appToAttach == null) {
-		    App.logger.severe("Cannot find master app to attach to cell");
+		    logger.severe("Cannot find master app to attach to cell");
 		    return;
 		}
 		app = appToAttach;

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.app.base.gui.guidefault;
 
 import com.jme.scene.Node;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.AppCell;
 import org.jdesktop.wonderland.client.app.base.ControlArb;
 import org.jdesktop.wonderland.client.app.base.Window2DFrame;
@@ -33,6 +34,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 @ExperimentalAPI
 public class FrameWorldDefault extends Window2DFrame {
+
+    private static final Logger logger = Logger.getLogger(FrameWorldDefault.class.getName());
 
     /** The height of the header */
     public static final float HEADER_HEIGHT = /* 0.2f */ 6.3f;
@@ -197,7 +200,7 @@ public class FrameWorldDefault extends Window2DFrame {
 
 	if (viewIsVisible && !connectedToCell) {
 	    if (cell == null) {
-		Gui2DFactoryDefault.logger.warning("Frame is not attached to cell. Cannot make it visible");
+		logger.warning("Frame is not attached to cell. Cannot make it visible");
 	    } else {
 		//TODO:cell.attachLocalChild(frameNode);
 		connectedToCell = true;

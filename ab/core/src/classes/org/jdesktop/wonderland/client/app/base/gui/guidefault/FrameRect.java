@@ -23,8 +23,9 @@ import com.jme.scene.shape.Quad;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.system.DisplaySystem;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.WindowView;
-import org.jdesktop.wonderland.client.jme.utils.GraphicsUtils;
+import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -37,6 +38,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 @ExperimentalAPI
 public class FrameRect extends FrameComponent {
+
+    private static final Logger logger = Logger.getLogger(FrameRect.class.getName());
 
     /** The width of the side in local coordinates. */
     protected float width;
@@ -99,7 +102,7 @@ public class FrameRect extends FrameComponent {
 	try {
 	    resize(width, height);
         } catch (InstantiationException ex) {
-            Gui2DFactoryDefault.logger.warning("Cannot update FrameRect component");
+            logger.warning("Cannot update FrameRect component");
         }
     }
 

@@ -75,19 +75,19 @@ public abstract class StatisticsSet {
     protected abstract void max (StatisticsSet maxStats);
 
     /**
-     * Print out current statistics values only. 
+     * Append the current statistics values to the given string buffer.
      */
-    protected abstract void printStats ();
+    protected abstract void appendStats (StringBuffer sb);
 
     /**
-     * Print out current statistics values and some derived rates. 
-     * timeSecs is the time (in seconds) it took to measure the stats.
+     * Append current statistics values and some derived rates to the given string buffer.
+     * @param timeSecs The time (in seconds) it took to measure the stats.
      */
-    protected abstract void printStatsAndRates (double timeSecs);
+    protected abstract void appendStatsAndRates (StringBuffer sb, double timeSecs);
 
     /**
-     * Statistics are printed only when the statistics set has been 
-     * triggered. This allows subclasses to disable printing when
+     * Statistics are logged only when the statistics set has been 
+     * triggered. This allows subclasses to disable loggin when
      * there is no worthwhile information (e.g. all values are zero).
      */
     protected boolean hasTriggered () {

@@ -56,7 +56,7 @@ public class Gui2DFactoryConventional implements GuiFactory {
      */
     public WindowView createView (Window window, String spaceName) {
 	if        ("World".equals(spaceName)) {
-	    return new ViewWorldConventional((Window2D)window);
+	    return new ViewWorldConventionalDefault((Window2D)window);
 	} else if ("HUD".equals(spaceName)) {
 	    // TODO: not yet
 	    //return new ViewHUD(window);
