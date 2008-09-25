@@ -69,7 +69,9 @@ public class WlzipManager {
      * @param zipFile
      */
     public void removeZip(String urlHost, ZipFile zipFile) {
-        
+        ZipFile removed = zips.remove(urlHost);
+        if (removed!=null && removed!=zipFile)
+            logger.severe("Removed wrong zipfile");
     }
     
     InputStream getInputStream(String urlHost, String path) throws IOException {
@@ -79,7 +81,8 @@ public class WlzipManager {
             return null;
         }
         
-        ZipEntry entry = zipFile.getEntry(path);
+        // Trim the leading / from the path
+        ZipEntry entry = zipFile.getEntry(path.substring(1));
         if (entry==null) {
             logger.warning("Unable to find texture "+path);
             return null;

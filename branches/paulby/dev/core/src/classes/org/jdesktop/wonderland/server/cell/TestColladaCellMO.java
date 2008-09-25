@@ -59,7 +59,7 @@ public class TestColladaCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return new ColladaCellConfig(this.modelURI);
     }
 

@@ -18,21 +18,19 @@
 package org.jdesktop.wonderland.client.jme.artimport;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.image.Texture;
 import com.jme.light.PointLight;
 import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
+import com.jme.scene.state.TextureState;
 import com.jme.scene.state.ZBufferState;
-import com.jme.util.export.Savable;
-import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocator;
-import com.jme.util.resource.ResourceLocatorTool;
-import com.jme.util.resource.SimpleResourceLocator;
-import com.jmex.model.collada.ColladaImporter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -42,19 +40,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
@@ -65,19 +58,14 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.ClientManager;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.artimport.ModelCompiler.CompilerMessageDisplay;
-import org.jdesktop.wonderland.common.config.WonderlandConfig;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 
 /**
@@ -132,8 +120,8 @@ public class ImportSessionFrame extends javax.swing.JFrame
             public void tableChanged(TableModelEvent tme) {
                 boolean models = importTable.getModel().getRowCount() > 0;
                 localB.setEnabled(models);
-                serverB.setEnabled(models && 
-                        ModelUploader.uploadAvailable(targetModuleTF.getText()));
+//                serverB.setEnabled(models && 
+//                        ModelUploader.uploadAvailable(targetModuleTF.getText()));
             }
         });
         
@@ -213,7 +201,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         }
         
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -662,15 +650,7 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         
         File dir = new File(model.getOrigModel()).getParentFile();
         
-        try {
-            ResourceLocatorTool.addResourceLocator(
-                    ResourceLocatorTool.TYPE_TEXTURE, new ImporterResourceLocator(
-                            dir.toURI()));
-
-            System.out.println("Looking for texutres in " + dir.toURL());
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        lastModelDir = dir;
         
         Node modelBG=null;
         
@@ -695,7 +675,16 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 //            return null;
 //        }
         
-        modelBG = LoaderManager.getLoaderManager().load(new File(model.getOrigModel()));
+        File modelFile = new File(model.getOrigModel());
+        ModelLoader modelLoader = LoaderManager.getLoaderManager().getLoader(modelFile);
+        
+        
+        if (modelLoader==null) {
+            JOptionPane.showMessageDialog(null, "No Loader for "+org.jdesktop.wonderland.common.FileUtils.getFileExtension(modelFile.getName()));
+            return null;
+        }
+        
+        modelBG = modelLoader.importModel(modelFile);
         
         rootBG.attachChild(modelBG);
         
@@ -739,6 +728,13 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         wm.addEntity(entity);
         sgViewFrame.addEntity(entity);
         
+        findTextures(modelBG);
+        
+        File targetArtDir = new File(targetModuleTF.getText()+File.separator+"art");
+        targetArtDir.mkdir();
+        
+        modelLoader.deployToModule(targetArtDir);
+
         return entity;
     }
       
@@ -777,6 +773,24 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             imports.add(imp);
             addToTable(imp);
         }
+        
+        writeDefaultsConfig();
+    }
+    
+    void findTextures(Node root) {
+        TreeScan.findNode(root, new ProcessNodeInterface() {
+
+            public boolean processNode(Spatial node) {
+                TextureState ts = (TextureState) node.getRenderState(TextureState.RS_TEXTURE);
+                if (ts!=null) {
+                    Texture t = ts.getTexture();
+                    if (t!=null)
+                        System.out.println("Texture "+t.getImageLocation());
+                }
+                return true;
+            }
+            
+        });
     }
     
     /**

@@ -30,11 +30,6 @@ import java.io.File;
 public interface ModelLoader {
 
     /**
-     * @return the file extensions supported by the loader
-     */
-    public String getFileExtension();
-    
-    /**
      * Import the model from it's original source
      * 
      * @param file
@@ -42,22 +37,16 @@ public interface ModelLoader {
      */
     public Node importModel(File file);
     
-//    public void deployToModule();
+    /**
+     * Deploy the art content to the module.
+     * @param rootDir the art root directory of the module (usually <module>/art)
+     */
+    public void deployToModule(File moduleArtRootDir);
     
     /**
      * Runtime load of the model from a module
      */
 //    public Node loadModel(URL url);
     
-    /**
-     * 
-     * @return true if this loader is enabled
-     */
-    public boolean isEnabled();
 
-    /**
-     * Set whether or not this loader is enabled.
-     * @param b
-     */
-    public void setEnabled(boolean enabled);
 }

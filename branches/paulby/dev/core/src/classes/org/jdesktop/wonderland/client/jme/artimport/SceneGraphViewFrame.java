@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.jme.artimport;
 
 import com.jme.scene.Node;
+import com.jme.scene.state.TextureState;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -42,6 +43,14 @@ public class SceneGraphViewFrame extends javax.swing.JFrame {
             public void valueChanged(TreeSelectionEvent e) {
                 Object selectedNode = jTree1.getLastSelectedPathComponent();
                 System.out.println("Selected "+selectedNode);
+                
+                if (selectedNode instanceof Node) {
+                    Node node = (Node)selectedNode;
+                    TextureState textureState = (TextureState) node.getRenderState(TextureState.RS_TEXTURE);
+                    if (textureState!=null) {
+                        System.out.println(textureState+"  "+textureState.getTexture().getImageLocation());
+                    }
+                }
             }
             
         });
@@ -65,6 +74,7 @@ public class SceneGraphViewFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTree1 = new javax.swing.JTree();
+        jPanel2 = new javax.swing.JPanel();
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
@@ -73,6 +83,11 @@ public class SceneGraphViewFrame extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTree1);
 
         jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        jPanel2.setMinimumSize(new java.awt.Dimension(100, 10));
+        jPanel2.setPreferredSize(new java.awt.Dimension(100, 10));
+        jPanel2.setRequestFocusEnabled(false);
+        jPanel1.add(jPanel2, java.awt.BorderLayout.LINE_END);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -83,6 +98,7 @@ public class SceneGraphViewFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTree jTree1;
     // End of variables declaration//GEN-END:variables

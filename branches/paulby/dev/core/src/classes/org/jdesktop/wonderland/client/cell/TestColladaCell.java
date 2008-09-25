@@ -44,8 +44,9 @@ public class TestColladaCell extends Cell {
      * @param setupData
      */
     @Override
-    public void configure(CellConfig setupData) {
-        ColladaCellConfig colladaConfig = (ColladaCellConfig)setupData;
+    public void configure(CellConfig config) {
+        super.configure(config);
+        ColladaCellConfig colladaConfig = (ColladaCellConfig)config;
         this.modelURI = colladaConfig.getModelURI();
     }
     

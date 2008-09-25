@@ -544,7 +544,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(session, capabilities),
-                getClientStateData(session, capabilities));
+                getCellConfig(session, capabilities));
     }
     
     /**
@@ -560,7 +560,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                                                ClientCapabilities capabilities) {
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(session, capabilities),
-                getClientStateData(session, capabilities));
+                getCellConfig(session, capabilities));
         
     }
     
@@ -585,10 +585,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
     protected abstract String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities);
     
     /**
-     * Get the setupdata for this cell. Subclasses should overload to
+     * Get the cellconfig for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    protected CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return null;
     }
     

@@ -37,8 +37,8 @@ class MovableCell extends TestColladaCell {
     
     public MovableCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponent(this));
-        addComponent(new MovableComponent(this));
+//        addComponent(new ChannelComponent(this));
+//        addComponent(new MovableComponent(this));
     }
 
     /**
