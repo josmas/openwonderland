@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.NodeListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 

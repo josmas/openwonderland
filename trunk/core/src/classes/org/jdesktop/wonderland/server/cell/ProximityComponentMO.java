@@ -56,9 +56,6 @@ import org.jdesktop.wonderland.common.Math3DUtils;
 @ExperimentalAPI
 public class ProximityComponentMO extends CellComponentMO {
 
-    private BoundingVolume[] localProxBounds = null;
-    private BoundingVolume[] worldProxBounds = null;
-    private ViewTransformListener viewTransformListener=null;
     private HashSet<ProximityListenerMO> proximityListeners = null;
     
     /**
@@ -72,61 +69,12 @@ public class ProximityComponentMO extends CellComponentMO {
      * @param cell the cell
      * @param localProximityBounds the proximity bounds in cell local coordinates
      */
-    public ProximityComponentMO(CellMO cell, BoundingVolume[] localProximityBounds) {
+    public ProximityComponentMO(CellMO cell) {
         super(cell);
-        setProximityBounds(localProximityBounds);
-        
-//        cell.addTransformChangeListener(new TransformChangeListenerMO() {
-//            public void transformChanged(Cell cell) {
-//                updateWorldBounds();
-//            }
-//        });
     }
     
-    private void updateWorldBounds() {
-        if (localProxBounds==null)
-            return;
-
-        // Update the world proximity bounds
-//        CellTransform l2vw = cell.getLocalToWorldTransform();
-//        int i=0;
-//        synchronized(this) {
-//            for(BoundingVolume lb : localProxBounds) {
-//                worldProxBounds[i] = lb.clone(worldProxBounds[i]);
-//                l2vw.transform(worldProxBounds[i]);
-//                i++;
-//            }
-//        }        
-    }
     
-    /**
-     * Set a list of bounds for which the system will track view enter/exit for
-     * this cell. When the view enters/exits one of these bounds the listener
-     * will be called with the index of the bounds in the supplied array.
-     * 
-     * The bounds must be ordered from largest to smallest, thus localBounds[i]
-     * must enclose localBounds[i+1]. An IllegalArgumentException will be thrown
-     * if this is not the case.
-     * 
-     * @param bounds
-     */
-    public void setProximityBounds(BoundingVolume[] localBounds) {
-//        synchronized(this) {
-//            this.localProxBounds = new BoundingVolume[localBounds.length];
-//            this.worldProxBounds = new BoundingVolume[localBounds.length];
-//            int i=0;
-//            for(BoundingVolume b : localBounds) {
-//                this.localProxBounds[i] = b.clone(null);
-//                worldProxBounds[i] = b.clone(null);
-//                
-//                if (i>0 && !Math3DUtils.encloses(localProxBounds[i-1], localProxBounds[i]))
-//                        throw new IllegalArgumentException("Proximity Bounds incorrectly ordered");
-//                i++;
-//            }
-//        }
-    }
-    
-    public void addProximityListener(ProximityListenerMO listener) {
+    public void addProximityListener(ProximityListenerMO listener, BoundingVolume[] localBounds) {
         synchronized(this) {
             if (proximityListeners==null)
                 proximityListeners = new HashSet();
@@ -158,48 +106,5 @@ public class ProximityComponentMO extends CellComponentMO {
 //        }
 //    }
     
-    /**
-     * Listen for view moves and check the view against our proximity bounds
-     */
-    class ViewTransformListener implements TransformChangeListenerSrv {
 
-        private BoundingVolume currentlyIn = null;
-        private int currentlyInIndex = 0;
-        
-        public void transformChanged(ManagedReference<CellMO> cell, CellTransform localTransform, CellTransform local2WorldTransform) {
-//            if (proximityListeners==null)
-//                return;
-//            
-//            Vector3f worldTransform = local2WorldTransform.getTranslation(null);
-//            
-//            // View Cell has moved
-//            synchronized(worldProxBounds) {
-//                BoundingVolume nowIn = null;
-//                int nowInIndex=-1;      // -1 = not in any bounding volume
-//                int i=0;
-//                while(i<worldProxBounds.length) {
-//                    if (worldProxBounds[i].contains(worldTransform)) {
-//                        nowIn = worldProxBounds[i];
-//                        nowInIndex = i;
-//                    } else {
-//                        i=worldProxBounds.length; // Exit the while
-//                    }
-//                    i++;
-//                }
-//                
-//                if (currentlyInIndex!=nowInIndex) {
-//                    if (nowInIndex<currentlyInIndex) {
-//                        // EXIT
-//                        notifyProximityListeners(false, currentlyIn, currentlyInIndex);
-//                    } else {
-//                        // ENTER
-//                        notifyProximityListeners(true, nowIn, nowInIndex);
-//                    }
-//                    currentlyIn = nowIn;
-//                    currentlyInIndex = nowInIndex;
-//                }
-//            }
-        }
-        
-    }
 }

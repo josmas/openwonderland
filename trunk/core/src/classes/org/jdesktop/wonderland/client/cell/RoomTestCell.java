@@ -47,17 +47,18 @@ public class RoomTestCell extends Cell {
                 break;                
         }
         
-        ProximityComponent comp = new ProximityComponent(this, new BoundingVolume[] { 
-            new BoundingSphere(15, new Vector3f()),
-            new BoundingSphere(13, new Vector3f()),
-            new BoundingSphere(11, new Vector3f())
-        });
+        ProximityComponent comp = new ProximityComponent(this);
         comp.addProximityListener(new ProximityListener() {
 
             public void viewEnterExit(boolean entered, Cell cell, BoundingVolume proximityVolume, int proximityIndex) {
                 System.out.println("-----------> View Enter/Exit "+entered+", "+proximityIndex+"  "+proximityVolume);
             }
+        }, new BoundingVolume[] { 
+            new BoundingSphere(15, new Vector3f()),
+            new BoundingSphere(13, new Vector3f()),
+            new BoundingSphere(11, new Vector3f())
         });
+        
         addComponent(comp);
                 
         return ret;

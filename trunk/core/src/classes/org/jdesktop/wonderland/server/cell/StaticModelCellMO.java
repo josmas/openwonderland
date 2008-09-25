@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
@@ -53,7 +54,7 @@ public class StaticModelCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return new StaticModelCellConfig();
     }
 

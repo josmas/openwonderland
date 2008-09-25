@@ -82,7 +82,16 @@ public class Client3DSim
                       
         userSim = new UserSimulator(avatar);
         
-        userSim.start();
+        avatar.addViewCellConfiguredListener(new LocalAvatar.ViewCellConfiguredListener() {
+            public void viewConfigured(LocalAvatar localAvatar) {
+                ((MovableComponent)avatar.getViewCell().getComponent(MovableComponent.class)).addServerCellMoveListener(messageTimer);
+                
+                // Start the userSim once the view is fully configured
+                userSim.start();
+            }
+        });
+                      
+        userSim = new UserSimulator(avatar);        
     }
     
     public void processRequest(TestRequest request) {
@@ -147,6 +156,7 @@ public class Client3DSim
         private Semaphore semaphore;
                 
         public UserSimulator(LocalAvatar avatar) {
+            super("UserSimulator");
             this.avatar = avatar;
             semaphore = new Semaphore(0);
         }
