@@ -16,6 +16,8 @@
  * $Date$
  * $State$
  */
+package org.jdesktop.wonderland.testharness.manager.ui;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
