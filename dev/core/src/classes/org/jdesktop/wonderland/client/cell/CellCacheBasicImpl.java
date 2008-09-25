@@ -136,12 +136,6 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             if (setup!=null)
                 cell.configure(setup);
 
-            // if the cell has a channel, notify it of the CellChannelConnection
-            ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
-            if (channelComp!=null) {
-                channelComp.setCellChannelConnection(cellChannelConnection);
-            }
-
             if (viewCell!=null) {
                 // No point in makeing cells active if we don't have a view
                 cell.setStatus(CellStatus.ACTIVE);  
@@ -235,4 +229,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         return session;
     }
 
+    
+    public CellChannelConnection getCellChannelConnection() {
+        return cellChannelConnection;
+    }
 }

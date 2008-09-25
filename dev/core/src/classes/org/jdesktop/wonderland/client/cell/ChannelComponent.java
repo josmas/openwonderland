@@ -40,6 +40,7 @@ public class ChannelComponent extends CellComponent {
     
     public ChannelComponent(Cell cell) {
         super(cell);
+        setCellChannelConnection(cell.getCellCache().getCellChannelConnection());
     }
 
 

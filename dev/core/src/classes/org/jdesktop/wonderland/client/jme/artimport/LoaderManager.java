@@ -32,14 +32,14 @@ import javax.swing.JOptionPane;
  */
 public class LoaderManager {
 
-    private ArrayList<ModelLoader> loaders = new ArrayList();
-    private HashMap<String, ModelLoader> activeLoaders = new HashMap();
+    private ArrayList<ModelLoaderFactory> loaders = new ArrayList();
+    private HashMap<String, ModelLoaderFactory> activeLoaders = new HashMap();
     private static LoaderManager loaderManager;
     
     private LoaderManager() {
         try {
-            Class clazz = Class.forName("org.jdesktop.wonderland.modules.kmzloader.client.LoaderKmz");
-            ModelLoader loader = (ModelLoader) clazz.newInstance();
+            Class clazz = Class.forName("org.jdesktop.wonderland.modules.kmzloader.client.LoaderFactoryKmz");
+            ModelLoaderFactory loader = (ModelLoaderFactory) clazz.newInstance();
             registerLoader(loader);
         } catch (InstantiationException ex) {
             Logger.getLogger(LoaderManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -60,7 +60,7 @@ public class LoaderManager {
      * Register the supplied loader with the system
      * @param loader
      */
-    public void registerLoader(ModelLoader loader) {
+    public void registerLoader(ModelLoaderFactory loader) {
         loaders.add(loader);
         
         if (activeLoaders.containsKey(loader.getFileExtension())) {
@@ -71,15 +71,10 @@ public class LoaderManager {
         
     }
     
-    public Node load(File file) {
-        ModelLoader loader = activeLoaders.get(getFileExtension(file.getName()));
+    public ModelLoader getLoader(File file) {
+        ModelLoaderFactory loaderFactory = activeLoaders.get(org.jdesktop.wonderland.common.FileUtils.getFileExtension(file.getName()));
         
-        if (loader==null) {
-            JOptionPane.showMessageDialog(null, "No Loader for "+getFileExtension(file.getName()));
-            return null;
-        } else {
-            return loader.importModel(file);
-        }
+        return loaderFactory.getLoader();
     }
     
     /**
@@ -90,16 +85,5 @@ public class LoaderManager {
         return activeLoaders.keySet().toArray(new String[activeLoaders.size()]);
     }
     
-    /**
-     * Returns the extension of the filename
-     * @param filename
-     * @return
-     */
-    private String getFileExtension(String filename) {
-        try {
-            return filename.substring(filename.lastIndexOf('.')+1);        
-        } catch(Exception ex) {
-            return null;
-        }        
-    }
+
 }
