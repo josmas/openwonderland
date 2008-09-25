@@ -92,7 +92,7 @@ public class ModuleManager {
         if (baseDir == null) {
             logger.warning("ModuleManager: no wonderland.webserver.modules.dir");
         }
-        logger.info("wonderland.webserver.modules.dir=" + baseDir);
+        logger.info("wonderland.webserver.modules.root=" + baseDir);
         
         /* Set the base directory for the module system, create it if necessary */
         try {
@@ -419,6 +419,8 @@ public class ModuleManager {
     public Collection<String> getModules(State state) {
         LinkedList<String> list = new LinkedList<String>();
 
+        System.out.println("module dir: " + this.getModuleStateDirectory(state).getAbsolutePath());
+        
         /*
          * Loop through each file and check that it is potentially valid.
          * If so, add its name to the list of module names
@@ -586,9 +588,9 @@ public class ModuleManager {
         
         /* Compile the artwork checksums, overwrite any existing file */
         try {
-            File artRoot = new File(pending, Module.MODULE_ART);
             File chkFile = new File(pending, Module.MODULE_CHECKSUMS);
-            ModuleChecksums cks = ModuleChecksums.generate(artRoot, ModuleChecksums.SHA1_CHECKSUM_ALGORITHM, new String[0], new String[0]);
+            String dirs[] = { "art", "plugins" };
+            ModuleChecksums cks = ModuleChecksums.generate(pending, dirs, ModuleChecksums.SHA1_CHECKSUM_ALGORITHM, new String[0], new String[0]);
             cks.encode(new FileWriter(chkFile));
         } catch (java.lang.Exception excp) {
             logger.log(Level.SEVERE, "ModuleManager: Failed to create checksums", excp);
