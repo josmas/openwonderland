@@ -19,10 +19,14 @@ package org.jdesktop.wonderland.testharness.slave.client3D;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
@@ -31,6 +35,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.testharness.common.Client3DRequest;
 import org.jdesktop.wonderland.testharness.common.LoginRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
@@ -51,6 +56,7 @@ public class Client3DSim
     /** the mover thread */
     private UserSimulator userSim;
     
+    private MessageTimer messageTimer = new MessageTimer();
     
     public Client3DSim(LoginRequest loginRequest) throws LoginFailureException {
         this.name = loginRequest.getUsername();
@@ -66,8 +72,14 @@ public class Client3DSim
         
         logger.info(getName() + " login succeeded");
         
-        LocalAvatar avatar = session.getLocalAvatar();
-               
+        final LocalAvatar avatar = session.getLocalAvatar();
+        
+        avatar.addViewCellConfiguredListener(new LocalAvatar.ViewCellConfiguredListener() {
+            public void viewConfigured(LocalAvatar localAvatar) {
+                ((MovableComponent)avatar.getViewCell().getComponent(MovableComponent.class)).addServerCellMoveListener(messageTimer);
+            }
+        });
+                      
         userSim = new UserSimulator(avatar);
         
         userSim.start();
@@ -180,6 +192,7 @@ public class Client3DSim
                     if (walking) {
                         currentLocation.addLocal(step);
                         avatar.localMoveRequest(currentLocation, orientation);    
+                        messageTimer.messageSent(new CellTransform(orientation, currentLocation));
                     }
                     
                     try {
@@ -223,4 +236,57 @@ public class Client3DSim
         }
     }
     
+    /**
+     * Measure the time between us sending a move request to the server and the server 
+     * sending the message back to us.
+     */
+    class MessageTimer implements CellMoveListener {
+        
+        private long timeSum=0;
+        private long lastReport;
+        private int count = 0;
+        private long min = Long.MAX_VALUE;
+        private long max = 0;
+        
+        private static final long REPORT_INTERVAL = 5000; // Report time in ms
+        
+        private HashMap<CellTransform, Long> messageTimes = new HashMap();
+        
+        public MessageTimer() {
+            lastReport = System.nanoTime();
+        }
+
+        /**
+         * Callback for messages from server
+         * @param arg0
+         * @param arg1
+         */
+        public void cellMoved(CellTransform transform, CellMoveSource arg1) {
+            Long sendTime = messageTimes.remove(transform);
+            
+            if (sendTime==null)
+                logger.warning("Unable to find record of data send");
+            
+            long time = ((System.nanoTime())-sendTime)/1000000;
+            
+            min = Math.min(min, time);
+            max = Math.max(max, time);
+            timeSum += time;
+            count++;
+            
+            if (System.nanoTime()-lastReport > REPORT_INTERVAL*1000000) {
+                long avg = timeSum/count;
+                logger.info("Roundtrip time avg "+avg + "ms "+name+" min "+min+" max "+max);
+                timeSum=0;
+                lastReport = System.nanoTime();
+                count = 0;
+                min = Long.MAX_VALUE;
+                max = 0;            
+            }
+        }
+        
+        public void messageSent(CellTransform transform) {
+            messageTimes.put(transform, System.nanoTime());
+        }
+    }
 }
