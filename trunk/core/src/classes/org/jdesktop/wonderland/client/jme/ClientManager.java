@@ -20,14 +20,16 @@ package org.jdesktop.wonderland.client.jme;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.scene.Node;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -39,9 +41,12 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.modules.ModulePluginList;
+import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import sun.misc.Service;
 
 
 /**
@@ -65,6 +70,9 @@ public class ClientManager {
 //    private Vector3f previousPos = new Vector3f();
 //    private Quaternion previousRot = new Quaternion();
     
+    // the classloader to use with this manager
+    private ClassLoader loader;
+    
     public ClientManager(String serverName, int serverPort, String userName) {
         
         WonderlandServerInfo server = new WonderlandServerInfo(serverName,
@@ -74,8 +82,19 @@ public class ClientManager {
                                                           "test".toCharArray());
         
         
+        // setup a classloader with the module jars
+        loader = setupClassLoader();
+        
+        // load any client plugins from that class loader
+        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
+                                                      loader);
+        while (it.hasNext()) {
+            ClientPlugin plugin = it.next(); 
+            plugin.initialize();
+        }
+        
         // create a session
-        session = new CellClientSession(server) {
+        session = new CellClientSession(server, loader) {
             // createCellCache is called in the constructor fo CellClientSession
             // so the cellCache will be set before we proceed
             @Override
@@ -97,6 +116,21 @@ public class ClientManager {
         
     }
     
+    private ClassLoader setupClassLoader() {
+        ModulePluginList list = ModuleUtils.fetchPluginJars();
+        List<URL> urls = new ArrayList<URL>();
+        
+        for (String uri : list.getJarURIs()) {
+            try {
+                urls.add(new URL(uri));
+            } catch (Exception excp) {
+                excp.printStackTrace();
+           }
+        }
+        
+        return new URLClassLoader(urls.toArray(new URL[0]));
+    }
+    
 //    void nodeMoved(Node node) {
 //        if (node instanceof CameraNode) {
 //            Vector3f v3f = node.getWorldTranslation();
@@ -112,7 +146,7 @@ public class ClientManager {
     class JmeCellCache extends CellCacheBasicImpl {
                 
         public JmeCellCache(CellClientSession session) {
-            super(session, 
+            super(session, loader,
                   session.getCellCacheConnection(), 
                   session.getCellChannelConnection());
         }

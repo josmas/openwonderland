@@ -1,14 +1,22 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.modules.ant;
-
-// IMPORTANT! You need to compile this class against ant.jar.
-// The easiest way to do this is to add ${ant.core.lib} to your project's classpath.
-// For example, for a plain Java project with no other dependencies, set in project.properties:
-// javac.classpath=${ant.core.lib}
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,15 +24,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.xml.bind.JAXBException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Jar;
+import org.apache.tools.ant.types.spi.Service;
 import org.apache.tools.ant.types.ZipFileSet;
+import org.apache.tools.zip.ZipOutputStream;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.ModuleRequires;
+
 /**
  * @author jon
  */
@@ -34,9 +46,12 @@ public class ModuleTask extends Jar {
     private String name;
     private int majorVersion = ModuleInfo.VERSION_UNSET;
     private int minorVersion = ModuleInfo.VERSION_UNSET;
+    
     private List<Requires> requires = new ArrayList<Requires>();
     private List<Plugin> plugins = new ArrayList<Plugin>();
    
+    private File buildDir;
+    
     public void setName(String name) {
         this.name = name;
     }
@@ -47,6 +62,10 @@ public class ModuleTask extends Jar {
     
     public void setMinorVersion(int minorVersion) {
         this.minorVersion = minorVersion;
+    }
+    
+    public void setBuildDir(File buildDir) {
+        this.buildDir = buildDir;
     }
     
     public Requires createRequires() {
@@ -73,31 +92,8 @@ public class ModuleTask extends Jar {
     
     @Override
     public void execute() throws BuildException {
-        // first, check all the inputs to make sure they seem valid
-        
-        if (name == null) {
-            throw new BuildException("Name is required.");
-        }
-        
-        if (majorVersion == ModuleInfo.VERSION_UNSET) {
-            throw new BuildException("Major version is required.");
-        }
-        
-        for (Requires r : requires) {
-            if (r.name == null) {
-                throw new BuildException("Requires without name.");
-            }
-            
-            if (r.majorVersion == ModuleInfo.VERSION_UNSET) {
-                throw new BuildException("Requires without major version.");
-            }
-        }
-        
-        for (Plugin p : plugins) {
-            if (p.name == null) {
-                throw new BuildException("Plugin without name.");
-            }
-        }
+        // make sure there are no obvious errors before we write anything
+        validate();
         
         // remember the context classloader
         ClassLoader contextCL = Thread.currentThread().getContextClassLoader();
@@ -141,8 +137,14 @@ public class ModuleTask extends Jar {
     private void writeModuleInfo() throws IOException, JAXBException {
         ModuleInfo mi = new ModuleInfo(name, majorVersion, minorVersion);
         
-        File moduleInfoFile = File.createTempFile("moduleInfo", "xml");
-        moduleInfoFile.deleteOnExit();
+        File moduleInfoFile;
+        if (buildDir == null) {
+            moduleInfoFile = File.createTempFile("moduleInfo", "xml");
+            moduleInfoFile.deleteOnExit();
+        } else {
+            moduleInfoFile = new File(buildDir, "moduleInfo.xml");
+        }
+        
         mi.encode(new FileWriter(moduleInfoFile));
             
         ZipFileSet zfs = new ZipFileSet();
@@ -160,8 +162,14 @@ public class ModuleTask extends Jar {
         
         ModuleRequires mr = new ModuleRequires(mis.toArray(new ModuleInfo[0]));
         
-        File moduleRequiresFile = File.createTempFile("moduleRequires", "xml");
-        moduleRequiresFile.deleteOnExit();
+        File moduleRequiresFile;
+        if (buildDir == null) {
+            moduleRequiresFile = File.createTempFile("moduleRequires", ".xml");
+            moduleRequiresFile.deleteOnExit();
+        } else {
+            moduleRequiresFile = new File(buildDir, "moduleRequires.xml");
+        }
+        
         mr.encode(new FileOutputStream(moduleRequiresFile));
             
         ZipFileSet zfs = new ZipFileSet();
@@ -171,20 +179,96 @@ public class ModuleTask extends Jar {
         super.addFileset(zfs);
     }
     
-    private void writePlugin(Plugin p) {
-        for (ZipFileSet jar : p.clientJars) {
-            jar.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/client/");
-            super.addFileset(jar);
+    private void writePlugin(Plugin p) throws IOException {
+        if (p.clientJar != null) {
+            writePluginJar(p.name, p.clientJar, "client");
+        }
+        if (p.commonJar != null) {
+            writePluginJar(p.name, p.commonJar, "common");
+        }
+        if (p.serverJar != null) {
+            writePluginJar(p.name, p.serverJar, "server");
         }
         
-        for (ZipFileSet jar : p.commonJars) {
-            jar.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/common/");
-            super.addFileset(jar);
+        for (ExtraJar e : p.extraClientJars) {
+            writePluginExtraJar(p.name, e, "client");
         }
         
-        for (ZipFileSet jar : p.serverJars) {
-            jar.setPrefix(Module.MODULE_PLUGINS + "/" + p.name + "/server/");
-            super.addFileset(jar);
+        for (ExtraJar e : p.extraCommonJars) {
+            writePluginExtraJar(p.name, e, "common");
+        }
+        
+        for (ExtraJar e : p.extraServerJars) {
+            writePluginExtraJar(p.name, e, "server");
+        }
+    }
+    
+    private void writePluginJar(String pluginName, PluginJar pluginJar, 
+                                String pluginDir)
+        throws IOException
+    {
+        String pluginJarName = pluginName + "-" + pluginDir + ".jar";
+        
+        File pluginFile;
+        if (buildDir == null) {
+            pluginFile = File.createTempFile("plugin", ".jar");
+            pluginFile.delete();
+            pluginFile.deleteOnExit();
+        } else {
+            File pluginBuildDir = new File(buildDir, pluginName);
+            File pluginInstDir = new File(pluginBuildDir, pluginDir);
+            pluginInstDir.mkdirs();
+            
+            pluginFile = new File(pluginInstDir, pluginJarName);
+        }
+        
+        pluginJar.setInternalDestFile(pluginFile);
+        pluginJar.execute();
+            
+        ZipFileSet zfs = new ZipFileSet();
+        zfs.setFile(pluginFile);
+        zfs.setFullpath(Module.MODULE_PLUGINS + "/" + pluginName + "/" + 
+                        pluginDir + "/" + pluginJarName);
+        
+        super.addFileset(zfs);
+    }
+    
+    private void writePluginExtraJar(String pluginName, ExtraJar e, 
+                                     String pluginDir)
+        throws IOException
+    {
+        ZipFileSet zfs = new ZipFileSet();
+        zfs.setFile(e.jarFile);
+        zfs.setFullpath(Module.MODULE_PLUGINS + "/" + pluginName + "/" + 
+                        pluginDir + "/" + e.jarFile.getName());
+        
+        super.addFileset(zfs);
+    }
+    
+    /**
+     * Once this task is completely assembled, this method can be used
+     * to check for any errors.  If it returns normally, there are no
+     * errors.
+     * @throws BuildException if there are errors with this tasks
+     */
+    private void validate() throws BuildException {
+        // make sure we have a name and version
+        if (name == null) {
+            throw new BuildException("Name is required.");
+        }
+        
+        if (majorVersion == ModuleInfo.VERSION_UNSET) {
+            throw new BuildException("Major version is required.");
+        }
+        
+        // check any included requirements
+        for (Requires r : requires) {
+            r.validate();
+        }
+        
+        // check any included plugins
+        for (Plugin p : plugins) {
+            p.validate();
         }
     }
     
@@ -204,28 +288,165 @@ public class ModuleTask extends Jar {
         public void setMinorVersion(int minorVersion) {
             this.minorVersion = minorVersion;
         }
+        
+        private void validate() throws BuildException {
+            if (name == null) {
+                throw new BuildException("Requires without name.");
+            }
+            
+            if (majorVersion == ModuleInfo.VERSION_UNSET) {
+                throw new BuildException("Requires without major version.");
+            }
+        }
     }
     
     public static class Plugin {
         private String name;
-        private List<ZipFileSet> clientJars = new ArrayList<ZipFileSet>();
-        private List<ZipFileSet> commonJars = new ArrayList<ZipFileSet>();
-        private List<ZipFileSet> serverJars = new ArrayList<ZipFileSet>();
-         
+        
+        private PluginJar clientJar;
+        private PluginJar commonJar;
+        private ServerJar serverJar;
+        
+        private List<ExtraJar> extraClientJars = new ArrayList<ExtraJar>();
+        private List<ExtraJar> extraCommonJars = new ArrayList<ExtraJar>();
+        private List<ExtraJar> extraServerJars = new ArrayList<ExtraJar>();
+        
         public void setName(String name) {
             this.name = name;
         }
         
-        public void addClient(ZipFileSet clientJar) {
-            clientJars.add(clientJar);
+        public void addClient(PluginJar clientJar) {
+            if (this.clientJar != null) {
+                throw new BuildException("Only one <client> allowed.");
+            }
+            
+            this.clientJar = clientJar;
         }
         
-        public void addCommon(ZipFileSet commonJar) {
-            commonJars.add(commonJar);
+        public void addCommon(PluginJar commonJar) {
+            if (this.commonJar != null) {
+                throw new BuildException("Only one <common> allowed.");
+            }
+            
+            this.commonJar = commonJar;
         }
         
-        public void addServer(ZipFileSet serverJar) {
-            serverJars.add(serverJar);
+        public void addServer(ServerJar serverJar) {
+            if (this.serverJar != null) {
+                throw new BuildException("Only one <server> allowed.");
+            }
+            
+            this.serverJar = serverJar;
+        }
+        
+        public void addClientJar(ExtraJar jar) {
+            extraClientJars.add(jar);
+        }
+        
+        public void addCommonJar(ExtraJar jar) {
+            extraCommonJars.add(jar);
+        }
+        
+        public void addServerJar(ExtraJar jar) {
+            extraServerJars.add(jar);
+        }
+        
+        private void validate() throws BuildException {
+            if (name == null) {
+                throw new BuildException("Plugin without name.");
+            }
+        }
+    }
+    
+    public static class ExtraJar {
+        private File jarFile;
+        
+        public void setJarFile(File jarFile) {
+            this.jarFile = jarFile;
+        }
+    }
+    
+    public static class PluginJar extends Jar {
+        private List<Service> services = new ArrayList<Service>();
+        
+        @Override
+        public void setDestFile(File file) {
+            throw new BuildException("Cannot change destination file of " +
+                                     " ModuleJar.");
+        }
+        
+        void setInternalDestFile(File file) {
+            super.setDestFile(file);
+        }
+        
+        /**
+         * A nested SPI service element.  Workaround for ant 1.7 issue
+         * writing services to the wrong directory.
+         * @param service the nested element.
+         */
+        @Override
+        public void addConfiguredService(Service service) {
+            // Check if the service is configured correctly
+            service.check();
+            services.add(service);
+        }
+
+        /**
+         * Initialize the zip output stream.
+         * @param zOut the zip output stream
+         * @throws IOException on I/O errors
+         * @throws BuildException on other errors
+         */
+        protected void initZipOutputStream(ZipOutputStream zOut)
+                throws IOException, BuildException 
+        {
+            super.initZipOutputStream(zOut);
+            
+            if (!skipWriting) {
+                writeServices(zOut);
+            }
+        }
+
+        
+        /**
+         * Write SPI Information to JAR. Workaround for ant 1.7 issue
+         * writing service to the wrong directory.
+         */
+        private void writeServices(ZipOutputStream zOut) throws IOException {
+            Iterator serviceIterator;
+            Service service;
+
+            serviceIterator = services.iterator();
+            while (serviceIterator.hasNext()) {
+                service = (Service) serviceIterator.next();
+                //stolen from writeManifest
+                super.zipFile(service.getAsStream(), zOut,
+                        "META-INF/services/" + service.getType(),
+                        System.currentTimeMillis(), null,
+                        ZipFileSet.DEFAULT_FILE_MODE);
+            }
+        }
+    }
+    
+    public static class ServerJar extends PluginJar {
+        public void addConfiguredServerPlugin(ServerPlugin serverPlugin) {
+            addConfiguredService(serverPlugin);
+        }
+        
+        public void addConfiguredCellSetup(CellSetup cellSetup) {
+            addConfiguredService(cellSetup);
+        }
+    }
+    
+    public static class ServerPlugin extends Service {
+        public ServerPlugin() {
+            setType ("org.jdesktop.wonderland.server.ServerPlugin");
+        }
+    }
+    
+    public static class CellSetup extends Service {
+        public CellSetup() {
+            setType ("org.jdesktop.wonderland.server.cell.setup.spi.CellSetupSPI");
         }
     }
 }
