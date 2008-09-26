@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.server.cell.setup;
+package org.jdesktop.wonderland.common.cell.setup;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;

@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.server.cell.setup;
+package org.jdesktop.wonderland.common.cell.setup;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import org.jdesktop.wonderland.server.cell.setup.spi.CellSetupSPI;
+import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
 import sun.misc.Service;
 
 /**
@@ -46,8 +46,8 @@ import sun.misc.Service;
 public class CellSetupFactory {
     /* A list of core cell setup class names */
     private static String[] coreSetup = {
-        "org.jdesktop.wonderland.server.cell.setup.StaticModelCellSetup",
-        "org.jdesktop.wonderland.server.cell.setup.ColladaCellSetup"
+        "org.jdesktop.wonderland.common.cell.setup.StaticModelCellSetup",
+        "org.jdesktop.wonderland.common.cell.setup.ColladaCellSetup"
     };
     
     /* The XML marshaller and unmarshaller for later use */

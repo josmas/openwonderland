@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
 /**

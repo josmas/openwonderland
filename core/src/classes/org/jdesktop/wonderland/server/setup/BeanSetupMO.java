@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.server.setup;
 
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 /**
  * This interface is used by cell GLOs that can read and write their state
