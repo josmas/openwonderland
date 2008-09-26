@@ -730,7 +730,7 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         
         findTextures(modelBG);
         
-        File targetArtDir = new File(targetModuleTF.getText()+File.separator+"art");
+        File targetArtDir = new File(targetModuleTF.getText());
         targetArtDir.mkdir();
         
         modelLoader.deployToModule(targetArtDir);
