@@ -149,7 +149,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
     public void loadWorld() {
         buildWFSWorld();
         
-        //test();
+//        test();
     }
 
     public void test() {
