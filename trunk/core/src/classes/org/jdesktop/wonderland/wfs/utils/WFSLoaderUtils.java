@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.wfs.utils;
 
 import java.io.InputStreamReader;
 import java.net.URL;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.wfs.loader.WFSLoader;
 
 

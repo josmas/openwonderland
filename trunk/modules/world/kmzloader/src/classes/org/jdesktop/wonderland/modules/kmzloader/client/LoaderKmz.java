@@ -25,9 +25,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
+import org.jdesktop.wonderland.common.cell.setup.ColladaCellSetup;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
@@ -69,20 +72,21 @@ class LoaderKmz implements ModelLoader {
     // The original file the user loaded
     private File origFile;
     
+    private ArrayList<String> modelFiles = new ArrayList();
+    
     /**
      * Load a SketchUP KMZ file and return the graph root
      * @param file
      * @return
      */
-    public Node importModel(File file) {
+    public Node importModel(File file) throws IOException {
         Node ret = null;
         origFile = file;
         
         try {
             ZipFile zipFile = new ZipFile(file);
             ZipEntry docKmlEntry = zipFile.getEntry("doc.kml");
-            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.modules.kmzloader.client.kml_21",
-                                                     getClass().getClassLoader());
+            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.modules.kmzloader.client.kml_21");
             Unmarshaller u = jc.createUnmarshaller();
             JAXBElement docKml = (JAXBElement) u.unmarshal(zipFile.getInputStream(docKmlEntry));
             
@@ -109,11 +113,14 @@ class LoaderKmz implements ModelLoader {
             }
             
         } catch (ZipException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
+            throw new IOException("Zip Error");
         } catch (IOException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
+            throw ex;
         } catch (JAXBException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
+            throw new IOException("JAXB Error");
         }
         
         return ret;
@@ -129,6 +136,8 @@ class LoaderKmz implements ModelLoader {
 
         
         logger.info("Loading MODEL " + filename);
+        modelFiles.add(filename);
+        
         ZipEntry modelEntry = zipFile.getEntry(filename);
         BufferedInputStream in = new BufferedInputStream(zipFile.getInputStream(modelEntry));
         
@@ -170,9 +179,45 @@ class LoaderKmz implements ModelLoader {
         }
     }
     
-    public void deployToModule(File moduleArtRootDir) {
-        deployTextures(moduleArtRootDir);
-        deployModels(moduleArtRootDir);
+    public void deployToModule(File moduleRootDir) throws IOException {
+        try {
+            String modelName = origFile.getName();
+            ZipFile zipFile = new ZipFile(origFile);
+            
+            // TODO replace getName with getModuleName(moduleRootDir)
+            String moduleName = moduleRootDir.getName();
+
+            String targetDirName = moduleRootDir.getAbsolutePath()+File.separator+"art"+ File.separator + modelName;
+            File targetDir = new File(targetDirName);
+            targetDir.mkdir();
+
+            deployTextures(zipFile, targetDir);
+            deployModels(zipFile, targetDir);
+
+            if (modelFiles.size() > 1) {
+                logger.warning("Multiple models not supported during deploy");
+            }
+            ColladaCellSetup setup = new ColladaCellSetup();
+            setup.setModel("wlm://"+moduleName+"/art/"+modelFiles.get(0));
+            
+            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
+            Writer w = new FileWriter(wfsFile);
+            try {
+                setup.encode(w);
+            } catch (JAXBException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+            w.close();
+            
+        } catch (ZipException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            throw new IOException("Zip error");
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            throw ex;
+        }
+        
+        
     }
     
     /**
@@ -180,17 +225,12 @@ class LoaderKmz implements ModelLoader {
      * models into the module
      * @param moduleArtRootDir
      */
-    private void deployModels(File moduleArtRootDir) {
+    private void deployModels(ZipFile zipFile, File targetDir) {
         
         // TODO update collada files with module relative texture paths
         
         try {
-            String modelName = origFile.getName();
-            ZipFile zipFile = new ZipFile(origFile);
-
-            String targetDirName = moduleArtRootDir.getAbsolutePath() + File.separator + modelName;
-            File targetDir = new File(targetDirName);
-            targetDir.mkdir();
+            String targetDirName = targetDir.getAbsolutePath();
             
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while(entries.hasMoreElements()) {
@@ -218,16 +258,10 @@ class LoaderKmz implements ModelLoader {
      * with the name of the original model.
      * @param moduleArtRootDir
      */
-    private void deployTextures(File moduleArtRootDir) {
+    private void deployTextures(ZipFile zipFile, File targetDir) {
         try {
             // TODO generate checksums to check for image duplication
-            String modelName = origFile.getName();
-            ZipFile zipFile = new ZipFile(origFile);
-
-            String targetDirName = moduleArtRootDir.getAbsolutePath() + File.separator + modelName;
-//            logger.fine("TargetDir "+moduleArtRootDir);
-            File targetDir = new File(targetDirName);
-            targetDir.mkdir();
+            String targetDirName = targetDir.getAbsolutePath();
 
             for (Map.Entry<URL, ZipEntry> t : textureFiles.entrySet()) {
                 File target = new File(targetDirName + File.separator + t.getKey().getPath());

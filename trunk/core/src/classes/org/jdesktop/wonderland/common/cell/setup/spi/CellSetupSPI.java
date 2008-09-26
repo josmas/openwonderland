@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.server.cell.setup.spi;
+package org.jdesktop.wonderland.common.cell.setup.spi;
 
 /**
  * The CellSetupSPI service provider interface returns fully-qualified class
