@@ -57,8 +57,6 @@
             
             <classpath>
 		<pathelement path="${core-client.classpath}"/>
-		<pathelement path="../modules/world/kmzloader/build/lib/kmzloader-client.jar"/>
-		<!--<pathelement path="../modules/world/testcells/build/lib/testcells-client.jar"/>-->
 	    </classpath>
             
 	    <env key="${env.path.name}" path="${env.path.defvalue}"/>

@@ -303,7 +303,7 @@ public class ModuleTask extends Jar {
     public static class Plugin {
         private String name;
         
-        private PluginJar clientJar;
+        private ClientJar clientJar;
         private PluginJar commonJar;
         private ServerJar serverJar;
         
@@ -315,7 +315,7 @@ public class ModuleTask extends Jar {
             this.name = name;
         }
         
-        public void addClient(PluginJar clientJar) {
+        public void addClient(ClientJar clientJar) {
             if (this.clientJar != null) {
                 throw new BuildException("Only one <client> allowed.");
             }
@@ -397,6 +397,7 @@ public class ModuleTask extends Jar {
          * @throws IOException on I/O errors
          * @throws BuildException on other errors
          */
+        @Override
         protected void initZipOutputStream(ZipOutputStream zOut)
                 throws IOException, BuildException 
         {
@@ -440,13 +441,25 @@ public class ModuleTask extends Jar {
     
     public static class ServerPlugin extends Service {
         public ServerPlugin() {
-            setType ("org.jdesktop.wonderland.server.ServerPlugin");
+            setType("org.jdesktop.wonderland.server.ServerPlugin");
         }
     }
     
     public static class CellSetup extends Service {
         public CellSetup() {
-            setType ("org.jdesktop.wonderland.server.cell.setup.spi.CellSetupSPI");
+            setType("org.jdesktop.wonderland.server.cell.setup.spi.CellSetupSPI");
+        }
+    }
+    
+    public static class ClientJar extends PluginJar {
+        public void addConfiguredClientPlugin(ClientPlugin clientPlugin) {
+            addConfiguredService(clientPlugin);
+        }
+    }
+    
+    public static class ClientPlugin extends Service {
+        public ClientPlugin() {
+            setType("org.jdesktop.wonderland.client.ClientPlugin");
         }
     }
 }

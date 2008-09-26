@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.kmzloader.client;
 
+import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
 
@@ -24,7 +26,13 @@ import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
  *
  * @author paulby
  */
-public class LoaderFactoryKmz extends ModelLoaderFactory {
+public class LoaderFactoryKmz extends ModelLoaderFactory
+    implements ClientPlugin
+{
+
+    public void initialize() {
+        LoaderManager.getLoaderManager().registerLoader(this);
+    }
     
     public String getFileExtension() {
         return "kmz";
