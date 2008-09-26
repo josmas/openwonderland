@@ -134,9 +134,23 @@ public class MessagePacker {
      * @return
      */
     public static ReceivedMessage unpack(ByteBuffer buf) throws PackerException {
+        return unpack(buf, null);
+    }
+    
+    /**
+     * Give a ByteBuffer unpack it's data and return the message it represents.
+     * Use the provided classloader to resolve the message class.
+     * @param buf the buffer to unpack
+     * @param classLoader the classloader to resolve the class with
+     * @return the unpacked message
+     * @throws org.jdesktop.wonderland.common.messages.MessagePacker.PackerException
+     */
+    public static ReceivedMessage unpack(ByteBuffer buf, ClassLoader classLoader) 
+            throws PackerException
+    {
         ObjectInputStream in = null;
         try {
-            in = new WonderlandObjectInputStream(getInputStream(buf));
+            in = new WonderlandObjectInputStream(getInputStream(buf), classLoader);
             ReceivedMessage msg = serializationUnpack(buf, in);
 
             in.close();
