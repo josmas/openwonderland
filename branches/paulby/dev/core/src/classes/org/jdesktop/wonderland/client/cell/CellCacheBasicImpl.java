@@ -53,6 +53,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     
     private ViewCell viewCell = null;
 
+    /** the classloader to use when instantiating classes */
+    private ClassLoader classLoader;
     
     /** the session this cache is associated with */
     private WonderlandSession session;
@@ -72,12 +74,18 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * messages
      */
     public CellCacheBasicImpl(WonderlandSession session,
+                              ClassLoader classLoader,
                               CellCacheConnection cellCacheConnection,
                               CellChannelConnection cellChannelConnection) {
         this.session = session;
+        this.classLoader = classLoader;
         this.cellCacheConnection = cellCacheConnection;
         this.cellChannelConnection = cellChannelConnection;
+        
         ClientContext.registerCellCache(this, session);
+        if (this.classLoader == null) {
+            this.classLoader = getClass().getClassLoader();
+        }
     }
     
     /**
@@ -189,7 +197,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         Cell cell;
         
         try {
-            Class clazz = Class.forName(className);
+            Class clazz = Class.forName(className, true, classLoader);
             Constructor constructor = clazz.getConstructor(CellID.class, CellCache.class);
             cell = (Cell) constructor.newInstance(cellId, this);
         } catch(Exception e) {

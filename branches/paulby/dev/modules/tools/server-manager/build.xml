@@ -15,17 +15,25 @@
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client"/>
-    <target name="jar" depends="build, -module-jar-server, 
-                                       -module-jar-client"/>
-                                       
-    <target name="package" depends="jar">
+   
+    <target name="package" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="servermanager" version="1" minorversion="1"
-                jarfile="${module.dist.dir}/${module.jarname}.jar">
+                jarfile="${module.dist.dir}/${module.jarname}.jar"
+                builddir="${build.lib.dir}">
             <plugin name="servermanager">
-                <client file="${build.lib.dir}/${module.jarname}-client.jar"/>
-                <server file="${build.lib.dir}/${module.jarname}-server.jar"/>
+                <client basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>                   
+                </client>
+                
+                <server basedir="${build.classes.dir}">
+                    <serverplugin provider="org.jdesktop.wonderland.servermanager.server.ServerManagerServerPlugin"/>
+                    
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>                   
+                </server>    
             </plugin>
         </module>
     </target>                                  
