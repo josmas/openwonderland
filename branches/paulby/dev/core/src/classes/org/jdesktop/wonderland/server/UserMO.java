@@ -49,7 +49,7 @@ public class UserMO implements ManagedObject, Serializable {
     
     private Set<ManagedReference<ClientSession>> activeSessions = null;
     private Map<String, Serializable> extendedData = null;
-    private Map<String, ManagedReference<AvatarCellMO>> avatars = new HashMap();
+    private Map<ManagedReference<ClientSession>, Map<String, ManagedReference<AvatarCellMO>>> avatars = new HashMap();
     
     protected static Logger logger = Logger.getLogger(UserMO.class.getName());
 
@@ -114,14 +114,20 @@ public class UserMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Return the specified avatar for this User, or null if that avatar
+     * Return the specified avatar for this User and session, or null if that avatar
      * does not exist
      * 
      * @param avatarName
      * @return
      */
-    public AvatarCellMO getAvatar(String avatarName) {
-        ManagedReference<AvatarCellMO> avatarRef = avatars.get(avatarName);
+    public AvatarCellMO getAvatar(ClientSession session, String avatarName) {
+        Map<String, ManagedReference<AvatarCellMO>> sessionAvatars = 
+                avatars.get(AppContext.getDataManager().createReference(session));
+            
+        if (sessionAvatars==null)
+            return null;
+        
+        ManagedReference<AvatarCellMO> avatarRef = sessionAvatars.get(avatarName);
         if (avatarRef == null) {
             return null;
         }
@@ -130,13 +136,21 @@ public class UserMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Put the avatarRef and the name in the set of avatars for this user
+     * Put the avatarRef and the name in the set of avatars for this user. Each
+     * ClientSession can have a set of avatars.
+     * 
      * @param avatarName
      * @param avatar
      */
-    public void putAvatar(String avatarName, AvatarCellMO avatar) {
+    public void putAvatar(ClientSession session, String avatarName, AvatarCellMO avatar) {
         DataManager dm = AppContext.getDataManager();
-        avatars.put(avatarName, dm.createReference(avatar));
+        ManagedReference<ClientSession> sessionRef = AppContext.getDataManager().createReference(session);
+        Map<String, ManagedReference<AvatarCellMO>> sessionAvatars = avatars.get(sessionRef);
+        if (sessionAvatars==null) {
+            sessionAvatars = new HashMap();
+            avatars.put(sessionRef, sessionAvatars);
+        }
+        sessionAvatars.put(avatarName, dm.createReference(avatar));
     }
     
     /**
