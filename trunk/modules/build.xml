@@ -4,6 +4,7 @@
     <target name="package">
         <ant antfile="samples/build.xml" target="package" inheritall="false"/>
         <ant antfile="tools/build.xml" target="package" inheritall="false"/>
+        <ant antfile="world/build.xml" target="package" inheritall="false"/>
     </target>
     
     <!-- copy sub-project jar files to dist directory -->

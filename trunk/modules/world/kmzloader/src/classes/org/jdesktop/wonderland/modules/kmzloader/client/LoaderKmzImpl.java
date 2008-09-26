@@ -81,7 +81,8 @@ class LoaderKmz implements ModelLoader {
         try {
             ZipFile zipFile = new ZipFile(file);
             ZipEntry docKmlEntry = zipFile.getEntry("doc.kml");
-            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.modules.kmzloader.client.kml_21");
+            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.modules.kmzloader.client.kml_21",
+                                                     getClass().getClassLoader());
             Unmarshaller u = jc.createUnmarshaller();
             JAXBElement docKml = (JAXBElement) u.unmarshal(zipFile.getInputStream(docKmlEntry));
             
