@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.multiboundstest.client;
 
+import org.jdesktop.wonderland.client.cell.CellChannelConnection;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
@@ -449,6 +450,11 @@ public class CellBoundsViewer extends javax.swing.JFrame {
 //            System.out.println("Cell moved "+cell.getLocalToVWorld().getTranslation(null)+"  "+cell);
             repaint();
         }
+
+        public CellChannelConnection getCellChannelConnection() {
+            return session.getCellChannelConnection();
+        }
+
     }
     
     /**
