@@ -21,19 +21,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.WorldEventClassListener;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A test listener for key events. Add this to an entity and it will log all key events that
- * occur over the entity when the event mode is WORLD.
+ * occur over the entity.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class KeyEvent3DLogger extends WorldEventClassListener {
+public class KeyEvent3DLogger extends EventClassListener {
 
     private static final Logger logger = Logger.getLogger(KeyEvent3DLogger.class.getName());
 

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.input;
 
 import java.awt.Canvas;
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -29,15 +30,11 @@ import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 /**
  * A singleton container for all of the processor objects in the Wonderland input subsystem.
- *
- * The <code>InputManager</code> provides a global Event Mode which which can take on one of two values: 
- * <code>WORLD</code> and <code>APP</code>. 
- * When the event mode is <code>WORLD</code> it is okay for event listeners which modify the world to handle events and
- * app-related event listeners should ignore incoming events. When the event mode is <code>APP</code>, 
- * it is okay for app-related
- * event listeners to handle events and world-related event listeners must ignore incoming events.
  *
  * The <code>InputManager</code> supports event listener (<code>EventListener</code>) objects. 
  * These listeners can be added to entities
@@ -50,6 +47,37 @@ import java.util.logging.Logger;
  * <code>propagateToUnder()</code> for global listeners
  * are ignored. Note: The <code>pickDetails</code> field of an event is null for events received by the 
  * global listeners.
+ *
+ * In Wonderland Release 0.4, the Wonderland client provided the notion of an "event mode." The event mode 
+ * could be either App or World. When the event mode was App, only event listeners which controlled the
+ * shared apps were to consume events. When the event mode was World, only event listeners which controlled
+ * the non-app parts of the scene (aka "world") were to consume events. This essentially provided a single focus for
+ * all input events, which had a binary value. The new Wonderland <code>InputManager</code> provides a more
+ * general model of focus.
+ *
+ * The <code>InputManager</code> provides "focus sets" for different classes of events. Each distinct event class 
+ * can have its own focus set. A focus set is a set of one or more entities that have focus for that 
+ * class of event. For example, the <code>KeyEvent3D</code> class can have a focus set consisting of Entity1 and the
+ * <code>MouseEvent3D</code> class can have a focus set consisting of Entity2 and Entity3. Unlike Wonderland Release 0.4,
+ * each event class can have a different set of focussed entities. Notice also that there can be multiple
+ * focussed entities instead of just one.
+
+ * When an entity is handed to an event listener via an event listener method such as, <code>consumesEvent</code> etc.,
+ * that method can determine the entity to which the event was distributed by calling <code>Event.getEntity()</code>.
+ * The method can determine if the entity has focus by calling <code>Event.isFocussed()</code>. (Note that 
+ * <code>isFocussed</code> returns whether the entity had focus at the time the event was delivered to the 
+ * listener).
+ *
+ * Note that the concept of focus in this input system is merely advisory. Event listeners can be programmed to 
+ * use the <code>isFocussed</code> flag or ignore it. For example, a shared app event listener could be written
+ * to ignore events when the entity of the shared app does not have focus. Or, a 3D "xeyes" type of app could 
+ * be written to accept all mouse motion events, regardless of whether their entity has focus,
+ * and change the gaze of the eyes to follow the mouse pointer's location no matter where it moves on the screen.
+ *
+ * It is intended that the Wonderland client provide one or more focus managers which change the 
+ * focussed entities based on user input or some other stimuli. These focus managers will be the responsible
+ * for implementing the focus management policy--the <code>InputManager</code> merely provides the mechanism.
+ * The goal is to allow multiple and different focus managers to be experimented with over time.
  *
  * @author deronj
  */
@@ -77,8 +105,53 @@ public abstract class InputManager
     /** The canvas from which this input manager should receive events. */
     protected Canvas canvas;
 
-    /** The global event mode type. */
-    public static enum EventMode { WORLD, APP };
+    /** The ways that a focus set can be changed. */
+    public enum FocusChangeAction { 
+	/** Add the given entities to the focus sets of the given event classes. */
+	ADD, 
+	/** Remove the given entities from the focus sets of the given event classes. */
+	REMOVE, 
+	/** 
+	  * Replace the previous focus sets for the given event classes with a new focus set
+	  * which contains the given entities. Note that the new set may be the empty set.
+	  */
+        REPLACE 
+    };
+
+    /**
+     * An object which indicates how to modify the focus set.
+     */
+    public class FocusChange {
+
+	/** The action to perform on the focus sets. */
+	public FocusChangeAction action;
+
+	/** The event classes whose focus set is to be changed. */
+	public Class[] eventClasses;
+
+	/** The target entities */
+	public Entity[] entities;
+
+        /** 
+	 * Create an instance of FocusChange.
+	 * @param action The action to perform on the focus sets.
+	 * @param eventClasses The event classes whose focus sets are to be changed.
+	 * @param entities The target entities.
+	 * @throws IllegalArgumentException If any class in <code>eventClasses</code> are not the Wonderland 
+	 * base event class or one of its subclasses.
+	 * 
+	 */
+	public FocusChange (FocusChangeAction action, Class[] eventClasses, Entity[] entities) {
+	    for (Class clazz : eventClasses) {
+		if (!Event.class.isAssignableFrom(clazz)) {
+		    throw new IllegalArgumentException("Class is not a Wonderland event class or one of its subclasses: " + clazz.getName());
+		}
+	    }
+	    this.action = action;
+	    this.eventClasses = eventClasses;
+	    this.entities = entities;
+	}
+    }
 
     /**
      * Return the input manager singleton.
@@ -88,33 +161,10 @@ public abstract class InputManager
     }
 
     /**
-     * Returns the current event mode. By default, event mode is WORLD.
-     * @return The current event mode.
+     * Return the event distributor singleton.
      */
-    public EventMode getEventMode () {
-	return eventDistributor.getEventMode();
-    }
-
-    /**
-     * Returns true if the event mode is currently WORLD.
-     */
-    public boolean isWorldMode () {
-	return getEventMode() == EventMode.WORLD;
-    }
-
-    /**
-     * Returns true if the event mode is currently APP.
-     */
-    public boolean isAppMode () {
-	return getEventMode() == EventMode.APP;
-    }
-
-    /**
-     * Sets the event mode.
-     * @param eventMode The new event mode.
-     */
-    public void setEventMode (EventMode eventMode) {
-	eventDistributor.setEventMode(eventMode);
+    EventDistributor getEventDistributor () {
+	return eventDistributor;
     }
 
     /** 
@@ -133,10 +183,12 @@ public abstract class InputManager
      * Initialize the input manager to receive input events from the given AWT canvas
      * and start the input manager running. The input manager will perform picks with the
      * given camera. This routine can only be called once. To subsequently change the 
-     * camera, use <code>setCameraComponent</code>.
+     * camera, use <code>setCameraComponent</code>. To subsequently change the focus manager,
+     * use <code>setFocusManager</code>.
      *
      * @param canvas The AWT canvas which generates AWT user events.
      * @param cameraComp The mtgame camera component to use for picking operations.
+     
      */
     public void initialize (Canvas canvas, CameraComponent cameraComp) {
 	if (this.canvas != null) {
@@ -164,11 +216,24 @@ public abstract class InputManager
 	logger.info("Input System initialization complete.");
     }
 
+    /** 
+     * INTERNAL ONLY.
+     * <br>
+     * The synthetic, "priming" mouse event should not be delivered to users. 
+     */
+    @InternalAPI
+    public static class NondeliverableMouseEvent extends MouseEvent {
+	NondeliverableMouseEvent (Component source, int id, long when, int modifiers, int x, int y, 
+				  int clickCount, boolean popupTrigger, int button) {
+	    super(source, id, when, modifiers, x, y, clickCount, popupTrigger, button);
+	}
+    }
+
     /**
      * This sends an initial, synthetic mouse event through the input system. The event position is the center
      * of the canvas. This is done for two reasons:
      * <br><br>
-     * 1. To initialize the keyboard focus.
+     * 1. To initialize EventDistributor3D.mousePickInfoPrev.
      * <br><br>
      * 2. To send out the initial enter event.
      * <br><br>
@@ -176,8 +241,8 @@ public abstract class InputManager
      * This will be rectified when we implement synthetic event injection (repick) on scene graph change.
      */
     private void injectInitialMouseEvent () {
-	MouseEvent me = new MouseEvent(canvas, MouseEvent.MOUSE_MOVED, 0, 0, 
-                                       canvas.getWidth()/2, canvas.getHeight()/2, 0, false, MouseEvent.NOBUTTON);
+	MouseEvent me = new NondeliverableMouseEvent(canvas, MouseEvent.MOUSE_MOVED, 0L, 0, 
+			     canvas.getWidth()/2, canvas.getHeight()/2, 0, false, MouseEvent.NOBUTTON);
 	mouseMoved(me);
     }
 
@@ -346,5 +411,104 @@ public abstract class InputManager
      */
     public CameraComponent getCameraComponent () {
 	return inputPicker.getCameraComponent();
+    }
+
+    /**
+     * The base changeFocus method. Atomically changes the focus sets. The other focus utility methods call
+     * this method. This method is for use by the Wonderland client focus manager.
+     * @param changes An array of the changes to make to the focus sets.
+     */
+    public void changeFocus (FocusChange[] changes) {
+	eventDistributor.enqueueEvent(new FocusChangeEvent(changes));
+    }
+
+    /**
+     * A utility method. Atomically add the given entities to the focus sets of the given event classes.
+     * This method is for use by the Wonderland client focus manager.
+     * @param eventClasses The event classes whose focus sets are to be modified.
+     * @param entities The entities to add to the focus sets.
+     * @throws IllegalArgumentException If any class in <code>eventClasses</code> are not the Wonderland 
+     * base event class or one of its subclasses.
+     */
+    public void addFocus (Class[] eventClasses, Entity[] entities) {
+	changeFocus(new FocusChange[] { new FocusChange(FocusChangeAction.ADD, eventClasses, entities) });
+    }
+
+    /**
+     * A utility method. Atomically remove the given entities from the focus sets of the given event classes.
+     * This method is for use by the Wonderland client focus manager.
+     * @param eventClasses The event classes whose focus sets are to be modified.
+     * @param entities The entities to add to the focus sets.
+     * @throws IllegalArgumentException If any class in <code>eventClasses</code> are not the Wonderland 
+     * base event class or one of its subclasses.
+     */
+    public void removeFocus (Class[] eventClasses, Entity[] entities) {
+	changeFocus(new FocusChange[] { new FocusChange(FocusChangeAction.REMOVE, eventClasses, entities) });
+    }
+
+    /**
+     * A utility method. Atomically replace the focus sets of the given event classes with the given entities.
+     * This method is for use by the Wonderland client focus manager.
+     * @param eventClasses The event classes whose focus sets are to be modified.
+     * @param entities The entities to add to the focus sets.
+     * @throws IllegalArgumentException If any class in <code>eventClasses</code> are not the Wonderland 
+     * base event class or one of its subclasses.
+     */
+    public void replaceFocus (Class[] eventClasses, Entity[] entities) {
+	changeFocus(new FocusChange[] { new FocusChange(FocusChangeAction.REPLACE, eventClasses, entities) });
+    }
+
+    /**
+     * A utility method. Atomically add the given entities to the focus sets of the KeyEvent3D
+     * and MouseEvent3D event classes. This method is for use by the Wonderland client focus manager.
+     * @param entities The entities to add to the focus sets.
+     */
+    public void addKeyMouseFocus (Entity[] entities) {
+	addFocus(new Class[] { KeyEvent3D.class, MouseEvent3D.class}, entities);
+    }
+
+    /**
+     * A utility method. Atomically remove the given entities from the focus sets of the KeyEvent3D
+     * and MouseEvent3D event classes. This method is for use by the Wonderland client focus manager.
+     * @param entities The entities to add to the focus sets.
+     */
+    public void removeKeyMouseFocus (Entity[] entities) {
+	removeFocus(new Class[] { KeyEvent3D.class, MouseEvent3D.class}, entities);
+    }
+
+    /**
+     * A utility method. Atomically replace the focus sets of the KeyEvent3D and MouseEvent3D 
+     * event classes with the given entities. This method is for use by the Wonderland client focus manager.
+     * @param entities The entities to add to the focus sets.
+     */
+    public void replaceKeyMouseFocus (Entity[] entities) {
+	replaceFocus(new Class[] { KeyEvent3D.class, MouseEvent3D.class}, entities);
+    }
+
+    /**
+     * A utility method. Atomically add the given entity to the focus sets of the KeyEvent3D
+     * and MouseEvent3D event classes. This method is for use by the Wonderland client focus manager.
+     * @param entity The entity to add to the focus sets.
+     */
+    public void addKeyMouseFocus (Entity entity) {
+	addKeyMouseFocus(new Entity[] { entity });
+    }
+
+    /**
+     * A utility method. Atomically remove the given entity from the focus sets of the KeyEvent3D
+     * and MouseEvent3D event classes. This method is for use by the Wonderland client focus manager.
+     * @param entity The entity to add to the focus sets.
+     */
+    public void removeKeyMouseFocus (Entity entity) {
+	removeKeyMouseFocus(new Entity[] { entity });
+    }
+
+    /**
+     * A utility method. Atomically replace the focus sets of the KeyEvent3D and MouseEvent3D 
+     * event classes with the given entity. This method is for use by the Wonderland client focus manager.
+     * @param entity The entity to add to the focus sets.
+     */
+    public void replaceKeyMouseFocus (Entity entity) {
+	replaceKeyMouseFocus(new Entity[] { entity });
     }
 }
