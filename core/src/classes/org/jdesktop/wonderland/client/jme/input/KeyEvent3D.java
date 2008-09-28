@@ -36,22 +36,15 @@ public class KeyEvent3D extends InputEvent3D {
 	EVENT_ID = Event.allocateEventID();
     }
 
-    /** The originating AWT key event */
-    private KeyEvent awtEvent;
-    
+    /** Default constructor (for cloning) */
+    protected KeyEvent3D () {}
+
     /** 
      * Create a new instance of <code>KeyEvent3D</code>.
      * @param awtEvent The originating AWT key event.
      */
     KeyEvent3D (KeyEvent awtEvent) {
-        this.awtEvent = awtEvent;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public InputEvent getAwtEvent() {
-        return awtEvent;
+        super(awtEvent);
     }
     
     /**
@@ -90,7 +83,7 @@ public class KeyEvent3D extends InputEvent3D {
      * <code>CHAR_UNDEFINED</code> is returned.
      */
     public char getKeyChar () {
-        return awtEvent.getKeyChar();
+        return ((KeyEvent)awtEvent).getKeyChar();
     }
     
     /**
@@ -101,9 +94,11 @@ public class KeyEvent3D extends InputEvent3D {
      * (For <code>KEY_TYPED events</code>, the key code is <code>VK_UNDEFINED</code>.)
      */
     public int getKeyCode () {
-        return awtEvent.getKeyCode();
+        return ((KeyEvent)awtEvent).getKeyCode();
     }
 
+    /** {@inheritDoc} */
+    @Override
     public String toString () {
 	return "Key " + keyAction() + ": keyCode=" + getKeyCode() + ", keyChar=" + getKeyChar(); 
     }
@@ -116,5 +111,18 @@ public class KeyEvent3D extends InputEvent3D {
 	} else {
 	    return "CLICK";
 	}
+    }
+
+    /** 
+     * {@inheritDoc}
+     * <br>
+     * If event is null, a new event of this class is created and returned.
+     */
+    @Override
+    public Event clone (Event event) {
+	if (event == null) {
+	    event = new KeyEvent3D();
+	}
+	return super.clone(event);
     }
 }
