@@ -42,7 +42,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup.HashMapEntry;
 
 /**
  * The ChecksumList class represents a collection of checkums for a given
