@@ -3,8 +3,14 @@
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.world-modules}"/>
     
+    <!-- TODO - allow ordering to be defined for some projects, current -->
+    <!-- ordering seems to be alphabetical which correctly compiles jmecolladloader before kmzloader, -->
+    <!-- the ordering in the fileset us not honoured :-( -->
+
     <!-- all projects -->
     <fileset dir="${current.dir}" id="all.projects">
+        <include name="kmzloader/build.xml"/>
+        <include name="jmecolladaloader/build.xml"/>
         <include name="*/**/build.xml"/>
     </fileset>
     

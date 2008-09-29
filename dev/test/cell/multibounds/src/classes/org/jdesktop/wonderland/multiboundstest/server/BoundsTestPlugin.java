@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.server.cell.MovableCellMO;
+import org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.MovableCellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
