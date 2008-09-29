@@ -30,6 +30,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 abstract class InputEvent3D extends Event {
 
+    /** The originating AWT input event. */
+    protected InputEvent awtEvent;
+
     /**
      * Enum values which indicate which modifiers keys are held down for this event.
      */
@@ -48,7 +51,24 @@ abstract class InputEvent3D extends Event {
         new ModifierConvTable(InputEvent.BUTTON3_DOWN_MASK, ModifierId.BUTTON3), 
     };     
     
-    public abstract InputEvent getAwtEvent();
+    /** Default constructor (for cloning) */
+    protected InputEvent3D () {}
+
+    /**
+     * Create a new instance of Event3D.
+     * @param awtEvent The AWT input event which generates this 3D input event.
+     */
+    public InputEvent3D (InputEvent awtEvent) {
+	this.awtEvent = awtEvent;
+    }
+
+    /**
+     * Returns the associated AWT input event
+     */
+    public InputEvent getAwtEvent() {
+        return awtEvent;
+    }
+    
     
     /** 
      * Returns the time stamp of when this event occurred
@@ -70,9 +90,6 @@ abstract class InputEvent3D extends Event {
      * @see java.awt.event.InputEvent
      */
     public ModifierId[] getModifiersEx(ModifierId[] ret) {
-        if (ret == null) {
-            throw new IllegalArgumentException("the argument cannot be null");
-        }
         
         int modifiers = getAwtEvent().getModifiersEx();
         int numBits = 0;
@@ -83,7 +100,7 @@ abstract class InputEvent3D extends Event {
             tmpMod /= 2;
         }
         
-        if (numBits > ret.length) {
+        if (ret == null || numBits > ret.length) {
             ret = new ModifierId[numBits];
         }
         
@@ -111,5 +128,12 @@ abstract class InputEvent3D extends Event {
             this.modifierAwt = awtModifier;
             this.modifier3D = modifier3D;
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Event clone (Event event) {
+	((InputEvent3D)event).awtEvent = awtEvent;
+	return event;
     }
 }

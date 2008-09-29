@@ -21,16 +21,16 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.processor.RotationProcessor;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.WorldEventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import com.jme.scene.Node;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An event listener which toggles the spinning state of an object when an button press event occurs over it.
- * In addition the global event mode must be WORLD. To use this in a scene just add this to any entities you 
- * wish to make input sensitive via <code>this.addToEntity</code>.
+ * To use this in a scene just add this to any entities you wish to make input sensitive via
+ * <code>this.addToEntity</code>.
  * <br><br>
  * Example Usage:
  * <br><br>
@@ -44,7 +44,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class SpinObjectEventListener extends WorldEventClassListener {
+public class SpinObjectEventListener extends EventClassListener {
 
     /**
      * Consume only mouse button events.

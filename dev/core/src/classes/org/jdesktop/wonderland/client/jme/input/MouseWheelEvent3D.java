@@ -36,6 +36,9 @@ public class MouseWheelEvent3D extends MouseEvent3D {
 	EVENT_ID = Event.allocateEventID();
     }
 
+    /** Default constructor (for cloning) */
+    protected MouseWheelEvent3D () {}
+
     /**
      * Create a new instance of MouseWheelEvent3D will a null pickDetails.
      * @param awtEvent The AWT event.
@@ -64,7 +67,22 @@ public class MouseWheelEvent3D extends MouseEvent3D {
         return ((MouseWheelEvent)awtEvent).getWheelRotation();
     }
 
+    /** {@inheritDoc} */
+    @Override
     public String toString () {
        	return "Mouse Wheel, rot=" + getWheelRotation();
+    }
+
+    /** 
+     * {@inheritDoc}
+     * <br>
+     * If event is null, a new event of this class is created and returned.
+     */
+    @Override
+    public Event clone (Event event) {
+	if (event == null) {
+	    event = new MouseMovedEvent3D();
+	}
+	return super.clone(event);
     }
 }

@@ -193,25 +193,29 @@ public abstract class InputPicker {
 	    // Note: WindowSwing entities are always leaf nodes so we don't need to search the parent chains.
 	    Entity entity = pickDetailsToEntity(pickDetails);
 
-	    boolean consumeEvent = false;
-	    EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+	    boolean consumesEvent = false;
+            boolean propagatesToUnder = false;
+            
+	    EventListenerCollection listeners = (EventListenerCollection) 
+		entity.getComponent(EventListenerCollection.class);
 	    if (listeners == null) { 
-		consumeEvent = false;
-		propagateToUnder = false;
+		consumesEvent = false;
+		propagatesToUnder = false;
 	    } else {
 		event.setPickDetails(pickDetails);
                 Iterator<EventListener> it = listeners.iterator();
 		while (it.hasNext()) {
                     EventListener listener = it.next();
-		    consumeEvent |= listener.consumeEvent(event, entity);
-		    propagateToUnder |= listener.propagateToUnder(event, entity);
+		    Event distribEvent = EventDistributor.createEventForEntity(event, entity);
+		    consumesEvent |= listener.consumesEvent(distribEvent);
+		    propagatesToUnder |= listener.propagatesToUnder(distribEvent);
 		}
 	    }
 
-	    if (consumeEvent && isWindowSwingEntity(entity)) {
-		// WindowSwing pick semantics: Stop at the first WindowSwing which will consume the event. 
-		// Note that because of single-threaded nature of the Embedded Swing interface we cannot do 
-		// any further propagation of the event to parents or unders.
+	    if (consumesEvent && isWindowSwingEntity(entity)) {
+		// WindowSwing pick semantics: Stop at the first WindowSwing which has any listener which
+		// will consume the event. Note that because of single-threaded nature of the Embedded Swing 
+		// interface we cannot do any further propagation of the event to parents or unders.
 		return new PickEventReturn(entity, pickDetails);
 	    }
 
@@ -483,7 +487,7 @@ public abstract class InputPicker {
 	// Determine list of added and deleted pick info
 	// Determine the entities for the added and deleted pick info 
 	// Generate enter events for added pickInfo and exit events for deleted pickInfo
-	// Enqueue enter/exit events to the EventDeliverer to be propagated through the entity and its parents, checking consumeEvent and propagateToParent
+	// Enqueue enter/exit events to the EventDeliverer to be propagated through the entity and its parents, checking consumesEvent and propagatesToParent
 	*/
 
 	destPickInfoPrev = destPickInfo;

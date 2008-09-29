@@ -63,7 +63,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     /**
      * {@inheritDoc}
      */
-    public void setEnable (boolean enable) {
+    public void setEnabled (boolean enable) {
 	this.enabled = enabled;
 
 	if (enabled && numEntitiesAttached > 0) {
@@ -85,7 +85,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean consumeEvent (Event event, Entity entity) {
+    public boolean consumesEvent (Event event) {
 	return true;
     }
 
@@ -94,7 +94,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean propagateToParent (Event event, Entity entity) {
+    public boolean propagatesToParent (Event event) {
 	return true;
     }
 
@@ -103,19 +103,19 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean propagateToUnder (Event event, Entity entity) {
+    public boolean propagatesToUnder (Event event) {
 	return false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void computeEvent (Event event, Entity entity) {}
+    public void computeEvent (Event event) {}
 
     /**
      * {@inheritDoc}
      */
-    public void commitEvent (Event event, Entity entity) {}
+    public void commitEvent (Event event) {}
 
     /**
      * {@inheritDoc}
@@ -123,7 +123,9 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     public void addToEntity (Entity entity) {
 
 	// Make sure that the entity has an event listener collection to use as an attach point.
-	EventListenerCollection collection = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+	EventListenerCollection collection = (EventListenerCollection) 
+	    entity.getComponent(EventListenerCollection.class);
+
 	if (collection == null) {
 	    collection = new EventListenerCollection();
 	    entity.addComponent(EventListenerCollection.class, collection);
@@ -150,7 +152,9 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      */
     public void removeFromEntity (Entity entity) {
 
-	EventListenerCollection collection = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+	EventListenerCollection collection = (EventListenerCollection) 
+	    entity.getComponent(EventListenerCollection.class);
+
 	if (collection == null) {
 	    return;
 	}
@@ -201,7 +205,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
             event = inputQueue.take();
         } catch (Exception ex) {}
 	if (event == null) return;
-	computeEvent(event, getEntity());
+	computeEvent(event);
 	lastComputedEvent = event;
     }
 
@@ -213,7 +217,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      */
     @InternalAPI
     public void commit (ProcessorArmingCollection collection) {
-	commitEvent(lastComputedEvent, getEntity());
+	commitEvent(lastComputedEvent);
     }
 
     /** Arm the processor */

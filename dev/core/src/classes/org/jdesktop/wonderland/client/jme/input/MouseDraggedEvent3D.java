@@ -71,6 +71,9 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
     ** End temporaries used by getDragPoint.
     */
 
+    /** Default constructor (for cloning) */
+    protected MouseDraggedEvent3D () {}
+
     /**
      * Create a new MouseDraggedEvent3D with a null pickDetails from an AWT mouse event.
      * @param awtEvent The AWT event
@@ -119,7 +122,7 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
     /* TODO
     public Vector3f getDragVectorWorld (Point3f dragStart, Vector3f ret) {
         if (ret == null) {
-            throw new IllegalArgumentException("argument cannot be null");
+            ret = new Vector3f();
         }
 
 	// DJ Note: See Wonderland Graph Book #1 p.27 for a diagram
@@ -133,8 +136,8 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
 	    vw2ip.invert();
         
 	    // Get the cursor position in Image Plate coordinates
-	    //System.err.println("drag event xy = " + awtEvent.getX() + " " + awtEvent.getY());
-	    canvas.getPixelLocationInImagePlate(awtEvent.getX(), awtEvent.getY(), cursorIP);
+	    //System.err.println("drag event xy = " + ((MouseEvent)awtEvent).getX() + " " + ((MouseEvent)awtEvent).getY());
+	    canvas.getPixelLocationInImagePlate(((MouseEvent)awtEvent).getX(), ((MouseEvent)awtEvent).getY(), cursorIP);
 	    //System.err.println("cursorIP = " + cursorIP);
 
 	    // Compute the cursor movement delta in image plate coords
@@ -179,8 +182,26 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
     }
     */
 
+    /** {@inheritDoc} */
+    @Override
     public String toString () {
 	// TODO: add internal state when drag methods are added
 	return "Mouse Drag";
+    }
+
+    /** 
+     * {@inheritDoc}
+     * <br>
+     * If event is null, a new event of this class is created and returned.
+     * <br>
+     * NOTE: any state set by <code>setPressPointScreen</code> and <code>getDragVectorWorld</copy>
+     * is not copied into the newly cloned object.
+     */
+    @Override
+    public Event clone (Event event) {
+	if (event == null) {
+	    event = new MouseDraggedEvent3D();
+	}
+	return super.clone(event);
     }
 }

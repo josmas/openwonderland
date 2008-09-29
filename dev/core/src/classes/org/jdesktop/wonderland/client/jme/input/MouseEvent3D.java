@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.InputPicker;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -41,34 +42,27 @@ public abstract class MouseEvent3D extends InputEvent3D {
     /** The supported button codes. */
     public enum ButtonId {NOBUTTON, BUTTON1, BUTTON2, BUTTON3};
     
-    /** The originating AWT mouse event. */
-    protected MouseEvent awtEvent;
-
     /** The pick details for the event */
     private PickDetails pickDetails;
 
     /** A temporary used for getIntersectionPointLocal */
-    Matrix4f world2local = new Matrix4f();
+    private Matrix4f world2Local;
+
+    /** Default constructor (for cloning) */
+    protected MouseEvent3D () {}
 
     /**
-     * Convert MouseEvent into a MouseEvent3D and change the event id to newID
+     * Create an instance of MouseEvent3D.
      * @param awtEvent The originating AWT mouse event
      * @param pickDetails The pick details for the event.
      */
     public MouseEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
-	this.awtEvent = awtEvent;
+        super(awtEvent);
 	this.pickDetails = pickDetails;
     }
     
     /**
-     * {@inheritDoc}
-     */
-    public InputEvent getAwtEvent() {
-        return awtEvent;
-    }
-    
-    /**
-     * Returns the pick details of the event.
+     * Returns the original pick details of the event. 
      */
     public PickDetails getPickDetails () {
 	return pickDetails;
@@ -77,7 +71,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
     /**
      * INTERNAL ONLY
      * <br>
-     * Sets the pick details of the event.
+     * Sets the original pick details of the event.
      */
     @InternalAPI
     public void setPickDetails (PickDetails pickDetails) {
@@ -85,10 +79,14 @@ public abstract class MouseEvent3D extends InputEvent3D {
     }
 
     /**
-     * Returns the entity hit by the event.
+     * Returns the entity hit by the event. This will be the pick hit entity unless previously overridden
+     * by the input system.
      */
     public Entity getEntity () {
-	return InputPicker.pickDetailsToEntity(pickDetails);
+	if (entity == null) {
+	    entity = InputPicker.pickDetailsToEntity(pickDetails);
+	}
+	return entity;
     }
 
     /**
@@ -98,7 +96,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
     public ButtonId getButton () {
         ButtonId ret = ButtonId.NOBUTTON;
         
-        int button = awtEvent.getButton();
+        int button = ((MouseEvent)awtEvent).getButton();
         switch (button) {
             case MouseEvent.BUTTON1:
                 ret = ButtonId.BUTTON1;
@@ -150,11 +148,19 @@ public abstract class MouseEvent3D extends InputEvent3D {
 	    if (posWorld == null) return null;
 	    CollisionComponent cc = pickDetails.getCollisionComponent();
 	    Node node = cc.getNode();
-	    synchronized (world2local) {
-		node.getLocalToWorldMatrix(null);
-		world2local.invert();
-		return world2local.mult(pickDetails.getPosition(), new Vector3f());
-	    }
+	    node.getLocalToWorldMatrix(world2Local);
+	    world2Local.invert();
+	    return world2Local.mult(pickDetails.getPosition(), new Vector3f());
 	}
+    }
+
+    /** 
+     * {@inheritDoc}
+     */
+    @Override
+    public Event clone (Event event) {
+	super.clone(event);
+	((MouseEvent3D)event).pickDetails = pickDetails;
+	return event;
     }
 }

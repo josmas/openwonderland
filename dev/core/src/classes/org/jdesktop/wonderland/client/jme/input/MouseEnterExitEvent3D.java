@@ -39,6 +39,9 @@ public class MouseEnterExitEvent3D extends MouseEvent3D {
     /** Whether this event was generated as a result of an interactive user event. */
     private boolean userGenerated;
 
+    /** Default constructor (for cloning) */
+    protected MouseEnterExitEvent3D () {}
+
     /**
      * Create a new instance of user generated MouseEnterExitEvent3D with a null pickDetails.
      * @param awtEvent The AWT event.
@@ -82,6 +85,8 @@ public class MouseEnterExitEvent3D extends MouseEvent3D {
 	return userGenerated;
     }
 
+    /** {@inheritDoc} */
+    @Override
     public String toString () {
        	return "Mouse " + enterAction() + ", userGen=" + isUserGenerated();
     }
@@ -92,5 +97,19 @@ public class MouseEnterExitEvent3D extends MouseEvent3D {
 	} else {
 	    return "EXIT";
 	}
+    }
+
+    /** 
+     * {@inheritDoc}
+     * <br>
+     * If event is null, a new event of this class is created and returned.
+     */
+    @Override
+    public Event clone (Event event) {
+	if (event == null) {
+	    event = new MouseEnterExitEvent3D();
+	}
+	((MouseEnterExitEvent3D)event).userGenerated = userGenerated;
+	return super.clone(event);
     }
 }

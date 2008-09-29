@@ -17,23 +17,21 @@
  */
 package org.jdesktop.wonderland.client.input;
 
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A simplified event listener which provides the input system with an array of event classes.
  * By doing this the listener is telling the input system that it wishes to receive only events of these classes.
- * This class ignores focus. If you wish to also honor focus, use <code>EventClassFocusListener</code> instead.
+ * Furthermore, the events are to be received only when the corresponding entity has focus.
+ * If you wish to also honor focus, use <code>EventClassListener</code> instead.
  * This class uses <code>isAssignableFrom</code> to compare the event class with the desired event classes, so if
  * the return array of <code>eventClassesToConsume</code> contains a superclass, events of that class and 
  * all subclasses will be consumed.
  */
 
 @ExperimentalAPI
-public class EventClassListener extends EventListenerBaseImpl {
-
-    private static final Logger logger = Logger.getLogger(EventClassListener.class.getName());
+public class EventClassFocusListener extends EventClassListener {
 
     /**
      * Note on subclassing: the subclass should override this method.
@@ -48,19 +46,7 @@ public class EventClassListener extends EventListenerBaseImpl {
      */
     @InternalAPI
     public boolean consumesEvent (Event event) {
-        Class<Event>[] eventClasses = eventClassesToConsume();
-	if (eventClasses == null) return false;
-	for (Class eventClass : eventClasses) {
-            if (!Event.class.isAssignableFrom(eventClass)) {
-                logger.warning("Method eventClassesToConsume must return classes which extend the main Wonderland Event class.");
-                logger.warning("Event ignored.");
-		return false;
-            }
-            if (event.getClass().isAssignableFrom(eventClass)) {
-	        return true;
-            }
-        }
-        return false;
+	if (!event.isFocussed()) return false;
+	return super.consumesEvent(event);
     }
-
 }
