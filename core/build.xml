@@ -53,7 +53,13 @@
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
-
+	    <!--start debug-->
+	    <!-- TODO: suspend=y doesn't work: it doesn't stop at bkpts after attach -->
+	    <!--
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
+            -->
+	    <!--end debug-->
             
             <classpath>
 		<pathelement path="${core-client.classpath}"/>
