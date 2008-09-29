@@ -15,8 +15,9 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.jme.cellrenderer;
+package org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer;
 
+import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;

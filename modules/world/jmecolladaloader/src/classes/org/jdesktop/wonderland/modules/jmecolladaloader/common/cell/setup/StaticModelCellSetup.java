@@ -16,8 +16,9 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.common.cell.setup;
+package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup;
 
+import org.jdesktop.wonderland.common.cell.setup.*;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 

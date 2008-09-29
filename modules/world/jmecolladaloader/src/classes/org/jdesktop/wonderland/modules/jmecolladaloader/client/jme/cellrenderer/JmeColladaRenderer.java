@@ -1,3 +1,4 @@
+
 /**
  * Project Wonderland
  *
@@ -15,37 +16,37 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.jme.cellrenderer;
+package org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer;
 
+import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
 import com.jme.light.PointLight;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.TriMesh;
-import com.jme.scene.shape.Box;
-import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
-import com.jme.scene.state.WireframeState;
 import com.jme.scene.state.ZBufferState;
+import com.jmex.model.collada.ColladaImporter;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- *
+ * A cell renderer that uses the JME Collada loader
+ * 
  * @author paulby
- * @deprecated
  */
-public class StaticModelRenderer extends BasicRenderer {
+public class JmeColladaRenderer extends BasicRenderer {
     
-    public StaticModelRenderer(Cell cell) {
+    public JmeColladaRenderer(Cell cell) {
         super(cell);
     }
     
@@ -67,87 +68,75 @@ public class StaticModelRenderer extends BasicRenderer {
 
         Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
-        color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        return createFloorEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);
-//        return createWireframeEntity();
+        return loadColladaAsset(cell.getCellID().toString(), buf);        
     }
 
-    public Node createFloorEntity(String name, float xoff, float yoff, float zoff, 
-            ZBufferState buf, LightState ls, ColorRGBA color) {
+    public Node loadCollada(String name, float xoff, float yoff, float zoff, 
+            ZBufferState buf, LightState ls) {
         MaterialState matState = null;
         
-        Node ret = new Node();
-        BoundingVolume b = cell.getLocalBounds();
-        float width;
-        float depth;
-        if (b instanceof BoundingBox) {
-            Vector3f extent = ((BoundingBox)b).getExtent(null);
-            width = extent.x*2;
-            depth = extent.z*2;
-        } else if (b instanceof BoundingSphere) {
-            width = ((BoundingSphere)b).getRadius();
-            depth = width;
-        } else {
-            logger.warning("Unsupported Bounds type "+b.getClass().getName());
-            width = depth = 5;
+        Node ret;
+
+        try {
+//            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/duck_triangulate.dae");
+            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/sphere2.dae");
+            System.out.println("Resource stream "+input);
+            ColladaImporter.load(input, "Test");
+            ret = ColladaImporter.getModel();
+            ColladaImporter.cleanUp();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error loading Collada file", e);
+            ret = new Node();
         }
         
-        Floor floor = new Floor("Floor", width, depth);
-        ret.attachChild(floor);
+        
         ret.setModelBound(new BoundingBox());
         ret.updateModelBound();
+        System.out.println("Triangles "+ret.getTriangleCount());
 
         matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
-        matState.setDiffuse(color);
 //        node.setRenderState(matState);
         ret.setRenderState(buf);
 //        node.setRenderState(ls);
         ret.setLocalTranslation(xoff, yoff, zoff);
-
+        
         ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
         return ret;
     }
     
     /**
-     * Creates a wireframe box or sphere with the same size as the bounds.
+     * Loads a collada cell from the asset managergiven an asset URL
      */
-    public Node createWireframeEntity() {
+    public Node loadColladaAsset(String name, ZBufferState buf) {        
+        Node node = null;
+
         /* Fetch the basic info about the cell */
-        String name = cell.getCellID().toString();
         CellTransform transform = cell.getLocalTransform();
         Vector3f translation = transform.getTranslation(null);
         Vector3f scaling = transform.getScaling(null);
         Quaternion rotation = transform.getRotation(null);
         
-        /* Create the new object -- either a Box or Sphere */
-        TriMesh mesh = null;
-        if (cell.getLocalBounds() instanceof BoundingBox) {
-            Vector3f extent = ((BoundingBox)cell.getLocalBounds()).getExtent(null);
-            mesh = new Box(name, new Vector3f(), extent.x, extent.y, extent.z);
-        }
-        else if (cell.getLocalBounds() instanceof BoundingSphere) {
-            float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
-            mesh = new Sphere(name, new Vector3f(), 10, 10, radius);
-        }
-        else {
-            logger.warning("Unsupported Bounds type " +cell.getLocalBounds().getClass().getName());
-            return new Node();
+        try {
+            URL url = new URL(((JmeColladaCell)cell).getModelURI());
+            InputStream input = url.openStream();
+            System.out.println("Resource stream "+input);
+            ColladaImporter.load(input, "Test");
+            node = ColladaImporter.getModel();
+            ColladaImporter.cleanUp();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error loading Collada file", e);
+            node = new Node();
         }
         
         /* Create the scene graph object and set its wireframe state */
-        Node node = new Node();
-        node.attachChild(mesh);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
         node.setLocalTranslation(translation);
         node.setLocalScale(scaling);
         node.setLocalRotation(rotation);
-
-        WireframeState wiState = (WireframeState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
-        wiState.setEnabled(true);
-        node.setRenderState(wiState);
-        node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
+        node.setRenderState(buf);
+        node.setName(name);
 
         return node;
     }

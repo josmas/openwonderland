@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="kmzloader" default="package" basedir=".">
+<project name="jmecolladaloader" default="package" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.kmzloader}"/>
+    <dirname property="current.dir" file="${ant.file.jmecolladaloader}"/>
     <property name="modules.dir" location="${current.dir}/../.."/>
         
-    <property name="module.src" value="org/jdesktop/wonderland/modules/kmzloader"/>
-    <property name="module.packagename" value="org.jdesktop.wonderland.modules.kmzloader"/>
-    <property name="module.jarname" value="kmzloader"/>
+    <property name="module.src" value="org/jdesktop/wonderland/modules/jmecolladaloader"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.jmecolladaloader"/>
+    <property name="module.jarname" value="jmecolladaloader"/>
     
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
-       
-    <!-- kmzload is dependent on the jmecolladaloader -->
-    <property name="module-client.classpath" value="${current.dir}/../jmecolladaloader/build/classes"/>
        
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
@@ -20,16 +17,25 @@
     <target name="package" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="kmzloader" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="jmecolladaloader" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.dir}">
                     
-           <plugin name="kmzloader">
+           <plugin name="jmecolladaloader">
                 <client basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.kmzloader.client.KmzLoaderFactory"/>
+                    <clientplugin provider="org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoaderFactory"/>
                     
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </client> 
+                
+                <server basedir="${build.classes.dir}">
+                    <!--<cellsetup>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.client.LoaderFactory"/>
+                    </cellsetup>-->
+                    
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </server>
             </plugin>
         </module>
     </target>                                                       

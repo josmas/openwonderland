@@ -15,24 +15,25 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 
-import org.jdesktop.wonderland.client.jme.cellrenderer.JmeColladaRenderer;
+import org.jdesktop.wonderland.client.cell.*;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.config.ColladaCellConfig;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.ColladaCellConfig;
 
 /**
  * Client side cell for rendering JME content
  * 
  * @author paulby
  */
-public class TestColladaCell extends Cell {
+public class JmeColladaCell extends Cell {
     
     /* The URI of the model asset */
     private String modelURI = null;
     
-    public TestColladaCell(CellID cellID, CellCache cellCache) {
+    public JmeColladaCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
     

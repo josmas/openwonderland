@@ -1,21 +1,9 @@
-/**
- * Project Wonderland
- *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
- *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
- *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
- *
- * $Revision$
- * $Date$
- * $State$
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
-package org.jdesktop.wonderland.multiboundstest.server;
+
+package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -27,25 +15,19 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.MovableCellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.RoomTestCellMO;
 
 /**
- * Sample plugin that doesn't do anything
- * @author jkaplan
+ *
+ * @author paulby
  */
-public class BoundsTestPlugin implements ServerPlugin {
+public class TestWorld {
 
-    private static final Logger logger =
-            Logger.getLogger(BoundsTestPlugin.class.getName());
-
-    public void initialize() {
-        logger.info("Initialize bounds test plugin");
-
+    public TestWorld() {
         try {
 
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
@@ -62,14 +44,31 @@ public class BoundsTestPlugin implements ServerPlugin {
 
             CellMO c4 = new MovableCellMO(
                     new BoundingSphere(0.5f, new Vector3f()),
-                    new CellTransform(null, new Vector3f(0, 0, 0)));
+                    new CellTransform(null, new Vector3f(1, 0, 0)));
             c4.setName("c4");
 
             c3.addChild(c4);
+            
+            float cellSize = 5;
+            int xMax = 10;
+            int zMax = 10;
+            
+            for(int x=0; x<cellSize*xMax; x+=cellSize) {
+                for(int z=0; z<cellSize*zMax; z+=cellSize) {
+                    WonderlandContext.getCellManager().insertCellInWorld(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
+                }
+            }
 
             WonderlandContext.getCellManager().insertCellInWorld(c2);
             WonderlandContext.getCellManager().insertCellInWorld(c3);
 
+            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
+//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
+            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
+
+            
             Task t = new TestTask(c3, c2);
 
             AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
@@ -90,7 +89,6 @@ public class BoundsTestPlugin implements ServerPlugin {
         public TestTask(MovableCellMO cell, MovableCellMO c2) {
             this.cellRef = AppContext.getDataManager().createReference(cell);
             this.cell2Ref = AppContext.getDataManager().createReference(c2);
-           
             pos = cell.getLocalTransform(null).getTranslation(null);
             pos2 = cell.getLocalTransform(null).getTranslation(null);
         }
@@ -98,7 +96,7 @@ public class BoundsTestPlugin implements ServerPlugin {
         public void run() throws Exception {
             pos.x += dir;
             pos2.z += dir;
-            if (pos.x > 40 || pos.x < 2) {
+            if (pos.x > 40 || pos.x < 4) {
                 dir = -dir;
             }
             cellRef.get().getComponent(MovableComponentMO.class).moveRequest(new CellTransform(null, pos));

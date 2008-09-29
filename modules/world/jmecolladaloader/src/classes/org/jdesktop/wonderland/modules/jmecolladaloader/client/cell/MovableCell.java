@@ -15,11 +15,10 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 
+import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.jme.cellrenderer.JmeColladaRenderer;
 
 /**
  * A cell that can move
@@ -29,10 +28,9 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.JmeColladaRenderer;
  * @author paulby
  * @deprecated
  */
-class MovableCell extends TestColladaCell {
+public class MovableCell extends JmeColladaCell {
 //    private CellChannelConnection cellChannelConnection;
     
-    private static Logger logger = Logger.getLogger(MovableCell.class.getName());
 //    private ArrayList<CellMoveListener> serverMoveListeners = null;
     
     public MovableCell(CellID cellID, CellCache cellCache) {
