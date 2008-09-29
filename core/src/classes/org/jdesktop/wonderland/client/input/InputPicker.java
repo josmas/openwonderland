@@ -247,15 +247,16 @@ public abstract class InputPicker {
      * the input queue of the event deliverer.
      */
     void pickMouseEventNonSwing (MouseEvent awtEvent) {
-	logger.info("Picker: received awtEvent = " + awtEvent);
+	logger.fine("Picker: received awt event = " + awtEvent);
 
 	// Determine the destination pick info by performing a pick, considering grabs. etc.
         destPickInfo = determineDestPickInfo(awtEvent);
 	if (destPickInfo == null || destPickInfo.size() <= 0) {
 	    // Pick miss. Ignore the event.
+	    logger.finest("Picker: pick miss");
 	    return;
 	}
-	logger.info("Picker: destPickInfo = " + destPickInfo);
+	logger.fine("Picker: destPickInfo = " + destPickInfo);
 
 	int eventID = awtEvent.getID();
 	if (eventID == MouseEvent.MOUSE_MOVED ||
@@ -273,6 +274,7 @@ public abstract class InputPicker {
      * entity that has the keyboard focus.
      */
     void pickKeyEvent (KeyEvent awtEvent) {
+	logger.fine("Picker: received awt event = " + awtEvent);
 	KeyEvent3D keyEvent = (KeyEvent3D) createWonderlandEvent(awtEvent);
 	eventDistributor.enqueueEvent(keyEvent);
     }

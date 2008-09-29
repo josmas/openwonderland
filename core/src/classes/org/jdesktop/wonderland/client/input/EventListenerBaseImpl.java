@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.PostEventCondition;
+import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -36,6 +39,8 @@ import org.jdesktop.wonderland.common.InternalAPI;
 @ExperimentalAPI
 public class EventListenerBaseImpl extends ProcessorComponent implements EventListener  {
 
+    private static final Logger logger = Logger.getLogger(EventListenerBaseImpl.class.getName());
+
     /** The mtgame event used to wake up the this collection for computation on the Event */
     // TODO: need a way to ensure this is unique throughout the client
     private static long MTGAME_EVENT_ID = 0;
@@ -49,8 +54,8 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     /** The number of entities to which the listener is attached */
     private int numEntitiesAttached;
 
-    /** The last event for which computeEvent was called */
-    private Event lastComputedEvent;
+    /** The list of events which was encountered when computeEvent was last called. */
+    private LinkedList<Event> computedEvents;
 
     /**
      * {@inheritDoc}
@@ -139,6 +144,8 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 	    collection.add(this);
 	}	
 
+	addProcessorCompToEntity(this, entity);
+
 	numEntitiesAttached++;
 
 	// Arm on first attach (if listener is enabled)
@@ -167,6 +174,8 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 	if (collection.size() <= 0) {
 	    entity.removeComponent(EventListenerCollection.class);
 	}
+
+	removeProcessorCompFromEntity(this, entity);
 
 	numEntitiesAttached--;
 
@@ -201,12 +210,32 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     @InternalAPI
     public void compute (ProcessorArmingCollection collection) {
 	Event event = null;
-        try {
-            event = inputQueue.take();
-        } catch (Exception ex) {}
-	if (event == null) return;
-	computeEvent(event);
-	lastComputedEvent = event;
+
+	if (computedEvents != null) {
+	    computedEvents.clear();
+	}
+
+	try {
+	    while (inputQueue.peek() != null) {
+
+		// Get the next available event
+		event = inputQueue.take();
+		if (event == null) {
+		    logger.warning("No event found during read of listener input queue.");
+		    return;
+		}
+
+		// Compute the event
+		computeEvent(event);
+		if (computedEvents == null) {
+		    computedEvents = new LinkedList<Event>();
+		}
+		computedEvents.add(event);
+	    }
+	} catch (Exception ex) {
+	    ex.printStackTrace();
+	    logger.warning("Exception during read of listener input queue.");
+	}
     }
 
     /**
@@ -217,16 +246,42 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      */
     @InternalAPI
     public void commit (ProcessorArmingCollection collection) {
-	commitEvent(lastComputedEvent);
+	// Commit all the events which were previously computd
+	for (Event event : computedEvents) {
+	    commitEvent(event);
+	}
     }
 
-    /** Arm the processor */
-    private void arm () {
+    /** Arm the listener's processor. */
+    void arm () {
 	setArmingCondition(new PostEventCondition(this, new long[] { MTGAME_EVENT_ID}));
     }
 
-    /** Disarm the processor */
-    private void disarm () {
+    /** Disarm the listener's processor. */
+    void disarm () {
 	setArmingCondition(null);
+    }
+
+    /** Add the given processor component to the given entity. */
+    private static void addProcessorCompToEntity (ProcessorComponent pc, Entity entity) {
+	ProcessorCollectionComponent pcc = (ProcessorCollectionComponent) entity.getComponent(ProcessorCollectionComponent.class);
+	if (pcc == null) {
+	    pcc = new ProcessorCollectionComponent();
+	    entity.addComponent(ProcessorCollectionComponent.class, pcc);
+	}
+	pcc.addProcessor(pc);
+    }
+
+    /** Remove the given processor component from the given entity. */
+    private static void removeProcessorCompFromEntity (ProcessorComponent pc, Entity entity) {
+	/* TODO: doug must impl pcc.remove
+	ProcessorCollectionComponent pcc = (ProcessorCollectionComponent) entity.getComponent(ProcessorCollectionComponent.class);
+	if (pcc == null) return;
+	pcc.remove(pc);
+	ProcessorComponent[] pcAry = pcc.getProcessors();
+	if (pcAry == null || pcAry.length <= 0) {
+	    ProcessorCollectionComponent pcc = entity.removeComponent(ProcessorCollectionComponent.class);
+	}
+	*/
     }
 }

@@ -63,9 +63,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	} else if (event instanceof MouseEvent3D) {
 	    processMouseKeyboardEvent(event, pickInfo);
 	} else if (event instanceof KeyEvent3D) {
-	    if (mousePickInfoPrev != null) {
-		processMouseKeyboardEvent(event, mousePickInfoPrev);
-	    }
+	    processMouseKeyboardEvent(event, mousePickInfoPrev);
 	} else if (event instanceof FocusChangeEvent) {
 	    processFocusChangeEvent(((FocusChangeEvent)event).getChanges());
 	} else {
@@ -74,7 +72,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
     }
 
     protected void processMouseKeyboardEvent (Event event, PickInfo pickInfo) {
-	logger.info("Distributor: received event = " + event + ", pickInfo = " + pickInfo);
+	logger.fine("Distributor: received event = " + event + ", pickInfo = " + pickInfo);
 
 	// Track the last mouse pick info for focus-follows-mouse keyboard focus policy
 	if (event instanceof MouseEvent3D) {
@@ -97,6 +95,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 
 	// Walk through successive depth levels, as long as propagateToUnder is true,
 	// searching up the parent chain in each level
+	if (pickInfo == null) return;
 	PickDetails pickDetails = pickInfo.get(0);
 	logger.fine("pickDetails = " + pickDetails);
 	int idx = 0;

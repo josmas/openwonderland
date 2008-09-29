@@ -58,11 +58,12 @@ public class SpinObjectEventListener extends EventClassListener {
     /**
      * {@inheritDoc}
      */
-    public void commitEvent (Event event, Entity entity) {
+    public void commitEvent (Event event) {
         MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
 	if (!buttonEvent.isPressed()) {
 	    return;
 	}
+	Entity entity = event.getEntity();
 	if (entity.getComponent(SpinProcessor.class) != null) {
 	    // Stop the spinning
 	    entity.removeComponent(SpinProcessor.class);
