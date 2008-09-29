@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
  *
  * @author paulby
  */
-public class LoaderFactoryKmz extends ModelLoaderFactory
+public class KmzLoaderFactory extends ModelLoaderFactory
     implements ClientPlugin
 {
 
@@ -39,7 +39,7 @@ public class LoaderFactoryKmz extends ModelLoaderFactory
     }
 
     public ModelLoader getLoader() {
-        return (ModelLoader) new LoaderKmz();
+        return (ModelLoader) new KmzLoader();
     }
 
 }
