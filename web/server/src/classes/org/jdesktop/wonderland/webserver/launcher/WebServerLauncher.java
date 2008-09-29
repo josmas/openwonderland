@@ -21,6 +21,7 @@ import org.jdesktop.wonderland.utils.RunUtil;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,7 +33,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  * Main entry point for Wonderland embedded web server.  This class extracts
@@ -69,6 +72,37 @@ public class WebServerLauncher {
             System.exit(-1);
         }
         
+        // now load in the logging configuration
+        if (System.getProperty("java.util.logging.config.file") == null &&
+                System.getProperty("java.util.logging.config.class") == null) 
+        { 
+            try {
+                InputStream logConfig;
+           
+                // substitute the wonderland log directory for the token
+                // %w in the FileHandler path
+                Properties p = new Properties();
+                p.load(WebServerLauncher.class.getResourceAsStream("/web-logging.properties"));
+                String filePattern = p.getProperty("java.util.logging.FileHandler.pattern");
+                if (filePattern != null && filePattern.contains("%w")) {
+                    String logDir = SystemPropertyUtil.getProperty("wonderland.log.dir");
+                    p.setProperty("java.util.logging.FileHandler.pattern",
+                                  filePattern.replaceAll("%w", logDir));
+                    File tmpLog = File.createTempFile("wonderlandlog", ".properties");
+                    p.store(new FileOutputStream(tmpLog), null);
+                    
+                    logConfig = new FileInputStream(tmpLog);
+                } else {
+                    // nothing to substitute, just read the file directly
+                    logConfig = WebServerLauncher.class.getResourceAsStream("/web-logging.properties");
+                }
+            
+                LogManager.getLogManager().readConfiguration(logConfig);
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error setting up log config", ioe);
+            }
+        }
+        
         if (!parseArguments(args)) {
             usage();
             System.exit(-1);
@@ -99,8 +133,17 @@ public class WebServerLauncher {
             
             Class c = cl.loadClass("org.jdesktop.wonderland.webserver.RunAppServer");
             c.newInstance();
+        
+            // log that everything is started up
+            System.out.println("-------------------------------------------------");
+            System.out.println("Wonderland web server started successfully.");
+            System.out.println("Log files are in " + 
+                               SystemPropertyUtil.getProperty("wonderland.log.dir"));
+            System.out.println("-------------------------------------------------");
+        
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error loading web server", ex);
+            System.exit(-1);
         }
     }
     
