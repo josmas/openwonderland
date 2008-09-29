@@ -99,7 +99,8 @@ public class WFSLoader {
          * Iterator through all of the roots. For each, create a new WFSCellMO
          * class and load in its cells. Just take the first one for now!
          */
-        String rootName = wfsRoots.getRoots()[0];
+        if (wfsRoots.getRoots().length > 0) {
+            String rootName = wfsRoots.getRoots()[0];
 //        for (String rootName : wfsRoots.getRoots()) {
 //            logger.info("WFSLoader: loading the WFS root " + rootName);
 //        
@@ -122,6 +123,7 @@ public class WFSLoader {
             /* Load in the cells in the WFS based upon this root */
             this.loadWFSRoot(rootName);
 //        }
+        }
     }
     
     /**

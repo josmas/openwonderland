@@ -144,11 +144,19 @@ public class WFSManager {
          * it is a valid WFS in the loadWFSs() method.
          */
         File rootDir = new File(baseDir);
-        return rootDir.list(new FilenameFilter() {
+        String[] res = rootDir.list(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.endsWith(WFS.WFS_DIRECTORY_SUFFIX);
             }
         });
+        
+        // return an empty array if the directory doesn't exist, otherwise
+        // we get NullPointerExceptions
+        if (res == null) {
+            res = new String[0];
+        }
+        
+        return res;
     }
     
     public static void main(String args[]) {
