@@ -16,8 +16,9 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.common.cell.setup;
+package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup;
 
+import org.jdesktop.wonderland.common.cell.setup.*;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,15 +30,15 @@ import javax.xml.bind.annotation.XmlTransient;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@XmlRootElement(name="collada-cell")
-public class ColladaCellSetup extends BasicCellSetup implements Serializable {
+@XmlRootElement(name="jme-collada-cell")
+public class JMEColladaCellSetup extends BasicCellSetup implements Serializable {
     
     /* The URI of the static model file */
     @XmlElement(name="model")
     public String model = null;
     
     /** Default constructor */
-    public ColladaCellSetup() {
+    public JMEColladaCellSetup() {
     }
     
     /**
@@ -60,7 +61,7 @@ public class ColladaCellSetup extends BasicCellSetup implements Serializable {
     }
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.server.cell.TestColladaCellMO";
+        return "org.jdesktop.wonderland.server.cell.JmeColladaCellMO";
     }
     
     /**

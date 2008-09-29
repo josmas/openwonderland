@@ -40,8 +40,10 @@ public class ModuleDependencyCheck {
     
     /** Constructor that takes module to check */
     public ModuleDependencyCheck(Module module) {
-        for (ModuleInfo info : module.getModuleRequires().getRequires()) {
-            requirements.add(info);
+        if (module.getModuleRequires()!=null) {
+            for (ModuleInfo info : module.getModuleRequires().getRequires()) {
+                requirements.add(info);
+            }
         }
     }
     

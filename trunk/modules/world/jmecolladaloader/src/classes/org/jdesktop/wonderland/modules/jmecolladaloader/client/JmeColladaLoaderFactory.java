@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.kmzloader.client;
+package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
@@ -23,10 +23,11 @@ import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
 
 /**
- *
+ * LoaderFactory for the JmeColladaLoader.
+ * 
  * @author paulby
  */
-public class LoaderFactoryKmz extends ModelLoaderFactory
+public class JmeColladaLoaderFactory extends ModelLoaderFactory
     implements ClientPlugin
 {
 
@@ -35,11 +36,11 @@ public class LoaderFactoryKmz extends ModelLoaderFactory
     }
     
     public String getFileExtension() {
-        return "kmz";
+        return "dae";
     }
 
     public ModelLoader getLoader() {
-        return (ModelLoader) new LoaderKmz();
+        return (ModelLoader) new JmeColladaLoader();
     }
 
 }

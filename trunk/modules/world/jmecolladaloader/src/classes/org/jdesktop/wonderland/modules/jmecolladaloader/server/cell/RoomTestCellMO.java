@@ -15,8 +15,9 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
+import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
@@ -26,8 +27,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.config.StaticModelCellConfig;
-import org.jdesktop.wonderland.common.cell.setup.ColladaCellSetup;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.StaticModelCellConfig;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -54,7 +55,7 @@ public class RoomTestCellMO extends CellMO
     }
     
     @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.cell.RoomTestCell";
+        return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.RoomTestCell";
     }
 
     @Override
@@ -65,7 +66,7 @@ public class RoomTestCellMO extends CellMO
     @Override
     public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
-        this.filename = ((ColladaCellSetup)setup).getModel();
+        this.filename = ((JMEColladaCellSetup)setup).getModel();
     }
 
     @Override
@@ -82,7 +83,7 @@ public class RoomTestCellMO extends CellMO
      */
     public BasicCellSetup getCellMOSetup() {
         /* Create a new BasicCellSetup and populate its members */
-        ColladaCellSetup setup = new ColladaCellSetup();
+        JMEColladaCellSetup setup = new JMEColladaCellSetup();
         setup.setModel(this.filename);
         
         /* Set the bounds of the cell */

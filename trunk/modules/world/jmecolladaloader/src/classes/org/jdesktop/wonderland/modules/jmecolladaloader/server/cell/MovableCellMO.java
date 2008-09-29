@@ -15,8 +15,9 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
+import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -32,7 +33,7 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
  * @deprecated
  * @author paulby
  */
-public class MovableCellMO extends TestColladaCellMO {
+public class MovableCellMO extends JmeColladaCellMO {
 
     public MovableCellMO(BoundingVolume bounds, CellTransform transform) {
         super(bounds, transform);
@@ -42,7 +43,7 @@ public class MovableCellMO extends TestColladaCellMO {
     
 
     @Override protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.cell.MovableCell";
+        return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.MovableCell";
     }
     
     @Override

@@ -378,9 +378,9 @@ public abstract class BasicCellSetup implements Serializable {
                 this.scaling.z + ")";
     }
     
-    public static void main(String[] args) throws JAXBException, IOException {
-        StaticModelCellSetup setup = new StaticModelCellSetup();
-        //setup.setMetaData(null);
-        setup.encode(new FileWriter("setup.xml"));
-    }
+//    public static void main(String[] args) throws JAXBException, IOException {
+//        StaticModelCellSetup setup = new StaticModelCellSetup();
+//        //setup.setMetaData(null);
+//        setup.encode(new FileWriter("setup.xml"));
+//    }
 }

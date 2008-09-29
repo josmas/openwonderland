@@ -15,10 +15,11 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 
+import org.jdesktop.wonderland.client.cell.*;
 import java.net.URL;
-import org.jdesktop.wonderland.client.jme.cellrenderer.StaticModelRenderer;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.StaticModelRenderer;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;

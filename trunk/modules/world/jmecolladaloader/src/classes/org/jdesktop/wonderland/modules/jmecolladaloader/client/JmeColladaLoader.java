@@ -15,15 +15,17 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.kmzloader.client;
+package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
 import com.jme.scene.Node;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
+import com.jme.util.resource.SimpleResourceLocator;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,13 +51,7 @@ import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
-import org.jdesktop.wonderland.common.cell.setup.ColladaCellSetup;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.KmlType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.ModelType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.PlacemarkType;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
 
 /**
  *
@@ -63,9 +59,9 @@ import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.PlacemarkType;
  * 
  * @author paulby
  */
-class LoaderKmz implements ModelLoader {
+class JmeColladaLoader implements ModelLoader {
 
-    private static final Logger logger = Logger.getLogger(LoaderKmz.class.getName());
+    private static final Logger logger = Logger.getLogger(JmeColladaLoader.class.getName());
         
     private HashMap<URL, ZipEntry> textureFiles = new HashMap();
     
@@ -83,141 +79,67 @@ class LoaderKmz implements ModelLoader {
         Node ret = null;
         origFile = file;
         
-        try {
-            ZipFile zipFile = new ZipFile(file);
-            ZipEntry docKmlEntry = zipFile.getEntry("doc.kml");
-            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.modules.kmzloader.client.kml_21");
-            Unmarshaller u = jc.createUnmarshaller();
-            JAXBElement docKml = (JAXBElement) u.unmarshal(zipFile.getInputStream(docKmlEntry));
-            
-            KmlType kml = (KmlType) docKml.getValue();
-            
-            ArrayList<ModelType> models=new ArrayList();
-            FeatureType feature = kml.getFeature().getValue();
-            if (feature instanceof FolderType) {
-                findModels(models, (FolderType)feature);
-            }
-            
-            if (models.size()==0) {
-                logger.severe("No models found in KMZ File");
-                return null;
-            }
-            
-            if (models.size()==1) {
-                ret = load(zipFile, models.get(0).getLink().getHref());
-            } else {
-                ret = new Node();
-                for(ModelType model : models) {
-                    ret.attachChild(load(zipFile, model.getLink().getHref()));
-                }
-            }
-            
-        } catch (ZipException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw new IOException("Zip Error");
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw ex;
-        } catch (JAXBException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw new IOException("JAXB Error");
-        }
-        
-        return ret;
-    }
-    
-    private Node load(ZipFile zipFile, String filename) throws IOException {
-        
-        String zipHost = WlzipManager.getWlzipManager().addZip(zipFile);
-        ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile);
+//        ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile);
+        SimpleResourceLocator resourceLocator = new SimpleResourceLocator(file.toURI());
         ResourceLocatorTool.addResourceLocator(
                 ResourceLocatorTool.TYPE_TEXTURE,
-                zipResource);
+                resourceLocator);
 
         
-        logger.info("Loading MODEL " + filename);
-        modelFiles.add(filename);
+        logger.info("Loading MODEL " + file.getName());
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
         
-        ZipEntry modelEntry = zipFile.getEntry(filename);
-        BufferedInputStream in = new BufferedInputStream(zipFile.getInputStream(modelEntry));
-        
-        Node ret;
-        ColladaImporter.load(in, filename);
+        ColladaImporter.load(in, file.getName());
         ret = ColladaImporter.getModel();
 
         ColladaImporter.cleanUp();
         
-        ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
-        WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
+        ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
         return ret;
     }
     
-    /**
-     * Search kmz folders adding any ModelTypes found to the models list
-     * @param models
-     * @param folder
-     */
-    private void findModels(ArrayList<ModelType> models, FolderType folder) {
-        List<JAXBElement<? extends FeatureType>> features = folder.getFeature();
-        for(JAXBElement<? extends FeatureType> featureJAXB : features) {
-            FeatureType feature = featureJAXB.getValue();
-            
-            if (feature instanceof FolderType) {
-                findModels(models, (FolderType)feature);
-            } else if (feature instanceof PlacemarkType) {
-                if (((PlacemarkType)feature).getGeometry()!=null) {
-                    GeometryType geometryType = ((PlacemarkType)feature).getGeometry().getValue();
-                    if (geometryType instanceof ModelType) {
-                        models.add((ModelType)geometryType);
-                    } else {
-                        logger.info("Unsupported GeometryType "+geometryType);
-                    }
-                }
-            } else
-                logger.info("Skipping feature "+feature);
-        }
-    }
+
     
     public void deployToModule(File moduleRootDir) throws IOException {
-        try {
-            String modelName = origFile.getName();
-            ZipFile zipFile = new ZipFile(origFile);
-            
-            // TODO replace getName with getModuleName(moduleRootDir)
-            String moduleName = moduleRootDir.getName();
-
-            String targetDirName = moduleRootDir.getAbsolutePath()+File.separator+"art"+ File.separator + modelName;
-            File targetDir = new File(targetDirName);
-            targetDir.mkdir();
-
-            deployTextures(zipFile, targetDir);
-            deployModels(zipFile, targetDir);
-
-            if (modelFiles.size() > 1) {
-                logger.warning("Multiple models not supported during deploy");
-            }
-            ColladaCellSetup setup = new ColladaCellSetup();
-            setup.setModel("wlm://"+moduleName+"/art/"+modelFiles.get(0));
-            
-            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
-            Writer w = new FileWriter(wfsFile);
-            try {
-                setup.encode(w);
-            } catch (JAXBException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            }
-            w.close();
-            
-        } catch (ZipException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw new IOException("Zip error");
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw ex;
-        }
-        
-        
+//        try {
+//            String modelName = origFile.getName();
+//            ZipFile zipFile = new ZipFile(origFile);
+//            
+//            // TODO replace getName with getModuleName(moduleRootDir)
+//            String moduleName = moduleRootDir.getName();
+//
+//            String targetDirName = moduleRootDir.getAbsolutePath()+File.separator+"art"+ File.separator + modelName;
+//            File targetDir = new File(targetDirName);
+//            targetDir.mkdir();
+//
+//            deployTextures(zipFile, targetDir);
+//            deployModels(zipFile, targetDir);
+//
+//            if (modelFiles.size() > 1) {
+//                logger.warning("Multiple models not supported during deploy");
+//            }
+//            ColladaCellSetup setup = new ColladaCellSetup();
+//            setup.setModel("wlm://"+moduleName+"/art/"+modelFiles.get(0));
+//            
+//            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
+//            Writer w = new FileWriter(wfsFile);
+//            try {
+//                setup.encode(w);
+//            } catch (JAXBException ex) {
+//                logger.log(Level.SEVERE, null, ex);
+//            }
+//            w.close();
+//            
+//        } catch (ZipException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//            throw new IOException("Zip error");
+//        } catch (IOException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//            throw ex;
+//        }
+//        
+//        
     }
     
     /**
@@ -337,7 +259,7 @@ class LoaderKmz implements ModelLoader {
                 textureFiles.put(url, entry);
                 return url;
             } catch (MalformedURLException ex) {
-                Logger.getLogger(LoaderKmz.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
             }
             return null;
         }

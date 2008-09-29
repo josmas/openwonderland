@@ -30,5 +30,6 @@
         <!-- clean sub-projects -->
         <ant antfile="samples/build.xml" target="clean" inheritall="false"/>
         <ant antfile="tools/build.xml" target="clean" inheritall="false"/> 
+        <ant antfile="world/build.xml" target="clean" inheritall="false"/> 
     </target>
 </project>

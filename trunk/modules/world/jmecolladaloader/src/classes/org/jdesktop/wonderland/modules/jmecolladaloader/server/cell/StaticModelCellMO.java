@@ -15,19 +15,19 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.cell;
+package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
-import org.jdesktop.wonderland.common.cell.setup.StaticModelCellSetup;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.StaticModelCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.config.StaticModelCellConfig;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.StaticModelCellConfig;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -50,7 +50,7 @@ public class StaticModelCellMO extends CellMO implements BeanSetupMO {
     }
     
     @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.cell.StaticModelCell";
+        return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.StaticModelCell";
     }
 
     @Override

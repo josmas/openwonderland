@@ -14,7 +14,7 @@
     <import file="${core.build-scripts.dir}/classpath.xml"/>
     
     <!-- unpack zips -->
-    <target name="unpack-core-libs">
+    <target name="unpack-core-libs" depends="unpack-jbullet">
         <!-- darkstar -->
    	<unpack-lib-zip pkgname="sgs-server"
 			srcdir="${core.lib.zip.dir}" destdir="${core.sgs.dir}"/>
@@ -26,8 +26,30 @@
                         srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
     </target>
 
+    <target name="unpack-jbullet">
+        <if>
+            <not>
+            <available file="${core.lib.dir}/common/jbullet.jar"/>
+            </not>
+            <then>
+                <get src="http://jbullet.advel.cz/download/jbullet-20080917.zip" dest="${core.lib.dir}/jbullet.zip"/>
+                <unzip src="${core.lib.dir}/jbullet.zip" dest="${core.lib.dir}" overwrite="true">
+                    <patternset>
+                        <include name="**/jbullet.jar"/>
+                    </patternset>
+                    <mapper type="flatten"/>
+                </unzip>
+                <move file="${core.lib.dir}/jbullet.jar" todir="${core.lib.dir}/common"/>
+                <delete file="jbullet.zip" quiet="true"/>
+            </then>
+        </if>
+    </target>
+
+    <target name="clean-jbullet">
+       <delete file="${core.lib.dir}/common/jbullet.jar" quiet="true"/>
+    </target>
    
-    <target name="clean-core-libs" description="Clean external libraries">
+    <target name="clean-core-libs" description="Clean external libraries" depends="clean-jbullet">
         <delete dir="core.sgs.dir"/>
         <delete dir="core.lib.os.dir"/>
     </target>    

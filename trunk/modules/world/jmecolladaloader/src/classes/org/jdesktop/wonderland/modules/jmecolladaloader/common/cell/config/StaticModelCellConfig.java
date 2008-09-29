@@ -15,24 +15,26 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.cell.config;
+package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config;
+
+import org.jdesktop.wonderland.common.cell.config.*;
 
 /**
- * The CalladaCellConfig class represents the information communicated
- * between the client and Darkstar server for collada model cells.
+ * The StaticModelCellConfig class represents the information communicated
+ * between the client and Darkstar server for static model cells.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class ColladaCellConfig extends CellConfig {
+public class StaticModelCellConfig extends CellConfig {
     /* The unique URL that describes the model data */
     private String modelURI = null;
     
     /** Default constructor */
-    public ColladaCellConfig() {
+    public StaticModelCellConfig() {
     }
     
     /** Constructor, takes the model URI */
-    public ColladaCellConfig(String modelURI) {
+    public StaticModelCellConfig(String modelURI) {
         this.modelURI = modelURI;
     }
     

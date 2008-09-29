@@ -15,12 +15,13 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 
+import org.jdesktop.wonderland.client.cell.*;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.client.jme.cellrenderer.RoomTestRenderer;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.RoomTestRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**

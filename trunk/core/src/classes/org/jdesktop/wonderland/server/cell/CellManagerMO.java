@@ -147,90 +147,24 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * For testing.....
      */
     public void loadWorld() {
-        buildWFSWorld();
+//        buildWFSWorld();
         
-//        test();
+        test();
     }
-
-    public void test() {
-        logger.info("Initialize bounds test plugin");
-
+    
+    private void test() {
         try {
-
-            BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
-
-            MovableCellMO c2 = new MovableCellMO(bounds,
-                    new CellTransform(null, new Vector3f(10, 5, 10)));
-            c2.setName("c2");
-            c2.setLocalBounds(bounds);
-
-            MovableCellMO c3 = new MovableCellMO(
-                    new BoundingSphere(2, new Vector3f()),
-                    new CellTransform(null, new Vector3f(5, 5, 5)));
-            c3.setName("c3");
-
-            CellMO c4 = new MovableCellMO(
-                    new BoundingSphere(0.5f, new Vector3f()),
-                    new CellTransform(null, new Vector3f(1, 0, 0)));
-            c4.setName("c4");
-
-            c3.addChild(c4);
-            
-            float cellSize = 5;
-            int xMax = 10;
-            int zMax = 10;
-            
-            for(int x=0; x<cellSize*xMax; x+=cellSize) {
-                for(int z=0; z<cellSize*zMax; z+=cellSize) {
-                    WonderlandContext.getCellManager().insertCellInWorld(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
-                }
-            }
-
-            WonderlandContext.getCellManager().insertCellInWorld(c2);
-            WonderlandContext.getCellManager().insertCellInWorld(c3);
-
-            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
-            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
-
-            
-            Task t = new TestTask(c3, c2);
-
-            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
-
-        } catch (Exception ex) {
+            Class.forName("org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.TestWorld").newInstance();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    static class TestTask implements Task, Serializable {
 
-        private ManagedReference<MovableCellMO> cellRef;
-        private Vector3f pos;
-        private Vector3f pos2;
-        private int dir = 2;
-        private ManagedReference<MovableCellMO> cell2Ref;
-
-        public TestTask(MovableCellMO cell, MovableCellMO c2) {
-            this.cellRef = AppContext.getDataManager().createReference(cell);
-            this.cell2Ref = AppContext.getDataManager().createReference(c2);
-            pos = cell.getLocalTransform(null).getTranslation(null);
-            pos2 = cell.getLocalTransform(null).getTranslation(null);
-        }
-
-        public void run() throws Exception {
-            pos.x += dir;
-            pos2.z += dir;
-            if (pos.x > 40 || pos.x < 4) {
-                dir = -dir;
-            }
-            cellRef.get().getComponent(MovableComponentMO.class).moveRequest(new CellTransform(null, pos));
-            cell2Ref.get().getComponent(MovableComponentMO.class).moveRequest(new CellTransform(null, pos2));
-        }
-    }
-    
     /**
      * Builds a world defined by a wonderland file system (e.g. on disk). The
      * world's root directory must be setTranslation in the system property 

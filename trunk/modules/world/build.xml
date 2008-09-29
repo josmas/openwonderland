@@ -3,9 +3,22 @@
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.world-modules}"/>
     
+    <!-- TODO - allow ordering to be defined for some projects, current -->
+    <!-- ordering seems to be alphabetical which correctly compiles jmecolladloader before kmzloader, -->
+    <!-- the ordering in the fileset us not honoured :-( -->
+
     <!-- all projects -->
     <fileset dir="${current.dir}" id="all.projects">
+        <exclude name="kmzloader/build.xml"/>
+        <exclude name="jmecolladaloader/build.xml"/>
         <include name="*/**/build.xml"/>
+    </fileset>
+    <fileset dir="${current.dir}" id="kmzloader.module">
+        <include name="kmzloader/build.xml"/>
+    </fileset>
+
+    <fileset dir="${current.dir}" id="jmecolladaloader.module">
+        <include name="jmecolladaloader/build.xml"/>
     </fileset>
     
     <!-- setup -->
@@ -14,17 +27,23 @@
     
     <!-- build all subprojects -->
     <target name="compile" depends="init">
+        <build-subprojects fileset="jmecolladaloader.module" target="build"/>
+        <build-subprojects fileset="kmzloader.module" target="build"/>
         <build-subprojects fileset="all.projects" target="build"/>
     </target>
     
     <!-- jar all subprojects -->
     <target name="package" depends="compile">
+        <build-subprojects fileset="jmecolladaloader.module" target="package"/>
+        <build-subprojects fileset="kmzloader.module" target="package"/>
         <build-subprojects fileset="all.projects" target="package"/>
     </target>
     
     <!-- clean all sub-projects -->
     <target name="clean">
         <!-- clean sub-projects -->
+        <build-subprojects fileset="jmecolladaloader.module" target="clean"/>
+        <build-subprojects fileset="kmzloader.module" target="clean"/>
         <build-subprojects fileset="all.projects" target="clean"/>       
     </target>
     
