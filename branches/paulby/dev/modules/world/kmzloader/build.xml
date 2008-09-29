@@ -11,6 +11,9 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
+    <!-- kmzload is dependent on the jmecolladaloader -->
+    <property name="module-client.classpath" value="../jmecolladaloader/build/classes"/>
+       
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client"/>
@@ -22,7 +25,7 @@
                     
            <plugin name="kmzloader">
                 <client basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.kmzloader.client.LoaderFactoryKmz"/>
+                    <clientplugin provider="org.jdesktop.wonderland.modules.kmzloader.client.KmzLoaderFactory"/>
                     
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>

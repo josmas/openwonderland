@@ -49,7 +49,7 @@ import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
-import org.jdesktop.wonderland.common.cell.setup.ColladaCellSetup;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
@@ -63,9 +63,9 @@ import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.PlacemarkType;
  * 
  * @author paulby
  */
-class LoaderKmz implements ModelLoader {
+class KmzLoader implements ModelLoader {
 
-    private static final Logger logger = Logger.getLogger(LoaderKmz.class.getName());
+    private static final Logger logger = Logger.getLogger(KmzLoader.class.getName());
         
     private HashMap<URL, ZipEntry> textureFiles = new HashMap();
     
@@ -197,8 +197,8 @@ class LoaderKmz implements ModelLoader {
             if (modelFiles.size() > 1) {
                 logger.warning("Multiple models not supported during deploy");
             }
-            ColladaCellSetup setup = new ColladaCellSetup();
-            setup.setModel("wlm://"+moduleName+"/art/"+modelFiles.get(0));
+            JMEColladaCellSetup setup = new JMEColladaCellSetup();
+            setup.setModel("wlm://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
             
             File wfsFile = new File(targetDirName+File.separator+"test.wfs");
             Writer w = new FileWriter(wfsFile);
@@ -337,7 +337,7 @@ class LoaderKmz implements ModelLoader {
                 textureFiles.put(url, entry);
                 return url;
             } catch (MalformedURLException ex) {
-                Logger.getLogger(LoaderKmz.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
             }
             return null;
         }
