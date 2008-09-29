@@ -36,8 +36,11 @@ public class MouseButtonEvent3D extends MouseEvent3D {
 	EVENT_ID = Event.allocateEventID();
     }
 
+    /** Default constructor (for cloning) */
+    protected MouseButtonEvent3D () {}
+
     /**
-     * Create a new MouseWheelEvent3D from the AWT mouse event with a null pickDetails.
+     * Create a new MousebuttonEvent3D from the AWT mouse event with a null pickDetails.
      * @param evt the AWT event
      */
     MouseButtonEvent3D (MouseEvent awtEvent) {
@@ -54,7 +57,7 @@ public class MouseButtonEvent3D extends MouseEvent3D {
 
         /* TODO
 	if (isPressed()) {
-	    MouseDraggedEvent3D.setPressPointScreen(awtEvent.getX(), awtEvent.getY());
+	    MouseDraggedEvent3D.setPressPointScreen(((MouseEvent)awtEvent).getX(), ((MouseEvent)awtEvent).getY());
 	}
         */
     }
@@ -85,7 +88,7 @@ public class MouseButtonEvent3D extends MouseEvent3D {
      * @return integer value for the number of clicks
      */
     public int getClickCount() {
-        return awtEvent.getClickCount();
+        return ((MouseEvent)awtEvent).getClickCount();
     }
 
     public String toString () {
@@ -100,5 +103,18 @@ public class MouseButtonEvent3D extends MouseEvent3D {
 	} else {
 	    return "CLICK";
 	}
+    }
+
+    /** 
+     * {@inheritDoc}
+     * <br>
+     * If event is null, a new event of this class is created and returned.
+     */
+    @Override
+    public Event clone (Event event) {
+	if (event == null) {
+	    event = new MouseButtonEvent3D();
+	}
+	return super.clone(event);
     }
 }
