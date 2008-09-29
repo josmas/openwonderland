@@ -17,9 +17,6 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.scene.GeometricUpdateListener;
-import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -27,7 +24,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 
 /**
  *
@@ -118,13 +119,31 @@ public class JmeClientMain {
         // center the frame
         frame.setLocationRelativeTo(null);
 
-	/* TODO: not yet
 	// Initialize the input manager
 	// TODO: CameraComponent cameraComp = ViewManager.getCameraComponent();
 	CameraComponent cameraComp = null;
-	InputManager3D.getInputManager().initialize(frame.getCanvas(), cameraComp);
-	*/
+	InputManager inputManager = InputManager3D.getInputManager();
+	inputManager.initialize(wm, frame.getCanvas(), cameraComp);
 
+	// Default Policy: Enable global focus everywhere
+	// Note: the app base will impose its own (different) policy later
+	// TODO: not yet
+	//inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
+
+	/* TODO: temporary: example global key event listener for Paul */
+	InputManager3D.getInputManager().addGlobalEventListener(
+	    new EventClassListener /*TODO:EventClassFocusListener*/ () {
+		private final Logger logger = Logger.getLogger("My Logger");
+		public Class[] eventClassesToConsume () {
+		    return new Class[] { KeyEvent3D.class };
+		}
+		public void commitEvent (Event event) {
+		    if (((KeyEvent3D)event).isPressed()) {
+			logger.warning("Global key listener: received event, event = " + event );
+		    }
+		}
+    	    });
+        
         // show frame
         frame.setVisible(true);
     }

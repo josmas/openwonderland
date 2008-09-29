@@ -46,6 +46,8 @@ public class EventClassFocusListener extends EventClassListener {
      */
     @InternalAPI
     public boolean consumesEvent (Event event) {
+	//Debug:System.err.println("************ event = " + event);
+	//Debug:System.err.println("************ isFocussed() = " + event.isFocussed());
 	if (!event.isFocussed()) return false;
 	return super.consumesEvent(event);
     }

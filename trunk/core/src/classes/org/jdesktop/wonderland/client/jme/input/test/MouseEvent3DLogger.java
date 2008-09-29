@@ -48,8 +48,8 @@ public class MouseEvent3DLogger extends EventClassListener {
 	return new Class[] { MouseEvent3D.class };
     }
 
-    public void commitEvent (Event event, Entity entity) {
-	logger.info("Received mouse event, entity = " + entity + ", event = " + event);
+    public void commitEvent (Event event) {
+	logger.info("Received mouse event, event = " + event + ", entity = " + event.getEntity());
     }
 }
 

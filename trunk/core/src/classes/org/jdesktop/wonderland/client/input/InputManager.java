@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 /**
@@ -105,6 +106,9 @@ public abstract class InputManager
     /** The canvas from which this input manager should receive events. */
     protected Canvas canvas;
 
+    /** The global focus wildcard entity */
+    protected Entity globalFocusEntity;
+
     /** The ways that a focus set can be changed. */
     public enum FocusChangeAction { 
 	/** Add the given entities to the focus sets of the given event classes. */
@@ -172,11 +176,11 @@ public abstract class InputManager
      * and start the input manager running. This method does not define a camera
      * component, so picking on events will not start occuring until a camera component
      * is specified with a subsequent call to <code>setCameraComponent</code>.
-     *
+     * @param wm The mtgame world manager.
      * @param canvas The AWT canvas which generates AWT user events.
      */
-    public void initialize (Canvas canvas) {
-	initialize(canvas, null);
+    public void initialize (WorldManager wm, Canvas canvas) {
+	initialize(wm, canvas, null);
     }
 
     /** 
@@ -185,12 +189,11 @@ public abstract class InputManager
      * given camera. This routine can only be called once. To subsequently change the 
      * camera, use <code>setCameraComponent</code>. To subsequently change the focus manager,
      * use <code>setFocusManager</code>.
-     *
+     * @param wm The mtgame world manager.
      * @param canvas The AWT canvas which generates AWT user events.
      * @param cameraComp The mtgame camera component to use for picking operations.
-     
      */
-    public void initialize (Canvas canvas, CameraComponent cameraComp) {
+    public void initialize (WorldManager wm, Canvas canvas, CameraComponent cameraComp) {
 	if (this.canvas != null) {
 	    throw new IllegalStateException("initialize has already been called for this InputManager");
 	}
@@ -199,24 +202,41 @@ public abstract class InputManager
 
 	setCameraComponent(cameraComp);
 
+	initializeGlobalFocus(wm);
+
 	canvas.addKeyListener(this);
 
 	if (ENABLE_EMBEDDED_SWING) {
-	    logger.info("Input System init: Embedded Swing case.");
+	    logger.fine("Input System init: Embedded Swing case.");
 	} else {
 	    // When not using Embedded Swing the input manager receives events directly from the AWT canvas.
-	    logger.info("Input System init: Non Swing case.");
+	    logger.fine("Input System init: Non Swing case.");
 	    canvas.addMouseListener(this);
 	    canvas.addMouseMotionListener(this);
 	    canvas.addMouseWheelListener(this);
 	}
 
-	injectInitialMouseEvent();
+	logger.fine("Input System initialization complete.");
+    }
 
-	logger.info("Input System initialization complete.");
+    /**
+     * Initialize the global focus wildcard entity.
+     */
+    private void initializeGlobalFocus (WorldManager wm) {
+	globalFocusEntity = new Entity("Global Focus");
+	wm.addEntity(globalFocusEntity);
+    }
+
+    /**
+     * Returns the global focus entity.
+     */
+    public Entity getGlobalFocusEntity () {
+	return globalFocusEntity;
     }
 
     /** 
+     * TODO: later: use for injecting a non-deliverable mouse event in order to implement programmatic 
+     * (non-user-generated) enter/exit events.
      * INTERNAL ONLY.
      * <br>
      * The synthetic, "priming" mouse event should not be delivered to users. 
@@ -227,23 +247,6 @@ public abstract class InputManager
 				  int clickCount, boolean popupTrigger, int button) {
 	    super(source, id, when, modifiers, x, y, clickCount, popupTrigger, button);
 	}
-    }
-
-    /**
-     * This sends an initial, synthetic mouse event through the input system. The event position is the center
-     * of the canvas. This is done for two reasons:
-     * <br><br>
-     * 1. To initialize EventDistributor3D.mousePickInfoPrev.
-     * <br><br>
-     * 2. To send out the initial enter event.
-     * <br><br>
-     * TODO: this is currently weak: it is only effective if called *AFTER* the scene graph is initialized.
-     * This will be rectified when we implement synthetic event injection (repick) on scene graph change.
-     */
-    private void injectInitialMouseEvent () {
-	MouseEvent me = new NondeliverableMouseEvent(canvas, MouseEvent.MOUSE_MOVED, 0L, 0, 
-			     canvas.getWidth()/2, canvas.getHeight()/2, 0, false, MouseEvent.NOBUTTON);
-	mouseMoved(me);
     }
 
     /**

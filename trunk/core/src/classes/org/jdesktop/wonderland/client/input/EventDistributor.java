@@ -102,6 +102,7 @@ public abstract class EventDistributor implements Runnable {
                 entry = inputQueue.take();
 		processEvent(entry.event, entry.pickInfo);
             } catch (Exception ex) {
+		ex.printStackTrace();
 		logger.warning("Exception caught in EventDistributor thread. Event is ignored.");
 	    }
 	}
@@ -213,6 +214,7 @@ public abstract class EventDistributor implements Runnable {
 		return;
 	    } else {
 		globalEventListeners.add(listener);
+		listener.addToEntity(InputManager.inputManager().getGlobalFocusEntity());
 	    }
 	}
     }
@@ -228,6 +230,7 @@ public abstract class EventDistributor implements Runnable {
     public void removeGlobalEventListener (EventListener listener) {
 	synchronized (globalEventListeners) {
 	    globalEventListeners.remove(listener);
+	    listener.removeFromEntity(InputManager.inputManager().getGlobalFocusEntity());
 	}
     }
 
@@ -300,6 +303,27 @@ public abstract class EventDistributor implements Runnable {
 		}
 		break;
 	    }
+	}
+
+	// Debug
+	//logger.warning("Updated focus sets");
+	//logger.warning("------------------");
+	//logFocusSets();
+	//logger.warning("------------------");
+    }
+
+    /** For debug */
+    private void logFocusSets () {
+	for (Class clazz : focusSets.keySet()) {
+	    HashSet<Entity> focusSet = focusSets.get(clazz);	    
+	    StringBuffer sb = new StringBuffer();
+	    sb.append("Class = " + clazz + ": ");
+	    Iterator<Entity> it = focusSet.iterator();
+	    while (it.hasNext()) {
+		Entity entity = it.next();
+		sb.append(entity.toString() + ", ");
+	    }
+	    logger.warning(sb.toString());
 	}
     }
 
