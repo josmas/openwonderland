@@ -46,6 +46,7 @@ public class ModuleTask extends Jar {
     private String name;
     private int majorVersion = ModuleInfo.VERSION_UNSET;
     private int minorVersion = ModuleInfo.VERSION_UNSET;
+    private String moduleDescription;
     
     private List<Requires> requires = new ArrayList<Requires>();
     private List<Plugin> plugins = new ArrayList<Plugin>();
@@ -66,6 +67,10 @@ public class ModuleTask extends Jar {
     
     public void setMinorVersion(int minorVersion) {
         this.minorVersion = minorVersion;
+    }
+    
+    public void setDescription(String moduleDescription) {
+        this.moduleDescription = moduleDescription;
     }
     
     public void setBuildDir(File buildDir) {
@@ -139,7 +144,7 @@ public class ModuleTask extends Jar {
     }
     
     private void writeModuleInfo() throws IOException, JAXBException {
-        ModuleInfo mi = new ModuleInfo(name, majorVersion, minorVersion);
+        ModuleInfo mi = new ModuleInfo(name, majorVersion, minorVersion, moduleDescription);
         
         File moduleInfoFile;
         if (buildDir == null) {
