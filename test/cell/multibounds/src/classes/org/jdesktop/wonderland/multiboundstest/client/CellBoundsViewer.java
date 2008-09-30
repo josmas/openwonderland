@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.multiboundstest.client;
 import org.jdesktop.wonderland.client.cell.CellChannelConnection;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
-import org.jdesktop.wonderland.client.comms.CellClientSession;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
@@ -36,17 +35,21 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
-import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.RootCell;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
@@ -55,9 +58,12 @@ import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
+import org.jdesktop.wonderland.client.modules.ModulePluginList;
+import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import sun.misc.Service;
 
 /**
  *
@@ -86,6 +92,8 @@ public class CellBoundsViewer extends javax.swing.JFrame {
     
     private Vector3f location = new Vector3f();
     private static final float STEP = 2f;
+    
+    private ClassLoader loader;
     
     /** Creates new form CellBoundsViewer */
     public CellBoundsViewer(String[] args) {
@@ -118,8 +126,19 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         LoginParameters loginParams = new LoginParameters(userName, 
                                                           "test".toCharArray());
         
+        // setup a classloader with the module jars
+        loader = setupClassLoader();
+        
+        // load any client plugins from that class loader
+        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
+                                                      loader);
+        while (it.hasNext()) {
+            ClientPlugin plugin = it.next(); 
+            plugin.initialize();
+        }
+        
         // create a session
-        session = new CellClientSession(server) {
+        session = new CellClientSession(server, loader) {
             @Override
             protected CellCache createCellCache() {
                 getCellCacheConnection().addListener(boundsPanel);
@@ -136,6 +155,21 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         } catch (LoginFailureException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private ClassLoader setupClassLoader() {
+        ModulePluginList list = ModuleUtils.fetchPluginJars();
+        List<URL> urls = new ArrayList<URL>();
+        
+        for (String uri : list.getJarURIs()) {
+            try {
+                urls.add(new URL(uri));
+            } catch (Exception excp) {
+                excp.printStackTrace();
+           }
+        }
+        
+        return new URLClassLoader(urls.toArray(new URL[0]));
     }
     
     /** This method is called from within the constructor to
@@ -315,11 +349,27 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             this.session = session;
             
             // setup internal cache
-            cacheImpl = new CellCacheBasicImpl(session, 
+            cacheImpl = new CellCacheBasicImpl(session,
+                                               setupClassLoader(),
                                                session.getCellCacheConnection(), 
                                                session.getCellChannelConnection());
         }
         
+        private ClassLoader setupClassLoader() {
+            ModulePluginList list = ModuleUtils.fetchPluginJars();
+            List<URL> urls = new ArrayList<URL>();
+
+            for (String uri : list.getJarURIs()) {
+                try {
+                    urls.add(new URL(uri));
+                } catch (Exception excp) {
+                    excp.printStackTrace();
+               }
+            }
+
+            return new URLClassLoader(urls.toArray(new URL[0]));
+        }
+
         @Override
         public void paint(Graphics gr) {
             Graphics2D g = (Graphics2D)gr;
