@@ -107,6 +107,9 @@ public class StaticModelRenderer extends BasicRenderer {
 
         ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
+        ret.setModelBound(new BoundingSphere());
+        ret.updateModelBound();
+
         return ret;
     }
     

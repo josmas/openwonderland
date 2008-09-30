@@ -145,6 +145,9 @@ public class RoomTestRenderer extends BasicRenderer {
         
         forceFieldNode.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
+        forceFieldNode.setModelBound(new BoundingSphere());
+        forceFieldNode.updateModelBound();
+
         return forceFieldNode;
     }
 }

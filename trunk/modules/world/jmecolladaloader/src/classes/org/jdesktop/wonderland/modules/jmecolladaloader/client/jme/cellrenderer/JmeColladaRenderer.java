@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer
 
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import com.jme.light.PointLight;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -101,6 +102,9 @@ public class JmeColladaRenderer extends BasicRenderer {
         ret.setLocalTranslation(xoff, yoff, zoff);
         
         ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
+
+        ret.setModelBound(new BoundingSphere());
+        ret.updateModelBound();
 
         return ret;
     }
