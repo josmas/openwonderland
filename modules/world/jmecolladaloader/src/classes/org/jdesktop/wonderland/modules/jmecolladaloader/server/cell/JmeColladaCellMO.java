@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.ColladaCellConfig;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
@@ -61,7 +61,7 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
 
     @Override
     public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new ColladaCellConfig(this.modelURI);
+        return new JmeColladaCellConfig(this.modelURI);
     }
 
     @Override

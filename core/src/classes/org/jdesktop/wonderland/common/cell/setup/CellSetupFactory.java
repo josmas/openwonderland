@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
@@ -46,7 +47,6 @@ import sun.misc.Service;
 public class CellSetupFactory {
     /* A list of core cell setup class names */
     private static String[] coreSetup = {
-        "org.jdesktop.wonderland.common.cell.setup.StaticModelCellSetup",
         "org.jdesktop.wonderland.common.cell.setup.ColladaCellSetup"
     };
     
@@ -77,21 +77,71 @@ public class CellSetupFactory {
     }
     
     /**
-     * Returns the object that marshalls JAXB-annotated classes into XML
+     * Returns the object that marshalls JAXB-annotated classes into XML using
+     * classes available in the supplied classLoader. If classLoader is null the
+     * classloader for this class will be used.
      * 
      * @return A marhsaller for JAXB-annotated classes
      */
-    public static Marshaller getMarshaller() {
-        return CellSetupFactory.marshaller;
+    public static Marshaller getMarshaller(ClassLoader classLoader) {
+        if (classLoader==null) {
+            return CellSetupFactory.marshaller;
+        }
+        
+        try {
+            Class[] clazz = getClasses(classLoader);
+            JAXBContext jc = JAXBContext.newInstance(clazz);
+            Marshaller m = jc.createMarshaller();
+            m.setProperty("jaxb.formatted.output", true);
+            return m;
+
+        } catch (JAXBException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+            
+        return null;
+        
     }
     
     /**
-     * Returns the object that unmarshalls XML into JAXB-annotated classes
+     * Returns the object that unmarshalls XML into JAXB-annotated classes using
+     * classes available in the supplied classLoader. If classLoader is null the
+     * classloader for this class will be used.
      * 
      * @return An unmarshaller for XML
      */
-    public static Unmarshaller getUnmarshaller() {
-        return CellSetupFactory.unmarshaller;
+    public static Unmarshaller getUnmarshaller(ClassLoader classLoader) {
+        if (classLoader == null) {
+            return CellSetupFactory.unmarshaller;
+        }
+
+        try {
+            Class[] clazz = getClasses(classLoader);
+            JAXBContext jc = JAXBContext.newInstance(clazz);
+            return jc.createUnmarshaller();
+
+        } catch (JAXBException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+            
+        return null;
+    }
+    
+    /**
+     * Find and return all the classes from the classLoader that implement the CellSetupSPI
+     * inteface
+     * 
+     * @param classLoader
+     * @return
+     */
+    private static Class[] getClasses(ClassLoader classLoader) {
+        Iterator<CellSetupSPI> it = Service.providers(CellSetupSPI.class, classLoader);
+        Collection<Class> names = CellSetupFactory.getCoreCellSetup();
+        while (it.hasNext() == true) {
+            names.add(it.next().getClass());
+        }
+
+        return names.toArray(new Class[]{} );
     }
     
     /**

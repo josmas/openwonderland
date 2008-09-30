@@ -104,7 +104,7 @@ public class MovableComponentMO extends CellComponentMO {
         transformTimestamp = TimeManager.getWonderlandTime();
         
         if (cell.isLive()) {
-//            System.out.println("Sending pos "+transform.getTranslation(null));
+            CellMO.logger.warning("Sending pos "+transform.getTranslation(null));
             channelComponent.sendAll(MovableMessage.newMovedMessage(cell.getCellID(), transform));
         }
     }

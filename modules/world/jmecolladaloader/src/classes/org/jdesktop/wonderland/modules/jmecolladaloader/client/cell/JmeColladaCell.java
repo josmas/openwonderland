@@ -21,7 +21,7 @@ import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.ColladaCellConfig;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig;
 
 /**
  * Client side cell for rendering JME content
@@ -42,12 +42,12 @@ public class JmeColladaCell extends Cell {
      * major configuration change. The cell will already be attached to it's parent
      * before the initial call of this method
      * 
-     * @param setupData
+     * @param config the cell config object
      */
     @Override
     public void configure(CellConfig config) {
         super.configure(config);
-        ColladaCellConfig colladaConfig = (ColladaCellConfig)config;
+        JmeColladaCellConfig colladaConfig = (org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig)config;
         this.modelURI = colladaConfig.getModelURI();
     }
     

@@ -25,16 +25,16 @@ import org.jdesktop.wonderland.common.cell.config.*;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class ColladaCellConfig extends CellConfig {
+public class JmeColladaCellConfig extends CellConfig {
     /* The unique URL that describes the model data */
     private String modelURI = null;
     
     /** Default constructor */
-    public ColladaCellConfig() {
+    public JmeColladaCellConfig() {
     }
     
     /** Constructor, takes the model URI */
-    public ColladaCellConfig(String modelURI) {
+    public JmeColladaCellConfig(String modelURI) {
         this.modelURI = modelURI;
     }
     

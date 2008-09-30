@@ -125,7 +125,7 @@ class JmeColladaLoader implements ModelLoader {
 //            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
 //            Writer w = new FileWriter(wfsFile);
 //            try {
-//                setup.encode(w);
+//                setup.encode(w, getClass().getClassLoader());
 //            } catch (JAXBException ex) {
 //                logger.log(Level.SEVERE, null, ex);
 //            }

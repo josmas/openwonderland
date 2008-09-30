@@ -75,11 +75,11 @@ public class SlaveConnection extends Thread {
                 Object msg = in.readObject();
                 if (msg instanceof LogRecord) {
                     LogRecord logR = (LogRecord)msg;
-                    logger.log(logR.getLevel(), "slave"+slaveID+":"+logR.getMessage(), logR.getThrown());
+                    logR.setLoggerName("slave"+slaveID+":"+logR.getLoggerName());
+                    logger.log(logR);
                 }
             } catch(OptionalDataException e) {
-                System.out.println("Exception length "+((OptionalDataException)e).length);
-                Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, null, e);
+                Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, "Exception length "+((OptionalDataException)e).length, e);
             } catch(EOFException eof) {
                 done=true;
                 MasterMain.getMaster().slaveLeft(this);
