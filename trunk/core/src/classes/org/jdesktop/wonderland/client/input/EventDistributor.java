@@ -128,9 +128,10 @@ public abstract class EventDistributor implements Runnable {
                 EventListener listener = it.next();
 		if (listener.isEnabled()) {
 		    logger.fine("Calling consume for listener " + listener);
-		    if (listener.consumesEvent(event)) {
+		    Event distribEvent = createEventForGlobalListener(event);
+		    if (listener.consumesEvent(distribEvent)) {
 			logger.fine("CONSUMED.");
-			listener.postEvent(event);
+			listener.postEvent(distribEvent);
 		    }
 		}
 	    }
@@ -189,6 +190,16 @@ public abstract class EventDistributor implements Runnable {
 	}
     }
 	
+    /**
+     * Create an event for distribution to a global event listener, based on the given base event.
+     */
+    static Event createEventForGlobalListener (Event baseEvent) {
+	Event event = baseEvent.clone(null);
+	event.setFocussed(entityHasFocus(baseEvent, InputManager.inputManager().getGlobalFocusEntity()));
+        return event;
+    }
+
+
     /**
      * Create an event for distribution to the given entity, based on the given base event.
      */
