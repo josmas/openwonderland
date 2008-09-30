@@ -159,7 +159,7 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent {
         for (int i=0; i<events.length; i++) {
             if (events[i] instanceof MouseEvent) {
                 MouseEvent me = (MouseEvent) events[i];
-                if (me.getID() == MouseEvent.MOUSE_MOVED) {
+                if (me.getID() == MouseEvent.MOUSE_DRAGGED && (me.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {
                     processRotations(me);
                     updateRotations = true;
                 }
