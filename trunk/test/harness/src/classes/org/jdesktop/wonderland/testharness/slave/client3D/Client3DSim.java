@@ -100,14 +100,6 @@ public class Client3DSim
         avatar.addViewCellConfiguredListener(new LocalAvatar.ViewCellConfiguredListener() {
             public void viewConfigured(LocalAvatar localAvatar) {
                 ((MovableComponent)avatar.getViewCell().getComponent(MovableComponent.class)).addServerCellMoveListener(messageTimer);
-            }
-        });
-                      
-        userSim = new UserSimulator(avatar);
-        
-        avatar.addViewCellConfiguredListener(new LocalAvatar.ViewCellConfiguredListener() {
-            public void viewConfigured(LocalAvatar localAvatar) {
-                ((MovableComponent)avatar.getViewCell().getComponent(MovableComponent.class)).addServerCellMoveListener(messageTimer);
                 
                 // Start the userSim once the view is fully configured
                 userSim.start();
@@ -311,10 +303,7 @@ public class Client3DSim
          * @param arg1
          */
         public void cellMoved(CellTransform transform, CellMoveSource moveSource) {
-            logger.warning("Source "+moveSource+"  pos "+transform.getTranslation(null));
-
             if (messageTimes.size()!=0 && messageTimes.getFirst().transform.equals(transform)) {
-                logger.warning("Got time");
                 TimeRecord rec = messageTimes.removeFirst();
             
                 long time = ((System.nanoTime())-rec.sendTime)/1000000;
@@ -335,14 +324,13 @@ public class Client3DSim
                 }
             } else {
                 logger.warning("No Time record for "+transform.getTranslation(null)+" queue size "+messageTimes.size());
-                if (messageTimes.size()!=0)
-                    logger.warning("HEAD "+messageTimes.getFirst().transform.getTranslation(null));
+//                if (messageTimes.size()!=0)
+//                    logger.warning("HEAD "+messageTimes.getFirst().transform.getTranslation(null));
             }
         }
         
         public void messageSent(CellTransform transform) {
             messageTimes.add(new TimeRecord(transform, System.nanoTime()));
-            System.err.println("SENDING "+transform.getTranslation(null));
         }
     }
 
