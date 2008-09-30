@@ -147,9 +147,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * For testing.....
      */
     public void loadWorld() {
-//        buildWFSWorld();
+        buildWFSWorld();
         
-        test();
+        //test();
     }
     
     private void test() {
