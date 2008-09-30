@@ -60,6 +60,10 @@ public class ModuleTask extends Jar {
         this.majorVersion = majorVersion;
     }
     
+    public void setMajorVersion(int majorVersion) {
+        this.majorVersion = majorVersion;
+    }
+    
     public void setMinorVersion(int minorVersion) {
         this.minorVersion = minorVersion;
     }
@@ -261,6 +265,11 @@ public class ModuleTask extends Jar {
             throw new BuildException("Major version is required.");
         }
         
+        // force the minor version to be 0 if it is unset
+        if (minorVersion == ModuleInfo.VERSION_UNSET) {
+            minorVersion = 0;
+        }
+        
         // check any included requirements
         for (Requires r : requires) {
             r.validate();
@@ -447,7 +456,7 @@ public class ModuleTask extends Jar {
     
     public static class CellSetup extends Service {
         public CellSetup() {
-            setType("org.jdesktop.wonderland.server.cell.setup.spi.CellSetupSPI");
+            setType("org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI");
         }
     }
     
