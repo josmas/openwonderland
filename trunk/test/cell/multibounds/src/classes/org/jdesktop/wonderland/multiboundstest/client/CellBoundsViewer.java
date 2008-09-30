@@ -350,24 +350,9 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             
             // setup internal cache
             cacheImpl = new CellCacheBasicImpl(session,
-                                               setupClassLoader(),
+                                               loader,
                                                session.getCellCacheConnection(), 
                                                session.getCellChannelConnection());
-        }
-        
-        private ClassLoader setupClassLoader() {
-            ModulePluginList list = ModuleUtils.fetchPluginJars();
-            List<URL> urls = new ArrayList<URL>();
-
-            for (String uri : list.getJarURIs()) {
-                try {
-                    urls.add(new URL(uri));
-                } catch (Exception excp) {
-                    excp.printStackTrace();
-               }
-            }
-
-            return new URLClassLoader(urls.toArray(new URL[0]));
         }
 
         @Override

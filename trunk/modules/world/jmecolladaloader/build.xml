@@ -23,7 +23,11 @@
            <plugin name="jmecolladaloader">
                 <client basedir="${build.classes.dir}">
                     <clientplugin provider="org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoaderFactory"/>
-                    
+                    <service type="org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI">
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.StaticModelCellSetup"/>
+                    </service> 
+
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </client> 

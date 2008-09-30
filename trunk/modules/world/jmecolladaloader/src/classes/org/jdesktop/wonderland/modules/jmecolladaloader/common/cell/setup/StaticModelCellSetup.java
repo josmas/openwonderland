@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup;
 import org.jdesktop.wonderland.common.cell.setup.*;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
 
 /**
  * The StaticModelCellSetup class is the cell that renders a static cell in
@@ -29,7 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="static-model")
-public class StaticModelCellSetup extends BasicCellSetup implements Serializable {
+public class StaticModelCellSetup extends BasicCellSetup implements Serializable, CellSetupSPI {
 
     /** Default constructor */
     public StaticModelCellSetup() {

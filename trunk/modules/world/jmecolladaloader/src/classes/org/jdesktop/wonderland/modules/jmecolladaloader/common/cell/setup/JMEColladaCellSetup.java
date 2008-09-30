@@ -23,6 +23,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
 
 /**
  * The ColladaCellSetup class is the cell that renders a collada model cell in
@@ -31,7 +32,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="jme-collada-cell")
-public class JMEColladaCellSetup extends BasicCellSetup implements Serializable {
+public class JMEColladaCellSetup extends BasicCellSetup implements Serializable, CellSetupSPI {
     
     /* The URI of the static model file */
     @XmlElement(name="model")

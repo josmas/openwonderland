@@ -115,7 +115,8 @@ public class ClientManager {
         }
         
     }
-    
+
+    // TODO this should probably be a utility, it's currently duplicated in CellBoundsViewer
     private ClassLoader setupClassLoader() {
         ModulePluginList list = ModuleUtils.fetchPluginJars();
         List<URL> urls = new ArrayList<URL>();

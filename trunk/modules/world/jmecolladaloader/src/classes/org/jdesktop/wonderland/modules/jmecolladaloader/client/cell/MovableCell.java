@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 
-import org.jdesktop.wonderland.client.cell.*;
+import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**

@@ -319,8 +319,12 @@ public abstract class BasicCellSetup implements Serializable {
      * @throw JAXBException Upon error reading the XML file
      */
     public static BasicCellSetup decode(Reader r) throws JAXBException {
+        return decode(r, null);
+    }
+
+    public static BasicCellSetup decode(Reader r, ClassLoader classLoader) throws JAXBException {
         /* Read from XML */
-        Unmarshaller u = CellSetupFactory.getUnmarshaller();
+        Unmarshaller u = CellSetupFactory.getUnmarshaller(classLoader);
         BasicCellSetup setup = (BasicCellSetup)u.unmarshal(r);
         
         /* Convert metadata to internal representation */
@@ -345,6 +349,11 @@ public abstract class BasicCellSetup implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
+        encode(w, null);
+    }
+    
+    
+    public void encode(Writer w, ClassLoader classLoader) throws JAXBException {
         /* Convert internal metadata hash to one suitable for serialization */
         if (this.internalMetaData != null) {
             this.metadata = new MetaDataHashMap();
@@ -360,7 +369,7 @@ public abstract class BasicCellSetup implements Serializable {
         }
 
         /* Write out as XML */
-        Marshaller m = CellSetupFactory.getMarshaller();
+        Marshaller m = CellSetupFactory.getMarshaller(classLoader);
         m.marshal(this, w);
     }
     
