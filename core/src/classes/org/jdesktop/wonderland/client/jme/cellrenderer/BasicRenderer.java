@@ -21,9 +21,9 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.JMECollisionComponent;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
@@ -74,8 +74,8 @@ public abstract class BasicRenderer implements CellRendererJME {
         JMECollisionSystem collisionSystem = (JMECollisionSystem) 
                 ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
         
-        JMECollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
-        ret.addComponent(JMECollisionComponent.class, cc);
+        CollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
+        ret.addComponent(CollisionComponent.class, cc);
         
         return ret;        
     }
