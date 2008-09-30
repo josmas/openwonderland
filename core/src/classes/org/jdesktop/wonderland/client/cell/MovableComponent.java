@@ -65,7 +65,6 @@ public class MovableComponent extends CellComponent {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
                         public void messageReceived(CellMessage message) {
-            //                System.out.println("messageReceived "+message);
                             MovableMessage mov = (MovableMessage)message;
                             serverMoveRequest(new CellTransform(mov.getRotation(), mov.getTranslation()));
                         }
@@ -189,7 +188,7 @@ public class MovableComponent extends CellComponent {
     private void notifyServerCellMoveListeners(CellTransform transform, CellMoveSource source) {
         if (serverMoveListeners==null)
             return;
-        
+
         for(CellMoveListener listener : serverMoveListeners) {
             listener.cellMoved(transform, source);
         }
