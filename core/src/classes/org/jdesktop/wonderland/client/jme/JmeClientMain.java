@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
@@ -119,20 +119,24 @@ public class JmeClientMain {
         // center the frame
         frame.setLocationRelativeTo(null);
 
-	// Initialize the input manager
-	// TODO: CameraComponent cameraComp = ViewManager.getCameraComponent();
-	CameraComponent cameraComp = null;
+        // show frame
+        frame.setVisible(true);
+
+	// Initialize the input manager.
+	// Note: this also creates the view manager.
+	// TODO: low bug: we would like to initialize the input manager BEFORE frame.setVisible.
+	// But if we create the camera before frame.setVisible the client window never appears.
+	CameraComponent cameraComp = ViewManager.getViewManager().getCameraComponent();
 	InputManager inputManager = InputManager3D.getInputManager();
 	inputManager.initialize(wm, frame.getCanvas(), cameraComp);
 
-	// Default Policy: Enable global focus everywhere
+	// Default Policy: Enable global key and mouse focus everywhere 
 	// Note: the app base will impose its own (different) policy later
-	// TODO: not yet
-	//inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
+	inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
 
-	/* TODO: temporary: example global key event listener for Paul */
+	//TODO: temporary: example global key event listener for Paul */
 	InputManager3D.getInputManager().addGlobalEventListener(
-	    new EventClassListener /*TODO:EventClassFocusListener*/ () {
+	    new EventClassFocusListener () {
 		private final Logger logger = Logger.getLogger("My Logger");
 		public Class[] eventClassesToConsume () {
 		    return new Class[] { KeyEvent3D.class };
@@ -144,9 +148,6 @@ public class JmeClientMain {
 		    }
 		}
     	    });
-        
-        // show frame
-        frame.setVisible(true);
     }
     
     private static Properties loadProperties(String fileName) {

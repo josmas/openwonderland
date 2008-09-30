@@ -230,7 +230,9 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 		if (computedEvents == null) {
 		    computedEvents = new LinkedList<Event>();
 		}
-		computedEvents.add(event);
+		synchronized (computedEvents) {
+		    computedEvents.add(event);
+		}
 	    }
 	} catch (Exception ex) {
 	    ex.printStackTrace();
@@ -247,8 +249,10 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     @InternalAPI
     public void commit (ProcessorArmingCollection collection) {
 	// Commit all the events which were previously computd
-	for (Event event : computedEvents) {
-	    commitEvent(event);
+	synchronized (computedEvents) {
+	    for (Event event : computedEvents) {
+		commitEvent(event);
+	    }
 	}
     }
 

@@ -152,7 +152,7 @@ public class ViewManager {
      * @return
      * @InternalAPI
      */
-    private CameraComponent getCameraComponent() {
+    CameraComponent getCameraComponent() {
         return cameraComponent;
     }
     
