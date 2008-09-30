@@ -139,7 +139,8 @@ public class JmeClientMain {
 		}
 		public void commitEvent (Event event) {
 		    if (((KeyEvent3D)event).isPressed()) {
-			logger.warning("Global key listener: received event, event = " + event );
+			// NOTE: to test, change this to logger.warning
+			logger.fine("Global key listener: received event, event = " + event );
 		    }
 		}
     	    });
