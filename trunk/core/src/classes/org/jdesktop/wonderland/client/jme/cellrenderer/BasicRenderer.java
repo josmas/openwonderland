@@ -23,6 +23,8 @@ import com.jme.scene.Node;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.JMECollisionComponent;
+import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -68,6 +70,12 @@ public abstract class BasicRenderer implements CellRendererJME {
         
         RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
         ret.addComponent(RenderComponent.class, rc);
+        
+        JMECollisionSystem collisionSystem = (JMECollisionSystem) 
+                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
+        
+        JMECollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
+        ret.addComponent(JMECollisionComponent.class, cc);
         
         return ret;        
     }
