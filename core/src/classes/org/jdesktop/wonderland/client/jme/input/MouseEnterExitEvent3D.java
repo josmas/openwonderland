@@ -32,8 +32,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public class MouseEnterExitEvent3D extends MouseEvent3D {
 
     static {
-	/** Allocate this event type's ID. */
-	EVENT_ID = Event.allocateEventID();
+	/** Allocate this event type's class ID. */
+	EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
     /** Whether this event was generated as a result of an interactive user event. */

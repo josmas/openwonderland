@@ -34,10 +34,13 @@ public abstract class Event implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(Event.class.getName());
 
-    /** This event's ID. All concrete subclasses should call <code>Event.allocateEventID</code> to allocate this. */
-    public static int EVENT_ID;
+    /** 
+     * This event's class ID. All concrete subclasses should call <code>Event.allocateEventClassID</code>
+     * to allocate this. 
+     */
+    public static int EVENT_CLASS_ID;
 
-    private static SmallIntegerAllocator idAllocator = new SmallIntegerAllocator();
+    private static SmallIntegerAllocator classIdAllocator = new SmallIntegerAllocator();
 
     /** The entity to which this event was distributed. */
     protected Entity entity;
@@ -49,24 +52,24 @@ public abstract class Event implements java.io.Serializable {
     protected Event () {}
 
     /**
-     * Return the ID of this event type. 
+     * Return the class ID of this event type. 
      */
-    public int getID () {
-	return EVENT_ID;
+    public int getClassID () {
+	return EVENT_CLASS_ID;
     }
 
     /**
-     * Allocate a unique event ID.
+     * Allocate a unique event class ID.
      */
-    protected static int allocateEventID () {
-	return idAllocator.allocate();
+    protected static int allocateEventClassID () {
+	return classIdAllocator.allocate();
     }
 
     /**
-     * Free an already allocated event ID.
+     * Free an already allocated event class ID.
      */
-    protected static void free (int eventID) {
-	idAllocator.free(eventID);
+    protected static void free (int eventClassID) {
+	classIdAllocator.free(eventClassID);
     }
 
     /**
