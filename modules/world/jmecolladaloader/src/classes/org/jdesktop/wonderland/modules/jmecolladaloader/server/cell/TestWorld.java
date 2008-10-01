@@ -20,14 +20,18 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.RoomTestCellMO;
+import org.jdesktop.wonderland.server.ServerPlugin;
 
 /**
  *
  * @author paulby
  */
-public class TestWorld {
+public class TestWorld implements ServerPlugin {
 
     public TestWorld() {
+    }
+
+    public void initialize() {
         try {
 
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
