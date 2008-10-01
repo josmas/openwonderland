@@ -32,8 +32,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public class MouseMovedEvent3D extends MouseEvent3D {
 
     static {
-	/** Allocate this event type's ID. */
-	EVENT_ID = Event.allocateEventID();
+	/** Allocate this event type's class ID. */
+	EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
     /** Default constructor (for cloning) */

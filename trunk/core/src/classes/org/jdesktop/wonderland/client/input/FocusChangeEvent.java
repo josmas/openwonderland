@@ -29,8 +29,8 @@ import org.jdesktop.wonderland.common.InternalAPI;
 public class FocusChangeEvent extends Event {
 
     static {
-	/** Allocate this event type's ID. */
-	EVENT_ID = Event.allocateEventID();
+	/** Allocate this event type's class ID. */
+	EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
     /** The ways in which this event will change the focus sets. */

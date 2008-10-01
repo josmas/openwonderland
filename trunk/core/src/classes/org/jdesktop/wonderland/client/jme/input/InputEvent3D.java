@@ -63,12 +63,18 @@ abstract class InputEvent3D extends Event {
     }
 
     /**
+     * Returns the ID of the associated AWT input event.
+     */
+    public int getID () {
+	return awtEvent.getID();
+    }
+
+    /**
      * Returns the associated AWT input event
      */
     public InputEvent getAwtEvent() {
         return awtEvent;
     }
-    
     
     /** 
      * Returns the time stamp of when this event occurred
