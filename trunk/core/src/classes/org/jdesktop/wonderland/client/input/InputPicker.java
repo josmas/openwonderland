@@ -248,12 +248,15 @@ public abstract class InputPicker {
      */
     void pickMouseEventNonSwing (MouseEvent awtEvent) {
 	logger.fine("Picker: received awt event = " + awtEvent);
+	MouseEvent3D event;
 
 	// Determine the destination pick info by performing a pick, considering grabs. etc.
         destPickInfo = determineDestPickInfo(awtEvent);
 	if (destPickInfo == null || destPickInfo.size() <= 0) {
-	    // Pick miss. Ignore the event.
+	    // Pick miss. Send it along without pick info.
 	    logger.finest("Picker: pick miss");
+	    event = (MouseEvent3D) createWonderlandEvent(awtEvent);
+	    eventDistributor.enqueueEvent(event, null);
 	    return;
 	}
 	logger.fine("Picker: destPickInfo = " + destPickInfo);
@@ -265,7 +268,7 @@ public abstract class InputPicker {
 	}
 
 	// Do the rest of the work in the EventDistributor
-	MouseEvent3D event = (MouseEvent3D) createWonderlandEvent(awtEvent);
+	event = (MouseEvent3D) createWonderlandEvent(awtEvent);
 	eventDistributor.enqueueEvent(event, destPickInfo);
     }
 
