@@ -41,6 +41,23 @@ public class KeyEvent3DLogger extends EventClassListener {
 	logger.setLevel(Level.INFO);
     }
 
+    private String name;
+
+    /**
+     * Create an instance of KeyEvent3DLogger.
+     */
+    public KeyEvent3DLogger () {
+	this(null);
+    }
+
+    /**
+     * Create an instance of KeyEvent3DLogger.
+     * @param name The name of the logger.
+     */
+    public KeyEvent3DLogger (String name) {
+	this.name = name;
+    }
+
     /**
      * Consume all key events.
      */
@@ -49,7 +66,12 @@ public class KeyEvent3DLogger extends EventClassListener {
     }
 
     public void commitEvent (Event event) {
-	logger.info("Received key event, event = " + event + ", entity = " + event.getEntity());
+	StringBuffer sb = new StringBuffer();
+	if (name != null) {
+	    sb.append(name + ": ");
+	}
+	sb.append("Received key event, event = " + event + ", entity = " + event.getEntity());
+	logger.info(sb.toString());
     }
 }
 

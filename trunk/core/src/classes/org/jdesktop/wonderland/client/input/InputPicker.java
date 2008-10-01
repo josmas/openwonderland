@@ -315,12 +315,15 @@ public abstract class InputPicker {
 	// First perform the pick (the pick details in the info are ordered
 	// from least to greatest eye distance.
         PickInfo hitPickInfo = pickEventScreenPos(e.getX(), e.getY());
-	/*
+
+	/* For Debug
 	int n = hitPickInfo.size();
 	System.err.println("n = " + n);
 	for (int i = 0; i < n; i++) {
 	    PickDetails pd = hitPickInfo.get(i);
 	    System.err.println("pd[" + i + "] = " + pd);
+	    Entity pickEntity = pickDetailsToEntity(pd);
+	    System.err.println("entity[" + i + "] = " + pickEntity);
 	}
 	*/
 

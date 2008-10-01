@@ -94,7 +94,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 
 	// Walk through successive depth levels, as long as propagateToUnder is true,
 	// searching up the parent chain in each level
-	if (pickInfo == null) return;
+        if (pickInfo == null) return;
 	PickDetails pickDetails = pickInfo.get(0);
 	logger.fine("pickDetails = " + pickDetails);
 	int idx = 0;

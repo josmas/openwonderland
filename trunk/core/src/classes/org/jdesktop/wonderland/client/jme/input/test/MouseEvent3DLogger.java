@@ -41,6 +41,23 @@ public class MouseEvent3DLogger extends EventClassListener {
 	logger.setLevel(Level.INFO);
     }
 
+    private String name;
+
+    /**
+     * Create an instance of MouseEvent3DLogger.
+     */
+    public MouseEvent3DLogger () {
+	this(null);
+    }
+
+    /**
+     * Create an instance of MouseEvent3DLogger.
+     * @param name The name of the logger.
+     */
+    public MouseEvent3DLogger (String name) {
+	this.name = name;
+    }
+
     /**
      * Consume all mouse events.
      */
@@ -49,7 +66,12 @@ public class MouseEvent3DLogger extends EventClassListener {
     }
 
     public void commitEvent (Event event) {
-	logger.info("Received mouse event, event = " + event + ", entity = " + event.getEntity());
+	StringBuffer sb = new StringBuffer();
+	if (name != null) {
+	    sb.append(name + ": ");
+	}
+	sb.append("Received mouse event, event = " + event + ", entity = " + event.getEntity());
+	logger.info(sb.toString());
     }
 }
 
