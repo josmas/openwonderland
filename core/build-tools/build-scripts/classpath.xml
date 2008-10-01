@@ -30,6 +30,7 @@
         <path location="${core.common.dir}/TimingFramework.jar"/>
 	<path location="${core.common.dir}/mtgame.jar"/>
 	<path location="${core.common.dir}/jbullet.jar"/>
+	<path location="${core.common.dir}/vecmath.jar"/>
     </pathconvert>
     
     <pathconvert property="darkstar.server.classpath">
