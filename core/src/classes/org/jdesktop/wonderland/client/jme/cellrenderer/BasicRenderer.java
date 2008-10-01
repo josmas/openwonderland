@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
+import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
@@ -63,7 +64,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         rootNode = createSceneGraph(ret);
         
         if (cell.getComponent(MovableComponent.class)!=null) {
-            // Avatars are movable so create a move processor
+            // The cell is movable so create a move processor
             moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
             ret.addComponent(ProcessorComponent.class, moveProcessor);
         }
@@ -76,7 +77,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         
         CollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
         ret.addComponent(CollisionComponent.class, cc);
-        
+
         return ret;        
     }
 

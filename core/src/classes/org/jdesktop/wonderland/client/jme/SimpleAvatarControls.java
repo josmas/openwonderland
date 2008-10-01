@@ -24,6 +24,7 @@ import com.jme.scene.Node;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
+import java.util.LinkedList;
 import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.AwtEventCondition;
 import org.jdesktop.mtgame.NewFrameCondition;
@@ -31,9 +32,16 @@ import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.AWTEventProcessorComponent;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseMovedEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 
@@ -43,7 +51,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * 
  * @author Doug Twilleager
  */
-public class SimpleAvatarControls extends AWTEventProcessorComponent {
+public class SimpleAvatarControls extends ProcessorComponent {
     /**
      * The arming conditions for this processor
      */
@@ -129,21 +137,27 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent {
     
     private AWTInputComponent listener;
     
+    private final LinkedList<Event> events = new LinkedList();
+    
     /**
      * The default constructor
      */
-    public SimpleAvatarControls(AWTInputComponent listener, Cell viewCell,
-            WorldManager wm) {
-        super(listener);
-        this.listener = listener;
+    public SimpleAvatarControls(Cell viewCell, WorldManager wm) {
+        super();
         target = viewCell;
         movableComponent = viewCell.getComponent(MovableComponent.class);
         worldManager = wm;
-//        worldManager.addNodeListener(this);
+
+        // Setup the rotated vectors
+        directionRotation.fromAngleAxis(rotY*(float)Math.PI/180.0f, yDir);
+        directionRotation.mult(fwdDirection, rotatedFwdDirection);
+        directionRotation.mult(sideDirection, rotatedSideDirection);
+        quaternion.fromAngles(rotX*(float)Math.PI/180.0f, rotY*(float)Math.PI/180.0f, 0.0f);
         
         collection = new ProcessorArmingCollection(this);
-        collection.addCondition(new AwtEventCondition(this));
         collection.addCondition(new NewFrameCondition(this));
+
+        ClientContext.getInputManager().addGlobalEventListener(new AvatarEventListener());
     }
     
     @Override
@@ -153,40 +167,43 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent {
     
     @Override
     public void compute(ProcessorArmingCollection collection) {
-        Object[] events = listener.getEvents();
-        updateRotations = false;
+        synchronized(events) {
+            updateRotations = false;
         
-        for (int i=0; i<events.length; i++) {
-            if (events[i] instanceof MouseEvent) {
-                MouseEvent me = (MouseEvent) events[i];
-                if (me.getID() == MouseEvent.MOUSE_DRAGGED && (me.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {
-                    processRotations(me);
-                    updateRotations = true;
+            for (Event e : events) {
+                if (e instanceof MouseDraggedEvent3D) {
+                    MouseEvent3D me = (MouseEvent3D)e;
+                    MouseEvent awtMe = (MouseEvent)me.getAwtEvent();
+                    if (awtMe.getID() == MouseEvent.MOUSE_DRAGGED && (awtMe.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {
+                        processRotations(me);
+                        updateRotations = true;
+                    }
+                } else if (e instanceof KeyEvent3D) {
+                    KeyEvent3D ke = (KeyEvent3D)e;
+                    processKeyEvent(ke);
                 }
-            } else if (events[i] instanceof KeyEvent) {
-                KeyEvent ke = (KeyEvent) events[i];
-                processKeyEvent(ke);
             }
+            events.clear();
         }
         
         if (updateRotations) {
             directionRotation.fromAngleAxis(rotY*(float)Math.PI/180.0f, yDir);
             directionRotation.mult(fwdDirection, rotatedFwdDirection);
             directionRotation.mult(sideDirection, rotatedSideDirection);
-            //System.out.println("Forward: " + rotatedFwdDirection);
+//            System.out.println("Forward: " + rotatedFwdDirection);
             quaternion.fromAngles(rotX*(float)Math.PI/180.0f, rotY*(float)Math.PI/180.0f, 0.0f);
         }
         
         updatePosition();
     }
     
-    private void processRotations(MouseEvent me) {
+    private void processRotations(MouseEvent3D me) {
         int deltaX = 0;
         int deltaY = 0;
         int currentX = 0;
         int currentY = 0;
-        currentX = me.getX();
-        currentY = me.getY();
+        currentX = ((MouseEvent)me.getAwtEvent()).getX();
+        currentY = ((MouseEvent)me.getAwtEvent()).getY();
 
         if (lastMouseX == -1) {
             // First time through, just initialize
@@ -210,7 +227,8 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent {
     }
     
     
-    private void processKeyEvent(KeyEvent ke) {
+    private void processKeyEvent(KeyEvent3D ke3D) {
+        KeyEvent ke = (KeyEvent)ke3D.getAwtEvent();
         if (ke.getID() == KeyEvent.KEY_PRESSED) {
             if (ke.getKeyCode() == KeyEvent.VK_W) {
                 state = WALKING_FORWARD;
@@ -258,7 +276,6 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent {
                 position.z -= (walkInc * rotatedSideDirection.z);
                 break;  
         }
-        
     }
     /**
      * The commit methods
@@ -273,9 +290,22 @@ public class SimpleAvatarControls extends AWTEventProcessorComponent {
     }
     
     /**
-     * The scene listener method
+     * The Event listener for the avatar. This is attached as a global event
+     * listener.
      */
-    public void nodeMoved(Node node) {
-//        System.out.println("Node Moved " + node);
+    class AvatarEventListener extends EventClassFocusListener {
+        @Override
+        public Class[] eventClassesToConsume () {
+            return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+        }
+
+        @Override
+        public void commitEvent (Event event) {
+//            System.out.println("evt " +event);
+            synchronized(events) {
+                events.add(event);
+            }
+        }
+        
     }
 }

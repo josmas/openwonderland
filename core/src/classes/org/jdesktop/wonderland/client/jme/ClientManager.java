@@ -173,8 +173,7 @@ public class ClientManager {
                 if (rend instanceof CellRendererJME) {
                     Entity parentEntity= findParentEntity(ret.getParent());
                     Entity thisEntity = ((CellRendererJME)rend).getEntity();
-
-                    // TODO When subentities work uncomment this if test
+                    
                     if (parentEntity!=null)
                         parentEntity.addEntity(thisEntity);
                     else
