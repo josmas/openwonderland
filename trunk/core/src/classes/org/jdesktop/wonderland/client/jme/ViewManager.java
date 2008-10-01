@@ -25,10 +25,12 @@ import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.InputManager;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -91,14 +93,12 @@ public class ViewManager {
         if (eventProcessor==null) {
             // Create the input listener and process to control the avatar
             WorldManager wm = JmeClientMain.getWorldManager();
-            AWTInputComponent eventListener = (AWTInputComponent) wm.getInputManager().createInputComponent(InputManager.MOUSE_EVENTS | InputManager.KEY_EVENTS);
-            eventProcessor = new SimpleAvatarControls(eventListener, cell, wm);
+//            AWTInputComponent eventListener = (AWTInputComponent) wm.getInputManager().createInputComponent(InputManager.MOUSE_EVENTS | InputManager.KEY_EVENTS);
+            eventProcessor = new SimpleAvatarControls(cell, wm);
             eventProcessor.setRunInRenderer(true);
-            
+
             // Chaining the camera here does not seem to work...
-//            eventProcessor.addToChain(cameraProcessor);
-//            wm.getInputManager().addAWTKeyListener(eventListener);
-//            wm.getInputManager().addAWTMouseListener(eventListener);    
+            eventProcessor.addToChain(cameraProcessor);
         }
         
         entity.addComponent(ProcessorComponent.class, eventProcessor);

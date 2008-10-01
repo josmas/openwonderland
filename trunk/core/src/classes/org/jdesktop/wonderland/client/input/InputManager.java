@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 /**
@@ -214,6 +215,7 @@ public abstract class InputManager
 	    canvas.addMouseMotionListener(this);
 	    canvas.addMouseWheelListener(this);
 	}
+        ClientContext.registerInputManager(this);
 
 	logger.fine("Input System initialization complete.");
     }
