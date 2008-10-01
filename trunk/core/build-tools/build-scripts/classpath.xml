@@ -29,6 +29,7 @@
         <path location="${core.common.dir}/swing-layout-1.0.jar"/>
         <path location="${core.common.dir}/TimingFramework.jar"/>
 	<path location="${core.common.dir}/mtgame.jar"/>
+	<path location="${core.common.dir}/jbullet.jar"/>
     </pathconvert>
     
     <pathconvert property="darkstar.server.classpath">
