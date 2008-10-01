@@ -56,7 +56,7 @@ public class EventClassListener extends EventListenerBaseImpl {
                 logger.warning("Event ignored.");
 		return false;
             }
-            if (event.getClass().isAssignableFrom(eventClass)) {
+            if (eventClass.isAssignableFrom(event.getClass())) {
 	        return true;
             }
         }

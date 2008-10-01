@@ -312,7 +312,15 @@ public abstract class InputPicker {
 	// First perform the pick (the pick details in the info are ordered
 	// from least to greatest eye distance.
         PickInfo hitPickInfo = pickEventScreenPos(e.getX(), e.getY());
-        
+	/*
+	int n = hitPickInfo.size();
+	System.err.println("n = " + n);
+	for (int i = 0; i < n; i++) {
+	    PickDetails pd = hitPickInfo.get(i);
+	    System.err.println("pd[" + i + "] = " + pd);
+	}
+	*/
+
 	// If no grab is active and we didn't hit anything return a miss */
 	if (!grabIsActive && (hitPickInfo == null || hitPickInfo.size() <= 0)) {
 	    if (e.getID() == MouseEvent.MOUSE_RELEASED) {
@@ -400,7 +408,7 @@ public abstract class InputPicker {
 	// Need to invert y because (0f, 0f) is at the button left corner.
 	eventPointScreen.setX((float)x);
 	eventPointScreen.setY((float)(canvas.getHeight()-1-y));
-	
+
 	// Get the world space coordinates of the screen space point from the event
 	// (The glass plate of the screen is considered to be at at z = 0 in world space
 	camera.getWorldCoordinates(eventPointScreen, 0f, eventPointWorld);

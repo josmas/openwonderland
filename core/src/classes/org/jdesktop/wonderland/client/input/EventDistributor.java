@@ -361,10 +361,17 @@ public abstract class EventDistributor implements Runnable {
 	    }
 	}
 
-	/** Does the focus set contain the given event class? */
-	private boolean contains (Class clazz) {
+	/** Does the focus set contain the given event class or one of its super classes? */
+	private boolean containsClassOrSuperclass (Class clazz) {
 	    if (focussedClasses == null) return false;
-	    return focussedClasses.contains(clazz);
+	    Iterator<Class> it = focussedClasses.iterator();
+	    while (it.hasNext()) {
+		Class cl = it.next();
+		if (cl.isAssignableFrom(clazz)) {
+		    return true;
+		}
+	    }
+	    return false;
 	}
 
 	/** Returns the number of event classes in the focus set. */
@@ -405,6 +412,6 @@ public abstract class EventDistributor implements Runnable {
     private static boolean entityHasFocus (Event event, Entity entity) {
 	EventFocusComponent focusComp = (EventFocusComponent) entity.getComponent(EventFocusComponent.class);
 	if (focusComp == null) return false;
-	return focusComp.contains(event.getClass());
+	return focusComp.containsClassOrSuperclass(event.getClass());
     }
 }
