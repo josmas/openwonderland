@@ -135,14 +135,12 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 	    collection = new EventListenerCollection();
 	    entity.addComponent(EventListenerCollection.class, collection);
 	} else {
-
 	    // See if listener is already attached to this entity
 	    if (collection.contains(this)) {
 		return;
 	    }
-
-	    collection.add(this);
 	}	
+	collection.add(this);
 
 	addProcessorCompToEntity(this, entity);
 

@@ -146,7 +146,7 @@ public abstract class EventDistributor implements Runnable {
     protected void tryListenersForEntity (Entity entity, Event event, PropagationState propState) {
 	logger.fine("tryListenersForEntity, entity = " + entity + ", event = " + event);
 	EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
-	if (listeners == null) { 
+	if (listeners == null || listeners.size() <= 0) { 
 	    logger.fine("Entity has no listeners");
 	    // propagatesToParent is true, so OR makes no change to its accumulator
 	    // propagatesToUnder is false, so OR makes its accumulator is false

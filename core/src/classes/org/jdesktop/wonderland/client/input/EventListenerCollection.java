@@ -78,4 +78,14 @@ class EventListenerCollection extends EntityComponent {
     Iterator<EventListener> iterator () {
 	return listeners.iterator();
     }
+
+    /**
+     * FOR DEBUG
+     */
+    public void print () {
+	System.err.println("Event listener collection size = " + listeners.size());
+	for (EventListener listener : listeners) {
+	    System.err.println("listener = " + listener);
+	}
+    }
 }
