@@ -63,8 +63,10 @@ public class SpinObjectEventListener extends EventClassListener {
 	    return;
 	}
 	Entity entity = event.getEntity();
-	if (entity.getComponent(SpinProcessor.class) != null) {
+	SpinProcessor spinner = (SpinProcessor) entity.getComponent(SpinProcessor.class);
+	if (spinner != null) {
 	    // Stop the spinning
+	    spinner.stop();
 	    entity.removeComponent(SpinProcessor.class);
 	} else {
 	    // Start the spinning
@@ -83,6 +85,10 @@ public class SpinObjectEventListener extends EventClassListener {
         
 	SpinProcessor (Entity entity) throws InstantiationException {
 	    super("Spinner", ClientContextJME.getWorldManager(), getNode(entity), 10);
+	}
+
+	void stop () {
+	    setArmingCondition(null);
 	}
 
 	static Node getNode (Entity entity) throws InstantiationException {
