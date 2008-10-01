@@ -50,12 +50,12 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /** Whether the listener is enabled. */
     protected boolean enabled = true;
-
+    
     /** The number of entities to which the listener is attached */
     private int numEntitiesAttached;
 
     /** The list of events which was encountered when computeEvent was last called. */
-    private LinkedList<Event> computedEvents;
+    private LinkedList<Event> computedEvents = new LinkedList<Event>();
 
     /**
      * {@inheritDoc}
@@ -210,11 +210,9 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     @InternalAPI
     public void compute (ProcessorArmingCollection collection) {
 	Event event = null;
-
-	if (computedEvents != null) {
+	synchronized (computedEvents) {
 	    computedEvents.clear();
 	}
-
 	try {
 	    while (inputQueue.peek() != null) {
 
@@ -227,9 +225,6 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
 		// Compute the event
 		computeEvent(event);
-		if (computedEvents == null) {
-		    computedEvents = new LinkedList<Event>();
-		}
 		synchronized (computedEvents) {
 		    computedEvents.add(event);
 		}

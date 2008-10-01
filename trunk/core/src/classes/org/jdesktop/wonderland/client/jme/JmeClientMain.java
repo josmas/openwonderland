@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 
 /**
  *
@@ -139,12 +140,16 @@ public class JmeClientMain {
 	    new EventClassFocusListener () {
 		private final Logger logger = Logger.getLogger("My Logger");
 		public Class[] eventClassesToConsume () {
-		    return new Class[] { KeyEvent3D.class };
+		    return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
 		}
 		public void commitEvent (Event event) {
-		    if (((KeyEvent3D)event).isPressed()) {
-			// NOTE: to test, change this to logger.warning
-			logger.fine("Global key listener: received event, event = " + event );
+		    // NOTE: to test, change the two logger.fine calls below to logger.warning
+		    if (event instanceof KeyEvent3D) {
+			if (((KeyEvent3D)event).isPressed()) {
+			    logger.fine("Global listener: received key event, event = " + event );
+			}
+		    } else {
+			logger.fine("Global listener: received mouse event, event = " + event);
 		    }
 		}
     	    });

@@ -84,7 +84,6 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	}
 	
 	// First try the global event listeners
-	// TODO: clone
 	if (event instanceof MouseEvent3D) {
 	    ((MouseEvent3D)event).setPickDetails((PickDetails)null);
 	}
@@ -107,7 +106,6 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    // See whether the picked entity wants the event.
 	    if (event instanceof MouseEvent3D) {
 		((MouseEvent3D)event).setPickDetails(pickDetails);
-		
 	    }
 	    Entity entity = InputPicker.pickDetailsToEntity(pickDetails);
 	    tryListenersForEntity(entity, event, propState);
