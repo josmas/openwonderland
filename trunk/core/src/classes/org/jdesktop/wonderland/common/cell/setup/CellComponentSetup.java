@@ -16,10 +16,10 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.server.cell.setup;
+package org.jdesktop.wonderland.common.cell.setup;
 
 /**
- * The CellSetupComponent class is the base class for the cell configuration
+ * The CellComponentSetup class is the base class for the cell configuration
  * (setup) information for all cell components. Individual cell components may
  * be mixed into cells to give them added functionality: subclasses of this
  * class provide the necessary configuration information.
@@ -31,10 +31,10 @@ package org.jdesktop.wonderland.server.cell.setup;
  * design its own XML schema for its setup information, typically using the
  * @XmlElement and @XmlAttribute annotations.
  * <p>
- * Each subclass of CellSetupComponent must declare itself with the mechanism
- * annotated JAXB classes, TBD.
+ * Each subclass of CellComponentSetup must declare itself with the mechanism
+ * annotated JAXB classes, by implementing the CellSetupAPI interface.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public abstract class CellSetupComponent {
+public abstract class CellComponentSetup {
 }

@@ -18,8 +18,6 @@
 
 package org.jdesktop.wonderland.common.cell.setup;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
@@ -28,12 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -77,10 +76,10 @@ public abstract class BasicCellSetup implements Serializable {
     })
     public MetaDataHashMap metadata = new MetaDataHashMap();
     
-//    @XmlElementRefs({
-//        @XmlElementRef()
-//    })
-//    public CellSetupComponent components[] = new CellSetupComponent[0];
+    @XmlElementRefs({
+        @XmlElementRef()
+    })
+    public CellComponentSetup components[] = new CellComponentSetup[0];
     
     /*
      * The internal representation of the metadata as a hashed map. The HashMap
@@ -272,24 +271,24 @@ public abstract class BasicCellSetup implements Serializable {
         this.rotation = rotation;
     }
     
-//    /**
-//     * Returns the cell's collection of component setup information
-//     * 
-//     * @return The cell's collection of component setup information
-//     */
-//    @XmlTransient public CellSetupComponent[] getCellSetupComponents() {
-//        return this.components;
-//    }
-//    
-//    /**
-//     * Sets the cell's collection of component setup information. If null, then
-//     * this property will not be written out to the file.
-//     * 
-//     * @param bounds The new cell bounds
-//     */
-//    public void setCellSetupComponents(CellSetupComponent[] components) {
-//        this.components = components;
-//    }
+    /**
+     * Returns the cell's collection of component setup information
+     * 
+     * @return The cell's collection of component setup information
+     */
+    @XmlTransient public CellComponentSetup[] getCellComponentSetups() {
+        return this.components;
+    }
+    
+    /**
+     * Sets the cell's collection of component setup information. If null, then
+     * this property will not be written out to the file.
+     * 
+     * @param bounds The new cell bounds
+     */
+    public void setCellComponentSetups(CellComponentSetup[] components) {
+        this.components = components;
+    }
     
     /**
      * Returns the cell metadata.
