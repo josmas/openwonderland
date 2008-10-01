@@ -39,8 +39,7 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.client.jme.input.test.KeyEvent3DLogger;
-import org.jdesktop.wonderland.client.jme.input.test.MouseEvent3DLogger;
+import org.jdesktop.wonderland.client.jme.input.test.SpinObjectEventListener;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -181,7 +180,7 @@ public class ClientManager {
                     else
                         JmeClientMain.getWorldManager().addEntity(thisEntity);
                     
-		    /* TODO: temporary 
+		    /* TODO: temporary
 		    MouseEvent3DLogger mouseEventListener = 
 			new MouseEvent3DLogger(className+"_"+cellID);
 		    mouseEventListener.addToEntity(thisEntity);
@@ -193,6 +192,11 @@ public class ClientManager {
 		    keyEventListener.addToEntity(thisEntity);
 		    */
 		    
+		    /* TODO: temporary
+		    SpinObjectEventListener spinEventListener = new SpinObjectEventListener();
+		    spinEventListener.addToEntity(thisEntity);
+		    */
+
                     if (parentEntity!=null && thisEntity!=null) {                        
                         RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
                         RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
