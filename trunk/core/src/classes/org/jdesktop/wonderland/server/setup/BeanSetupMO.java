@@ -45,10 +45,4 @@ public interface BeanSetupMO {
      * @param setup a Java bean with updated properties
      */
     public void reconfigureCell(BasicCellSetup setup);
-    
-    /**
-     * Write the cell's current state to a JavaBean.
-     * @return a JavaBean representing the current state
-     */
-    public BasicCellSetup getCellMOSetup();
 }
