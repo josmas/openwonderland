@@ -138,7 +138,7 @@ public class ViewManager {
         
         // Add the camera
         Entity camera = new Entity("DefaultCamera");
-        cameraComponent = wm.getRenderManager().createCameraComponent(cameraSG, cameraNode, width, height, 45.0f, aspect, 1.0f, 1000.0f, true);
+        cameraComponent = wm.getRenderManager().createCameraComponent(cameraSG, cameraNode, width, height, 45.0f, aspect, 1.0f, 2000.0f, true);
         cameraComponent.setCameraSceneGraph(cameraSG);
         cameraComponent.setCameraNode(cameraNode);
         camera.addComponent(CameraComponent.class, cameraComponent);
