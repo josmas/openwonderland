@@ -74,7 +74,7 @@ public class MainFrame extends javax.swing.JFrame {
         contentPane = (JPanel) this.getContentPane();
         contentPane.setLayout(new BorderLayout());
         mainPanel.setLayout(new GridBagLayout());
-        setTitle("Wonderland");
+        setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
 
         contentPane.add(mainPanel, BorderLayout.NORTH);
         mainPanel.add(fpsLabel,
@@ -117,9 +117,9 @@ public class MainFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jMenu3.setText("null");
+        jMenu3.setText(bundle.getString("File")); // NOI18N
 
-        exitMI.setText("null");
+        exitMI.setText(bundle.getString("Exit")); // NOI18N
         exitMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitMIActionPerformed(evt);
@@ -129,12 +129,12 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(jMenu3);
 
-        jMenu4.setText("null");
+        jMenu4.setText(bundle.getString("Edit")); // NOI18N
         jMenuBar2.add(jMenu4);
 
-        toolsMenu.setText("null");
+        toolsMenu.setText(bundle.getString("Tools")); // NOI18N
 
-        modelImportMI.setText("null");
+        modelImportMI.setText(bundle.getString("Model_Importer...")); // NOI18N
         modelImportMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 modelImportMIActionPerformed(evt);
@@ -142,7 +142,8 @@ public class MainFrame extends javax.swing.JFrame {
         });
         toolsMenu.add(modelImportMI);
 
-        cellViewerMI.setText("Cell Viewer...");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
+        cellViewerMI.setText(bundle.getString("Cell_Viewer...")); // NOI18N
         cellViewerMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cellViewerMIActionPerformed(evt);
@@ -152,9 +153,9 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(toolsMenu);
 
-        jMenu1.setText("Help");
+        jMenu1.setText(bundle.getString("Help")); // NOI18N
 
-        jMenuItem1.setText("User Guide");
+        jMenuItem1.setText(bundle.getString("User_Guide")); // NOI18N
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 help(evt);
