@@ -73,7 +73,7 @@ public class MovableComponentMO extends CellComponentMO {
         if (live) {
             CellMO cell = cellRef.get();
             SpaceMO[] currentSpace = WonderlandContext.getCellManager().getEnclosingSpace(
-                                        cell.getLocalToWorld(null).getTranslation(null));
+                                        cell.getWorldTransform(null).getTranslation(null));
             currentSpaceRef = AppContext.getDataManager().createReference(currentSpace[0]);  
         } else {
             currentSpaceRef = null;
@@ -92,7 +92,7 @@ public class MovableComponentMO extends CellComponentMO {
         channelComponent = channelComponentRef.getForUpdate();
         
         // TODO only handles a single space at the moment
-        CellTransform cellWorld = cell.getLocalToWorld(cellTransformTmp);
+        CellTransform cellWorld = cell.getWorldTransform(cellTransformTmp);
         SpaceMO[] spaceSet = WonderlandContext.getCellManager().getEnclosingSpace(cellWorld.getTranslation(v3fTmp));
         SpaceMO newSpace = spaceSet[0];
         ManagedReference<SpaceMO> newSpaceRef = AppContext.getDataManager().createReference(newSpace);
@@ -112,7 +112,7 @@ public class MovableComponentMO extends CellComponentMO {
      * Check if the object needs to be added as 'in' other spaces
      */
     private void checkForNewSpace(CellMO cell, Collection<SpaceInfo> currentSpaces) {
-        Vector3f origin = cell.getLocalToWorld(cellTransformTmp).getTranslation(v3fTmp);
+        Vector3f origin = cell.getWorldTransform(cellTransformTmp).getTranslation(v3fTmp);
         
         for(SpaceInfo spaceInfo : currentSpaces) {
             Collection<ManagedReference<SpaceMO>> proximity = spaceInfo.getSpaceRef().get().getSpaces(cell.getWorldBounds());

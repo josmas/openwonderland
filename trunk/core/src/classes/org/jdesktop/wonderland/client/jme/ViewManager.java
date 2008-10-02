@@ -100,6 +100,9 @@ public class ViewManager {
             // Chaining the camera here does not seem to work...
             eventProcessor.addToChain(cameraProcessor);
         }
+
+        // Set initial camera position
+        cameraProcessor.viewMoved(cell.getWorldTransform());
         
         entity.addComponent(ProcessorComponent.class, eventProcessor);
         attachCell = cell;
@@ -170,7 +173,7 @@ public class ViewManager {
     class CellListener implements TransformChangeListener {
 
         public void transformChanged(Cell cell) {
-            cameraProcessor.viewMoved(cell.getLocalToWorldTransform());
+            cameraProcessor.viewMoved(cell.getWorldTransform());
         }
         
     }
