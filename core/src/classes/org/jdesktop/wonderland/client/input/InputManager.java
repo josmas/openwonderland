@@ -252,9 +252,8 @@ public abstract class InputManager
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
-     * <br><br>
+     * {@inheritDoc}
+     * <br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
@@ -264,9 +263,8 @@ public abstract class InputManager
     
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
-     * <br><br>
+     * {@inheritDoc}
+     * <br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
@@ -276,9 +274,8 @@ public abstract class InputManager
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
-     * <br><br>
+     * {@inheritDoc}
+     * <br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
@@ -288,9 +285,8 @@ public abstract class InputManager
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
-     * <br><br>
+     * {@inheritDoc}
+     * <br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
@@ -300,9 +296,8 @@ public abstract class InputManager
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
-     * <br><br>
+     * {@inheritDoc}
+     * <br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
@@ -312,9 +307,8 @@ public abstract class InputManager
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
-     * <br><br>
+     * {@inheritDoc}
+     * <br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
@@ -324,9 +318,8 @@ public abstract class InputManager
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
-     * <br><br>
+     * {@inheritDoc}
+     * <br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
@@ -336,9 +329,8 @@ public abstract class InputManager
     
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
-     * <br><br>
+     * {@inheritDoc}
+     * <br>
      * Only used in the non-embedded swing case.
      */
     @InternalAPI
@@ -348,8 +340,7 @@ public abstract class InputManager
     
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
+     * {@inheritDoc}
      */
     @InternalAPI
     public void keyPressed(KeyEvent e) {
@@ -358,8 +349,7 @@ public abstract class InputManager
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
+     * {@inheritDoc}
      */
     @InternalAPI
     public void keyReleased(KeyEvent e) {
@@ -368,8 +358,7 @@ public abstract class InputManager
 
     /**
      * INTERNAL ONLY
-     * <br><br>
-     * <@inheritDoc>
+     * {@inheritDoc}
      */
     @InternalAPI
     public void keyTyped(KeyEvent e) {
