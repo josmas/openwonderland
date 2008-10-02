@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
@@ -128,7 +129,7 @@ public class JmeClientMain {
 	// TODO: low bug: we would like to initialize the input manager BEFORE frame.setVisible.
 	// But if we create the camera before frame.setVisible the client window never appears.
 	CameraComponent cameraComp = ViewManager.getViewManager().getCameraComponent();
-	InputManager inputManager = InputManager3D.getInputManager();
+	InputManager inputManager = ClientContext.getInputManager();
 	inputManager.initialize(wm, frame.getCanvas(), cameraComp);
 
 	// Default Policy: Enable global key and mouse focus everywhere 

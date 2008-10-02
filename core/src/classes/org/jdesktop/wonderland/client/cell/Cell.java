@@ -524,7 +524,7 @@ public class Cell {
             try {
                 Class compClazz = Class.forName(compClassname);
                 if (!components.containsKey(compClazz)) {
-                    logger.warning("Installing component "+compClassname);
+                    logger.info("Installing component "+compClassname);
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
                     addComponent(constructor.newInstance(this));
                 }

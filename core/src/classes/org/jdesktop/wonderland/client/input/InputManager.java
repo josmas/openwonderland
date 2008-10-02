@@ -215,7 +215,6 @@ public abstract class InputManager
 	    canvas.addMouseMotionListener(this);
 	    canvas.addMouseWheelListener(this);
 	}
-        ClientContext.registerInputManager(this);
 
 	logger.fine("Input System initialization complete.");
     }
