@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.testcells.client.cell;
 
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.jme.input.test.MouseEvent3DLogger;
 import org.jdesktop.wonderland.client.jme.input.test.SpinObjectEventListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.ShapeRenderer;
@@ -46,10 +47,15 @@ public class MouseSpinCell extends Cell {
                 ret= new ShapeRenderer(this);
                 break;                
         }
-        
-//        SpinObjectEventListener spinEventListener = new SpinObjectEventListener();
-//        spinEventListener.addToEntity(((CellRendererJME)ret).getEntity());
-                
+
+
+        SpinObjectEventListener spinEventListener = new SpinObjectEventListener();
+        spinEventListener.addToEntity(((CellRendererJME)ret).getEntity());
+
+        MouseEvent3DLogger mouseEventListener =
+			new MouseEvent3DLogger(getCellID().toString());
+        mouseEventListener.addToEntity(((CellRendererJME)ret).getEntity());
+
         return ret;
     }
     
