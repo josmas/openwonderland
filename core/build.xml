@@ -69,6 +69,14 @@
         </java>
     </target>
 
+    <target name="run-dbtest" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.assetmgr.AssetDB" fork="true">
+            <classpath>
+                <pathelement path="${core-client.classpath}"/>
+            </classpath>
+        </java>
+    </target>
+
     <!-- run the server -->
     <target name="run-server" depends="package" description="Build core packages">
         <!-- unzip the distributed packages into the run directory -->
