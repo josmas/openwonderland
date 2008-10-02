@@ -45,8 +45,9 @@ import sun.misc.Service;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class CellSetupFactory {
-    /* A list of core cell setup class names, currently none */
+    /* A list of core cell setup class names, currently only for components */
     private static String[] coreSetup = {
+        "org.jdesktop.wonderland.common.cell.setup.CellComponentSetup"
     };
     
     /* The XML marshaller and unmarshaller for later use */
