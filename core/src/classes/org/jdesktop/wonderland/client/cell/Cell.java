@@ -50,6 +50,7 @@ public class Cell {
     private ArrayList<Cell> children = null;
     private CellTransform localTransform;
     private CellTransform local2VW = new CellTransform(null, null);
+    private CellTransform worldTransform = new CellTransform(null, null);
     private CellID cellID;
     private String name=null;
     private CellStatus currentStatus = CellStatus.DISK;
@@ -246,12 +247,12 @@ public class Cell {
         
         if (localTransform==null) {
             this.localTransform=null;
-            // Get parent local2VW
+            // Get parent worldTransform
             Cell current=getParent();
             while(current!=null) {
-                CellTransform parentLocal2VW = current.getLocalToWorldTransform();
-                if (parentLocal2VW!=null) {
-                    setLocalToWorldTransform(parentLocal2VW);  // this method also calls notifyTransformChangeListeners
+                CellTransform parentWorldTransform = current.getWorldTransform();
+                if (parentWorldTransform!=null) {
+                    setWorldTransform(parentWorldTransform);  // this method also calls notifyTransformChangeListeners
                     current = null;
                 } else
                     current = current.getParent();
@@ -259,13 +260,18 @@ public class Cell {
         } else {
             this.localTransform = (CellTransform) localTransform.clone(null);
             if (parent!=null) {
-                local2VW = (CellTransform) localTransform.clone(null);
-                local2VW = local2VW.mul(parent.getLocalToWorldTransform());
+                worldTransform = (CellTransform) localTransform.clone(null);
+                worldTransform = worldTransform.mul(parent.getWorldTransform());
                 cachedVWBounds = localBounds.clone(cachedVWBounds);
-                local2VW.transform(cachedVWBounds);                
+                worldTransform.transform(cachedVWBounds);                
+
+                local2VW = null;
             } else if (this instanceof RootCell) {
-                local2VW = (CellTransform) localTransform.clone(null);
+                worldTransform = (CellTransform)localTransform.clone(null);
+                local2VW = null;
+                
                 cachedVWBounds = localBounds.clone(cachedVWBounds);               
+                worldTransform.transform(cachedVWBounds);                
             }
             
             notifyTransformChangeListeners();
@@ -281,8 +287,8 @@ public class Cell {
 
         // Notify Renderers that the cell has moved
         for(CellRenderer rend : cellRenderers.values())
-            rend.cellTransformUpdate(local2VW);
-        
+            rend.cellTransformUpdate(worldTransform);
+
     }
         
     /**
@@ -290,9 +296,15 @@ public class Cell {
      * @return cells local to VWorld transform
      */
     public CellTransform getLocalToWorldTransform() {
-        if (local2VW==null)
-            return null;
+        if (local2VW==null) {
+            local2VW = worldTransform.clone(null);
+            local2VW.invert();
+        } 
         return (CellTransform) local2VW.clone(null);
+    }
+
+    public CellTransform getWorldTransform() {
+        return (CellTransform)worldTransform.clone(null);
     }
     
     
@@ -300,10 +312,11 @@ public class Cell {
      * Set the localToVWorld transform for this cell
      * @param localToVWorld
      */
-    void setLocalToWorldTransform(CellTransform localToVWorld) {
-        local2VW = (CellTransform) localToVWorld.clone(null);
+    void setWorldTransform(CellTransform worldTransform) {
+        worldTransform = (CellTransform) worldTransform.clone(null);
         cachedVWBounds = localBounds.clone(cachedVWBounds);
-        local2VW.transform(cachedVWBounds);
+        worldTransform.transform(cachedVWBounds);
+        local2VW = null; // force local2VW to be recalculated
         
         notifyTransformChangeListeners();
     }
@@ -340,15 +353,15 @@ public class Cell {
      * @return the combined bounds of the child and all it's children
      */
     private BoundingVolume transformTreeUpdate(Cell parent, Cell child) {
-        CellTransform parentL2VW = parent.getLocalToWorldTransform();
-        
+        CellTransform parentWorldTransform = parent.getWorldTransform();
+
         CellTransform childTransform = child.getLocalTransform();
         
         if (childTransform!=null) {
-            childTransform.mul(parentL2VW);
-            child.setLocalToWorldTransform(childTransform);
+            childTransform.mul(parentWorldTransform);
+            child.setWorldTransform(childTransform);
         } else {
-            child.setLocalToWorldTransform(parentL2VW);
+            child.setWorldTransform(parentWorldTransform);
         }
         
         BoundingVolume ret = child.getWorldBounds();

@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseMovedEvent3D;
@@ -148,6 +149,10 @@ public class SimpleAvatarControls extends ProcessorComponent {
         movableComponent = viewCell.getComponent(MovableComponent.class);
         worldManager = wm;
 
+        // TODO set initial orientation to value from viewCell
+        CellTransform worldTransform = viewCell.getWorldTransform();
+        position = worldTransform.getTranslation(position);
+
         // Setup the rotated vectors
         directionRotation.fromAngleAxis(rotY*(float)Math.PI/180.0f, yDir);
         directionRotation.mult(fwdDirection, rotatedFwdDirection);
@@ -171,7 +176,14 @@ public class SimpleAvatarControls extends ProcessorComponent {
             updateRotations = false;
         
             for (Event e : events) {
-                if (e instanceof MouseDraggedEvent3D) {
+                if (e instanceof MouseButtonEvent3D) {
+                    MouseButtonEvent3D mbe = (MouseButtonEvent3D)e;
+                    MouseEvent awt = (MouseEvent) mbe.getAwtEvent();
+                    if (awt.getID()== MouseEvent.MOUSE_PRESSED && (awt.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {
+                        lastMouseX = awt.getX();
+                        lastMouseY = awt.getY();
+                    }
+                } else if (e instanceof MouseDraggedEvent3D) {
                     MouseEvent3D me = (MouseEvent3D)e;
                     MouseEvent awtMe = (MouseEvent)me.getAwtEvent();
                     if (awtMe.getID() == MouseEvent.MOUSE_DRAGGED && (awtMe.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {

@@ -176,7 +176,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         }
         
         ViewCellMO view = viewRef.get();
-        Vector3f translation = view.getLocalToWorld(cellTransformTmp).getTranslation(null);
+        Vector3f translation = view.getWorldTransform(cellTransformTmp).getTranslation(null);
         proximityBounds = AvatarBoundsHelper.getProximityBounds(translation);        
     }
     
@@ -233,7 +233,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         try {
             // getTranslation the current user's bounds
             ViewCellMO view = viewRef.get();
-            Vector3f translation = view.getLocalToWorld(cellTransformTmp).getTranslation(null);
+            Vector3f translation = view.getWorldTransform(cellTransformTmp).getTranslation(null);
             proximityBounds.setCenter(translation);            
             
             CellListMO dynamicCellList = new CellListMO();

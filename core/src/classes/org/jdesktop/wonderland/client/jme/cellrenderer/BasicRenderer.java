@@ -68,15 +68,17 @@ public abstract class BasicRenderer implements CellRendererJME {
             moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
             ret.addComponent(ProcessorComponent.class, moveProcessor);
         }
-        
-        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-        ret.addComponent(RenderComponent.class, rc);
-        
-        JMECollisionSystem collisionSystem = (JMECollisionSystem) 
-                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
-        
-        CollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
-        ret.addComponent(CollisionComponent.class, cc);
+
+        if (rootNode!=null) {
+            RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+            ret.addComponent(RenderComponent.class, rc);
+
+            JMECollisionSystem collisionSystem = (JMECollisionSystem)
+                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
+
+            CollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
+            ret.addComponent(CollisionComponent.class, cc);
+        }
 
         return ret;        
     }
@@ -93,9 +95,9 @@ public abstract class BasicRenderer implements CellRendererJME {
         return entity;
     }
     
-    public void cellTransformUpdate(CellTransform cellTransform) {
+    public void cellTransformUpdate(CellTransform worldTransform) {
         if (moveProcessor!=null) {
-            moveProcessor.cellMoved(cellTransform);
+            moveProcessor.cellMoved(worldTransform);
         }
     }
     
