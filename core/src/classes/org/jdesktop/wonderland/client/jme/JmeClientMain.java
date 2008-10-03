@@ -53,7 +53,7 @@ public class JmeClientMain {
     /**
      * The desired frame rate
      */
-    private int desiredFrameRate = 1;
+    private int desiredFrameRate = 30;
     
     /**
      * The width and height of our 3D window
