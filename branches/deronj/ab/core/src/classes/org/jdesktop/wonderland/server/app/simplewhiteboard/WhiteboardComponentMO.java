@@ -15,7 +15,23 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.simplewhiteboard;
+package org.jdesktop.wonderland.server.app.simplewhiteboard;
+
+import com.jme.math.Vector3f;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedReference;
+import java.util.Collection;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellMO.SpaceInfo;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.SpaceMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * The server side of the communication component that provides communication between the whiteboard client and server.
@@ -31,14 +47,14 @@ public class WhiteboardComponentMO extends CellComponentMO {
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
 
     /** The cell to which this component belongs. */
-    private WhiteboardCell cell;
+    private WhiteboardCellMO cell;
 
     /** 
      * Create a new instance of WhiteboardComponentMO. 
      * @param cell The cell to which this component belongs.
      * @throws IllegalStateException If the cell does not already have a ChannelComponent IllegalStateException will be thrown.
      */
-    public WhiteboardComponentMO (WhitboardCellMO cell) {
+    public WhiteboardComponentMO (WhiteboardCellMO cell) {
         super(cell);
 	this.cell = cell;
 
@@ -47,39 +63,23 @@ public class WhiteboardComponentMO extends CellComponentMO {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
         channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
                 
-        channelComponent.addMessageReceiver(CompoundWhiteboardCellMessage.class, new WhiteboardMessageReceiverImpl(this));
+        channelComponent.addMessageReceiver(WhiteboardCompoundCellMessage.class, new ComponentMessageReceiverImpl(this));
     }
     
     /**
      * Broadcast the given message to all clients.
      * @param message The message to broadcast.
      */
-    public void sendAllClients (CompoundWhiteboardCellMessage message) {
+    public void sendAllClients (WhiteboardCompoundCellMessage message) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent = channelComponentRef.getForUpdate();
 	channelComponent.sendAll(message);
     }
     
     /**
-     * Check if the object needs to be added as 'in' other spaces
-     */
-    private void checkForNewSpace(CellMO cell, Collection<SpaceInfo> currentSpaces) {
-        Vector3f origin = cell.getLocalToWorld(cellTransformTmp).getTranslation(v3fTmp);
-        
-        for(SpaceInfo spaceInfo : currentSpaces) {
-            Collection<ManagedReference<SpaceMO>> proximity = spaceInfo.getSpaceRef().get().getSpaces(cell.getWorldBounds());
-            for(ManagedReference<SpaceMO> spaceCellRef : proximity) {
-                if (spaceCellRef.get().getWorldBounds(null).contains(origin)) {
-                    cell.addToSpace(spaceCellRef.getForUpdate());
-                }
-            }
-        }
-    }
-       
-    /**
      * Receiver for for whiteboard messages.
      */
-    private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
+    private class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
 
         private ManagedReference<WhiteboardComponentMO> compRef;
         
@@ -88,8 +88,8 @@ public class WhiteboardComponentMO extends CellComponentMO {
         }
 
         public void messageReceived (WonderlandClientSender sender, ClientSession session, CellMessage message) {
-	    CompoundWhiteboardCellMessage cmsg = (CompoundWhiteboardCellMessage)message;
-	    cell.processMessage(sender, session, cmsg);
+	    WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
+	    ((WhiteboardCellMO)cell).receivedMessage(sender, session, cmsg);
         }
     }
 }

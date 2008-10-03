@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.simplewhiteboard;
 
 import org.jdesktop.wonderland.client.app.base.AppType2D;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.app.base.AppLaunchMethods;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardLaunchMethods;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTypeName;

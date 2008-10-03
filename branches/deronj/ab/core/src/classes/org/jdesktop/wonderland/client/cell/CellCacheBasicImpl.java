@@ -53,6 +53,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     
     private ViewCell viewCell = null;
 
+    /** the classloader to use when instantiating classes */
+    private ClassLoader classLoader;
     
     /** the session this cache is associated with */
     private WonderlandSession session;
@@ -72,12 +74,18 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * messages
      */
     public CellCacheBasicImpl(WonderlandSession session,
+                              ClassLoader classLoader,
                               CellCacheConnection cellCacheConnection,
                               CellChannelConnection cellChannelConnection) {
         this.session = session;
+        this.classLoader = classLoader;
         this.cellCacheConnection = cellCacheConnection;
         this.cellChannelConnection = cellChannelConnection;
+        
         ClientContext.registerCellCache(this, session);
+        if (this.classLoader == null) {
+            this.classLoader = getClass().getClassLoader();
+        }
     }
     
     /**
@@ -105,7 +113,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          CellTransform cellTransform, 
                          CellConfig setup,
                          String cellName) {
-        logger.info("-----> creating cell "+className+" "+cellId);
+        logger.fine("creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
             return null;     // Instantiation failed, error has already been logged
@@ -135,12 +143,6 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
             if (setup!=null)
                 cell.configure(setup);
-
-            // if the cell has a channel, notify it of the CellChannelConnection
-            ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
-            if (channelComp!=null) {
-                channelComp.setCellChannelConnection(cellChannelConnection);
-            }
 
             if (viewCell!=null) {
                 // No point in makeing cells active if we don't have a view
@@ -195,7 +197,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         Cell cell;
         
         try {
-            Class clazz = Class.forName(className);
+            Class clazz = Class.forName(className, true, classLoader);
             Constructor constructor = clazz.getConstructor(CellID.class, CellCache.class);
             cell = (Cell) constructor.newInstance(cellId, this);
         } catch(Exception e) {
@@ -235,4 +237,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         return session;
     }
 
+    
+    public CellChannelConnection getCellChannelConnection() {
+        return cellChannelConnection;
+    }
 }

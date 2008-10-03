@@ -93,6 +93,7 @@ class JmeTreeCellRenderer extends DefaultTreeCellRenderer {
             if (name==null)
                 name="";
         }
+        
         return new JLabel(getTrimmedClassname(value)+":"+name);
     }       
 

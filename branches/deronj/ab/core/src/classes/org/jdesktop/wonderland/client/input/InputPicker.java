@@ -193,25 +193,29 @@ public abstract class InputPicker {
 	    // Note: WindowSwing entities are always leaf nodes so we don't need to search the parent chains.
 	    Entity entity = pickDetailsToEntity(pickDetails);
 
-	    boolean consumeEvent = false;
-	    EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+	    boolean consumesEvent = false;
+            boolean propagatesToUnder = false;
+            
+	    EventListenerCollection listeners = (EventListenerCollection) 
+		entity.getComponent(EventListenerCollection.class);
 	    if (listeners == null) { 
-		consumeEvent = false;
-		propagateToUnder = false;
+		consumesEvent = false;
+		propagatesToUnder = false;
 	    } else {
 		event.setPickDetails(pickDetails);
                 Iterator<EventListener> it = listeners.iterator();
 		while (it.hasNext()) {
                     EventListener listener = it.next();
-		    consumeEvent |= listener.consumeEvent(event, entity);
-		    propagateToUnder |= listener.propagateToUnder(event, entity);
+		    Event distribEvent = EventDistributor.createEventForEntity(event, entity);
+		    consumesEvent |= listener.consumesEvent(distribEvent);
+		    propagatesToUnder |= listener.propagatesToUnder(distribEvent);
 		}
 	    }
 
-	    if (consumeEvent && isWindowSwingEntity(entity)) {
-		// WindowSwing pick semantics: Stop at the first WindowSwing which will consume the event. 
-		// Note that because of single-threaded nature of the Embedded Swing interface we cannot do 
-		// any further propagation of the event to parents or unders.
+	    if (consumesEvent && isWindowSwingEntity(entity)) {
+		// WindowSwing pick semantics: Stop at the first WindowSwing which has any listener which
+		// will consume the event. Note that because of single-threaded nature of the Embedded Swing 
+		// interface we cannot do any further propagation of the event to parents or unders.
 		return new PickEventReturn(entity, pickDetails);
 	    }
 
@@ -243,15 +247,19 @@ public abstract class InputPicker {
      * the input queue of the event deliverer.
      */
     void pickMouseEventNonSwing (MouseEvent awtEvent) {
-	logger.info("Picker: received awtEvent = " + awtEvent);
+	logger.fine("Picker: received awt event = " + awtEvent);
+	MouseEvent3D event;
 
 	// Determine the destination pick info by performing a pick, considering grabs. etc.
         destPickInfo = determineDestPickInfo(awtEvent);
 	if (destPickInfo == null || destPickInfo.size() <= 0) {
-	    // Pick miss. Ignore the event.
+	    // Pick miss. Send it along without pick info.
+	    logger.finest("Picker: pick miss");
+	    event = (MouseEvent3D) createWonderlandEvent(awtEvent);
+	    eventDistributor.enqueueEvent(event, null);
 	    return;
 	}
-	logger.info("Picker: destPickInfo = " + destPickInfo);
+	logger.fine("Picker: destPickInfo = " + destPickInfo);
 
 	int eventID = awtEvent.getID();
 	if (eventID == MouseEvent.MOUSE_MOVED ||
@@ -260,7 +268,7 @@ public abstract class InputPicker {
 	}
 
 	// Do the rest of the work in the EventDistributor
-	MouseEvent3D event = (MouseEvent3D) createWonderlandEvent(awtEvent);
+	event = (MouseEvent3D) createWonderlandEvent(awtEvent);
 	eventDistributor.enqueueEvent(event, destPickInfo);
     }
 
@@ -269,6 +277,7 @@ public abstract class InputPicker {
      * entity that has the keyboard focus.
      */
     void pickKeyEvent (KeyEvent awtEvent) {
+	logger.fine("Picker: received awt event = " + awtEvent);
 	KeyEvent3D keyEvent = (KeyEvent3D) createWonderlandEvent(awtEvent);
 	eventDistributor.enqueueEvent(keyEvent);
     }
@@ -306,7 +315,18 @@ public abstract class InputPicker {
 	// First perform the pick (the pick details in the info are ordered
 	// from least to greatest eye distance.
         PickInfo hitPickInfo = pickEventScreenPos(e.getX(), e.getY());
-        
+
+	/* For Debug
+	int n = hitPickInfo.size();
+	System.err.println("n = " + n);
+	for (int i = 0; i < n; i++) {
+	    PickDetails pd = hitPickInfo.get(i);
+	    System.err.println("pd[" + i + "] = " + pd);
+	    Entity pickEntity = pickDetailsToEntity(pd);
+	    System.err.println("entity[" + i + "] = " + pickEntity);
+	}
+	*/
+
 	// If no grab is active and we didn't hit anything return a miss */
 	if (!grabIsActive && (hitPickInfo == null || hitPickInfo.size() <= 0)) {
 	    if (e.getID() == MouseEvent.MOUSE_RELEASED) {
@@ -394,7 +414,7 @@ public abstract class InputPicker {
 	// Need to invert y because (0f, 0f) is at the button left corner.
 	eventPointScreen.setX((float)x);
 	eventPointScreen.setY((float)(canvas.getHeight()-1-y));
-	
+
 	// Get the world space coordinates of the screen space point from the event
 	// (The glass plate of the screen is considered to be at at z = 0 in world space
 	camera.getWorldCoordinates(eventPointScreen, 0f, eventPointWorld);
@@ -483,7 +503,7 @@ public abstract class InputPicker {
 	// Determine list of added and deleted pick info
 	// Determine the entities for the added and deleted pick info 
 	// Generate enter events for added pickInfo and exit events for deleted pickInfo
-	// Enqueue enter/exit events to the EventDeliverer to be propagated through the entity and its parents, checking consumeEvent and propagateToParent
+	// Enqueue enter/exit events to the EventDeliverer to be propagated through the entity and its parents, checking consumesEvent and propagatesToParent
 	*/
 
 	destPickInfoPrev = destPickInfo;

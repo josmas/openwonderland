@@ -20,9 +20,8 @@ package org.jdesktop.wonderland.client.app.base;
 
 import java.awt.Graphics2D;
 import com.jmex.awt.swingui.ImageGraphics;
-import com.jme.math.Vector2f;
-import com.jme.renderer.ColorRGBA;
 import java.awt.Color;
+import java.awt.Point;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -129,11 +128,11 @@ public class DrawingSurface {
      *
      * @return The corresponding pixel location in the image.
      */
-    protected Vector2f computePoint(float x, float y) {
+    protected Point computeImagePoint(float x, float y) {
         int pX = surfaceWidth / 2 + (int)((x * surfaceWidth) / 2);
         int pY = surfaceHeight / 2 + (int)((y * surfaceHeight) / 2);
         
-        return new Vector2f(pX, pY);
+        return new Point(pX, pY);
     }
     
     /**

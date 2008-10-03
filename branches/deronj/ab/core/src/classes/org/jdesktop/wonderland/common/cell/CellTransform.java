@@ -211,6 +211,15 @@ public class CellTransform implements Serializable {
     public void setScaling(Vector3f scale) {
         this.scale = new Vector3f(scale);
     }
+
+    /**
+     * Invert the transform
+     */
+    public void invert() {
+        rotation.inverseLocal();
+        scale.multLocal(-1);
+        translation.multLocal(-1);
+    }
     
     @Override
     public boolean equals(Object o) {
@@ -248,5 +257,10 @@ public class CellTransform implements Serializable {
         hash = 13 * hash + (this.translation != null ? this.translation.hashCode() : 0);
         hash = 13 * hash + (this.scale != null ? this.scale.hashCode() : 0);
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return translation.toString();
     }
 }

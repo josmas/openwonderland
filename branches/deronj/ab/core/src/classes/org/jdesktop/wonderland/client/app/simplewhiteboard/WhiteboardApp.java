@@ -18,11 +18,11 @@
  */
 package org.jdesktop.wonderland.client.simplewhiteboard;
 
-import org.jdesktop.wonderland.client.app.base.App;
 import org.jdesktop.wonderland.client.app.base.AppType;
 import org.jdesktop.wonderland.client.app.base.AppGraphics2D;
 import org.jdesktop.wonderland.client.app.base.ControlArbMulti;
 import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  *

@@ -15,9 +15,10 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.simplewhiteboard;
+package org.jdesktop.wonderland.common.app.simplewhiteboard;
 
 import java.awt.Color;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * @author nsimpson

@@ -62,6 +62,7 @@
             
             <!-- include the default properties file -->
             <fileset file="${current.dir}/web-default.properties"/>
+            <fileset file="${current.dir}/web-logging.properties"/>
             
             <!-- files that are needed for the web server classpath -->
             <zipfileset dir="${web.dir}/lib/glassfish" prefix="webserver"/>

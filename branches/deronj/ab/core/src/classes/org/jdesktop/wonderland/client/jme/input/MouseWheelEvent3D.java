@@ -32,9 +32,12 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public class MouseWheelEvent3D extends MouseEvent3D {
 
     static {
-	/** Allocate this event type's ID. */
-	EVENT_ID = Event.allocateEventID();
+	/** Allocate this event type's class ID. */
+	EVENT_CLASS_ID = Event.allocateEventClassID();
     }
+
+    /** Default constructor (for cloning) */
+    protected MouseWheelEvent3D () {}
 
     /**
      * Create a new instance of MouseWheelEvent3D will a null pickDetails.
@@ -64,7 +67,22 @@ public class MouseWheelEvent3D extends MouseEvent3D {
         return ((MouseWheelEvent)awtEvent).getWheelRotation();
     }
 
+    /** {@inheritDoc} */
+    @Override
     public String toString () {
        	return "Mouse Wheel, rot=" + getWheelRotation();
+    }
+
+    /** 
+     * {@inheritDoc}
+     * <br>
+     * If event is null, a new event of this class is created and returned.
+     */
+    @Override
+    public Event clone (Event event) {
+	if (event == null) {
+	    event = new MouseMovedEvent3D();
+	}
+	return super.clone(event);
     }
 }

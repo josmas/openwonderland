@@ -35,26 +35,66 @@ import java.util.HashMap;
 
     private static HashMap<Integer, String> idToDesc = new HashMap();
 
+    private ClassLoader classLoader;
+    
     static {
         WonderlandObjectOutputStream.populateIdToDesc(idToDesc);        
     }
     
     public WonderlandObjectInputStream(InputStream in) throws IOException {
+        this (in, null);
+    }
+    
+    public WonderlandObjectInputStream(InputStream in, ClassLoader classLoader)
+            throws IOException
+    {
         super(in);
+   
+        this.classLoader = classLoader;
+        if (this.classLoader == null) {
+            this.classLoader = getClass().getClassLoader();
+        }
     }
 
+    /**
+     * Override the default class resolution to use the provided 
+     * classloader.
+     * @param osc the class to resolve
+     * @return the class for the given stream
+     * @throws java.io.IOException
+     * @throws java.lang.ClassNotFoundException
+     */
     @Override
-    protected ObjectStreamClass readClassDescriptor() throws ClassNotFoundException, IOException {
-        ObjectStreamClass ret;
-        int id = readInt();
+    protected Class<?> resolveClass(ObjectStreamClass osc) 
+            throws IOException, ClassNotFoundException 
+    {
+        if (classLoader == null) {
+            // fall back to the default
+            return super.resolveClass(osc);
+        } else {
+            // resolve with our classloader
+            return Class.forName(osc.getName(), true, classLoader);
+        }
+    }
 
+    
+    
+    @Override
+    protected ObjectStreamClass readClassDescriptor()
+            throws ClassNotFoundException, IOException 
+    {
+        int id = readInt();
+        Class lookupClass;
+        
         if (id == WonderlandObjectOutputStream.UNKNOWN_DESCRIPTOR) {
             String className = readUTF();
 //            System.err.println("WonderlandInputStream reading NEW_DESC "+className);
-            ret = ObjectStreamClass.lookup(Class.forName(className));
+            lookupClass = Class.forName(className, true, classLoader);
         } else {
-            ret = ObjectStreamClass.lookup(Class.forName(idToDesc.get(id)));
+            lookupClass = Class.forName(idToDesc.get(id), true, classLoader);
         }
+        
+        ObjectStreamClass ret = ObjectStreamClass.lookup(lookupClass);
         if (ret == null) {
             throw new IOException("Unknown class ID " + id);
         }

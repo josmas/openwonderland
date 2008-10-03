@@ -29,4 +29,8 @@
   </copy>
 </target>
 
+<target name="run-server" depends="package, javadoc" description="Run the Wonderland Server">
+    <ant dir="web"     target="run-web" inheritall="false"/>
+</target>
+
 </project>

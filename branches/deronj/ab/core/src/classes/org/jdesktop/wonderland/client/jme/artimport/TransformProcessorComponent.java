@@ -34,6 +34,7 @@ public class TransformProcessorComponent extends ProcessorComponent {
 
         private Matrix3f rotation;
         private Vector3f translation;
+        private Vector3f scale = new Vector3f(1,1,1);
         private Node node;
         private WorldManager worldManager;
         private boolean updatePending = false;
@@ -54,6 +55,7 @@ public class TransformProcessorComponent extends ProcessorComponent {
                 if (updatePending) {
                     node.setLocalRotation(rotation);
                     node.setLocalTranslation(translation);
+                    node.setLocalScale(scale);
                     updatePending = false;
                 }
 
@@ -74,5 +76,13 @@ public class TransformProcessorComponent extends ProcessorComponent {
             }
         }
 
+        public void setTransform(Matrix3f rotation, Vector3f translation, Vector3f scale) {
+            synchronized(this) {
+                this.rotation = rotation;
+                this.translation = translation;
+                this.scale = scale;
+                updatePending = true;
+            }
+        }
     
 }

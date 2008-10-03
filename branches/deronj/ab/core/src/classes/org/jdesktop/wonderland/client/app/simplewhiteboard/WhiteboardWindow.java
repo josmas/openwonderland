@@ -18,21 +18,20 @@
 package org.jdesktop.wonderland.client.simplewhiteboard;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.App;
-import org.jdesktop.wonderland.client.app.base.DrawingSurface;
 import org.jdesktop.wonderland.client.app.base.WindowGraphics2D;
-import org.jdesktop.wonderland.client.app.simplewhiteboard.BufferedCompoundMessageSender;
 import org.jdesktop.wonderland.client.app.simplewhiteboard.WhiteboardDrawingSurface;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellMessage;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTool.Tool;
 import com.jme.math.Vector2f;
+import java.math.BigInteger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  *
@@ -76,20 +75,22 @@ public class WhiteboardWindow extends WindowGraphics2D  {
                 dragTo(e.getPoint());
                 
                 // notify other clients
-                WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(), app.getCell().getCellID(),
-                        WhiteboardAction.DRAG_TO,
-                        e.getPoint());
-                commComponent.send(msg);
+                WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(app), 
+								      app.getCell().getCellID(),
+								      WhiteboardAction.DRAG_TO,
+								      e.getPoint());
+                commComponent.sendMessage(msg);
             }
             
             public void mouseMoved(MouseEvent e) {
                 moveTo(e.getPoint());
                 
                 // notify other clients
-                WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(), app.getCell().getCellID(),
+                WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(app), 
+								      app.getCell().getCellID(),
                         WhiteboardAction.MOVE_TO,
                         e.getPoint());
-                commComponent.send(msg);
+                commComponent.sendMessage(msg);
             }
             
         });
@@ -104,25 +105,25 @@ public class WhiteboardWindow extends WindowGraphics2D  {
                 switch (wbSurface.getActionType()) {
                     case COLOR:
                         logger.info("select color: " + wbSurface.getPenColor());
-                        msg = new WhiteboardCellMessage(getClientID(), app.getCell().getCellID(),
+                        msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
                                 WhiteboardAction.SET_COLOR,
                                 wbSurface.getPenColor());
                         break;
                     case TOOL:
                         logger.info("select tool: " + wbSurface.getTool());
-                        msg = new WhiteboardCellMessage(getClientID(), app.getCell().getCellID(),
+                        msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
                                 WhiteboardAction.SET_TOOL, 
                                 wbSurface.getTool());
                         break;
                     case COMMAND:
                         logger.info("execute command: " + wbSurface.getCommand());
-                        msg = new WhiteboardCellMessage(getClientID(), app.getCell().getCellID(),
+                        msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
                                 WhiteboardAction.EXECUTE_COMMAND, 
                                 wbSurface.getCommand());
                         break;
                 }
                 if (msg != null) {
-                    commComponent.send(msg);
+                    commComponent.sendMessage(msg);
                 }
             }
             
@@ -139,6 +140,13 @@ public class WhiteboardWindow extends WindowGraphics2D  {
             }
             
         });
+    }
+
+    /**
+     * Return the client id of this window's cell.
+     */
+    private BigInteger getClientID (App app) {
+	return ((WhiteboardCell)(app.getCell())).getClientID();
     }
 
     /**
