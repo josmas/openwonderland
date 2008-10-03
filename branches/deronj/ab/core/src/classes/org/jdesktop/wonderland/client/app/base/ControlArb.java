@@ -113,7 +113,7 @@ public abstract class ControlArb {
      */
     public void takeControl () {
 	if (!hasControl()) {
-	    InputManager3D.getInputManager().setEventMode(InputManager3D.EventMode.APP);
+// TODO	    InputManager3D.getInputManager().setEventMode(InputManager3D.EventMode.APP);
 	    appControl = true;
 	    updateControl();
 	}
@@ -124,7 +124,7 @@ public abstract class ControlArb {
      */
     public void releaseControl () {
 	if (!hasControl()) {
-	    InputManager3D.getInputManager().setEventMode(InputManager3D.EventMode.WORLD);
+//TODO	    InputManager3D.getInputManager().setEventMode(InputManager3D.EventMode.WORLD);
 	    appControl = false;
 	    updateControl();
 	}

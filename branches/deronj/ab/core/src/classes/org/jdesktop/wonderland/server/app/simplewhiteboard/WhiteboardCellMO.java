@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.server.app.base.App2DCellMO;
 import org.jdesktop.wonderland.server.app.base.AppTypeCellMO;
 import org.jdesktop.wonderland.server.app.base.AppTypeMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
@@ -105,7 +105,7 @@ public class WhiteboardCellMO extends App2DCellMO
      * {@inheritDoc}
      */
     @Override
-    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig (ClientSession clientSession, ClientCapabilities capabilities) {
 	WhiteboardCellConfig config = new WhiteboardCellConfig(pixelScale);
 	config.setPreferredWidth(preferredWidth);
 	config.setPreferredHeight(preferredHeight);
