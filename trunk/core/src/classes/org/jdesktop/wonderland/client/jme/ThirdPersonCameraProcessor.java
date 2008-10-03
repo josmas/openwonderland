@@ -76,12 +76,13 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
             tmp = translation.clone();
             rotation = worldTransform.getRotation(rotation);
 
-            rotation.lookAt(rotation.mult(cameraLook), yUp);
 
             Vector3f cameraTrans = rotation.mult(offset);
 //            System.out.println("Camera trans "+cameraTrans );
             translation.addLocal(cameraTrans);
             commitRequired=true;
+            
+//            rotation.lookAt(rotation.mult(cameraLook), yUp);
         }
     }
 
