@@ -33,6 +33,7 @@
                 </client> 
                 
                 <server basedir="${build.classes.dir}">
+                    <serverplugin provider="org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.TestWorld"/>
                     <!--<cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.client.LoaderFactory"/>
                     </cellsetup>-->
