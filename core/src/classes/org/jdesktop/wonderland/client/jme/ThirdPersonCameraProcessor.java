@@ -36,6 +36,11 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
     private Vector3f translation = new Vector3f();
     private Vector3f offset = new Vector3f(0,4,-10);
     private boolean commitRequired = false;
+
+    private Vector3f cameraLook = new Vector3f(0,0,-1);
+    private Vector3f yUp = new Vector3f(0,1,0);
+
+    private Vector3f tmp=new Vector3f();
     
     public ThirdPersonCameraProcessor(CameraNode cameraNode, WorldManager wm) {
         super(cameraNode, wm);
@@ -51,6 +56,7 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
             if (commitRequired) {
                 cameraNode.setLocalRotation(rotation);
                 cameraNode.setLocalTranslation(translation);
+//                System.err.println("Camera moved "+tmp);
                 wm.addToUpdateList(cameraNode);
                 commitRequired = false;
             }
@@ -67,10 +73,13 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
     public void viewMoved(CellTransform worldTransform) {
         synchronized(this) {
             translation = worldTransform.getTranslation(translation);
+            tmp = translation.clone();
             rotation = worldTransform.getRotation(rotation);
-            
+
+            rotation.lookAt(rotation.mult(cameraLook), yUp);
+
             Vector3f cameraTrans = rotation.mult(offset);
-            
+//            System.out.println("Camera trans "+cameraTrans );
             translation.addLocal(cameraTrans);
             commitRequired=true;
         }
