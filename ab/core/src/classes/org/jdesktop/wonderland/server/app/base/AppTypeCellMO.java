@@ -27,7 +27,7 @@ import java.util.HashMap;
 import org.jdesktop.wonderland.common.app.base.AppTypeCellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
@@ -89,7 +89,7 @@ public class AppTypeCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig (ClientSession clientSession, ClientCapabilities capabilities) {
 	// Only client information is needed by client cells
 	return new AppTypeCellConfig(effBaseUrl, null, appTypeClientClassName, null, clientJar);
     }
