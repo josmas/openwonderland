@@ -53,7 +53,7 @@ public class JmeClientMain {
     /**
      * The desired frame rate
      */
-    private int desiredFrameRate = 30;
+    private int desiredFrameRate = 1;
     
     /**
      * The width and height of our 3D window
@@ -72,18 +72,21 @@ public class JmeClientMain {
                                               USER_NAME_DEFAULT);
         
         
-        ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
-        
-        // Low level Federation testing
-//        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
-        
         processArgs(args);
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
 
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
         
-        createUI(worldManager);  
+        createUI(worldManager);
+
+        // Dont start the client manager until JME has been initialized, many JME components
+        // expect the renderer to be ready during init.
+        ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
+        
+        // Low level Federation testing
+//        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
+        
     }
 
     /**
