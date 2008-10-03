@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -99,7 +99,8 @@ public class WFSLoader {
          * Iterator through all of the roots. For each, create a new WFSCellMO
          * class and load in its cells. Just take the first one for now!
          */
-        String rootName = wfsRoots.getRoots()[0];
+        if (wfsRoots.getRoots().length > 0) {
+            String rootName = wfsRoots.getRoots()[0];
 //        for (String rootName : wfsRoots.getRoots()) {
 //            logger.info("WFSLoader: loading the WFS root " + rootName);
 //        
@@ -122,6 +123,7 @@ public class WFSLoader {
             /* Load in the cells in the WFS based upon this root */
             this.loadWFSRoot(rootName);
 //        }
+        }
     }
     
     /**

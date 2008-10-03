@@ -157,7 +157,7 @@ public class App {
     }
 
     /**
-     * Add a new window to this app's list of windows.
+     * Remove a window from this app's list of windows.
      *
      * @param window The window to remove.
      */

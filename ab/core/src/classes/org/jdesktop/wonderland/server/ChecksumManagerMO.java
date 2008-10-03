@@ -33,7 +33,10 @@ import org.jdesktop.wonderland.common.config.WonderlandConfig;
  *
  * TODO put checksum in a JavaDB instead of using darkstar.
  *
+ * TODO Delete this class
+ * 
  * @author paulby
+ * @deprecated 
  */
 public class ChecksumManagerMO implements ManagedObject, Serializable {
 

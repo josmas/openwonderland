@@ -18,17 +18,20 @@
 package org.jdesktop.wonderland.client.simplewhiteboard;
 
 import java.awt.Point;
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellSetup;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.client.app.base.AppType;
 import org.jdesktop.wonderland.client.app.base.App2DCell;
 import org.jdesktop.wonderland.client.app.base.AppTypeCell;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellSetup;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.CompoundWhiteboardCellMessage;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction;
+import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellConfig;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction.Action;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTypeName;
@@ -48,8 +51,8 @@ public class WhiteboardCell extends App2DCell {
     /** The (singleton) window created by the whiteboard app */
     private WhiteboardWindow whiteboardWin;
 
-    /** The cell setup message received from the server cell */
-    private WhiteboardCellSetup setup;
+    /** The cell config message received from the server cell */
+    private WhiteboardCellConfig config;
     
     /** The communications component used to communicate with the server */
     private WhiteboardComponent commComponent;
@@ -60,10 +63,10 @@ public class WhiteboardCell extends App2DCell {
      * @param cellID The ID of the cell.
      * @param cellCache the cell cache which instantiated, and owns, this cell.
      */
-    public AppCell (CellID cellID, CellCache cellCache) {
+    public WhiteboardCell (CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         addComponent(new ChannelComponent(this));
-	commComponent = new WhiteboardComponent(this)
+	commComponent = new WhiteboardComponent(this);
         addComponent(commComponent);
     }
     
@@ -78,13 +81,13 @@ public class WhiteboardCell extends App2DCell {
     /**
      * Initialize the whiteboard
      *
-     * @param setupData the setup data to initialize the cell with
+     * @param configData the config data to initialize the cell with
      */
-    public void setup(CellSetup setupData) {
+    public void config(CellConfig configData) {
 
-        setup = (WhiteboardCellSetup)setupData;
-        app = new WhiteboardApp(getAppType(), setup.getPreferredWidth(), setup.getPreferredHeight(),
-				setup.getPixelScale(), commComponent);
+        config = (WhiteboardCellConfig)configData;
+        app = new WhiteboardApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
+				config.getPixelScale(), commComponent);
 
 	// Associate the app with this cell (must be done before making it visible)
 	app.setCell(this);
@@ -104,7 +107,7 @@ public class WhiteboardCell extends App2DCell {
      *
      * @param msg a compound message
      */
-    private void processMessage(CompoundWhiteboardCellMessage msg) {
+    void processMessage(WhiteboardCompoundCellMessage msg) {
         switch (msg.getAction()) {
             case SET_TOOL:
                 whiteboardWin.setTool(msg.getTool());
@@ -131,5 +134,12 @@ public class WhiteboardCell extends App2DCell {
                     whiteboardWin.erase();
                 }
         }
+    }
+
+    /**
+     * Returns the client ID of this cell's session.
+     */
+    BigInteger getClientID () {
+	return getCellCache().getSession().getID();
     }
 }

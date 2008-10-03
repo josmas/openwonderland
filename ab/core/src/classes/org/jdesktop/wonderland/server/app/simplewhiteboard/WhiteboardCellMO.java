@@ -15,23 +15,30 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.simplewhiteboard;
+package org.jdesktop.wonderland.server.app.simplewhiteboard;
 
+import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ClientSession;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Set;
 import java.util.logging.Logger;
-import com.jme.bounding.BoundingVolume;
-import javax.vecmath.Matrix4d;
-import org.jdesktop.wonderland.server.app.base.App2DCellGLO;
-import org.jdesktop.wonderland.server.app.base.AppTypeCellGLO;
-import org.jdesktop.wonderland.server.app.base.AppTypeGLO;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.CompoundWhiteboardCellMessage;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction.Action;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellConfig;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTypeName;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.server.app.base.App2DCellMO;
+import org.jdesktop.wonderland.server.app.base.AppTypeCellMO;
+import org.jdesktop.wonderland.server.app.base.AppTypeMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
 /**
  * A server cell associated with a whiteboard
@@ -40,20 +47,24 @@ import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTypeName;
  */
 
 @ExperimentalAPI
-public class WhiteboardCellGLO 
-    extends App2DCellMO
-    implements CellMessageListener 
+public class WhiteboardCellMO extends App2DCellMO
 {
     private static final Logger logger = Logger.getLogger(WhiteboardCellMO.class.getName());
     
     // The messages list contains the current state of the whiteboard.
     // It's updated every time a client makes a change to the whiteboard
     // so that when new clients join, they receive the current state
-    private static LinkedList<CompoundWhiteboardCellMessage> messages;
-    private static CompoundWhiteboardCellMessage lastMessage;
+    private static LinkedList<WhiteboardCompoundCellMessage> messages;
+    private static WhiteboardCompoundCellMessage lastMessage;
     
     /** The communications component used to broadcast to all clients */
     private WhiteboardComponentMO commComponent;
+
+    /** The preferred width (from the WFS file) */
+    private int preferredWidth;
+
+    /** The preferred height (from the WFS file) */
+    private int preferredHeight;
 
     /** Default constructor, used when the cell is created via WFS */
     public WhiteboardCellMO() {
@@ -61,12 +72,26 @@ public class WhiteboardCellGLO
         addComponent(new ChannelComponentMO(this));
 	commComponent = new WhiteboardComponentMO(this);
         addComponent(commComponent);
-        messages = new LinkedList<CompoundWhiteboardCellMessage>();
+        messages = new LinkedList<WhiteboardCompoundCellMessage>();
     }
 
-    /** Returns the class name for the corresponding client cells */
-    public String getClientCellClassName() {
-        return "org.jdesktop.wonderland.client.app.whiteboard.WhiteboardCell";
+    /**
+     * Creates a new instance of <code>WhiteboardCellMO</code> with the specified localBounds and transform.
+     * If either parameter is null an IllegalArgumentException will be thrown.
+     *
+     * @param localBounds the bounds of the new cell, must not be null.
+     * @param transform the transform for this cell, must not be null.
+     */
+    public WhiteboardCellMO (BoundingVolume localBounds, CellTransform transform) {
+        super(localBounds, transform);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+        return "org.jdesktop.wonderland.client.app.simplewhitebaord.WhiteboardCell";
     }
 
     /** 
@@ -74,6 +99,67 @@ public class WhiteboardCellGLO
      */
     public AppTypeMO getAppType () {
 	return AppTypeCellMO.findAppType(WhiteboardTypeName.WHITEBOARD_APP_TYPE_NAME);
+    }
+
+    /** 
+     * {@inheritDoc}
+     */
+    @Override
+    public CellConfig getClientStateData(ClientSession clientSession, ClientCapabilities capabilities) {
+	WhiteboardCellConfig config = new WhiteboardCellConfig(pixelScale);
+	config.setPreferredWidth(preferredWidth);
+	config.setPreferredHeight(preferredHeight);
+        return config;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setupCell(BasicCellSetup setupData) {
+	super.setupCell(setupData);
+
+	WhiteboardCellSetup setup = (WhiteboardCellSetup) setupData;
+	preferredWidth = setup.getPreferredWidth();
+	preferredHeight = setup.getPreferredHeight();
+	pixelScale = setup.getPixelScale();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
+    }
+
+    /**
+     * Return a new BasicCellSetup Java bean class that represents the current
+     * state of the cell.
+     * 
+     * @return a JavaBean representing the current state
+     */
+    public BasicCellSetup getCellMOSetup() {
+
+        /* Create a new BasicCellState and populate its members */
+        WhiteboardCellSetup setup = new WhiteboardCellSetup();
+	setup.setPixelScale(this.pixelScale);
+        
+        /* Set the bounds of the cell */
+        BoundingVolume bounds = this.getLocalBounds();
+        if (bounds != null) {
+            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
+        }
+
+        /* Set the origin, scale, and rotation of the cell */
+        CellTransform transform = this.getLocalTransform(null);
+        if (transform != null) {
+            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
+            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
+            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
+        }
+        return setup;
     }
 
     /**
@@ -88,22 +174,23 @@ public class WhiteboardCellGLO
      * @param commComponent The communications component that received the message.
      */
     public void receivedMessage(WonderlandClientSender clientSender, ClientSession clientSession, CellMessage message) {
-        CompoundWhiteboardCellMessage cmsg = (CompoundWhiteboardCellMessage)message;
+        WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
         logger.fine("received whiteboard message: " + cmsg);
 
         if (cmsg.getAction() == Action.REQUEST_SYNC) {
             logger.fine("sending " + messages.size() + " whiteboard sync messages");
-            Iterator<CompoundWhiteboardCellMessage> iter = messages.iterator();
+            Iterator<WhiteboardCompoundCellMessage> iter = messages.iterator();
             
             while (iter.hasNext()) {
-                CompoundWhiteboardCellMessage msg = iter.next();
-		clientSender.send(session, msg);
+                WhiteboardCompoundCellMessage msg = iter.next();
+		clientSender.send(clientSession, msg);
             }
         } else {
 
 	    // Create the copy of the message to be broadcast to clients
-            CompoundWhiteboardCellMessage msg = new CompoundWhiteboardCellMessage(cmsg.getAction());
-	    msg.setClientID(cmsg.getClientID());
+            WhiteboardCompoundCellMessage msg = new WhiteboardCompoundCellMessage(cmsg.getClientID(), 
+										  cmsg.getCellID(),
+										  cmsg.getAction());
             switch (cmsg.getAction()) {
                 case SET_TOOL:
                     // tool
@@ -144,7 +231,6 @@ public class WhiteboardCellGLO
 		    cmsg.setClientID(null);
 
                     messages.add(cmsg);
-		    accumulatedMessage = true;
                 }
             }
             lastMessage = cmsg;

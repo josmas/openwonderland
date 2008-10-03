@@ -84,6 +84,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /** the server to connect to */
     private WonderlandServerInfo server;
     
+    /** the classloader for resolving messages */
+    private ClassLoader classLoader;
+    
     /** the current login attempt */
     private LoginAttempt currentLogin;
     
@@ -105,7 +108,21 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * @param server the server to connect to
      */
     public WonderlandSessionImpl(WonderlandServerInfo server) {
+        this (server, null);
+    }
+    
+    /**
+     * Create a new client to log in to the given server.  Use the provided
+     * classloader to resolve the class of any messages that are received.
+     * @param server the server to connect to
+     * @param classloader the classloader to resolve messages with,
+     * or null to use the system classloader.
+     */
+    public WonderlandSessionImpl(WonderlandServerInfo server,
+                                 ClassLoader classLoader) 
+    {
         this.server = server;
+        this.classLoader = classLoader;
         
         // initial status
         status = Status.DISCONNECTED;
@@ -394,7 +411,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         
         try {
             // read the message
-            ReceivedMessage recv = MessagePacker.unpack(data);
+            ReceivedMessage recv = MessagePacker.unpack(data, getClassLoader());
             
             // all set, just unpack the received message
             message = recv.getMessage();
@@ -460,6 +477,14 @@ public class WonderlandSessionImpl implements WonderlandSession {
      */
     protected ProtocolVersion getProtocolVersion() {
         return WonderlandProtocolVersion.VERSION;
+    }
+    
+    /**
+     * Get the classloader to use while deserializing received messages
+     * @return the deserialization classloader
+     */
+    protected ClassLoader getClassLoader() {
+        return classLoader;
     }
     
     /**

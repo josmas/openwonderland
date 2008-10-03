@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
+import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -34,6 +35,7 @@ public class ClientContext {
 
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
     private static WonderlandSessionManager sessionManager = null;
+    private static InputManager inputManager=null;
     
     /**
      * Return the CellCache if the session has one, otherwise
@@ -79,5 +81,16 @@ public class ClientContext {
      */
     public static CellManager getCellManager() {
         return CellManager.getCellManager();
+    }
+    
+    public static void registerInputManager(InputManager regInputManager) {
+        if (inputManager!=null)
+            throw new RuntimeException("registerInputManager can only be called once");
+        
+        inputManager = regInputManager;
+    }
+
+    public static InputManager getInputManager() {
+        return inputManager;
     }
 }

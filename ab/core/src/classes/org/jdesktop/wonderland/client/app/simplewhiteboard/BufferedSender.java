@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A lazy ClientChannel sender that buffers up messages and sends them

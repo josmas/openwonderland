@@ -17,6 +17,18 @@
  */
 package org.jdesktop.wonderland.client.simplewhiteboard;
 
+import java.math.BigInteger;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.app.simplewhiteboard.BufferedCompoundMessageSender;
+import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellMessage;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
 /**
  * The client side of the communication component that provides communication between the whiteboard client and server.
  * Requires ChannelComponent to also be connected to the cell prior to construction.
@@ -49,9 +61,9 @@ public class WhiteboardComponent extends CellComponent {
         super(cell);
 	this.cell = cell;
         channelComp = cell.getComponent(ChannelComponent.class);
-        if (channelComponent==null)
+        if (channelComp == null)
             throw new IllegalStateException("Cell does not have a ChannelComponent");
-	bufferedSsender = new BufferedCompoundMessageSender(channelComp);
+	bufferedSender = new BufferedCompoundMessageSender(channelComp);
     }
     
     /**
@@ -63,7 +75,7 @@ public class WhiteboardComponent extends CellComponent {
          switch(status) {
             case DISK :
                 if (msgReceiver!=null) {
-                    channelComp.removeMessageRecevier(CompoundWhiteboardCellMessage.class);
+                    channelComp.removeMessageReceiver(WhiteboardCompoundCellMessage.class);
                     msgReceiver = null;
                 }
                 break;
@@ -77,19 +89,20 @@ public class WhiteboardComponent extends CellComponent {
 			    // Note: The new DarkStar doesn't support the exclusion of certain clients from
 			    // its message broadcasts. Therefore all messages that we send will be echoed
 			    // back to us! Therefore we must ignore the echoed messages.
-			    ClientID msgClientID = message.getClientID();
-			    if (msgClientID == null || !msgClientID.equals(getClientID())) {
+			    BigInteger msgClientID = msg.getClientID();
+			    if (msgClientID == null || 
+				!msgClientID.equals(cell.getClientID())) {
 				cell.processMessage(msg);
 			    }
                         }
                     };                    
-                    channelComp.addMessageReceiver(CompoundWhiteboardCellMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(WhiteboardCompoundCellMessage.class, msgReceiver);
                  }
 
 		 // Must do *after* registering the listener.
 		 sync();
 
-		 logger.severe("********* Whiteboard cell initialization complete, cellID = " + getCellID());
+		 logger.severe("********* Whiteboard cell initialization complete, cellID = " + cell.getCellID());
              }
         }
     }
@@ -99,7 +112,7 @@ public class WhiteboardComponent extends CellComponent {
      * messages which provide the latest data.
      */
     private void sync () {
-        CompoundWhiteboardCellMessage cmsg = new CompoundWhiteboardCellMessage(getClientID(), cell.getCellID(),
+        WhiteboardCompoundCellMessage cmsg = new WhiteboardCompoundCellMessage(cell.getClientID(), cell.getCellID(),
                 WhiteboardAction.REQUEST_SYNC);
         channelComp.send(cmsg);
     }

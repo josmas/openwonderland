@@ -37,7 +37,8 @@
             <arg value="org.jdesktop.wonderland.comms.client.SerializationTest"/>
             <classpath>
 		<pathelement path="${core-client.classpath}"/>
-                <pathelement location="${test-client.classpath}"/>
+                <pathelement path="${junit.classpath}"/>              
+                <pathelement path="${test-client.classpath}"/>
                 <pathelement path="${build.classes.dir}"/>
 	    </classpath>
         </java>

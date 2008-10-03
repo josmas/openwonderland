@@ -20,7 +20,12 @@ package org.jdesktop.wonderland.client.app.simplewhiteboard;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.app.common.simplewhiteboard.WhiteboardAction.Action;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction.Action;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellMessage;
 
 /**
  * A buffered message sender that coalesces similar messages before
@@ -72,7 +77,7 @@ public class BufferedCompoundMessageSender extends BufferedSender {
     public synchronized void dequeue() {
         if (isSenderEnabled()) {
             if (queue.size() > 0) {
-                CompoundWhiteboardCellMessage cmsg = null;
+                WhiteboardCompoundCellMessage cmsg = null;
                 currentAction = WhiteboardAction.NO_ACTION;
                 
                 Iterator iter = queue.iterator();
@@ -95,7 +100,7 @@ public class BufferedCompoundMessageSender extends BufferedSender {
                     if (cmsg == null) {
                         // new action, create a new coalesced message
                         currentAction = action;
-                        cmsg = new CompoundWhiteboardCellMessage(msg);
+                        cmsg = new WhiteboardCompoundCellMessage(msg);
                     }
                 }
                 if (cmsg != null) {
@@ -119,7 +124,7 @@ public class BufferedCompoundMessageSender extends BufferedSender {
      * @param obj the message to send
      */
     public void send(Object obj) {
-        CompoundWhiteboardCellMessage cmsg = (CompoundWhiteboardCellMessage)obj;
+        WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)obj;
         int n = (cmsg.getPositions() != null) ? cmsg.getPositions().size() : 0;
         logger.finest("sending coalesced message containing " + n + " messages: " + cmsg);
         channelComp.send(cmsg);

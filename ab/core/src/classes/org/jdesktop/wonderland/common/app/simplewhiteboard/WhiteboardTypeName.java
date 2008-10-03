@@ -15,7 +15,9 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.simplewhiteboard;
+package org.jdesktop.wonderland.common.app.simplewhiteboard;
+
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The external app type name for Whiteboard apps. 

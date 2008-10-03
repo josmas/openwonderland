@@ -32,9 +32,12 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public class MouseMovedEvent3D extends MouseEvent3D {
 
     static {
-	/** Allocate this event type's ID. */
-	EVENT_ID = Event.allocateEventID();
+	/** Allocate this event type's class ID. */
+	EVENT_CLASS_ID = Event.allocateEventClassID();
     }
+
+    /** Default constructor (for cloning) */
+    protected MouseMovedEvent3D () {}
 
     /**
      * Create a new instance of MouseMovedEvent3D with a null pickDetails.
@@ -43,6 +46,7 @@ public class MouseMovedEvent3D extends MouseEvent3D {
     MouseMovedEvent3D (MouseEvent awtEvent) {
         super(awtEvent, null);
     }
+
     /**
      * Create a new instance of MouseMovedEvent3D.
      * @param event The AWT event.
@@ -52,8 +56,23 @@ public class MouseMovedEvent3D extends MouseEvent3D {
         super(awtEvent, pickDetails);
     }
 
+    /** {@inheritDoc} */
+    @Override
     public String toString () {
 	// TODO: add internal state when drag methods are added
-	return "Mouse Move: xy = " + awtEvent.getX() + "," + awtEvent.getY();
+	return "Mouse Move: xy = " + ((MouseEvent)awtEvent).getX() + "," + ((MouseEvent)awtEvent).getY();
+    }
+
+    /** 
+     * {@inheritDoc}
+     * <br>
+     * If event is null, a new event of this class is created and returned.
+     */
+    @Override
+    public Event clone (Event event) {
+	if (event == null) {
+	    event = new MouseMovedEvent3D();
+	}
+	return super.clone(event);
     }
 }

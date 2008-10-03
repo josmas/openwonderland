@@ -15,18 +15,20 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.simplewhiteboard;
+package org.jdesktop.wonderland.common.app.simplewhiteboard;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.nio.ByteBuffer;
+import java.math.BigInteger;
 import java.util.logging.Logger;
-import javax.vecmath.Color3f;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.app.common.simplewhiteboard.WhiteboardAction.Action;
-import org.jdesktop.wonderland.app.common.simplewhiteboard.WhiteboardActionType.ActionType;
-import org.jdesktop.wonderland.app.common.simplewhiteboard.WhiteboardCommand.Command;
-import org.jdesktop.wonderland.app.common.simplewhiteboard.WhiteboardTool.Tool;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction.Action;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardActionType.ActionType;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCommand.Command;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTool.Tool;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
 
 /**
  * A Cell Message that carries whiteboard actions
@@ -37,10 +39,9 @@ import org.jdesktop.wonderland.app.common.simplewhiteboard.WhiteboardTool.Tool;
 @ExperimentalAPI
 public class WhiteboardCellMessage extends CellMessage {
     
-    private static final Logger logger =
-            Logger.getLogger(WhiteboardCellMessage.class.getName());
+    private static final Logger logger = Logger.getLogger(WhiteboardCellMessage.class.getName());
     
-    protected ClientID clientID;
+    protected BigInteger clientID;
     protected ActionType actionType;
     protected Action action = WhiteboardAction.NO_ACTION;
     protected Point position;
@@ -48,60 +49,56 @@ public class WhiteboardCellMessage extends CellMessage {
     protected Command command;
     protected Color color;
     
-    public WhiteboardCellMessage (ClientID clientID, CellID cellID) {
+    public WhiteboardCellMessage(BigInteger clientID, CellID cellID) {
         super(cellID);
-	this.clientID = clientID
+	this.clientID = clientID;
     }
     
-    public WhiteboardCellMessage(ClientID clientID, CellID cellID, Action action) {
+    public WhiteboardCellMessage(BigInteger clientID, CellID cellID, Action action) {
         super(cellID);
-	this.clientID = clientID
+	this.clientID = clientID;
         this.action = action;
     }
     
-    public WhiteboardCellMessage(ClientID clientID, CellID cellID, Action action, Point position) {
+    public WhiteboardCellMessage(BigInteger clientID, CellID cellID, Action action, Point position) {
         super(cellID);
-	this.clientID = clientID
+	this.clientID = clientID;
         this.action = action;
         this.position = position;
     }
     
-    public WhiteboardCellMessage(ClientID clientID, CellID cellID, Action action, Tool tool) {
+    public WhiteboardCellMessage(BigInteger clientID, CellID cellID, Action action, Tool tool) {
         super(cellID);
-	this.clientID = clientID
+	this.clientID = clientID;
         this.action = action;
         this.tool = tool;
         actionType = WhiteboardActionType.TOOL;
     }
     
-    public WhiteboardCellMessage(ClientID clientID, CellID cellID, Action action, Command command) {
+    public WhiteboardCellMessage(BigInteger clientID, CellID cellID, Action action, Command command) {
         super(cellID);
-	this.clientID = clientID
+	this.clientID = clientID;
         this.action = action;
         this.command = command;
         actionType = WhiteboardActionType.COMMAND;
     }
     
-    public WhiteboardCellMessage(ClientID clientID, CellID cellID, Action action, Color color) {
+    public WhiteboardCellMessage(BigInteger clientID, CellID cellID, Action action, Color color) {
         super(cellID);
-	this.clientID = clientID
+	this.clientID = clientID;
         this.action = action;
         this.color = color;
         actionType = WhiteboardActionType.COLOR;
     }
     
-    public void setClientID(ClientID clientID) {
+    public void setClientID(BigInteger clientID) {
         this.clientID = clientID;
     }
 
-    public ClientID getClientID() {
+    public BigInteger getClientID() {
         return clientID;
     }
 
-    public void mySetCellID(CellID cellID) {
-        setCellID(cellID);
-    }
-    
     /**
      * Set the action
      * @param action the action

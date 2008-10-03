@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.jme.input;
 
 import java.awt.Canvas;
 import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -37,6 +38,7 @@ public class InputManager3D extends InputManager {
     public static InputManager getInputManager () {
 	if (inputManager == null) {
 	    inputManager = new InputManager3D();
+            ClientContext.registerInputManager(inputManager);
 	}
 	return inputManager;
     }

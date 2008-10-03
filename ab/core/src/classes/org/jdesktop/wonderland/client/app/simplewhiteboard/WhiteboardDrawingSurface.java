@@ -26,8 +26,11 @@ import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.app.base.DrawingSurface;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardActionType;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardActionType.ActionType;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCommand.Command;
+import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardPenColors;
 import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTool.Tool;
 
 /**
@@ -179,11 +182,11 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
     }
     
     public void penMove(float x, float y) {
-        penMove(computePoint(x,y));
+        penMove(computeImagePoint(x,y));
     }
     
     public void penSelect(float x, float y) {
-        penSelect(computePoint(x,y));
+        penSelect(computeImagePoint(x,y));
     }
     
     public void erase() {
@@ -195,7 +198,7 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
     }
     
     public void penDrag(float x, float y) {
-        penDrag(computePoint(x,y));
+        penDrag(computeImagePoint(x,y));
     }
     
     protected void initSurface (Graphics2D g) {

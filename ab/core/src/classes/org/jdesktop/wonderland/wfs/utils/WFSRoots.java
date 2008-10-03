@@ -41,7 +41,7 @@ public class WFSRoots {
     @XmlElements({
         @XmlElement(name="root")
     })
-    private String[] roots = null;
+    private String[] roots = new String[0];
 
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;

@@ -43,7 +43,7 @@ public class SimpleTestDirector implements TestDirector {
     private static int USERS_PER_SLAVE = 10;
     private static int USERS_PER_GROUP = 3;
     private static int GROUP_SPACING = 8;
-    private int maxUsers = 5;
+    private int maxUsers = 1;
     
     private int slaveCount = 0; // Slaves currently in use by this director
     private int currentGroupIndex = 0;

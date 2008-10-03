@@ -34,7 +34,7 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
 
     private Quaternion rotation = new Quaternion();
     private Vector3f translation = new Vector3f();
-    private Vector3f offset = new Vector3f(0,0,-10);
+    private Vector3f offset = new Vector3f(0,4,-10);
     private boolean commitRequired = false;
     
     public ThirdPersonCameraProcessor(CameraNode cameraNode, WorldManager wm) {

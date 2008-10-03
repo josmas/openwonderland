@@ -19,10 +19,21 @@ package org.jdesktop.wonderland.testharness.slave.client3D;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
@@ -31,9 +42,13 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.client.modules.ModulePluginList;
+import org.jdesktop.wonderland.client.modules.ModuleUtils;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.testharness.common.Client3DRequest;
 import org.jdesktop.wonderland.testharness.common.LoginRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
+import sun.misc.Service;
 
 /**
  * A test client that simulates a 3D client
@@ -44,6 +59,8 @@ public class Client3DSim
     /** a logger */
     private static final Logger logger = 
             Logger.getLogger(Client3DSim.class.getName());
+    private static final Logger messageTimerLogger = 
+            Logger.getLogger(MessageTimer.class.getName());
     
     /** the name of this client */
     private String name;
@@ -51,6 +68,7 @@ public class Client3DSim
     /** the mover thread */
     private UserSimulator userSim;
     
+    private MessageTimer messageTimer = new MessageTimer();
     
     public Client3DSim(LoginRequest loginRequest) throws LoginFailureException {
         this.name = loginRequest.getUsername();
@@ -59,20 +77,53 @@ public class Client3DSim
                                                                loginRequest.getSgsServerPort());
         LoginParameters login = new LoginParameters(name, loginRequest.getPasswd());
                 
+        // setup a classloader with the module jars
+        ClassLoader loader = setupClassLoader();
+        
+        // load any client plugins from that class loader
+        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
+                                                      loader);
+        while (it.hasNext()) {
+            ClientPlugin plugin = it.next(); 
+            plugin.initialize();
+        }
+        
         // login
-        CellClientSession session = new CellClientSession(server);
+        CellClientSession session = new CellClientSession(server, loader);
         session.addSessionStatusListener(this);
         session.login(login);
         
         logger.info(getName() + " login succeeded");
         
-        LocalAvatar avatar = session.getLocalAvatar();
-               
-        userSim = new UserSimulator(avatar);
+        final LocalAvatar avatar = session.getLocalAvatar();
         
-        userSim.start();
+        avatar.addViewCellConfiguredListener(new LocalAvatar.ViewCellConfiguredListener() {
+            public void viewConfigured(LocalAvatar localAvatar) {
+                ((MovableComponent)avatar.getViewCell().getComponent(MovableComponent.class)).addServerCellMoveListener(messageTimer);
+                
+                // Start the userSim once the view is fully configured
+                userSim.start();
+            }
+        });
+                      
+        userSim = new UserSimulator(avatar);        
     }
     
+    private ClassLoader setupClassLoader() {
+        ModulePluginList list = ModuleUtils.fetchPluginJars();
+        List<URL> urls = new ArrayList<URL>();
+        
+        for (String uri : list.getJarURIs()) {
+            try {
+                urls.add(new URL(uri));
+            } catch (Exception excp) {
+                excp.printStackTrace();
+           }
+        }
+        
+        return new URLClassLoader(urls.toArray(new URL[0]));
+    }
+
     public void processRequest(TestRequest request) {
         if (request instanceof Client3DRequest) {
             processClient3DRequest((Client3DRequest)request);
@@ -135,6 +186,7 @@ public class Client3DSim
         private Semaphore semaphore;
                 
         public UserSimulator(LocalAvatar avatar) {
+            super("UserSimulator");
             this.avatar = avatar;
             semaphore = new Semaphore(0);
         }
@@ -180,6 +232,7 @@ public class Client3DSim
                     if (walking) {
                         currentLocation.addLocal(step);
                         avatar.localMoveRequest(currentLocation, orientation);    
+                        messageTimer.messageSent(new CellTransform(orientation, currentLocation));
                     }
                     
                     try {
@@ -223,4 +276,71 @@ public class Client3DSim
         }
     }
     
+    /**
+     * Measure the time between us sending a move request to the server and the server 
+     * sending the message back to us.
+     */
+    class MessageTimer implements CellMoveListener {
+        
+        private long timeSum=0;
+        private long lastReport;
+        private int count = 0;
+        private long min = Long.MAX_VALUE;
+        private long max = 0;
+        
+        
+        private static final long REPORT_INTERVAL = 5000; // Report time in ms
+        
+        private LinkedList<TimeRecord> messageTimes = new LinkedList();
+        
+        public MessageTimer() {
+            lastReport = System.nanoTime();
+        }
+
+        /**
+         * Callback for messages from server
+         * @param arg0
+         * @param arg1
+         */
+        public void cellMoved(CellTransform transform, CellMoveSource moveSource) {
+            if (messageTimes.size()!=0 && messageTimes.getFirst().transform.equals(transform)) {
+                TimeRecord rec = messageTimes.removeFirst();
+            
+                long time = ((System.nanoTime())-rec.sendTime)/1000000;
+
+                min = Math.min(min, time);
+                max = Math.max(max, time);
+                timeSum += time;
+                count++;
+
+                if (System.nanoTime()-lastReport > REPORT_INTERVAL*1000000) {
+                    long avg = timeSum/count;
+                    messageTimerLogger.info("Roundtrip time avg "+avg + "ms "+name+" min "+min+" max "+max);
+                    timeSum=0;
+                    lastReport = System.nanoTime();
+                    count = 0;
+                    min = Long.MAX_VALUE;
+                    max = 0;
+                }
+            } else {
+                logger.warning("No Time record for "+transform.getTranslation(null)+" queue size "+messageTimes.size());
+//                if (messageTimes.size()!=0)
+//                    logger.warning("HEAD "+messageTimes.getFirst().transform.getTranslation(null));
+            }
+        }
+        
+        public void messageSent(CellTransform transform) {
+            messageTimes.add(new TimeRecord(transform, System.nanoTime()));
+        }
+    }
+
+    class TimeRecord {
+        private CellTransform transform;
+        private long sendTime;
+
+        public TimeRecord(CellTransform transform, long sendTime) {
+            this.transform = transform;
+            this.sendTime = sendTime;
+        }
+    }
 }
