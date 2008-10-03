@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 /**
@@ -158,6 +158,15 @@ public abstract class InputManager
     }
 
     /**
+     * Create a new instance of InputManager.
+     */
+    protected InputManager () {
+	// Note: the global focus entity must be initialized early so that the Wonderland client can register 
+	// global listeners. The Wonderland client does this before it calls initialize.
+	initializeGlobalFocus(ClientContextJME.getWorldManager());
+    }
+
+    /**
      * Return the input manager singleton.
      */
     static InputManager inputManager () {
@@ -176,11 +185,10 @@ public abstract class InputManager
      * and start the input manager running. This method does not define a camera
      * component, so picking on events will not start occuring until a camera component
      * is specified with a subsequent call to <code>setCameraComponent</code>.
-     * @param wm The mtgame world manager.
      * @param canvas The AWT canvas which generates AWT user events.
      */
-    public void initialize (WorldManager wm, Canvas canvas) {
-	initialize(wm, canvas, null);
+    public void initialize (Canvas canvas) {
+	initialize(canvas, null);
     }
 
     /** 
@@ -189,11 +197,10 @@ public abstract class InputManager
      * given camera. This routine can only be called once. To subsequently change the 
      * camera, use <code>setCameraComponent</code>. To subsequently change the focus manager,
      * use <code>setFocusManager</code>.
-     * @param wm The mtgame world manager.
      * @param canvas The AWT canvas which generates AWT user events.
      * @param cameraComp The mtgame camera component to use for picking operations.
      */
-    public void initialize (WorldManager wm, Canvas canvas, CameraComponent cameraComp) {
+    public void initialize (Canvas canvas, CameraComponent cameraComp) {
 	if (this.canvas != null) {
 	    throw new IllegalStateException("initialize has already been called for this InputManager");
 	}
@@ -201,8 +208,6 @@ public abstract class InputManager
 	inputPicker.setCanvas(canvas);
 
 	setCameraComponent(cameraComp);
-
-	initializeGlobalFocus(wm);
 
 	canvas.addKeyListener(this);
 
