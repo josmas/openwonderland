@@ -28,8 +28,11 @@ import org.jdesktop.wonderland.client.jme.input.InputManager3D;
  */
 public class ClientContextJME extends ClientContext {
 
+    private static WorldManager worldManager;
+    
     static {
-        InputManager3D.getInputManager();
+        worldManager = new WorldManager("Wonderland");
+        InputManager3D.getInputManager(); // worldManager must be instantiated first
     }
 
     /**
@@ -45,6 +48,6 @@ public class ClientContextJME extends ClientContext {
      * @return
      */
     public static WorldManager getWorldManager() {
-        return JmeClientMain.getWorldManager();
+        return worldManager;
     }
 }

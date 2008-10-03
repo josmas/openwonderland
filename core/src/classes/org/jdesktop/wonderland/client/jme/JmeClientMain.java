@@ -61,8 +61,6 @@ public class JmeClientMain {
     private int width = 800;
     private int height = 600;
     
-    private static WorldManager worldManager;
-    
     public JmeClientMain(String[] args) {
         props = loadProperties("run-client.properties");
    
@@ -74,21 +72,26 @@ public class JmeClientMain {
                                               USER_NAME_DEFAULT);
         
         
-        worldManager = new WorldManager("Wonderland");
-        
         ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
         
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
         
         processArgs(args);
+
+        WorldManager worldManager = ClientContextJME.getWorldManager();
+
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
         
         createUI(worldManager);  
     }
-    
+
+    /**
+     * @deprecated 
+     * @return
+     */
     static WorldManager getWorldManager() {
-        return worldManager;
+        return ClientContextJME.getWorldManager();
     }
     
     
