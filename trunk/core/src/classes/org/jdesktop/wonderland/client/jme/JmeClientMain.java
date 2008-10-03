@@ -133,7 +133,7 @@ public class JmeClientMain {
 	// But if we create the camera before frame.setVisible the client window never appears.
 	CameraComponent cameraComp = ViewManager.getViewManager().getCameraComponent();
 	InputManager inputManager = ClientContext.getInputManager();
-	inputManager.initialize(wm, frame.getCanvas(), cameraComp);
+	inputManager.initialize(frame.getCanvas(), cameraComp);
 
 	// Default Policy: Enable global key and mouse focus everywhere 
 	// Note: the app base will impose its own (different) policy later
