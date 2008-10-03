@@ -48,7 +48,9 @@ public class ShapeRenderer extends BasicRenderer {
         ret.attachChild(new Box("Box", new Vector3f(), xExtent, yExtent, zExtent));
 
 //        new Sphere("Sphere", 10, 10, xExtent);
-//        new Cone("Cone", 10, 10, xExtent, yExtent);s
+//        new Cone("Cone", 10, 10, xExtent, yExtent);
+
+        applyTransform(ret, cell.getLocalTransform());
         
         return ret;
     }
