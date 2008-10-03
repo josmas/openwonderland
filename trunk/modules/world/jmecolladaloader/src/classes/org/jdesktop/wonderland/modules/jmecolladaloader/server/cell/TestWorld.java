@@ -53,7 +53,7 @@ public class TestWorld implements ServerPlugin {
 
             c3.addChild(c4);
             
-            float cellSize = 5;
+            float cellSize = 20;
             int xMax = 10;
             int zMax = 10;
             
