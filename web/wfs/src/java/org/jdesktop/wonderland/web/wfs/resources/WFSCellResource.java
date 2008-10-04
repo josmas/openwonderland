@@ -20,16 +20,16 @@ package org.jdesktop.wonderland.web.wfs.resources;
 
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.tools.wfs.WFSCell;
 import org.jdesktop.wonderland.tools.wfs.WFSCellDirectory;
+import org.jdesktop.wonderland.web.wfs.WFSManager;
+
 
 /**
  * The WFSCellResource class is a Jersey RESTful resource that allows clients
@@ -47,26 +47,8 @@ import org.jdesktop.wonderland.tools.wfs.WFSCellDirectory;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/{wfsname}/cell")
+@Path(value="/{wfsname}/cell/{path}", limited=false)
 public class WFSCellResource {
-    
-    @PUT
-    @Path(value="/create/{path}", limited=false)
-    public Response create() {
-        return null;
-    }
-    
-    @PUT
-    @Path(value="/update/{path}", limited=false)
-    public Response update() {
-        return null;
-    }
-    
-    @PUT
-    @Path(value="/delete/{path}", limited=false)
-    public Response delete() {
-        return null;
-    }
     
     /**
      * Returns the JAXB XML serialization of the cell setup class given the
@@ -80,7 +62,6 @@ public class WFSCellResource {
      */
     @GET
     @ProduceMime("text/plain")
-    @Path(value="/get/{path}", limited=false)
     public Response getCellResource(@PathParam("wfsname") String wfsName, @PathParam("path") String path) {
         /* Fetch thhe error logger for use in this method */
         Logger logger = WFSManager.getLogger();
