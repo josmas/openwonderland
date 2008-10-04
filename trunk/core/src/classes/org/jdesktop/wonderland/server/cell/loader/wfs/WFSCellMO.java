@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.wfs.cell;
+package org.jdesktop.wonderland.server.cell.loader.wfs;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;

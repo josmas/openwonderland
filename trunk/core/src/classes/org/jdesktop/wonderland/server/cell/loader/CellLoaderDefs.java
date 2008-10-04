@@ -16,16 +16,16 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.utils;
+package org.jdesktop.wonderland.server.cell.loader;
 
 /**
- * The WFSLoaderDefs class contains some useful public definitions for the WFS
+ * The CellLoaderDefs class contains some useful public definitions for the WFS
  * loader mechanism. It contains all of the names that objects are bound to in
  * the Darkstar data manager.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WFSLoaderDefs {
+public class CellLoaderDefs {
 
     /* Binding name for the map of canonical cell names to last modified date */
     public static final String WFS_MODIFIED_MAP = "WFS_MODIFIED_MAP";

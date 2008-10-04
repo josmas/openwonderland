@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.utils;
+package org.jdesktop.wonderland.server.cell.loader;
 
 import java.io.InputStream;
 import java.io.Writer;
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * The WFSCellList class simply represent an array of child names for a
+ * The CellList class simply represent an array of child names for a
  * given cell. It is used to serialize this list across a network in XML form
  * or out to disk. It also contains the date the cell was last modified, so
  * that the cell loading and reloading scheme in Wonderland can check whether
@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="wfs-children")
-public class WFSCellList {
+public class CellList {
     /* An array of cell children names */
     @XmlElements({
         @XmlElement(name="child")
@@ -56,10 +56,10 @@ public class WFSCellList {
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(WFSCellList.class);
-            WFSCellList.unmarshaller = jc.createUnmarshaller();
-            WFSCellList.marshaller = jc.createMarshaller();
-            WFSCellList.marshaller.setProperty("jaxb.formatted.output", true);
+            JAXBContext jc = JAXBContext.newInstance(CellList.class);
+            CellList.unmarshaller = jc.createUnmarshaller();
+            CellList.marshaller = jc.createMarshaller();
+            CellList.marshaller.setProperty("jaxb.formatted.output", true);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -90,11 +90,11 @@ public class WFSCellList {
     }
     
     /** Default constructor */
-    public WFSCellList() {
+    public CellList() {
     }
     
     /** Constructor, takes the relative path and names of the children */
-    public WFSCellList(String relativePath, Cell[] children) {
+    public CellList(String relativePath, Cell[] children) {
         this.relativePath = relativePath;
         this.children = children;
     }
@@ -119,14 +119,14 @@ public class WFSCellList {
     
     /**
      * Takes the input stream of the XML and instantiates an instance of
-     * the WFSCellList class
+     * the CellList class
      * <p>
      * @param is The input stream of the XML representation
-     * @throw ClassCastException If the input file does not map to WFSCellList
+     * @throw ClassCastException If the input file does not map to CellList
      * @throw JAXBException Upon error reading the XML stream
      */
-    public static WFSCellList decode(String relativePath, InputStream is) throws JAXBException {
-        WFSCellList children = (WFSCellList)WFSCellList.unmarshaller.unmarshal(is);
+    public static CellList decode(String relativePath, InputStream is) throws JAXBException {
+        CellList children = (CellList)CellList.unmarshaller.unmarshal(is);
         children.relativePath = relativePath;
         return children;
     }
@@ -138,6 +138,6 @@ public class WFSCellList {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        WFSCellList.marshaller.marshal(this, w);
+        CellList.marshaller.marshal(this, w);
     }
 }

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.wfs.utils;
+package org.jdesktop.wonderland.server.cell.loader;
 
 import java.util.Iterator;
 
@@ -12,7 +12,7 @@ import java.util.Iterator;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WFSCellMapUtils {
+public class CellMapUtils {
     /**
      * Takes a cell map and returns a set that contains the cells that are
      * in this cell map, but not the given cell map (hence, have been "deleted"
@@ -21,8 +21,8 @@ public class WFSCellMapUtils {
      * @param map The map of cells to compare to
      * @return A set of cells that are not in the given map, but in this map
      */
-    public static WFSCellSet getDeletedCells(WFSCellMap map1, WFSCellMap map2) {
-        WFSCellSet deleted = new WFSCellSet(map1.keySet());
+    public static CellSet getDeletedCells(CellMap map1, CellMap map2) {
+        CellSet deleted = new CellSet(map1.keySet());
         deleted.removeAll(map2.keySet());
         return deleted;
     }
@@ -35,8 +35,8 @@ public class WFSCellMapUtils {
      * @param map The map of cells to compare to
      * @return A set of cells that are in the given map, but not this map
      */
-    public static WFSCellSet getAddedCells(WFSCellMap map1, WFSCellMap map2) {
-        WFSCellSet added = new WFSCellSet(map2.keySet());
+    public static CellSet getAddedCells(CellMap map1, CellMap map2) {
+        CellSet added = new CellSet(map2.keySet());
         added.removeAll(map1.keySet());
         return added;
     }
@@ -50,9 +50,9 @@ public class WFSCellMapUtils {
      * @param map The map of cells to compare to
      * @return A set of cells that have been modified
      */
-    public static WFSCellSet getModifiedCells(WFSCellMap<Long> map1, WFSCellMap<Long> map2) {
+    public static CellSet getModifiedCells(CellMap<Long> map1, CellMap<Long> map2) {
         /* Find the intersection between the two sets */
-        WFSCellSet modified = new WFSCellSet(map2.keySet());
+        CellSet modified = new CellSet(map2.keySet());
         modified.retainAll(map1.keySet());
         
         /* For each element in the intersection set, check the modified dates */
