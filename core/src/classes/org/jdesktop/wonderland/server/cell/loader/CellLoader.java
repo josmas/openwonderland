@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.loader;
+package org.jdesktop.wonderland.server.cell.loader;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
@@ -31,34 +31,34 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
-import org.jdesktop.wonderland.wfs.cell.CellMOFactory;
-import org.jdesktop.wonderland.wfs.utils.WFSCellList;
-import org.jdesktop.wonderland.wfs.utils.WFSCellList.Cell;
-import org.jdesktop.wonderland.wfs.utils.WFSCellMap;
-import org.jdesktop.wonderland.wfs.utils.WFSLoaderDefs;
-import org.jdesktop.wonderland.wfs.utils.WFSLoaderUtils;
-import org.jdesktop.wonderland.wfs.utils.WFSRoots;
+import org.jdesktop.wonderland.server.cell.CellMOFactory;
+import org.jdesktop.wonderland.server.cell.loader.CellList;
+import org.jdesktop.wonderland.server.cell.loader.CellList.Cell;
+import org.jdesktop.wonderland.server.cell.loader.CellMap;
+import org.jdesktop.wonderland.server.cell.loader.CellLoaderDefs;
+import org.jdesktop.wonderland.server.cell.loader.CellLoaderUtils;
+import org.jdesktop.wonderland.server.cell.loader.CellRoots;
 
 
 
 /**
- * The WFSLoader class is responsible for loading a WFS from the HTTP-based
+ * The CellLoader class is responsible for loading a WFS from the HTTP-based
  * WFS service.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WFSLoader {
+public class CellLoader {
     /* The logger for the wfs loader */
-    private static final Logger logger = Logger.getLogger(WFSLoader.class.getName());
+    private static final Logger logger = Logger.getLogger(CellLoader.class.getName());
     
     /* Conatins a map of canonical cell names in WFS to cell objects */
-    private WFSCellMap<ManagedReference<CellMO>> cellMOMap = new WFSCellMap();
+    private CellMap<ManagedReference<CellMO>> cellMOMap = new CellMap();
     
     /* Contains a map of canonical cell names in WFS to last modified dates */
-    private WFSCellMap<Long> cellModifiedMap = new WFSCellMap();
+    private CellMap<Long> cellModifiedMap = new CellMap();
     
     /** Default Constructor */
-    public WFSLoader() {
+    public CellLoader() {
     }
     
     /**
@@ -67,7 +67,7 @@ public class WFSLoader {
      * @return The error logger
      */
     public static Logger getLogger() {
-        return WFSLoader.logger;
+        return CellLoader.logger;
     }
     
     /**
@@ -89,7 +89,7 @@ public class WFSLoader {
      */
     public void load() {
         /* First fetch all of the individual WFSs there are in the system. */
-        WFSRoots wfsRoots = WFSLoaderUtils.getWFSRoots();
+        CellRoots wfsRoots = CellLoaderUtils.getWFSRoots();
         if (wfsRoots == null) {
             logger.info("WFSLoader: did not find any valid WFS roots");
             return;
@@ -102,7 +102,7 @@ public class WFSLoader {
         if (wfsRoots.getRoots().length > 0) {
             String rootName = wfsRoots.getRoots()[0];
 //        for (String rootName : wfsRoots.getRoots()) {
-//            logger.info("WFSLoader: loading the WFS root " + rootName);
+//            logger.info("CellLoader: loading the WFS root " + rootName);
 //        
 //            /*
 //             * Attempt to create a new MO based upon the WFS root. We need to setup
@@ -117,7 +117,7 @@ public class WFSLoader {
 //            } catch (java.lang.Exception excp) {
 //                logger.severe("Unable to load WFS into world: " + excp.toString());
 //            }
-//            logger.info("WFSLoader: WFSCellMO (ID=" + mo.getCellID().toString() +
+//            logger.info("CellLoader: WFSCellMO (ID=" + mo.getCellID().toString() +
 //                    ") name=" + rootName);
             
             /* Load in the cells in the WFS based upon this root */
@@ -134,10 +134,10 @@ public class WFSLoader {
      */
     private void loadWFSRoot(String rootName) {
         /* A queue (last-in, first-out) containing a list of cell to search down */
-        LinkedList<WFSCellList> children = new LinkedList<WFSCellList>();
+        LinkedList<CellList> children = new LinkedList<CellList>();
 
         /* Find the children in the top-level directory and go! */
-        WFSCellList dir = WFSLoaderUtils.getWFSRootChildren(rootName);
+        CellList dir = CellLoaderUtils.getWFSRootChildren(rootName);
         if (dir == null) {
             /* Log an error and return, though this should never happen */
             logger.warning("WFSLoader: did not find root directory for wfs " + rootName);
@@ -153,7 +153,7 @@ public class WFSLoader {
          */
         while (children.isEmpty() == false) {
             /* Fetch and remove the first on the list and load */
-            WFSCellList childdir = children.removeFirst();
+            CellList childdir = children.removeFirst();
             if (childdir == null) {
                 /* Log an error and continue, though this should never happen */
                 logger.warning("WFSLoader: could not fetch child dir in WFS " + rootName);
@@ -170,14 +170,14 @@ public class WFSLoader {
          * data manager
          */
         DataManager dm = AppContext.getDataManager();
-        dm.setBinding(WFSLoaderDefs.WFS_OBJECT_MAP, this.cellMOMap);
-        dm.setBinding(WFSLoaderDefs.WFS_MODIFIED_MAP, this.cellModifiedMap);
+        dm.setBinding(CellLoaderDefs.WFS_OBJECT_MAP, this.cellMOMap);
+        dm.setBinding(CellLoaderDefs.WFS_MODIFIED_MAP, this.cellModifiedMap);
 
         /*
          * Create the reload phase and initial it to none.
          */
-        WFSReloadPhase phase = new WFSReloadPhase();
-        dm.setBinding(WFSLoaderDefs.WFS_RELOAD_PHASE, phase);
+        CellReloadPhase phase = new CellReloadPhase();
+        dm.setBinding(CellLoaderDefs.WFS_RELOAD_PHASE, phase);
     }
     
     /**
@@ -189,7 +189,7 @@ public class WFSLoader {
      * @param dir The current directory of children to load
      * @param children A list of child directories remaining to be loaded
      */
-    private void loadCells(String root, WFSCellList dir, LinkedList<WFSCellList> children) {
+    private void loadCells(String root, CellList dir, LinkedList<CellList> children) {
         /*
          * Fetch an array of the names of the child cells. Check this is not
          * null, although this getChildren() should return an empty array
@@ -224,7 +224,7 @@ public class WFSLoader {
              * Download and parse the cell configuration information. Create a
              * new cell based upon the information.
              */
-            BasicCellSetup setup = WFSLoaderUtils.getWFSCell(root, relativePath, child.name);
+            BasicCellSetup setup = CellLoaderUtils.getWFSCell(root, relativePath, child.name);
             if (setup == null) {
                 logger.info("WFSLoader: unable to read cell setup info " + relativePath + "/" + child.name);
                 continue;
@@ -303,7 +303,7 @@ public class WFSLoader {
             /*
              * See if the cell has any children and add to the linked list.
              */
-            WFSCellList newChildren = WFSLoaderUtils.getWFSChildren(root, cellPath);
+            CellList newChildren = CellLoaderUtils.getWFSChildren(root, cellPath);
             if (newChildren != null) {
                 children.addLast(newChildren);
             }

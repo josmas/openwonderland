@@ -16,14 +16,14 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.loader;
+package org.jdesktop.wonderland.server.cell.loader;
 
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 
 
 /**
- * The WFSReloadPhase class represents a point during a reload of the cells.
+ * The CellReloadPhase class represents a point during a reload of the cells.
  * This is used to keep track of where the WFS reload mechanism is, so that
  * upon failure, the reload state can be recovered and memory is not leaked.
  * <p>
@@ -61,7 +61,7 @@ import java.io.Serializable;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WFSReloadPhase implements ManagedObject, Serializable {
+public class CellReloadPhase implements ManagedObject, Serializable {
 
     /* An enumeration listing all of the reload phases */
     public enum Phase { NONE, FETCH, COMPARE, REMOVE, MODIFY, ADD }
@@ -71,7 +71,7 @@ public class WFSReloadPhase implements ManagedObject, Serializable {
 
     
     /** Default constructor */
-    public WFSReloadPhase() {
+    public CellReloadPhase() {
     }
     
     /**

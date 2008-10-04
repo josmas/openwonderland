@@ -15,25 +15,24 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.wfs.utils;
+package org.jdesktop.wonderland.server.cell.loader;
 
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.LinkedHashMap;
 
 /**
- * The WFSCellSet class is a list of canonical cell names. The implementation of
- * the list is via LinkedList, so the entries are ordered. This encapsulation
- * implements the Darkstar ManagedObject interface so that it can be managed
- * in its data amanger.
+ * The CellMap class is a mapping between the canonical name of the cell
+ * and some piece of information associated with that cell (e.g. the last
+ * modification date or the cell object reference).
+ * <p>
+ * The implements of the list is via LinkedHashMap, so the entries are ordered.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WFSCellSet extends LinkedList<String> implements ManagedObject, Serializable {
+public class CellMap<T> extends LinkedHashMap<String, T> implements ManagedObject, Serializable {
     
-    /** Constructor takes a Set */
-    public WFSCellSet(Set<String> set) {
-        super(set);
+    /** Default constructor */
+    public CellMap() {
     }
 }

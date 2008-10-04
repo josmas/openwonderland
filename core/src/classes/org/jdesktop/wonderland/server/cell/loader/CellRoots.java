@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.utils;
+package org.jdesktop.wonderland.server.cell.loader;
 
 import java.io.InputStream;
 import java.io.Writer;
@@ -30,13 +30,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * The WFSRoots class simply represents an array of WFS root names. It is used
+ * The CellRoots class simply represents an array of WFS root names. It is used
  * to serialize this list across a network in XML form or out to disk.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="wfs-roots")
-public class WFSRoots {
+public class CellRoots {
     /* An array of WFS root names */
     @XmlElements({
         @XmlElement(name="root")
@@ -50,21 +50,21 @@ public class WFSRoots {
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(WFSRoots.class);
-            WFSRoots.unmarshaller = jc.createUnmarshaller();
-            WFSRoots.marshaller = jc.createMarshaller();
-            WFSRoots.marshaller.setProperty("jaxb.formatted.output", true);
+            JAXBContext jc = JAXBContext.newInstance(CellRoots.class);
+            CellRoots.unmarshaller = jc.createUnmarshaller();
+            CellRoots.marshaller = jc.createMarshaller();
+            CellRoots.marshaller.setProperty("jaxb.formatted.output", true);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
     }
     
     /** Default constructor */
-    public WFSRoots() {
+    public CellRoots() {
     }
     
     /** Constructor, takes the names of the roots, which may be null */
-    public WFSRoots(String[] roots) {
+    public CellRoots(String[] roots) {
         this.roots = roots;
     }
     
@@ -85,8 +85,8 @@ public class WFSRoots {
      * @throw ClassCastException If the input file does not map to WFSCellChildren
      * @throw JAXBException Upon error reading the XML stream
      */
-    public static WFSRoots decode(InputStream is) throws JAXBException {
-        return (WFSRoots)WFSRoots.unmarshaller.unmarshal(is);        
+    public static CellRoots decode(InputStream is) throws JAXBException {
+        return (CellRoots)CellRoots.unmarshaller.unmarshal(is);        
     }
     
     /**
@@ -96,6 +96,6 @@ public class WFSRoots {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        WFSRoots.marshaller.marshal(this, w);
+        CellRoots.marshaller.marshal(this, w);
     }
 }

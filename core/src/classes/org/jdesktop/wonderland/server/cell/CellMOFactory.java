@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.wfs.cell;
+package org.jdesktop.wonderland.server.cell;
 
 import org.jdesktop.wonderland.server.cell.*;
 import java.util.Iterator;

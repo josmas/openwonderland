@@ -16,21 +16,21 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.utils;
+package org.jdesktop.wonderland.server.cell.loader;
 
 import java.io.InputStreamReader;
 import java.net.URL;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.wfs.loader.WFSLoader;
+import org.jdesktop.wonderland.server.cell.loader.CellLoader;
 
 
 /**
- * The WFSLoaderUtils contains a collection of static utility methods to load
+ * The CellLoaderUtils contains a collection of static utility methods to load
  * WFS information from the WFS web service.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class WFSLoaderUtils {
+public class CellLoaderUtils {
     /* The base URL of the loader */
     private static final String BASE_URL = "http://localhost:8080/wonderland-web-wfs/wfs/";
     //private static final String BASE_URL = System.getProperty("wonderland.server.wfs.url");
@@ -40,14 +40,14 @@ public class WFSLoaderUtils {
      * is ordered so that parent cells appear before child cells. Takes the WFS
      * URI of the WFS root.
      */
-    public static WFSCellList getWFSCells(String root, boolean reload) {
+    public static CellList getWFSCells(String root, boolean reload) {
         /*
          * Try to open up a connection the Jersey RESTful resource and parse
          * the stream. Upon error return null.
          */
         try {
             URL url = new URL(BASE_URL + root + "/cells/?reload=" + Boolean.toString(reload));
-            return WFSCellList.decode("", url.openStream());
+            return CellList.decode("", url.openStream());
         } catch (java.lang.Exception excp) {
             return null;
         }
@@ -106,10 +106,10 @@ public class WFSLoaderUtils {
      * Returns the children of the root WFS path, given the name of the WFS
      * root.
      */
-    public static WFSCellList getWFSRootChildren(String root) {
+    public static CellList getWFSRootChildren(String root) {
         try {
             URL url = new URL(BASE_URL + root + "/directory/");
-            return WFSCellList.decode("", url.openStream());
+            return CellList.decode("", url.openStream());
         } catch (java.lang.Exception excp) {
             return null;
         }            
@@ -119,14 +119,14 @@ public class WFSLoaderUtils {
      * Returns the children of the WFS path. The relativePath argument must
      * never begin with a "/".
      */
-    public static WFSCellList getWFSChildren(String root, String canonicalName) {
+    public static CellList getWFSChildren(String root, String canonicalName) {
         /*
          * Try to open up a connection the Jersey RESTful resource and parse
          * the stream. Upon error return null.
          */
         try {
             URL url = new URL(BASE_URL + root + "/directory/" + canonicalName);
-            return WFSCellList.decode(canonicalName, url.openStream());
+            return CellList.decode(canonicalName, url.openStream());
         } catch (java.lang.Exception excp) {
             return null;
         }        
@@ -135,17 +135,17 @@ public class WFSLoaderUtils {
     /**
      * Returns all of the WFS root names or null upon error
      */
-    public static WFSRoots getWFSRoots() {
+    public static CellRoots getWFSRoots() {
         /*
          * Try to open up a connection the Jersey RESTful resource and parse
          * the stream. Upon error return null.
          */
         try {
             URL url = new URL(BASE_URL + "roots");
-            WFSLoader.getLogger().info("WFS: Loading roots at " + url.toExternalForm());
-            return WFSRoots.decode(url.openStream());
+            CellLoader.getLogger().info("WFS: Loading roots at " + url.toExternalForm());
+            return CellRoots.decode(url.openStream());
         } catch (java.lang.Exception excp) {
-            WFSLoader.getLogger().info("WFS: Error loading roots: " + excp.toString());
+            CellLoader.getLogger().info("WFS: Error loading roots: " + excp.toString());
             return null;
         }
     }
