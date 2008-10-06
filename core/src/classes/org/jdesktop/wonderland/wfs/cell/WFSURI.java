@@ -17,7 +17,7 @@
  * $Date: 2007/05/04 23:11:34 $
  * $State: Exp $
  */
-package org.jdesktop.wonderland.server.cell.loader.wfs;
+package org.jdesktop.wonderland.wfs.cell;
 
 import org.jdesktop.wonderland.common.*;
 import java.net.URI;
