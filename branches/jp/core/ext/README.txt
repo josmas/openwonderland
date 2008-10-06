@@ -36,3 +36,6 @@ will (or plan to ) use:
 
 8. JOGL
     - Java bindings for OpenGL. Only needed for Mac for Java3D support
+
+9. Sip Communicator
+    - softphone.jar
