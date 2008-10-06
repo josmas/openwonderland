@@ -40,15 +40,13 @@ public interface SoftphoneControl {
 
     public boolean isConnected() throws IOException;
 
-    public void addListener(SoftphoneListener listener);
-
-    public void removeListener(SoftphoneListener listener);
-
-    public void showSoftphone(boolean isVisible) throws IOException;
+    public void setVisible(boolean isVisible) throws IOException;
 
     public boolean isVisible();
 
-    public void mute(boolean isuted) throws IOException;
+    public void mute(boolean isMuted) throws IOException;
+
+    public boolean isMuted();
     
     public void setAudioQuality(AudioQuality quality) throws IOException;
 
@@ -56,4 +54,8 @@ public interface SoftphoneControl {
     
     public void runLineTest() throws IOException;
     
+    public void addListener(SoftphoneListener listener);
+
+    public void removeListener(SoftphoneListener listener);
+
 }
