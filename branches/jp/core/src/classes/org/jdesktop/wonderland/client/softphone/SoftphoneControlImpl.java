@@ -133,7 +133,7 @@ public class SoftphoneControlImpl {
 	    registrarTimeout, localHost, quality);
 
 	if (command == null) {
-	    System.out.println("[SoftphoneControl ERR] Unable to find softphone.jar.  "
+	    logger.warning("Unable to find softphone.jar.  "
 		+ "You cannot use the softphone!");
 
 	    softphoneProcess = null;
@@ -162,7 +162,7 @@ public class SoftphoneControlImpl {
         pinger.start();
 
 	if (isVisible) {
-	    showSoftphone(true);
+	    setVisible(true);
 	}
 
         return waitForAddress();
@@ -370,7 +370,7 @@ public class SoftphoneControlImpl {
 	try {
 	    int exitValue = softphoneProcess.exitValue();	// softphone exited
 
-	    System.out.println("Softphone exited with status " + exitValue);
+	    logger.warning("Softphone exited with status " + exitValue);
             close(null); // Software phone was closed.
 
 	    synchronized (this) {
@@ -410,7 +410,7 @@ public class SoftphoneControlImpl {
 	return isRunning() && isVisible;
     }
 
-    public void showSoftphone(boolean isVisible) {
+    public void setVisible(boolean isVisible) {
 	if (isRunning() == false) {
 	    notifyListeners(State.INVISIBLE);
 	    return;
@@ -433,6 +433,10 @@ public class SoftphoneControlImpl {
         }
     }
     
+    public boolean isMuted() {
+	return isMuted;
+    }
+
     public void setAudioQuality(AudioQuality quality) {
         sendCommandToSoftphone("sampleRate=" + quality.sampleRate());
         sendCommandToSoftphone("channels=" + quality.channels());
@@ -472,7 +476,7 @@ public class SoftphoneControlImpl {
     public void addSoftphoneListener(SoftphoneListener listener) {
         synchronized(listeners) {
 	    if (listeners.contains(listener)) {
-		System.out.println("Duplicate listener!!!");
+		logger.warning("Duplicate listener!!!");
 		return;
 	    }
 
@@ -490,10 +494,10 @@ public class SoftphoneControlImpl {
 
     private void lineReceived(ProcOutputListener source, String line) {
         if (source == stdErrListener) {
-            System.err.println("[SIP err] "+line);
+            logger.warning(line);
         } else if (source == stdOutListener) {
 	    if (quiet == false) {	
-                System.out.println("[SIP] "+line);
+                logger.info(line);
 	    }
       
 	    if (line.indexOf("Connected:") >= 0) {
