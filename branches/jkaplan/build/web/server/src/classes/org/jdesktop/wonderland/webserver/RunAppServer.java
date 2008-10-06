@@ -60,7 +60,7 @@ public class RunAppServer {
 
     private void deployWebApps() throws IOException {
         AppServer as = getAppServer();
-
+                
         // read the list of .war files to deploy
         InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/deploy.jars");
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
