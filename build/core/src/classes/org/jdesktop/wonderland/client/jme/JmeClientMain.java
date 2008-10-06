@@ -93,6 +93,10 @@ public class JmeClientMain {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        if (Webstart.isWebstart()) {
+            Webstart.webstartSetup();
+        }
+        
         JmeClientMain worldTest = new JmeClientMain(args);
         
     }
