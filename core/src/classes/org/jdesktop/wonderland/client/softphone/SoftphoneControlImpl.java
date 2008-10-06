@@ -42,7 +42,7 @@ public class SoftphoneControlImpl {
     public static final String SOFTPHONE_PROP =
             "com.sun.mc.softphone.jar";
     
-    private Process softphone;
+    private Process softphoneProcess;
     private OutputStream softphoneOutputStream;
     private ProcOutputListener stdOutListener;
     private ProcOutputListener stdErrListener;
@@ -129,48 +129,41 @@ public class SoftphoneControlImpl {
 	exitNotificationSent = false;
 
         // launch the sucker!
-        try {
-            String[] command = getSoftphoneCommand(userName, registrar,
-		registrarTimeout, localHost, quality);
+        String[] command = getSoftphoneCommand(userName, registrar,
+	    registrarTimeout, localHost, quality);
 
-	    if (command == null) {
-	        System.out.println("[SoftphoneControl ERR] Unable to find softphone.jar.  "
+	if (command == null) {
+	    System.out.println("[SoftphoneControl ERR] Unable to find softphone.jar.  "
 		+ "You cannot use the softphone!");
 
-		softphone = null;
-		throw new IOException("Unable to find softphone.jar");
-	    }
+	    softphoneProcess = null;
 
-            StringBuffer sb = new StringBuffer();
+	    throw new IOException("Unable to find softphone.jar");
+	}
 
-            for (int i=0; i<command.length; i++) {
-                sb.append(" "+command[i]);
-            }
+	StringBuffer sb = new StringBuffer();
 
-            logger.info("Launching communicator:\n "+sb.toString());
-
-            softphone = Runtime.getRuntime().exec(command);
-            
-            // open communication channels to the new process
-            softphoneOutputStream =
-                    new BufferedOutputStream(softphone.getOutputStream());
-            stdOutListener = new ProcOutputListener(softphone.getInputStream());
-            stdErrListener = new ProcOutputListener(softphone.getErrorStream());
-            stdOutListener.start();
-            stdErrListener.start();
-            pinger = new Pinger();
-            pinger.start();
-
-	    if (isVisible) {
-		showSoftphone(true);
-	    }
-        } catch (IOException e) {
-            System.out.println("[SoftphoneControl ERR] Softphone launch failed: "
-                + e.getMessage());
-
-	    softphone = null;
-	    
+        for (int i=0; i<command.length; i++) {
+            sb.append(" "+command[i]);
         }
+
+        logger.info("Launching communicator:\n "+sb.toString());
+
+        softphoneProcess = Runtime.getRuntime().exec(command);
+            
+	// open communication channels to the new process
+        softphoneOutputStream =
+            new BufferedOutputStream(softphoneProcess.getOutputStream());
+        stdOutListener = new ProcOutputListener(softphoneProcess.getInputStream());
+        stdErrListener = new ProcOutputListener(softphoneProcess.getErrorStream());
+        stdOutListener.start();
+        stdErrListener.start();
+        pinger = new Pinger();
+        pinger.start();
+
+	if (isVisible) {
+	    showSoftphone(true);
+	}
 
         return waitForAddress();
     }
@@ -184,22 +177,15 @@ public class SoftphoneControlImpl {
      * could not be launched or was canceled by the user.
      */
     private String waitForAddress() throws IOException {
-        int waitCount = 200;
-
-        while (softphoneAddress == null) {
-	    if (isRunning() == false) {
-		throw new IOException("Softphone died while waiting for address!");
-	    }
-
+	synchronized (this) {
 	    try {
-                wait(300);
+                wait(60000);
 	    } catch (InterruptedException e) {
 	    }
 
-            if (waitCount-- <= 0) {
+	    if (softphoneAddress == null) {
                 logger.warning("Softphone not starting.  Abandoning!");
-		break;
-            }
+	    }
 	}
 
 	return softphoneAddress;
@@ -366,6 +352,10 @@ public class SoftphoneControlImpl {
 
     public void stopSoftphone() {
         close(null);
+
+	synchronized (this) {
+	    notifyAll();
+	}
     }
     
     public void register(String registrarAddress) {
@@ -373,15 +363,20 @@ public class SoftphoneControlImpl {
     }
 
     public boolean isRunning() {
-	if (softphone == null) {
+	if (softphoneProcess == null) {
 	    return false;
 	}
 
 	try {
-	    int exitValue = softphone.exitValue();	// softphone exited
+	    int exitValue = softphoneProcess.exitValue();	// softphone exited
 
 	    System.out.println("Softphone exited with status " + exitValue);
             close(null); // Software phone was closed.
+
+	    synchronized (this) {
+	        notifyAll();
+	    }
+
 	    return false;
 	} catch (IllegalThreadStateException e) {
 	    return true;		// still running
@@ -526,7 +521,12 @@ public class SoftphoneControlImpl {
                     addr = addr.substring(0, ixEnd);
                 }
 
-                softphoneAddress = addr;
+		synchronized (this) {
+                    softphoneAddress = addr;
+
+		    notifyAll();
+		}
+
                 logger.info("softphone address is '" + addr + "'");
             } else if (line.indexOf("Softphone is visible") >= 0) {
                 isVisible = true;
@@ -705,7 +705,7 @@ public class SoftphoneControlImpl {
                 pinger.interrupt();
                 pinger = null;
             }
-            this.softphone = null;
+            softphoneProcess = null;
         }
 
 	notifyListeners(State.EXITED);
@@ -787,7 +787,7 @@ public class SoftphoneControlImpl {
 
 	try {
 	    String address = softphoneControlImpl.startSoftphone(
-	        System.getProperty("user.name"), "swbridge.east.sun.com", 0, null, null);
+	        System.getProperty("user.name"), "swbridge.east.sun.com:5060", 0, null, null);
 
 	    logger.warning("Softphone address is " + address);
 
