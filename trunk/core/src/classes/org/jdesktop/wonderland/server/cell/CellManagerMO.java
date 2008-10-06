@@ -36,8 +36,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.server.cell.loader.wfs.WFSCellMO;
-import org.jdesktop.wonderland.server.cell.loader.CellLoader;
+import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
+import org.jdesktop.wonderland.wfs.loader.CellLoader;
 
 /**
  *

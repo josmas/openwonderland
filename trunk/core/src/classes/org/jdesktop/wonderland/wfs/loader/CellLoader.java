@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.server.cell.loader;
+package org.jdesktop.wonderland.wfs.loader;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
@@ -32,12 +32,12 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
-import org.jdesktop.wonderland.server.cell.loader.CellList;
-import org.jdesktop.wonderland.server.cell.loader.CellList.Cell;
-import org.jdesktop.wonderland.server.cell.loader.CellMap;
-import org.jdesktop.wonderland.server.cell.loader.CellLoaderDefs;
-import org.jdesktop.wonderland.server.cell.loader.CellLoaderUtils;
-import org.jdesktop.wonderland.server.cell.loader.CellRoots;
+import org.jdesktop.wonderland.wfs.loader.CellList;
+import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
+import org.jdesktop.wonderland.wfs.loader.CellMap;
+import org.jdesktop.wonderland.wfs.loader.CellLoaderDefs;
+import org.jdesktop.wonderland.wfs.loader.CellLoaderUtils;
+import org.jdesktop.wonderland.wfs.loader.CellRoots;
 
 
 

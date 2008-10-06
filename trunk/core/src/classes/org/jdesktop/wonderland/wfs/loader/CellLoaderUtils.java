@@ -16,12 +16,12 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.server.cell.loader;
+package org.jdesktop.wonderland.wfs.loader;
 
 import java.io.InputStreamReader;
 import java.net.URL;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.server.cell.loader.CellLoader;
+import org.jdesktop.wonderland.wfs.loader.CellLoader;
 
 
 /**

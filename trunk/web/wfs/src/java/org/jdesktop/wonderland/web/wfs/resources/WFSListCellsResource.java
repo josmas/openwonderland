@@ -33,8 +33,9 @@ import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.tools.wfs.WFSCell;
 import org.jdesktop.wonderland.tools.wfs.WFSCellDirectory;
-import org.jdesktop.wonderland.wfs.utils.WFSCellList;
-import org.jdesktop.wonderland.wfs.utils.WFSCellList.Cell;
+import org.jdesktop.wonderland.wfs.loader.CellList;
+import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
+
 
 /**
  * The WFSListCellsResource class is a Jersey RESTful resource that allows
@@ -70,7 +71,7 @@ public class WFSListCellsResource {
         Logger logger = WFSManager.getLogger();
         
         /* The list of resulting cells */
-        LinkedList<WFSCellList.Cell> cellList = new LinkedList();
+        LinkedList<CellList.Cell> cellList = new LinkedList();
         
         /*
          * Fetch the wfs manager and the WFS. If invalid, then return a bad
@@ -122,7 +123,7 @@ public class WFSListCellsResource {
         
         /* Convert the list of CellChilds to an array */
         Cell[] childs = cellList.toArray(new Cell[] {});
-        WFSCellList wfsCellList = new WFSCellList("", childs);
+        CellList wfsCellList = new CellList("", childs);
         
         /* Send the serialized cell names to the client */
         try {
@@ -148,7 +149,7 @@ public class WFSListCellsResource {
      */
     private void loadCells(WFSCellDirectory dir,
             LinkedList<WFSCellDirectory> children,
-            LinkedList<WFSCellList.Cell> cellList) {
+            LinkedList<CellList.Cell> cellList) {
         
         /*
          * Fetch an array of the names of the child cells. Check this is not

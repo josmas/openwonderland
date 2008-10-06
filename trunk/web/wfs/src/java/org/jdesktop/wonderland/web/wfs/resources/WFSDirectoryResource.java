@@ -32,8 +32,8 @@ import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.tools.wfs.WFSCell;
 import org.jdesktop.wonderland.tools.wfs.WFSCellDirectory;
-import org.jdesktop.wonderland.wfs.utils.WFSCellList;
-import org.jdesktop.wonderland.wfs.utils.WFSCellList.Cell;
+import org.jdesktop.wonderland.wfs.loader.CellList;
+import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
 
 /**
  * The WFSDirectoryResource class is a Jersey RESTful resource that allows clients
@@ -159,7 +159,7 @@ public class WFSDirectoryResource {
         
         /* Convert the list of CellChilds to an array */
         Cell[] childs = list.toArray(new Cell[] {});
-        WFSCellList children = new WFSCellList(path, childs);
+        CellList children = new CellList(path, childs);
         
         /* Send the serialized cell names to the client */
         try {

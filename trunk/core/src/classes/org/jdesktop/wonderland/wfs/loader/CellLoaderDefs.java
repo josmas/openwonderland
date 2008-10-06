@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.server.cell.loader;
+package org.jdesktop.wonderland.wfs.loader;
 
 /**
  * The CellLoaderDefs class contains some useful public definitions for the WFS

@@ -26,7 +26,7 @@ import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
-import org.jdesktop.wonderland.wfs.utils.WFSRoots;
+import org.jdesktop.wonderland.wfs.loader.CellRoots;
 
 
 /**
@@ -66,7 +66,7 @@ public class WFSRootsResource {
          */
         WFSManager wfsm = WFSManager.getWFSManager();
         String roots[] = wfsm.getWFSRoots();
-        WFSRoots wfsRoots = new WFSRoots(roots);
+        CellRoots wfsRoots = new CellRoots(roots);
         
         /* Send the serialized cell names to the client */
         try {

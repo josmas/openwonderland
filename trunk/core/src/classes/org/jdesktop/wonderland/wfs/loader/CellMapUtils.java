@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.server.cell.loader;
+package org.jdesktop.wonderland.wfs.loader;
 
 import java.util.Iterator;
 
