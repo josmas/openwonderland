@@ -17,7 +17,7 @@
  * $Date: 2007/12/17 19:45:54 $
  * $State: Exp $
  */
-package org.jdesktop.lg3d.wonderland.darkstar.client;
+package org.jdesktop.wonderland.client.softphone;
 
 import java.io.IOException;
 
@@ -40,9 +40,9 @@ public interface SoftphoneControl {
 
     public boolean isConnected() throws IOException;
 
-    public void addListener(SipListener listener);
+    public void addListener(SoftphoneListener listener);
 
-    public void removeListener(SipListener listener);
+    public void removeListener(SoftphoneListener listener);
 
     public void showSoftphone(boolean isVisible) throws IOException;
 
