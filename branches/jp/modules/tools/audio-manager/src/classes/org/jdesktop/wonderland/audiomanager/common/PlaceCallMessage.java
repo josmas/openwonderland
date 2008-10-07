@@ -27,9 +27,20 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public class PlaceCallMessage extends Message {
     private String sipURL;	      // URL of softphone to call
+    private double x;	      	      // location of the call
+    private double y;
+    private double z;
+    private double direction;	      // direction of avatar
     private boolean confirmAnswered;  // user has to press 1
 
-    public PlaceCallMessage() {
+    public PlaceCallMessage(String sipURL, double x, double y,
+	    double z, double direction, boolean confirmAnswered) {
+
+	this.sipURL = sipURL;
+	this.x = x;
+	this.y = y;
+	this.z = z;
+	this.confirmAnswered = confirmAnswered;
     }
 
     public void setSipURL(String sipURL) {
@@ -38,6 +49,38 @@ public class PlaceCallMessage extends Message {
 
     public String getSipURL() {
 	return sipURL;
+    }
+
+    public void setX(double x) {
+	this.x = x;
+    }
+
+    public double getX() {
+	return x;
+    }
+
+    public void setY(double y) {
+	this.y = y;
+    }
+
+    public double getY() {
+	return y;
+    }
+
+    public void setZ(double z) {
+	this.z = z;
+    }
+
+    public double getZ() {
+	return z;
+    }
+
+    public void setDirection(double direction) {
+	this.direction = direction;
+    }
+
+    public double getDirection() {
+	return direction;
     }
 
     public void setConfirmAnswered(boolean confirmAnswered) {	
