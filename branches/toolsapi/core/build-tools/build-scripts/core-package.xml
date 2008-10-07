@@ -1,0 +1,48 @@
+<project basedir="." default="..." name="core.package">
+    <!-- 
+        imported from core-build.xml, so we can assume the common build
+        packages and core properties are imported already.
+    -->
+    <target name="-core-package-server" depends="-setup-package-server">
+        <mkdir dir="${dist.dir}"/>
+        
+        <zip zipfile="${dist.dir}/wonderland-server-dist.zip">
+            <!-- include entire Darkstar server .zip -->
+            <zipfileset src="${core.lib.zip.dir}/sgs-server.zip" prefix="core/lib/sgs">
+                <include name="sgs-${core.sgs.version}/lib/*.jar"/>
+                <include name="sgs-${core.sgs.version}/sgs-logging.properties"/>
+                <include name="bdb-4.5.20/**"/>
+            </zipfileset>
+            
+            <!-- include jme.jar for bounds checking -->
+            <zipfileset dir="${core.jme.dir}" prefix="core/lib/jme20">
+                <include name="target/jme.jar"/>
+            </zipfileset>
+            
+            <!-- include wonderland server and common directories -->
+            <zipfileset dir="${build.lib.dir}" prefix="core/lib">
+                <include name="wonderland-common.jar"/>
+                <include name="wonderland-server.jar"/>
+            </zipfileset>
+            
+            <!-- include ant files -->
+            <zipfileset dir="${core.build-scripts.dir}" prefix="core/build-tools/build-scripts">
+                <include name="core-setup.xml"/>
+                <include name="classpath.xml"/>
+                <include name="core.properties"/>
+            </zipfileset>
+            
+            <zipfileset dir="${core.build-scripts.dir}/../run-scripts" prefix="core/build-tools/run-scripts">
+                <include name="run-server.properties"/>
+                <include name="run-server.xml"/>
+            </zipfileset>
+            
+            <!-- include ant files -->
+            <zipfileset file="${core.build-scripts.dir}/../run-scripts/run-server-main.xml" 
+                        fullpath="run.xml"/>
+            
+            <!-- include wonderland properties -->
+            <zipfileset file="${src.dir}/darkstar_config/WonderlandMain.cfg" prefix="core"/>
+        </zip> 
+    </target>
+</project>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="package" name="wonderland">
+
+<target name="package" description="Create packages">
+    <!-- build areas in correct order, use default build target -->
+    <ant dir="utils"   inheritall="false"/>
+    <ant dir="core"    inheritall="false"/>
+    <ant dir="web"     inheritall="false"/>
+    <ant dir="modules" inheritall="false"/>
+</target>
+
+<target name="javadoc" description="Build javadoc">
+    <ant dir="core" target="javadoc"/>
+</target>
+
+<target name="clean" description="Clean all rebuildable stuff.">
+    <ant dir="utils"   target="clean" inheritall="false"/>
+    <ant dir="core"    target="clean" inheritall="false"/>
+    <ant dir="web"     target="clean" inheritall="false"/>
+    <ant dir="modules" target="clean" inheritall="false"/>
+</target>
+
+<target name="release" depends="package, javadoc" description="Build release">
+</target>
+
+<target name="daily-build" depends="release" description="Do the daily build">
+  <copy todir="/export/home/lg3dadmin/lg3d/packages/api-update">
+    <fileset dir="core/release/linux-i686/debug/javadoc"/>
+  </copy>
+</target>
+
+<target name="run-server" depends="package, javadoc" description="Run the Wonderland Server">
+    <ant dir="web"     target="run-web" inheritall="false"/>
+</target>
+
+</project>
