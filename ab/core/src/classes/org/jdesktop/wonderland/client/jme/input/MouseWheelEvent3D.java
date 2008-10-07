@@ -81,7 +81,7 @@ public class MouseWheelEvent3D extends MouseEvent3D {
     @Override
     public Event clone (Event event) {
 	if (event == null) {
-	    event = new MouseMovedEvent3D();
+	    event = new MouseWheelEvent3D();
 	}
 	return super.clone(event);
     }

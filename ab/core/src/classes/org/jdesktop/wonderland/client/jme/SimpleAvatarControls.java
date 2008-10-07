@@ -149,9 +149,13 @@ public class SimpleAvatarControls extends ProcessorComponent {
         movableComponent = viewCell.getComponent(MovableComponent.class);
         worldManager = wm;
 
-        // TODO set initial orientation to value from viewCell
+        // Set initial position and orientation from cell transform
         CellTransform worldTransform = viewCell.getWorldTransform();
         position = worldTransform.getTranslation(position);
+        float[] angles = worldTransform.getRotation(null).toAngles(null);
+
+        rotX = (float) Math.toDegrees(angles[0]);
+        rotY = (float) Math.toDegrees(angles[1]);
 
         // Setup the rotated vectors
         directionRotation.fromAngleAxis(rotY*(float)Math.PI/180.0f, yDir);
@@ -295,10 +299,9 @@ public class SimpleAvatarControls extends ProcessorComponent {
     @Override
     public void commit(ProcessorArmingCollection collection) {
         if (state!=STOPPED || updateRotations) {
+//            System.err.println("localMoveRequest "+position+"  "+this);
             movableComponent.localMoveRequest(new CellTransform(quaternion, position));
         }
-
-//        worldManager.addToUpdateList(target);
     }
     
     /**
