@@ -142,6 +142,10 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public void callStatusChanged(CallStatus status) {
+	logger.warning("got status " + status);
+    }
+
     /*
      * XXX This probably doesn't belong here!
      *
