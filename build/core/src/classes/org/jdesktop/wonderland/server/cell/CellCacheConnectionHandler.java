@@ -69,7 +69,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
                                ClientSession session) 
     {
         UserMO user = WonderlandContext.getUserManager().getUser(session);
-        AvatarCellMO avatar = user.getAvatar(viewID);
+        AvatarCellMO avatar = user.getAvatar(session, viewID);
         if (avatar == null) {
             logger.severe("clientDetached has null avatar for session");
             return;
@@ -123,12 +123,12 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
                                                      ClientSession session, 
                                                      CellHierarchyMessage msg) {
         UserMO user = WonderlandContext.getUserManager().getUser(session);
-        AvatarCellMO avatar = user.getAvatar(msg.getViewID());
+        AvatarCellMO avatar = user.getAvatar(session, msg.getViewID());
         if (avatar == null) {
             user.getReference().getForUpdate(); // Mark for update
             avatar = new AvatarCellMO(user);
             viewID = msg.getViewID();
-            user.putAvatar(viewID, avatar);
+            user.putAvatar(session, viewID, avatar);
         }
 
         try {

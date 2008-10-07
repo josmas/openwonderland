@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.jme.artimport;
 
 import com.jme.scene.Node;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Interface for Model loader code. Provides support for inital import of the 
@@ -35,13 +36,13 @@ public interface ModelLoader {
      * @param file
      * @return
      */
-    public Node importModel(File file);
+    public Node importModel(File file) throws IOException;
     
     /**
      * Deploy the art content to the module.
      * @param rootDir the art root directory of the module (usually <module>/art)
      */
-    public void deployToModule(File moduleArtRootDir);
+    public void deployToModule(File moduleRootDir) throws IOException;
     
     /**
      * Runtime load of the model from a module

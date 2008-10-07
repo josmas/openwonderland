@@ -36,7 +36,7 @@ public interface CellRenderer {
     
     /**
      * The cell has moved, the transform is the cell position in world coordinates
-     * @param cellLocal2World the cell Local to World transform
+     * @param worldTransfrm the cell world transform
      */
-    public void cellTransformUpdate(CellTransform cellLocal2World);
+    public void cellTransformUpdate(CellTransform worldTransform);
 }

@@ -122,6 +122,12 @@ public class ModuleInfo implements Serializable {
     /** Default constructor */
     public ModuleInfo() {}
     
+    /** Constructor which takes major/minor version number and description */
+    public ModuleInfo(String name, int major, int minor, String description) {
+        this(name, major, minor);
+        this.description = description;
+    }
+    
     /** Constructor which takes major/minor version number */
     public ModuleInfo(String name, int major, int minor) {
         /* Populate the basic elements of the module info */

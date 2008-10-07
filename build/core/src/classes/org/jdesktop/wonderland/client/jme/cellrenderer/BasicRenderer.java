@@ -17,12 +17,16 @@
  */
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
+import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -61,14 +65,22 @@ public abstract class BasicRenderer implements CellRendererJME {
         rootNode = createSceneGraph(ret);
         
         if (cell.getComponent(MovableComponent.class)!=null) {
-            // Avatars are movable so create a move processor
+            // The cell is movable so create a move processor
             moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
             ret.addComponent(ProcessorComponent.class, moveProcessor);
         }
-        
-        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-        ret.addComponent(RenderComponent.class, rc);
-        
+
+        if (rootNode!=null) {
+            RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+            ret.addComponent(RenderComponent.class, rc);
+
+            JMECollisionSystem collisionSystem = (JMECollisionSystem)
+                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
+
+            CollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
+            ret.addComponent(CollisionComponent.class, cc);
+        }
+
         return ret;        
     }
 
@@ -77,6 +89,17 @@ public abstract class BasicRenderer implements CellRendererJME {
      * @return
      */
     protected abstract Node createSceneGraph(Entity entity);
+
+    /**
+     * Apply the transform to the jme node
+     * @param node
+     * @param transform
+     */
+    public static void applyTransform(Spatial node, CellTransform transform) {
+        node.setLocalRotation(transform.getRotation(null));
+        node.setLocalScale(transform.getScaling(null));
+        node.setLocalTranslation(transform.getTranslation(null));
+    }
     
     public Entity getEntity() {
         if (entity==null)
@@ -84,16 +107,16 @@ public abstract class BasicRenderer implements CellRendererJME {
         return entity;
     }
     
-    public void cellTransformUpdate(CellTransform cellTransform) {
+    public void cellTransformUpdate(CellTransform worldTransform) {
         if (moveProcessor!=null) {
-            moveProcessor.cellMoved(cellTransform);
+            moveProcessor.cellMoved(worldTransform);
         }
     }
     
     /**
      * An mtgame ProcessorCompoenent to process cell moves.
      */
-    protected class MoveProcessor extends ProcessorComponent {
+    public class MoveProcessor extends ProcessorComponent {
 
         private CellTransform cellTransform;
         private boolean dirty = false;
@@ -115,11 +138,12 @@ public abstract class BasicRenderer implements CellRendererJME {
                 if (dirty) {
                     node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
                     node.setLocalRotation(cellTransform.getRotation(tmpQuat));
-//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f+" "+tmpQuat);
+                    //System.err.println("BasicRenderer.cellMoved "+tmpV3f);
                     dirty = false;
                     worldManager.addToUpdateList(node);
                 }
             }
+            //System.out.println("--------------------------------");
         }
 
         @Override

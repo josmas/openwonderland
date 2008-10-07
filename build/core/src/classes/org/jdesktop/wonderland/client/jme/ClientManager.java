@@ -18,8 +18,6 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -41,6 +39,8 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.jme.input.test.MouseEvent3DLogger;
+import org.jdesktop.wonderland.client.jme.input.test.SpinObjectEventListener;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -115,7 +115,8 @@ public class ClientManager {
         }
         
     }
-    
+
+    // TODO this should probably be a utility, it's currently duplicated in CellBoundsViewer
     private ClassLoader setupClassLoader() {
         ModulePluginList list = ModuleUtils.fetchPluginJars();
         List<URL> urls = new ArrayList<URL>();
@@ -175,12 +176,32 @@ public class ClientManager {
                     Entity parentEntity= findParentEntity(ret.getParent());
                     Entity thisEntity = ((CellRendererJME)rend).getEntity();
                     
-                    // TODO When subentities work uncomment this if test
+//		    MouseEvent3DLogger mouseEventListener =
+//			new MouseEvent3DLogger(className+"_"+cellID);
+//		    mouseEventListener.addToEntity(thisEntity);
+                    
                     if (parentEntity!=null)
                         parentEntity.addEntity(thisEntity);
                     else
                         JmeClientMain.getWorldManager().addEntity(thisEntity);
                     
+//		    /* TODO: temporary
+//		    MouseEvent3DLogger mouseEventListener =
+//			new MouseEvent3DLogger(className+"_"+cellID);
+//		    mouseEventListener.addToEntity(thisEntity);
+//		    */
+
+		    /* TODO: temporary
+		    KeyEvent3DLogger keyEventListener = 
+			new KeyEvent3DLogger(className+"_"+cellID);
+		    keyEventListener.addToEntity(thisEntity);
+		    */
+		    
+		    /* TODO: temporary
+		    SpinObjectEventListener spinEventListener = new SpinObjectEventListener();
+		    spinEventListener.addToEntity(thisEntity);
+		    */
+
                     if (parentEntity!=null && thisEntity!=null) {                        
                         RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
                         RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);

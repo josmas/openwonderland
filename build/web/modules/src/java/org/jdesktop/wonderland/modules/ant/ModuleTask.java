@@ -46,6 +46,7 @@ public class ModuleTask extends Jar {
     private String name;
     private int majorVersion = ModuleInfo.VERSION_UNSET;
     private int minorVersion = ModuleInfo.VERSION_UNSET;
+    private String moduleDescription;
     
     private List<Requires> requires = new ArrayList<Requires>();
     private List<Plugin> plugins = new ArrayList<Plugin>();
@@ -60,8 +61,16 @@ public class ModuleTask extends Jar {
         this.majorVersion = majorVersion;
     }
     
+    public void setMajorVersion(int majorVersion) {
+        this.majorVersion = majorVersion;
+    }
+    
     public void setMinorVersion(int minorVersion) {
         this.minorVersion = minorVersion;
+    }
+    
+    public void setDescription(String moduleDescription) {
+        this.moduleDescription = moduleDescription;
     }
     
     public void setBuildDir(File buildDir) {
@@ -135,7 +144,7 @@ public class ModuleTask extends Jar {
     }
     
     private void writeModuleInfo() throws IOException, JAXBException {
-        ModuleInfo mi = new ModuleInfo(name, majorVersion, minorVersion);
+        ModuleInfo mi = new ModuleInfo(name, majorVersion, minorVersion, moduleDescription);
         
         File moduleInfoFile;
         if (buildDir == null) {
@@ -259,6 +268,11 @@ public class ModuleTask extends Jar {
         
         if (majorVersion == ModuleInfo.VERSION_UNSET) {
             throw new BuildException("Major version is required.");
+        }
+        
+        // force the minor version to be 0 if it is unset
+        if (minorVersion == ModuleInfo.VERSION_UNSET) {
+            minorVersion = 0;
         }
         
         // check any included requirements
@@ -447,7 +461,7 @@ public class ModuleTask extends Jar {
     
     public static class CellSetup extends Service {
         public CellSetup() {
-            setType("org.jdesktop.wonderland.server.cell.setup.spi.CellSetupSPI");
+            setType("org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI");
         }
     }
     

@@ -27,17 +27,17 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * once to a particular entity. Subsequent attempts to add the listener to the same entity will be ignored.
  * <br><br>
  * When an entity receives an event it will invoke methods for all enabled event listeners. An event listener 
- * can be enabled or disabled via <code>setEnable()</code>. For each enabled listener the following methods will be called for the event:
+ * can be enabled or disabled via <code>setEnabled()</code>. For each enabled listener the following methods will be called for the event:
  * <br><br>
- * 1. <code>consumeEvent</code>: The listener should return true if it wishes to receive the given event.
+ * 1. <code>consumesEvent</code>: The listener should return true if it wishes to receive the given event.
  * <br><br>
- * 2. <code>propagateToParent</code>: The listener should return true if the parent entity should be
+ * 2. <code>propagatesToParent</code>: The listener should return true if the parent of the event entity should be
  * given a chance to receive the given event.
  * <br><br>
- * 3. <code>propagateToUnder</code>: The listener should return true if the entity immediately 
- * underneath the current entity (in eye space) should be given a chance to receive the event.
+ * 3. <code>propagatesToUnder</code>: The listener should return true if the entity immediately 
+ * underneath the event's entity (in eye space) should be given a chance to receive the event.
  * <br><br>
- * 4. <code>computeEvent</code>: Called if the previous call to consumeEvent returned true. This
+ * 4. <code>computeEvent</code>: Called if the previous call to consumesEvent returned true. This
  * method should determine how to change the world based on the event.
  * <br><br>
  * 5. <code>commitEvent</code>: Called if computeEvent was previously called. This method should
@@ -50,13 +50,13 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * event listeners are called for a single event. Nor should the programmer make any assumptions about
  * the order or number of times methods are called for a single event listener for a single event. One 
  * guarantee which is provided is that for a given event an enabled listener's <code>computeEvent</code>
- * will be called once (if <code>consumeEvent</code> returned true) and, sometime later, the <code>commitEvent</code> routine will be called. Also, another 
+ * will be called once (if <code>consumesEvent</code> returned true) and, sometime later, the <code>commitEvent</code> routine will be called. Also, another 
  * guarantee is that all registered, enabled event listeners (both global and per-entity) will be tried for a 
  * given event before any event listeners are tried for subsequent events.
  * <br><br>
  * If an entity which has no attached listeners receives an event that entity will be treated as
- * if it has an enabled listener whose <code>consumeEvent</code> method returns true, whose 
- * <code>propagateToParent</code> method returns true and whose <code>propagateToUnder</code> method returns false.
+ * if it has an enabled listener whose <code>consumesEvent</code> method returns true, whose 
+ * <code>propagatesToParent</code> method returns true and whose <code>propagatesToUnder</code> method returns false.
  * <br><br>
  * <code>computeEvent</code> should propagate information to <code>commitEvent</code> by storing
  * data in instance data members of the event listener. The system makes the guaranteed that 
@@ -82,7 +82,7 @@ public interface EventListener  {
      *
      * @param enable Whether the event listener should be enabled.
      */
-    public void setEnable (boolean enable);
+    public void setEnabled (boolean enable);
 
     /**
      * Returns whether this event listener currently wishes to receive the given event.
@@ -94,24 +94,21 @@ public interface EventListener  {
      * Example Usage: User interface buttons with rounded edges can use a simple quad for its geometry
      * and use a transparent texture to achieve the rounded appearance. In order to make sure that
      * the portions of the quad which are transparent are not input sensitive we could define 
-     * <code>consumeEvent</code> to lookup the hit texel in the texture and not consume the event if the hit
+     * <code>consumesEvent</code> to lookup the hit texel in the texture and not consume the event if the hit
      * texel is transparent.
      *
      * @param event The event in question.
-     * @param entity The entity which is a candidate to receive the event. (This is null if the 
-     * event listener is global).
      */
-    public boolean consumeEvent (Event event, Entity entity);
+    public boolean consumesEvent (Event event);
 
     /**
-     * Returns whether the event should also be propagated to the entity's parent for possible delivery.
+     * Returns whether the event should also be propagated to the event entity's parent for possible delivery.
      * Computations in this method should be kept reasonably short as they occur in
      * AWT Event Dispatch thread. This method is only called for entity-attached event listeners.
      *
      * @param event The event in question.
-     * @param entity The entity which is a candidate to receive the event. 
      */
-    public boolean propagateToParent (Event event, Entity entity);
+    public boolean propagatesToParent (Event event);
 
     /**
      * Returns whether the event should also be propagated to the next underlying object (in eye space) for 
@@ -119,9 +116,8 @@ public interface EventListener  {
      * AWT Event Dispatch thread. This method is only called for entity-attached event listeners.
      *
      * @param event The event in question.
-     * @param entity The entity which is a candidate to receive the event. 
      */
-    public boolean propagateToUnder (Event event, Entity entity);
+    public boolean propagatesToUnder (Event event);
 
     /**
      * The implementation of this method should determine how to change the world based on the given event.
@@ -130,9 +126,8 @@ public interface EventListener  {
      * that <code>commitEvent</code> will be called sometime after.
      *
      * @param event The event in question.
-     * @param entity The entity which is receiving the event.
      */
-    public void computeEvent (Event event, Entity entity);
+    public void computeEvent (Event event);
 
     /**
      * Called after <code>computeEvent</code> has been called for this event listener.
@@ -143,9 +138,8 @@ public interface EventListener  {
      * preceded by a call to <code>commitEvent</code> for that event.
      *
      * @param event The event which was computed.
-     * @param entity The entity which is receiving the event.
      */
-    public void commitEvent (Event event, Entity entity);
+    public void commitEvent (Event event);
 
     /**
      * Add this event listener to the given entity. An given event listener instance may be only

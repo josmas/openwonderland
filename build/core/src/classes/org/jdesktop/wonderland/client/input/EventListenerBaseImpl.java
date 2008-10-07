@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.PostEventCondition;
+import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -36,6 +39,8 @@ import org.jdesktop.wonderland.common.InternalAPI;
 @ExperimentalAPI
 public class EventListenerBaseImpl extends ProcessorComponent implements EventListener  {
 
+    private static final Logger logger = Logger.getLogger(EventListenerBaseImpl.class.getName());
+
     /** The mtgame event used to wake up the this collection for computation on the Event */
     // TODO: need a way to ensure this is unique throughout the client
     private static long MTGAME_EVENT_ID = 0;
@@ -45,12 +50,12 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /** Whether the listener is enabled. */
     protected boolean enabled = true;
-
+    
     /** The number of entities to which the listener is attached */
     private int numEntitiesAttached;
 
-    /** The last event for which computeEvent was called */
-    private Event lastComputedEvent;
+    /** The list of events which was encountered when computeEvent was last called. */
+    private LinkedList<Event> computedEvents = new LinkedList<Event>();
 
     /**
      * {@inheritDoc}
@@ -63,7 +68,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     /**
      * {@inheritDoc}
      */
-    public void setEnable (boolean enable) {
+    public void setEnabled (boolean enable) {
 	this.enabled = enabled;
 
 	if (enabled && numEntitiesAttached > 0) {
@@ -85,7 +90,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean consumeEvent (Event event, Entity entity) {
+    public boolean consumesEvent (Event event) {
 	return true;
     }
 
@@ -94,7 +99,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean propagateToParent (Event event, Entity entity) {
+    public boolean propagatesToParent (Event event) {
 	return true;
     }
 
@@ -103,19 +108,19 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      * <br><br>
      * Note on subclassing: unless a subclass overrides this method, true is always returned.
      */
-    public boolean propagateToUnder (Event event, Entity entity) {
+    public boolean propagatesToUnder (Event event) {
 	return false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void computeEvent (Event event, Entity entity) {}
+    public void computeEvent (Event event) {}
 
     /**
      * {@inheritDoc}
      */
-    public void commitEvent (Event event, Entity entity) {}
+    public void commitEvent (Event event) {}
 
     /**
      * {@inheritDoc}
@@ -123,19 +128,21 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     public void addToEntity (Entity entity) {
 
 	// Make sure that the entity has an event listener collection to use as an attach point.
-	EventListenerCollection collection = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+	EventListenerCollection collection = (EventListenerCollection) 
+	    entity.getComponent(EventListenerCollection.class);
+
 	if (collection == null) {
 	    collection = new EventListenerCollection();
 	    entity.addComponent(EventListenerCollection.class, collection);
 	} else {
-
 	    // See if listener is already attached to this entity
 	    if (collection.contains(this)) {
 		return;
 	    }
-
-	    collection.add(this);
 	}	
+	collection.add(this);
+
+	addProcessorCompToEntity(this, entity);
 
 	numEntitiesAttached++;
 
@@ -150,7 +157,9 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      */
     public void removeFromEntity (Entity entity) {
 
-	EventListenerCollection collection = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+	EventListenerCollection collection = (EventListenerCollection) 
+	    entity.getComponent(EventListenerCollection.class);
+
 	if (collection == null) {
 	    return;
 	}
@@ -163,6 +172,8 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 	if (collection.size() <= 0) {
 	    entity.removeComponent(EventListenerCollection.class);
 	}
+
+	removeProcessorCompFromEntity(this, entity);
 
 	numEntitiesAttached--;
 
@@ -197,12 +208,29 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     @InternalAPI
     public void compute (ProcessorArmingCollection collection) {
 	Event event = null;
-        try {
-            event = inputQueue.take();
-        } catch (Exception ex) {}
-	if (event == null) return;
-	computeEvent(event, getEntity());
-	lastComputedEvent = event;
+	synchronized (computedEvents) {
+	    computedEvents.clear();
+	}
+	try {
+	    while (inputQueue.peek() != null) {
+
+		// Get the next available event
+		event = inputQueue.take();
+		if (event == null) {
+		    logger.warning("No event found during read of listener input queue.");
+		    return;
+		}
+
+		// Compute the event
+		computeEvent(event);
+		synchronized (computedEvents) {
+		    computedEvents.add(event);
+		}
+	    }
+	} catch (Exception ex) {
+	    ex.printStackTrace();
+	    logger.warning("Exception during read of listener input queue.");
+	}
     }
 
     /**
@@ -213,16 +241,44 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      */
     @InternalAPI
     public void commit (ProcessorArmingCollection collection) {
-	commitEvent(lastComputedEvent, getEntity());
+	// Commit all the events which were previously computd
+	synchronized (computedEvents) {
+	    for (Event event : computedEvents) {
+		commitEvent(event);
+	    }
+	}
     }
 
-    /** Arm the processor */
-    private void arm () {
+    /** Arm the listener's processor. */
+    void arm () {
 	setArmingCondition(new PostEventCondition(this, new long[] { MTGAME_EVENT_ID}));
     }
 
-    /** Disarm the processor */
-    private void disarm () {
+    /** Disarm the listener's processor. */
+    void disarm () {
 	setArmingCondition(null);
+    }
+
+    /** Add the given processor component to the given entity. */
+    private static void addProcessorCompToEntity (ProcessorComponent pc, Entity entity) {
+	ProcessorCollectionComponent pcc = (ProcessorCollectionComponent) entity.getComponent(ProcessorCollectionComponent.class);
+	if (pcc == null) {
+	    pcc = new ProcessorCollectionComponent();
+	    entity.addComponent(ProcessorCollectionComponent.class, pcc);
+	}
+	pcc.addProcessor(pc);
+    }
+
+    /** Remove the given processor component from the given entity. */
+    private static void removeProcessorCompFromEntity (ProcessorComponent pc, Entity entity) {
+	/* TODO: doug must impl pcc.remove
+	ProcessorCollectionComponent pcc = (ProcessorCollectionComponent) entity.getComponent(ProcessorCollectionComponent.class);
+	if (pcc == null) return;
+	pcc.remove(pc);
+	ProcessorComponent[] pcAry = pcc.getProcessors();
+	if (pcAry == null || pcAry.length <= 0) {
+	    ProcessorCollectionComponent pcc = entity.removeComponent(ProcessorCollectionComponent.class);
+	}
+	*/
     }
 }

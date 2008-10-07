@@ -26,7 +26,7 @@ import java.util.ArrayList;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public abstract class CellConfig implements Serializable {
+public class CellConfig implements Serializable {
     
     private ArrayList<String> clientComponentClasses = null;
     

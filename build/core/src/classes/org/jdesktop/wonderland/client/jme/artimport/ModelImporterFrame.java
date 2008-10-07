@@ -65,9 +65,11 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 //    private UserMotionListener userMotionListener = null;
     private ChangeListener translationChangeListener = null;
     private ChangeListener rotationChangeListener = null;
+    private ChangeListener scaleChangeListener = null;
     
     private Vector3f currentTranslation = new Vector3f();
     private Vector3f currentRotationValues = new Vector3f();
+    private Vector3f currentScale = new Vector3f();
     private Matrix3f currentRotation = new Matrix3f();
     
     private ImportSessionFrame sessionFrame;
@@ -92,7 +94,11 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         translationXTF.setModel(translationX);
         translationYTF.setModel(translationY);
         translationZTF.setModel(translationZ);
-        
+
+        value = new Float(1);
+        SpinnerNumberModel scaleX = new SpinnerNumberModel(value, min, max, step);
+        scaleTF.setModel(scaleX);
+                
         value = new Float(0);
         min = new Float(-360);
         max = new Float(360);
@@ -104,6 +110,9 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         rotationYTF.setModel(rotationY);
         rotationZTF.setModel(rotationZ);
         currentRotation.loadIdentity();
+
+
+        // TODO add Float editors to the spinners
                 
 //        userMotionListener = new UserMotionListener() {
 //            public void userMoved(Point3f position, Vector3f lookDirection, Vector3f userVelocity, Vector3f upVector) {
@@ -164,10 +173,32 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             }
 
         };
-                
+
         ((SpinnerNumberModel)rotationXTF.getModel()).addChangeListener(rotationChangeListener);
         ((SpinnerNumberModel)rotationYTF.getModel()).addChangeListener(rotationChangeListener);
         ((SpinnerNumberModel)rotationZTF.getModel()).addChangeListener(rotationChangeListener);            
+                
+        scaleChangeListener = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                float x = (Float)((SpinnerNumberModel)scaleTF.getModel()).getValue();
+//                float y = (Float)((SpinnerNumberModel)translationYTF.getModel()).getValue();
+//                float z = (Float)((SpinnerNumberModel)translationZTF.getModel()).getValue();
+                
+                if (x!=currentScale.x ) {
+                    currentScale.set(x,x,x);
+//                    rootBG.setLocalRotation(currentRotation);
+//                    rootBG.setLocalTranslation(currentTranslation);
+//                    rootBG.setLocalScale(1f);
+                    if (transformProcessor!=null)
+                        transformProcessor.setTransform(currentRotation, currentTranslation, currentScale);
+                }
+            }
+
+        };
+
+        ((SpinnerNumberModel)scaleTF.getModel()).addChangeListener(scaleChangeListener);
+        
+
     }
     
     private void calcCurrentRotationMatrix() {
@@ -323,6 +354,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         okB1 = new javax.swing.JButton();
         cancelB1 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        scaleTF = new javax.swing.JSpinner();
         advancedPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         textureTable = new javax.swing.JTable();
@@ -345,6 +378,14 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         setTitle("Model Import");
 
         jTabbedPane1.setPreferredSize(new java.awt.Dimension(102, 167));
+
+        basicPanel.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                basicPanelInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+        });
 
         avatarMoveCB.setSelected(true);
         avatarMoveCB.setText("Move with Avatar");
@@ -487,6 +528,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             }
         });
 
+        jLabel3.setText("Scale");
+
         org.jdesktop.layout.GroupLayout basicPanelLayout = new org.jdesktop.layout.GroupLayout(basicPanel);
         basicPanel.setLayout(basicPanelLayout);
         basicPanelLayout.setHorizontalGroup(
@@ -507,7 +550,12 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                     .add(modelNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 304, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                             .add(basicPanelLayout.createSequentialGroup()
-                                .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(basicPanelLayout.createSequentialGroup()
+                                        .add(jLabel3)
+                                        .add(18, 18, 18)
+                                        .add(scaleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 154, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                                 .add(38, 38, 38)
                                 .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                     .add(basicPanelLayout.createSequentialGroup()
@@ -532,7 +580,12 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 .add(avatarMoveCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(basicPanelLayout.createSequentialGroup()
+                        .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel3)
+                            .add(scaleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(84, 84, 84)
                 .add(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -678,7 +731,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                         .add(okB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 182, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 174, Short.MAX_VALUE)
                         .add(geometryStatsB)))
                 .addContainerGap())
         );
@@ -797,6 +850,11 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 //        }
 
     }//GEN-LAST:event_avatarMoveCBActionPerformed
+
+    private void basicPanelInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_basicPanelInputMethodTextChanged
+        // TODO add your handling code here:
+        System.err.println(evt);
+    }//GEN-LAST:event_basicPanelInputMethodTextChanged
     
     
 
@@ -907,6 +965,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel29;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -924,6 +983,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     private javax.swing.JSpinner rotationXTF;
     private javax.swing.JSpinner rotationYTF;
     private javax.swing.JSpinner rotationZTF;
+    private javax.swing.JSpinner scaleTF;
     private javax.swing.JTextField texturePrefixTF;
     private javax.swing.JTable textureTable;
     private javax.swing.JSpinner translationXTF;

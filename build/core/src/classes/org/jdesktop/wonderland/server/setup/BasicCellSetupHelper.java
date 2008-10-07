@@ -23,11 +23,11 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup.Bounds.BoundsType;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup.Origin;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup.Rotation;
-import org.jdesktop.wonderland.server.cell.setup.BasicCellSetup.Scaling;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Bounds.BoundsType;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Origin;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Rotation;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Scaling;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
