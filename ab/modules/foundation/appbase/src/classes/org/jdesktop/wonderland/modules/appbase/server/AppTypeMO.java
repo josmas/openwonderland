@@ -15,11 +15,11 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.app.base;
+package org.jdesktop.wonderland.modules.appbase.server;
 
 import java.io.Serializable;
-import org.jdesktop.wonderland.common.app.base.AppLaunchMethods;
-import org.jdesktop.wonderland.common.app.base.AppLaunchMethodsDefault;
+import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethods;
+import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethodsDefault;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
