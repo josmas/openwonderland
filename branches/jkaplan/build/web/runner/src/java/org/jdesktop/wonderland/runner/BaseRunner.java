@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.runner;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,7 +29,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipInputStream;
 import org.jdesktop.wonderland.utils.RunUtil;
@@ -59,7 +62,8 @@ public abstract class BaseRunner implements Runner {
     /** the log file */
     private File logDir;
     private File logFile;
-    private PrintWriter logWriter;
+    private Logger logWriter;
+    private Handler logFileHandler;
     
     /** the current status */
     private Status status = Status.NOT_RUNNING;
@@ -148,7 +152,10 @@ public abstract class BaseRunner implements Runner {
         // created.
         resetLogFile();
         try {
-            logWriter = new PrintWriter(new FileWriter(getLogFile(true)));
+            logWriter = Logger.getLogger("wonderland.runner." + getLogName());
+            logWriter.setLevel(Level.INFO);
+            logWriter.setUseParentHandlers(false);
+            logWriter.addHandler(getLogFileHandler());
         } catch (IOException ioe) {
             // no log file, abort
             logger.log(Level.WARNING, "Error creating log file " +
@@ -187,7 +194,7 @@ public abstract class BaseRunner implements Runner {
             cmd.add(runHome + fileSep + "run.xml");
                
             // log the command
-            logWriter.println("Executing: " + cmd.toString());
+            logWriter.info("Executing: " + cmd.toString());
         
             // update status
             setStatus(Status.STARTING_UP);
@@ -209,7 +216,8 @@ public abstract class BaseRunner implements Runner {
             waiter.setName(getName() + " process waiter");
             waiter.start();
         } catch (IOException ioe) {
-            ioe.printStackTrace(logWriter);
+            logWriter.log(Level.WARNING, "Error starting process " + getName(), 
+                          ioe);
             setStatus(Status.ERROR);
             throw new RunnerException(ioe);
         }    
@@ -298,12 +306,20 @@ public abstract class BaseRunner implements Runner {
         }
         
         if (create && logFile == null) {
-            // create a new log file
-            do {
-                String fileName = getName() + ((int) (Math.random() * 65536)) + 
-                                  ".log"; 
-                logFile = new File(logDir, fileName);
-            } while (logFile.exists());
+            if (Boolean.parseBoolean(
+                    SystemPropertyUtil.getProperty("wonderland.log.preserve"))) 
+            {
+                // create a unqiuely named new log file
+                do {
+                    String useName = getLogName() + 
+                                     ((int) (Math.random() * 65536)) + 
+                                     ".log"; 
+                    logFile = new File(logDir, useName);
+                } while (logFile.exists());
+            } else {
+                // reuse the name of the runner as the log file
+                logFile = new File(logDir, getLogName() + ".log");
+            }
         }
         
         return logFile;
@@ -315,13 +331,44 @@ public abstract class BaseRunner implements Runner {
     protected synchronized void resetLogFile() {
         logFile = null;
         
+        if (logFileHandler != null) {
+            logFileHandler.close();
+            logFileHandler = null;
+        }
+        
         if (logWriter != null) {
-            logWriter.close();
             logWriter = null;
         }
     }
 
-
+    /**
+     * Get the name of the runner, formatted for using as the name of a log
+     * file.  Typically, this will do things like replace " " with "_" and
+     * convert to lower case.
+     * @return the log-formatted name of this runner
+     */
+    protected String getLogName() {
+        return getName().replaceAll(" ", "_").toLowerCase();
+    }
+    
+    /**
+     * Get a log handler that should be used to write the log out to
+     * the log file.
+     * @return the handler to use
+     */
+    protected Handler getLogFileHandler() throws IOException {
+        logFileHandler = new FileHandler(getLogFile(true).getCanonicalPath());
+        logFileHandler.setLevel(Level.ALL);
+        logFileHandler.setFormatter(new Formatter() {
+            @Override
+            public String format(LogRecord record) {
+                return record.getMessage() + "\n";
+            }
+        });
+       
+        return logFileHandler;
+    }
+    
     public void addStatusListener(RunnerStatusListener listener) {
         listeners.add(listener);
     }
@@ -357,16 +404,13 @@ public abstract class BaseRunner implements Runner {
         hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
-
-    
-    
     
     /** read a stream from a process and write it to the given log file */
     static class ProcessOutputReader implements Runnable {
         private BufferedReader in;
-        private PrintWriter out;
+        private Logger out;
         
-        public ProcessOutputReader(InputStream is, PrintWriter out) {
+        public ProcessOutputReader(InputStream is, Logger out) {
             this.in = new BufferedReader(new InputStreamReader(is));
             this.out = out;
         }
@@ -376,11 +420,13 @@ public abstract class BaseRunner implements Runner {
             
             try {
                 while ((line = in.readLine()) != null) {
-                    out.println(line);
-                    out.flush();
+                    out.info(line);
                 }
             } catch (IOException ioe) {
                 // oh well
+                out.log(Level.WARNING, "Exception in process output reader",
+                        ioe);
+                
                 logger.log(Level.WARNING, "Exception in process output reader",
                            ioe);
             }
@@ -391,10 +437,10 @@ public abstract class BaseRunner implements Runner {
     class ProcessWaiter implements Runnable {
         private Process proc;
         private Thread outReader;
-        private PrintWriter logWriter;
+        private Logger logWriter;
         
         public ProcessWaiter(Process proc, Thread outReader, 
-                             PrintWriter logWriter) 
+                             Logger logWriter) 
         {
             this.proc = proc;
             this.outReader = outReader;
@@ -423,8 +469,7 @@ public abstract class BaseRunner implements Runner {
             }    
             
             // wrte the exit value to the log and then close the log
-            logWriter.println("Process exitted, return value: " + exitValue);
-            logWriter.close();
+            logWriter.info("Process exitted, return value: " + exitValue);
             
             // everything has terminated -- update the status
             setStatus(Status.NOT_RUNNING);

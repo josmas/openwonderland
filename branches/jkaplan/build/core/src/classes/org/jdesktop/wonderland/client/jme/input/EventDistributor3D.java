@@ -23,6 +23,8 @@ import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.mtgame.PickDetails;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.input.FocusChangeEvent;
+import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.input.InputPicker;
 import org.jdesktop.wonderland.common.InternalAPI;
 
@@ -41,7 +43,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
     private EventDistributor.PropagationState propState = new PropagationState();
 
     /** The pick info for the last mouse event */
-    private PickInfo mousePickDetailsPrev;
+    private PickInfo mousePickInfoPrev;
 
     /** The singleton event distributor */
     private static EventDistributor eventDistributor;
@@ -60,26 +62,30 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    processEnterExitEvent(event, pickInfo);
 	} else if (event instanceof MouseEvent3D) {
 	    processMouseKeyboardEvent(event, pickInfo);
-	} if (event instanceof KeyEvent3D) {
-	    if (mousePickDetailsPrev != null) {
-		processMouseKeyboardEvent(event, mousePickDetailsPrev);
-	    }
+	} else if (event instanceof KeyEvent3D) {
+	    processMouseKeyboardEvent(event, mousePickInfoPrev);
+	} else if (event instanceof FocusChangeEvent) {
+	    processFocusChangeEvent(((FocusChangeEvent)event).getChanges());
 	} else {
 	    logger.warning("Invalid event type encountered, event = " + event);
 	}
     }
 
     protected void processMouseKeyboardEvent (Event event, PickInfo pickInfo) {
-	logger.info("Distributor: received event = " + event + ", pickInfo = " + pickInfo);
+	logger.fine("Distributor: received event = " + event + ", pickInfo = " + pickInfo);
 
 	// Track the last mouse pick info for focus-follows-mouse keyboard focus policy
 	if (event instanceof MouseEvent3D) {
-	    mousePickDetailsPrev = pickInfo;
+	    mousePickInfoPrev = pickInfo;
+	    MouseEvent3D mouseEvent = (MouseEvent3D) event;
+	    if (mouseEvent.getAwtEvent() instanceof InputManager.NondeliverableMouseEvent) {
+		return;
+	    }
 	}
 	
 	// First try the global event listeners
 	if (event instanceof MouseEvent3D) {
-	    ((MouseEvent3D)event).setPickDetails(null);
+	    ((MouseEvent3D)event).setPickDetails((PickDetails)null);
 	}
 	tryGlobalListeners(event);
 
@@ -88,6 +94,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 
 	// Walk through successive depth levels, as long as propagateToUnder is true,
 	// searching up the parent chain in each level
+        if (pickInfo == null) return;
 	PickDetails pickDetails = pickInfo.get(0);
 	logger.fine("pickDetails = " + pickDetails);
 	int idx = 0;
@@ -99,7 +106,6 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    // See whether the picked entity wants the event.
 	    if (event instanceof MouseEvent3D) {
 		((MouseEvent3D)event).setPickDetails(pickDetails);
-		
 	    }
 	    Entity entity = InputPicker.pickDetailsToEntity(pickDetails);
 	    tryListenersForEntity(entity, event, propState);
@@ -107,7 +113,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    // See whether any of the picked entity's parents want the event
 	    if (propState.toParent) {
 		logger.fine("Propogating to parents");
-		tryListenersForEntityParents(/* TODO: notyet: entity.getParent()*/ null, event, propState);
+		tryListenersForEntityParents(entity.getParent(), event, propState);
 	    }
 
 	    if (!propState.toUnder) {

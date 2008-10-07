@@ -24,12 +24,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
 import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.common.LogControl;
@@ -71,7 +74,7 @@ public class MainFrame extends javax.swing.JFrame {
         contentPane = (JPanel) this.getContentPane();
         contentPane.setLayout(new BorderLayout());
         mainPanel.setLayout(new GridBagLayout());
-        setTitle("Wonderland");
+        setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
 
         contentPane.add(mainPanel, BorderLayout.NORTH);
         mainPanel.add(fpsLabel,
@@ -109,6 +112,8 @@ public class MainFrame extends javax.swing.JFrame {
         toolsMenu = new javax.swing.JMenu();
         modelImportMI = new javax.swing.JMenuItem();
         cellViewerMI = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -137,7 +142,8 @@ public class MainFrame extends javax.swing.JFrame {
         });
         toolsMenu.add(modelImportMI);
 
-        cellViewerMI.setText("Cell Viewer...");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
+        cellViewerMI.setText(bundle.getString("Cell_Viewer...")); // NOI18N
         cellViewerMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cellViewerMIActionPerformed(evt);
@@ -146,6 +152,18 @@ public class MainFrame extends javax.swing.JFrame {
         toolsMenu.add(cellViewerMI);
 
         jMenuBar2.add(toolsMenu);
+
+        jMenu1.setText(bundle.getString("Help")); // NOI18N
+
+        jMenuItem1.setText(bundle.getString("User_Guide")); // NOI18N
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                help(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
+
+        jMenuBar2.add(jMenu1);
 
         setJMenuBar(jMenuBar2);
 
@@ -172,13 +190,24 @@ private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     cellViewerFrame.setVisible(true);
 }//GEN-LAST:event_cellViewerMIActionPerformed
 
+private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
+    try {
+        /* Just launch a browser for now */
+        WebBrowserLauncher.openURL("http://wonderland.dev.java.net");//GEN-LAST:event_help
+    } catch (Exception ex) {
+        Logger.getLogger(MainFrame.class.getName()).log(Level.WARNING, null, ex);
+    }
+}
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem cellViewerMI;
     private javax.swing.JMenuItem exitMI;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem modelImportMI;
     private javax.swing.JMenu toolsMenu;
     // End of variables declaration//GEN-END:variables

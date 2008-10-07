@@ -89,6 +89,7 @@ public class AvatarJME extends BasicRenderer {
         Teapot teapot = new Teapot();
         teapot.resetData();
         ret.setLocalTranslation(xoff, yoff, zoff);
+        ret.setLocalScale(0.2f);
         ret.attachChild(teapot);
 
         matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);

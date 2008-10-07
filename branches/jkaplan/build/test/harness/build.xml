@@ -111,6 +111,7 @@
     
     <target name="run-slave" depends="jar-slave">
         <java classname="org.jdesktop.wonderland.testharness.slave.SlaveMain" fork="true">
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
             <classpath>
                 <path location="${build.lib.dir}/testharness-slave.jar"/>
                 <path location="${build.lib.dir}/testharness-common.jar"/>
@@ -147,6 +148,15 @@
 
     <target name="run-manager" depends="compile-manager-ui">
         <java classname="org.jdesktop.wonderland.testharness.manager.ui.HarnessManagerUI" fork="true">
+            <classpath>
+                <path location="${build.classes.dir}"/>
+		<pathelement path="${core-client.classpath}"/>
+            </classpath>    
+        </java>
+    </target>
+    
+    <target name="run-chart" depends="compile-manager-ui">
+        <java classname="org.jdesktop.wonderland.testharness.manager.ui.analysis.TimeChart" fork="true">
             <classpath>
                 <path location="${build.classes.dir}"/>
 		<pathelement path="${core-client.classpath}"/>

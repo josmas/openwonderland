@@ -17,17 +17,23 @@
  */
 package org.jdesktop.wonderland.client.input;
 
-import com.jme.entity.Entity;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A simplified event listener which provides the input system with an array of event classes.
  * By doing this the listener is telling the input system that it wishes to receive only events of these classes.
+ * This class ignores focus. If you wish to honor focus, use <code>EventClassFocusListener</code> instead.
+ * This class uses <code>isAssignableFrom</code> to compare the event class with the desired event classes, so if
+ * the return array of <code>eventClassesToConsume</code> contains a superclass, events of that class and 
+ * all subclasses will be consumed.
  */
 
 @ExperimentalAPI
 public class EventClassListener extends EventListenerBaseImpl {
+
+    private static final Logger logger = Logger.getLogger(EventClassListener.class.getName());
 
     /**
      * Note on subclassing: the subclass should override this method.
@@ -41,15 +47,16 @@ public class EventClassListener extends EventListenerBaseImpl {
      * INTERNAL ONLY.
      */
     @InternalAPI
-    public boolean consumeEvent (Event event, Entity entity) {
+    public boolean consumesEvent (Event event) {
         Class<Event>[] eventClasses = eventClassesToConsume();
 	if (eventClasses == null) return false;
 	for (Class eventClass : eventClasses) {
             if (!Event.class.isAssignableFrom(eventClass)) {
-                throw new IllegalArgumentException(
-		   "Method eventClassesToConsume must return classes which extend the main Wonderland event class");
+                logger.warning("Method eventClassesToConsume must return classes which extend the main Wonderland Event class.");
+                logger.warning("Event ignored.");
+		return false;
             }
-            if (event.getClass().isAssignableFrom(eventClass)) {
+            if (eventClass.isAssignableFrom(event.getClass())) {
 	        return true;
             }
         }

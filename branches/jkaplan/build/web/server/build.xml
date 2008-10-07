@@ -66,6 +66,7 @@
             
             <!-- include the default properties file -->
             <fileset file="${current.dir}/web-default.properties"/>
+            <fileset file="${current.dir}/web-logging.properties"/>
             
             <!-- files that are needed for the web server classpath -->
             <zipfileset file="${web.dir}/utils/dist/wonderland-web-utils.jar" prefix="webserver"/>
