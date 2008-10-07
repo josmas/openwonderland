@@ -17,24 +17,24 @@
  * $Date:$
  * $State:$
  */
-package org.jdesktop.wonderland.audiomanager.server;
+package org.jdesktop.wonderland.audiomanager.client;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.ServerPlugin;
-import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.client.ClientPlugin;
+//import org.jdesktop.wonderland.client.WonderlandContext;
+//import org.jdesktop.wonderland.client.comms.CommsManager;
 
 /**
  * Pluging to support the audio manager
  * @author paulby
  */
-public class AudioManagerClientPlugin implements ServerPlugin {
+public class AudioManagerClientPlugin implements ClientPlugin {
     private static final Logger logger =
-            Logger.getLogger(AudioManagerServerPlugin.class.getName());
+            Logger.getLogger(AudioManagerClientPlugin.class.getName());
     
     public void initialize() {
-        CommsManager cm = WonderlandContext.getCommsManager();
-        cm.registerClientHandler(new AudioManagerConnectionHandler());
+        //CommsManager cm = WonderlandContext.getCommsManager();
+        //cm.registerClientHandler(new AudioManagerConnectionHandler());
     }
     
 }
