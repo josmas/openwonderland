@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.app.base;
+package org.jdesktop.wonderland.modules.appbase.server;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -24,7 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
-import org.jdesktop.wonderland.common.app.base.AppTypeCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.AppTypeCellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;

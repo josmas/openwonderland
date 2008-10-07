@@ -15,12 +15,12 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.app.base;
+package org.jdesktop.wonderland.modules.appbase.server;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.app.base.AppCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.AppCellConfig;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;

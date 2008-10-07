@@ -15,17 +15,17 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.app.base;
+package org.jdesktop.wonderland.modules.appbase.server;
 
 import java.io.Serializable;
 import java.util.UUID;
 import com.jme.bounding.BoundingVolume;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.app.base.AppConventionalCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellConfig;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.base.AppConventionalCellCreateMessage;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;

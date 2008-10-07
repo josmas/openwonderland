@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.server.app.base;
+package org.jdesktop.wonderland.modules.appbase.server;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
@@ -99,7 +99,7 @@ public class AppTypeCellSetup extends BasicCellSetup implements Serializable {
     }
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.server.app.base.AppTypeCellMO";
+        return "org.jdesktop.wonderland.modules.appbase.server.AppTypeCellMO";
     }
     
     /**

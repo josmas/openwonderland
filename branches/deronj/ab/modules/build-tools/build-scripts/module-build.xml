@@ -36,6 +36,21 @@
         </taskdef>
     </target>
    
+    <target name="module-compile-common" depends="-module-init">
+        <echo message="FOO"/>
+        <echo message="${module.src}/common/**"/>
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/common/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+		<pathelement path="${core-common.classpath}"/>
+                <pathelement path="${module-common.classpath}"/>
+	    </compile-classpath>
+        </wl-compile>
+    </target>
+    
     <target name="-module-compile-common" depends="-module-init">
         <wl-compile>
             <compile-classes>

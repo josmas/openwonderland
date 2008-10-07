@@ -15,14 +15,14 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.app.base;
+package org.jdesktop.wonderland.modules.appbase.server;
 
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.common.app.base.AppConventionalConnectionType;
-import org.jdesktop.wonderland.common.app.base.AppConventionalMessage;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalConnectionType;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalMessage;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
