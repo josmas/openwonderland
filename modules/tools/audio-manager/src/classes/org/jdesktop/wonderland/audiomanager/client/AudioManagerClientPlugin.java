@@ -28,8 +28,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 
 /**
- * Pluging to support the audio manager
- * @author paulby
+ * Plugin to support the audio manager
+ * @author jprovino
  */
 public class AudioManagerClientPlugin implements ClientPlugin,
 	SessionLifecycleListener {
