@@ -24,8 +24,8 @@ import java.util.LinkedList;
 import java.util.logging.Logger;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.app.base.App2DCellConfig;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 
 /**

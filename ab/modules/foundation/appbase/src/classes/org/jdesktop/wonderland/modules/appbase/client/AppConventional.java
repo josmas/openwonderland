@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalMessage;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
-import org.jdesktop.wonderland.client.apps.utils.net.NetworkAddress;
+import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
