@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="package" name="server-manager">
+<project basedir="." default="package" name="audio-manager">
      <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.audio}"/>
+    <dirname property="current.dir" file="${ant.file.audio-manager}"/>
     <property name="modules.dir" location="${current.dir}/../.."/>
         
     <property name="module.src" value="org/jdesktop/wonderland/audiomanager"/>
