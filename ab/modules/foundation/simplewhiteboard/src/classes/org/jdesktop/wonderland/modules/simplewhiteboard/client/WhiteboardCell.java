@@ -15,26 +15,26 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
 import java.awt.Point;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.client.app.base.AppType;
-import org.jdesktop.wonderland.client.app.base.App2DCell;
-import org.jdesktop.wonderland.client.app.base.AppTypeCell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.modules.appbase.client.AppType;
+import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
+import org.jdesktop.wonderland.modules.appbase.client.AppTypeCell;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellConfig;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTypeName;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellConfig;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCompoundCellMessage;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction.Action;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCommand.Command;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTypeName;
 
 /**
  * Client Cell for a whiteboard shared application.

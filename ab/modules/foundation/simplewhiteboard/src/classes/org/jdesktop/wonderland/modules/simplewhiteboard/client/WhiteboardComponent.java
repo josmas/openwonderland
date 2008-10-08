@@ -15,19 +15,19 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
 import java.math.BigInteger;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.app.simplewhiteboard.BufferedCompoundMessageSender;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCompoundCellMessage;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellMessage;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.simplewhiteboard.client.BufferedCompoundMessageSender;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellMessage;
 
 /**
  * The client side of the communication component that provides communication between the whiteboard client and server.

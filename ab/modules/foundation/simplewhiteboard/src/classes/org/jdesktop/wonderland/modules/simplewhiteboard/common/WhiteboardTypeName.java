@@ -15,28 +15,21 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * Whiteboard tool types
+ * The external app type name for Whiteboard apps. 
  *
- * @author nsimpson
+ * @author deronj
  */
 
 @ExperimentalAPI
-public interface WhiteboardTool {
-    public enum Tool {
-        STROKE,
-// not implemented yet
-//        LINE,
-//        RECTANGLE,
-//        ELLIPSE
-    };
-    
-    public static final Tool STROKE = Tool.STROKE;
-//    public static final Tool LINE = Tool.LINE;    
-//    public static final Tool RECTANGLE = Tool.RECTANGLE;
-//    public static final Tool ELLIPSE = Tool.ELLIPSE;
+public class WhiteboardTypeName {
+
+    /**
+     * The external app type name for Whiteboard apps. 
+     */
+    public static final String WHITEBOARD_APP_TYPE_NAME = "SimpleWhiteboard";
 }

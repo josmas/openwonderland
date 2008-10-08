@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common;
 
 import java.awt.Point;
 import java.lang.reflect.Array;
@@ -26,7 +26,7 @@ import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.app.base.App2DCellConfig;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction.Action;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 
 /**
  * Container for whiteboard cell data

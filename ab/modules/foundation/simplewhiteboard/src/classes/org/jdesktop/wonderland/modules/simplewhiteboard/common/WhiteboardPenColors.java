@@ -15,21 +15,22 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common;
 
+import java.awt.Color;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * Whiteboard command types
- *
  * @author nsimpson
  */
 
 @ExperimentalAPI
-public interface WhiteboardCommand {
-    public enum Command {
-        ERASE
+public interface WhiteboardPenColors {
+    public static final Color[] PenColors = new Color[] {
+        Color.BLACK,
+        Color.RED,
+        Color.BLUE,
+        Color.GREEN
     };
-    
-    public static final Command ERASE = Command.ERASE;
+ 
 }

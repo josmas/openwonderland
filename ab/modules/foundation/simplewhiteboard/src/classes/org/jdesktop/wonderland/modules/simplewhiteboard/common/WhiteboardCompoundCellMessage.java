@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -23,9 +23,9 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction.Action;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCommand.Command;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTool.Tool;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTool.Tool;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 

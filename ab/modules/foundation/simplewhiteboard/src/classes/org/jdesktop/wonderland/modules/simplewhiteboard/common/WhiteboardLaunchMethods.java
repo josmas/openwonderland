@@ -15,11 +15,11 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.base.AppLaunchMethods;
-import org.jdesktop.wonderland.common.app.base.AppLaunchMethodsWonderland;
+import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethods;
+import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethodsWonderland;
 
 /**
  * The Whiteboard is a Wonderland app. It currently is only

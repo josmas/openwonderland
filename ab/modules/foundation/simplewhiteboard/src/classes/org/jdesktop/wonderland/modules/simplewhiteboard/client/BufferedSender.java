@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
 import java.util.Iterator;
 import java.util.LinkedList;
