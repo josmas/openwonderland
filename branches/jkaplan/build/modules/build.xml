@@ -2,6 +2,7 @@
 <project basedir="." default="dist" name="wonderland-modules"> 
     <!-- jar all subprojects -->
     <target name="package">
+        <ant antfile="foundation/build.xml" target="package" inheritall="false"/>
         <ant antfile="samples/build.xml" target="package" inheritall="false"/>
         <ant antfile="tools/build.xml" target="package" inheritall="false"/>
         <ant antfile="world/build.xml" target="package" inheritall="false"/>
@@ -28,6 +29,7 @@
         <delete dir="dist" failonerror="false"/>
         
         <!-- clean sub-projects -->
+        <ant antfile="foundation/build.xml" target="clean" inheritall="false"/> 
         <ant antfile="samples/build.xml" target="clean" inheritall="false"/>
         <ant antfile="tools/build.xml" target="clean" inheritall="false"/> 
         <ant antfile="world/build.xml" target="clean" inheritall="false"/> 
