@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Source for wonderland.jnlp -->
+
+<jnlp spec="1.0+"
+  codebase="$$codebase"
+  href="Wonderland.jnlp">
+
+  <information>
+    <title>Project Wonderland 0.5</title>
+    <vendor>Sun Microsystems Inc.</vendor>
+    <homepage href="http://wonderland.dev.java.net/"/>
+    <description>Project Wonderland 0.5</description>
+    <description kind="short">Toolkit for building collaborative, immersive environments</description>
+  </information>
+
+  <security>
+    <all-permissions/>
+  </security>
+  
+  <resources>
+    <j2se version="1.5+" initial-heap-size="128m" max-heap-size="512m" java-vm-args=""/>
+    
+    <!-- jar files auto-populated by build script -->
+    %LOCAL_JAR_FILES%
+    
+    <property name="wonderland.server.url" value="$$wonderland.server.url"/>
+    <property name="wonderland.protocol.handler.pkgs" value="org.jdesktop.wonderland.client.protocols"/>
+  </resources>
+
+  <resources os="Windows">
+    <nativelib href="win32/wonderland_native.jar"/>
+  </resources>
+
+  <resources os="Linux" arch="i386">
+    <nativelib href="linux/wonderland_native.jar"/>
+  </resources>
+  
+  <resources os="Mac OS X">
+    <nativelib href="macosx/wonderland_native.jar"/>
+  </resources>
+
+  <application-desc main-class="org.jdesktop.wonderland.client.jme.JmeClientMain">
+  </application-desc>
+</jnlp>

@@ -42,6 +42,7 @@
 	<path location="${core.sgs.client.dir}/lib/sgs-client.jar"/>
 	<path location="${core.sgs.dir}/mina-1.1/mina-core-1.1.jar"/>
 	<path location="${core.sgs.dir}/slf4j-1.4.0/slf4j-api-1.4.0.jar"/>
+        <path location="${core.sgs.dir}/slf4j-1.4.0/slf4j-jdk14-1.4.0.jar"/>
     </pathconvert>
     
     <pathconvert property="core-common-compile.classpath">
