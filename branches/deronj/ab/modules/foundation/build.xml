@@ -10,11 +10,16 @@
     <!-- all projects -->
     <fileset dir="${current.dir}" id="all.projects">
         <exclude name="appbase/build.xml"/>
+        <exclude name="simplewhiteboard/build.xml"/>
         <include name="*/**/build.xml"/>
     </fileset>
  
    <fileset dir="${current.dir}" id="appbase.module">
         <include name="appbase/build.xml"/>
+    </fileset>
+
+   <fileset dir="${current.dir}" id="simplewhiteboard.module">
+        <include name="simplewhiteboard/build.xml"/>
     </fileset>
 
     <!-- setup -->
@@ -24,12 +29,14 @@
     <!-- build all subprojects -->
     <target name="compile" depends="init">
         <build-subprojects fileset="appbase.module" target="build"/>
+        <build-subprojects fileset="simplewhiteboard.module" target="build"/>
         <build-subprojects fileset="all.projects" target="build"/>
     </target>
     
     <!-- jar all subprojects -->
-    <target name="package" depends="compile">
+    <target name="package">
         <build-subprojects fileset="appbase.module" target="package"/>
+        <build-subprojects fileset="simplewhiteboard.module" target="package"/>
         <build-subprojects fileset="all.projects" target="package"/>
     </target>
     
@@ -37,6 +44,7 @@
     <target name="clean">
         <!-- clean sub-projects -->
         <build-subprojects fileset="appbase.module" target="clean"/>
+        <build-subprojects fileset="simplewhiteboard.module" target="clean"/>
         <build-subprojects fileset="all.projects" target="clean"/>       
     </target>
     
