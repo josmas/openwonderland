@@ -17,20 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.simplewhiteboard.server;
 
-import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector2f;
+import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedReference;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellConfig;
@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTypeNam
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
  * A server cell associated with a whiteboard
@@ -47,8 +48,8 @@ import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
  */
 
 @ExperimentalAPI
-public class WhiteboardCellMO extends App2DCellMO
-{
+public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
+
     private static final Logger logger = Logger.getLogger(WhiteboardCellMO.class.getName());
     
     // The messages list contains the current state of the whiteboard.
@@ -58,7 +59,7 @@ public class WhiteboardCellMO extends App2DCellMO
     private static WhiteboardCompoundCellMessage lastMessage;
     
     /** The communications component used to broadcast to all clients */
-    private WhiteboardComponentMO commComponent;
+    private ManagedReference<WhiteboardComponentMO> commComponentRef = null;
 
     /** The preferred width (from the WFS file) */
     private int preferredWidth;
@@ -68,22 +69,12 @@ public class WhiteboardCellMO extends App2DCellMO
 
     /** Default constructor, used when the cell is created via WFS */
     public WhiteboardCellMO() {
-        this(null, null);
+        super();
         addComponent(new ChannelComponentMO(this));
-	commComponent = new WhiteboardComponentMO(this);
+	WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
+        commComponentRef = AppContext.getDataManager().createReference(commComponent); 
         addComponent(commComponent);
         messages = new LinkedList<WhiteboardCompoundCellMessage>();
-    }
-
-    /**
-     * Creates a new instance of <code>WhiteboardCellMO</code> with the specified localBounds and transform.
-     * If either parameter is null an IllegalArgumentException will be thrown.
-     *
-     * @param localBounds the bounds of the new cell, must not be null.
-     * @param transform the transform for this cell, must not be null.
-     */
-    public WhiteboardCellMO (BoundingVolume localBounds, CellTransform transform) {
-        super(localBounds, transform);
     }
 
     /**
@@ -91,7 +82,7 @@ public class WhiteboardCellMO extends App2DCellMO
      */
     @Override
     protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.client.app.simplewhitebaord.WhiteboardCell";
+        return "org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardCell";
     }
 
     /** 
@@ -122,7 +113,7 @@ public class WhiteboardCellMO extends App2DCellMO
 	WhiteboardCellSetup setup = (WhiteboardCellSetup) setupData;
 	preferredWidth = setup.getPreferredWidth();
 	preferredHeight = setup.getPreferredHeight();
-	pixelScale = setup.getPixelScale();
+	pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
     }
 
     /**
@@ -132,34 +123,6 @@ public class WhiteboardCellMO extends App2DCellMO
     public void reconfigureCell(BasicCellSetup setup) {
         super.reconfigureCell(setup);
         setupCell(setup);
-    }
-
-    /**
-     * Return a new BasicCellSetup Java bean class that represents the current
-     * state of the cell.
-     * 
-     * @return a JavaBean representing the current state
-     */
-    public BasicCellSetup getCellMOSetup() {
-
-        /* Create a new BasicCellState and populate its members */
-        WhiteboardCellSetup setup = new WhiteboardCellSetup();
-	setup.setPixelScale(this.pixelScale);
-        
-        /* Set the bounds of the cell */
-        BoundingVolume bounds = this.getLocalBounds();
-        if (bounds != null) {
-            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
-        }
-
-        /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform(null);
-        if (transform != null) {
-            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
-            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
-            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
-        }
-        return setup;
     }
 
     /**
@@ -176,6 +139,8 @@ public class WhiteboardCellMO extends App2DCellMO
     public void receivedMessage(WonderlandClientSender clientSender, ClientSession clientSession, CellMessage message) {
         WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
         logger.fine("received whiteboard message: " + cmsg);
+
+	WhiteboardComponentMO commComponent = commComponentRef.getForUpdate();
 
         if (cmsg.getAction() == Action.REQUEST_SYNC) {
             logger.fine("sending " + messages.size() + " whiteboard sync messages");

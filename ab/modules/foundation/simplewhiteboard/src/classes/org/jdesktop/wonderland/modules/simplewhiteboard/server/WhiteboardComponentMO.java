@@ -46,9 +46,6 @@ public class WhiteboardComponentMO extends CellComponentMO {
     /** A managed reference to the cell channel communications component */
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
 
-    /** The cell to which this component belongs. */
-    private WhiteboardCellMO cell;
-
     /** 
      * Create a new instance of WhiteboardComponentMO. 
      * @param cell The cell to which this component belongs.
@@ -56,14 +53,14 @@ public class WhiteboardComponentMO extends CellComponentMO {
      */
     public WhiteboardComponentMO (WhiteboardCellMO cell) {
         super(cell);
-	this.cell = cell;
 
         ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
         if (channelComponent==null)
             throw new IllegalStateException("Cell does not have a ChannelComponent");
         channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
                 
-        channelComponent.addMessageReceiver(WhiteboardCompoundCellMessage.class, new ComponentMessageReceiverImpl(this));
+        channelComponent.addMessageReceiver(WhiteboardCompoundCellMessage.class, 
+					    new ComponentMessageReceiverImpl(this, cellRef));
     }
     
     /**
@@ -78,17 +75,21 @@ public class WhiteboardComponentMO extends CellComponentMO {
     
     /**
      * Receiver for for whiteboard messages.
+     * Note: inner classes of managed objects must be non-static.
      */
-    private class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
+    private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
 
         private ManagedReference<WhiteboardComponentMO> compRef;
+	private ManagedReference<CellMO> cellRef;
         
-        public ComponentMessageReceiverImpl (WhiteboardComponentMO comp) {
+        public ComponentMessageReceiverImpl (WhiteboardComponentMO comp,  ManagedReference<CellMO> cellRef) {
             compRef = AppContext.getDataManager().createReference(comp);
+	    this.cellRef = cellRef;
         }
 
         public void messageReceived (WonderlandClientSender sender, ClientSession session, CellMessage message) {
 	    WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
+	    CellMO cell = cellRef.get();
 	    ((WhiteboardCellMO)cell).receivedMessage(sender, session, cmsg);
         }
     }
