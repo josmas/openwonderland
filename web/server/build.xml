@@ -57,14 +57,19 @@
                 <include name="org/jdesktop/wonderland/webserver/launcher/**"/>
             </fileset>
             
-            <!-- include utility classes at top level as well -->
-            <zipfileset src="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
+            <!-- include some utility classes at top level as well -->
+            <zipfileset src="${web.dir}/utils/dist/wonderland-web-utils.jar">
+                <include name="org/jdesktop/wonderland/utils/PropertyUtil*.class"/>
+                <include name="org/jdesktop/wonderland/utils/RunUtil*.class"/>
+                <include name="org/jdesktop/wonderland/utils/SystemPropertyUtil*.class"/>
+            </zipfileset>
             
             <!-- include the default properties file -->
             <fileset file="${current.dir}/web-default.properties"/>
             <fileset file="${current.dir}/web-logging.properties"/>
             
             <!-- files that are needed for the web server classpath -->
+            <zipfileset file="${web.dir}/utils/dist/wonderland-web-utils.jar" prefix="webserver"/>
             <zipfileset dir="${web.dir}/lib/glassfish" prefix="webserver"/>
             <zipfileset file="${build.dir}/lib/wonderland-webserver.jar" prefix="webserver"/>
             <zipfileset dir="${top.dir}/lib/jaxb" prefix="webserver"/>
@@ -72,6 +77,9 @@
             <zipfileset dir="${web.dir}/lib/apache" prefix="webserver"/>
             <zipfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
+            
+            <!-- contents of the document root -->
+            <zipfileset dir="${current.dir}/web" prefix="docroot"/>
             
             <!-- wars to deploy -->
             <zipfileset dir="${top.dir}/web/wfs/dist" prefix="deploy">
@@ -81,6 +89,9 @@
                 <include name="**/*.war"/>
             </zipfileset>
             <zipfileset dir="${top.dir}/web/runner/dist" prefix="deploy">
+                <include name="**/*.war"/>
+            </zipfileset>
+            <zipfileset dir="${top.dir}/web/front/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
             
@@ -95,20 +106,21 @@
         <!-- list files in the jar in the deploy and webserver category
              ant generate a file that can be added to META-INF, so we
              can read the list of jars from a resource -->
-        <mkdir dir="${build.dir}/tmp/META-INF"/>
+        <mkdir dir="${build.dir}/jar/META-INF"/>
         
         <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="deploy" 
-                   output="${build.dir}/tmp/META-INF/deploy.jars"/>
+                   output="${build.dir}/jar/META-INF/deploy.jars"/>
         <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="webserver" 
-                   output="${build.dir}/tmp/META-INF/webserver.jars"/>
+                   output="${build.dir}/jar/META-INF/webserver.jars"/>
         <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="modules" 
-                   output="${build.dir}/tmp/META-INF/module.jars"/>
+                   output="${build.dir}/jar/META-INF/module.jars"/>
+        <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="docroot" 
+                   output="${build.dir}/jar/META-INF/docroot.files"/>
                    
         <jar destfile="${build.dir}/lib/Wonderland.jar" update="true">
-            <fileset dir="${build.dir}/tmp"/>
+            <fileset dir="${build.dir}/jar"/>
         </jar>
         
-        <delete dir="${build.dir}/tmp"/>
     </target>
     
     <target name="-web-server-build-modules" unless="webserver.nomodules">

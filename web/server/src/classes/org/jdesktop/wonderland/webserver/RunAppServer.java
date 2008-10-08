@@ -27,21 +27,40 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embed.App;
 import org.glassfish.embed.AppServer;
+import org.glassfish.embed.EmbeddedException;
+import org.glassfish.embed.EmbeddedHttpListener;
+import org.glassfish.embed.EmbeddedVirtualServer;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jdesktop.wonderland.modules.service.AddedModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
+import org.jvnet.hk2.component.Habitat;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author jkaplan
  */
 public class RunAppServer {
+    // logger
+    private static final Logger logger =
+            Logger.getLogger(RunAppServer.class.getName());
+    
     // singleton instance
-    private static AppServer appServer;    // the port to start glassfish on
+    private static WonderlandAppServer appServer;
     private static int port;
 
     static {
@@ -59,17 +78,32 @@ public class RunAppServer {
     }
 
     private void deployWebApps() throws IOException {
-        AppServer as = getAppServer();
-
+        WonderlandAppServer as = getAppServer();
+                
+        // copy files to document root of web server
+        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/docroot.files");
+        BufferedReader in = in = new BufferedReader(new InputStreamReader(is));
+        
+        File docDir = new File(RunUtil.getRunDir(), "docroot");
+        docDir.mkdirs();
+        
+        String line;
+        while ((line = in.readLine()) != null) {
+            InputStream fileIs = WebServerLauncher.class.getResourceAsStream(line);
+            if (line.lastIndexOf("/") != -1) {
+                line = line.substring(line.lastIndexOf("/"));
+            }
+            RunUtil.writeToFile(fileIs, new File(docDir, line));
+        }
+        
         // read the list of .war files to deploy
-        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/deploy.jars");
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        is = WebServerLauncher.class.getResourceAsStream("/META-INF/deploy.jars");
+        in = new BufferedReader(new InputStreamReader(is));
 
         // write to a subdirectory of the default temp directory
         File deployDir = new File(RunUtil.getRunDir(), "deploy");
         deployDir.mkdirs();
         
-        String line;
         while ((line = in.readLine()) != null) {
             File f = RunUtil.extractJar(getClass(), line, deployDir);
             try {
@@ -102,28 +136,71 @@ public class RunAppServer {
     }
     
     // get the main instance
-    private synchronized static AppServer getAppServer() {
+    private synchronized static WonderlandAppServer getAppServer() {
         if (appServer == null) {
-            appServer = new AppServer(port) {
-
-                @Override
-                protected InhabitantsParser decorateInhabitantsParser(InhabitantsParser parser) {
-                    InhabitantsParser out = super.decorateInhabitantsParser(parser);
-                    parser.replace(ServerEnvironmentImpl.class, DirServerEnvironment.class);
-                    return out;
-                }
-
-                @Override
-                public App deploy(File archive) throws IOException {
-                    // override because we know this will always be a
-                    // a directory, and we don't want it extracted to
-                    // the current working directory
-                    ReadableArchive a = archiveFactory.openArchive(archive);
-                    return deploy(a);
-                }
-            };
+            appServer = new WonderlandAppServer(port);
         }
 
         return appServer;
+    }
+    
+    static class WonderlandAppServer extends AppServer {
+        public WonderlandAppServer(int port) {
+            super (port);
+        }
+        
+        public Habitat getHabitat() {
+            return habitat;
+        }
+        
+        public DirServerEnvironment getServerEnvironment() {
+            return (DirServerEnvironment) this.env;
+        }
+        
+        @Override
+        protected InhabitantsParser decorateInhabitantsParser(InhabitantsParser parser) {
+            InhabitantsParser out = super.decorateInhabitantsParser(parser);
+            parser.replace(ServerEnvironmentImpl.class, DirServerEnvironment.class);
+            return out;
+        }
+
+        @Override
+        public App deploy(File archive) throws IOException {
+            // override because we know this will always be a
+            // a directory, and we don't want it extracted to
+            // the current working directory
+            ReadableArchive a = archiveFactory.openArchive(archive);
+            return deploy(a);
+        }
+
+        @Override
+        public EmbeddedVirtualServer createVirtualServer(final EmbeddedHttpListener listener) {
+            EmbeddedVirtualServer out = super.createVirtualServer(listener);
+
+            try {
+                File docRoot = new File(RunUtil.getRunDir(), "docRoot");
+                docRoot.mkdirs();
+
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                Document d = dbf.newDocumentBuilder().parse(domainXmlUrl.toExternalForm());
+                XPath xpath = XPathFactory.newInstance().newXPath();
+
+                Element v = (Element) xpath.evaluate("//http-service/virtual-server/property[@name='docroot']", d, XPathConstants.NODE);
+                v.setAttribute("value", docRoot.getCanonicalPath());
+
+                /**
+                 * Write domain.xml to a temporary file. UGLY UGLY UGLY.
+                 */
+                File domainFile = File.createTempFile("wonderlanddomain", "xml");
+                domainFile.deleteOnExit();
+                Transformer t = TransformerFactory.newInstance().newTransformer();
+                t.transform(new DOMSource(d), new StreamResult(domainFile));
+                domainXmlUrl = domainFile.toURI().toURL();
+            } catch (Exception ex) {
+                throw new EmbeddedException(ex);
+            }
+
+            return out;
+        }
     }
 }

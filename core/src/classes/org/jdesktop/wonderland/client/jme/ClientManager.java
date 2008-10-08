@@ -129,7 +129,8 @@ public class ClientManager {
            }
         }
         
-        return new URLClassLoader(urls.toArray(new URL[0]));
+        return new URLClassLoader(urls.toArray(new URL[0]),
+                                  getClass().getClassLoader());
     }
     
 //    void nodeMoved(Node node) {
