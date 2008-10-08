@@ -84,7 +84,7 @@ public class RunAppServer {
         InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/docroot.files");
         BufferedReader in = in = new BufferedReader(new InputStreamReader(is));
         
-        File docDir = new File(RunUtil.getRunDir(), "docroot");
+        File docDir = new File(RunUtil.getRunDir(), "docRoot");
         docDir.mkdirs();
         
         String line;
