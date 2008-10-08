@@ -18,13 +18,23 @@
 package org.jdesktop.wonderland.audiomanager.client;
 
 import org.jdesktop.wonderland.client.comms.BaseConnection;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.client.comms.SessionLifecycleListener;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
+
 import org.jdesktop.wonderland.common.messages.Message;
+
 import org.jdesktop.wonderland.audiomanager.common.AudioManagerConnectionType;
+import org.jdesktop.wonderland.audiomanager.common.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.audiomanager.common.PlaceCallMessage;
 
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+
+import java.io.IOException;
 
 /**
  *
@@ -32,7 +42,16 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
  */
 public class AudioManagerClient extends BaseConnection {
 
-    public AudioManagerClient() {
+    private WonderlandSession session;
+
+    public AudioManagerClient(WonderlandSession session)  
+	    throws ConnectionFailureException {
+
+	this.session = session;
+
+	session.connect(this);
+
+	session.send(this, new GetVoiceBridgeMessage());
     }
     
     @Override
@@ -44,7 +63,7 @@ public class AudioManagerClient extends BaseConnection {
 
 	    SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-            String tokens[] = bridge.split(":");
+            String tokens[] = msg.getBridgeInfo().split(":");
 
             String registrarAddress = tokens[0] + ";sip-stun:";
 
@@ -57,11 +76,12 @@ public class AudioManagerClient extends BaseConnection {
 	    try {
 	        String sipURL = sc.startSoftphone(
 		    "jp", registrarAddress, 10, "129.148.75.55", AudioQuality.VPN);
+
+	        // XXX need location and direction
+	        session.send(this, new PlaceCallMessage(sipURL, 0., 0., 0., 0., false));
 	    } catch (IOException e) {
 		System.out.println(e.getMessage());
 	    }
-
-	    // XXX need to send PlaceCallMessage to the server
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}

@@ -21,20 +21,39 @@ package org.jdesktop.wonderland.audiomanager.client;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientPlugin;
-//import org.jdesktop.wonderland.client.WonderlandContext;
-//import org.jdesktop.wonderland.client.comms.CommsManager;
+
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.comms.SessionLifecycleListener;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 
 /**
  * Pluging to support the audio manager
  * @author paulby
  */
-public class AudioManagerClientPlugin implements ClientPlugin {
+public class AudioManagerClientPlugin implements ClientPlugin,
+	SessionLifecycleListener {
+
     private static final Logger logger =
             Logger.getLogger(AudioManagerClientPlugin.class.getName());
     
+    private WonderlandSessionManager manager;
+    private WonderlandSession session;
+    private AudioManagerClient client;
+
     public void initialize() {
-        //CommsManager cm = WonderlandContext.getCommsManager();
-        //cm.registerClientHandler(new AudioManagerConnectionHandler());
+	manager = new WonderlandSessionManager();
+	manager.addLifecycleListener(this);
     }
     
+    public void sessionCreated(WonderlandSession session) {
+	this.session = session;
+
+	try {
+	    client = new AudioManagerClient(session);
+	} catch (ConnectionFailureException e) {
+	    logger.warning(e.getMessage());
+	}
+    }
+
 }

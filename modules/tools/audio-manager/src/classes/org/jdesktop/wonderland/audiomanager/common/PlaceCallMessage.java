@@ -15,9 +15,11 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.messages;
+package org.jdesktop.wonderland.audiomanager.common;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  * The initial message that a client must send to the Wonderland server

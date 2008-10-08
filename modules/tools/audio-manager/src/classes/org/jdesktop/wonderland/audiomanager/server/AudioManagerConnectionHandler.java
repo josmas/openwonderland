@@ -50,7 +50,7 @@ import java.io.IOException;
 /**
  * Test listener, will eventually support Audio Manager
  * 
- * @author paulby
+ * @author jprovino
  */
 public class AudioManagerConnectionHandler 
         implements ClientConnectionHandler, Serializable, CallStatusListener
