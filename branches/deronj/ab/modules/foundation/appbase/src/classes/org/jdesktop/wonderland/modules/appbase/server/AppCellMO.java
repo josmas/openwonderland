@@ -83,29 +83,4 @@ public abstract class AppCellMO extends CellMO {
     public void reconfigureCell (BasicCellSetup setup) {
         setupCell(setup);
     }
-
-    /**
-     * Return a new CellMOSetup Java bean class that represents the current state of the cell.
-     * 
-     * @return a JavaBean representing the current state
-     */
-    public BasicCellSetup getCellMOSetup() {
-        /* Create a new BasicCellSetup and populate its members */
-        BasicCellSetup setup = new AppCellSetup();
-        
-        /* Set the bounds of the cell */
-        BoundingVolume bounds = this.getLocalBounds();
-        if (bounds != null) {
-            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
-        }
-
-        /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform(null);
-        if (transform != null) {
-            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
-            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
-            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
-        }
-        return setup;
-    }
 }

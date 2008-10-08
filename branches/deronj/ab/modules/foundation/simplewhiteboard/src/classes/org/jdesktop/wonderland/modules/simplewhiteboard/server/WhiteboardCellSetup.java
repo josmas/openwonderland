@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
 
 /**
  * The WFS setup class for WhiteboardCellMO.
@@ -31,7 +32,7 @@ import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
  * @author deronj
  */
 @XmlRootElement(name="simplewhiteboard-cell")
-public class WhiteboardCellSetup extends BasicCellSetup implements Serializable {
+public class WhiteboardCellSetup extends BasicCellSetup implements Serializable, CellSetupSPI {
     
     /** The user's preferred width of the whiteboard window. */
     @XmlElement(name="preferredWidth")
@@ -41,9 +42,13 @@ public class WhiteboardCellSetup extends BasicCellSetup implements Serializable 
     @XmlElement(name="preferredHeight")
     public int preferredHeight = 768;
     
-    /** The pixel scale of the whiteboard window. */
-    @XmlElement(name="pixelScale")
-	public Vector2f pixelScale = new Vector2f(0.01f, 0.01f);
+    /** The X pixel scale of the whiteboard window. */
+    @XmlElement(name="pixelScaleX")
+    public float pixelScaleX = 0.01f;
+
+    /** The Y pixel scale of the whiteboard window. */
+    @XmlElement(name="pixelScaleY")
+    public float pixelScaleY = 0.01f;
     
     /** Default constructor */
     public WhiteboardCellSetup() {}
@@ -68,14 +73,22 @@ public class WhiteboardCellSetup extends BasicCellSetup implements Serializable 
         this.preferredHeight = preferredHeight;
     }
     
-    @XmlTransient public Vector2f getPixelScale () {
-        return pixelScale;
+    @XmlTransient public float getPixelScaleX () {
+        return pixelScaleX;
     }
     
-    public void setPixelScale (Vector2f pixelScale) {
-        this.pixelScale = pixelScale;
+    public void setPixelScaleX (float pixelScale) {
+        this.pixelScaleX = pixelScaleX;
+    }
+
+    @XmlTransient public float getPixelScaleY () {
+        return pixelScaleY;
     }
     
+    public void setPixelScaleY (float pixelScale) {
+        this.pixelScaleY = pixelScaleY;
+    }
+
     /**
      * Returns a string representation of this class.
      *
@@ -86,6 +99,7 @@ public class WhiteboardCellSetup extends BasicCellSetup implements Serializable 
         return super.toString() + " [WhiteboardCellSetup]: " +
 	    "preferredWidth=" + preferredWidth + "," +
 	    "preferredHeight=" + preferredHeight + "," +
-	    "pixelScale=" + pixelScale;
+	    "pixelScaleX=" + pixelScaleX + "," +
+	    "pixelScaleY=" + pixelScaleY;
     }
 }
