@@ -10,6 +10,7 @@
     
     <property name="module-common.classpath" value="${current.dir}/../appbase/build/appbase/client/appbase-client.jar"/>
     <property name="module-client.classpath" value="${current.dir}/../appbase/build/appbase/client/appbase-client.jar"/>
+    <property name="module-server.classpath" value="${current.dir}/../appbase/build/appbase/server/appbase-server.jar"/>
 
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>

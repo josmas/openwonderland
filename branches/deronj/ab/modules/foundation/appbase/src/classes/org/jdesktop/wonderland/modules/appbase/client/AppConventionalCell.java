@@ -22,9 +22,9 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellConfig;
+import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.client.apps.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
