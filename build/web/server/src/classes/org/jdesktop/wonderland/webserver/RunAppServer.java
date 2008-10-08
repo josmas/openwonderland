@@ -94,15 +94,30 @@ public class RunAppServer {
     private void deployWebApps() throws IOException {
         WonderlandAppServer as = getAppServer();
                 
+        // copy files to document root of web server
+        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/docroot.files");
+        BufferedReader in = in = new BufferedReader(new InputStreamReader(is));
+        
+        File docDir = new File(RunUtil.getRunDir(), "docroot");
+        docDir.mkdirs();
+        
+        String line;
+        while ((line = in.readLine()) != null) {
+            InputStream fileIs = WebServerLauncher.class.getResourceAsStream(line);
+            if (line.lastIndexOf("/") != -1) {
+                line = line.substring(line.lastIndexOf("/"));
+            }
+            RunUtil.writeToFile(fileIs, new File(docDir, line));
+        }
+        
         // read the list of .war files to deploy
-        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/deploy.jars");
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        is = WebServerLauncher.class.getResourceAsStream("/META-INF/deploy.jars");
+        in = new BufferedReader(new InputStreamReader(is));
 
         // write to a subdirectory of the default temp directory
         File deployDir = new File(RunUtil.getRunDir(), "deploy");
         deployDir.mkdirs();
         
-        String line;
         while ((line = in.readLine()) != null) {
             File f = RunUtil.extractJar(getClass(), line, deployDir);
             try {
