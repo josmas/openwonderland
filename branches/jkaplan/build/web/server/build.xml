@@ -78,6 +78,9 @@
             <zipfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
             
+            <!-- contents of the document root -->
+            <zipfileset dir="${current.dir}/web" prefix="docroot"/>
+            
             <!-- wars to deploy -->
             <zipfileset dir="${top.dir}/web/wfs/dist" prefix="deploy">
                 <include name="**/*.war"/>
@@ -111,6 +114,8 @@
                    output="${build.dir}/jar/META-INF/webserver.jars"/>
         <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="modules" 
                    output="${build.dir}/jar/META-INF/module.jars"/>
+        <listfiles jar="${build.dir}/lib/Wonderland.jar" dir="docroot" 
+                   output="${build.dir}/jar/META-INF/docroot.files"/>
                    
         <jar destfile="${build.dir}/lib/Wonderland.jar" update="true">
             <fileset dir="${build.dir}/jar"/>
