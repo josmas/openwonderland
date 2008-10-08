@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.audiomanager.common;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  * The client type for audio managers
