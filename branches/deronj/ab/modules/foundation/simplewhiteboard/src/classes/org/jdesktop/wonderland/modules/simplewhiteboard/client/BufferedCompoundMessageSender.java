@@ -15,17 +15,17 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
 import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCompoundCellMessage;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction.Action;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellMessage;
 
 /**
  * A buffered message sender that coalesces similar messages before

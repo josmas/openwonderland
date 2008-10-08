@@ -15,22 +15,28 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common;
 
-import java.awt.Color;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
+ * Whiteboard tool types
+ *
  * @author nsimpson
  */
 
 @ExperimentalAPI
-public interface WhiteboardPenColors {
-    public static final Color[] PenColors = new Color[] {
-        Color.BLACK,
-        Color.RED,
-        Color.BLUE,
-        Color.GREEN
+public interface WhiteboardTool {
+    public enum Tool {
+        STROKE,
+// not implemented yet
+//        LINE,
+//        RECTANGLE,
+//        ELLIPSE
     };
- 
+    
+    public static final Tool STROKE = Tool.STROKE;
+//    public static final Tool LINE = Tool.LINE;    
+//    public static final Tool RECTANGLE = Tool.RECTANGLE;
+//    public static final Tool ELLIPSE = Tool.ELLIPSE;
 }

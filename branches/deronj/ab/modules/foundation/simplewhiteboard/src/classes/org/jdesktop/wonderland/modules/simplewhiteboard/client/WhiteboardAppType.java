@@ -15,13 +15,13 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
-import org.jdesktop.wonderland.client.app.base.AppType2D;
+import org.jdesktop.wonderland.modules.appbase.client.AppType2D;
+import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethods;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardLaunchMethods;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTypeName;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.base.AppLaunchMethods;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardLaunchMethods;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTypeName;
 
 /**
  * The AppType for a simple whiteboard

@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -23,12 +23,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.app.base.App;
-import org.jdesktop.wonderland.client.app.base.WindowGraphics2D;
-import org.jdesktop.wonderland.client.app.simplewhiteboard.WhiteboardDrawingSurface;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardAction;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCellMessage;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTool.Tool;
+import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
+import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardDrawingSurface;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTool.Tool;
 import com.jme.math.Vector2f;
 import java.math.BigInteger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;

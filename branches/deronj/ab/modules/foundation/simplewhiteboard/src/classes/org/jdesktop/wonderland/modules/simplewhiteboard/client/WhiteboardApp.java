@@ -1,4 +1,3 @@
-
 /**
  * Project Wonderland
  *
@@ -16,11 +15,11 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
-import org.jdesktop.wonderland.client.app.base.AppType;
-import org.jdesktop.wonderland.client.app.base.AppGraphics2D;
-import org.jdesktop.wonderland.client.app.base.ControlArbMulti;
+import org.jdesktop.wonderland.modules.appbase.client.AppType;
+import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 

@@ -15,21 +15,23 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * The external app type name for Whiteboard apps. 
- *
- * @author deronj
+ * @author nsimpson
  */
 
 @ExperimentalAPI
-public class WhiteboardTypeName {
-
-    /**
-     * The external app type name for Whiteboard apps. 
-     */
-    public static final String WHITEBOARD_APP_TYPE_NAME = "SimpleWhiteboard";
+public interface WhiteboardActionType {
+    public enum ActionType {
+        COMMAND,
+        TOOL,
+        COLOR
+    };
+    
+    public static final ActionType COMMAND = ActionType.COMMAND;
+    public static final ActionType TOOL = ActionType.TOOL;
+    public static final ActionType COLOR = ActionType.COLOR;
 }

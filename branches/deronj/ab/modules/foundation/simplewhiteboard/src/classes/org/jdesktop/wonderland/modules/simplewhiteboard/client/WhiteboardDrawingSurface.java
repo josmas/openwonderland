@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.app.simplewhiteboard;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -25,13 +25,13 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.app.base.DrawingSurface;
+import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardActionType;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardActionType.ActionType;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardCommand.Command;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardPenColors;
-import org.jdesktop.wonderland.common.app.simplewhiteboard.WhiteboardTool.Tool;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardActionType;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardActionType.ActionType;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardPenColors;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTool.Tool;
 
 /**
  * @author paulby,deronj
