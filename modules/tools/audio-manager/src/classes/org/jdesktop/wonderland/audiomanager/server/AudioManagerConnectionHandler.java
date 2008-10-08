@@ -67,7 +67,7 @@ public class AudioManagerConnectionHandler
     }
 
     public void registered(WonderlandClientSender sender) {
-        logger.info("Sever manager connection registered");
+        logger.info("Audio Server manager connection registered");
     }
 
     public void clientConnected(WonderlandClientSender sender, ClientSession session, Properties properties) {
@@ -79,12 +79,16 @@ public class AudioManagerConnectionHandler
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	if (message instanceof GetVoiceBridgeMessage) {
+	    logger.warning("Got voice bridge request message");
+
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
 	    msg.setBridgeInfo("129.148.75.55:6666:5060:129.148.75.55:6666:5060");
 
 	    sender.send(msg);
 	} else if (message instanceof PlaceCallMessage) {
+	    logger.warning("Got pace call message");
+
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
 
 	    CallSetup setup = new CallSetup();
