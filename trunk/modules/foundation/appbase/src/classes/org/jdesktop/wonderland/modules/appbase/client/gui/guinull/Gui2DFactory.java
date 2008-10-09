@@ -20,10 +20,12 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guinull;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.GuiFactory;
 import org.jdesktop.wonderland.modules.appbase.client.Window;
-import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.WindowFrame;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.AppCell;
+import org.jdesktop.wonderland.modules.appbase.client.AppCellRenderer;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
  * A GUI factory which returns GUI classes which don't render anything. Used by the SAS.
@@ -47,6 +49,13 @@ public class Gui2DFactory implements GuiFactory {
 	    guiFactory = new Gui2DFactory();
 	}
 	return guiFactory;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public AppCellRenderer createCellRenderer (AppCell cell) {
+	return new AppCellRendererNull(cell);
     }
 
     /**

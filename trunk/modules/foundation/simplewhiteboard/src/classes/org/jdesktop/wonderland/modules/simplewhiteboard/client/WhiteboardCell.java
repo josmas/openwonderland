@@ -28,7 +28,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
-import org.jdesktop.wonderland.modules.appbase.client.AppTypeCell;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellConfig;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
@@ -74,20 +73,20 @@ public class WhiteboardCell extends App2DCell {
      * {@inheritDoc}
      */
     public AppType getAppType () {
-	// TODO: changes 0.5
-	return AppTypeCell.findAppType(WhiteboardTypeName.WHITEBOARD_APP_TYPE_NAME);
+	return new WhiteboardAppType();
     }
 
     /**
-     * Initialize the whiteboard
+     * Initialize the whiteboard with parameters from the server.
      *
      * @param configData the config data to initialize the cell with
      */
-    public void config(CellConfig configData) {
+    public void configure (CellConfig configData) {
+	System.err.println("************* Enter WhiteboardCell.configure");
 
         config = (WhiteboardCellConfig)configData;
-        app = new WhiteboardApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
-				config.getPixelScale(), commComponent);
+        setApp(new WhiteboardApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
+				 config.getPixelScale(), commComponent));
 
 	// Associate the app with this cell (must be done before making it visible)
 	app.setCell(this);
