@@ -18,11 +18,12 @@
 package org.jdesktop.wonderland.modules.appbase.client.gui.guinull;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
+import org.jdesktop.wonderland.modules.appbase.client.Window2DViewWorld;
 
 /**
  * A view onto a window which exists in the 3D world.
@@ -31,7 +32,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */ 
 
 @ExperimentalAPI
-public class Window2DViewNull extends Window2DView {
+public class Window2DViewNull extends Window2DView implements Window2DViewWorld {
 
     /**
      * Create a new instance of Window2DViewNull.

@@ -17,8 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-//TODO: import org.jdesktop.wonderland.modules.appbase.client.gui.guidefault.Gui2DFactory;
-import org.jdesktop.wonderland.modules.appbase.client.gui.guinull.Gui2DFactory;
+import org.jdesktop.wonderland.modules.appbase.client.gui.guidefault.Gui2DFactory;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**

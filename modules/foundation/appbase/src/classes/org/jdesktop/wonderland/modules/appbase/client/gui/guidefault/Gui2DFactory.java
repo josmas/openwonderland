@@ -24,6 +24,8 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.WindowFrame;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.AppCell;
+import org.jdesktop.wonderland.modules.appbase.client.AppCellRenderer;
 
 /**
  * The default 2D GUI factory (a singleton). This creates window views and frame objects
@@ -49,6 +51,13 @@ public class Gui2DFactory implements GuiFactory {
 	    guiFactory = new Gui2DFactory();
 	}
 	return guiFactory;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public AppCellRenderer createCellRenderer (AppCell cell) {
+	return new AppCellRendererJME(cell);
     }
 
     /**
