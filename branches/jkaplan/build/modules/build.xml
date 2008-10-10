@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="dist" name="wonderland-modules"> 
-    <!-- jar all subprojects -->
-    <target name="package">
-        <ant antfile="foundation/build.xml" target="package" inheritall="false"/>
-        <ant antfile="samples/build.xml" target="package" inheritall="false"/>
-        <ant antfile="tools/build.xml" target="package" inheritall="false"/>
-        <ant antfile="world/build.xml" target="package" inheritall="false"/>
-    </target>
-    
-    <!-- copy sub-project jar files to dist directory -->
-    <target name="dist" depends="package">
-        <!-- create dist directory -->
+    <!-- Compile and package all modules.  This is done in a particular order
+         to make sure module dependencies are met. --> 
+    <target name="dist">
+        <!-- go through and compile the individual modules -->
+        <ant antfile="foundation/build.xml" target="dist" inheritall="false"/>
+        <ant antfile="samples/build.xml" target="dist" inheritall="false"/>
+        <ant antfile="tools/build.xml" target="dist" inheritall="false"/>
+        <ant antfile="world/build.xml" target="dist" inheritall="false"/>
+        
+        <!-- copy the modules into a common dist directory -->
         <mkdir dir="dist"/>
-       
-        <!-- copy all modules -->
         <copy todir="dist">
             <fileset dir=".">
                 <include name="**/dist/*.jar"/>
