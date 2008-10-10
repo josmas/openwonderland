@@ -34,6 +34,7 @@
     
     <target name="jar" depends="build">   
         <mkdir dir="${build.dir}/lib"/>
+        <mkdir dir="${build.dir}/jar"/>
         
         <!-- create a jar file with the AppServer launching classes -->
         <jar destfile="${build.dir}/lib/wonderland-webserver.jar">
@@ -49,6 +50,7 @@
     <target name="package" depends="-declare-ant-task" description="Package Wonderland into a jar">
         <fail message="No server.package.dir specified" unless="server.package.dir"/>
         
+        <mkdir dir="${server.package.dir}"/>
         <jar destfile="${server.package.dir}/Wonderland.jar">
             <!-- classes -->
             <fileset dir="${build.classes.dir}" >
@@ -95,6 +97,10 @@
             
             <!-- modules -->
             <zipfileset dir="${top.dir}/modules/dist" prefix="modules"/>
+            
+            <!-- include any generated META-INF.  These will be updated
+                 below if they are out of date. -->
+            <fileset dir="${build.dir}/jar"/>
             
             <manifest>
                 <attribute name="Main-Class" value="org.jdesktop.wonderland.webserver.launcher.WebServerLauncher"/>
