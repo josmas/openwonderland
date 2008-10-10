@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.simplewhiteboard.serverw;
+package org.jdesktop.wonderland.modules.simplewhiteboard.server;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethods;

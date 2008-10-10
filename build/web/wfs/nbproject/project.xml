@@ -14,7 +14,6 @@
                 </library>
                 <library>
                     <file>${libs.restapi.classpath}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library files="1">
                     <file>${file.reference.wonderland-common.jar}</file>
@@ -22,7 +21,6 @@
                 </library>
                 <library files="1">
                     <file>${file.reference.wonderland-web-utils.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library files="1">
                     <file>${file.reference.wonderland-server.jar}</file>
