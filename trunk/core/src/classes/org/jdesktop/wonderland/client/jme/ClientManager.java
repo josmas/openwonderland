@@ -85,14 +85,6 @@ public class ClientManager {
         // setup a classloader with the module jars
         loader = setupClassLoader();
         
-        // load any client plugins from that class loader
-        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
-                                                      loader);
-        while (it.hasNext()) {
-            ClientPlugin plugin = it.next(); 
-            plugin.initialize();
-        }
-        
         // create a session
         session = new CellClientSession(server, loader) {
             // createCellCache is called in the constructor fo CellClientSession
@@ -105,7 +97,15 @@ public class ClientManager {
             }
         };
         ClientContextJME.getWonderlandSessionManager().registerSession(session);
-                   
+        
+        // load any client plugins from that class loader
+        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
+                                                      loader);
+        while (it.hasNext()) {
+            ClientPlugin plugin = it.next(); 
+            plugin.initialize(session);
+        }
+                          
         localAvatar = session.getLocalAvatar();
                 
         try {
