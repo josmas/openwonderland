@@ -7,7 +7,7 @@
     <property name="module.src" value="org/jdesktop/wonderland/audiomanager"/>
     <property name="module.packagename" value="org.jdesktop.wonderland.audiomanager"/>
     <property name="module.jarname" value="audiomanager"/>
-    <property name="module.plugins" value="AudioManagerServerPlugin"/>
+    <property name="module.plugins" value="AudioManagerServerPlugin AudioManagerClientPlugin"/>
 
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/lib/voicelib.jar"/>
@@ -30,7 +30,7 @@
                 builddir="${build.lib.dir}">
             <plugin name="audiomanager">
                 <client basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.audiomanager.server.AudioManagerClientPlugin"/>
+                    <clientplugin provider="org.jdesktop.wonderland.audiomanager.client.AudioManagerClientPlugin"/>
 
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   

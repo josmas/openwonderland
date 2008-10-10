@@ -344,12 +344,6 @@ public class SoftphoneControlImpl {
         return command;
     }
 
-    public void placeCall(String conferenceId, String callee) {
-	sendCommandToSoftphone("PlaceCall=conferenceId:" 
-	    + conferenceId + ",UserName:" + userName
-	    + ",callee:" + callee);
-    }
-
     public void stopSoftphone() {
         close(null);
 
@@ -577,10 +571,10 @@ public class SoftphoneControlImpl {
 	    for (SoftphoneListener listener : listeners) {
                 switch (state) {
                 case VISIBLE:
-                    listener.sipNotification(true);
+                    listener.softphoneVisible(true);
                     break;
                 case INVISIBLE:
-                    listener.sipNotification(false);
+                    listener.softphoneVisible(false);
                     break;
                 case MUTED:
                     listener.softphoneMuted(true);
@@ -795,7 +789,8 @@ public class SoftphoneControlImpl {
 
 	    logger.warning("Softphone address is " + address);
 
-	    softphoneControlImpl.placeCall("xxx", "20315");
+	    softphoneControlImpl.sendCommandToSoftphone(
+		"PlaceCall=conferenceId:xxx,callee=20315");
 	} catch (IOException e) {
 	    logger.warning(e.getMessage());
 	}

@@ -135,11 +135,17 @@ public class WebServerLauncher {
             c.newInstance();
         
             // log that everything is started up
-            System.out.println("-------------------------------------------------");
+            System.out.println("-----------------------------------------------------------");
             System.out.println("Wonderland web server started successfully.");
             System.out.println("Log files are in " + 
                                SystemPropertyUtil.getProperty("wonderland.log.dir"));
-            System.out.println("-------------------------------------------------");
+            
+            // get the port the web server is running on
+            // TODO: get the host too
+            System.out.println("Web server running on http://localhost:" +
+                               SystemPropertyUtil.getProperty(
+                                    WebServerLauncher.WEBSERVER_PORT_PROP, "8080"));
+            System.out.println("-----------------------------------------------------------");
         
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error loading web server", ex);

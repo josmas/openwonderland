@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.common.cell.setup;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * The CellComponentSetup class is the base class for the cell configuration
  * (setup) information for all cell components. Individual cell components may
@@ -36,5 +38,6 @@ package org.jdesktop.wonderland.common.cell.setup;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public abstract class CellComponentSetup {
+@XmlRootElement(name="component")
+public class CellComponentSetup {
 }

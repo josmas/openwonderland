@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
@@ -60,8 +61,6 @@ public class JmeClientMain {
     private int width = 800;
     private int height = 600;
     
-    private static WorldManager worldManager;
-    
     public JmeClientMain(String[] args) {
         props = loadProperties("run-client.properties");
    
@@ -73,21 +72,29 @@ public class JmeClientMain {
                                               USER_NAME_DEFAULT);
         
         
-        worldManager = new WorldManager("Wonderland");
+        processArgs(args);
+
+        WorldManager worldManager = ClientContextJME.getWorldManager();
+
+        worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
         
+        createUI(worldManager);
+
+        // Dont start the client manager until JME has been initialized, many JME components
+        // expect the renderer to be ready during init.
         ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
         
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
         
-        processArgs(args);
-        worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
-        
-        createUI(worldManager);  
     }
-    
+
+    /**
+     * @deprecated 
+     * @return
+     */
     static WorldManager getWorldManager() {
-        return worldManager;
+        return ClientContextJME.getWorldManager();
     }
     
     
@@ -95,6 +102,10 @@ public class JmeClientMain {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        if (Webstart.isWebstart()) {
+            Webstart.webstartSetup();
+        }
+        
         JmeClientMain worldTest = new JmeClientMain(args);
         
     }
@@ -128,8 +139,8 @@ public class JmeClientMain {
 	// TODO: low bug: we would like to initialize the input manager BEFORE frame.setVisible.
 	// But if we create the camera before frame.setVisible the client window never appears.
 	CameraComponent cameraComp = ViewManager.getViewManager().getCameraComponent();
-	InputManager inputManager = InputManager3D.getInputManager();
-	inputManager.initialize(wm, frame.getCanvas(), cameraComp);
+	InputManager inputManager = ClientContext.getInputManager();
+	inputManager.initialize(frame.getCanvas(), cameraComp);
 
 	// Default Policy: Enable global key and mouse focus everywhere 
 	// Note: the app base will impose its own (different) policy later

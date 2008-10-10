@@ -10,9 +10,18 @@
         <servlet-class>org.jdesktop.wonderland.runner.servlet.RunnerServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+     <servlet>
+        <servlet-name>ServletAdaptor</servlet-name>
+        <servlet-class>com.sun.jersey.impl.container.servlet.ServletAdaptor</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
     <servlet-mapping>
         <servlet-name>RunServlet</servlet-name>
         <url-pattern>/run</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ServletAdaptor</servlet-name>
+        <url-pattern>/services/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

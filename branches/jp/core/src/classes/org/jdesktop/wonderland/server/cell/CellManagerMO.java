@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
-import org.jdesktop.wonderland.wfs.loader.WFSLoader;
+import org.jdesktop.wonderland.wfs.loader.CellLoader;
 
 /**
  *
@@ -148,8 +148,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     public void loadWorld() {
         buildWFSWorld();
-        
-        //test();
+//
+//        test();
     }
     
     private void test() {
@@ -171,7 +171,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * wonderland.wfs.root
      */
     private void buildWFSWorld() {
-        new WFSLoader().load();
+        new CellLoader().load();
     }
     
     /**

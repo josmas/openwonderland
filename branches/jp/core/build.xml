@@ -63,9 +63,18 @@
             
             <classpath>
 		<pathelement path="${core-client.classpath}"/>
+		<pathelement path="/home/jp/wonderland.5/jp/core/ext/softphone/softphone.jar"/>
 	    </classpath>
             
 	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+
+    <target name="run-dbtest" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.assetmgr.AssetDB" fork="true">
+            <classpath>
+                <pathelement path="${core-client.classpath}"/>
+            </classpath>
         </java>
     </target>
 

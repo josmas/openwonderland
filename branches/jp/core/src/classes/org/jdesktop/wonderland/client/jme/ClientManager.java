@@ -39,8 +39,8 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.client.jme.input.test.KeyEvent3DLogger;
 import org.jdesktop.wonderland.client.jme.input.test.MouseEvent3DLogger;
+import org.jdesktop.wonderland.client.jme.input.test.SpinObjectEventListener;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -85,14 +85,6 @@ public class ClientManager {
         // setup a classloader with the module jars
         loader = setupClassLoader();
         
-        // load any client plugins from that class loader
-        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
-                                                      loader);
-        while (it.hasNext()) {
-            ClientPlugin plugin = it.next(); 
-            plugin.initialize();
-        }
-        
         // create a session
         session = new CellClientSession(server, loader) {
             // createCellCache is called in the constructor fo CellClientSession
@@ -105,7 +97,15 @@ public class ClientManager {
             }
         };
         ClientContextJME.getWonderlandSessionManager().registerSession(session);
-                   
+        
+        // load any client plugins from that class loader
+        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
+                                                      loader);
+        while (it.hasNext()) {
+            ClientPlugin plugin = it.next(); 
+            plugin.initialize(session);
+        }
+                          
         localAvatar = session.getLocalAvatar();
                 
         try {
@@ -129,7 +129,8 @@ public class ClientManager {
            }
         }
         
-        return new URLClassLoader(urls.toArray(new URL[0]));
+        return new URLClassLoader(urls.toArray(new URL[0]),
+                                  getClass().getClassLoader());
     }
     
 //    void nodeMoved(Node node) {
@@ -174,18 +175,21 @@ public class ClientManager {
                 if (rend instanceof CellRendererJME) {
                     Entity parentEntity= findParentEntity(ret.getParent());
                     Entity thisEntity = ((CellRendererJME)rend).getEntity();
-
-                    // TODO When subentities work uncomment this if test
+                    
+//		    MouseEvent3DLogger mouseEventListener =
+//			new MouseEvent3DLogger(className+"_"+cellID);
+//		    mouseEventListener.addToEntity(thisEntity);
+                    
                     if (parentEntity!=null)
                         parentEntity.addEntity(thisEntity);
                     else
                         JmeClientMain.getWorldManager().addEntity(thisEntity);
                     
-		    /* TODO: temporary 
-		    MouseEvent3DLogger mouseEventListener = 
-			new MouseEvent3DLogger(className+"_"+cellID);
-		    mouseEventListener.addToEntity(thisEntity);
-		    */
+//		    /* TODO: temporary
+//		    MouseEvent3DLogger mouseEventListener =
+//			new MouseEvent3DLogger(className+"_"+cellID);
+//		    mouseEventListener.addToEntity(thisEntity);
+//		    */
 
 		    /* TODO: temporary
 		    KeyEvent3DLogger keyEventListener = 
@@ -193,6 +197,11 @@ public class ClientManager {
 		    keyEventListener.addToEntity(thisEntity);
 		    */
 		    
+		    /* TODO: temporary
+		    SpinObjectEventListener spinEventListener = new SpinObjectEventListener();
+		    spinEventListener.addToEntity(thisEntity);
+		    */
+
                     if (parentEntity!=null && thisEntity!=null) {                        
                         RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
                         RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);

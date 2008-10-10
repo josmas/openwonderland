@@ -81,7 +81,7 @@ public class JmeColladaRenderer extends BasicRenderer {
         try {
 //            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/duck_triangulate.dae");
             InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/sphere2.dae");
-            System.out.println("Resource stream "+input);
+//            System.out.println("Resource stream "+input);
             ColladaImporter.load(input, "Test");
             ret = ColladaImporter.getModel();
             ColladaImporter.cleanUp();
@@ -93,7 +93,7 @@ public class JmeColladaRenderer extends BasicRenderer {
         
         ret.setModelBound(new BoundingBox());
         ret.updateModelBound();
-        System.out.println("Triangles "+ret.getTriangleCount());
+//        System.out.println("Triangles "+ret.getTriangleCount());
 
         matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
 //        node.setRenderState(matState);

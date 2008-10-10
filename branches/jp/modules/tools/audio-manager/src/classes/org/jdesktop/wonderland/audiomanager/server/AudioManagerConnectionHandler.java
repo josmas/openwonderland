@@ -34,6 +34,7 @@ import com.sun.sgs.app.AppContext;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
+import com.sun.mpk20.voicelib.app.BridgeInfo;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
 import com.sun.mpk20.voicelib.app.Player;
@@ -67,11 +68,12 @@ public class AudioManagerConnectionHandler
     }
 
     public void registered(WonderlandClientSender sender) {
-        logger.info("Audio Server manager connection registered");
+	logger.info("Audio Server manager connection registered");
     }
 
     public void clientConnected(WonderlandClientSender sender, ClientSession session, Properties properties) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+	logger.warning("client connected...");
     }
 
     public void messageReceived(WonderlandClientSender sender, ClientSession session, Message message) {
@@ -83,7 +85,15 @@ public class AudioManagerConnectionHandler
 
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
-	    msg.setBridgeInfo("129.148.75.55:6666:5060:129.148.75.55:6666:5060");
+	    try {
+		String voiceBridge = vm.getVoiceBridge().toString();
+
+		logger.info("Got voice bridge '" + voiceBridge + "'");
+	        msg.setBridgeInfo(voiceBridge);
+	    } catch (IOException e) {
+		logger.info("unable to get voice bridge:  " + e.getMessage());
+		return;
+	    }
 
 	    sender.send(msg);
 	} else if (message instanceof PlaceCallMessage) {
@@ -94,6 +104,8 @@ public class AudioManagerConnectionHandler
 	    CallSetup setup = new CallSetup();
 
 	    CallParticipant cp = new CallParticipant();
+
+	    setup.cp = cp;
 
             cp.setPhoneNumber(msg.getSipURL());
             cp.setConferenceId(vm.getConferenceId());

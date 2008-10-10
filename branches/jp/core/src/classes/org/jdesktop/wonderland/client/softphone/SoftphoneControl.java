@@ -30,8 +30,6 @@ public interface SoftphoneControl {
 	    int registrarTimeout, String localHost, AudioQuality quality)
 	    throws IOException;
     
-    public void placeCall(String conferenceId, String callee) throws IOException;
-
     public void stopSoftphone();
 
     public void register(String registrarAddress) throws IOException;

@@ -146,6 +146,7 @@ public class WonderlandSessionListener
      * @param data the message data
      */
     public void receivedMessage(ByteBuffer data) {
+	logger.warning("Received MESSAGE");
         try {
             // extract the message and client id
             ReceivedMessage recv = MessagePacker.unpack(data);
@@ -155,6 +156,7 @@ public class WonderlandSessionListener
             // find the handler
             ClientConnectionHandler handler = getHandler(clientID);
             if (handler == null) {
+		logger.warning("Handle is NULL");
                 logger.fine("Session " + getSession().getName() + 
                             " unknown handler ID: " + clientID);
                 sendError(m.getMessageID(), clientID,
@@ -169,6 +171,11 @@ public class WonderlandSessionListener
                               " handled by " + handler.getConnectionType());
             }
             
+            logger.warning("Session " + getSession().getName() + 
+                " received message " + m + 
+                " for client ID" + clientID + 
+                " handled by " + handler.getConnectionType());
+
             // get the WonderlandClientSender to pass in
             WonderlandClientSender sender = senders.get(clientID);
             
@@ -332,6 +339,8 @@ public class WonderlandSessionListener
                         "client type " + type);
         }
         
+	logger.warning("HANDLEATTACH");
+
         ClientSession session = getSession();
         
         // get the handler for this type
@@ -341,6 +350,8 @@ public class WonderlandSessionListener
                         "client type " + type);
             sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
                       "No handler for " + type);
+
+	    logger.warning("NO HANDLER!");
             return;
         }
         
@@ -354,6 +365,7 @@ public class WonderlandSessionListener
                         "for type " + type);
             sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
                           "Duplicate client for " + type);
+	    logger.warning("DUPLICATE!");
             return;
         }
         
@@ -377,6 +389,7 @@ public class WonderlandSessionListener
             properties = new Properties();
         }
         
+	logger.warning("NOTIFY HANDLER");
         // notify the handler
         ref.get().clientConnected(sender, session, properties);
     }
@@ -648,7 +661,11 @@ public class WonderlandSessionListener
                                     ClientSession session, 
                                     Message message)
         {
+	    logger.warning("GOT A MESSAGE!");
+
             if (message instanceof AttachClientMessage) {
+		logger.warning("GOT ATTACH CLIENT MESSAGE!");
+
                 AttachClientMessage acm = (AttachClientMessage) message;
                 listener.handleAttach(acm.getMessageID(), acm.getClientType(),
                                       acm.getProperties());
