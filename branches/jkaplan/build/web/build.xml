@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-web" default="build" basedir=".">
+    <property name="server.package.dir" location="${basedir}/server/build/lib"/>
+    
     <target name="build">
        <ant dir="utils"   target="jar"/>
        <ant dir="wfs"     target="dist" inheritall="false"/>
