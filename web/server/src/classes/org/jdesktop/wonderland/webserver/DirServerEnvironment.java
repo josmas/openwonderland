@@ -31,7 +31,7 @@ public class DirServerEnvironment extends ServerEnvironmentImpl {
             Logger.getLogger(DirServerEnvironment.class.getName());
     
     private static File dir;
-    
+        
     public DirServerEnvironment() {
         super (RunUtil.createTempDir("wlweb", ".tmp"));
         

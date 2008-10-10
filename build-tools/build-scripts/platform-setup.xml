@@ -107,4 +107,7 @@
 	    <fail message="Platform ${system.type} not supported!"/>
 	</default>
     </switch>
+    
+    <!-- all supported ostypes -->
+    <property name="ostypes" value="win32,linux,solaris,macosx"/>
 </project>

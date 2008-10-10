@@ -131,12 +131,6 @@ public class AssetManager {
         
         loadingAssets = new HashMap<AssetID, AssetLoader>();
         loadedAssets = new HashMap<AssetID, Asset>();
-        
-        ConsoleHandler ch = new ConsoleHandler();
-        ch.setLevel(Level.ALL);
-        logger.addHandler(ch);
-        logger.setLevel(Level.ALL);
-        logger.setUseParentHandlers(false);
     }
     
     /**

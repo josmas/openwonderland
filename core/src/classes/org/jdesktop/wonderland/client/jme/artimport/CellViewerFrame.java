@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JTree;
@@ -31,6 +32,8 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -38,10 +41,15 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellManager;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.RootCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
@@ -54,9 +62,17 @@ public class CellViewerFrame extends javax.swing.JFrame {
     private DefaultMutableTreeNode treeRoot = new DefaultMutableTreeNode("Root");
     private HashMap<Cell, DefaultMutableTreeNode> nodes = new HashMap();
     
+    private boolean active = false;
+
+    private CellViewerEventListener cellViewerListener;
+    
+    private static final Logger logger = Logger.getLogger(CellViewerFrame.class.getName());
+    
     /** Creates new form CellViewerFrame */
     public CellViewerFrame(WonderlandSession session) {
         initComponents();
+        cellViewerListener = new CellViewerEventListener();
+
         CellManager.getCellManager().addCellStatusChangeListener(new CellStatusChangeListener() {
 
             public void cellStatusChanged(Cell cell, CellStatus status) {
@@ -68,17 +84,8 @@ public class CellViewerFrame extends javax.swing.JFrame {
                             ((DefaultTreeModel)cellTree.getModel()).removeNodeFromParent(node);
                         break;
                     case BOUNDS :
-                        DefaultMutableTreeNode parentNode = nodes.get(cell.getParent());
-                        if (parentNode==null && !(cell instanceof RootCell)) {
-                            System.err.println("******* Null parent "+cell.getParent());
-                        } else {
-                            if (node==null) {
-                                node = new DefaultMutableTreeNode(cell);
-                                nodes.put(cell, node);
-                                if (cell instanceof RootCell)
-                                    parentNode = treeRoot;
-                                ((DefaultTreeModel)cellTree.getModel()).insertNodeInto(node, parentNode, parentNode.getChildCount());
-                            }
+                        if (node==null) {
+                            node = createJTreeNode(cell);
                         }
                         break;
                 }
@@ -103,20 +110,26 @@ public class CellViewerFrame extends javax.swing.JFrame {
         cellTree.addTreeSelectionListener(new TreeSelectionListener() {
 
             public void valueChanged(TreeSelectionEvent e) {
-                Object selectedNode = cellTree.getLastSelectedPathComponent();
+                DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) cellTree.getLastSelectedPathComponent();
                 System.out.println("Selected "+selectedNode);
-                Cell cell = (Cell) ((DefaultMutableTreeNode)selectedNode).getUserObject();
-                System.out.println("Cell "+cell.getName());
-                
-                CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-                if (renderer==null)
-                    return;
-                
-                showJMEGraph(((RenderComponent)renderer.getEntity().getComponent(RenderComponent.class)).getSceneRoot());
+
+                if (selectedNode.getUserObject() instanceof Cell) {
+                    Cell cell = (Cell) selectedNode.getUserObject();
+                    System.out.println("Cell "+cell.getName());
+
+                    CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                    if (renderer==null)
+                        return;
+
+                    showJMEGraph(((RenderComponent)renderer.getEntity().getComponent(RenderComponent.class)).getSceneRoot());
+                } else if (selectedNode.getUserObject() instanceof Entity) {
+                    // TOOD 
+                }
             }
             
         });
     }
+    
     
     /**
      * Show the JME scene graph for this node, find the 
@@ -125,7 +138,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
     private void showJMEGraph(Node node) {
         Node root = node;
         while(root.getParent()!=null) {
-            System.out.println("Finding root "+root);
+//            System.out.println("Finding root "+root);
             root = root.getParent();
         }
             
@@ -152,12 +165,32 @@ public class CellViewerFrame extends javax.swing.JFrame {
     }
     
     private DefaultMutableTreeNode createJTreeNode(Cell cell) {
+        DefaultMutableTreeNode parentNode = nodes.get(cell.getParent());
+        if (parentNode==null && !(cell instanceof RootCell)) {
+            logger.severe("******* Null parent "+cell.getParent());
+            return null;
+        } 
+        
+        
         DefaultMutableTreeNode ret = new DefaultMutableTreeNode(cell);
         nodes.put(cell, ret);
+        if (cell instanceof RootCell)
+            parentNode = treeRoot;
+        ((DefaultTreeModel)cellTree.getModel()).insertNodeInto(ret, parentNode, parentNode.getChildCount());
+
+        CellRenderer cr = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        if (cr!=null && cr instanceof CellRendererJME) {
+            CellRendererJME crj = (CellRendererJME)cr;
+            Entity e = crj.getEntity();
+            DefaultMutableTreeNode entityNode = new DefaultMutableTreeNode(e);
+            ((DefaultTreeModel)cellTree.getModel()).insertNodeInto(entityNode, parentNode, parentNode.getChildCount());
+            // TODO find children entity, but don't traverse into child cells entities
+        }
         
         List<Cell> children = cell.getChildren();
         for(Cell child : children)
             ret.add(createJTreeNode(child));
+        
         
         return ret;
     }
@@ -178,6 +211,21 @@ public class CellViewerFrame extends javax.swing.JFrame {
             }
         }
     }
+    
+    private void setViewerActive(boolean active) {
+        System.out.println("Viewer Active "+active);
+
+        if (this.active = active)
+            return;
+        
+        if (active) {
+            ClientContext.getInputManager().addGlobalEventListener(cellViewerListener);            
+        } else {
+            ClientContext.getInputManager().removeGlobalEventListener(cellViewerListener);
+        }
+        
+        this.active = active;
+    }
 
     class WonderlandCellRenderer extends DefaultTreeCellRenderer {
 
@@ -189,12 +237,28 @@ public class CellViewerFrame extends javax.swing.JFrame {
                                                boolean leaf,
                                                int row,
                                                boolean hasFocus) {
-            Cell cell = (Cell) ((DefaultMutableTreeNode)value).getUserObject();
-            String name = cell.getName();
-            if (name==null)
-                name="";
+            super.getTreeCellRendererComponent(
+                        tree, value, selected,
+                        expanded, leaf, row,
+                        hasFocus);
             
-            return new JLabel(getTrimmedClassname(cell)+":"+name);
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) value;
+
+            if (treeNode.getUserObject() instanceof Cell) {
+                Cell cell = (Cell) treeNode.getUserObject();
+                String name = cell.getName();
+                if (name==null)
+                    name="";
+
+                setText("C "+getTrimmedClassname(cell)+":"+name);
+            } else if (treeNode.getUserObject() instanceof Entity) {
+                Entity entity = (Entity)treeNode.getUserObject();
+                String name = entity.getName();
+                if (name==null)
+                    name="";
+                setText("E "+getTrimmedClassname(entity)+":"+name);
+            }
+            return this;
         }       
 
         /**
@@ -207,6 +271,20 @@ public class CellViewerFrame extends javax.swing.JFrame {
 
             return str.substring(str.lastIndexOf('.')+1);
         }
+    }
+    
+    class CellViewerEventListener extends EventClassFocusListener {
+        @Override
+        public Class[] eventClassesToConsume () {
+            return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+        }
+
+        @Override
+        public void commitEvent (Event event) {
+            System.out.println("evt " +event);
+            
+        }
+        
     }
     
     /** This method is called from within the constructor to
@@ -238,11 +316,26 @@ public class CellViewerFrame extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jmeTree = new javax.swing.JTree();
+        entityGraphPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
 
         setTitle("Cell Viewer");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+            public void windowIconified(java.awt.event.WindowEvent evt) {
+                formWindowIconified(evt);
+            }
+            public void windowDeiconified(java.awt.event.WindowEvent evt) {
+                formWindowDeiconified(evt);
+            }
+        });
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
@@ -253,10 +346,14 @@ public class CellViewerFrame extends javax.swing.JFrame {
         jLabel4.setText("Cells");
         jPanel2.add(jLabel4, java.awt.BorderLayout.NORTH);
 
-        cellTree.setMaximumSize(new java.awt.Dimension(400, 57));
-        cellTree.setMinimumSize(new java.awt.Dimension(100, 0));
-        cellTree.setPreferredSize(new java.awt.Dimension(200, 57));
+        jPanel3.setLayout(new java.awt.BorderLayout());
+
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        cellTree.setAutoscrolls(true);
+        cellTree.setDragEnabled(true);
         cellTree.setRootVisible(false);
+        cellTree.setScrollsOnExpand(true);
         cellTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 cellTreeValueChanged(evt);
@@ -264,16 +361,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(cellTree);
 
-        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
-        );
+        jPanel3.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
         jPanel2.add(jPanel3, java.awt.BorderLayout.CENTER);
 
@@ -308,7 +396,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
                     .add(cellInfoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                         .add(cellClassNameTF)
                         .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)))
-                .addContainerGap(134, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         cellInfoPanelLayout.setVerticalGroup(
             cellInfoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -325,7 +413,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
                 .add(cellInfoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 98, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel3))
-                .addContainerGap(295, Short.MAX_VALUE))
+                .addContainerGap(210, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Cell Info", cellInfoPanel);
@@ -338,16 +426,29 @@ public class CellViewerFrame extends javax.swing.JFrame {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE)
+            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
         );
 
         jmeGraphPanel.add(jPanel4, java.awt.BorderLayout.CENTER);
 
         jTabbedPane1.addTab("JME Graph", jmeGraphPanel);
+
+        org.jdesktop.layout.GroupLayout entityGraphPanelLayout = new org.jdesktop.layout.GroupLayout(entityGraphPanel);
+        entityGraphPanel.setLayout(entityGraphPanelLayout);
+        entityGraphPanelLayout.setHorizontalGroup(
+            entityGraphPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 425, Short.MAX_VALUE)
+        );
+        entityGraphPanelLayout.setVerticalGroup(
+            entityGraphPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 403, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Entity Graph", entityGraphPanel);
 
         jSplitPane1.setRightComponent(jTabbedPane1);
 
@@ -381,12 +482,29 @@ private void cellTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//G
 
 }//GEN-LAST:event_cellTreeValueChanged
 
+private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+    setViewerActive(false);
+}//GEN-LAST:event_formWindowClosed
+
+private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+    setViewerActive(true);
+}//GEN-LAST:event_formWindowOpened
+
+private void formWindowIconified(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowIconified
+    setViewerActive(false);
+}//GEN-LAST:event_formWindowIconified
+
+private void formWindowDeiconified(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowDeiconified
+    setViewerActive(true);
+}//GEN-LAST:event_formWindowDeiconified
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField cellClassNameTF;
     private javax.swing.JList cellComponentList;
     private javax.swing.JPanel cellInfoPanel;
     private javax.swing.JTextField cellNameTF;
     private javax.swing.JTree cellTree;
+    private javax.swing.JPanel entityGraphPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

@@ -24,7 +24,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * A simplified event listener which provides the input system with an array of event classes.
  * By doing this the listener is telling the input system that it wishes to receive only events of these classes.
  * Furthermore, the events are to be received only when the corresponding entity has focus.
- * If you wish to also honor focus, use <code>EventClassListener</code> instead.
+ * If you wish to not honor focus, use <code>EventClassListener</code> instead.
  * This class uses <code>isAssignableFrom</code> to compare the event class with the desired event classes, so if
  * the return array of <code>eventClassesToConsume</code> contains a superclass, events of that class and 
  * all subclasses will be consumed.

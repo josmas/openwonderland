@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.jme;
 
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 
 /**
  * A subclass of ClientContext which adds JME client specific context accessors.
@@ -26,6 +27,13 @@ import org.jdesktop.wonderland.client.ClientContext;
  * @author paulby
  */
 public class ClientContextJME extends ClientContext {
+
+    private static WorldManager worldManager;
+    
+    static {
+        worldManager = new WorldManager("Wonderland");
+        InputManager3D.getInputManager(); // worldManager must be instantiated first
+    }
 
     /**
      * Get the view manager
@@ -40,6 +48,6 @@ public class ClientContextJME extends ClientContext {
      * @return
      */
     public static WorldManager getWorldManager() {
-        return JmeClientMain.getWorldManager();
+        return worldManager;
     }
 }

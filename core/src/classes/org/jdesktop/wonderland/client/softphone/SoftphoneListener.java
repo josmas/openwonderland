@@ -20,11 +20,11 @@
 package org.jdesktop.wonderland.client.softphone;
 
 /*
- * Listener for softphone visibility changes
+ * Listener for softphone changes
  */
 public interface SoftphoneListener {
 
-    public void sipNotification(boolean isVisible);
+    public void softphoneVisible(boolean isVisible);
     public void softphoneMuted(boolean muted);
     public void softphoneConnected(boolean connected);
     public void softphoneExited();

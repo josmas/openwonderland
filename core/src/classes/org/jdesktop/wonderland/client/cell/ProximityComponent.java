@@ -198,19 +198,19 @@ public class ProximityComponent extends CellComponent {
                 return;
 
             // Update the world proximity bounds
-            CellTransform l2vw = cell.getLocalToWorldTransform();
+            CellTransform worldTransform = cell.getWorldTransform();
             int i=0;
             synchronized(worldProxBounds) {
                 for(BoundingVolume lb : localProxBounds) {
                     worldProxBounds[i] = lb.clone(worldProxBounds[i]);
-                    l2vw.transform(worldProxBounds[i]);
+                    worldTransform.transform(worldProxBounds[i]);
                     i++;
                 }
             }        
         }
         
         public void transformChanged(Cell cell) {
-            Vector3f worldTransform = cell.getLocalToWorldTransform().getTranslation(null);
+            Vector3f worldTransform = cell.getWorldTransform().getTranslation(null);
             
             // View Cell has moved
             synchronized(worldProxBounds) {

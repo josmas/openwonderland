@@ -53,7 +53,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
 
     private ManagedReference<CellMO> parentRef=null;
     private ArrayList<ManagedReference<CellMO>> childCellRefs = null;
-    private CellTransform transform = null;
+    private CellTransform localTransform = null;
     protected CellID cellID;
     private BoundingVolume localBounds;
     private CellID parentCellID;
@@ -80,7 +80,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     private HashMap<Class, ManagedReference<CellComponentMO>> components = new HashMap();
     
-    private CellTransform local2VWorld = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
+    private CellTransform worldTransform = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
     private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
     private boolean isMovable=false;            // Is this cell movable
     private boolean isParentMovable = false;    // Is a parent of this cell movable
@@ -89,7 +89,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     /** Default constructor, used when the cell is created via WFS */
     public CellMO() {
         this.localBounds = null;
-        this.transform = null;        
+        this.localTransform = null;
         this.cellID = WonderlandContext.getCellManager().createCellID(this);
     }
     
@@ -106,7 +106,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             throw new IllegalArgumentException("transform must not be null");
         
         cellID = WonderlandContext.getCellManager().createCellID(this);
-        this.transform = transform;
+        this.localTransform = transform;
         setLocalBounds(localBounds);
     }
     
@@ -166,7 +166,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
    
     /**
-     * Get the local to VWorld transform of this cells origin. This call
+     * Get the world transform of this cells origin. This call
      * can only be made on live cells, an IllegalStateException will be thrown
      * if the cell is not live.
      * 
@@ -176,7 +176,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * can be null in which case a new CellTransform will be returned.
      * @return
      */
-    public CellTransform getLocalToWorld(CellTransform result) {
+    public CellTransform getWorldTransform(CellTransform result) {
         if (!live)
             throw new IllegalStateException("Unsupported Operation, only valid for a live Cell "+this.getClass().getName());
         
@@ -187,14 +187,14 @@ public abstract class CellMO implements ManagedObject, Serializable {
 //        }
 //        
 //        return BoundsManager.get().getLocalToVWorld(cellID);
-        return (CellTransform) local2VWorld.clone(result);
+        return (CellTransform) worldTransform.clone(result);
     }
     
-    private CellTransform computeLocalToWorld(CellMO currentCell) {
+    private CellTransform computeWorldTransform(CellMO currentCell) {
         if (currentCell instanceof RootCellMO)
             return currentCell.getLocalTransform(null);
         
-        CellTransform ret = currentCell.computeLocalToWorld(currentCell.getParent());
+        CellTransform ret = currentCell.computeWorldTransform(currentCell.getParent());
         ret.mul(currentCell.getLocalTransform(null));
         return ret;
     }
@@ -346,7 +346,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             throw new RuntimeException("Modifying Static Cell");
         } 
         
-        this.transform = (CellTransform) transform.clone(null);  
+        this.localTransform = (CellTransform) transform.clone(null);
         
 //        if (live) {
 //            BoundsManager.get().cellTransformChanged(cellID, transform);
@@ -370,11 +370,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param parent
      */
     private void processTransformChange(long timestamp) {
-        calcLocal2World();
+        calcWorldTransform();
         calcWorldBounds();
             
-        
-        
         Collection<ManagedReference<CellMO>> childrenRef = getAllChildrenRefs();
         for(ManagedReference<CellMO> childRef : childrenRef) {
             childRef.getForUpdate().processParentTransformChange(timestamp);
@@ -398,17 +396,17 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private void calcWorldBounds() {
         assert(live);
         vwBounds = localBounds.clone(vwBounds);
-        local2VWorld.transform(vwBounds);        
+        worldTransform.transform(vwBounds);
     }
     
     /**
      * Calculate the local2VWorld transform
      */
-    private void calcLocal2World() {
+    private void calcWorldTransform() {
         assert(live);
-        local2VWorld = (CellTransform) transform.clone(null);
+        worldTransform = (CellTransform) localTransform.clone(null);
         if (parentRef!=null) {
-             local2VWorld.mul(parentRef.get().getLocalTransform(null));  
+             worldTransform.mul(parentRef.get().getWorldTransform(null));  
         }
     }
     
@@ -418,7 +416,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @return return a clone of the transform
      */
     public CellTransform getLocalTransform(CellTransform result) {
-        return (CellTransform) transform.clone(result);
+        return (CellTransform) localTransform.clone(result);
     }
     
     /**
@@ -464,17 +462,17 @@ public abstract class CellMO implements ManagedObject, Serializable {
             }
             if (localBounds==null)
                 throw new IllegalStateException("localBounds must not be null");
-            if (transform==null)
+            if (localTransform==null)
                 throw new IllegalStateException("transform must not be null");
         
-            calcLocal2World();
+            calcWorldTransform();
             calcWorldBounds();
             
             if (!(this instanceof RootCellMO)) {
                 // Find the space in which the center of cell is located
-                SpaceMO[] space = CellManagerMO.getCellManager().getEnclosingSpace(transform.getTranslation(null));
+                SpaceMO[] space = CellManagerMO.getCellManager().getEnclosingSpace(localTransform.getTranslation(null));
                 if (space[0]==null) {
-                    logger.severe("Unable to find space to contain cell at "+transform.getTranslation(null) +" aborting addCell");
+                    logger.severe("Unable to find space to contain cell at "+localTransform.getTranslation(null) +" aborting addCell");
                     this.live = false;
                     return;
                 }
@@ -853,8 +851,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         // Dispatch listener notifications in new tasks
         ManagedReference<CellMO> thisRef = AppContext.getDataManager().createReference(this);
-        CellTransform newLocal = (CellTransform) transform.clone(null);
-        CellTransform newL2VW = (CellTransform) local2VWorld.clone(null);
+        CellTransform newLocal = (CellTransform) localTransform.clone(null);
+        CellTransform newL2VW = (CellTransform) worldTransform.clone(null);
         
         for(TransformChangeListenerSrv listenerRef : transformChangeListeners) {
             if (listenerRef instanceof ManagedReference) {

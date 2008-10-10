@@ -124,6 +124,8 @@ public class WonderlandSessionImpl implements WonderlandSession {
         this.server = server;
         this.classLoader = classLoader;
         
+	logger.warning("host " + server.getHostname() + " port " + server.getSgsPort());
+
         // initial status
         status = Status.DISCONNECTED;
        

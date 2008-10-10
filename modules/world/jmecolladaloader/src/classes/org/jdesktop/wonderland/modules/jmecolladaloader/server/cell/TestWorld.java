@@ -20,14 +20,18 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.RoomTestCellMO;
+import org.jdesktop.wonderland.server.ServerPlugin;
 
 /**
  *
  * @author paulby
  */
-public class TestWorld {
+public class TestWorld implements ServerPlugin {
 
     public TestWorld() {
+    }
+
+    public void initialize() {
         try {
 
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
@@ -49,7 +53,7 @@ public class TestWorld {
 
             c3.addChild(c4);
             
-            float cellSize = 5;
+            float cellSize = 20;
             int xMax = 10;
             int zMax = 10;
             

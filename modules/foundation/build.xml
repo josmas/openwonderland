@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="package" name="foundation-modules">  
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.foundation-modules}"/>
+    
+    <!-- TODO - allow ordering to be defined for some projects, current -->
+    <!-- ordering seems to be alphabetical which correctly compiles jmecolladloader before kmzloader, -->
+    <!-- the ordering in the fileset us not honoured :-( -->
+
+    <!-- all projects -->
+    <fileset dir="${current.dir}" id="all.projects">
+        <exclude name="appbase/build.xml"/>
+        <exclude name="simplewhiteboard/build.xml"/>
+        <include name="*/**/build.xml"/>
+    </fileset>
+ 
+   <fileset dir="${current.dir}" id="appbase.module">
+        <include name="appbase/build.xml"/>
+    </fileset>
+
+   <fileset dir="${current.dir}" id="simplewhiteboard.module">
+        <include name="simplewhiteboard/build.xml"/>
+    </fileset>
+
+    <!-- setup -->
+    <target name="init">
+    </target>
+    
+    <!-- build all subprojects -->
+    <target name="compile" depends="init">
+        <build-subprojects fileset="appbase.module" target="build"/>
+        <build-subprojects fileset="simplewhiteboard.module" target="build"/>
+        <build-subprojects fileset="all.projects" target="build"/>
+    </target>
+    
+    <!-- jar all subprojects -->
+    <target name="package">
+        <build-subprojects fileset="appbase.module" target="package"/>
+        <build-subprojects fileset="simplewhiteboard.module" target="package"/>
+        <build-subprojects fileset="all.projects" target="package"/>
+    </target>
+    
+    <!-- clean all sub-projects -->
+    <target name="clean">
+        <!-- clean sub-projects -->
+        <build-subprojects fileset="appbase.module" target="clean"/>
+        <build-subprojects fileset="simplewhiteboard.module" target="clean"/>
+        <build-subprojects fileset="all.projects" target="clean"/>       
+    </target>
+    
+    <!-- macro to iterate across all subprojects -->
+    <macrodef name="build-subprojects">
+        <!-- the reference id of the fileset to iterate over -->
+        <attribute name="fileset"/>
+        
+        <!-- the build target to run -->
+        <attribute name="target"/>
+        <sequential>
+            <subant target="@{target}" inheritall="false">
+                <fileset refid="@{fileset}"/>
+            </subant>
+        </sequential>
+    </macrodef>
+</project>
