@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="package" name="world-modules">  
+<project basedir="." default="dist" name="world-modules">  
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.world-modules}"/>
     
@@ -13,6 +13,7 @@
         <exclude name="jmecolladaloader/build.xml"/>
         <include name="*/**/build.xml"/>
     </fileset>
+    
     <fileset dir="${current.dir}" id="kmzloader.module">
         <include name="kmzloader/build.xml"/>
     </fileset>
@@ -21,22 +22,11 @@
         <include name="jmecolladaloader/build.xml"/>
     </fileset>
     
-    <!-- setup -->
-    <target name="init">
-    </target>
-    
-    <!-- build all subprojects -->
-    <target name="compile" depends="init">
-        <build-subprojects fileset="jmecolladaloader.module" target="build"/>
-        <build-subprojects fileset="kmzloader.module" target="build"/>
-        <build-subprojects fileset="all.projects" target="build"/>
-    </target>
-    
-    <!-- jar all subprojects -->
-    <target name="package" depends="compile">
-        <build-subprojects fileset="jmecolladaloader.module" target="package"/>
-        <build-subprojects fileset="kmzloader.module" target="package"/>
-        <build-subprojects fileset="all.projects" target="package"/>
+    <!-- build and package all subprojects -->
+    <target name="dist">
+        <build-subprojects fileset="jmecolladaloader.module" target="dist"/>
+        <build-subprojects fileset="kmzloader.module" target="dist"/>
+        <build-subprojects fileset="all.projects" target="dist"/>
     </target>
     
     <!-- clean all sub-projects -->

@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.jme.utils;
+package org.jdesktop.wonderland.client.jme.utils.graphics;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
@@ -34,7 +34,6 @@ import com.jme.util.export.OutputCapsule;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import com.jme.util.geom.BufferUtils;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
