@@ -14,7 +14,7 @@
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client"/>
-    <target name="package" depends="build">
+    <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="jmecolladaloader" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"

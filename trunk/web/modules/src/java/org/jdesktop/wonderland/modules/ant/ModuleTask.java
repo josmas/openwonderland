@@ -20,15 +20,18 @@ package org.jdesktop.wonderland.modules.ant;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.xml.bind.JAXBException;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.spi.Service;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -52,6 +55,7 @@ public class ModuleTask extends Jar {
     private List<Plugin> plugins = new ArrayList<Plugin>();
    
     private File buildDir;
+    private boolean overwrite = false;
     
     public void setName(String name) {
         this.name = name;
@@ -69,12 +73,16 @@ public class ModuleTask extends Jar {
         this.minorVersion = minorVersion;
     }
     
-    public void setDescription(String moduleDescription) {
+    public void setModuleDescription(String moduleDescription) {
         this.moduleDescription = moduleDescription;
     }
     
     public void setBuildDir(File buildDir) {
         this.buildDir = buildDir;
+    }
+    
+    public void setOverwrite(boolean overwrite) {
+        this.overwrite = overwrite;
     }
     
     public Requires createRequires() {
@@ -154,13 +162,61 @@ public class ModuleTask extends Jar {
             moduleInfoFile = new File(buildDir, "moduleInfo.xml");
         }
         
-        mi.encode(new FileWriter(moduleInfoFile));
-            
+        if (overwrite || !compareModuleInfo(mi, moduleInfoFile)) {
+            log("Rewriting moduleInfo file", Project.MSG_VERBOSE);
+            mi.encode(new FileWriter(moduleInfoFile));
+        }
+        
         ZipFileSet zfs = new ZipFileSet();
         zfs.setFile(moduleInfoFile);
         zfs.setFullpath(Module.MODULE_INFO);
         
         super.addFileset(zfs);
+    }
+    
+    /**
+     * Return if the given new ModuleInfo object is the same as the 
+     * module info contained in the file oldMIFile.  Returns false if
+     * the old file doesn't exist.  Note this relies on more than just the 
+     * equals() method of the ModuleInfo object -- it also compares the 
+     * description.
+     * 
+     * @param newMI the new module info object
+     * @param oldMIFile the file containing the old module info object
+     * @return true if the files are the same, or false if they are different
+     * @throws IOException if there is a problem reading the file
+     */
+    private boolean compareModuleInfo(ModuleInfo newMI, File oldMIFile) 
+        throws IOException
+    {
+        log("Comparing module info " + oldMIFile.getCanonicalPath() + 
+            " exists: " + oldMIFile.exists(), Project.MSG_VERBOSE);
+        
+        if (!oldMIFile.exists()) {
+            return false;
+        }
+        
+        try {
+            ModuleInfo oldMI = ModuleInfo.decode(new FileReader(oldMIFile));
+            
+            log("New desc:|" + newMI.getDescription() + "|Old desc:|" + oldMI.getDescription() + "|", Project.MSG_VERBOSE);
+            
+            // ModuleInfo.equals() doesn't check the description field, 
+            // but we want to re-write the file if the description has
+            // changed.
+            boolean descChanged = (newMI.getDescription() == null) ?
+                (oldMI.getDescription() != null) :
+                (!newMI.getDescription().equals(oldMI.getDescription()));
+            
+            log("ModuleInfo: descChanged: " + descChanged + " " +
+                "equals: " + newMI.equals(oldMI), Project.MSG_VERBOSE);
+            
+            return (!descChanged && newMI.equals(oldMI));
+        } catch (JAXBException je) {
+            // problem reading file
+        }
+        
+        return false;
     }
     
     private void writeRequires() throws IOException, JAXBException {
@@ -179,13 +235,45 @@ public class ModuleTask extends Jar {
             moduleRequiresFile = new File(buildDir, "moduleRequires.xml");
         }
         
-        mr.encode(new FileOutputStream(moduleRequiresFile));
-            
+        if (overwrite || !compareModuleRequires(mr, moduleRequiresFile)) {
+            log("Rewriting moduleRequires file", Project.MSG_VERBOSE);
+            mr.encode(new FileOutputStream(moduleRequiresFile));
+        }
+        
         ZipFileSet zfs = new ZipFileSet();
         zfs.setFile(moduleRequiresFile);
         zfs.setFullpath(Module.MODULE_REQUIRES);
         
         super.addFileset(zfs);
+    }
+    
+    /**
+     * Return if the given new ModuleRequires object is the same as the 
+     * module requires contained in the file oldMRFile.  Returns false if
+     * the old file doesn't exist. This task compares the ModuleInfo[] objects
+     * in each requires file.
+     * 
+     * @param newMR the new module requires object
+     * @param oldMRFile the file containing the old module requires object
+     * @return true if the files are the same, or false if they are different
+     * @throws IOException if there is a problem reading the file
+     */
+    private boolean compareModuleRequires(ModuleRequires newMR, File oldMRFile) 
+        throws IOException
+    {
+        if (!oldMRFile.exists()) {
+            return false;
+        }
+        
+        try {
+            ModuleRequires oldMR = ModuleRequires.decode(new FileReader(oldMRFile));
+           
+            return Arrays.deepEquals(newMR.getRequires(), oldMR.getRequires());
+        } catch (JAXBException je) {
+            // problem reading file
+        }
+        
+        return false;
     }
     
     private void writePlugin(Plugin p) throws IOException {

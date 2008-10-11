@@ -4,7 +4,7 @@
      $Date$
      $Author$
 -->
-<project basedir="." default="package" name="wonderland-core">
+<project basedir="." default="dist" name="wonderland-core">
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-core}"/>
     
@@ -18,7 +18,7 @@
     <target name="jar" depends="-core-jar"/>
 
     <!-- package -->
-    <target name="package" depends="-core-package"/>
+    <target name="dist" depends="-core-package" description="Build server distribution"/>
 
     <!-- javadoc -->
     <target name="javadoc" depends="javadoc-api, javadoc-all" description="Javadoc for Wonderland"/>
@@ -76,20 +76,10 @@
             </classpath>
         </java>
     </target>
-
-    <!-- run the server -->
-    <target name="run-server" depends="package" description="Build core packages">
-        <!-- unzip the distributed packages into the run directory -->
-        <mkdir dir="${core.run.dir}"/>
-        <unzip src="${dist.dir}/wonderland-setup-dist.zip" dest="${core.run.dir}"/>
-        <unzip src="${dist.dir}/wonderland-server-dist.zip" dest="${core.run.dir}"/>
-        
-        <!-- run -->
-        <ant antfile="${core.run.dir}/run.xml" inheritall="false">
-            <property name="antcontrib.taskdef.resource" value="noop.xml"/>
-        </ant>
-    </target>
     
     <!-- clean -->
     <target name="clean" depends="-core-clean" description="Clean core directories"/>
+    
+    <!-- remove libraries too -->
+    <target name="scrub" depends="-core-clean, -core-scrub-libs"/>
 </project>

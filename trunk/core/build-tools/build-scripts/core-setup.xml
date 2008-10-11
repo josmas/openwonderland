@@ -45,6 +45,8 @@
         </if>
     </target>
 
+    <target name="-core-scrub-libs" depends="clean-jbullet, clean-core-libs"/>
+
     <target name="clean-jbullet">
        <delete file="${core.lib.dir}/common/jbullet.jar" quiet="true"/>
     </target>

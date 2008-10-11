@@ -1,24 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-web" default="build" basedir=".">
+    <property name="server.package.dir" location="${basedir}/server/build/lib"/>
+    
     <target name="build">
-       <ant dir="utils" target="jar"/>
-       <ant dir="wfs" target="dist" inheritall="false"/>
+       <ant dir="utils"   target="jar"/>
+       <ant dir="wfs"     target="dist" inheritall="false"/>
        <ant dir="modules" target="dist" inheritall="false"/>
-       <ant dir="runner" target="dist" inheritall="false"/>
-       <ant dir="front" target="dist" inheritall="false"/>
-       <ant dir="server" target="package" inheritall="false"/>
+       <ant dir="runner"  target="dist" inheritall="false"/>
+       <ant dir="front"   target="dist" inheritall="false"/>
+       <ant dir="server"  target="jar" inheritall="false"/>
+    </target>
+    
+    <target name="package">
+        <ant dir="server" target="package" inheritall="false">
+            <property name="server.package.dir" value="${server.package.dir}"/>
+        </ant>
     </target>
     
     <target name="run-web" depends="build">
+        <!-- create Wonderland.jar in server/build/lib" -->
+        <ant dir="server" target="package" inheritall="false">
+            <property name="server.package.dir" value="${basedir}/server/build/lib"/>
+        </ant>
+        
         <java dir="server" jar="${basedir}/server/build/lib/Wonderland.jar" fork="true"/>
     </target>
     
     <target name="clean">
-       <ant dir="utils" target="clean"/>
-       <ant dir="wfs" target="clean" inheritall="false"/>
+       <ant dir="utils"   target="clean" inheritall="false"/>
+       <ant dir="wfs"     target="clean" inheritall="false"/>
        <ant dir="modules" target="clean" inheritall="false"/>
-       <ant dir="runner" target="clean" inheritall="false"/>
-       <ant dir="front" target="clean" inheritall="false"/>
-       <ant dir="server" target="clean" inheritall="false"/>
+       <ant dir="runner"  target="clean" inheritall="false"/>
+       <ant dir="front"   target="clean" inheritall="false"/>
+       <ant dir="server"  target="clean" inheritall="false"/>
     </target>
 </project>
