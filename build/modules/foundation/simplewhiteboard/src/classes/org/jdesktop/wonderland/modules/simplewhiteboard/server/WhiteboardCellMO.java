@@ -37,7 +37,6 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellCon
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
-import org.jdesktop.wonderland.modules.appbase.server.AppTypeCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -89,7 +88,7 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     public AppTypeMO getAppType () {
-	return AppTypeCellMO.findAppType(WhiteboardTypeName.WHITEBOARD_APP_TYPE_NAME);
+	return new WhiteboardAppTypeMO();
     }
 
     /** 

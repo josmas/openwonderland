@@ -23,6 +23,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.awt.Button;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
@@ -61,7 +62,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      * The root of the view subgraph. This contains all geometry and is 
      * connected to the local scene graph of the cell.
      */
-    protected /*TODO: EventNode */ Node viewNode;
+    protected Node baseNode;
 
     /** The control arbitrator of the window */
     protected ControlArb controlArb;
@@ -139,12 +140,12 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    frame.cleanup();
 	    frame = null;
         }
-	if (viewNode != null) {
+	if (baseNode != null) {
 	    AppCell cell = getCell();
 	    if (cell != null) {
-// TODO:		cell.detachLocalChild(viewNode);
+		cell.detachView(this, RendererType.RENDERER_JME);
 	    }
-	    viewNode = null;
+	    baseNode = null;
 	}
 	if (gui != null) {
 	    // TODO: gui.cleanup();
@@ -228,6 +229,16 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     }
 
     /**
+     * Returns the base node of the view. Ths is the root node of the view's scene graph.
+     */
+    public Node getBaseNode () {
+	if (baseNode == null) {
+	    update(0);
+	}
+	return baseNode;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -235,12 +246,12 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
 	// The first time we are updated we need to create top part 
 	// of the view's scene graph (but it's not yet attached to its cell)
-	if (viewNode == null) {
-	    viewNode = new Node("ViewWorldDefault ViewNode"); /* TODO: EventNode() */
+	if (baseNode == null) {
+	    baseNode = new Node("ViewWorldDefault Node for cell " + getCell().getCellID().toString()); 
 
 	    // There must be a node of this type as an ancestor of the textured panel
 	    // in order to receive events
-	    // TODO gui.initEventHandling(viewNode);
+	    // TODO gui.initEventHandling(baseNode);
     	}
 	
 	// It's necessary to do these in the following order
@@ -364,12 +375,12 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    if (cell == null) {
 		logger.warning("View is not attached to cell. Cannot make it visible");
 	    } else {
-// TODO		cell.attachLocalChild(viewNode);
+		cell.attachView(this, RendererType.RENDERER_JME);
 		connectedToCell = true;
 	    }
 	} else if (!visible && connectedToCell) {
 	    if (cell != null) {
-//TODO		cell.detachLocalChild(viewNode);
+		cell.detachView(this, RendererType.RENDERER_JME);
 	    }
 	    connectedToCell = false;
 	}
@@ -596,14 +607,14 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	// Detach any previous geometry object
 	if (geometryObj != null) {
 	    geometryObj.cleanup();
-	    viewNode.detachChild(geometryObj);
+	    baseNode.detachChild(geometryObj);
 	}
 
 	geometryObj = newGeometryObj;
 	geometryObj.updateSize();
 	geometryObj.updateTexture();
 
-	viewNode.attachChild(newGeometryObj);
+	baseNode.attachChild(newGeometryObj);
     }
 
     /**
