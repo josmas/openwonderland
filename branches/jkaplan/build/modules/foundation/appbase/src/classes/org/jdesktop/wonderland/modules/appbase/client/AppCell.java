@@ -22,6 +22,8 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * The generic application cell superclass. Created with a subclass-specific constructor.
@@ -109,6 +111,58 @@ public abstract class AppCell extends Cell {
 	    return;
 	}
 	//TODO: How do we do this?
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        CellRenderer ret = null;
+        switch(rendererType) {
+            case RENDERER_2D :
+                // No 2D Renderer yet
+                break;
+            case RENDERER_JME :
+		ret = getAppType().getGuiFactory().createCellRenderer(this);;
+                break;                
+        }
+        
+        return ret;
+    }
+
+    /**
+     * Attach the given view to the specified renderer of this cell.
+     * <br>
+     * INTERNAL ONLY.
+     */
+    @InternalAPI
+    public void attachView (WindowView view, RendererType rendererType) {
+        CellRenderer renderer = null;
+        switch(rendererType) {
+	case RENDERER_JME :
+	    ((AppCellRenderer)getCellRenderer(rendererType)).attachView(view);
+	    break;                
+	default:
+	    throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+        }
+    }
+
+    /**
+     * Detach the given view from the specified renderer of this cell.
+     * <br>
+     * INTERNAL ONLY.
+     */
+    @InternalAPI
+    public void detachView (WindowView view, RendererType rendererType) {
+        CellRenderer renderer = null;
+        switch(rendererType) {
+	case RENDERER_JME :
+	    ((AppCellRenderer)getCellRenderer(rendererType)).detachView(view);
+	    break;                
+	default:
+	    throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+        }
     }
 
     /**

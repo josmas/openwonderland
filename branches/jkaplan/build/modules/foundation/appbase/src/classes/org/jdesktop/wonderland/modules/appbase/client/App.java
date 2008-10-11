@@ -208,6 +208,62 @@ public class App {
 	this.cell = cell;
     }
 
+    /** 
+     * Launch an instance of the given app type. This creates the server cell for the app and associated
+     * client cells.
+     * @param appTypeName The name of the app type.
+     * @param appName The name of the application instance (Note: doesn't need to be unique).
+     * @param command The command (with arguments) to execute on the master machine.
+     * @param bestView If true the bounds and transform are configured to place the app in front of the 
+     * launching user at a "good" distance.
+     * @param bounds The bounding object of the app cell (only used if bestView is false).
+     * @param transform The center of the the app cell in World coordinates (not used if bestView is true).
+     * @param pixelScale The size of app window pixels (in world coordinates).
+     */
+    /* TODO
+    public static void userLaunchLocalApp (String appTypeName, String appName, String command, boolean bestView,
+					   BoundingVolume bounds, CellTransform transform, Vector2f pixelScale) {
+
+	AppType appType = findAppType(appTypeName);
+	if (appType == null) {
+	    reportLaunchError("Cannot find app type to launch: " + appTypeName);
+	    return;
+	}
+
+	AppLaunchMethods lm = appType.getLaunchMethods();
+	if (lm == null) {
+	    reportLaunchError("Cannot determine permitted launch modes for app type " + appTypeName);
+	    return;
+	}
+
+	if (!lm.containsLauncher(AppLaunchMethods.Launcher.USER)) {
+	    reportLaunchError("Instances of app type " + appTypeName + " cannot be launched by the user");
+	    return;
+	}
+
+	switch (lm.getStyle()) {
+
+	case WONDERLAND:
+	    //TODO
+	    break;
+
+	case CONVENTIONAL:
+	    AppLaunchMethodsConventional lmc = (AppLaunchMethodsConventional) lm;
+	    AppTypeConventional act = (AppTypeConventional) appType;
+	    if (lmc.containsExecutionSite(AppLaunchMethodsConventional.ExecutionSite.LOCAL)) {
+		AppConventional.userLaunchApp(act, appName, command, bestView, bounds, transform, pixelScale);
+	    } else {
+		reportLaunchError("Instances of app type " + appTypeName + " cannot be launched on the local machine");
+	    }
+	    break;
+	}
+    }
+    */
+
+    protected static void reportLaunchError (String message) {
+	JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     /**
      * Print debug information for all app windows.
      */

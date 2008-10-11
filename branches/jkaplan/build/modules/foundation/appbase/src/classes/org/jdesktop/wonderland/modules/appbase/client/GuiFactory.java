@@ -49,6 +49,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public interface GuiFactory {
 
     /**
+     * Create a renderer object which will arrange for the given cell to be rendered.
+     * @param cell The cell to be rendered.
+     * @return The renderer created. 
+     */
+    public AppCellRenderer createCellRenderer (AppCell cell);
+
+    /**
      * Create a window view object which displays the given window in the specified space.
      *
      * @param window The window the view will display.
