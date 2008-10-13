@@ -1,6 +1,7 @@
 <project basedir="." default="..." name="setup.build-setup">
     <!-- set the build-scripts directory to the current directory -->
     <dirname property="setup.build-scripts.dir" file="${ant.file.setup.build-setup}"/>
+    <property name="top.dir" location="${setup.build-scripts.dir}/../.."/>
    
     <taskdef name="pack200" 
              classname="com.sun.tools.apache.ant.pack200.Pack200Task" 
@@ -10,14 +11,6 @@
              classname="com.sun.tools.apache.ant.pack200.Unpack200Task" 
              classpath="${top.dir}/lib/ant/Pack200Task.jar"/>
    
-    <!-- 
-        Use my.properties to override default values in *.properties.
-        You can specify an alternate build.properties override file by
-        running with "ant -Dmy.properties.file=<file>" 
-    -->
-    <property name="my.properties.file" location="my.properties"/>
-    <property file="${my.properties.file}"/>
-    
     <!-- import common setup.xml -->
     <import file="${setup.build-scripts.dir}/setup.xml"/>
     

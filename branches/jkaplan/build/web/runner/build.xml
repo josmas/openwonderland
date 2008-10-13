@@ -86,5 +86,12 @@
             <!-- include config files we generated -->
             <fileset dir="${build.dir}/pkg"/>
         </jar>
+        
+        <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="org/jdesktop/wonderland/runner/*.class"/>
+                <include name="org/jdesktop/wonderland/runner/ant/**"/>
+            </fileset>
+        </jar>
     </target>
 </project>
