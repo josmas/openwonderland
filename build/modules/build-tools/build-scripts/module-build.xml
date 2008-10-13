@@ -34,6 +34,20 @@
                 <pathelement path="${jaxb.classpath}"/>
             </classpath>
         </taskdef>
+        <taskdef name="deploy"
+                  classname="org.jdesktop.wonderland.modules.ant.DeployTask">
+            <classpath>
+                <pathelement location="${top.dir}/web/modules/dist/wonderland-modules-api.jar"/>
+                <pathelement path="${jaxb.classpath}"/>
+            </classpath>
+        </taskdef>
+        <taskdef name="runner"
+                 classname="org.jdesktop.wonderland.runner.ant.RunnerTask">
+            <classpath>
+                <pathelement location="${top.dir}/web/runner/dist/wonderland-runner-api.jar"/>
+                <pathelement path="${jaxb.classpath}"/>
+            </classpath>
+        </taskdef>
     </target>
    
     <target name="-module-compile-common" depends="-module-init">
@@ -74,6 +88,12 @@
 	    </compile-classpath>
         </wl-compile>
     </target>
+                
+    <target name="-module-deploy">
+        <deploy module="${module.dist.dir}/${module.jarname}.jar"
+                serverurl="${wonderland.web.url}"/>
+        <runner action="restart" serverurl="${wonderland.web.url}"/>
+    </target>            
                 
     <target name="-module-clean">
         <delete dir="${build.dir}"/>
