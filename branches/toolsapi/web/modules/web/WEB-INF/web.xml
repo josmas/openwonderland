@@ -7,7 +7,7 @@
     </servlet>
     <servlet>
         <servlet-name>ModuleUploadServlet</servlet-name>
-        <servlet-class>org.jdesktop.wonderland.modules.servlets.ModuleUploadServlet</servlet-class>
+        <servlet-class>org.jdesktop.wonderland.common.tools.modules.ModuleUploadServlet</servlet-class>
         <url-pattern>/ModuleUploadServlet</url-pattern>
     </servlet>
     <servlet-mapping>
