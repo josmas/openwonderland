@@ -42,6 +42,7 @@ public class PlaceCallMessage extends Message {
 	this.x = x;
 	this.y = y;
 	this.z = z;
+	this.direction = direction;
 	this.confirmAnswered = confirmAnswered;
     }
 

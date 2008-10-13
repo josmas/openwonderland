@@ -18,17 +18,25 @@
 package org.jdesktop.wonderland.audiomanager.server;
 
 import java.util.Properties;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.audiomanager.common.AvatarCellIDMessage;
 import org.jdesktop.wonderland.audiomanager.common.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.audiomanager.common.PlaceCallMessage;
 import org.jdesktop.wonderland.audiomanager.common.DisconnectCallMessage;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.audiomanager.common.AudioManagerConnectionType;
+
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 
 import com.sun.sgs.app.AppContext;
 
@@ -54,7 +62,8 @@ import java.io.IOException;
  * @author jprovino
  */
 public class AudioManagerConnectionHandler 
-        implements ClientConnectionHandler, Serializable, CallStatusListener
+        implements ClientConnectionHandler, Serializable, CallStatusListener,
+	TransformChangeListenerSrv
 {
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
@@ -71,16 +80,25 @@ public class AudioManagerConnectionHandler
 	logger.info("Audio Server manager connection registered");
     }
 
-    public void clientConnected(WonderlandClientSender sender, ClientSession session, Properties properties) {
+    public void clientConnected(WonderlandClientSender sender, 
+	    ClientSession session, Properties properties) {
+
         //throw new UnsupportedOperationException("Not supported yet.");
 	logger.warning("client connected...");
     }
 
-    public void messageReceived(WonderlandClientSender sender, ClientSession session, Message message) {
+    public void messageReceived(WonderlandClientSender sender, 
+	    ClientSession session, Message message) {
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	if (message instanceof GetVoiceBridgeMessage) {
+	if (message instanceof AvatarCellIDMessage) {
+	    AvatarCellIDMessage msg = (AvatarCellIDMessage) message;
+
+	    CellMO avatarCellMO = CellManagerMO.getCell(msg.getCellID());
+
+	    avatarCellMO.addTransformChangeListener(this);
+	} else if (message instanceof GetVoiceBridgeMessage) {
 	    logger.warning("Got voice bridge request message");
 
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
@@ -151,6 +169,22 @@ public class AudioManagerConnectionHandler
 	    logger.warning("got DisconnectCallMessage");
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
+	}
+    }
+
+    public void transformChanged(ManagedReference<CellMO> cellRef, 
+	    final CellTransform localTransform, final CellTransform localToWorldTransform) {
+
+	logger.warning("localTransform " + localTransform + " world " 
+	    + localToWorldTransform);
+
+	Player player = AppContext.getManager(VoiceManager.class).getPlayer("jp");
+
+	if (player == null) {
+	    logger.warning("got AvatarMovedMessage but can't find player");
+	} else {
+	    //player.moved(msg.getX(), msg.getY(), msg.getZ(), 
+	    //    msg.getDirection());
 	}
     }
 
