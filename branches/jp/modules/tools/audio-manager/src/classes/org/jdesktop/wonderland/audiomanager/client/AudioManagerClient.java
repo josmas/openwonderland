@@ -17,16 +17,26 @@
  */
 package org.jdesktop.wonderland.audiomanager.client;
 
+import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
+
+import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
+
 import org.jdesktop.wonderland.client.comms.BaseConnection;
+import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.client.comms.SessionLifecycleListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.audiomanager.common.AudioManagerConnectionType;
+import org.jdesktop.wonderland.audiomanager.common.AvatarCellIDMessage;
 import org.jdesktop.wonderland.audiomanager.common.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.audiomanager.common.PlaceCallMessage;
 
@@ -43,7 +53,6 @@ import java.util.logging.Logger;
  * @author paulby
  */
 public class AudioManagerClient extends BaseConnection {
-
     private static final Logger logger =
         Logger.getLogger(AudioManagerClient.class.getName());
 
@@ -81,6 +90,10 @@ public class AudioManagerClient extends BaseConnection {
 	    } catch (ConnectionFailureException e) {
 		logger.warning("FOO:  " + e.getMessage());
 	    }
+
+	    CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+
+	    session.send(client, new AvatarCellIDMessage(cellID));
 
 	    logger.warning("Sending message to server to get voice bridge...");
 

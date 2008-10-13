@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.audiomanager.client;
 
 import java.util.logging.Logger;
+
 import org.jdesktop.wonderland.client.ClientPlugin;
 
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
