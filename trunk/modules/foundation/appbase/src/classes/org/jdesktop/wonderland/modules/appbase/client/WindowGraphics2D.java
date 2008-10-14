@@ -84,9 +84,9 @@ public class WindowGraphics2D extends Window2D {
     }
 
     /**
-     * Returns the drawing surface of this windows. This allows subclasses to access the drawing surface.
+     * Returns the drawing surface of this windows. 
      */
-    protected DrawingSurface getSurface () {
+    public DrawingSurface getSurface () {
 	return surface;
     }
 

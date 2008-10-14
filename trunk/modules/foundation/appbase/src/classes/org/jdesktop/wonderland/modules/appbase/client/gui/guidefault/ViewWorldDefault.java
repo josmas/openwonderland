@@ -19,14 +19,10 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
 import com.jme.image.Image;
 import com.jme.image.Texture;
-import com.jme.image.Texture2D;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
-import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.util.TextureManager;
 import java.awt.Button;
-import java.awt.Toolkit;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
@@ -40,6 +36,7 @@ import com.jme.scene.state.TextureState;
 import java.nio.FloatBuffer;
 import com.jme.util.geom.BufferUtils;
 import com.jme.scene.TexCoords;
+import java.awt.Point;
 
 /**
  * A view onto a window which exists in the 3D world.
@@ -466,8 +463,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 * @param p3f A 3D world point.
 	 * @return The 2D position of the world point in the window
 	 * or null if the point is outside the window's geometry.
-	 */
-	/* TODO
+
+	// TODO: should I switch to using calcPositionInPixelCoordinates?
 	protected Point convertPoint3DTo2D (Point3f p3f) {
 	    // First calculate the actual coordinates of the corners of
 	    // the panel in world coords.
@@ -490,6 +487,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    // Now calculate the x and y coords relative to the panel
         
 	    float y = Math3D.pointLineDistance(topLeft,topRight,p3f);
+
 	    float y1 = Math3D.pointLineDistance(bottomLeft, bottomRight, p3f);
 	    float x = Math3D.pointLineDistance(topLeft,bottomLeft,p3f);
 	    float x1 = Math3D.pointLineDistance(topRight,bottomRight,p3f);
@@ -653,6 +651,71 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	geometryObj.updateTexture();
 
 	baseNode.attachChild(newGeometryObj);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Point calcPositionInPixelCoordinates (Vector3f point) {
+        
+	Vector3f topLeft = new Vector3f( -width/2f, height/2f, 0f);
+	Vector3f topRight = new Vector3f( width/2f, height/2f, 0f);
+	Vector3f bottomLeft = new Vector3f( -width/2f, -height/2f, 0f);
+	Vector3f bottomRight = new Vector3f( width/2f, -height/2f, 0f);
+        
+	// Now calculate the x and y coords relative to the panel
+        
+	float y = pointLineDistance(topLeft,topRight,point);
+	float y1 = pointLineDistance(bottomLeft, bottomRight, point);
+        
+	float x = pointLineDistance(topLeft,bottomLeft,point);
+	float x1 = pointLineDistance(topRight,bottomRight,point);
+
+	if (y > height || y1> height || x>width || x1>width) {
+	    return null;
+	}
+        
+	int winWidth = ((Window2D)window).getWidth();
+	int winHeight = ((Window2D)window).getHeight();
+
+	//System.err.println("XY "+x+" "+y);
+	//System.err.println("XY "+(x/width)*winWidth+" "+(y/height)*winHeight);
+	return new Point((int)((x/width)*winWidth),(int)((y/height)*winHeight));
+    }
+
+    /**
+     * Calculates the distance of a point from a line.
+     * <p><code>
+     *    x1----------------------------x2 <br>
+     *                  |               <br>
+     *                  | distance      <br>
+     *                  |               <br>
+     *                 point            <br>
+     * </code>
+     * <p>
+     * The formula is <br>
+     * <code>
+     *      d = |(x2-x1) x (x1-p)| <br>
+     *          ------------------ <br>
+     *              |x2-x1|        <br>
+     * </code>
+     *
+     * Where p=point, lineStart=x1, lineEnd=x2
+     *
+     */
+    public static float pointLineDistance( final Vector3f lineStart, 
+					   final Vector3f lineEnd, 
+					   final Vector3f point ) {
+	Vector3f a = new Vector3f(lineEnd);
+	a.subtract(lineStart);
+        
+	Vector3f b = new Vector3f(lineStart);
+	b.subtract(point);
+        
+	Vector3f cross = new Vector3f();
+	cross.cross(a,b);
+        
+	return cross.length()/a.length();
     }
 
     /**
