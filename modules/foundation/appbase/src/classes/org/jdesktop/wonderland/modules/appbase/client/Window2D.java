@@ -37,6 +37,9 @@ import com.jme.math.Vector3f;
 import com.jme.util.geom.BufferUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
+// TODO: for debug
+import org.jdesktop.wonderland.modules.appbase.client.gui.guidefault.ViewWorldDefault;
+
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
  * class are created via App2D.createWindow.
@@ -683,6 +686,16 @@ public abstract class Window2D extends Window {
 	for (Window2DView view : views) {
 	    view.update(changeMask);
 	}
+    }
+
+    public void forceTextureIdAssignment () {
+	if (views.size() <= 0) {
+	    System.err.println("Trying to assign texture ID before view has been created.");
+	    System.exit(1);
+	}
+	for (Window2DView view : views) {
+	    view.forceTextureIdAssignment();
+	}	
     }
 
     /** 

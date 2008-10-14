@@ -17,12 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import com.jme.image.Image;
 import com.jme.image.Texture;
 import com.jme.math.Vector2f;
-import com.jme.util.TextureManager;
+import com.jmex.awt.swingui.ImageGraphics;
 import java.awt.Graphics2D;
-import java.awt.Toolkit;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -56,7 +54,33 @@ public class WindowGraphics2D extends Window2D {
 	throws InstantiationException 
     {
 	super(app, width, height, topLevel, pixelScale);
+	updateTexture();
+
+	// Arrange for the surface contents to be continuously copied into this window's texture.
 	this.surface = surface;
+	surface.setWindow(this);
+	surface.setTexture(texture);
+	surface.setUpdateEnable(true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void cleanup () {
+	if (surface != null) {
+	    surface.cleanup();
+	    surface = null;
+	}
+	super.cleanup();
+    }
+
+    /**
+     * Initialize the contents of the surface.
+     */
+    protected void initializeSurface () {
+	if (surface != null) {
+	    surface.initializeSurface();
+	}
     }
 
     /**
@@ -74,44 +98,8 @@ public class WindowGraphics2D extends Window2D {
      */
     protected void paint(Graphics2D g) {}
 
-    // TODO: for now just copy the entire window contents into a new image and replace it in the texture
     protected void repaint() {
-	Texture texture = getTexture();
-	Image image = texture.getImage();
-	int width = image.getWidth();
-	int height = image.getHeight();
-
-	// Paint this window onto a new buffered image
-	// TODO: this is a klunky interface -- usually there is a BufferedInterface in the drawing surface.
-	// Why create a new one?
-        /* Debug
-	BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-	paint((Graphics2D)bi.getGraphics());
-        */
-        
-	// For debug
-	logger.warning("WindowGraphics2D: load test image");
-	java.awt.Image bi = Toolkit.getDefaultToolkit().getImage(
-		              "/home/dj/jme/cvs/jme/src/jmetest/data/images/Monkey.jpg");
-
-	/* For debug
-	BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-	for (int y = 0; y < height; y++) {
-	    for (int x = 0; x < width; x++) {
-		bi.setRGB(x, y, 0x00ff0000);
-	    }
-	}
-	*/
-
-	// Copy the BufferedImage to a new JME image
-	image = TextureManager.loadImage(bi, false);
-
-
-	// Attach the new image to the texture
-	texture.setImage(image);
-
-	// For debug
-      	texture.setApply(Texture.ApplyMode.Modulate);
+	// Don't need to do anything. The copying of the 
     }
 
     /**

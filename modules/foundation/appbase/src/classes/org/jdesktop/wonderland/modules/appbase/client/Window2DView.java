@@ -91,4 +91,7 @@ public abstract class Window2DView extends WindowView {
      * @param me3d The 3D mouse event to deliver.
      */
     // TODO: public abstract void deliverEvent (Window2D window, MouseEvent3D me3d);
+
+    // TODO: temporary until ImageGraphics can be fixed to allocated texture id when necessary
+    public void forceTextureIdAssignment () {}
 }
