@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.appbase.client.gui.guinull;
 
 import com.jme.math.Vector3f;
+import java.awt.Point;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
@@ -154,5 +155,12 @@ public class Window2DViewNull extends Window2DView implements Window2DViewWorld 
      * {@inheritDoc}
      */
     public void deliverEvent (Window2D window, MouseEvent3D me3d) {}
+
+    /**
+     * {@inheritDoc}
+     */
+    public Point calcPositionInPixelCoordinates (Vector3f point) {
+	return null;
+    }
 }
 

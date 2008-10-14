@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="appbase" default="package" basedir=".">
+<project name="appbase" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.appbase}"/>
     <property name="modules.dir" location="${current.dir}/../.."/>
@@ -8,6 +8,10 @@
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.appbase"/>
     <property name="module.jarname" value="appbase"/>
     
+    <pathconvert property="module-client.classpath">
+      <path location="${current.dir}/lib/Scenario.jar"/>
+    </pathconvert>
+
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
@@ -30,6 +34,7 @@
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </server>
+		<clientjar jarfile="${current.dir}/lib/Scenario.jar"/>
             </plugin>
             <art dir="${current.dir}/art"/>
         </module>

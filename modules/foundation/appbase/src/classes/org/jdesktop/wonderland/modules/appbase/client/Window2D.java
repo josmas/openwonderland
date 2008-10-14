@@ -35,10 +35,10 @@ import com.jme.image.Texture2D;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.util.geom.BufferUtils;
+import java.awt.Point;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 // TODO: for debug
-import org.jdesktop.wonderland.modules.appbase.client.gui.guidefault.ViewWorldDefault;
 
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
@@ -743,5 +743,17 @@ public abstract class Window2D extends Window {
      */
     public float getRotateY () {
 	return rotY;
+    }
+
+    /**
+     * Transform the given 3D point in local coordinates into the corresponding point
+     * in the pixel space of the image of the world view of the window. The given point must be on the surface 
+     * of the window.
+     * @param point The point to transform.
+     * @return the 2D position of the pixel space the window's image, or null if the point is not within the window
+     * or is not on the surface of the window.
+     */
+    public Point calcWorldPositionInPixelCoordinates (Vector3f point) { 
+	return viewWorld.calcPositionInPixelCoordinates(point);
     }
 }
