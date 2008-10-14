@@ -17,11 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
+import com.jme.image.Image;
 import com.jme.image.Texture;
+import com.jme.image.Texture2D;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
+import com.jme.util.TextureManager;
 import java.awt.Button;
+import java.awt.Toolkit;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
@@ -31,6 +36,10 @@ import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DViewWorld;
 import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import com.jme.scene.state.TextureState;
+import java.nio.FloatBuffer;
+import com.jme.util.geom.BufferUtils;
+import com.jme.scene.TexCoords;
 
 /**
  * A view onto a window which exists in the 3D world.
@@ -229,7 +238,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     }
 
     /**
-     * Returns the base node of the view. Ths is the root node of the view's scene graph.
+     * Returns the base node of the view. This is the root node of the view's scene graph.
      */
     public Node getBaseNode () {
 	if (baseNode == null) {
@@ -239,7 +248,17 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the frame of view. 
+     */
+    FrameWorldDefault getFrame () {
+	if (topLevel && frame == null) {
+	    update(CHANGED_TOP_LEVEL);
+	}
+	return frame;
+    }
+
+    /**
+     * {@inheritDoc}"
      */
     @Override
     public void update (int changeMask) {
@@ -247,7 +266,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	// The first time we are updated we need to create top part 
 	// of the view's scene graph (but it's not yet attached to its cell)
 	if (baseNode == null) {
-	    baseNode = new Node("ViewWorldDefault Node for cell " + getCell().getCellID().toString()); 
+	    baseNode = new Node(); 
 
 	    // There must be a node of this type as an ancestor of the textured panel
 	    // in order to receive events
@@ -369,19 +388,16 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /** Update the view's visibility */
     void updateVisibility() {
 	AppCell cell = getCell();
+	if (cell == null) return;
+	baseNode.setName("ViewWorldDefault Node for cell " + getCell().getCellID().toString());
+
 	visible = viewVisible && window.isVisible();
 	
 	if (visible && !connectedToCell) {
-	    if (cell == null) {
-		logger.warning("View is not attached to cell. Cannot make it visible");
-	    } else {
-		cell.attachView(this, RendererType.RENDERER_JME);
-		connectedToCell = true;
-	    }
+	    cell.attachView(this, RendererType.RENDERER_JME);
+	    connectedToCell = true;
 	} else if (!visible && connectedToCell) {
-	    if (cell != null) {
-		cell.detachView(this, RendererType.RENDERER_JME);
-	    }
+	    cell.detachView(this, RendererType.RENDERER_JME);
 	    connectedToCell = false;
 	}
     }
@@ -497,6 +513,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 * Returns the texture height.
 	 */
 	public abstract int getTextureHeight ();
+
+	/**
+	 * Returns the texture state.
+	 */
+	public abstract TextureState getTextureState ();
     }
 
     /** 
@@ -554,6 +575,17 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	public void updateTexture () {
 	    Window2D window2D = (Window2D) view.getWindow();
 	    Texture texture = window2D.getTexture();
+
+	    /* For debug
+	    java.awt.Image bi = Toolkit.getDefaultToolkit().getImage("/home/dj/wl/images/Monkey.png");
+	    Image image = TextureManager.loadImage(bi, false);
+	    Texture texture = new Texture2D();
+	    texture.setImage(image);
+	    texture.setMagnificationFilter(Texture.MagnificationFilter.Bilinear);
+	    texture.setMinificationFilter(Texture.MinificationFilter.BilinearNoMipMaps);
+	    texture.setApply(Texture.ApplyMode.Replace);
+	    */
+
 	    if (texture == null) {
 		// Texture hasn't been created yet. (This method will
 		// be called again when it is created).
@@ -562,22 +594,21 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
 	    quad.setTexture(texture);
 
-	    /* TODO: need this?
 	    float winWidth = (float) window2D.getWidth();
 	    float winHeight = (float) window2D.getHeight();
 
-            float texCoordW = winWidth / texture.getWidth();
-            float texCoordH = winHeight / texture.getHeight();
+	    Image image = texture.getImage();
+            float texCoordW = winWidth / image.getWidth();
+            float texCoordH = winHeight / image.getHeight();
             
             //logger.warning("TexCoords "+texCoordW+", "+texCoordH);
 
-            quad.setTextureCoordinates(0,0, new float[] {
-                texCoordW,1f,
-                0f,1f,
-                0f,1-texCoordH,
-                texCoordW,1-texCoordH
-            });
-	    */
+	    FloatBuffer tbuf = BufferUtils.createVector2Buffer(4);
+	    quad.setTextureCoords(new TexCoords(tbuf));
+	    tbuf.put(0f).put(0);
+	    tbuf.put(0f).put(texCoordH);
+	    tbuf.put(texCoordW).put(texCoordH);
+	    tbuf.put(texCoordW).put(0);
         } 
 
 	/**
@@ -592,6 +623,13 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 */
 	public int getTextureHeight () {
 	    return quad.getTexture().getImage().getHeight();
+	}
+
+	/**
+	 * Returns the texture state.
+	 */
+	public TextureState getTextureState () {
+	    return quad.getTextureState();
 	}
     }
 
@@ -671,5 +709,27 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	}
     }
     */
+
+    public void forceTextureIdAssignment () {
+	if (geometryObj == null) {
+	    logger.warning("Trying to force texture id assignment while view geometry is null");
+	    return;
+	}
+	TextureState ts = geometryObj.getTextureState();
+	if (ts == null) {
+	    logger.warning("Trying to force texture id assignment while view texture state is null");
+	    return;
+	}
+	// The JME magic - must be called from within the render loop
+	ts.load();
+	
+	// Verify
+	Texture texture = ((Window2D)window).getTexture();
+	int texid = texture.getTextureId();
+	logger.warning("ViewWorldDefault: allocated texture id " + texid);
+	if (texid == 0) {
+	    logger.severe("Texture Id is still 0!!!");
+	}
+    }
 }
 
