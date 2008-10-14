@@ -91,42 +91,12 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
             runner = RunManager.getInstance().get(runnerName);
         }
               
-        try {
-            if (action.equalsIgnoreCase("start")) {
-                doStart(request, response, runner);
-            } else if (action.equalsIgnoreCase("stop")) {
-                doStop(request, response, runner);
-            } else if (action.equalsIgnoreCase("log")) {
-                doLog(request, response, runner);
-            } else {
-                // default case -- show the view page
-                doView(request, response);
-            }
-        } catch (RunnerException re) {
-            throw new ServletException(re);
+        if (action.equalsIgnoreCase("log")) {
+            doLog(request, response, runner);
+        } else {
+            // default case -- show the view page
+            doView(request, response);
         }
-    }
-    
-    private void doStart(HttpServletRequest request,
-                         HttpServletResponse response,
-                         Runner runner)
-        throws ServletException, IOException, RunnerException
-    {
-        runner.start(new Properties());
-        
-        // redirect to the main page
-        response.sendRedirect("run");
-    }
-    
-    private void doStop(HttpServletRequest request,
-                        HttpServletResponse response,
-                        Runner runner)
-        throws ServletException, IOException
-    {
-        runner.stop();
-        
-        // redirect to the main page
-        response.sendRedirect("run");
     }
     
     private void doView(HttpServletRequest request,

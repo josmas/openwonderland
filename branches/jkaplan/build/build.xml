@@ -19,7 +19,7 @@
     <mkdir dir="dist"/>
    
     <!-- create the final jar in the dist directory -->
-    <ant dir="web" target="package" inheritall="false">
+    <ant dir="web" target="-package" inheritall="false">
         <property name="server.package.dir" value="${basedir}/dist"/>
     </ant>
 </target>
