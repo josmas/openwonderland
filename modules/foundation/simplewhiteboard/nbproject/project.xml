@@ -24,20 +24,20 @@
             </folders>
             <ide-actions>
                 <action name="build">
-                    <target>package</target>
+                    <target>dist</target>
                 </action>
                 <action name="clean">
                     <target>clean</target>
                 </action>
                 <action name="rebuild">
                     <target>clean</target>
-                    <target>package</target>
+                    <target>dist</target>
                 </action>
             </ide-actions>
             <export>
                 <type>jar</type>
                 <location>dist/simplewhiteboard.jar</location>
-                <build-target>package</build-target>
+                <build-target>dist</build-target>
             </export>
             <view>
                 <items>
