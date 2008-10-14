@@ -17,24 +17,33 @@
  */
 package org.jdesktop.wonderland.audiomanager.server;
 
-import java.util.Properties;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;;
-import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.audiomanager.common.AvatarCellIDMessage;
-import org.jdesktop.wonderland.audiomanager.common.GetVoiceBridgeMessage;
-import org.jdesktop.wonderland.audiomanager.common.PlaceCallMessage;
-import org.jdesktop.wonderland.audiomanager.common.DisconnectCallMessage;
+
+import org.jdesktop.wonderland.audiomanager.common.AudioManagerConnectionType;
+
+import org.jdesktop.wonderland.audiomanager.common.messages.AvatarCellIDMessage;
+import org.jdesktop.wonderland.audiomanager.common.messages.DisconnectCallMessage;
+import org.jdesktop.wonderland.audiomanager.common.messages.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.audiomanager.common.messages.VoiceChatMessage;
+
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
+
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
+
 import java.io.Serializable;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.audiomanager.common.AudioManagerConnectionType;
+
+import java.util.Properties;
 
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 
@@ -56,6 +65,8 @@ import com.sun.voip.client.connector.CallStatusListener;
 
 import java.io.IOException;
 
+import com.jme.math.Vector3f;
+
 /**
  * Test listener, will eventually support Audio Manager
  * 
@@ -68,8 +79,12 @@ public class AudioManagerConnectionHandler
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
     
+    private VoiceChatHandler voiceChatHandler;
+
     public AudioManagerConnectionHandler() {
         super();
+
+	VoiceChatHandler voiceChatHandler = VoiceChatHandler.getInstance();
     }
 
     public ConnectionType getConnectionType() {
@@ -95,9 +110,11 @@ public class AudioManagerConnectionHandler
 	if (message instanceof AvatarCellIDMessage) {
 	    AvatarCellIDMessage msg = (AvatarCellIDMessage) message;
 
-	    CellMO avatarCellMO = CellManagerMO.getCell(msg.getCellID());
+	    AvatarCellMO avatarCellMO = (AvatarCellMO) CellManagerMO.getCell(msg.getCellID());
 
 	    avatarCellMO.addTransformChangeListener(this);
+
+	    voiceChatHandler.initialize(avatarCellMO.getUser().getUsername(), sender);
 	} else if (message instanceof GetVoiceBridgeMessage) {
 	    logger.warning("Got voice bridge request message");
 
@@ -167,6 +184,8 @@ public class AudioManagerConnectionHandler
             vm.getDefaultStationaryPlayerAudioGroup().addPlayer(player, info);
 	} else if (message instanceof DisconnectCallMessage) {
 	    logger.warning("got DisconnectCallMessage");
+	} else if (message instanceof VoiceChatMessage) {
+	    voiceChatHandler.processVoiceChatMessage((VoiceChatMessage) message);
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
@@ -183,8 +202,17 @@ public class AudioManagerConnectionHandler
 	if (player == null) {
 	    logger.warning("got AvatarMovedMessage but can't find player");
 	} else {
-	    //player.moved(msg.getX(), msg.getY(), msg.getZ(), 
-	    //    msg.getDirection());
+	    Vector3f heading = new Vector3f(0, 0, -1);
+
+	    Vector3f angleV = heading.clone();
+
+	    localToWorldTransform.transform(angleV);
+
+	    double angle = heading.angleBetween(angleV);
+
+	    Vector3f location = localToWorldTransform.getTranslation(null);
+	
+	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
 	}
     }
 
