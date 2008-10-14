@@ -82,8 +82,13 @@ public class WhiteboardCell extends App2DCell {
      * @param configData the config data to initialize the cell with
      */
     public void configure (CellConfig configData) {
-	System.err.println("************* Enter WhiteboardCell.configure");
 
+	/* TODO: For debug 
+	while (i++ < 1000000) {
+	    try { Thread.sleep(1000); } catch (Exception ex) {}
+	}
+	*/
+	
         config = (WhiteboardCellConfig)configData;
         setApp(new WhiteboardApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
 				 config.getPixelScale(), commComponent));
