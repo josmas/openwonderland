@@ -37,6 +37,9 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
  */
 public class JmeClientMain {
     
+    /** The frame of the Wonderland client window. */
+    private static MainFrame frame;
+
     // properties
     private Properties props;
     
@@ -127,7 +130,7 @@ public class JmeClientMain {
      * Create all of the Swing windows - and the 3D window
      */
     private void createUI(WorldManager wm) {             
-        MainFrame frame = new MainFrame(wm, width, height);
+        frame = new MainFrame(wm, width, height);
         // center the frame
         frame.setLocationRelativeTo(null);
 
@@ -166,6 +169,13 @@ public class JmeClientMain {
     	    });
     }
     
+    /**
+     * Returns the frame of the Wonderland client window.
+     */
+    public static MainFrame getFrame () {
+	return frame;
+    }
+
     private static Properties loadProperties(String fileName) {
         // start with the system properties
         Properties props = new Properties(System.getProperties());
