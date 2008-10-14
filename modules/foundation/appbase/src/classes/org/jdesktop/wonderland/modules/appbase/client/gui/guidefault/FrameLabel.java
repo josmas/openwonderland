@@ -149,6 +149,7 @@ public class FrameLabel extends /*TODO: FrameTranspTexRect */ FrameTexRect {
 	texHeight = (int)(hScale * getHeight());
 	logger.warning("updateTexture: texWH = " + texWidth + " " + texHeight);
 
+	// TODO
 	// For debug
 	texWidth = 256;
 	texHeight = 64;
