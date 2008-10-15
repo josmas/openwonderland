@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
  */
 
+// TODO: currently this has JME dependencies. It would be nice to do this in a graphics library independent fashion.
 @ExperimentalAPI
 public class WindowSwing extends WindowGraphics2D {
 
