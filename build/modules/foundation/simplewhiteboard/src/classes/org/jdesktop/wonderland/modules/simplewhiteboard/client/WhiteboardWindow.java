@@ -64,12 +64,13 @@ public class WhiteboardWindow extends WindowGraphics2D  {
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
+	initializeSurface();
 
 	// For debug
 	setTitle("WHITEBOARD WINDOW");
 	
 	wbSurface = (WhiteboardDrawingSurface)getSurface();
-
+	
         addMouseMotionListener(new MouseMotionListener() {
             public void mouseDragged(MouseEvent e) {
                 dragTo(e.getPoint());
