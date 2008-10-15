@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-webserver" default="all" basedir=".">
-       <!-- current directory needed in all scripts -->
+    <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-webserver}"/>
     
     <property name="web.src" value="org/jdesktop/wonderland/webserver"/>
