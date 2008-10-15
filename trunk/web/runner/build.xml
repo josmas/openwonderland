@@ -68,13 +68,15 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-pre-dist">
+        <mkdir dir="${build.dir}/deploy/META-INF/deploy"/>
+        <copy todir="${build.dir}/deploy/META-INF/deploy"
+              file="${current.dir}/DeploymentPlan.xml"/>
+        <copy tofile="${build.dir}/deploy/META-INF/deploy/org.jdesktop.wonderland.runner.DarkstarRunner"
+              file="${current.dir}/DarkstarRunner.files"/>
+    </target>
+    
     <target name="-post-dist">
-        <mkdir dir="${build.dir}/pkg/META-INF/deploy"/>
-        <echo file="${build.dir}/pkg/META-INF/deploy/org.jdesktop.wonderland.runner.DarkstarRunner">
-            /META-INF/deploy/wonderland-setup-dist.zip
-            /META-INF/deploy/wonderland-server-dist.zip
-        </echo>
-        
         <jar jarfile="${dist.dir}/wonderland-runner-core.jar">
             <fileset dir="${build.classes.dir}">
                 <exclude name="org/jdesktop/wonderland/runner/servlet/**"/>
@@ -84,7 +86,7 @@
             <zipfileset dir="../../core/dist" prefix="META-INF/deploy"/>
             
             <!-- include config files we generated -->
-            <fileset dir="${build.dir}/pkg"/>
+            <fileset dir="${build.dir}/deploy"/>
         </jar>
         
         <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
