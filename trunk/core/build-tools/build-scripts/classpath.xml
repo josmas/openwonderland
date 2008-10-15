@@ -27,7 +27,6 @@
         <path location="${core.common.dir}/commons-httpclient-3.0.1.jar"/>
         <path location="${core.common.dir}/commons-logging-1.1.jar"/>
         <path location="${core.common.dir}/swing-layout-1.0.jar"/>
-        <path location="${core.common.dir}/TimingFramework.jar"/>
 	<path location="${core.common.dir}/mtgame.jar"/>
 	<path location="${core.common.dir}/jbullet.jar"/>
 	<path location="${core.common.dir}/vecmath.jar"/>
@@ -48,6 +47,7 @@
     <pathconvert property="core-common-compile.classpath">
 	<path path="${jme.classpath}"/>
         <path path="${jaxb.classpath}"/>
+	<path location="${core.common.dir}/Scenario.jar"/>
     </pathconvert>
     
     <pathconvert property="core-common.classpath">
