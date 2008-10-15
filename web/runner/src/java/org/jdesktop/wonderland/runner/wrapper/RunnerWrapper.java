@@ -37,6 +37,8 @@ import org.jdesktop.wonderland.runner.Runner;
 public class RunnerWrapper {
     private String name;
     private String status;
+    private String location = "localhost";
+    private boolean hasLog = false;
     
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
@@ -60,6 +62,7 @@ public class RunnerWrapper {
     public RunnerWrapper(Runner runner) {
         this.name = runner.getName();
         this.status = runner.getStatus().toString();
+        this.hasLog = runner.getLogFile().exists();
     }
     
     @XmlElement
@@ -78,6 +81,24 @@ public class RunnerWrapper {
     
     public void setStatus(String status) {
         this.status = status;
+    }
+    
+    @XmlElement 
+    public String getLocation() {
+        return location;
+    }
+    
+    public void setLocation(String location) {
+        this.location = location;
+    }
+    
+    @XmlElement
+    public boolean getHasLog() {
+        return hasLog;
+    }
+    
+    public void setHasLog(boolean hasLog) {
+        this.hasLog = hasLog;
     }
      
     /**

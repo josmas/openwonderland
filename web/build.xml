@@ -1,29 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="wonderland-web" default="build" basedir=".">
-    <property name="server.package.dir" location="${basedir}/server/build/lib"/>
-    
+<project name="wonderland-web" default="build" basedir=".">    
     <target name="build">
+       <!-- workaround for some issues with NetBeans projects, particularly
+            the tendency of NetBeans to remove the j2ee.platform.classpath
+            variable -->
+       <property name="j2ee.platform.classpath"
+                 location="${web.glassfish.dir}/glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar"/>       
+       <propertyset id="web.project.properties">
+           <propertyref name="j2ee.platform.classpath"/>
+       </propertyset>
+
        <ant dir="utils"   target="jar"/>
-       <ant dir="wfs"     target="dist" inheritall="false"/>
-       <ant dir="modules" target="dist" inheritall="false"/>
-       <ant dir="runner"  target="dist" inheritall="false"/>
-       <ant dir="front"   target="dist" inheritall="false"/>
+       <ant dir="wfs"     target="dist" inheritall="false">
+          <propertyset refid="web.project.properties"/> 
+       </ant>
+       <ant dir="modules" target="dist" inheritall="false">
+          <propertyset refid="web.project.properties"/>
+       </ant>
+       <ant dir="runner"  target="dist" inheritall="false">
+          <propertyset refid="web.project.properties"/>
+       </ant>
+       <ant dir="front"   target="dist" inheritall="false">
+          <propertyset refid="web.project.properties"/>
+       </ant>
        <ant dir="server"  target="jar" inheritall="false"/>
     </target>
     
-    <target name="package">
+    <!-- this target assumes build has been called, but doesn't
+         explicitly depend on to avoid duplication.  Don't use this
+         directly, call the top level "package" target instead, since
+         that will build everything that is needed. -->
+    <target name="-package">
         <ant dir="server" target="package" inheritall="false">
             <property name="server.package.dir" value="${server.package.dir}"/>
         </ant>
     </target>
     
-    <target name="run-web" depends="build">
+    <target name="run-web" depends="build, -set-server-package-dir, -package">
         <!-- create Wonderland.jar in server/build/lib" -->
-        <ant dir="server" target="package" inheritall="false">
-            <property name="server.package.dir" value="${basedir}/server/build/lib"/>
-        </ant>
-        
-        <java dir="server" jar="${basedir}/server/build/lib/Wonderland.jar" fork="true"/>
+        <java dir="server" jar="${server.package.dir}/Wonderland.jar" fork="true"/>
+    </target>
+    
+    <target name="-set-server-package-dir">
+        <property name="server.package.dir" location="${basedir}/server/build/lib"/>
     </target>
     
     <target name="clean">

@@ -131,11 +131,11 @@
         <ant dir="${top.dir}/modules" inheritall="false"/>
     </target>
     
-    <target name="run" depends="package">
+    <target name="run" depends="-set-package-dir, package">
         <java jar="${build.dir}/lib/Wonderland.jar"/>
     </target>
     
-    <target name="debug" depends="package">
+    <target name="debug" depends="-set-package-dir, package">
         <!--nbjpdastart addressproperty="jpda.address" name="wonderland-webserver" transport="dt_socket">
             <classpath>
                 <pathelement path="${build.classes.dir}"/>
@@ -152,6 +152,9 @@
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890"/>
             <!--end debug-->
         </java>
+    </target>
+    <target name="-set-package-dir">
+        <property name="server.package.dir" value="${build.dir}/lib"/>           
     </target>
     
     <target name="clean" depends="-web-clean"/>

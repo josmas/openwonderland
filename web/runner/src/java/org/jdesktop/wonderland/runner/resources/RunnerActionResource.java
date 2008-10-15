@@ -50,7 +50,7 @@ public class RunnerActionResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @ProduceMime("text/plain")
+    @ProduceMime({"text/plain", "application/xml", "application/json"})
     public Response get(@PathParam(value="runner") String runner,
                         @PathParam(value="action") String action,
                         @QueryParam(value="wait")  String waitParam) 
