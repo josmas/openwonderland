@@ -36,6 +36,7 @@ import com.jme.scene.Node;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.scenario.animation.Clip;
+import com.sun.scenario.animation.TimingTarget;
 
 /**
  * This is a simple test processor that rotates a node around the Y axis
@@ -83,20 +84,22 @@ public class RotationAnimationProcessor extends ProcessorComponent {
         this.name = name;
         setArmingCondition(new NewFrameCondition(this));
 
-        Clip clip2 = Clip.create(1000, this, "angle", new Float(0), new Float(Math.PI*2));
+//        Clip clip2 = Clip.create(1000, this, "angle", new Float(0), new Float(Math.PI*2));
+        Clip clip2 = Clip.create(1000, new RotationTimingTarget(0f, (float)Math.PI*2f));
+        
         clip2.start();
     }
 
-    public void setAngle(float radians) {
-        synchronized(quaternion) {
-            System.out.println("SetAngle "+radians);
-            this.radians = radians;
-        }
-    }
-
-    public float getAngle() {
-        return radians;
-    }
+//    public void setAngle(float radians) {
+//        synchronized(quaternion) {
+//            System.out.println("SetAngle "+radians);
+//            this.radians = radians;
+//        }
+//    }
+//
+//    public float getAngle() {
+//        return radians;
+//    }
     
     public String toString() {
         return (name);
@@ -106,7 +109,7 @@ public class RotationAnimationProcessor extends ProcessorComponent {
      * The initialize method
      */
     public void initialize() {
-        setArmingCondition(new NewFrameCondition(this));
+//        setArmingCondition(new NewFrameCondition(this));
     }
     
     /**
@@ -125,5 +128,33 @@ public class RotationAnimationProcessor extends ProcessorComponent {
             target.setLocalRotation(quaternion);
             worldManager.addToUpdateList(target);
         }
+    }
+    
+    class RotationTimingTarget implements TimingTarget {
+        
+        public RotationTimingTarget(float startAngle, float endAngle) {
+            
+        }
+
+        public void timingEvent(float arg0, long arg1) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void begin() {
+            setArmingCondition(new NewFrameCondition(RotationAnimationProcessor.this));
+        }
+
+        public void end() {
+            setArmingCon
+        }
+
+        public void pause() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void resume() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
     }
 }
