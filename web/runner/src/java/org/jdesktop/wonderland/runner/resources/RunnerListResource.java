@@ -46,7 +46,7 @@ public class RunnerListResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @ProduceMime("text/plain")
+    @ProduceMime({"text/plain", "application/xml", "application/json"})
     public Response getRunnerList() {
         Collection<Runner> runners = RunManager.getInstance().getAll();
         RunnerListWrapper out = new RunnerListWrapper(runners);

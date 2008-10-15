@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.audiomanager.server;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.audiomanager.common.AudioManagerConnectionType;

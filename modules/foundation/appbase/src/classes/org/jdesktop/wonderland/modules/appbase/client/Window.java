@@ -39,7 +39,7 @@ public abstract class Window {
     protected boolean visible;
 
     /**
-     * Create a Window2D instance. Initially the window is not visible.
+     * Create a Window instance. Initially the window is not visible.
      *
      * @param app The application to which this window belongs
      */

@@ -5,8 +5,10 @@
 
 package org.jdesktop.wonderland.utils.ant;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.util.FileUtils;
 
 /**
  * Ant task that lists files in a subdirectory of a jar file, and puts them
@@ -23,14 +26,15 @@ import org.apache.tools.ant.Task;
  * @author jkaplan
  */
 public class ListFilesTask extends Task {
-    private String jar;
+    private File jar;
     private String dir;
-    private String output;
+    private File output;
+    
+    private static final FileUtils FILE_UTILS = FileUtils.getFileUtils();
     
     @Override
     public void execute() throws BuildException {
-        File jarFile = new File(jar);
-        if (!jarFile.exists()) {
+        if (!jar.exists()) {
             throw new BuildException("No such jar file: " + jar);
         }
         
@@ -39,13 +43,26 @@ public class ListFilesTask extends Task {
         }
         
         if (output == null) {
-            output = "listfile.out";
+            output = new File("listfiles.out");
         }
+        
+        // track if anything has changed
+        boolean changed = false;
+        BufferedReader check = null;
+        File tmpFile = FILE_UTILS.createTempFile("listfiles", ".out", 
+                                                 jar.getParentFile());
         
         // open the jar file and output file
         try {
-            JarInputStream in = new JarInputStream(new FileInputStream(jarFile));
-            PrintWriter out = new PrintWriter(new FileWriter(output));
+            JarInputStream in = new JarInputStream(new FileInputStream(jar));
+            PrintWriter out = new PrintWriter(new FileWriter(tmpFile));
+            
+            // open the existing file to see about changes
+            if (output.exists()) {
+                check = new BufferedReader(new FileReader(output));
+            } else {
+                changed = true;
+            }
             
             Pattern p = Pattern.compile("^" + dir + "/(.+)");
             
@@ -53,18 +70,31 @@ public class ListFilesTask extends Task {
             while ((je = in.getNextJarEntry()) != null) {
                 Matcher m = p.matcher(je.getName());
                 if (m.matches() && m.groupCount() == 1) {
-                    out.println("/" + m.group());
+                    String line = "/" + m.group();
+                    
+                    // see if this is different
+                    if (!changed && !line.equals(check.readLine())) {
+                        changed = true;
+                        check.close();
+                    }
+                    
+                    out.println(line);
                 }
             }
             
             out.close();
+            
+            // overwrite if the file changed
+            if (changed) {
+                FILE_UTILS.rename(tmpFile, output);
+            }
         } catch (IOException ioe) {
             throw new BuildException(ioe);
         }
         
     }
     
-    public void setJar(String jar) {
+    public void setJar(File jar) {
         this.jar = jar;
     }
     
@@ -72,7 +102,7 @@ public class ListFilesTask extends Task {
         this.dir = dir;
     }
     
-    public void setOutput(String output) {
+    public void setOutput(File output) {
         this.output = output;
     }
     

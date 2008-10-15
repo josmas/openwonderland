@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
+import com.jme.image.Image;
 import com.jme.image.Texture;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
@@ -29,8 +30,13 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DViewWorld;
-import org.jdesktop.wonderland.client.jme.utils.TexturedQuad;
+import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import com.jme.scene.state.TextureState;
+import java.nio.FloatBuffer;
+import com.jme.util.geom.BufferUtils;
+import com.jme.scene.TexCoords;
+import java.awt.Point;
 
 /**
  * A view onto a window which exists in the 3D world.
@@ -229,7 +235,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     }
 
     /**
-     * Returns the base node of the view. Ths is the root node of the view's scene graph.
+     * Returns the base node of the view. This is the root node of the view's scene graph.
      */
     public Node getBaseNode () {
 	if (baseNode == null) {
@@ -239,7 +245,17 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the frame of view. 
+     */
+    FrameWorldDefault getFrame () {
+	if (topLevel && frame == null) {
+	    update(CHANGED_TOP_LEVEL);
+	}
+	return frame;
+    }
+
+    /**
+     * {@inheritDoc}"
      */
     @Override
     public void update (int changeMask) {
@@ -247,7 +263,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	// The first time we are updated we need to create top part 
 	// of the view's scene graph (but it's not yet attached to its cell)
 	if (baseNode == null) {
-	    baseNode = new Node("ViewWorldDefault Node for cell " + getCell().getCellID().toString()); 
+	    baseNode = new Node(); 
 
 	    // There must be a node of this type as an ancestor of the textured panel
 	    // in order to receive events
@@ -369,19 +385,16 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /** Update the view's visibility */
     void updateVisibility() {
 	AppCell cell = getCell();
+	if (cell == null) return;
+	baseNode.setName("ViewWorldDefault Node for cell " + getCell().getCellID().toString());
+
 	visible = viewVisible && window.isVisible();
 	
 	if (visible && !connectedToCell) {
-	    if (cell == null) {
-		logger.warning("View is not attached to cell. Cannot make it visible");
-	    } else {
-		cell.attachView(this, RendererType.RENDERER_JME);
-		connectedToCell = true;
-	    }
+	    cell.attachView(this, RendererType.RENDERER_JME);
+	    connectedToCell = true;
 	} else if (!visible && connectedToCell) {
-	    if (cell != null) {
-		cell.detachView(this, RendererType.RENDERER_JME);
-	    }
+	    cell.detachView(this, RendererType.RENDERER_JME);
 	    connectedToCell = false;
 	}
     }
@@ -450,8 +463,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 * @param p3f A 3D world point.
 	 * @return The 2D position of the world point in the window
 	 * or null if the point is outside the window's geometry.
-	 */
-	/* TODO
+
+	// TODO: should I switch to using calcPositionInPixelCoordinates?
 	protected Point convertPoint3DTo2D (Point3f p3f) {
 	    // First calculate the actual coordinates of the corners of
 	    // the panel in world coords.
@@ -474,6 +487,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    // Now calculate the x and y coords relative to the panel
         
 	    float y = Math3D.pointLineDistance(topLeft,topRight,p3f);
+
 	    float y1 = Math3D.pointLineDistance(bottomLeft, bottomRight, p3f);
 	    float x = Math3D.pointLineDistance(topLeft,bottomLeft,p3f);
 	    float x1 = Math3D.pointLineDistance(topRight,bottomRight,p3f);
@@ -497,6 +511,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 * Returns the texture height.
 	 */
 	public abstract int getTextureHeight ();
+
+	/**
+	 * Returns the texture state.
+	 */
+	public abstract TextureState getTextureState ();
     }
 
     /** 
@@ -554,6 +573,17 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	public void updateTexture () {
 	    Window2D window2D = (Window2D) view.getWindow();
 	    Texture texture = window2D.getTexture();
+
+	    /* For debug
+	    java.awt.Image bi = Toolkit.getDefaultToolkit().getImage("/home/dj/wl/images/Monkey.png");
+	    Image image = TextureManager.loadImage(bi, false);
+	    Texture texture = new Texture2D();
+	    texture.setImage(image);
+	    texture.setMagnificationFilter(Texture.MagnificationFilter.Bilinear);
+	    texture.setMinificationFilter(Texture.MinificationFilter.BilinearNoMipMaps);
+	    texture.setApply(Texture.ApplyMode.Replace);
+	    */
+
 	    if (texture == null) {
 		// Texture hasn't been created yet. (This method will
 		// be called again when it is created).
@@ -562,22 +592,21 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
 	    quad.setTexture(texture);
 
-	    /* TODO: need this?
 	    float winWidth = (float) window2D.getWidth();
 	    float winHeight = (float) window2D.getHeight();
 
-            float texCoordW = winWidth / texture.getWidth();
-            float texCoordH = winHeight / texture.getHeight();
+	    Image image = texture.getImage();
+            float texCoordW = winWidth / image.getWidth();
+            float texCoordH = winHeight / image.getHeight();
             
             //logger.warning("TexCoords "+texCoordW+", "+texCoordH);
 
-            quad.setTextureCoordinates(0,0, new float[] {
-                texCoordW,1f,
-                0f,1f,
-                0f,1-texCoordH,
-                texCoordW,1-texCoordH
-            });
-	    */
+	    FloatBuffer tbuf = BufferUtils.createVector2Buffer(4);
+	    quad.setTextureCoords(new TexCoords(tbuf));
+	    tbuf.put(0f).put(0);
+	    tbuf.put(0f).put(texCoordH);
+	    tbuf.put(texCoordW).put(texCoordH);
+	    tbuf.put(texCoordW).put(0);
         } 
 
 	/**
@@ -592,6 +621,13 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 */
 	public int getTextureHeight () {
 	    return quad.getTexture().getImage().getHeight();
+	}
+
+	/**
+	 * Returns the texture state.
+	 */
+	public TextureState getTextureState () {
+	    return quad.getTextureState();
 	}
     }
 
@@ -615,6 +651,71 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	geometryObj.updateTexture();
 
 	baseNode.attachChild(newGeometryObj);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Point calcPositionInPixelCoordinates (Vector3f point) {
+        
+	Vector3f topLeft = new Vector3f( -width/2f, height/2f, 0f);
+	Vector3f topRight = new Vector3f( width/2f, height/2f, 0f);
+	Vector3f bottomLeft = new Vector3f( -width/2f, -height/2f, 0f);
+	Vector3f bottomRight = new Vector3f( width/2f, -height/2f, 0f);
+        
+	// Now calculate the x and y coords relative to the panel
+        
+	float y = pointLineDistance(topLeft,topRight,point);
+	float y1 = pointLineDistance(bottomLeft, bottomRight, point);
+        
+	float x = pointLineDistance(topLeft,bottomLeft,point);
+	float x1 = pointLineDistance(topRight,bottomRight,point);
+
+	if (y > height || y1> height || x>width || x1>width) {
+	    return null;
+	}
+        
+	int winWidth = ((Window2D)window).getWidth();
+	int winHeight = ((Window2D)window).getHeight();
+
+	//System.err.println("XY "+x+" "+y);
+	//System.err.println("XY "+(x/width)*winWidth+" "+(y/height)*winHeight);
+	return new Point((int)((x/width)*winWidth),(int)((y/height)*winHeight));
+    }
+
+    /**
+     * Calculates the distance of a point from a line.
+     * <p><code>
+     *    x1----------------------------x2 <br>
+     *                  |               <br>
+     *                  | distance      <br>
+     *                  |               <br>
+     *                 point            <br>
+     * </code>
+     * <p>
+     * The formula is <br>
+     * <code>
+     *      d = |(x2-x1) x (x1-p)| <br>
+     *          ------------------ <br>
+     *              |x2-x1|        <br>
+     * </code>
+     *
+     * Where p=point, lineStart=x1, lineEnd=x2
+     *
+     */
+    public static float pointLineDistance( final Vector3f lineStart, 
+					   final Vector3f lineEnd, 
+					   final Vector3f point ) {
+	Vector3f a = new Vector3f(lineEnd);
+	a.subtract(lineStart);
+        
+	Vector3f b = new Vector3f(lineStart);
+	b.subtract(point);
+        
+	Vector3f cross = new Vector3f();
+	cross.cross(a,b);
+        
+	return cross.length()/a.length();
     }
 
     /**
@@ -671,5 +772,27 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	}
     }
     */
+
+    public void forceTextureIdAssignment () {
+	if (geometryObj == null) {
+	    logger.warning("Trying to force texture id assignment while view geometry is null");
+	    return;
+	}
+	TextureState ts = geometryObj.getTextureState();
+	if (ts == null) {
+	    logger.warning("Trying to force texture id assignment while view texture state is null");
+	    return;
+	}
+	// The JME magic - must be called from within the render loop
+	ts.load();
+	
+	// Verify
+	Texture texture = ((Window2D)window).getTexture();
+	int texid = texture.getTextureId();
+	logger.warning("ViewWorldDefault: allocated texture id " + texid);
+	if (texid == 0) {
+	    logger.severe("Texture Id is still 0!!!");
+	}
+    }
 }
 

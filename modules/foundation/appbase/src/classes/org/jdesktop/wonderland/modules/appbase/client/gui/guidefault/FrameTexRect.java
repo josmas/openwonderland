@@ -23,7 +23,7 @@ import com.jme.scene.state.TextureState;
 import com.jme.system.DisplaySystem;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
-import org.jdesktop.wonderland.client.jme.utils.TexturedQuad;
+import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
 import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
