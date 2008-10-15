@@ -1,0 +1,89 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
+ */
+package org.jdesktop.wonderland.modules.swingtest.client;
+
+import org.jdesktop.wonderland.modules.appbase.client.AppType;
+import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
+import com.jme.math.Vector2f;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+/**
+ *
+ * A Swing test application.
+ *
+ * @author paulby,deronj
+ */
+
+@ExperimentalAPI
+public class SwingTestApp extends AppGraphics2D  {
+    
+    /** The single window created by this app */
+    private SwingTestWindow window;
+
+    /**
+     * Create a new instance of SwingTestApp. This in turn creates
+     * and makes visible the single window used by the app.
+     *
+     * @param appType The type of app (should be SwingTestAppType).
+     * @param width The width (in pixels) of the window.
+     * @param height The height (in pixels) of the window.
+     * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
+     */
+    public SwingTestApp (AppType appType, int width, int height, Vector2f pixelScale) {
+
+	// configWorld can be null because the server cell is already configured
+	super(appType, new ControlArbMulti(), pixelScale);
+	controlArb.setApp(this);
+
+	// This app has only one window, so it is always top-level 
+        try {
+            window = new SwingTestWindow(this, width, height, true, pixelScale);
+        } catch (InstantiationException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /** 
+     * Clean up resources.
+     */
+    public void cleanup () {
+	super.cleanup();
+	if (window != null) {
+	    window.setVisible(false);
+	    window.cleanup();
+	    window = null;
+	}
+    }
+
+    /**
+     * Returns the app's window.
+     */
+    public SwingTestWindow getWindow () {
+	return window;
+    }
+
+    /**
+     * Change the visibility of the app.
+     *
+     * @param visible Whether the application is visible.
+     */
+    public void setVisible (boolean visible) {
+	window.setVisible(visible);
+    }
+}

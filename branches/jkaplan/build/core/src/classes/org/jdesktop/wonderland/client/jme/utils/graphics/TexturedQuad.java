@@ -57,6 +57,7 @@ public class TexturedQuad extends Quad {
     /** The height in of the quad, in local coordinates. */
     private float height;
 
+    
     /**
      * Internal Only: Create a new instance of <code>TexturedQuad</code>. 
      * The width and height attributes must be supplied later by calling <code>initialize</code>. 
@@ -109,6 +110,13 @@ public class TexturedQuad extends Quad {
      */
     public Texture getTexture () {
 	return texture;
+    }
+
+    /**
+     * Returns this quad's TextureState.
+     */
+    public TextureState getTextureState () {
+	return (TextureState) getRenderState(RenderState.RS_TEXTURE);
     }
 
     /**
