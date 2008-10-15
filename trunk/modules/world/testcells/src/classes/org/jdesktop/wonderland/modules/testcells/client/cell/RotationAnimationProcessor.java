@@ -37,6 +37,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.TimingTarget;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
  * This is a simple test processor that rotates a node around the Y axis
@@ -44,7 +45,7 @@ import com.sun.scenario.animation.TimingTarget;
  * 
  * @author Doug Twilleager
  */
-public class RotationAnimationProcessor extends ProcessorComponent {     
+public class RotationAnimationProcessor extends ProcessorComponent implements TimingTarget {
     /**
      * The WorldManager - used for adding to update list
      */
@@ -54,11 +55,9 @@ public class RotationAnimationProcessor extends ProcessorComponent {
      */
     private float radians = 0.0f;
 
-    /**
-     * The increment to rotate each frame
-     */
-    private float increment = 0.0f;
-    
+    private float startRadians;
+    private float endRadians;
+
     /**
      * The rotation matrix to apply to the target
      */
@@ -77,13 +76,12 @@ public class RotationAnimationProcessor extends ProcessorComponent {
     /**
      * The constructor
      */
-    public RotationAnimationProcessor(String name, WorldManager worldManager, Node target, float increment) {
-        this.worldManager = worldManager;
+    public RotationAnimationProcessor(Node target, float startRadians, float endRadians) {
+        this.worldManager = ClientContextJME.getWorldManager();
         this.target = target;
-        this.increment = increment;
-        this.name = name;
-        setArmingCondition(new NewFrameCondition(this));
-
+        this.name = "RotationAnimationProcessor";
+        this.startRadians = startRadians;
+        this.endRadians = endRadians;
 //        Clip clip2 = Clip.create(1000, this, "angle", new Float(0), new Float(Math.PI*2));
     }
 
@@ -107,9 +105,6 @@ public class RotationAnimationProcessor extends ProcessorComponent {
      */
     public void initialize() {
 //        setArmingCondition(new NewFrameCondition(this));
-        Clip clip2 = Clip.create(1000, new RotationTimingTarget(0f, (float)Math.PI*2f));
-        
-        clip2.start();
     }
     
     /**
@@ -128,35 +123,26 @@ public class RotationAnimationProcessor extends ProcessorComponent {
         worldManager.addToUpdateList(target);
     }
     
-    class RotationTimingTarget implements TimingTarget {
 
-        private float startAngle;
-        private float endAngle;
-
-        public RotationTimingTarget(float startAngle, float endAngle) {
-            this.startAngle = startAngle;
-            this.endAngle = endAngle;
-        }
-
-        public void timingEvent(float fraction, long totalElapsed) {
-            radians = (endAngle-startAngle)*fraction;
-        }
-
-        public void begin() {
-            setArmingCondition(new NewFrameCondition(RotationAnimationProcessor.this));
-        }
-
-        public void end() {
-            setArmingCondition(null);
-        }
-
-        public void pause() {
-            setArmingCondition(null);
-        }
-
-        public void resume() {
-            setArmingCondition(new NewFrameCondition(RotationAnimationProcessor.this));
-        }
-        
+    public void timingEvent(float fraction, long totalElapsed) {
+        radians = (endRadians-startRadians)*fraction;
     }
+
+    public void begin() {
+        setArmingCondition(new NewFrameCondition(RotationAnimationProcessor.this));
+    }
+
+    public void end() {
+        setArmingCondition(null);
+    }
+
+    public void pause() {
+        setArmingCondition(null);
+    }
+
+    public void resume() {
+        setArmingCondition(new NewFrameCondition(RotationAnimationProcessor.this));
+    }
+        
+
 }

@@ -19,33 +19,23 @@ package org.jdesktop.wonderland.modules.testcells.client.cell;
 
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.mtgame.processor.RotationProcessor;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import com.jme.scene.Node;
+import com.sun.scenario.animation.Clip;
+import com.sun.scenario.animation.Interpolators;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * An event listener which toggles the spinning state of an object when an button press event occurs over it.
- * To use this in a scene just add this to any entities you wish to make input sensitive via
- * <code>this.addToEntity</code>.
- * <br><br>
- * Example Usage:
- * <br><br>
- * <code>
- * SpinObjectEventListener spinListener = new SpinObjectEventListener();
- * <br>
- * spinListener.addToEntity(entity);
- * </code>
- *
- * @author deronj
+ * @author paulby
  */
 
 @ExperimentalAPI
 public class SpinAnimObjectEventListener extends EventClassListener {
 
+     private Clip clip2;
+        
     /**
      * Consume only mouse button events.
      */
@@ -65,45 +55,29 @@ public class SpinAnimObjectEventListener extends EventClassListener {
 	    return;
 	}
 	Entity entity = event.getEntity();
-	SpinProcessor spinner = (SpinProcessor) entity.getComponent(SpinProcessor.class);
-	if (spinner != null) {
-	    // Stop the spinning
-	    spinner.stop();
-	    entity.removeComponent(SpinProcessor.class);
-	} else {
-	    // Start the spinning
-	    try {
-		entity.addComponent(SpinProcessor.class, new SpinProcessor(entity));
-	    } catch (InstantiationException ex) {
-		// Can't spin an unspinnable entity
-	    }
-	}
+	RotationAnimationProcessor spinner = (RotationAnimationProcessor) entity.getComponent(RotationAnimationProcessor.class);
+	if (spinner == null) {
+            Node node = getSceneRoot(entity);
+            if (node==null)
+                return;
+
+	    spinner = new RotationAnimationProcessor(node, 0f, (float)Math.PI*2f);
+            clip2 = Clip.create(1000, spinner);
+            clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
+            entity.addComponent(RotationAnimationProcessor.class, spinner);
+        }
+
+        if (!clip2.isRunning())
+            clip2.start();
     }
 
-    /** 
-     * A component which animates an object to spin around the Y axis.
-     */
-    private static class SpinProcessor extends RotationAnimationProcessor {
-        
-	SpinProcessor (Entity entity) throws InstantiationException {
-	    super("Spinner", ClientContextJME.getWorldManager(), getNode(entity), 10);
-	}
-
-	void stop () {
-	    setArmingCondition(null);
-	}
-
-	static Node getNode (Entity entity) throws InstantiationException {
-	    RenderComponent renderComp = (RenderComponent) entity.getComponent(RenderComponent.class);
-	    if (renderComp == null) {
-		throw new InstantiationException("Enity has no render component");
-	    }
-	    Node node = renderComp.getSceneRoot();
-	    if (node == null) {
-		throw new InstantiationException("Entity has no scene graph");
-	    }
-	    return node;
-	}
+    static Node getSceneRoot (Entity entity) {
+        RenderComponent renderComp = (RenderComponent) entity.getComponent(RenderComponent.class);
+        if (renderComp == null) {
+            return null;
+        }
+        Node node = renderComp.getSceneRoot();
+        return node;
     }
 }
 
