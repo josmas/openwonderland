@@ -27,13 +27,18 @@
                     <include name="${module.src}/common/**"/>
                 </client> 
                 
-                <server basedir="${build.classes.dir}">
+                <server>
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.sample.server.SampleCellSetup"/>
                     </cellsetup>
                     
-                    <include name="${module.src}/server/**"/>
-                    <include name="${module.src}/common/**"/>
+                    <fileset dir="${build.classes.dir}">
+                        <include name="${module.src}/server/**"/>
+                        <include name="${module.src}/common/**"/>
+                    </fileset>
+                    <fileset dir="${javasrc.dir}">
+                        <include name="${module.src}/client/SampleCell.java"/>
+                    </fileset>
                 </server>
             </plugin>
         </module>

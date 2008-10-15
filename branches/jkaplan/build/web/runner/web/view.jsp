@@ -75,6 +75,9 @@
                 service.status_text = service.status;
         }
         
+        service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name=' + service.name,
+                                             'target': '_top'}).update("edit"));
+        
         if (service.hasLog) {
             service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name=' + service.name,
                                                  'target': '_top'}).update("log"));
