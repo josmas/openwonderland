@@ -75,6 +75,20 @@ public abstract class App2D extends App {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCell (AppCell cell) {
+	super.setCell(cell);
+
+	// Do an updateAll on all windows currently attached to this app
+	for (Window window : windows) {
+	    ((Window2D)window).updateAll();
+	}
+    }
+
+    /**
+    /**
      * Add a window to this app. It is added on top of the app's window stack.
      *
      * @param window The window to add.

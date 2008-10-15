@@ -38,10 +38,10 @@ public class FrameWorldDefault extends Window2DFrame {
     private static final Logger logger = Logger.getLogger(FrameWorldDefault.class.getName());
 
     /** The height of the header */
-    public static final float HEADER_HEIGHT = /* 0.2f */ 6.3f;
+    public static final float HEADER_HEIGHT = /* 0.2f */ /*6.3f*/ 1.25f;
 
     /** The thickness (in the plane of the frame) of the other parts of the border */
-    public static final float SIDE_THICKNESS = /*0.07f*/ 3.0f;
+    public static final float SIDE_THICKNESS = /*0.07f*/ /* 3.0f */ 0.75f;
 
     /** The width of the resize corner - currently the same as a header height */
     public static final float RESIZE_CORNER_WIDTH = HEADER_HEIGHT;
@@ -70,9 +70,6 @@ public class FrameWorldDefault extends Window2DFrame {
      */
     protected Node frameNode;
 
-    /** The frame's geometry is connected to its cell */
-    protected boolean connectedToCell;
-
     /**
      * Create a new instance of FrameWorldDefault.
      *
@@ -90,10 +87,10 @@ public class FrameWorldDefault extends Window2DFrame {
 	frameNode = new Node("FrameWorldDefault Node");
 
 	frameNode.attachChild(header);
-	//frameNode.attachChild(leftSide);
-	//frameNode.attachChild(rightSide);
-	//frameNode.attachChild(bottomSide);
-	//frameNode.attachChild(resizeCorner);	
+	frameNode.attachChild(leftSide);
+	frameNode.attachChild(rightSide);
+	frameNode.attachChild(bottomSide);
+	frameNode.attachChild(resizeCorner);	
 
 	updateVisibility();
     }
@@ -135,6 +132,13 @@ public class FrameWorldDefault extends Window2DFrame {
     }
 
     /**
+     * Returns the root node of the frame scene graph.
+     */
+    Node getBaseNode () {
+	return frameNode;
+    }
+
+    /**
      * Disconnect the frame components from the frame's window view.
      */
     void disconnect () {
@@ -155,11 +159,6 @@ public class FrameWorldDefault extends Window2DFrame {
 	}
 	if (resizeCorner != null) {
 	    frameNode.detachChild(resizeCorner);
-	}
-
-	AppCell cell = getCell();
-	if (cell != null && connectedToCell) {
-//TODO	    cell.detachLocalChild(frameNode);
 	}
     }
 
@@ -197,20 +196,6 @@ public class FrameWorldDefault extends Window2DFrame {
 
 	((ViewWorldDefault)view).updateVisibility();
 	boolean viewIsVisible = ((ViewWorldDefault)view).getActuallyVisible();
-
-	if (viewIsVisible && !connectedToCell) {
-	    if (cell == null) {
-		logger.warning("Frame is not attached to cell. Cannot make it visible");
-	    } else {
-		//TODO:cell.attachLocalChild(frameNode);
-		connectedToCell = true;
-	    }
-	} else {
-	    if (cell != null) {
-//TODO		cell.detachLocalChild(frameNode);
-	    }
-	    connectedToCell = false;
-	}
 
 	updateControl(controlArb);
     }

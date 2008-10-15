@@ -70,7 +70,7 @@ public class GraphicsUtils {
     /**
      * Print the attributes of the given image and a small subset of its contents.
      */
-    private static void printImage (Image image) {
+    public static void printImage (Image image) {
 	System.err.println("Image = " + image);
 	if (image == null) return;
 
@@ -80,14 +80,14 @@ public class GraphicsUtils {
 	int h = image.getHeight();
 	System.err.println("width/height = " + w + " " + h);
 
-	//ByteBuffer data = image.getData();
-	//printImageContentsSubset(data, w, h);
+	ByteBuffer data = image.getData(0);
+	printImageContentsSubset(data, w, h);
     }
 
     /**
      * Print the pertinent attributes of the given texture.
      */
-    private static void printTexture (Texture texture) {
+    public static void printTexture (Texture texture) {
 	System.err.println("texture = " + texture);
 	if (texture == null) return;
 

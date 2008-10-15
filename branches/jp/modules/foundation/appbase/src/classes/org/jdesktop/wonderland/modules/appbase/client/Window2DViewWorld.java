@@ -17,7 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import com.jme.math.Vector3f;
+import java.awt.Point;
 
 /**
  * An interface used by view world objects provided by the gui factory.
@@ -71,4 +72,13 @@ public interface Window2DViewWorld {
      * Returns the visibility of the view (independent of the window)
      */
     public boolean getVisible ();
+
+    /**
+     * Transform the given 3D point in local coordinates into the corresponding point
+     * in the pixel space of the window image. The given point must be on the surface of the window.
+     * @param point The point to transform.
+     * @return the 2D position of the pixel space the window's image, or null if the point is not within the window
+     * or is not on the surface of the window.
+     */
+    public Point calcPositionInPixelCoordinates (Vector3f point);
 }

@@ -51,8 +51,9 @@ public class FrameHeader extends FrameSide {
     public FrameHeader (Window2DView view, LinkedList<Window2DFrame.CloseListener> closeListeners) {
 	super("FrameHeader", view, Side.TOP, null/*TODO new Gui2DSide(view)*/);
 
-	closeButton = new FrameCloseButton(view, closeListeners);
-	attachChild(closeButton);
+	// TODO
+	//closeButton = new FrameCloseButton(view, closeListeners);
+	//attachChild(closeButton);
 
 	title = new FrameLabelTitle(view, gui);
 	attachChild(title);

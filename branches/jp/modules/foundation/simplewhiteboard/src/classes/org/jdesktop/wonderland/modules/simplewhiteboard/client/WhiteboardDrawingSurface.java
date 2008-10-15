@@ -192,8 +192,15 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
     public void erase() {
         Graphics2D g = getGraphics();
         setClip(g, true);
+	/* TODO: bug: this should fill the image with white, but it doesn't
         g.setBackground(Color.WHITE);
         g.clearRect(0, 0, getWidth(), getHeight());
+	*/
+	/* Bug workaround */
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, getWidth(), getHeight());
+	/**/
+
         setClip(g, false);
     }
     
@@ -202,6 +209,8 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
     }
     
     protected void initSurface (Graphics2D g) {
+	erase();
+
 	// Note: this works only when we always draw
 	// the buttons on the left side of the window.
         for (Button b : buttons) {
