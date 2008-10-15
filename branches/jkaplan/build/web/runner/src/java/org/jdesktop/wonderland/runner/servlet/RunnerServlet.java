@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
@@ -159,7 +160,7 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
         if (button.equalsIgnoreCase("Save")) {
             doEditSave(request, response, de);
         } else if (button.equalsIgnoreCase("Cancel")) {
-            response.sendRedirect("run");
+            redirectToRun(response);
         } else {
             doEdit(request, response, runner, de);
         }
@@ -178,7 +179,20 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
         dp.addEntry(de);
         dm.savePlan();
         
-        response.sendRedirect("run");
+        redirectToRun(response);
+    }
+    
+    protected void redirectToRun(HttpServletResponse response) 
+        throws IOException
+    {
+        String page = "/wonderland-web-runner/run";
+        String url = "/wonderland-web-front/admin?pageURL=" +
+                URLEncoder.encode(page, "utf-8");
+        
+        response.getWriter().println("<script>");
+        response.getWriter().println("parent.location.replace('" + url + "');");
+        response.getWriter().println("</script>");
+        response.getWriter().close();
     }
     
     protected DeploymentEntry getEntry(HttpServletRequest request) 
