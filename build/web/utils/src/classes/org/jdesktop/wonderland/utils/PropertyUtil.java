@@ -169,7 +169,7 @@ public class PropertyUtil {
             
             // resolve the result as a system property -- don't do recursive
             // substitution
-            String res = getProperty(expr, resolvers, defVal, false);
+            String res = getProperty(expr, resolvers, defVal, true);
             if (res == null && defVal != null) {
                 // use the default
                 res = defVal;
