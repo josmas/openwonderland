@@ -85,9 +85,6 @@ public class RotationAnimationProcessor extends ProcessorComponent {
         setArmingCondition(new NewFrameCondition(this));
 
 //        Clip clip2 = Clip.create(1000, this, "angle", new Float(0), new Float(Math.PI*2));
-        Clip clip2 = Clip.create(1000, new RotationTimingTarget(0f, (float)Math.PI*2f));
-        
-        clip2.start();
     }
 
 //    public void setAngle(float radians) {
@@ -110,6 +107,9 @@ public class RotationAnimationProcessor extends ProcessorComponent {
      */
     public void initialize() {
 //        setArmingCondition(new NewFrameCondition(this));
+        Clip clip2 = Clip.create(1000, new RotationTimingTarget(0f, (float)Math.PI*2f));
+        
+        clip2.start();
     }
     
     /**
@@ -122,22 +122,24 @@ public class RotationAnimationProcessor extends ProcessorComponent {
      * The commit method
      */
     public void commit(ProcessorArmingCollection collection) {
-        synchronized(quaternion) {
-            System.out.println("Commit "+radians);
-            quaternion.fromAngles(0.0f, radians, 0.0f);
-            target.setLocalRotation(quaternion);
-            worldManager.addToUpdateList(target);
-        }
+        System.out.println("Commit "+radians);
+        quaternion.fromAngles(0.0f, radians, 0.0f);
+        target.setLocalRotation(quaternion);
+        worldManager.addToUpdateList(target);
     }
     
     class RotationTimingTarget implements TimingTarget {
-        
+
+        private float startAngle;
+        private float endAngle;
+
         public RotationTimingTarget(float startAngle, float endAngle) {
-            
+            this.startAngle = startAngle;
+            this.endAngle = endAngle;
         }
 
-        public void timingEvent(float arg0, long arg1) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public void timingEvent(float fraction, long totalElapsed) {
+            radians = (endAngle-startAngle)*fraction;
         }
 
         public void begin() {
@@ -145,15 +147,15 @@ public class RotationAnimationProcessor extends ProcessorComponent {
         }
 
         public void end() {
-            setArmingCon
+            setArmingCondition(null);
         }
 
         public void pause() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            setArmingCondition(null);
         }
 
         public void resume() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            setArmingCondition(new NewFrameCondition(RotationAnimationProcessor.this));
         }
         
     }
