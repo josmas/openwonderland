@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.ShapeRe
  * @deprecated
  * @author paulby
  */
-public class MouseSpinCell extends Cell {
+public class MouseSpinCell extends SimpleShapeCell {
     
     public MouseSpinCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -38,23 +38,10 @@ public class MouseSpinCell extends Cell {
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        CellRenderer ret = null;
-        switch(rendererType) {
-            case RENDERER_2D :
-                // No 2D Renderer yet
-                break;
-            case RENDERER_JME :
-                ret= new ShapeRenderer(this);
-                break;                
-        }
+        CellRenderer ret = super.createCellRenderer(rendererType);
 
-
-        SpinObjectEventListener spinEventListener = new SpinObjectEventListener();
+        SpinAnimObjectEventListener spinEventListener = new SpinAnimObjectEventListener();
         spinEventListener.addToEntity(((CellRendererJME)ret).getEntity());
-
-        MouseEvent3DLogger mouseEventListener =
-			new MouseEvent3DLogger(getCellID().toString());
-        mouseEventListener.addToEntity(((CellRendererJME)ret).getEntity());
 
         return ret;
     }
