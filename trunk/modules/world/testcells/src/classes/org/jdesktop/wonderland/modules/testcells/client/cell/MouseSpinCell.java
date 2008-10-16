@@ -17,12 +17,23 @@
  */
 package org.jdesktop.wonderland.modules.testcells.client.cell;
 
+import com.jme.math.Vector3f;
+import com.jme.scene.Node;
+import com.sun.scenario.animation.Clip;
+import com.sun.scenario.animation.Interpolators;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorCollectionComponent;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.test.MouseEvent3DLogger;
 import org.jdesktop.wonderland.client.jme.input.test.SpinObjectEventListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.ShapeRenderer;
+import org.jdesktop.wonderland.modules.testcells.client.timingframework.RotationAnimationProcessor;
+import org.jdesktop.wonderland.modules.testcells.client.timingframework.TranslationAnimationProcessor;
+import org.jdesktop.wonderland.modules.testcells.client.timingframework.util.Mouse3DTrigger;
+import org.jdesktop.wonderland.modules.testcells.client.timingframework.util.Mouse3DTriggerEvent;
 
 /**
  * Test for mouse over spin
@@ -40,11 +51,36 @@ public class MouseSpinCell extends SimpleShapeCell {
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         CellRenderer ret = super.createCellRenderer(rendererType);
 
-        SpinAnimObjectEventListener spinEventListener = new SpinAnimObjectEventListener();
-        spinEventListener.addToEntity(((CellRendererJME)ret).getEntity());
+        Entity entity = ((CellRendererJME)ret).getEntity();
+
+        Node node = getSceneRoot(entity);
+        Vector3f currentLoc = node.getLocalTranslation();
+        Vector3f dest = new Vector3f(currentLoc);
+        dest.y+=0.3;
+
+        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, node, 0f, (float)Math.PI*2f);
+        TranslationAnimationProcessor trans = new TranslationAnimationProcessor(entity, node, currentLoc, dest);
+        Clip clip2 = Clip.create(1000, spinner);
+        clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
+
+        Mouse3DTrigger.addTrigger(entity, clip2, Mouse3DTriggerEvent.PRESS);
+
+        Clip clip = Clip.create(500, Clip.INDEFINITE, trans);
+        clip.setAutoReverse(true);
+        clip.start();
+//        Mouse3DTrigger.addTrigger(entity, clip, Mouse3DTriggerEvent.ENTER);
 
         return ret;
     }
     
+
+    static Node getSceneRoot (Entity entity) {
+        RenderComponent renderComp = (RenderComponent) entity.getComponent(RenderComponent.class);
+        if (renderComp == null) {
+            return null;
+        }
+        Node node = renderComp.getSceneRoot();
+        return node;
+    }
 
 }
