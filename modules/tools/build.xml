@@ -8,7 +8,6 @@
         <include name="server-manager/build.xml"/>
         <include name="audio-manager/build.xml"/>
         <include name="voicebridge/build.xml"/>
-        <include name="phone/build.xml"/>
 <!--        <include name="phone/build.xml"/> -->
     </fileset>
     
