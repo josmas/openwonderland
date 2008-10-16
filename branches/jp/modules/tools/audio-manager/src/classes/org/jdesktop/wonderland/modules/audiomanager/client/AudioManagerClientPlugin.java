@@ -17,7 +17,7 @@
  * $Date:$
  * $State:$
  */
-package org.jdesktop.wonderland.audiomanager.client;
+package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.util.logging.Logger;
 

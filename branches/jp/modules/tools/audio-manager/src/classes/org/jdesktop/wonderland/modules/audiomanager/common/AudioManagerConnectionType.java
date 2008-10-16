@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.audiomanager.common;
+package org.jdesktop.wonderland.modules.audiomanager.common;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
