@@ -24,7 +24,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.util.prefs.Preferences;
 
 import java.io.File;
 import java.io.BufferedReader;
@@ -33,14 +32,13 @@ import java.io.OutputStream;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 public class SoftphoneControlImpl {
     private static final Logger logger =
             Logger.getLogger(SoftphoneControlImpl.class.getName());
 
     public static final String SOFTPHONE_PROP =
-            "com.sun.mc.softphone.jar";
+            "org.jdesktop.wonderland.client.softphone.jar";
     
     private Process softphoneProcess;
     private OutputStream softphoneOutputStream;

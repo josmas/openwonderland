@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-web" default="build" basedir=".">    
-    <target name="build">
-       <!-- workaround for some issues with NetBeans projects, particularly
-            the tendency of NetBeans to remove the j2ee.platform.classpath
-            variable -->
-       <property name="j2ee.platform.classpath"
-                 location="${web.glassfish.dir}/glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar"/>       
-       <propertyset id="web.project.properties">
-           <propertyref name="j2ee.platform.classpath"/>
-       </propertyset>
-
+    <target name="build" depends="-set-j2ee-platform">
        <ant dir="utils"   target="jar"/>
        <ant dir="wfs"     target="dist" inheritall="false">
           <propertyset refid="web.project.properties"/> 
@@ -30,10 +21,25 @@
          explicitly depend on to avoid duplication.  Don't use this
          directly, call the top level "package" target instead, since
          that will build everything that is needed. -->
-    <target name="-package">
+    <target name="-package" depends="-set-j2ee-platform">
+        <ant dir="runner" target="package" inheritall="false">
+            <propertyset refid="web.project.properties"/> 
+        </ant>
+       
         <ant dir="server" target="package" inheritall="false">
             <property name="server.package.dir" value="${server.package.dir}"/>
         </ant>
+    </target>
+    
+    <!-- workaround for some issues with NetBeans projects, particularly
+         the tendency of NetBeans to remove the j2ee.platform.classpath
+         variable. -->
+    <target name="-set-j2ee-platform">
+       <property name="j2ee.platform.classpath"
+                 location="${web.glassfish.dir}/glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar"/>       
+       <propertyset id="web.project.properties">
+           <propertyref name="j2ee.platform.classpath"/>
+       </propertyset>
     </target>
     
     <target name="run-web" depends="build, -set-server-package-dir, -package">
