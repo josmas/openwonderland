@@ -27,9 +27,30 @@ package org.jdesktop.wonderland.client.cell;
 public interface TransformChangeListener {
 
     /**
+     * The source, or originator of a transform change.
+     */
+    public enum ChangeSource {
+        /**
+         * The change was originated from the local client
+         */
+        LOCAL,
+
+        /**
+         * Change was originated from a remote client
+         */
+        REMOTE,
+
+        /**
+         * The change was originated by the server because a previous
+         * transform was illegal
+         */
+        SERVER_ADJUST };
+
+    /**
      * Called when the cells transform has changed.
      * 
-     * @param cell
+     * @param cell the cells whos transform has changed
+     * @param changeSource the source or originator of the change
      */
-    public void transformChanged(Cell cell);
+    public void transformChanged(Cell cell, ChangeSource source);
 }

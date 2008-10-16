@@ -93,15 +93,6 @@ public class JmeClientMain {
     }
 
     /**
-     * @deprecated 
-     * @return
-     */
-    static WorldManager getWorldManager() {
-        return ClientContextJME.getWorldManager();
-    }
-    
-    
-    /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
@@ -168,7 +159,10 @@ public class JmeClientMain {
 		}
     	    });
     }
-    
+
+    /**
+     * Load system properties and properties from the named file
+     */
     /**
      * Returns the frame of the Wonderland client window.
      */
@@ -193,17 +187,4 @@ public class JmeClientMain {
         return props;
     }
     
-//    class NodeMoveListener implements GeometricUpdateListener {
-//
-//        private ClientManager clientManager;
-//        
-//        public NodeMoveListener(ClientManager clientManager) {
-//            this.clientManager = clientManager;
-//        }
-//        
-//        public void geometricDataChanged(Spatial arg0) {
-//            clientManager.nodeMoved(arg0);
-//        }
-//        
-//    }
 }

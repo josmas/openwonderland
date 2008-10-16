@@ -71,12 +71,16 @@ public class ProximityComponent extends CellComponent {
      * must enclose localBounds[i+1]
      * 
      * @param cell the cell
-     * @param localProximityBounds the proximity bounds in cell local coordinates
      */
     public ProximityComponent(Cell cell) {
         super(cell);
     }
     
+    /**
+     * Add a proximity listener.
+     * @param listener the listener that will be notified
+     * @param localBounds the array of bounds (in cell local coordinates) for which the listener will be notified
+     */
     public void addProximityListener(ProximityListener listener, BoundingVolume[] localBounds) {
         synchronized(listenerRecords) {
            ListenerRecord lr = new ListenerRecord(listener, localBounds);
@@ -86,6 +90,11 @@ public class ProximityComponent extends CellComponent {
         }
     }
     
+    /**
+     * Remove the specified listener. Does nothing if the listener is not already
+     * attached to this ProximityComponent
+     * @param listener the listener to remove
+     */
     public void removeProximityListener(ProximityListener listener) {
         synchronized(listenerRecords) {
             listenerRecords.remove(new ListenerRecord(listener, null));
@@ -126,7 +135,7 @@ public class ProximityComponent extends CellComponent {
     class ViewTransformListener implements TransformChangeListener {
 
         
-        public void transformChanged(Cell cell) {
+        public void transformChanged(Cell cell, ChangeSource source) {
             
             synchronized(listenerRecords) {
                 for(ListenerRecord l : listenerRecords) {
@@ -143,7 +152,7 @@ public class ProximityComponent extends CellComponent {
      */
     class CellTransformListener implements TransformChangeListener {
 
-        public void transformChanged(Cell cell) {
+        public void transformChanged(Cell cell, ChangeSource source) {
             synchronized(listenerRecords) {
                 for(ListenerRecord l : listenerRecords) {
                     l.updateWorldBounds();
@@ -155,7 +164,10 @@ public class ProximityComponent extends CellComponent {
         }
         
     }
-    
+
+    /**
+     * Internal structure containing the array of bounds for a given listener.
+     */
     class ListenerRecord {
         ProximityListener proximityListener;
         BoundingVolume[] localProxBounds;
@@ -192,7 +204,11 @@ public class ProximityComponent extends CellComponent {
                 i++;
             }
         }
-        
+
+        /**
+         * The cell world bounds have been updated, so update our internal
+         * structures
+         */
         private void updateWorldBounds() {
             if (localProxBounds==null)
                 return;
@@ -208,7 +224,11 @@ public class ProximityComponent extends CellComponent {
                 }
             }        
         }
-        
+
+        /**
+         * The cells transform has changed so update our internal structures
+         * @param cell
+         */
         public void transformChanged(Cell cell) {
             Vector3f worldTransform = cell.getWorldTransform().getTranslation(null);
             

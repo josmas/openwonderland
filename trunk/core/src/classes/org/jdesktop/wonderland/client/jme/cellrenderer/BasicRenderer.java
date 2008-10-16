@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
+import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
@@ -122,6 +123,8 @@ public abstract class BasicRenderer implements CellRendererJME {
         private boolean dirty = false;
         private Node node;
         private WorldManager worldManager;
+
+        private boolean isChained = false;
         
         public MoveProcessor(WorldManager worldManager, Node node) {
             this.node = node;
@@ -138,9 +141,11 @@ public abstract class BasicRenderer implements CellRendererJME {
                 if (dirty) {
                     node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
                     node.setLocalRotation(cellTransform.getRotation(tmpQuat));
-                    //System.err.println("BasicRenderer.cellMoved "+tmpV3f);
+//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f);
                     dirty = false;
                     worldManager.addToUpdateList(node);
+                    if (!isChained)
+                        setArmingCondition(null);
                 }
             }
             //System.out.println("--------------------------------");
@@ -148,7 +153,6 @@ public abstract class BasicRenderer implements CellRendererJME {
 
         @Override
         public void initialize() {
-            setArmingCondition(new NewFrameCondition(this));           
         }
 
         /**
@@ -160,9 +164,13 @@ public abstract class BasicRenderer implements CellRendererJME {
             synchronized(this) {
                 this.cellTransform = transform;
                 dirty = true;
+                if (!isChained)
+                    setArmingCondition(new NewFrameCondition(this));
             }
         }
 
-
+        public void setChained(boolean isChained) {
+            this.isChained = isChained;
+        }
     }
 }

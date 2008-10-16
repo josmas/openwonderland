@@ -119,6 +119,7 @@ public class MovableComponent extends CellComponent {
                         CellTransform actualTransform = new CellTransform(msg.getRotation(), msg.getTranslation());
                         int reason = 1;
                         listener.moveModified(requestedTransform, reason, actualTransform);
+                        // TODO Trigger a cell move with the SERVER_ADJUST source
                     }
                 });
         } else {
@@ -139,7 +140,7 @@ public class MovableComponent extends CellComponent {
      */
     public void localMoveRequest(CellTransform transform) {
         localMoveRequest(transform, null);
-        cell.setLocalTransform(transform);
+        cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.LOCAL);
     }
     
     /**
@@ -148,7 +149,7 @@ public class MovableComponent extends CellComponent {
      * @param transform
      */
     protected void serverMoveRequest(CellTransform transform) {
-        cell.setLocalTransform(transform);
+        cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.REMOTE);
 //        if (cell.getTransform()!=null)
 //            System.out.println("serverMoveRequest "+cell.getTransform().getTranslation(null)+"  "+cell);
 //        else

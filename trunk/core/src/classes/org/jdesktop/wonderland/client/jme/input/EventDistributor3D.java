@@ -87,6 +87,11 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	if (event instanceof MouseEvent3D) {
 	    ((MouseEvent3D)event).setPickDetails((PickDetails)null);
 	}
+        
+        if (event instanceof InputEvent3D) {
+            ((InputEvent3D)event).setPickInfo(pickInfo);
+        }
+
 	tryGlobalListeners(event);
 
 	// Start out the entity search assuming no propagation to unders

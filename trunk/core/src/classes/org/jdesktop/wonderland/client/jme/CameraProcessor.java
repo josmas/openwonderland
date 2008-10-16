@@ -30,16 +30,19 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 public abstract class CameraProcessor extends ProcessorComponent {
 
     protected CameraNode cameraNode;
-    protected WorldManager wm;
-    
-    public CameraProcessor(CameraNode cameraNode, WorldManager wm) {
+
+    /**
+     * Create a CameraProcessor for the specified cameraNode.
+     *
+     * @param cameraNode the cameraNode this processor will manipulate
+     */
+    public CameraProcessor(CameraNode cameraNode) {
         this.cameraNode = cameraNode;
-        this.wm = wm;
     }
     
     /**
      * The view cell has moved, update the camera position
-     * @param worldTransform
+     * @param worldTransform the worldTransform of the view cell
      */
     public abstract void viewMoved(CellTransform worldTransform);
 }

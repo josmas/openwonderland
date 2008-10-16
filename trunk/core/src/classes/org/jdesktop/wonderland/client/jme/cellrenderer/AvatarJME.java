@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
+import com.jme.bounding.BoundingSphere;
 import com.jme.light.PointLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
@@ -46,14 +47,14 @@ public class AvatarJME extends BasicRenderer {
         super(cell);
     }
 
-    @Override
-    protected Entity createEntity() {
-        Entity ret = super.createEntity();
-        WorldManager wm = ClientContextJME.getWorldManager();
-               
-                                
-        return ret;
-    }
+//    @Override
+//    protected Entity createEntity() {
+//        Entity ret = super.createEntity();
+//        WorldManager wm = ClientContextJME.getWorldManager();
+//
+//
+//        return ret;
+//    }
 
     @Override
     protected Node createSceneGraph(Entity entity) {
@@ -98,6 +99,9 @@ public class AvatarJME extends BasicRenderer {
         ret.setRenderState(buf);
         ret.setRenderState(ls);
         ret.setLocalTranslation(xoff, yoff, zoff);
+
+        ret.setModelBound(new BoundingSphere());
+        ret.updateModelBound();
 
         return ret;
     }

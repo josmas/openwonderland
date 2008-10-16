@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * Provides global static access to the various client subsystems.
@@ -34,8 +35,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public class ClientContext {
 
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
-    private static WonderlandSessionManager sessionManager = null;
     private static InputManager inputManager=null;
+    private static WonderlandSessionManager sessionManager = new WonderlandSessionManager();
     
     /**
      * Return the CellCache if the session has one, otherwise
@@ -54,6 +55,7 @@ public class ClientContext {
      * than once a RuntimeException will be thrown;
      * @param clientCellCache
      */
+    @InternalAPI
     public static void registerCellCache(CellCache clientCellCache, WonderlandSession session) {
         if (cellCaches==null) {
             cellCaches = new HashMap();
@@ -66,16 +68,6 @@ public class ClientContext {
     }
     
     /**
-     * Return the WonderlandSessionManager for this client
-     * 
-     */
-    public static WonderlandSessionManager getWonderlandSessionManager() {
-        if (sessionManager==null)
-            sessionManager = new WonderlandSessionManager();
-        return sessionManager;
-    }
-    
-    /**
      * Return the CellManager for this client
      * @return
      */
@@ -83,6 +75,11 @@ public class ClientContext {
         return CellManager.getCellManager();
     }
     
+    /**
+     * 
+     * @param regInputManager
+     */
+    @InternalAPI
     public static void registerInputManager(InputManager regInputManager) {
         if (inputManager!=null)
             throw new RuntimeException("registerInputManager can only be called once");
@@ -92,5 +89,9 @@ public class ClientContext {
 
     public static InputManager getInputManager() {
         return inputManager;
+    }
+
+    public static WonderlandSessionManager getWonderlandSessionManager() {
+        return sessionManager;
     }
 }
