@@ -4,8 +4,8 @@
     <dirname property="current.dir" file="${ant.file.audio-manager}"/>
     <property name="modules.dir" location="${current.dir}/../.."/>
         
-    <property name="module.src" value="org/jdesktop/wonderland/audiomanager"/>
-    <property name="module.packagename" value="org.jdesktop.wonderland.audiomanager"/>
+    <property name="module.src" value="org/jdesktop/wonderland/modules/audiomanager"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.audiomanager"/>
     <property name="module.jarname" value="audiomanager"/>
     <property name="module.plugins" value="AudioManagerServerPlugin AudioManagerClientPlugin"/>
 
@@ -30,14 +30,14 @@
                 builddir="${build.lib.dir}">
             <plugin name="audiomanager">
                 <client basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.audiomanager.client.AudioManagerClientPlugin"/>
+                    <clientplugin provider="org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlugin"/>
 
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </client>
                 
                 <server basedir="${build.classes.dir}">
-                    <serverplugin provider="org.jdesktop.wonderland.audiomanager.server.AudioManagerServerPlugin"/>
+                    <serverplugin provider="org.jdesktop.wonderland.modules.audiomanager.server.AudioManagerServerPlugin"/>
                     
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>                   
