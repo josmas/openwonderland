@@ -20,7 +20,7 @@
     </target>
     
     <!-- unpack zips -->
-    <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-scenegraph">
+    <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-scenegraph, unpack-javolution">
         <!-- darkstar -->
    	<unpack-lib-zip pkgname="sgs-server"
 			srcdir="${core.lib.zip.dir}" destdir="${core.sgs.dir}"/>
@@ -51,6 +51,25 @@
         </if>
     </target>
 
+    <target name="unpack-javolution">
+        <if>
+            <not>
+            <available file="${core.lib.dir}/common/javolution.jar"/>
+            </not>
+            <then>
+                <get src="http://javolution.org/javolution-5.2.6-bin.zip" dest="${downloads.dir}/javolution.zip"/>
+                <unzip src="${downloads.dir}/javolution.zip" dest="${core.lib.dir}" overwrite="true">
+                    <patternset>
+                        <include name="**/javolution.jar"/>
+                    </patternset>
+                    <mapper type="flatten"/>
+                </unzip>
+                <move file="${core.lib.dir}/javolution.jar" todir="${core.lib.dir}/common"/>
+                <delete file="jbullet.zip" quiet="true"/>
+            </then>
+        </if>
+    </target>
+
     <!-- From OpenJFX compiler bootstrap.xml -->
     <property name="bootstrap.dir" value="${downloads.dir}"/>
     
@@ -62,6 +81,9 @@
         <os family="windows"/>
     </condition>
     <condition property="scenegraph.platform" value="linux-i586">
+        <os name="Linux"/>
+    </condition>
+    <condition property="scenegraph.platform" value="macosx-universal">
         <os name="Linux"/>
     </condition>
     <condition property="scenegraph.platform" value="solaris-sparc">
