@@ -17,10 +17,8 @@
  */
 package org.jdesktop.wonderland.runner;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -132,25 +130,17 @@ public class RunManager {
      * from the archive or an error writing them to the runner.
      */
     private void deployTo(Runner runner) throws IOException {
-        // first, find the deploment descriptor file
-        String deployFile = DEPLOY_DIR + "/" + runner.getClass().getName();
-        InputStream is = getClass().getResourceAsStream(deployFile);
-        if (is == null) {
-            throw new IOException("Unable to find deployment information at " +
-                                  deployFile);
-        }
-        
-        // now read the file
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        String line;
-        while ((line = in.readLine()) != null) {
-            InputStream deploy = getClass().getResourceAsStream(line.trim());
+        // get the list of deployment files
+        Collection<String> files = runner.getDeployFiles();
+        for (String file : files) {
+            String fullPath = DEPLOY_DIR + "/" + file;
+            InputStream deploy = getClass().getResourceAsStream(fullPath);
             if (deploy == null) {
-                throw new IOException("Unable to find deploy file " + line);
+                throw new IOException("Unable to find deploy file " + fullPath);
             }
             
             // deploy the file
-            runner.deploy(deploy);
+            runner.deploy(file, deploy);
         }
     }
 }

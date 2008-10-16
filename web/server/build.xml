@@ -96,7 +96,9 @@
             </zipfileset>
             
             <!-- modules -->
-            <zipfileset dir="${top.dir}/modules/dist" prefix="modules"/>
+            <zipfileset dir="${top.dir}/modules/dist" prefix="modules">
+                <include name="*.jar"/>
+            </zipfileset>
             
             <!-- include any generated META-INF.  These will be updated
                  below if they are out of date. -->
