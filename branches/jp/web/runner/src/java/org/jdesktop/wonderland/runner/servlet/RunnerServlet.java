@@ -23,7 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.jdesktop.wonderland.runner.DarkstarRunner;
+import org.jdesktop.wonderland.runner.darkstar.DarkstarRunner;
 import org.jdesktop.wonderland.runner.DeploymentEntry;
 import org.jdesktop.wonderland.runner.DeploymentManager;
 import org.jdesktop.wonderland.runner.DeploymentPlan;
@@ -73,7 +73,12 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
                 Runner r = RunnerFactory.create(de.getRunnerClass(), props);
                 r = RunManager.getInstance().add(r);
                 if (start) {
-                    r.start(de.getRunProps());
+                    Properties runProps = de.getRunProps();
+                    if (runProps == null || runProps.isEmpty()) {
+                        runProps = r.getDefaultProperties();
+                    }
+                    
+                    r.start(runProps);
                 }
             }
         } catch (Exception ex) {
@@ -141,10 +146,14 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
         if (de == null) {
             de = DeploymentManager.getInstance().getEntry(runner.getName());
         }
+        
+        // if the deployment entry has no properties, use the defaults
+        if (de.getRunProps().isEmpty()) {
+            de.setRunProps(runner.getDefaultProperties());
+        }
+        
         request.setAttribute("entry", de);
-        
-        logger.warning("Entry " + de.getRunnerName() + " props " + de.getRunProps().size());
-        
+       
         RequestDispatcher rd = request.getRequestDispatcher("/edit.jsp");
         rd.forward(request, response);
     }
@@ -158,9 +167,12 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
         
         String button = request.getParameter("button");
         if (button.equalsIgnoreCase("Save")) {
-            doEditSave(request, response, de);
+            doEditSave(request, response, runner, de);
         } else if (button.equalsIgnoreCase("Cancel")) {
             redirectToRun(response);
+        } else if (button.equalsIgnoreCase("Restore Defaults")) {
+            de.setRunProps(runner.getDefaultProperties());
+            doEdit(request, response, runner, de);
         } else {
             doEdit(request, response, runner, de);
         }
@@ -168,11 +180,19 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
     
     protected void doEditSave(HttpServletRequest request, 
                               HttpServletResponse response,
+                              Runner runner,
                               DeploymentEntry de)
         throws ServletException, IOException
     {
         DeploymentManager dm = DeploymentManager.getInstance();
         DeploymentPlan dp = dm.getPlan();
+        
+        // if the properties are the same as the default property set,
+        // remove all properties so we preserve the fact that these
+        // are defaults
+        if (de.getRunProps().equals(runner.getDefaultProperties())) {
+            de.getRunProps().clear();
+        }
         
         // replace the existing entry with the new one
         dp.removeEntry(de);

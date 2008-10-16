@@ -122,6 +122,9 @@ public class RunAppServer {
         // extract modules to a directory, and make a list of the extracted
         // modules
         File moduleDir = ModuleManager.getModuleManager().getModuleStateDirectory(ModuleManager.State.ADD);
+        moduleDir.mkdirs();
+        
+        // make sure the modules directory exists
         Collection<AddedModule> modules = new ArrayList<AddedModule>();
         
         String line;
