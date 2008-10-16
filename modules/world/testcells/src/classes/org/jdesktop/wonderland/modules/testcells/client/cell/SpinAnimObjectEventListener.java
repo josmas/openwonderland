@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.testcells.client.cell;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.input.Event;
@@ -64,7 +65,11 @@ public class SpinAnimObjectEventListener extends EventClassListener {
 	    spinner = new RotationAnimationProcessor(node, 0f, (float)Math.PI*2f);
             clip2 = Clip.create(1000, spinner);
             clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
+            Vector3f currentLoc = node.getLocalTranslation();
+            TranslationAnimationProcessor trans = new TranslationAnimationProcessor(node, currentLoc, new Vector3f(currentLoc.x, currentLoc.y+2, currentLoc.z));
+            clip2.addTarget(trans);
             entity.addComponent(RotationAnimationProcessor.class, spinner);
+            entity.addComponent(TranslationAnimationProcessor.class, trans);
         }
 
         if (!clip2.isRunning())
