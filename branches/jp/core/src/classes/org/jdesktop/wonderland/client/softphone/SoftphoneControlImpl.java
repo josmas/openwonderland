@@ -36,10 +36,7 @@ import java.util.logging.Logger;
 public class SoftphoneControlImpl {
     private static final Logger logger =
             Logger.getLogger(SoftphoneControlImpl.class.getName());
-
-    public static final String SOFTPHONE_PROP =
-            "org.jdesktop.wonderland.client.softphone.jar";
-    
+ 
     private Process softphoneProcess;
     private OutputStream softphoneOutputStream;
     private ProcOutputListener stdOutListener;
@@ -201,7 +198,7 @@ public class SoftphoneControlImpl {
      */
     private String getJarPath() {
         // try the system property
-        String jarPath = System.getProperty(this.SOFTPHONE_PROP);
+        String jarPath = System.getProperty(SoftphoneControl.SOFTPHONE_PROP);
 
         if (jarPath != null && checkPath(jarPath)) {
             return jarPath;

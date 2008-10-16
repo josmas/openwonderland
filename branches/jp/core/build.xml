@@ -57,6 +57,7 @@
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
 	    <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${current.dir}/ext/softphone/softphone.jar"/>
+            <jvmarg value="-Dwonderland.version=${wonderland.version}"/>
             
             <!--start debug-->
 	    <!-- TODO: suspend=y doesn't work: it doesn't stop at bkpts after attach -->

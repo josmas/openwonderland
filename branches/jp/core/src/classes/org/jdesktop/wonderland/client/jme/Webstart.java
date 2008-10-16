@@ -18,13 +18,16 @@
 
 package org.jdesktop.wonderland.client.jme;
 
-import java.io.FileDescriptor;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.security.Permission;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sun.misc.Service;
 
 /**
  *
@@ -39,6 +42,9 @@ public class Webstart {
     private static boolean webstartChecked = false;
     private static boolean isWebstart = false;
     
+    // listeners
+    private static Collection<WebstartStartupListener> startupListeners =
+            new ArrayList<WebstartStartupListener>();
     
     public synchronized static boolean isWebstart() {
         if (!webstartChecked) {
@@ -98,8 +104,16 @@ public class Webstart {
         // set our own security manager
         logger.info("Setting security manager");
         System.setSecurityManager(new JnlpSecurityManager());
+        
+        // discover listeners using service loader mechanism
+        Iterator<WebstartStartupListener> it = 
+                Service.providers(WebstartStartupListener.class);
+        while (it.hasNext()) {
+            WebstartStartupListener wsl = it.next();
+            wsl.onStartup();
+        }
     }
-    
+       
     /**
      *
      * Simple Security Manager for JNLP deployment.
