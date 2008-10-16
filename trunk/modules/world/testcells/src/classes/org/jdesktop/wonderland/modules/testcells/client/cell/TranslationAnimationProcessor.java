@@ -33,33 +33,26 @@ package org.jdesktop.wonderland.modules.testcells.client.cell;
 
 import org.jdesktop.mtgame.*;
 import com.jme.scene.Node;
-import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.scenario.animation.TimingTarget;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
- * Rotation Processor for use with Scenario Timing framework
+ * Translation Animation for use with Scenario Timing framework
  *
  * @author paulby
  */
-public class RotationAnimationProcessor extends ProcessorComponent implements TimingTarget {
+public class TranslationAnimationProcessor extends ProcessorComponent implements TimingTarget {
     /**
      * The WorldManager - used for adding to update list
      */
     private WorldManager worldManager = null;
-    /**
-     * The current degrees of rotation
-     */
-    private float radians = 0.0f;
 
-    private float startRadians;
-    private float endRadians;
-
-    /**
-     * The rotation matrix to apply to the target
-     */
-    private Quaternion quaternion = new Quaternion();
+    private Vector3f startV3f;
+    private Vector3f endV3f;
     
+    private Vector3f translation = new Vector3f();
+
     /**
      * The rotation target
      */
@@ -68,30 +61,17 @@ public class RotationAnimationProcessor extends ProcessorComponent implements Ti
     /**
      * The constructor
      */
-    public RotationAnimationProcessor(Node target, float startRadians, float endRadians) {
+    public TranslationAnimationProcessor(Node target, Vector3f startLocation, Vector3f endLocation) {
         this.worldManager = ClientContextJME.getWorldManager();
         this.target = target;
-        this.startRadians = startRadians;
-        this.endRadians = endRadians;
-//        Clip clip2 = Clip.create(1000, this, "angle", new Float(0), new Float(Math.PI*2));
+        this.startV3f = startLocation;
+        this.endV3f = endLocation;
     }
 
-//    public void setAngle(float radians) {
-//        synchronized(quaternion) {
-//            System.out.println("SetAngle "+radians);
-//            this.radians = radians;
-//        }
-//    }
-//
-//    public float getAngle() {
-//        return radians;
-//    }
-        
     /**
      * The initialize method
      */
     public void initialize() {
-//        setArmingCondition(new NewFrameCondition(this));
     }
     
     /**
@@ -104,19 +84,23 @@ public class RotationAnimationProcessor extends ProcessorComponent implements Ti
      * The commit method
      */
     public void commit(ProcessorArmingCollection collection) {
-//        System.out.println("Commit "+radians);
-        quaternion.fromAngles(0.0f, radians, 0.0f);
-        target.setLocalRotation(quaternion);
+        synchronized(translation) {
+            target.setLocalTranslation(translation);
+        }
         worldManager.addToUpdateList(target);
     }
     
 
     public void timingEvent(float fraction, long totalElapsed) {
-        radians = (endRadians-startRadians)*fraction;
+        synchronized(translation) {
+            translation.x = (endV3f.x - startV3f.x)*fraction;
+            translation.y = (endV3f.y - startV3f.y)*fraction;
+            translation.z = (endV3f.z - startV3f.z)*fraction;
+        }
     }
 
     public void begin() {
-        setArmingCondition(new NewFrameCondition(RotationAnimationProcessor.this));
+        setArmingCondition(new NewFrameCondition(TranslationAnimationProcessor.this));
     }
 
     public void end() {
@@ -128,7 +112,7 @@ public class RotationAnimationProcessor extends ProcessorComponent implements Ti
     }
 
     public void resume() {
-        setArmingCondition(new NewFrameCondition(RotationAnimationProcessor.this));
+        setArmingCondition(new NewFrameCondition(TranslationAnimationProcessor.this));
     }
         
 
