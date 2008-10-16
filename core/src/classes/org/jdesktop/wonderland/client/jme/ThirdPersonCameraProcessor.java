@@ -41,9 +41,12 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
     private Vector3f yUp = new Vector3f(0,1,0);
 
     private Vector3f tmp=new Vector3f();
+
+    private WorldManager wm;
     
-    public ThirdPersonCameraProcessor(CameraNode cameraNode, WorldManager wm) {
-        super(cameraNode, wm);
+    public ThirdPersonCameraProcessor(CameraNode cameraNode) {
+        super(cameraNode);
+        wm = ClientContextJME.getWorldManager();
     }
     
     @Override
@@ -66,7 +69,7 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
 
     @Override
     public void initialize() {
-        setArmingCondition(new NewFrameCondition(this));
+//        setArmingCondition(new NewFrameCondition(this));
     }
 
     @Override

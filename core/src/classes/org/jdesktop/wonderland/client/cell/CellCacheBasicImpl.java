@@ -49,7 +49,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     private Map<CellID, Cell> cells = Collections.synchronizedMap(new HashMap());
     private Set<Cell> rootCells = Collections.synchronizedSet(new HashSet());
     
-    private static Logger logger = Logger.getLogger(CellCacheBasicImpl.class.getName());
+    protected static Logger logger = Logger.getLogger(CellCacheBasicImpl.class.getName());
     
     private ViewCell viewCell = null;
 
@@ -130,7 +130,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             logger.warning("loadCell - Cell parent is null "+parentCellID);
         }
         cell.setLocalBounds(localBounds);
-        cell.setLocalTransform(cellTransform);
+        cell.setLocalTransform(cellTransform, TransformChangeListener.ChangeSource.SERVER_ADJUST);
 //        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
 
         synchronized(cells) {
@@ -176,14 +176,15 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * {@inheritDoc}
      */
     public void moveCell(CellID cellId, CellTransform cellTransform) {
-        Cell cell = cells.get(cellId);
-        if (cell==null) {
-            // TODO this is probably ok, need to check
-            logger.warning("Got move for non-local cell");
-            return;
-        }
-
-        cell.setLocalTransform(cellTransform);
+        throw new RuntimeException("TODO REMOVE THIS METHOD");
+//        Cell cell = cells.get(cellId);
+//        if (cell==null) {
+//            // TODO this is probably ok, need to check
+//            logger.warning("Got move for non-local cell");
+//            return;
+//        }
+//
+//        cell.setLocalTransform(cellTransform);
     }
     
     /**

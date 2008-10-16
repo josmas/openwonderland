@@ -15,23 +15,29 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.client.jme;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.cell.Cell;
 
 /**
- * Listener for notification of cell status changes
+ * An Entity component that provides a reference to the cell 
+ * that created the entity
  * 
  * @author paulby
  */
-@ExperimentalAPI
-public interface CellStatusChangeListener {
+public class CellRefComponent extends EntityComponent {
 
+    private Cell cell;
+    
+    public CellRefComponent(Cell cell) {
+        this.cell = cell;
+    }
+    
     /**
-     * Notification that the cells status has changed.
-     * @param cell the cells whoes status has changed
-     * @param status the new status for the cell
-     */
-    public void cellStatusChanged(Cell cell, CellStatus status);
+     * Get the cell referenced by this component
+     */ 
+    public Cell getCell() {
+        return cell;
+    }
 }

@@ -510,6 +510,8 @@ public abstract class InputPicker {
     }
 
     public static Entity pickDetailsToEntity (PickDetails pickDetails) {
+        if (pickDetails==null)
+            return null;
 	CollisionComponent cc = pickDetails.getCollisionComponent();
 	if (cc == null) return null;
 	return cc.getEntity();

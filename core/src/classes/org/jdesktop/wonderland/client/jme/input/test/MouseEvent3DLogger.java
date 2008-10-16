@@ -37,10 +37,6 @@ public class MouseEvent3DLogger extends EventClassListener {
 
     private static final Logger logger = Logger.getLogger(MouseEvent3DLogger.class.getName());
 
-    static {
-	logger.setLevel(Level.INFO);
-    }
-
     private String name;
 
     /**
