@@ -15,19 +15,19 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.audiomanager.server;
+package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.CellTransform;;
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.audiomanager.common.AudioManagerConnectionType;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
-import org.jdesktop.wonderland.audiomanager.common.messages.AvatarCellIDMessage;
-import org.jdesktop.wonderland.audiomanager.common.messages.DisconnectCallMessage;
-import org.jdesktop.wonderland.audiomanager.common.messages.GetVoiceBridgeMessage;
-import org.jdesktop.wonderland.audiomanager.common.messages.PlaceCallMessage;
-import org.jdesktop.wonderland.audiomanager.common.messages.VoiceChatMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;

@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.audiomanager.client;
+package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
@@ -35,10 +35,10 @@ import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.audiomanager.common.AudioManagerConnectionType;
-import org.jdesktop.wonderland.audiomanager.common.messages.AvatarCellIDMessage;
-import org.jdesktop.wonderland.audiomanager.common.messages.GetVoiceBridgeMessage;
-import org.jdesktop.wonderland.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
