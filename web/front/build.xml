@@ -10,6 +10,7 @@
     
     <!-- import netbeans properties -->
     <import file="nbproject/build-impl.xml"/>
+    
     <!--
 
     There exist several targets which are by default empty and which can be 
@@ -69,16 +70,18 @@
 
     -->
     <target name="-pre-dist">
-        <ant antfile="build-tools/build-scripts/webstart-package.xml"
-             target="package" inheritall="false">
-                 
-             <property name="front.webstart.dir"
-                       value="${current.dir}/${build.web.dir}/app"/>
-             <property name="front.jar.dir"
-                       value="${current.dir}/build/lib"/>
-             <property name="current.dir" value="${current.dir}"/>
-             
-        </ant>
+        <!-- copy in webstart files built by the webstart module -->
+        <copy todir="${current.dir}/${build.web.dir}/app">
+            <fileset dir="${current.dir}/../webstart/dist/webstart"/>
+        </copy>
+         
+        <!-- substitute in the version number -->
+        <replace dir="${build.web.dir}" 
+                 propertyfile="${current.dir}/../../build-tools/build-scripts/setup.properties">
+            <include name="*.jsp"/>
+            <replacefilter token="@VERSION@" 
+                           property="wonderland.version"/>
+        </replace>
     </target>
         
 </project>

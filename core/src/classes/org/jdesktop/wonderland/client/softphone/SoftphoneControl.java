@@ -22,7 +22,9 @@ package org.jdesktop.wonderland.client.softphone;
 import java.io.IOException;
 
 public interface SoftphoneControl {
-
+    public static final String SOFTPHONE_PROP =
+            "org.jdesktop.wonderland.client.softphone.jar";
+ 
     /*
      * Start the softphone and wait for it to determine its address.
      */
