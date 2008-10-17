@@ -48,6 +48,8 @@ import java.io.IOException;
 
 import java.util.logging.Logger;
 
+import org.jdesktop.wonderland.common.NetworkAddress;
+
 /**
  *
  * @author paulby
@@ -118,9 +120,11 @@ public class AudioManagerClient extends BaseConnection {
 
             registrarAddress += tokens[4];
 
+	    String localHost = NetworkAddress.getDefaultHostAddress();
+
 	    try {
 	        String sipURL = sc.startSoftphone(
-		    "jp", registrarAddress, 10, "129.148.75.55", AudioQuality.VPN);
+		    msg.getUsername(), registrarAddress, 10, localHost, AudioQuality.VPN);
 
 
 		sc.setVisible(true);

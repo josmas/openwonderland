@@ -29,6 +29,9 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBrid
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
+import org.jdesktop.wonderland.server.UserManager;
+import org.jdesktop.wonderland.server.UserMO;
+
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
@@ -36,9 +39,6 @@ import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ManagedReference;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -48,6 +48,9 @@ import java.util.Properties;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
@@ -79,12 +82,13 @@ public class AudioManagerConnectionHandler
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
     
-    private VoiceChatHandler voiceChatHandler;
+    private ManagedReference<VoiceChatHandler> voiceChatHandlerRef;
 
     public AudioManagerConnectionHandler() {
         super();
 
-	VoiceChatHandler voiceChatHandler = VoiceChatHandler.getInstance();
+	voiceChatHandlerRef = 
+	    AppContext.getDataManager().createReference(new VoiceChatHandler());
     }
 
     public ConnectionType getConnectionType() {
@@ -107,6 +111,8 @@ public class AudioManagerConnectionHandler
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	String username = UserManager.getUserManager().getUser(session).getUsername();
+
 	if (message instanceof AvatarCellIDMessage) {
 	    AvatarCellIDMessage msg = (AvatarCellIDMessage) message;
 
@@ -114,9 +120,9 @@ public class AudioManagerConnectionHandler
 
 	    avatarCellMO.addTransformChangeListener(this);
 
-	    voiceChatHandler.initialize(avatarCellMO.getUser().getUsername(), sender);
+	    voiceChatHandlerRef.get().initialize(username, sender);
 	} else if (message instanceof GetVoiceBridgeMessage) {
-	    logger.warning("Got voice bridge request message");
+	    logger.warning("Got voice bridge request message from user " + username);
 
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
@@ -125,6 +131,7 @@ public class AudioManagerConnectionHandler
 
 		logger.info("Got voice bridge '" + voiceBridge + "'");
 	        msg.setBridgeInfo(voiceBridge);
+		msg.setUsername(username);
 	    } catch (IOException e) {
 		logger.info("unable to get voice bridge:  " + e.getMessage());
 		return;
@@ -132,7 +139,7 @@ public class AudioManagerConnectionHandler
 
 	    sender.send(msg);
 	} else if (message instanceof PlaceCallMessage) {
-	    logger.warning("Got pace call message");
+	    logger.warning("Got place call message");
 
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
 
@@ -142,6 +149,10 @@ public class AudioManagerConnectionHandler
 
 	    setup.cp = cp;
 
+	    ManagedReference sessionRef = AppContext.getDataManager().createReference(session);
+
+	    cp.setCallId(username + "-" + sessionRef.getId());
+	    cp.setName(username);
             cp.setPhoneNumber(msg.getSipURL());
             cp.setConferenceId(vm.getConferenceId());
             cp.setVoiceDetection(true);
@@ -154,7 +165,7 @@ public class AudioManagerConnectionHandler
 	    Call call;
 
             try {
-                call = vm.createCall("jp", setup);
+                call = vm.createCall(username, setup);
             } catch (IOException e) {
                 logger.warning("Unable to create call " + cp + ": " + e.getMessage());
 		return;
@@ -185,7 +196,7 @@ public class AudioManagerConnectionHandler
 	} else if (message instanceof DisconnectCallMessage) {
 	    logger.warning("got DisconnectCallMessage");
 	} else if (message instanceof VoiceChatMessage) {
-	    voiceChatHandler.processVoiceChatMessage((VoiceChatMessage) message);
+	    voiceChatHandlerRef.get().processVoiceChatMessage((VoiceChatMessage) message);
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}

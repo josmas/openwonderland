@@ -44,7 +44,7 @@ import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.ManagedObject;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -81,23 +81,13 @@ import java.io.IOException;
  * 
  * @author jprovino
  */
-public class VoiceChatHandler {
+public class VoiceChatHandler implements ManagedObject {
 
     private static final Logger logger =
 	Logger.getLogger(VoiceChatHandler.class.getName());
     
-    private static VoiceChatHandler voiceChatHandler;
-
     private String username;
     private WonderlandClientSender sender;
-
-    public static VoiceChatHandler getInstance() {
-	if (voiceChatHandler == null) {
-	    voiceChatHandler = new VoiceChatHandler();
-	}
-
-	return voiceChatHandler;
-    }
 
     public VoiceChatHandler() {
     }
