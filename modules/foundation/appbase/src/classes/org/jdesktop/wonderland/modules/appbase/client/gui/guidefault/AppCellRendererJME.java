@@ -123,7 +123,9 @@ public class AppCellRendererJME extends AppCellRenderer {
 	rootNode.attachChild(viewWorld.getBaseNode());
 
         FrameWorldDefault frame = viewWorld.getFrame();
-	rootNode.attachChild(frame.getBaseNode());
+	if (frame != null) {
+	    rootNode.attachChild(frame.getBaseNode());
+	}
     }
 
     /**

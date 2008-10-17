@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.appbase.client.swing;
 
 import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -27,11 +26,10 @@ import javax.swing.Popup;
 import com.sun.embeddedswing.EmbeddedToolkit;
 import com.sun.embeddedswing.EmbeddedPeer;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
-import java.awt.Point;
 import java.awt.Dimension;
-import javax.swing.SwingUtilities;
-import java.awt.EventQueue;
-
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
  * The main interface to Embedded Swing. This class provides access to the three basic capabilities
@@ -232,17 +230,21 @@ class WindowSwingEmbeddedToolkit
 	*/
     }
     
-     
     static class WindowSwingEmbeddedPeer extends EmbeddedPeer {
 
+	private static PainterThread painterThread;
+
 	WindowSwingEmbeddedToolkit toolkit;
+
+        private WindowSwing windowSwing = null;
 
         protected WindowSwingEmbeddedPeer(JComponent parent, Component embedded, WindowSwingEmbeddedToolkit toolkit) {
             super(parent, embedded);
 	    this.toolkit = toolkit;
-        }
 
-        private WindowSwing windowSwing = null;
+	    painterThread = new PainterThread();
+	    painterThread.start();
+        }
 
 	void repaint () {
 	    // TODO: for now
@@ -256,30 +258,10 @@ class WindowSwingEmbeddedToolkit
                 return;
             }
 
-	    //System.err.println("===========================================================");
-	    //System.err.println("************* dump stack");
-	    //Thread.dumpStack();
+	    paintOnWindow(windowSwing);
 
-	    final DrawingSurface drawingSurface = windowSwing.getSurface();
-	    final Graphics2D gDst = drawingSurface.getGraphics();
-
+  	    /* TODO: if I do this it needs to be in the painter thread
             Component embedded = getEmbeddedComponent();
-	    //System.err.println("********** Component to paint = " + embedded);
-
-	    // WRONG: causes infinite recursion (always for popups and sometimes for nonpopups)
-	    //embedded.paint(gDst);
-
-	    // Note: Igor: Embedded Swing doesn't support painting from inside the repaint method.
-	    // We must do the repainting asynchronously.
-	    EventQueue.invokeLater(new Runnable () {
-		public void run () {
-		    paint(gDst);
-		    // TODO: obsolete: no longer necessary
-		    //drawingSurface.swapBuffers();
-		}
-	    });
-
-	    /* TODO: if I dod this it needs to be in the invokeLater
             int compX0 = embedded.getX();
             int compY0 = embedded.getY();
             int compX1 = compX0 + embedded.getWidth();
@@ -321,5 +303,48 @@ class WindowSwingEmbeddedToolkit
             }
 	    */
         }
+
+	private void paintOnWindow (WindowSwing window) {
+	    painterThread.enqueuePaint(this, window);
+	}
+
+	private static class PainterThread extends Thread {
+
+	    private static final Logger logger = Logger.getLogger(PainterThread.class.getName());
+
+	    private static class PaintRequest {
+		private WindowSwingEmbeddedPeer embeddedPeer;
+		private WindowSwing window;
+		private PaintRequest (WindowSwingEmbeddedPeer embeddedPeer, WindowSwing window) {
+		    this.embeddedPeer = embeddedPeer;
+		    this.window = window;
+		}
+	    }
+
+	    private LinkedBlockingQueue<PaintRequest> queue = new LinkedBlockingQueue<PaintRequest>();
+
+	    private PainterThread () {
+		super("WindowSwingEmbeddedPeer-PainterThread");
+	    }
+
+	    private void enqueuePaint (WindowSwingEmbeddedPeer embeddedPeer, WindowSwing window) {
+		queue.add(new PaintRequest(embeddedPeer, window));
+	    }
+
+	    public void run () {
+		while (true) {
+		    try {
+			PaintRequest request = null;
+			request = queue.take();
+			DrawingSurface drawingSurface = request.window.getSurface();
+			Graphics2D gDst = drawingSurface.getGraphics();
+			request.embeddedPeer.paint(gDst);
+		    } catch (Exception ex) {
+			ex.printStackTrace();
+			logger.warning("Exception caught in WindowSwingEmbeddedToolkit Painter Thread.");
+		    }
+		}
+	    }
+	}
     }
 }

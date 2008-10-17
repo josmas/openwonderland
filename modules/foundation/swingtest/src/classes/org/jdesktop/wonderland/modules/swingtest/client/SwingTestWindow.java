@@ -19,9 +19,11 @@ package org.jdesktop.wonderland.modules.swingtest.client;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App;
-import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
-import org.jdesktop.wonderland.modules.swingtest.client.SwingTestDrawingSurface;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
+import javax.swing.JPanel;
+import org.jdesktop.wonderland.modules.swingtest.client.TestPanel;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -32,18 +34,15 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class SwingTestWindow extends WindowGraphics2D  {
+public class SwingTestWindow extends WindowSwing  {
 
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingTestWindow.class.getName());
 
-    /** The image which is drawn on. */
-    private SwingTestDrawingSurface surface;
-
     /**
      * Create a new instance of SwingTestWindow.
      *
-     * @param app The whiteboard app which owns the window.
+     * @param app The app which owns the window.
      * @param width The width of the window (in pixels).
      * @param height The height of the window (in pixels).
      * @param topLevel Whether the window is top-level (e.g. is decorated) with a frame.
@@ -52,11 +51,16 @@ public class SwingTestWindow extends WindowGraphics2D  {
     public SwingTestWindow (final App app, int width, int height, boolean topLevel, Vector2f pixelScale)
         throws InstantiationException
     {
-	super(app, width, height, topLevel, pixelScale, new SwingTestDrawingSurface(width, height));
+	super(app, width, height, topLevel, pixelScale);
+	setSize(width, height);
 	initializeSurface();
 
 	setTitle("Swing Test");
 	
-	surface = (SwingTestDrawingSurface)getSurface();
+	JPanel testPanel = new TestPanel();
+	// Note: this seems to only be required for the swing set, but do it here for safety
+	// TODO: test without
+       	JmeClientMain.getFrame().getMainPanel().add(testPanel);
+	setComponent(testPanel);
     }
 }
