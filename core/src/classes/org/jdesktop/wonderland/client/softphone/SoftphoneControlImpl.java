@@ -119,7 +119,7 @@ public class SoftphoneControlImpl {
 	    throw new IOException("Softphone needs java 1.5.0 or later to run");
         }
         
-	quiet = false;
+	quiet = true;
 
 	exitNotificationSent = false;
 
@@ -479,7 +479,7 @@ public class SoftphoneControlImpl {
         }
     }
 
-    private boolean quiet;
+    private boolean quiet = true;
 
     private void lineReceived(ProcOutputListener source, String line) {
         if (source == stdErrListener) {
