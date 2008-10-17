@@ -27,7 +27,7 @@ import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
@@ -75,13 +75,14 @@ import com.sun.voip.client.connector.CallStatus;
 import com.sun.voip.client.connector.CallStatusListener;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Test listener, will eventually support Audio Manager
  * 
  * @author jprovino
  */
-public class VoiceChatHandler implements ManagedObject {
+public class VoiceChatHandler implements ManagedObject, Serializable {
 
     private static final Logger logger =
 	Logger.getLogger(VoiceChatHandler.class.getName());
