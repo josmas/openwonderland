@@ -313,7 +313,9 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	}
 
 	if ((changeMask & CHANGED_TITLE) != 0) {
-	    frame.setTitle(((Window2D)window).getTitle());
+	    if (frame != null) {
+		frame.setTitle(((Window2D)window).getTitle());
+	    }
 	}
     }
 
@@ -775,8 +777,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
     public void forceTextureIdAssignment () {
 	if (geometryObj == null) {
-	    logger.warning("Trying to force texture id assignment while view geometry is null");
-	    return;
+	    setGeometry(new ViewGeometryObjectDefault(this));
+	    if (geometryObj == null) {
+		logger.severe("***** Cannot allocate geometry!!");
+		return;
+	    }
 	}
 	TextureState ts = geometryObj.getTextureState();
 	if (ts == null) {

@@ -36,12 +36,12 @@ public class SwingTestCellSetup extends BasicCellSetup implements Serializable, 
     
     /** The user's preferred width of the Swing test window. */
     @XmlElement(name="preferredWidth")
-    public int preferredWidth = 1024;
+    public int preferredWidth = 300;
     
     /** The user's preferred height of the Swing test window. */
     @XmlElement(name="preferredHeight")
 
-    public int preferredHeight = 768;
+    public int preferredHeight = 300;
     
     /** The X pixel scale of the Swing test window. */
     @XmlElement(name="pixelScaleX")

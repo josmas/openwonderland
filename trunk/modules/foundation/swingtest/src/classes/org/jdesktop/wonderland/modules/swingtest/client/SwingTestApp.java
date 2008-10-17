@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 
 /**
  *
@@ -53,7 +54,7 @@ public class SwingTestApp extends AppGraphics2D  {
 
 	// This app has only one window, so it is always top-level 
         try {
-            window = new SwingTestWindow(this, width, height, true, pixelScale);
+            window = new SwingTestWindow(this, width, height, /*TODO: until debugged: true*/false, pixelScale);
         } catch (InstantiationException ex) {
             throw new RuntimeException(ex);
         }
@@ -69,6 +70,19 @@ public class SwingTestApp extends AppGraphics2D  {
 	    window.cleanup();
 	    window = null;
 	}
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCell (AppCell cell) 
+	throws IllegalArgumentException, IllegalStateException 
+    {
+	super.setCell(cell);
+
+	// TODO: temp for popups
+	// TODO: NOTYET: WindowSwingPopup.setCell(this);
     }
 
     /**
