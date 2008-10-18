@@ -43,8 +43,8 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -53,8 +53,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
-
-import com.sun.sgs.app.AppContext;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
@@ -77,37 +75,34 @@ import com.sun.voip.client.connector.CallStatusListener;
 import java.io.IOException;
 import java.io.Serializable;
 
+import com.jme.math.Vector3f;
+
 /**
  * Test listener, will eventually support Audio Manager
  * 
  * @author jprovino
  */
-public class VoiceChatHandler implements ManagedObject, Serializable {
+public class VoiceChatHandler implements TransformChangeListenerSrv, 
+	Serializable {
 
     private static final Logger logger =
 	Logger.getLogger(VoiceChatHandler.class.getName());
     
-    private String username;
-    private WonderlandClientSender sender;
-
     public VoiceChatHandler() {
     }
 
-    public void initialize(String username, WonderlandClientSender sender) {
-	this.username = username;
-	this.sender = sender;
-    }
+    public void processVoiceChatMessage(WonderlandClientSender sender, 
+	    VoiceChatMessage message) {
 
-    public void processVoiceChatMessage(VoiceChatMessage message) {
         VoiceChatMessage.ActionType action = message.getActionType();
  
 	if (action == VoiceChatMessage.ActionType.GET_CHAT_INFO_REQUEST) {
-	    sendVoiceChatInfo(message);
+	    sendVoiceChatInfo(sender, message);
 	    return;
 	}
 
 	if (action == VoiceChatMessage.ActionType.BUSY) {
-	    sendVoiceChatBusyMessage(message);
+	    sendVoiceChatBusyMessage(sender, message);
 	    return;
 	}
 
@@ -204,7 +199,7 @@ public class VoiceChatHandler implements ManagedObject, Serializable {
 		    }
 		}
 
-	        requestPlayerJoinAudioGroup(group, username,
+	        requestPlayerJoinAudioGroup(sender, group, null,
 		    players[i], calleeList, chatType);
 	    }
 	}
@@ -264,31 +259,36 @@ public class VoiceChatHandler implements ManagedObject, Serializable {
 	return true;
     }
 
-    private void requestPlayerJoinAudioGroup(String group, String caller,
-	String callee, String calleeList, VoiceChatMessage.ChatType chatType) {
+    private void requestPlayerJoinAudioGroup(WonderlandClientSender sender,
+	    String group, String caller, String callee, String calleeList, 
+	    VoiceChatMessage.ChatType chatType) {
 
 	logger.warning("Asking " + callee + " to join audio group " + group + " chatType " 
 	    + chatType);
 
 	VoiceChatMessage message = new VoiceChatMessage(
-	     VoiceChatMessage.ActionType.REQUEST_TO_JOIN, group, 
+	     VoiceChatMessage.ActionType.REQUEST_TO_JOIN, null, group, 
 		caller, calleeList, chatType);
 
         sender.send(message);
     }
 
-    private void sendVoiceChatBusyMessage(VoiceChatMessage message) {
+    private void sendVoiceChatBusyMessage(WonderlandClientSender sender,
+	    VoiceChatMessage message) {
+
 	logger.warning("Sending busy message to " + message.getCaller());
 
 	VoiceChatMessage msg = new VoiceChatMessage(
-	     VoiceChatMessage.ActionType.BUSY,
+	     VoiceChatMessage.ActionType.BUSY, null,
 	     message.getGroup(), message.getCaller(), message.getCalleeList(),
 	     message.getChatType());
 
         sender.send(msg);
     }
 
-    private void sendVoiceChatInfo(VoiceChatMessage message) {
+    private void sendVoiceChatInfo(WonderlandClientSender sender,
+	    VoiceChatMessage message) {
+
 	String chatInfo = "";
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
@@ -309,7 +309,7 @@ public class VoiceChatHandler implements ManagedObject, Serializable {
 	}
 
         VoiceChatMessage msg = new VoiceChatMessage(
-             VoiceChatMessage.ActionType.GET_CHAT_INFO_RESPONSE, 
+             VoiceChatMessage.ActionType.GET_CHAT_INFO_RESPONSE, null,
 	     message.getGroup());
 	    
 	msg.setChatInfo(chatInfo);
@@ -611,4 +611,36 @@ public class VoiceChatHandler implements ManagedObject, Serializable {
 	//    e.printStackTrace();
 	//}
     }
+
+    public void addTransformChangeListener(CellID cellID) {
+        CellManagerMO.getCell(cellID).addTransformChangeListener(this);
+    }
+
+    public void transformChanged(ManagedReference<CellMO> cellMORef, 
+	    final CellTransform localTransform, final CellTransform localToWorldTransform) {
+
+	String clientId = cellMORef.getId().toString();
+
+	logger.warning("localTransform " + localTransform + " world " 
+	    + localToWorldTransform);
+
+	Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
+
+	if (player == null) {
+	    logger.warning("got AvatarMovedMessage but can't find player");
+	} else {
+	    Vector3f heading = new Vector3f(0, 0, -1);
+
+	    Vector3f angleV = heading.clone();
+
+	    localToWorldTransform.transform(angleV);
+
+	    double angle = heading.angleBetween(angleV);
+
+	    Vector3f location = localToWorldTransform.getTranslation(null);
+	
+	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
+	}
+    }
+
 }

@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBrid
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
+import org.jdesktop.wonderland.server.ClientCallId;
 import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.UserMO;
 
@@ -40,12 +41,12 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
+import org.jdesktop.wonderland.server.ClientCallId;
+
 import java.io.Serializable;
 import java.util.logging.Logger;
 
 import java.util.Properties;
-
-import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
@@ -71,24 +72,20 @@ import java.io.IOException;
 import com.jme.math.Vector3f;
 
 /**
- * Test listener, will eventually support Audio Manager
+ * Audio Manager
  * 
  * @author jprovino
  */
 public class AudioManagerConnectionHandler 
-        implements ClientConnectionHandler, Serializable, CallStatusListener,
-	TransformChangeListenerSrv
+        implements ClientConnectionHandler, Serializable, CallStatusListener
 {
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
     
-    private ManagedReference<VoiceChatHandler> voiceChatHandlerRef;
+    private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
 
     public AudioManagerConnectionHandler() {
         super();
-
-	voiceChatHandlerRef = 
-	    AppContext.getDataManager().createReference(new VoiceChatHandler());
     }
 
     public ConnectionType getConnectionType() {
@@ -111,20 +108,16 @@ public class AudioManagerConnectionHandler
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	String username = UserManager.getUserManager().getUser(session).getUsername();
-
 	if (message instanceof AvatarCellIDMessage) {
 	    AvatarCellIDMessage msg = (AvatarCellIDMessage) message;
-
-	    AvatarCellMO avatarCellMO = (AvatarCellMO) CellManagerMO.getCell(msg.getCellID());
-
-	    avatarCellMO.addTransformChangeListener(this);
-
-	    voiceChatHandlerRef.get().initialize(username, sender);
+	    voiceChatHandler.addTransformChangeListener(msg.getCellID());
 	} else if (message instanceof GetVoiceBridgeMessage) {
-	    logger.warning("Got voice bridge request message from user " + username);
-
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
+
+	    String username = 
+		UserManager.getUserManager().getUser(session).getUsername();
+
+	    logger.warning("Got voice bridge request message from " + username);
 
 	    try {
 		String voiceBridge = vm.getVoiceBridge().toString();
@@ -149,10 +142,21 @@ public class AudioManagerConnectionHandler
 
 	    setup.cp = cp;
 
-	    ManagedReference sessionRef = AppContext.getDataManager().createReference(session);
+	    CellMO cellMO = CellManagerMO.getCell(msg.getCellID());
 
-	    cp.setCallId(username + "-" + sessionRef.getId());
-	    cp.setName(username);
+	    if (cellMO == null) {
+		logger.warning("Can't place call to " + msg.getSipURL()
+		    + ".  No cell for " + msg.getCellID());
+		return;
+	    }
+
+	    ManagedReference cellMORef =
+                AppContext.getDataManager().createReference(cellMO);
+
+	    String callId = cellMORef.getId().toString();
+
+	    cp.setCallId(callId);
+	    cp.setName(UserManager.getUserManager().getUser(session).getUsername());
             cp.setPhoneNumber(msg.getSipURL());
             cp.setConferenceId(vm.getConferenceId());
             cp.setVoiceDetection(true);
@@ -165,11 +169,13 @@ public class AudioManagerConnectionHandler
 	    Call call;
 
             try {
-                call = vm.createCall(username, setup);
+                call = vm.createCall(callId, setup);
             } catch (IOException e) {
                 logger.warning("Unable to create call " + cp + ": " + e.getMessage());
 		return;
             }
+
+	    callId = call.getId();
 
             PlayerSetup ps = new PlayerSetup();
             ps.x = (double) msg.getX();
@@ -179,7 +185,7 @@ public class AudioManagerConnectionHandler
                 msg.getDirection());
             ps.isLivePlayer = true;
 
-            Player player = vm.createPlayer(call.getId(), ps);
+            Player player = vm.createPlayer(callId, ps);
 
             call.setPlayer(player);
             player.setCall(call);
@@ -196,34 +202,10 @@ public class AudioManagerConnectionHandler
 	} else if (message instanceof DisconnectCallMessage) {
 	    logger.warning("got DisconnectCallMessage");
 	} else if (message instanceof VoiceChatMessage) {
-	    voiceChatHandlerRef.get().processVoiceChatMessage((VoiceChatMessage) message);
+	    voiceChatHandler.processVoiceChatMessage(sender, 
+		(VoiceChatMessage) message);
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
-	}
-    }
-
-    public void transformChanged(ManagedReference<CellMO> cellRef, 
-	    final CellTransform localTransform, final CellTransform localToWorldTransform) {
-
-	logger.warning("localTransform " + localTransform + " world " 
-	    + localToWorldTransform);
-
-	Player player = AppContext.getManager(VoiceManager.class).getPlayer("jp");
-
-	if (player == null) {
-	    logger.warning("got AvatarMovedMessage but can't find player");
-	} else {
-	    Vector3f heading = new Vector3f(0, 0, -1);
-
-	    Vector3f angleV = heading.clone();
-
-	    localToWorldTransform.transform(angleV);
-
-	    double angle = heading.angleBetween(angleV);
-
-	    Vector3f location = localToWorldTransform.getTranslation(null);
-	
-	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
 	}
     }
 
