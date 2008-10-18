@@ -47,7 +47,6 @@ public class LocalOnlyWebArchivist extends WebArchivist {
      */
     public static SAXParser turnOffValidation(SAXParser sp) {
         try {
-            logger.severe("Overwriting load-external-dtd");
             sp.getXMLReader().setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",
                                          false);
             return sp;
@@ -68,6 +67,7 @@ public class LocalOnlyWebArchivist extends WebArchivist {
             if (validating) {
                 return sp;
             } else {
+                logger.info("Turning off external DTD loading");
                 return turnOffValidation(sp);
             }
         }
