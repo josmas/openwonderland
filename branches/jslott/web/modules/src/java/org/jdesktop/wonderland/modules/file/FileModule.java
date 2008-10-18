@@ -20,8 +20,6 @@ package org.jdesktop.wonderland.modules.file;
 
 import java.io.File;
 import java.io.FileReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -83,13 +81,17 @@ public class FileModule extends Module {
      * Reads the module info from the module.
      */
     private ModuleInfo fetchModuleInfo() {
+        Logger logger = Logger.getLogger(Module.class.getName());
         try {
             /* Fetch the entry, return null if it does not exist */
             File entry = new File(this.getFile(), Module.MODULE_INFO);
+            if (entry.exists() == false) {
+                logger.info("[MODULE] No module.xml for Module " + this.getFile());
+                return null;
+            }
             return ModuleInfo.decode(new FileReader(entry));
         } catch (java.lang.Exception excp) {
             /* This is pretty bad -- if this doesn't exist, then the module is invalid */
-            Logger logger = Logger.getLogger(Module.class.getName());
             logger.log(Level.WARNING, "[MODULE] Invalid Module " + this.getFile(), excp);
             return null;
         }
@@ -99,14 +101,18 @@ public class FileModule extends Module {
      * Reads the dependency info from the module.
      */
     private ModuleRequires fetchModuleRequires() {
-         try {
+        Logger logger = Logger.getLogger(Module.class.getName());
+        try {
             /* Fetch the entry, return null if it does not exist */
             File entry = new File(this.getFile(), Module.MODULE_REQUIRES);
+            if (entry.exists() == false) {
+                logger.info("[MODULE] No requires.xml for Module " + this.getFile());
+                return null;
+            }
             return ModuleRequires.decode(new FileReader(entry));
         } catch (java.lang.Exception excp) {
             /* This is not too bad if it does not exist */
-            Logger logger = Logger.getLogger(Module.class.getName());
-            logger.log(Level.INFO, "[MODULE] No requires.xml for Module " + this.getFile(), excp);
+            logger.log(Level.INFO, "[MODULE] Error reading requires.xml for Module " + this.getFile(), excp);
             return null;
         }
     }
@@ -115,14 +121,18 @@ public class FileModule extends Module {
      * Reads the asset server info from the module.
      */
     private ModuleRepository fetchModuleRepository() {
-         try {
+        Logger logger = Logger.getLogger(Module.class.getName());
+        try {
             /* Fetch the entry, return null if it does not exist */
             File entry = new File(this.getFile(), Module.MODULE_REPOSITORY);
+            if (entry.exists() == false) {
+                logger.info("[MODULE] No repository.xml for Module " + this.getFile());
+                return null;
+            }
             return ModuleRepository.decode(new FileReader(entry));
         } catch (java.lang.Exception excp) {
             /* This is not too bad if it does not exist */
-            Logger logger = Logger.getLogger(Module.class.getName());
-            logger.log(Level.INFO, "[MODULE] No repository.xml for Module " + this.getFile(), excp);
+            logger.log(Level.INFO, "[MODULE] Error reading repository.xml for Module " + this.getFile(), excp);
             return null;
         }
     }
@@ -145,15 +155,8 @@ public class FileModule extends Module {
         for (File file : files) {
             if (file.isDirectory() == true && file.isHidden() == false) {
                 String name = file.getName();
-                try {
-                    String partType = name.substring(0, name.length() - 1);
-                    URL url = new URL("jar:" + this.getFile().toURL() + "!/" + name);
-                    ModulePart part = new ModulePart(partType, url);
-                    map.put(partType, part);
-                } catch (MalformedURLException excp) {
-                    Logger logger = Logger.getLogger(Module.class.getName());
-                    logger.log(Level.INFO, "[MODULE] Cannot form URL for asset " + name, excp);
-                }
+                ModulePart part = new ModulePart(name, file);
+                map.put(name, part);
             }
         }
         return map;

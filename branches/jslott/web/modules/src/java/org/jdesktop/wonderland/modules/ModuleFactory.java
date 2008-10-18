@@ -18,10 +18,12 @@
 
 package org.jdesktop.wonderland.modules;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.modules.archive.ArchiveModule;
+import org.jdesktop.wonderland.modules.file.FileModule;
 
 /**
  * The ModuleFactory class creates instances of modules, either if the already
@@ -35,35 +37,25 @@ import javax.xml.bind.JAXBException;
 public final class ModuleFactory {
 
     /**
-     * Opens an existing module given its URL. This factory method supports URLs
-     * with the following protocols: 'file:' and 'jar:'. If a URL with a 'file:'
-     * protocol is given, this method expects to find the root directory of the
-     * module on the disk file system. If a URL with a 'jar:' protocol is given,
-     * this method interprets the contents as a JAR file that contains a module.
-     * The jar file may be additionally located on a disk file system or over
-     * the network (see the Javadoc for the ArchiveModule class for more details
-     * about the format of the URL in this case).
+     * Opens an existing module given its File. The File may either be a
+     * directory or a JAR file.
      *
-     * @param url The URL of the WFS to open
-     * @throw FileNotFoundException If the WFS does not exist
+     * @param file The File of the Module to open
+     * @throw FileNotFoundException If the Module does not exist
      * @throw IOException Upon some general I/O error reading the WFS
      * @throw JAXBException Upon error reading XML
-     * @throw InvalidWFSException If the WFS is not properly formatted 
      */
-    public static final Module open(URL url) throws FileNotFoundException, IOException, JAXBException {        
-        String protocol = url.getProtocol();
+    public static final Module open(File file) throws FileNotFoundException, IOException, JAXBException {        
         
         /* If the URL points to a disk directory */
-        if (protocol.equals(Module.FILE_PROTOCOL) == true) {
-            //return new FileWFS(url.getPath(), false);
-            return null;
+        if (file.exists() == true && file.isDirectory() == true) {
+            return new FileModule(file);
         }
-        else if (protocol.equals(Module.JAR_PROTOCOL) == true) {
-            //return new ArchiveWFS(url);
-            return null;
+        else if (file.exists() == true && file.getName().endsWith(".jar") == true) {
+            return new ArchiveModule(file);
         }
         else {
-            throw new IOException("Invalid Protocol for Module Given: " + url.toString());
+            throw new IOException("Invalid File for Module Given: " + file);
         }
     }
 }

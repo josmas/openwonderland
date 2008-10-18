@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -140,22 +141,22 @@ public class ModuleManager {
     }
 
     /**
-     * Attempts to add a collection of modules to install. Takes the URL of
+     * Attempts to add a collection of modules to install. Takes the Files of
      * Jar files containing the modules.
      */
-    public Collection<URL> install(Collection<URL> moduleURLs) {
+    public Collection<File> install(Collection<File> moduleFiles) {
         /* Returns a collection of module urls added */
-        Collection<URL> added = new LinkedList<URL>();
+        Collection<File> added = new LinkedList<File>();
         
         /* Iterate through each module URL and make it a pending module */
-        Iterator<URL> it = moduleURLs.iterator();
+        Iterator<File> it = moduleFiles.iterator();
         while (it.hasNext() == true) {
-            URL url = it.next();
-            if (this.pendingMananger.add(url) == false) {
-                logger.warning("[MODULES] INSTALL Failed to add " + url);
+            File file = it.next();
+            if (this.pendingMananger.add(file) == false) {
+                logger.warning("[MODULES] INSTALL Failed to add " + file);
                 continue;
             }
-            added.add(url);
+            added.add(file);
         }
         return added;
     }
@@ -531,9 +532,9 @@ public class ModuleManager {
         return satisfied;
     }
     
-    public static void main(String args[]) {
-        System.setProperty("wonderland.webserver.modules.root", "/Users/jordanslott/wonderland/trunk/web/examples/modules");
-        ModuleManager mm = ModuleManager.getModuleManager();
+    public static void main(String args[]) throws MalformedURLException {
+        System.setProperty("wonderland.webserver.modules.root", "/Users/jordanslott/src/moduletest");
+        ModuleManager manager = ModuleManager.getModuleManager();
         
         /* Write out the installed modules */
 //        StringBuilder sb = new StringBuilder("Installed Modules\n");
@@ -544,25 +545,18 @@ public class ModuleManager {
 //        }
 //        logger.info(sb.toString());
         
-//        Collection<String> added = mm.getModules(State.ADD);
+//        Collection<File> files = new LinkedList<File>();
+//        File file = new File("/Users/jordanslott/src/moduletest/tmp/example.jar");
+//        files.add(file);
+//        Collection<File> added = manager.install(files);
 //        System.out.println(added);
-//        AddedModule am1 = (AddedModule)mm.getModule("medical", State.ADD);
-//        AddedModule am2 = (AddedModule)mm.getModule("demo", State.ADD);
-//        Collection<AddedModule> map = new LinkedList();
-//        map.add(am1);
-//        map.add(am2);
-//        mm.addAll(map, true);
-        
-//        mm.installAll();
+//        manager.installAll();
 //        
-//        ModuleInfo info1 = new ModuleInfo("demo", 1, 0);
-//        ModuleInfo info2 = new ModuleInfo("medical", 1, 0);
-//        Collection<ModuleInfo> map = new LinkedList();
-//        map.add(info1);
-//        map.add(info2);
-//        mm.removeAll(map);
-                mm.uninstallAll();
 
-        mm.uninstallAll();
+        Collection<String> names = new LinkedList<String>();
+        names.add("example");
+        Collection<String> removed = manager.uninstall(names);
+        System.out.println(removed);
+        manager.uninstallAll();
     }
 }

@@ -22,8 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -177,15 +175,15 @@ public class ArchiveModule extends Module {
 
             /* See if the name ends with a "/", then it is a directory */
             if (name.endsWith("/") == true) {
-                try {
-                    String partType = name.substring(0, name.length() - 1);
-                    URL url = new URL("jar:" + this.getFile().toURL() + "!/" + name);
-                    ModulePart part = new ModulePart(partType, url);
-                    map.put(partType, part);
-                } catch (MalformedURLException excp) {
-                    Logger logger = Logger.getLogger(Module.class.getName());
-                    logger.log(Level.INFO, "[MODULE] Cannot form URL for asset " + name, excp);
+                /* Look at the part type, ignore META-INF */
+                String partType = name.substring(0, name.length() - 1);
+                if (partType.equals("META-INF") == true) {
+                    continue;
                 }
+
+                /* Just use the jar file */
+                ModulePart part = new ModulePart(partType, this.getFile());
+                map.put(partType, part);
             }
         }
         return map;

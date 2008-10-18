@@ -112,12 +112,11 @@ public class ModuleUploadServlet extends HttpServlet {
             /*
              * Write the file a temporary file
              */
-            URL url = null;
+            File tmpFile = null;
             try {
-                File tmpFile = File.createTempFile(moduleName, ".jar");
+                tmpFile = File.createTempFile(moduleName, ".jar");
                 tmpFile.deleteOnExit();
                 item.write(tmpFile);
-                url = tmpFile.toURL();
                 logger.info("[MODULE] UPLOAD Wrote added module to " + tmpFile.getAbsolutePath());
             } catch (java.lang.Exception excp) {
                 /* Log an error to the log and write an error message back */
@@ -129,10 +128,10 @@ public class ModuleUploadServlet extends HttpServlet {
             }
             
             /* Add the new module */
-            Collection<URL> moduleURLs = new LinkedList<URL>();
-            moduleURLs.add(url);
-            Collection<URL> result = manager.install(moduleURLs);
-            if (result.contains(url) == false) {
+            Collection<File> moduleFiles = new LinkedList<File>();
+            moduleFiles.add(tmpFile);
+            Collection<File> result = manager.install(moduleFiles);
+            if (result.contains(tmpFile) == false) {
                 /* Log an error to the log and write an error message back */
                 logger.warning("[MODULE] UPLOAD Failed to install module " + moduleName);
                 writer.println("Unable to install module for some reason. Press the ");

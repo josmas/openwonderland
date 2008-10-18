@@ -69,6 +69,7 @@ public class ArchiveManifest {
      */
     public ArchiveManifest(File file) throws IOException {
         this.url = file.toURL();
+        System.out.println("file " + file.getAbsolutePath() + " " + file.exists());
         this.jarfile = new JarFile(file);
         this.createArchiveMap(jarfile);
     }
@@ -106,6 +107,9 @@ public class ArchiveManifest {
      */
     public InputStream getEntryInputStream(String path) throws IOException {
         ZipEntry entry = this.jarfile.getEntry(path);
+        if (entry == null) {
+            return null;
+        }
         InputStream is = jarfile.getInputStream(entry);
         return is;
     }

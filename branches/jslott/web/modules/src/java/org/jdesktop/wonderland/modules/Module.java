@@ -19,8 +19,13 @@
 package org.jdesktop.wonderland.modules;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
+import javax.xml.bind.JAXBException;
 
 /**
  * The Module class represents a single module within Wonderland. A module
@@ -43,10 +48,6 @@ import java.util.Map;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public abstract class Module {
-
-    /* Support URL protocols for file systems */
-    public static final String FILE_PROTOCOL = "file";
-    public static final String JAR_PROTOCOL  = "jar";
     
     /* Useful names of files within the archive */
     public static final String MODULE_INFO       = "module.xml";
@@ -176,12 +177,20 @@ public abstract class Module {
         sb.append("Parts: ");
         
         Map<String, ModulePart> parts = this.getParts();
-        Iterator<String> it = parts.keySet().iterator();
+        Iterator<Map.Entry<String, ModulePart>> it = parts.entrySet().iterator();
         while (it.hasNext() == true) {
-            sb.append(it.next() + " ");
+            Map.Entry<String, ModulePart> entry = it.next();
+            ModulePart part = entry.getValue();
+            sb.append("\t" + part.getName() + " " + part.getFile().getAbsolutePath() + "\n");
         }
         sb.append("\n");
         sb.append("---------------------------------------------------------------------------\n");
         return sb.toString();
+    }
+    
+    public static void main(String args[]) throws MalformedURLException, FileNotFoundException, IOException, JAXBException {
+        File file = new File("/Users/jordanslott/src/moduletest/tmp/example.jar");
+        Module module = ModuleFactory.open(file);
+        System.out.println(module.toString());
     }
 }
