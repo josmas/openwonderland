@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -28,8 +30,19 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public class DisconnectCallMessage extends Message {
+  
+    private CellID cellID;
 
-    public DisconnectCallMessage() {
+    public DisconnectCallMessage(CellID cellID) {
+	this.cellID = cellID;
+    }
+
+    public void setCellID(CellID cellID) {
+        this.cellID = cellID;
+    }
+
+    public CellID getCellID() {
+        return cellID;
     }
 
 }

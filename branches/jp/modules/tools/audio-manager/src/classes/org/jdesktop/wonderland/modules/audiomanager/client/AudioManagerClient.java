@@ -129,8 +129,11 @@ public class AudioManagerClient extends BaseConnection {
 
 		sc.setVisible(true);
 
+	        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+
 	        // XXX need location and direction
-	        session.send(this, new PlaceCallMessage(sipURL, 0., 0., 0., 0., false));
+	        session.send(this, new PlaceCallMessage(
+		    cellID, sipURL, 0., 0., 0., 0., false));
 	    } catch (IOException e) {
 		logger.warning(e.getMessage());
 	    }

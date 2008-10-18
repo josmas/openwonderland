@@ -22,6 +22,8 @@ package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 /**
  *
  * @author joe provino
@@ -46,6 +48,7 @@ public class VoiceChatMessage extends Message {
 
     private ActionType actionType;
     
+    private CellID cellID;
     private String group;
     private String calleeList;
     private String caller;
@@ -58,21 +61,23 @@ public class VoiceChatMessage extends Message {
     public VoiceChatMessage() {
     }
 
-    public VoiceChatMessage(ActionType actionType) {
+    public VoiceChatMessage(ActionType actionType, CellID cellID) {
 	if (actionType != ActionType.GET_CHAT_INFO_REQUEST) {
 	    System.out.println("Invalid action type:  " + actionType);
 	}
 
+	this.cellID = cellID;
 	this.actionType = actionType;
     }
 
-    public VoiceChatMessage(ActionType actionType, String group) {
+    public VoiceChatMessage(ActionType actionType, CellID cellID, String group) {
 	if (actionType != ActionType.GET_CHAT_INFO_REQUEST && 
 		actionType != ActionType.GET_CHAT_INFO_RESPONSE) {
 
 	    System.out.println("Invalid action type:  " + actionType);
 	}
 
+	this.cellID = cellID;
 	this.actionType = actionType;
 	this.group = group;
     }
@@ -80,26 +85,29 @@ public class VoiceChatMessage extends Message {
     /*
      * End group
      */
-    public VoiceChatMessage(String group) {
+    public VoiceChatMessage(CellID cellID, String group) {
 	actionType = ActionType.END;
+	this.cellID = cellID;
 	this.group = group;
     }
 
     /*
      * Leave group
      */
-    public VoiceChatMessage(ActionType actionType, String group, 
+    public VoiceChatMessage(ActionType actionType, CellID cellID, String group, 
 	    String caller) {
 
         this.actionType = actionType;
+	this.cellID = cellID;
 	this.group = group;
 	this.caller = caller;
     }
 	 
-    public VoiceChatMessage(ActionType actionType, String group, 
+    public VoiceChatMessage(ActionType actionType, CellID cellID, String group, 
 	    String caller, String calleeList, ChatType chatType) {
 
         this.actionType = actionType;
+	this.cellID = cellID;
 	this.group = group;
 	this.caller = caller;
 	this.calleeList = calleeList;
@@ -110,6 +118,14 @@ public class VoiceChatMessage extends Message {
         return actionType;
     }
     
+    public void setCellID(CellID cellID) {
+        this.cellID = cellID;
+    }
+
+    public CellID getCellID() {
+        return cellID;
+    }
+
     public String getGroup() {
 	return group;
     }

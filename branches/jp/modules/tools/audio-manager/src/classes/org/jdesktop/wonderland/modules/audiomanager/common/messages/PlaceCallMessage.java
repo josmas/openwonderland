@@ -21,6 +21,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 /**
  * The initial message that a client must send to the Wonderland server
  * in order to specify a communications protocol to use.
@@ -28,6 +30,7 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 @ExperimentalAPI
 public class PlaceCallMessage extends Message {
+    private CellID cellID;
     private String sipURL;	      // URL of softphone to call
     private double x;	      	      // location of the call
     private double y;
@@ -35,15 +38,24 @@ public class PlaceCallMessage extends Message {
     private double direction;	      // direction of avatar
     private boolean confirmAnswered;  // user has to press 1
 
-    public PlaceCallMessage(String sipURL, double x, double y,
+    public PlaceCallMessage(CellID cellID, String sipURL, double x, double y,
 	    double z, double direction, boolean confirmAnswered) {
 
+	this.cellID = cellID;
 	this.sipURL = sipURL;
 	this.x = x;
 	this.y = y;
 	this.z = z;
 	this.direction = direction;
 	this.confirmAnswered = confirmAnswered;
+    }
+
+    public void setCellID(CellID cellID) {
+        this.cellID = cellID;
+    }
+
+    public CellID getCellID() {
+        return cellID;
     }
 
     public void setSipURL(String sipURL) {
