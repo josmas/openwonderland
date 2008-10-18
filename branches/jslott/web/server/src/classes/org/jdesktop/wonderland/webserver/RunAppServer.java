@@ -45,7 +45,6 @@ import org.glassfish.embed.EmbeddedException;
 import org.glassfish.embed.EmbeddedHttpListener;
 import org.glassfish.embed.EmbeddedVirtualServer;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jdesktop.wonderland.modules.service.AddedModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jvnet.hk2.component.Habitat;
@@ -117,27 +116,27 @@ public class RunAppServer {
     }
     
     private void installModules() throws IOException {
-        // read the list of .war files to deploy
-        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/module.jars");
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-    
-        // extract modules to a directory, and make a list of the extracted
-        // modules
-        File moduleDir = ModuleManager.getModuleManager().getModuleStateDirectory(ModuleManager.State.ADD);
-        moduleDir.mkdirs();
-        
-        // make sure the modules directory exists
-        Collection<AddedModule> modules = new ArrayList<AddedModule>();
-        
-        String line;
-        while ((line = in.readLine()) != null) {
-            File f = RunUtil.extract(getClass(), line, moduleDir);
-            modules.add(new AddedModule(f));
-        }
-        
-        // add all modules at once to the module manager.  This will ensure
-        // that dependency checks take all modules into account.
-        ModuleManager.getModuleManager().addAll(modules, true);
+//        // read the list of .war files to deploy
+//        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/module.jars");
+//        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+//    
+//        // extract modules to a directory, and make a list of the extracted
+//        // modules
+//        File moduleDir = ModuleManager.getModuleManager().getModuleStateDirectory(ModuleManager.State.ADD);
+//        moduleDir.mkdirs();
+//        
+//        // make sure the modules directory exists
+//        Collection<AddedModule> modules = new ArrayList<AddedModule>();
+//        
+//        String line;
+//        while ((line = in.readLine()) != null) {
+//            File f = RunUtil.extract(getClass(), line, moduleDir);
+//            modules.add(new AddedModule(f));
+//        }
+//        
+//        // add all modules at once to the module manager.  This will ensure
+//        // that dependency checks take all modules into account.
+//        ModuleManager.getModuleManager().addAll(modules, true);
     }
     
     // get the main instance

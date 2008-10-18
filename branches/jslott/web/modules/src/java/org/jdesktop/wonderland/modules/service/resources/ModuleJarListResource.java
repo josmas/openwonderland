@@ -30,10 +30,7 @@ import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
-import org.jdesktop.wonderland.modules.ModulePlugin;
-import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
-import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModuleJarListResource class is a Jersey RESTful service that returns a
@@ -52,59 +49,60 @@ public class ModuleJarListResource {
     @GET
     @ProduceMime("text/plain")
     public Response getModuleClientAndCommonJars() {
-        Logger logger = ModuleManager.getLogger();
-        Collection<String> jarURIs = new LinkedList<String>();
-        ModuleManager manager = ModuleManager.getModuleManager();
-        
-        /* Fetch the entire list of installed modules, loop through each */
-        Iterator<String> it = manager.getModules(State.INSTALLED).iterator();
-        while (it.hasNext() == true) {
-            String moduleName = it.next();
-            InstalledModule im = (InstalledModule) manager.getModule(moduleName, State.INSTALLED);
-            if (im == null) {
-                /* Log an error and return null */
-                logger.warning("[MODULES] REST GET PLUGINS Unable to locate module " + moduleName);
-                continue;
-            }
-        
-            /* Fetch the list of plugins */
-            Iterator<String> it2 = im.getModulePlugins().iterator();
-            while (it2.hasNext() == true) {
-                /*
-                 * For each plugin, fetch the list of client-side and common jar
-                 * names
-                 */
-                String pluginName = it2.next();
-                ModulePlugin plugin = im.getModulePlugin(pluginName);
-                if (plugin == null) {
-                    logger.warning("[MODULES] REST GET PLUGINS Unable to fetch " +
-                            "plugin " + pluginName + " in " + moduleName);
-                    continue;
-                }
-
-                Collection<String> clientJars = plugin.getClientJars();
-                jarURIs.addAll(this.getPluginJarURIs(moduleName, pluginName, clientJars, ModulePlugin.CLIENT_JAR));
-                Collection<String> commonJars = plugin.getCommonsJars();
-                jarURIs.addAll(this.getPluginJarURIs(moduleName, pluginName, commonJars, ModulePlugin.COMMON_JAR));
-            }
-        }
-        
-        /* Otherwise, return a response with the input stream */
-        ModulePluginList mpl = new ModulePluginList();
-        mpl.setJarURIs(jarURIs.toArray(new String[] {}));
-
-        /* Write the XML encoding to a writer and return it2 */
-        StringWriter sw = new StringWriter();
-        try {
-            mpl.encode(sw);
-            ResponseBuilder rb = Response.ok(sw.toString());
-            return rb.build();
-        } catch (javax.xml.bind.JAXBException excp) {
-            /* Log an error and return an error response */
-            logger.log(Level.WARNING, "[MODULES] REST GET PLUGINS Unable to encode", excp);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
+//        Logger logger = ModuleManager.getLogger();
+//        Collection<String> jarURIs = new LinkedList<String>();
+//        ModuleManager manager = ModuleManager.getModuleManager();
+//        
+//        /* Fetch the entire list of installed modules, loop through each */
+//        Iterator<String> it = manager.getModules(State.INSTALLED).iterator();
+//        while (it.hasNext() == true) {
+//            String moduleName = it.next();
+//            InstalledModule im = (InstalledModule) manager.getModule(moduleName, State.INSTALLED);
+//            if (im == null) {
+//                /* Log an error and return null */
+//                logger.warning("[MODULES] REST GET PLUGINS Unable to locate module " + moduleName);
+//                continue;
+//            }
+//        
+//            /* Fetch the list of plugins */
+//            Iterator<String> it2 = im.getModulePlugins().iterator();
+//            while (it2.hasNext() == true) {
+//                /*
+//                 * For each plugin, fetch the list of client-side and common jar
+//                 * names
+//                 */
+//                String pluginName = it2.next();
+//                ModulePlugin plugin = im.getModulePlugin(pluginName);
+//                if (plugin == null) {
+//                    logger.warning("[MODULES] REST GET PLUGINS Unable to fetch " +
+//                            "plugin " + pluginName + " in " + moduleName);
+//                    continue;
+//                }
+//
+//                Collection<String> clientJars = plugin.getClientJars();
+//                jarURIs.addAll(this.getPluginJarURIs(moduleName, pluginName, clientJars, ModulePlugin.CLIENT_JAR));
+//                Collection<String> commonJars = plugin.getCommonsJars();
+//                jarURIs.addAll(this.getPluginJarURIs(moduleName, pluginName, commonJars, ModulePlugin.COMMON_JAR));
+//            }
+//        }
+//        
+//        /* Otherwise, return a response with the input stream */
+//        ModulePluginList mpl = new ModulePluginList();
+//        mpl.setJarURIs(jarURIs.toArray(new String[] {}));
+//
+//        /* Write the XML encoding to a writer and return it2 */
+//        StringWriter sw = new StringWriter();
+//        try {
+//            mpl.encode(sw);
+//            ResponseBuilder rb = Response.ok(sw.toString());
+//            return rb.build();
+//        } catch (javax.xml.bind.JAXBException excp) {
+//            /* Log an error and return an error response */
+//            logger.log(Level.WARNING, "[MODULES] REST GET PLUGINS Unable to encode", excp);
+//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+//            return rb.build();
+//        }
+        return null;
     }
     
     /**

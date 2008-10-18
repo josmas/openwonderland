@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModulePlugin;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.utils.RunUtil;
 
@@ -87,19 +86,19 @@ public class DarkstarRunner extends BaseRunner {
         }
         
         // write all new modules to the module directory
-        moduleDir.mkdirs();
-        Collection<String> moduleNames = mm.getModules(ModuleManager.State.INSTALLED);
-        for (String moduleName : moduleNames) {
-            Module m = mm.getModule(moduleName, ModuleManager.State.INSTALLED);
-            
-            try {
-                writePlugins(m, moduleDir);
-            } catch (IOException ioe) {
-                // skip this module and keep going
-                logger.log(Level.WARNING, "Error writing plugins for " + m.getName(),
-                           ioe);
-            }
-        }
+//        moduleDir.mkdirs();
+//        Collection<String> moduleNames = mm.getModules(ModuleManager.State.INSTALLED);
+//        for (String moduleName : moduleNames) {
+//            Module m = mm.getModule(moduleName, ModuleManager.State.INSTALLED);
+//            
+//            try {
+//                writePlugins(m, moduleDir);
+//            } catch (IOException ioe) {
+//                // skip this module and keep going
+//                logger.log(Level.WARNING, "Error writing plugins for " + m.getName(),
+//                           ioe);
+//            }
+//        }
         
         super.start(props);
     }
@@ -120,46 +119,46 @@ public class DarkstarRunner extends BaseRunner {
     protected void writePlugins(Module module, File moduleDir)
         throws IOException
     {
-        File moduleSpecificDir = new File(moduleDir, module.getName());
-        moduleSpecificDir.mkdirs();
-        
-        // got through each plugin
-        Collection<String> pluginNames = module.getModulePlugins();
-        for (String pluginName : pluginNames) {
-            // create a directory to put the data int
-            File pluginDir = new File(moduleSpecificDir, pluginName);
-            pluginDir.mkdirs();
-            
-            // get the plugin
-            ModulePlugin mp = module.getModulePlugin(pluginName);
-            
-            // extract server jars
-            Collection<String> serverJars = mp.getServerJars();
-            if (!serverJars.isEmpty()) {
-                File serverDir = new File(pluginDir, "server");
-                serverDir.mkdirs();
-            
-                for (String serverJar : serverJars) {
-                    InputStream is = 
-                        module.getInputStreamForPlugin(pluginName, serverJar,
-                                                       "server/");
-                    RunUtil.writeToFile(is, new File(serverDir, serverJar));
-                }
-            }
-            
-            // extract common jars
-            Collection<String> commonJars = mp.getCommonsJars();
-            if (!commonJars.isEmpty()) {
-                File commonDir = new File(pluginDir, "common");
-                commonDir.mkdirs();
-            
-                for (String commonJar : commonJars) {
-                    InputStream is = 
-                        module.getInputStreamForPlugin(pluginName, commonJar,
-                                                       "common/");
-                    RunUtil.writeToFile(is, new File(commonDir, commonJar));
-                }
-            }
-        }
+//        File moduleSpecificDir = new File(moduleDir, module.getName());
+//        moduleSpecificDir.mkdirs();
+//        
+//        // got through each plugin
+//        Collection<String> pluginNames = module.getModulePlugins();
+//        for (String pluginName : pluginNames) {
+//            // create a directory to put the data int
+//            File pluginDir = new File(moduleSpecificDir, pluginName);
+//            pluginDir.mkdirs();
+//            
+//            // get the plugin
+//            ModulePlugin mp = module.getModulePlugin(pluginName);
+//            
+//            // extract server jars
+//            Collection<String> serverJars = mp.getServerJars();
+//            if (!serverJars.isEmpty()) {
+//                File serverDir = new File(pluginDir, "server");
+//                serverDir.mkdirs();
+//            
+//                for (String serverJar : serverJars) {
+//                    InputStream is = 
+//                        module.getInputStreamForPlugin(pluginName, serverJar,
+//                                                       "server/");
+//                    RunUtil.writeToFile(is, new File(serverDir, serverJar));
+//                }
+//            }
+//            
+//            // extract common jars
+//            Collection<String> commonJars = mp.getCommonsJars();
+//            if (!commonJars.isEmpty()) {
+//                File commonDir = new File(pluginDir, "common");
+//                commonDir.mkdirs();
+//            
+//                for (String commonJar : commonJars) {
+//                    InputStream is = 
+//                        module.getInputStreamForPlugin(pluginName, commonJar,
+//                                                       "common/");
+//                    RunUtil.writeToFile(is, new File(commonDir, commonJar));
+//                }
+//            }
+//        }
     }
 }

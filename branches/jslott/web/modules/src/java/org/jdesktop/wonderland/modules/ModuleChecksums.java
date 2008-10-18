@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -71,7 +72,7 @@ public class ModuleChecksums {
      * serialization
      */
     @XmlTransient
-    public HashMap<String, Checksum> internalChecksums = new HashMap<String, Checksum>();
+    public Map<String, Checksum> internalChecksums = new HashMap<String, Checksum>();
     
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
@@ -131,8 +132,8 @@ public class ModuleChecksums {
      * 
      * @param checksums An hash map of Checksum objects
      */
-    public void setChecksums(HashMap<String, Checksum> checksums) {
-        this.internalChecksums = checksums;
+    public void setChecksums(Map<String, Checksum> checksums) {
+        this.internalChecksums = Collections.synchronizedMap(new HashMap(checksums));
     }
     
     /**
@@ -141,7 +142,7 @@ public class ModuleChecksums {
      * @return An array of Checksum objects
      */
     @XmlTransient
-    public HashMap<String, Checksum> getChecksums() {
+    public Map<String, Checksum> getChecksums() {
         return this.internalChecksums;
     }
     

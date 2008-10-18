@@ -19,23 +19,13 @@
 package org.jdesktop.wonderland.modules.service.resources;
 
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.client.modules.ModulePluginList;
-import org.jdesktop.wonderland.modules.ModulePlugin;
-import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
-import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModulePluginJarResource class is a Jersey RESTful service that returns a
@@ -69,20 +59,21 @@ public class ModulePluginJarResource {
     public Response getModuleClientPluginJar(@PathParam("modulename") String moduleName,
             @PathParam("pluginname") String pluginName, @PathParam("jarname") String jarName) {
         
-        /* Fetch the input stream for the jar, return error if null */
-        InputStream is = this.getModulePlugin(moduleName, pluginName, jarName, ModulePlugin.CLIENT_JAR);
-        if (is == null) {
-            /* Log an error and return an error response */
-            ModuleManager.getLogger().warning("[MODULES] REST GET PLUGIN " +
-                    " Unable to locate plugin " + moduleName + " " + pluginName +
-                    " " + jarName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
-        
-        /* Otherwise, return a response with the input stream */
-        ResponseBuilder rb = Response.ok(is);
-        return rb.build();
+//        /* Fetch the input stream for the jar, return error if null */
+//        InputStream is = this.getModulePlugin(moduleName, pluginName, jarName, ModulePlugin.CLIENT_JAR);
+//        if (is == null) {
+//            /* Log an error and return an error response */
+//            ModuleManager.getLogger().warning("[MODULES] REST GET PLUGIN " +
+//                    " Unable to locate plugin " + moduleName + " " + pluginName +
+//                    " " + jarName);
+//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+//            return rb.build();
+//        }
+//        
+//        /* Otherwise, return a response with the input stream */
+//        ResponseBuilder rb = Response.ok(is);
+//        return rb.build();
+        return null;
     }
 
     /**
@@ -106,20 +97,21 @@ public class ModulePluginJarResource {
     public Response getModuleCommonPluginJar(@PathParam("modulename") String moduleName,
             @PathParam("pluginname") String pluginName, @PathParam("jarname") String jarName) {
         
-        /* Fetch the input stream for the jar, return error if null */
-        InputStream is = this.getModulePlugin(moduleName, pluginName, jarName, ModulePlugin.COMMON_JAR);
-        if (is == null) {
-            /* Log an error and return an error response */
-            ModuleManager.getLogger().warning("[MODULES] REST GET PLUGIN " +
-                    " Unable to locate plugin " + moduleName + " " + pluginName +
-                    " " + jarName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
-        
-        /* Otherwise, return a response with the input stream */
-        ResponseBuilder rb = Response.ok(is);
-        return rb.build();
+//        /* Fetch the input stream for the jar, return error if null */
+//        InputStream is = this.getModulePlugin(moduleName, pluginName, jarName, ModulePlugin.COMMON_JAR);
+//        if (is == null) {
+//            /* Log an error and return an error response */
+//            ModuleManager.getLogger().warning("[MODULES] REST GET PLUGIN " +
+//                    " Unable to locate plugin " + moduleName + " " + pluginName +
+//                    " " + jarName);
+//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+//            return rb.build();
+//        }
+//        
+//        /* Otherwise, return a response with the input stream */
+//        ResponseBuilder rb = Response.ok(is);
+//        return rb.build();
+        return null;
     }
  
     /**
@@ -143,20 +135,21 @@ public class ModulePluginJarResource {
     public Response getModuleServerPluginJar(@PathParam("modulename") String moduleName,
             @PathParam("pluginname") String pluginName, @PathParam("jarname") String jarName) {
         
-        /* Fetch the input stream for the jar, return error if null */
-        InputStream is = this.getModulePlugin(moduleName, pluginName, jarName, ModulePlugin.SERVER_JAR);
-        if (is == null) {
-            /* Log an error and return an error response */
-            ModuleManager.getLogger().warning("[MODULES] REST GET PLUGIN " +
-                    " Unable to locate plugin " + moduleName + " " + pluginName +
-                    " " + jarName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
-        
-        /* Otherwise, return a response with the input stream */
-        ResponseBuilder rb = Response.ok(is);
-        return rb.build();
+//        /* Fetch the input stream for the jar, return error if null */
+//        InputStream is = this.getModulePlugin(moduleName, pluginName, jarName, ModulePlugin.SERVER_JAR);
+//        if (is == null) {
+//            /* Log an error and return an error response */
+//            ModuleManager.getLogger().warning("[MODULES] REST GET PLUGIN " +
+//                    " Unable to locate plugin " + moduleName + " " + pluginName +
+//                    " " + jarName);
+//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+//            return rb.build();
+//        }
+//        
+//        /* Otherwise, return a response with the input stream */
+//        ResponseBuilder rb = Response.ok(is);
+//        return rb.build();
+        return null;
     }
     
     /**
@@ -165,19 +158,20 @@ public class ModulePluginJarResource {
      * string is either CLIENT, SERVER, or COMMON.
      */
     private InputStream getModulePlugin(String moduleName, String pluginName, String jarName, String type) {
-        /* Fetch thhe error logger for use in this method */
-        Logger logger = ModuleManager.getLogger();
-        
-        /* Fetch the module from the module manager */
-        ModuleManager mm = ModuleManager.getModuleManager();
-        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
-        if (im == null) {
-            /* Log an error and return null */
-            logger.warning("[MODULES] REST GET PLUGIN Unable to locate module " + moduleName);
-            return null;
-        }
-        
-        /* Fetch the input stream */
-        return im.getInputStreamForPlugin(pluginName, jarName, type);
+//        /* Fetch thhe error logger for use in this method */
+//        Logger logger = ModuleManager.getLogger();
+//        
+//        /* Fetch the module from the module manager */
+//        ModuleManager mm = ModuleManager.getModuleManager();
+//        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
+//        if (im == null) {
+//            /* Log an error and return null */
+//            logger.warning("[MODULES] REST GET PLUGIN Unable to locate module " + moduleName);
+//            return null;
+//        }
+//        
+//        /* Fetch the input stream */
+//        return im.getInputStreamForPlugin(pluginName, jarName, type);
+        return null;
     }
 }

@@ -324,8 +324,7 @@ public class ModuleTask extends Jar {
             
         ZipFileSet zfs = new ZipFileSet();
         zfs.setFile(pluginFile);
-        zfs.setFullpath(Module.MODULE_PLUGINS + "/" + pluginName + "/" + 
-                        pluginDir + "/" + pluginJarName);
+        zfs.setFullpath(pluginDir + "/" + pluginName + "/" + pluginJarName);
         
         super.addFileset(zfs);
     }
@@ -336,8 +335,7 @@ public class ModuleTask extends Jar {
     {
         ZipFileSet zfs = new ZipFileSet();
         zfs.setFile(e.jarFile);
-        zfs.setFullpath(Module.MODULE_PLUGINS + "/" + pluginName + "/" + 
-                        pluginDir + "/" + e.jarFile.getName());
+        zfs.setFullpath(pluginDir + "/" + pluginName + "/" + e.jarFile.getName());
         
         super.addFileset(zfs);
     }

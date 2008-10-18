@@ -29,11 +29,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleRepository;
 import org.jdesktop.wonderland.modules.ModuleRepository.Repository;
-import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
-import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModuleRepositoryResource class is a Jersey RESTful service that returns
@@ -69,9 +68,9 @@ public class ModuleRepositoryResource {
         Logger logger = ModuleManager.getLogger();
         
         /* Fetch the module from the module manager */
-        ModuleManager mm = ModuleManager.getModuleManager();
-        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
-        if (im == null) {
+        ModuleManager manager = ModuleManager.getModuleManager();
+        Module module = manager.getModules().get(moduleName);
+        if (module == null) {
             /* Log an error and return an error response */
             logger.warning("ModuleManager: unable to locate module " + moduleName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
@@ -86,7 +85,7 @@ public class ModuleRepositoryResource {
         String hostname = uriBuilder.build().toString();
         
         /* Fetch the module repository, return an error if it does not exist */
-        ModuleRepository mr = im.getModuleRepository();
+        ModuleRepository mr = module.getRepository();
         if (mr == null) {
             /*
              * If the repository doesn't exist (perhaps from a missing repository.xml

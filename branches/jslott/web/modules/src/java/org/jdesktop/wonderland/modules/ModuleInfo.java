@@ -35,12 +35,10 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * The ModuleInfo class represents the basic information about a module: its
- * unique name and its major.minor version.
+ * unique name, its major.minor version, and a string description.
  * <p>
- * This class follows the Java Bean pattern (default constructor, setter/getter
- * methods) so that it may be serialised to/from disk. The static decode() and
- * encode methods take an instance of a ModuleVersion class and perform the
- * loading and saving from/to disk.
+ * This class is annotation with JAXB XML elements and supports encoding and
+ * decoding to/from XML via the encode() and decode() methods, respectively.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */

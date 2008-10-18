@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules.util;
+package org.jdesktop.wonderland.modules;
 
 import java.io.InputStream;
 import java.io.Writer;

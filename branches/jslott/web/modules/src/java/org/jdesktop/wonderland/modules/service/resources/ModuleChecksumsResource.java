@@ -27,9 +27,7 @@ import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.modules.ModuleChecksums;
-import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
-import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModuleChecksumsResource class is a Jersey RESTful service that returns the
@@ -59,39 +57,40 @@ public class ModuleChecksumsResource {
     @GET
     @ProduceMime("text/plain")
     public Response getModuleInfo(@PathParam("modulename") String moduleName) {
-        /* Fetch thhe error logger for use in this method */
-        Logger logger = ModuleManager.getLogger();
-        
-        /* Fetch the module from the module manager */
-        ModuleManager mm = ModuleManager.getModuleManager();
-        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
-        if (im == null) {
-            /* Log an error and return an error response */
-            logger.warning("ModuleManager: unable to locate module " + moduleName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
-        
-        /* Check to see that the module checksums exist, return error if not */
-        ModuleChecksums rc = im.getModuleChecksums();
-        if (rc == null) {
-            /* Log an error and return an error response */
-            logger.warning("ModuleManager: unable to locate module checksums: " + moduleName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
-        
-        /* Write the XML encoding to a writer and return it */
-        StringWriter sw = new StringWriter();
-        try {
-            rc.encode(sw);
-            ResponseBuilder rb = Response.ok(sw.toString());
-            return rb.build();
-        } catch (javax.xml.bind.JAXBException excp) {
-            /* Log an error and return an error response */
-            logger.warning("ModuleManager: unable to encode module info " + moduleName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
+//        /* Fetch thhe error logger for use in this method */
+//        Logger logger = ModuleManager.getLogger();
+//        
+//        /* Fetch the module from the module manager */
+//        ModuleManager mm = ModuleManager.getModuleManager();
+//        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
+//        if (im == null) {
+//            /* Log an error and return an error response */
+//            logger.warning("ModuleManager: unable to locate module " + moduleName);
+//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+//            return rb.build();
+//        }
+//        
+//        /* Check to see that the module checksums exist, return error if not */
+//        ModuleChecksums rc = im.getModuleChecksums();
+//        if (rc == null) {
+//            /* Log an error and return an error response */
+//            logger.warning("ModuleManager: unable to locate module checksums: " + moduleName);
+//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+//            return rb.build();
+//        }
+//        
+//        /* Write the XML encoding to a writer and return it */
+//        StringWriter sw = new StringWriter();
+//        try {
+//            rc.encode(sw);
+//            ResponseBuilder rb = Response.ok(sw.toString());
+//            return rb.build();
+//        } catch (javax.xml.bind.JAXBException excp) {
+//            /* Log an error and return an error response */
+//            logger.warning("ModuleManager: unable to encode module info " + moduleName);
+//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+//            return rb.build();
+//        }
+        return null;
     }
 }
