@@ -83,6 +83,13 @@ public class ArtDeployer implements ModuleDeployerSPI {
     }
     
     /**
+     * Returns (a copy of) a map of module names to their File roots
+     */
+    public static Map<String, File> getFileMap() {
+        return new HashMap(artMap);
+    }
+    
+    /**
      * Returns the file root for the module name, or null if it does not exist.
      * 
      * @param moduleName The module name
