@@ -70,7 +70,7 @@ public class ModuleListResource {
          */
         try {
             ModuleManager manager = ModuleManager.getModuleManager();
-            Map<String, Module> modules = manager.getModules();
+            Map<String, Module> modules = manager.getInstalledModules();
             ModuleList moduleList = new ModuleList(modules.keySet().toArray(new String[] {}));
             StringWriter sw = new StringWriter();
             moduleList.encode(sw);

@@ -72,6 +72,8 @@ public class DarkstarRunner extends BaseRunner {
     public synchronized void start(Properties props) throws RunnerException {
         ModuleManager mm = ModuleManager.getModuleManager();
         
+        mm.redeployAll();
+        
         // first tell the module manager to remove any modules scheduled for
         // removal
         mm.uninstallAll();

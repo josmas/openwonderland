@@ -223,13 +223,12 @@ public class ModuleChecksums {
      * to exclude is either null or an empty string, no files are excluded.
      * 
      * @param root The root directory from which to start
-     * @param dirs The directories to search
      * @param algorithm The checksum algorithm
      * @param includes An array of regular expressions of files to include
      * @throws NoSuchAlgorithmException If the given checksum algorithm is invalid
      * @throws PatternSynaxException If either includes or excludes is invalid
      */
-    public static ModuleChecksums generate(File root, String[] dirs, String algorithm,
+    public static ModuleChecksums generate(File root, String algorithm,
             String[] includes, String excludes[]) throws NoSuchAlgorithmException {
         
         /* Try creating hte message digest, throws NoSuchAlgorithmException */
@@ -237,10 +236,8 @@ public class ModuleChecksums {
         
         /* Recursively generate checksums, then convert list to an array */
         HashMap<String, Checksum> list = new HashMap<String, Checksum>();
-        for (String dir : dirs) {
-            File file = new File(root, dir);
-            list.putAll(ModuleChecksums.generateChecksumForDirectory(root, file, digest, includes, excludes));
-        }
+        list.putAll(ModuleChecksums.generateChecksumForDirectory(root, root, digest, includes, excludes));
+
         ModuleChecksums rc = new ModuleChecksums();
         rc.setChecksums(list);
         return rc;
@@ -386,7 +383,7 @@ public class ModuleChecksums {
         String includes[] = new String[0];
         String excludes[] = new String[0];
         
-        ModuleChecksums checksums = ModuleChecksums.generate(root, new String[] { "art", "plugins"}, SHA1_CHECKSUM_ALGORITHM, includes, excludes);
+        ModuleChecksums checksums = ModuleChecksums.generate(root, SHA1_CHECKSUM_ALGORITHM, includes, excludes);
         checksums.encode(new FileWriter(file));
     }
 }

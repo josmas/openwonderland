@@ -16,8 +16,9 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules.service.spi;
+package org.jdesktop.wonderland.modules.spi;
 
+import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 
 /**
@@ -54,36 +55,40 @@ public interface ModuleDeployerSPI {
      * if not.
      * 
      * @param type The module part type
+     * @param module The module associated with the module part
      * @param part The part of the module to be deployed
      * @return True if the module part can be deployed by the deployer
      */
-    public boolean isDeployable(String type, ModulePart part);
+    public boolean isDeployable(String type, Module module, ModulePart part);
     
     /**
      * Returns true if the given module part can be undeployed right now, false
      * if not.
      * 
      * @param type The module part type
+     * @param module The module associated with the module part
      * @param part The part of the module to be undeployed
      * @return True if the module part can be undeployed by the deployer
      */
-    public boolean isUndeployable(String type, ModulePart part);
+    public boolean isUndeployable(String type, Module module, ModulePart part);
     
     /**
      * Deploys the module part. Deployers that return true for isDeployable()
      * should not fail in this method.
      * 
      * @param type The module part type
+     * @param module The module associated with the module part
      * @param part The module part to deploy
      */
-    public void deploy(String type, ModulePart part);
+    public void deploy(String type, Module module, ModulePart part);
 
     /**
      * Undeploys the module part. Deployers that return true for isUndeployable()
      * should not fail in this method.
      * 
      * @param type The module part type
+     * @param module The module associated with the module part
      * @param part The module part to undeploy
      */
-    public void undeploy(String type, ModulePart part);
+    public void undeploy(String type, Module module, ModulePart part);
 }

@@ -182,7 +182,7 @@ public class ModuleManager {
          * map.
          */
         Iterator<String> it = moduleNames.iterator();
-        Map<String, Module> installed = this.getModules();
+        Map<String, Module> installed = this.getInstalledModules();
         while (it.hasNext() == true) {
             String moduleName = it.next();
             Module module = installed.get(moduleName);
@@ -320,10 +320,29 @@ public class ModuleManager {
      * 
      * @return An collection of unique module names and their Module objects
      */
-    public Map<String, Module> getModules() {
-        return this.installedMananger.getModules();
+    public Map<String, Module> getInstalledModules() {
+        return new HashMap(this.installedMananger.getModules());
     }
 
+    /**
+     * Returns a map of installed modules that posses a property with a certain
+     * key
+     */
+    public Map<String, Module> getInstalledModulesByKey(String key) {
+        Map<String, Module> keyed = new HashMap();
+        Map<String, Module> installed = this.installedMananger.getModules();
+        Iterator<Map.Entry<String, Module>> it = installed.entrySet().iterator();
+        while (it.hasNext() == true) {
+            Map.Entry<String, Module> entry = it.next();
+            String moduleName = entry.getKey();
+            Module module = entry.getValue();
+            if (module.getInfo().getAttribute(key) != null) {
+                keyed.put(moduleName, module);
+            }
+        }
+        return keyed;
+    }
+    
     /**
      * Returns the module installation directory: the wonderland.module.dir
      * property.
@@ -360,7 +379,7 @@ public class ModuleManager {
          * Fetch a map of installed modules. Loop through each and add as
          * requirements to the modules if they are being asked to be removed.
          */
-        Map<String, Module> present = this.getModules();
+        Map<String, Module> present = this.getInstalledModules();
         Iterator<Map.Entry<String, Module>> it2 = present.entrySet().iterator();
         while (it2.hasNext() == true) {
             /*
@@ -464,7 +483,7 @@ public class ModuleManager {
          * added modules depends upon the installed module. If so, mark the
          * dependency as met.
          */
-        Map<String, Module> present = this.getModules();
+        Map<String, Module> present = this.getInstalledModules();
         Iterator<Map.Entry<String, Module>> it2 = present.entrySet().iterator();
         while (it2.hasNext() == true) {
             ModuleInfo potentialDependency = it2.next().getValue().getInfo();

@@ -16,9 +16,12 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules.service.resources;
+package org.jdesktop.wonderland.web.art.resources;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -26,6 +29,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.web.art.deployer.ArtDeployer;
 
 /**
  * The ModuleArtResource class is a Jersey RESTful service that returns some
@@ -54,41 +58,44 @@ public class ModuleArtResource {
      */
     @GET
     public Response getModuleArt(@PathParam("modulename") String moduleName, @PathParam("path") String path) {
-//        /* Fetch thhe error logger for use in this method */
-//        Logger logger = ModuleManager.getLogger();
-//        
-//        /* Fetch the module from the module manager */
-//        ModuleManager mm = ModuleManager.getModuleManager();
-//        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
-//        if (im == null) {
-//            /* Log an error and return an error response */
-//            logger.warning("ModuleManager: unable to locate module " + moduleName);
-//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-//            return rb.build();
-//        }
-//        
-//        /*
-//         * If the path has a leading slash, then remove it (this is typically
-//         * the case with @PathParam
-//         */
-//        if (path.startsWith("/") == true) {
-//            path = path.substring(1);
-//        }
-//        
-//        /* Fetch the input stream for the art resource */
-//        ModuleResource mr = im.getModuleArtResource(path);
-//        if (mr == null) {
-//            /* Write an error to the log and return */
-//            logger.warning("ModuleManager: unable to locate resource " + path +
-//                    " in module: " + moduleName);
-//            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-//            return rb.build();
-//        }
-//        
-//        /* Encode in an HTTP response and send */
-//        InputStream is = im.getInputStreamForResource(mr);
-//        ResponseBuilder rb = Response.ok(is);
-//        return rb.build();
-        return null;
+        /* Fetch thhe error logger for use in this method */
+        Logger logger = ModuleManager.getLogger();
+        
+        /* Ask the deployer for the directory of the art */
+        File root = ArtDeployer.getFile(moduleName);
+        if (root == null) {
+            /* Log an error and return an error response */
+            logger.warning("[ART] Unable to locate module " + moduleName);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
+        }
+
+        /*
+         * If the path has a leading slash, then remove it (this is typically
+         * the case with @PathParam
+         */
+        if (path.startsWith("/") == true) {
+            path = path.substring(1);
+        }
+        
+        File file = new File(root, path);
+        if (file.exists() == false || file.isDirectory() == true) {
+            /* Write an error to the log and return */
+            logger.warning("[ART] Unable to locate resource " + path +
+                    " in module " + moduleName);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
+        }
+        
+        /* Encode in an HTTP response and send */
+        try {
+            InputStream is = new FileInputStream(file);
+            ResponseBuilder rb = Response.ok(is);
+            return rb.build();
+        } catch (Exception excp) {
+            logger.log(Level.WARNING, "[ART] Unable to locate resource", excp);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();            
+        }
     }
 }

@@ -62,7 +62,7 @@ public class ModuleInfoResource {
         
         /* Fetch the module from the module manager */
         ModuleManager manager = ModuleManager.getModuleManager();
-        Module module = manager.getModules().get(moduleName);
+        Module module = manager.getInstalledModules().get(moduleName);
         if (module == null) {
             /* Log an error and return an error response */
             logger.warning("ModuleManager: unable to locate module " + moduleName);
