@@ -317,12 +317,34 @@ public class ModuleManager {
      * Returns a map of module names and objects currently installed in the
      * system. If no modules are installed, this method returns an empty map.
      * 
-     * @return An collection of unique module names and their Module objects
+     * @return A map of unique installed module names and their Module objects
      */
     public Map<String, Module> getInstalledModules() {
         return new HashMap(this.installedMananger.getModules());
     }
 
+    /**
+     * Returns a map of module names and objects currently pending installation
+     * in the system. If no modules are pending installation, this method
+     * returns an empty map.
+     * 
+     * @return A map of unique pending module names and their Module objects
+     */
+    public Map<String, Module> getPendingModules() {
+        return new HashMap(this.pendingMananger.getModules());
+    }
+    
+    /**
+     * Returns a map of moduel names and info objects currently waiting for
+     * uninstall in the system. If no modules are pending uninstall, this
+     * method returns an empty map.
+     * 
+     * @return A map of unique uninstall module names and their info objects
+     */
+    public Map<String, ModuleInfo> getUninstallModuleInfos() {
+        return new HashMap(this.uninstallManager.getModules());
+    }
+    
     /**
      * Returns a map of installed modules that posses a property with a certain
      * key
