@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -144,7 +143,7 @@ public class ModuleManager {
      * Attempts to add a collection of modules to install. Takes the Files of
      * Jar files containing the modules.
      */
-    public Collection<File> install(Collection<File> moduleFiles) {
+    public Collection<File> addToInstall(Collection<File> moduleFiles) {
         /* Returns a collection of module urls added */
         Collection<File> added = new LinkedList<File>();
         
@@ -171,7 +170,7 @@ public class ModuleManager {
      * @param removedModules A collection of modules to remove
      * @return The names of the successfully removed modules
      */
-    public Collection<String> uninstall(Collection<String> moduleNames) {
+    public Collection<String> addToUninstall(Collection<String> moduleNames) {
         /* Returns a collection of module names removed */
         Collection<String> removed = new LinkedList<String>();
         
@@ -567,14 +566,14 @@ public class ModuleManager {
 //        Collection<File> files = new LinkedList<File>();
 //        File file = new File("/Users/jordanslott/src/moduletest/tmp/example.jar");
 //        files.add(file);
-//        Collection<File> added = manager.install(files);
+//        Collection<File> added = manager.addToInstall(files);
 //        System.out.println(added);
 //        manager.installAll();
 //        
 
         Collection<String> names = new LinkedList<String>();
         names.add("example");
-        Collection<String> removed = manager.uninstall(names);
+        Collection<String> removed = manager.addToUninstall(names);
         System.out.println(removed);
         manager.uninstallAll();
     }

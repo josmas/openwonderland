@@ -136,7 +136,7 @@ public class RunAppServer {
         // add all modules at once to the module manager.  This will ensure
         // that dependency checks take all modules into account. This can also
         // check return values.
-        ModuleManager.getModuleManager().install(modules);
+        ModuleManager.getModuleManager().addToInstall(modules);
     }
     
     // get the main instance
