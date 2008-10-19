@@ -116,27 +116,27 @@ public class RunAppServer {
     }
     
     private void installModules() throws IOException {
-//        // read the list of .war files to deploy
-//        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/module.jars");
-//        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-//    
-//        // extract modules to a directory, and make a list of the extracted
-//        // modules
-//        File moduleDir = ModuleManager.getModuleManager().getModuleStateDirectory(ModuleManager.State.ADD);
-//        moduleDir.mkdirs();
-//        
-//        // make sure the modules directory exists
-//        Collection<AddedModule> modules = new ArrayList<AddedModule>();
-//        
-//        String line;
-//        while ((line = in.readLine()) != null) {
-//            File f = RunUtil.extract(getClass(), line, moduleDir);
-//            modules.add(new AddedModule(f));
-//        }
-//        
-//        // add all modules at once to the module manager.  This will ensure
-//        // that dependency checks take all modules into account.
-//        ModuleManager.getModuleManager().addAll(modules, true);
+        // read the list of .war files to deploy
+        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/module.jars");
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+    
+        // extract modules to a directory, and make a list of the extracted
+        // modules
+        File moduleDir = RunUtil.createTempDir("module", ".jar");
+       
+        // keep a collection of File object that we want to add
+        Collection<File> modules = new ArrayList<File>();
+        
+        String line;
+        while ((line = in.readLine()) != null) {
+            File f = RunUtil.extract(getClass(), line, moduleDir);
+            modules.add(f);
+        }
+        
+        // add all modules at once to the module manager.  This will ensure
+        // that dependency checks take all modules into account. This can also
+        // check return values.
+        ModuleManager.getModuleManager().install(modules);
     }
     
     // get the main instance
