@@ -130,7 +130,7 @@ public class ModuleUploadServlet extends HttpServlet {
             /* Add the new module */
             Collection<File> moduleFiles = new LinkedList<File>();
             moduleFiles.add(tmpFile);
-            Collection<File> result = manager.install(moduleFiles);
+            Collection<File> result = manager.addToInstall(moduleFiles);
             if (result.contains(tmpFile) == false) {
                 /* Log an error to the log and write an error message back */
                 logger.warning("[MODULE] UPLOAD Failed to install module " + moduleName);
