@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -113,6 +114,25 @@ public class RunManager {
     public synchronized Collection<Runner> getAll() {
         return runners.values();
     }
+    
+    /**
+     * Get all runners of the given type. Each runner will be tested
+     * using "instanceof", and this method will return the list of
+     * runners that implement the given type.
+     * @param clazz the class of runner to get
+     * @return the list of runners matching the given class, or an empty
+     * list if no runners match
+     */
+    public synchronized Collection<Runner> getAll(Class clazz) {
+        Collection<Runner> out = new ArrayList<Runner>();
+        for (Runner r : getAll()) {
+            if (clazz.isAssignableFrom(r.getClass())) {
+                out.add(r);
+            }
+        }
+        return out;
+    }
+        
     
     /**
      * Remove a runner by name

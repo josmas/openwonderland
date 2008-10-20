@@ -69,11 +69,10 @@
 
     -->
     <target name="-pre-dist">
-        <mkdir dir="${build.dir}/deploy/META-INF/deploy"/>
-        <copy todir="${build.dir}/deploy/META-INF/deploy"
-              file="${current.dir}/DeploymentPlan.xml"/>
-        <copy tofile="${build.dir}/deploy/META-INF/deploy/org.jdesktop.wonderland.runner.DarkstarRunner"
-              file="${current.dir}/DarkstarRunner.files"/>
+        <mkdir dir="${build.dir}/deploy/META-INF"/>
+        <copy todir="${build.dir}/deploy/META-INF">
+            <fileset dir="${current.dir}/src/java/META-INF"/>
+        </copy>
     </target>
     
     <target name="-post-dist">
@@ -86,7 +85,7 @@
             <zipfileset dir="../../core/dist" prefix="META-INF/deploy"/>
             
             <!-- include config files we generated -->
-            <fileset dir="${build.dir}/deploy"/>
+            <!--fileset dir="${build.dir}/deploy"/-->
         </jar>
         
         <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
