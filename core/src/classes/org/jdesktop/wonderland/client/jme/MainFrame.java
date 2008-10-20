@@ -28,6 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.ToolTipManager;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -59,6 +61,9 @@ public class MainFrame extends javax.swing.JFrame {
     
     /** Creates new form MainFrame */
     public MainFrame(WorldManager wm, int width, int height) {
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+        ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
+
         initComponents();
         
         // make the canvas:
@@ -112,6 +117,8 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jToolBar1 = new javax.swing.JToolBar();
+        cellViewerTTB = new javax.swing.JButton();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         exitMI = new javax.swing.JMenuItem();
@@ -123,6 +130,21 @@ public class MainFrame extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jToolBar1.setRollover(true);
+
+        cellViewerTTB.setText("Editor");
+        cellViewerTTB.setFocusable(false);
+        cellViewerTTB.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cellViewerTTB.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        cellViewerTTB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cellViewerMIActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(cellViewerTTB);
+
+        getContentPane().add(jToolBar1, java.awt.BorderLayout.PAGE_START);
 
         jMenu3.setText(bundle.getString("File")); // NOI18N
 
@@ -207,12 +229,14 @@ private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem cellViewerMI;
+    private javax.swing.JButton cellViewerTTB;
     private javax.swing.JMenuItem exitMI;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JMenuItem modelImportMI;
     private javax.swing.JMenu toolsMenu;
     // End of variables declaration//GEN-END:variables
