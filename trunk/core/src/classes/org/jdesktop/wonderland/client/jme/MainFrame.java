@@ -49,7 +49,6 @@ public class MainFrame extends javax.swing.JFrame {
 
     JPanel mainPanel = new JPanel();
     Canvas canvas = null;
-    JLabel fpsLabel = new JLabel("FPS: ");
     private JPanel contentPane;
     
     private ImportSessionFrame importSessionFrame = null;
@@ -76,20 +75,10 @@ public class MainFrame extends javax.swing.JFrame {
         }, 100);
         wm.getRenderManager().setCurrentCanvas(canvas);
 
-        contentPane = (JPanel) this.getContentPane();
-        contentPane.setLayout(new BorderLayout());
-        mainPanel.setLayout(new GridBagLayout());
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
 
-        contentPane.add(mainPanel, BorderLayout.NORTH);
-        mainPanel.add(fpsLabel,
-                new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER,
-                GridBagConstraints.HORIZONTAL, new Insets(5, 5, 0,
-                5), 0, 0));
-
         canvas.setBounds(0, 0, width, height);
-        contentPane.add(canvas, BorderLayout.CENTER);
+        centerPanel.add(canvas, BorderLayout.CENTER);
 
         pack();
     }
@@ -117,8 +106,12 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel1 = new javax.swing.JLabel();
         jToolBar1 = new javax.swing.JToolBar();
         cellViewerTTB = new javax.swing.JButton();
+        centerPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        fpsLabel = new javax.swing.JLabel();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         exitMI = new javax.swing.JMenuItem();
@@ -128,6 +121,8 @@ public class MainFrame extends javax.swing.JFrame {
         cellViewerMI = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+
+        jLabel1.setText("jLabel1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -145,6 +140,12 @@ public class MainFrame extends javax.swing.JFrame {
         jToolBar1.add(cellViewerTTB);
 
         getContentPane().add(jToolBar1, java.awt.BorderLayout.PAGE_START);
+        getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
+
+        fpsLabel.setText("FPS :");
+        jPanel1.add(fpsLabel);
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
         jMenu3.setText(bundle.getString("File")); // NOI18N
 
@@ -230,12 +231,16 @@ private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem cellViewerMI;
     private javax.swing.JButton cellViewerTTB;
+    private javax.swing.JPanel centerPanel;
     private javax.swing.JMenuItem exitMI;
+    private javax.swing.JLabel fpsLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JMenuItem modelImportMI;
     private javax.swing.JMenu toolsMenu;
