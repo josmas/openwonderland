@@ -9,7 +9,6 @@ package org.jdesktop.wonderland.modules.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,6 +24,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 
 /**
@@ -130,8 +130,8 @@ public class ModuleUploadServlet extends HttpServlet {
             /* Add the new module */
             Collection<File> moduleFiles = new LinkedList<File>();
             moduleFiles.add(tmpFile);
-            Collection<File> result = manager.addToInstall(moduleFiles);
-            if (result.contains(tmpFile) == false) {
+            Collection<Module> result = manager.addToInstall(moduleFiles);
+            if (result.isEmpty() == true) {
                 /* Log an error to the log and write an error message back */
                 logger.warning("[MODULE] UPLOAD Failed to install module " + moduleName);
                 writer.println("Unable to install module for some reason. Press the ");

@@ -143,19 +143,20 @@ public class ModuleManager {
      * Attempts to add a collection of modules to install. Takes the Files of
      * Jar files containing the modules.
      */
-    public Collection<File> addToInstall(Collection<File> moduleFiles) {
-        /* Returns a collection of module urls added */
-        Collection<File> added = new LinkedList<File>();
+    public Collection<Module> addToInstall(Collection<File> moduleFiles) {
+        /* Returns a collection of modules added */
+        Collection<Module> added = new LinkedList<Module>();
         
         /* Iterate through each module URL and make it a pending module */
         Iterator<File> it = moduleFiles.iterator();
         while (it.hasNext() == true) {
             File file = it.next();
-            if (this.pendingMananger.add(file) == false) {
+            Module module = this.pendingMananger.add(file);
+            if (module == null) {
                 logger.warning("[MODULES] INSTALL Failed to add " + file);
                 continue;
             }
-            added.add(file);
+            added.add(module);
         }
         return added;
     }

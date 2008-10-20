@@ -77,10 +77,10 @@ public class PendingManager {
     }
     
     /**
-     * Adds a new module to be pending. If this fails, then return false. Takes
-     * a File of the module (in JAR format) to add.
+     * Adds a new module to be pending. Returns the new module object, or null
+     * upon error.
      */
-    public boolean add(File jarFile) {
+    public Module add(File jarFile) {
         /* Get the error logger */
         Logger logger = ModuleManager.getLogger();
         
@@ -92,7 +92,7 @@ public class PendingManager {
             /* Log the error and return false */
             logger.log(Level.WARNING, "[MODULES] PENDING Failed to Open Module "
                     + jarFile, excp);
-            return false;
+            return null;
         }
         
         /* Next, see the module already exists, log warning and continue */
@@ -106,7 +106,7 @@ public class PendingManager {
         if (file == null) {
             logger.log(Level.WARNING, "[MODULES] PENDING Failed to add " +
                     module.getName());
-            return false;
+            return null;
         }
         
         /* Re-open the module in the new directory */
@@ -116,11 +116,11 @@ public class PendingManager {
             /* Log the error and return false */
             logger.log(Level.WARNING, "[MODULES] PENDING Failed to Open Module "
                     + file, excp);
-            return false;
+            return null;
         }       
         /* If successful, add to the list of pending modules */
         this.pendingModules.put(module.getName(), module);
-        return true;
+        return module;
     }
     
     /**
@@ -213,14 +213,10 @@ public class PendingManager {
      */
     private void expand(File root, File jar) throws IOException {
         /*
-         * Open the url as a jar input stream
-         */
-        JarFile jarFile = new JarFile(jar);
-  
-        /*
          * Loop through each entry, fetch its input stream, and write to an
          * output stream for the file.
          */
+        JarFile jarFile = new JarFile(jar);
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements() == true) {
             /* Fetch the next entry, its name is the relative file name */
