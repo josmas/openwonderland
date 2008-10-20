@@ -76,7 +76,7 @@
             <zipfileset dir="${web.dir}/lib/restlib" prefix="webserver"/>
             <zipfileset dir="${web.dir}/lib/apache" prefix="webserver"/>
             <zipfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
-            <zipfileset file="${web.dir}/art/dist/wonderland-art-core.jar" prefix="webserver"/>
+            <zipfileset file="${web.dir}/asset/dist/wonderland-asset-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
             
             <!-- contents of the document root -->
@@ -89,7 +89,7 @@
             <zipfileset dir="${top.dir}/web/modules/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
-            <zipfileset dir="${top.dir}/web/art/dist" prefix="deploy">
+            <zipfileset dir="${top.dir}/web/asset/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
             <zipfileset dir="${top.dir}/web/runner/dist" prefix="deploy">

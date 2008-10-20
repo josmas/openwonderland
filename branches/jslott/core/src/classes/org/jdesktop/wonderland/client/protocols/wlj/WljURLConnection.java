@@ -70,9 +70,7 @@ public class WljURLConnection extends URLConnection {
         try {
             /* Forms an ResourceURI given the URL and fetches from the asset manager */
             JarURI uri = new JarURI(this.url.toExternalForm());
-            System.out.println("OPENING URI " + uri.toString());
             Asset asset = AssetManager.getAssetManager().getAsset(uri, AssetType.FILE);
-            System.out.println("GOT ASSET "+asset);
             if (asset == null || AssetManager.getAssetManager().waitForAsset(asset) == false) {
                 return null;
             }

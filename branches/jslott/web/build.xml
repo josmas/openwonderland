@@ -17,7 +17,7 @@
        <ant dir="modules" target="dist" inheritall="false">
           <propertyset refid="web.project.properties"/>
        </ant>
-      <ant dir="art" target="dist" inheritall="false">
+      <ant dir="asset" target="dist" inheritall="false">
           <propertyset refid="web.project.properties"/>
        </ant>
        <ant dir="runner"  target="dist" inheritall="false">
@@ -49,7 +49,7 @@
     </target>
     
     <target name="clean">
-       <ant dir="art"     target="clean" inheritall="false"/>
+       <ant dir="asset"   target="clean" inheritall="false"/>
        <ant dir="utils"   target="clean" inheritall="false"/>
        <ant dir="wfs"     target="clean" inheritall="false"/>
        <ant dir="modules" target="clean" inheritall="false"/>

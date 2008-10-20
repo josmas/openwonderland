@@ -47,7 +47,7 @@ public class JarURI extends ResourceURI {
      * @return The relative path within the URI
      */
     public String getRelativePath() {
-        return "plugins" + this.getURI().getPath();
+        return this.getURI().getPath();
     }
     
     /**
