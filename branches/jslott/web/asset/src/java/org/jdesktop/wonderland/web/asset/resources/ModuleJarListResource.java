@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/{modulename}/jars/get", limited=false)
+@Path(value="/jars/get")
 public class ModuleJarListResource {
     
     /**

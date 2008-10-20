@@ -10,21 +10,22 @@
 
 <html>
 <body>
-    <%@ page import="org.jdesktop.wonderland.web.asset.deployer.ArtDeployer" %>
+    <%@ page import="org.jdesktop.wonderland.web.asset.deployer.AssetDeployer" %>
+    <%@ page import="org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset" %>
     <%@ page import="java.util.Map" %>
     <%@ page import="java.util.Iterator" %>
     <%@ page import="java.io.File" %>
     
     <h3>Installed Artwork</h3>
     <%
-        Map<String, File> map = AssetDeployer.getFileMap("art");
-        Iterator<Map.Entry<String, File>> it = map.entrySet().iterator();
+        Map<DeployedAsset, File> map = AssetDeployer.getFileMap();
+        Iterator<Map.Entry<DeployedAsset, File>> it = map.entrySet().iterator();
         while (it.hasNext() == true) {
-            Map.Entry<String, File> entry = it.next();
-            String moduleName = entry.getKey();
+            Map.Entry<DeployedAsset, File> entry = it.next();
+            DeployedAsset asset = entry.getKey();
             File file = entry.getValue();
     %>
-        <%= moduleName%> <%=file.getAbsolutePath()%><br>
+        <%= asset.moduleName%> <%= asset.assetType%> <%=file.getAbsolutePath()%><br>
         <%
         }
         %>
