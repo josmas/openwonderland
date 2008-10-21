@@ -20,8 +20,8 @@
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage;
 
+import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import java.awt.Color;
@@ -42,7 +42,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
     private boolean locked = false;
     private String phoneNumber;
 
-    private PhoneClient client;
+    private ClientConnection connection;
 
     private WonderlandSession session;
 
@@ -53,14 +53,14 @@ public class PhoneForm extends JDialog implements KeypadListener {
         initComponents();
     }
 
-    public PhoneForm(PhoneClient client, WonderlandSession session, 
+    public PhoneForm(ClientConnection connection, WonderlandSession session, 
 	    PhoneMessageHandler phoneMessageHandler, boolean locked, 
 	    String phoneNumber, boolean passwordProtected) {
 
         initComponents();
         getRootPane().setDefaultButton(callButton);
 
-	this.client = client;
+	this.connection = connection;
 	this.session = session;
 	this.phoneMessageHandler = phoneMessageHandler;
         this.phoneNumber = phoneNumber;
@@ -69,7 +69,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
             unlockButton.setVisible(false);
         } else {
             phonePasswordDialog = 
-		new PhonePasswordDialog(this, client, session);
+		new PhonePasswordDialog(this, connection, session);
         }
 
         setLocked(locked);
@@ -493,7 +493,6 @@ private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     // Ask the server to place a call for us.
     // We'll update our display lists from the phone cell once the success message echos back.
-    PhoneCellMessage msg;
     String privateClientName = "";
 
     if (privateCallCheckBox.isSelected()) {

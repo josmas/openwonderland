@@ -26,7 +26,7 @@ import java.io.Serializable;
  * A convenience class to encapsulate basic call information.
  * @author jh215363
  */
-public class CallListing implements Serializable{
+public class CallListing implements Serializable {
     
     private String contactName;
     private String contactNumber;                
@@ -35,10 +35,10 @@ public class CallListing implements Serializable{
     //that this is a private call.
     private String privateClientName; 
         
-    private boolean demoMode;
+    private boolean simulateCalls;
 
     private String callID;
-    
+
     /**
      * This constructor allows you to fully specify all of the listings
      * parameters.
@@ -50,14 +50,12 @@ public class CallListing implements Serializable{
      * speaking privately on this call. Empty if this call is public.
      */
     public CallListing(String contactName, String contactNumber, String privateClientName, 
-	    boolean demoMode) {
+	    boolean simulateCalls) {
             
 	this.contactName = contactName;
         this.contactNumber = contactNumber;            
         this.privateClientName = privateClientName;
-        this.demoMode = demoMode;
-
-	callID = "";
+        this.simulateCalls = simulateCalls;
     }
         
     public String getContactName() {
@@ -76,12 +74,12 @@ public class CallListing implements Serializable{
         this.privateClientName = privateClientName;
     }
         
-    public boolean demoMode() {
-	return demoMode;
+    public boolean simulateCalls() {
+	return simulateCalls;
     }
 
-    public void setDemoMode(boolean demoMode) {
-	this.demoMode = demoMode;
+    public void setSimulateCalls(boolean simulateCalls) {
+	this.simulateCalls = simulateCalls;
     }
 
     public void setCallID(String callID) {

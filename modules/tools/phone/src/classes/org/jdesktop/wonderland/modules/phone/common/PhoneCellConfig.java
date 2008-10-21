@@ -41,7 +41,7 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 public class PhoneCellConfig extends CellConfig {
 
     private boolean locked;
-    private boolean demoMode;
+    private boolean simulateCalls;
     private String phoneNumber;
     private String password;
     private String phoneLocation;
@@ -61,12 +61,12 @@ public class PhoneCellConfig extends CellConfig {
 	this.locked = locked;
     }
 
-    public boolean getDemoMode() {
- 	return demoMode;
+    public boolean getSimulateCalls() {
+ 	return simulateCalls;
     }
 
-    public void setDemoMode(boolean demoMode) {
-	this.demoMode = demoMode;
+    public void setSimulateCalls(boolean simulateCalls) {
+	this.simulateCalls = simulateCalls;
     }
 
     public String getPhoneNumber() {

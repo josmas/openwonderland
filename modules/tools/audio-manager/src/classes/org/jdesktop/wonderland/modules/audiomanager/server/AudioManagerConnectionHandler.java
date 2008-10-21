@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellID
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
 import org.jdesktop.wonderland.server.UserManager;
@@ -108,7 +109,10 @@ public class AudioManagerConnectionHandler
 	if (message instanceof AvatarCellIDMessage) {
 	    AvatarCellIDMessage msg = (AvatarCellIDMessage) message;
 	    voiceChatHandler.addTransformChangeListener(msg.getCellID());
-	} else if (message instanceof GetVoiceBridgeMessage) {
+	    return;
+	}
+
+	if (message instanceof GetVoiceBridgeMessage) {
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
 	    String username = 
@@ -128,7 +132,10 @@ public class AudioManagerConnectionHandler
 	    }
 
 	    sender.send(msg);
-	} else if (message instanceof PlaceCallMessage) {
+	    return;
+	}
+
+	if (message instanceof PlaceCallMessage) {
 	    logger.warning("Got place call message");
 
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
@@ -139,18 +146,13 @@ public class AudioManagerConnectionHandler
 
 	    setup.cp = cp;
 
-	    CellMO cellMO = CellManagerMO.getCell(msg.getCellID());
+	    String callId = getCallId(msg.getCellID());
 
-	    if (cellMO == null) {
-		logger.warning("Can't place call to " + msg.getSipURL()
+	    if (callId == null) {
+	        logger.warning("Can't place call to " + msg.getSipURL()
 		    + ".  No cell for " + msg.getCellID());
 		return;
 	    }
-
-	    ManagedReference cellMORef =
-                AppContext.getDataManager().createReference(cellMO);
-
-	    String callId = cellMORef.getId().toString();
 
 	    cp.setCallId(callId);
 	    cp.setName(UserManager.getUserManager().getUser(session).getUsername());
@@ -160,6 +162,8 @@ public class AudioManagerConnectionHandler
             cp.setDtmfDetection(true);
             cp.setVoiceDetectionWhileMuted(true);
             cp.setHandleSessionProgress(true);
+            cp.setJoinConfirmationTimeout(0);
+	    cp.setCallAnsweredTreatment(null);
 
             vm.addCallStatusListener(this);
 
@@ -196,14 +200,73 @@ public class AudioManagerConnectionHandler
             info.defaultSpeakingAttenuation = 0;
 
             vm.getDefaultStationaryPlayerAudioGroup().addPlayer(player, info);
-	} else if (message instanceof DisconnectCallMessage) {
+	    return;
+	}
+
+	if (message instanceof TransferCallMessage) {
+	    TransferCallMessage msg = (TransferCallMessage) message;
+
+	    String callId = getCallId(msg.getCellID());
+
+	    if (callId == null) {
+		logger.warning("Unable to transfer call.  Can't get callId for " 
+		    + msg.getCellID());
+		return;
+	    }
+
+	    Call call = vm.getCall(callId);
+
+	    if (call == null) {
+		logger.warning("Unable to transfer call.  No Call for " + callId);
+		return;
+	    }
+
+	    CallParticipant cp = call.getSetup().cp;
+
+            cp.setPhoneNumber(msg.getPhoneNumber());
+            cp.setJoinConfirmationTimeout(90);
+
+	    String callAnsweredTreatment = System.getProperty(
+                "com.sun.sgs.impl.app.voice.CALL_ANSWERED_TREATMENT");
+
+	    if (callAnsweredTreatment == null || callAnsweredTreatment.length() == 0) {
+		callAnsweredTreatment = "dialtojoin.au";
+	    }
+
+            cp.setCallAnsweredTreatment(callAnsweredTreatment);
+
+	    try {
+	        call.transfer(cp);
+	    } catch (IOException e) {
+		logger.warning("Unable to transfer call:  " + e.getMessage());
+	    }
+	    return;
+	}
+
+	if (message instanceof DisconnectCallMessage) {
 	    logger.warning("got DisconnectCallMessage");
-	} else if (message instanceof VoiceChatMessage) {
+	    return;
+	}
+
+	if (message instanceof VoiceChatMessage) {
 	    voiceChatHandler.processVoiceChatMessage(sender, 
 		(VoiceChatMessage) message);
-	} else {
-            throw new UnsupportedOperationException("Not supported yet.");
+	    return;
 	}
+
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private String getCallId(CellID cellID) {
+	CellMO cellMO = CellManagerMO.getCell(cellID);
+
+	if (cellMO == null) {
+	    return null;
+	}
+
+	ManagedReference cellMORef = AppContext.getDataManager().createReference(cellMO);
+
+	return cellMORef.getId().toString();
     }
 
     public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
