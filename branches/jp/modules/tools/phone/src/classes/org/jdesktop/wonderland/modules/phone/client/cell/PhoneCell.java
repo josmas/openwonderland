@@ -142,6 +142,14 @@ public class PhoneCell extends Cell {
 	fullVolumeRadius = config.getFullVolumeRadius();
     }
 
+    public boolean getLocked() {
+	return locked;
+    }
+
+    public String getPassword() {
+	return password;
+    }
+
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
 	WonderlandSession session = getCellCache().getSession();

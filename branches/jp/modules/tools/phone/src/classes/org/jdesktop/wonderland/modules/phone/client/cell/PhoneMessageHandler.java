@@ -102,7 +102,16 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
 
     public void virtualPhoneMenuItemSelected() {
 	if (phoneForm == null) {
-	    phoneForm = new PhoneForm(connection, session, this, false, "1", true);
+	    boolean locked = phoneCell.getLocked();
+	    boolean passwordProtected = true;
+
+	    if (phoneCell.getPassword() == null || phoneCell.getPassword().length() == 0) {
+		locked = false;
+		passwordProtected = false;
+	    }
+
+	    phoneForm = new PhoneForm(phoneCell.getCellID(), connection, session, 
+		this, locked, "1", passwordProtected);
 	}
 
 	phoneForm.setVisible(true);

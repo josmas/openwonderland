@@ -115,29 +115,32 @@ public class PhoneMessageHandler implements
 
 	PhoneControlMessage msg = (PhoneControlMessage) message;
 
-	ManagedReference<PhoneCellMO> externalCallCellMORef = null;
-
-	if (msg.getExternalCallCellID() != null) {
-	    externalCallCellMORef = AppContext.getDataManager().createReference(
-	        (PhoneCellMO) CellManagerMO.getCell(msg.getExternalCallCellID()));
-	}
-
 	if (message instanceof LockUnlockMessage) {
 	    LockUnlockMessage m = (LockUnlockMessage) message;
 
-	    boolean successful = 
-		m.getPassword().equals(externalCallCellMORef.get().getPassword());
+	    boolean successful = true;
 
-	    if (successful) {
-		externalCallCellMORef.get().setLocked(!externalCallCellMORef.get().getLocked());
-	        externalCallCellMORef.get().setKeepUnlocked(m.keepUnlocked());
+	    ManagedReference<PhoneCellMO> clientCellMORef = null;
+
+	    if (msg.getClientCellID() != null) {
+	        clientCellMORef = AppContext.getDataManager().createReference(
+	            (PhoneCellMO) CellManagerMO.getCell(msg.getClientCellID()));
 	    }
 
-	    logger.fine("locked " + externalCallCellMORef.get().getLocked() + " successful " 
+	    if (m.getPassword() != null) {
+		successful = m.getPassword().equals(clientCellMORef.get().getPassword());
+	    }
+
+	    if (successful) {
+		clientCellMORef.get().setLocked(!clientCellMORef.get().getLocked());
+	        clientCellMORef.get().setKeepUnlocked(m.keepUnlocked());
+	    }
+
+	    logger.fine("locked " + clientCellMORef.get().getLocked() + " successful " 
 		+ successful + " pw " + m.getPassword());
 
             LockUnlockResponseMessage response = 
-		new LockUnlockResponseMessage(externalCallCellMORef.get().getLocked(), successful);
+		new LockUnlockResponseMessage(clientCellMORef.get().getLocked(), successful);
 
 	    sender.send(response);
 	    return;
@@ -209,6 +212,13 @@ public class PhoneMessageHandler implements
 	    }
 
 	    return;
+	}
+
+	ManagedReference<PhoneCellMO> externalCallCellMORef = null;
+
+	if (msg.getExternalCallCellID() != null) {
+	    externalCallCellMORef = AppContext.getDataManager().createReference(
+	        (PhoneCellMO) CellManagerMO.getCell(msg.getExternalCallCellID()));
 	}
 
 	if (msg instanceof PlaceCallMessage) {
