@@ -39,6 +39,8 @@ import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.common.LogControl;
 
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+
 /**
  * The Main JFrame for the wonderland jme client
  * 
@@ -109,6 +111,12 @@ public class MainFrame extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jToolBar1 = new javax.swing.JToolBar();
         cellViewerTTB = new javax.swing.JButton();
+        softphoneButton = new javax.swing.JButton();
+        testAudioButton = new javax.swing.JButton();
+        reconnectSoftphoneButton = new javax.swing.JButton();
+        transferCallButton = new javax.swing.JButton();
+        logAudioProblemButton = new javax.swing.JButton();
+        virtualPhoneButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         fpsLabel = new javax.swing.JLabel();
@@ -145,6 +153,72 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         jToolBar1.add(cellViewerTTB);
+
+        softphoneButton.setText("Softphone");
+        softphoneButton.setFocusable(false);
+        softphoneButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        softphoneButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        softphoneButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                softphoneButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(softphoneButton);
+
+        testAudioButton.setText("TestAudio");
+        testAudioButton.setFocusable(false);
+        testAudioButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        testAudioButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        testAudioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testAudioButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(testAudioButton);
+
+        reconnectSoftphoneButton.setText("ReconnectSoftphone");
+        reconnectSoftphoneButton.setFocusable(false);
+        reconnectSoftphoneButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        reconnectSoftphoneButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        reconnectSoftphoneButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reconnectSoftphoneButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(reconnectSoftphoneButton);
+
+        transferCallButton.setText("TransferCall");
+        transferCallButton.setFocusable(false);
+        transferCallButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        transferCallButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        transferCallButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transferCallButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(transferCallButton);
+
+        logAudioProblemButton.setText("LogAudioProblem");
+        logAudioProblemButton.setFocusable(false);
+        logAudioProblemButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        logAudioProblemButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        logAudioProblemButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logAudioProblemButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(logAudioProblemButton);
+
+        virtualPhoneButton.setText("VirtualPhone");
+        virtualPhoneButton.setFocusable(false);
+        virtualPhoneButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        virtualPhoneButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        virtualPhoneButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                virtualPhoneButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(virtualPhoneButton);
 
         getContentPane().add(jToolBar1, java.awt.BorderLayout.PAGE_START);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
@@ -337,6 +411,43 @@ if (virtualPhoneListener != null) {
 }
 }//GEN-LAST:event_virtualPhoneMenuItemActionPerformed
 
+private void softphoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_softphoneButtonActionPerformed
+if (audioMenuListener != null) {
+    boolean isVisible = SoftphoneControlImpl.getInstance().isVisible();
+    audioMenuListener.showSoftphone(!isVisible);
+}
+}//GEN-LAST:event_softphoneButtonActionPerformed
+
+private void testAudioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testAudioButtonActionPerformed
+if (audioMenuListener != null) {
+    audioMenuListener.testAudio();
+}
+}//GEN-LAST:event_testAudioButtonActionPerformed
+
+private void reconnectSoftphoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reconnectSoftphoneButtonActionPerformed
+if (audioMenuListener != null) {
+    audioMenuListener.reconnectSoftphone();
+}
+}//GEN-LAST:event_reconnectSoftphoneButtonActionPerformed
+
+private void transferCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transferCallButtonActionPerformed
+if (audioMenuListener != null) {
+    audioMenuListener.transferCall();
+}
+}//GEN-LAST:event_transferCallButtonActionPerformed
+
+private void logAudioProblemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logAudioProblemButtonActionPerformed
+if (audioMenuListener != null) {
+    audioMenuListener.logAudioProblem();
+}
+}//GEN-LAST:event_logAudioProblemButtonActionPerformed
+
+private void virtualPhoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualPhoneButtonActionPerformed
+if (virtualPhoneListener != null) {
+    virtualPhoneListener.virtualPhoneMenuItemSelected();
+}
+}//GEN-LAST:event_virtualPhoneButtonActionPerformed
+
 public void updateSoftphoneCheckBoxMenuItem(boolean isSelected) {
     softphoneMenuItem.setSelected(isSelected);
 }
@@ -362,13 +473,19 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JButton logAudioProblemButton;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
     private javax.swing.JMenuItem modelImportMI;
+    private javax.swing.JButton reconnectSoftphoneButton;
     private javax.swing.JMenuItem reconnectSoftphoneMenuItem;
+    private javax.swing.JButton softphoneButton;
     private javax.swing.JCheckBoxMenuItem softphoneMenuItem;
+    private javax.swing.JButton testAudioButton;
     private javax.swing.JMenuItem testAudioMenuItem;
     private javax.swing.JMenu toolsMenu;
+    private javax.swing.JButton transferCallButton;
     private javax.swing.JMenuItem transferCallMenuItem;
+    private javax.swing.JButton virtualPhoneButton;
     private javax.swing.JMenuItem virtualPhoneMenuItem;
     // End of variables declaration//GEN-END:variables
 
