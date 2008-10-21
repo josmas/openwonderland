@@ -32,16 +32,17 @@ import org.jdesktop.wonderland.common.cell.CellID;
 public interface CellCache {
 
     /**
-     * Return the cell with the specified id
-     * @param cellId
-     * @return
+     * Return the cell with the specified id, or null if no such cell exists.
+     *
+     * @param cellId the id of the cell to return
+     * @return the cell with the specified ID.
      */
     public Cell getCell(CellID cellId);
     
     /**
      * Return the session with which this cell cache is associated. 
      * 
-     * @return
+     * @return the session for this cache
      */
     public WonderlandSession getSession();
     
@@ -67,7 +68,7 @@ public interface CellCache {
     
     /**
      * Get the CellChannelConnection
-     * @return
+     * @return the CellChannelConnection for this CellCache
      */
     public CellChannelConnection getCellChannelConnection();
 }

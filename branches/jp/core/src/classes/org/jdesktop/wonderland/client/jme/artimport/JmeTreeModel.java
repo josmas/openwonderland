@@ -87,6 +87,7 @@ class JmeTreeCellRenderer extends DefaultTreeCellRenderer {
                                            boolean leaf,
                                            int row,
                                            boolean hasFocus) {
+        super.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
         String name ="";
         if ((value instanceof Spatial)) {
             name = ((Spatial)value).getName();
@@ -94,7 +95,9 @@ class JmeTreeCellRenderer extends DefaultTreeCellRenderer {
                 name="";
         }
         
-        return new JLabel(getTrimmedClassname(value)+":"+name);
+        setText(getTrimmedClassname(value)+":"+name);
+
+        return this;
     }       
 
     /**

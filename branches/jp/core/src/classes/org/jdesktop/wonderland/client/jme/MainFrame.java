@@ -28,6 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.ToolTipManager;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -47,7 +49,6 @@ public class MainFrame extends javax.swing.JFrame {
 
     JPanel mainPanel = new JPanel();
     Canvas canvas = null;
-    JLabel fpsLabel = new JLabel("FPS: ");
     private JPanel contentPane;
     
     private ImportSessionFrame importSessionFrame = null;
@@ -59,6 +60,9 @@ public class MainFrame extends javax.swing.JFrame {
     
     /** Creates new form MainFrame */
     public MainFrame(WorldManager wm, int width, int height) {
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+        ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
+
         initComponents();
         
         // make the canvas:
@@ -71,20 +75,10 @@ public class MainFrame extends javax.swing.JFrame {
         }, 100);
         wm.getRenderManager().setCurrentCanvas(canvas);
 
-        contentPane = (JPanel) this.getContentPane();
-        contentPane.setLayout(new BorderLayout());
-        mainPanel.setLayout(new GridBagLayout());
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
 
-        contentPane.add(mainPanel, BorderLayout.NORTH);
-        mainPanel.add(fpsLabel,
-                new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER,
-                GridBagConstraints.HORIZONTAL, new Insets(5, 5, 0,
-                5), 0, 0));
-
         canvas.setBounds(0, 0, width, height);
-        contentPane.add(canvas, BorderLayout.CENTER);
+        centerPanel.add(canvas, BorderLayout.CENTER);
 
         pack();
     }
@@ -112,6 +106,12 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel1 = new javax.swing.JLabel();
+        jToolBar1 = new javax.swing.JToolBar();
+        cellViewerTTB = new javax.swing.JButton();
+        centerPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        fpsLabel = new javax.swing.JLabel();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         exitMI = new javax.swing.JMenuItem();
@@ -129,7 +129,30 @@ public class MainFrame extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
 
+        jLabel1.setText("jLabel1");
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jToolBar1.setRollover(true);
+
+        cellViewerTTB.setText("Editor");
+        cellViewerTTB.setFocusable(false);
+        cellViewerTTB.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cellViewerTTB.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        cellViewerTTB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cellViewerMIActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(cellViewerTTB);
+
+        getContentPane().add(jToolBar1, java.awt.BorderLayout.PAGE_START);
+        getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
+
+        fpsLabel.setText("FPS :");
+        jPanel1.add(fpsLabel);
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
         jMenu3.setText(bundle.getString("File")); // NOI18N
 
@@ -254,9 +277,7 @@ if (importSessionFrame==null)
 
 private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cellViewerMIActionPerformed
     if (cellViewerFrame==null) {
-        // TODO handle multiple sessions
-        WonderlandSession session = ClientContextJME.getWonderlandSessionManager().getSessions().next();
-        cellViewerFrame = new CellViewerFrame(session);
+        cellViewerFrame = new CellViewerFrame();
     }
     cellViewerFrame.setVisible(true);
 }//GEN-LAST:event_cellViewerMIActionPerformed
@@ -329,12 +350,18 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu AudioMenu;
     private javax.swing.JMenuItem cellViewerMI;
+    private javax.swing.JButton cellViewerTTB;
+    private javax.swing.JPanel centerPanel;
     private javax.swing.JMenuItem exitMI;
+    private javax.swing.JLabel fpsLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
     private javax.swing.JMenuItem modelImportMI;
     private javax.swing.JMenuItem reconnectSoftphoneMenuItem;

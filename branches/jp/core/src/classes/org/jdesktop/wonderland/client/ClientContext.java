@@ -17,17 +17,14 @@
  */
 package org.jdesktop.wonderland.client;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * Provides global static access to the various client subsystems.
@@ -36,13 +33,10 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public class ClientContext {
-    private static final Logger logger =
-            Logger.getLogger(ClientContext.class.getName());
-    
+
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
-    private static WonderlandSessionManager sessionManager = null;
     private static InputManager inputManager=null;
-    private static File userDir;
+    private static WonderlandSessionManager sessionManager = new WonderlandSessionManager();
     
     /**
      * Return the CellCache if the session has one, otherwise
@@ -61,6 +55,7 @@ public class ClientContext {
      * than once a RuntimeException will be thrown;
      * @param clientCellCache
      */
+    @InternalAPI
     public static void registerCellCache(CellCache clientCellCache, WonderlandSession session) {
         if (cellCaches==null) {
             cellCaches = new HashMap();
@@ -73,16 +68,6 @@ public class ClientContext {
     }
     
     /**
-     * Return the WonderlandSessionManager for this client
-     * 
-     */
-    public static WonderlandSessionManager getWonderlandSessionManager() {
-        if (sessionManager==null)
-            sessionManager = new WonderlandSessionManager();
-        return sessionManager;
-    }
-    
-    /**
      * Return the CellManager for this client
      * @return
      */
@@ -90,6 +75,11 @@ public class ClientContext {
         return CellManager.getCellManager();
     }
     
+    /**
+     * 
+     * @param regInputManager
+     */
+    @InternalAPI
     public static void registerInputManager(InputManager regInputManager) {
         if (inputManager!=null)
             throw new RuntimeException("registerInputManager can only be called once");
@@ -100,35 +90,8 @@ public class ClientContext {
     public static InputManager getInputManager() {
         return inputManager;
     }
-    
-    /**
-     * Return the wonderland user directory for this user
-     * @return the user directory
-     */
-    public synchronized static File getUserDirectory() {
-        if (userDir != null) {
-            return userDir;
-        }
-        
-        String userDirName = System.getProperty("wonderland.user.dir");
-        String version = System.getProperty("wonderland.version");
-        
-        if (userDirName == null) {
-            userDirName = System.getProperty("user.home") + File.separator + 
-                          ".wonderland" + File.separator + version;
-        }
-        
-        File out = new File(userDirName);
-        if (!out.exists()) {
-            if (!out.mkdirs()) {
-                logger.log(Level.WARNING, "Error trying to create user " +
-                           "directory: " + out);
-                
-                out = new File(System.getProperty("java.io.tmpdir"));
-            }
-        }
-        
-        userDir = out;
-        return out;
+
+    public static WonderlandSessionManager getWonderlandSessionManager() {
+        return sessionManager;
     }
 }

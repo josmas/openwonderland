@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.client.jme;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
+import java.util.ArrayList;
+import java.util.HashMap;
 import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.InputManager;
@@ -28,7 +30,12 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer.MoveProcessor;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -42,6 +49,18 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * giving a third person view.
  * 
  * TODO currently the camera processor is hardcoded to ThirdPerson
+ *
+ * The system provides the concept of a primary ViewCell, when using Wonderland with
+ * a set of federated servers the primary ViewCell is the one that is providing most
+ * of the user interaction. For example the rendering of the avatar and audio in formation
+ * will come from the primary ViewCell. The non primary ViewCells track the primary.
+ *
+ * The JME Camera and input controls will normally be attached to the View Cells (primary and others), however
+ * the system does support attaching the camera and controls to any cell. This is useful in some
+ * tool interfaces for positioning cells and visually checking things. It should be noted that
+ * when the camera and controls are not attached to a ViewCell the client will have some limitations, for
+ * example as the ViewCell is not moving on the server no cache updates will be sent to the client so
+ * tools should be careful not to allow the users to move outside of the current cell set.
  *
  * @author paulby
  */
@@ -65,8 +84,14 @@ public class ViewManager {
     private CellListener listener = null;
     private SimpleAvatarControls eventProcessor = null;
     
+    private ArrayList<ViewManagerListener> viewListeners = new ArrayList();
+
+    private HashMap<WonderlandSession, ViewCell> sessionViewCells = new HashMap();
+
+    private ViewCell primaryViewCell = null;
+    
     ViewManager() {  
-        createCameraEntity(JmeClientMain.getWorldManager());
+        createCameraEntity(ClientContextJME.getWorldManager());
         listener = new CellListener();
     }
     
@@ -77,8 +102,59 @@ public class ViewManager {
         return viewManager;
     }
     
+    
     /**
-     * Attach the view to the specified cell
+     * Register a ViewCell for a session with the ViewManager
+     * 
+     * @param cell ViewCell to register
+     */
+    public void register(ViewCell cell) {
+        sessionViewCells.put(cell.getCellCache().getSession(), cell);
+    }
+
+    /**
+     * Deregister a ViewCell (usually called when a session is closed)
+     * TODO  implement
+     * 
+     * @param cell ViewCell to deregister
+     */
+    public void deregister(ViewCell cell) {
+        throw new RuntimeException("Not Implemented");
+    }
+
+    /**
+     * Set the Primary ViewCell for this client. The primary ViewCell is the one
+     * that is currently rendering the client avatar etc.
+     * @param cell
+     */
+    public void setPrimaryViewCell(ViewCell cell) {
+        attach(cell);
+        ViewCell oldViewCell = primaryViewCell;
+        primaryViewCell = cell;
+
+        // TODO all non primary view cells should track the movements of the primary
+
+        notifyViewManagerListeners(oldViewCell, primaryViewCell);
+    }
+
+    /**
+     * Returns the primary view cell.
+     * The session can be obtained from the cell, cell.getCellCache().getSession().
+     *
+     * The primaryViewCell may be null, especially during startup. Use the
+     * ViewManagerListener to track changes to the primaryViewCell.
+     *
+     */
+    public ViewCell getPrimaryViewCell() {
+        return primaryViewCell;
+    }
+    
+    /**
+     * Attach the 3D view to the specified cell. Note the 3D view (camera and controls) are usually attached
+     * to a ViewCell, however they can be attached to any cell in the system. This can be useful for
+     * position cells etc, but note that the Primary ViewCell is not changed in that case so there may be some
+     * interesting side effects. For example the ViewCell on the server is not being moved so the client will
+     * not receive any cache updates.
      * @param cell
      */
     public void attach(Cell cell) {
@@ -92,13 +168,21 @@ public class ViewManager {
 
         if (eventProcessor==null) {
             // Create the input listener and process to control the avatar
-            WorldManager wm = JmeClientMain.getWorldManager();
-//            AWTInputComponent eventListener = (AWTInputComponent) wm.getInputManager().createInputComponent(InputManager.MOUSE_EVENTS | InputManager.KEY_EVENTS);
+            WorldManager wm = ClientContextJME.getWorldManager();
             eventProcessor = new SimpleAvatarControls(cell, wm);
             eventProcessor.setRunInRenderer(true);
 
             // Chaining the camera here does not seem to work...
             eventProcessor.addToChain(cameraProcessor);
+        }
+        
+        CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        if (renderer!=null && renderer instanceof BasicRenderer) {
+            BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
+            if (moveProc!=null) {
+                eventProcessor.addToChain(moveProc);
+                moveProc.setChained(true);
+            }
         }
 
         // Set initial camera position
@@ -110,7 +194,7 @@ public class ViewManager {
     }
     
     /**
-     * Detach the view from the cell it's currently attached to.
+     * Detach the 3D view from the cell it's currently attached to.
      */
     public void detach() {
         if (attachCell!=null)
@@ -118,6 +202,14 @@ public class ViewManager {
         
         Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
         entity.removeComponent(SimpleAvatarControls.class);
+        
+        CellRendererJME renderer = (CellRendererJME) attachCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        if (renderer!=null && renderer instanceof BasicRenderer) {
+            BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
+            if (moveProc!=null) {
+                eventProcessor.removeFromChain(moveProc);
+            }
+        }
         
         attachCell.removeTransformChangeListener(listener);
         attachCell = null;
@@ -132,6 +224,27 @@ public class ViewManager {
     public void setCameraProcessor(CameraProcessor cameraProcessor) {
         throw new RuntimeException("Not Implemented yet");
     }
+
+    /**
+     * Add a ViewManagerListener which will be notified of changes in the view system
+     * @param listener to be added
+     */
+    public void addViewManagerListener(ViewManagerListener listener) {
+        viewListeners.add(listener);
+    }
+
+    /**
+     * Remove the specified ViewManagerListner.
+     * @param listener
+     */
+    public void removeViewManagerListener(ViewManagerListener listener) {
+        viewListeners.add(listener);
+    }
+
+    private void notifyViewManagerListeners(ViewCell oldViewCell, ViewCell newViewCell) {
+        for(ViewManagerListener vListener : viewListeners)
+            vListener.primaryViewCellChanged(oldViewCell, newViewCell);
+    }
     
     protected void createCameraEntity(WorldManager wm) {
         Node cameraSG = createCameraGraph(wm);
@@ -143,7 +256,7 @@ public class ViewManager {
         cameraComponent.setCameraNode(cameraNode);
         camera.addComponent(CameraComponent.class, cameraComponent);
         
-        cameraProcessor = new ThirdPersonCameraProcessor(cameraNode, wm);
+        cameraProcessor = new ThirdPersonCameraProcessor(cameraNode);
         camera.addComponent(ProcessorComponent.class, cameraProcessor);
         
         wm.addEntity(camera);         
@@ -172,9 +285,25 @@ public class ViewManager {
      */
     class CellListener implements TransformChangeListener {
 
-        public void transformChanged(Cell cell) {
+        public void transformChanged(Cell cell, ChangeSource source) {
+//            System.out.println("TransformChange "+cell.getWorldTransform().getTranslation(null));
             cameraProcessor.viewMoved(cell.getWorldTransform());
         }
         
+    }
+
+    /**
+     * Listener interface for ViewManager changes
+     */
+    public interface ViewManagerListener {
+        /**
+         * Notification of a change in Primary ViewCell. Both the old viewCell and the new
+         * view cell are provided. This notification occurs after the change of primary
+         * view has taken place.
+         * 
+         * @param oldViewCell the old view cell, may be null
+         * @param newViewCell the new view cell, may be null
+         */
+        public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell);
     }
 }

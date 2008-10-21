@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
-import com.sun.sgs.app.ManagedObject;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -75,6 +74,19 @@ public interface CellDescription {
     public CellTransform getLocalTransform();
     
     void setLocalTransform(CellTransform localTransform, long timestamp);
+
+    /**
+     * Mark the given objectClass as dirty storing the updated Object and
+     * the timestamp of the change, should ObjectClass be a class or an
+     * integer ID or an enum ?
+     */
+//    void markDirty(Class objectClass, Object object, long timestamp);
+
+    /**
+     * Return all dirty object since the given timestamp. This call will
+     * mark all objects returned as clean.
+     */
+//  public HashSet<Class, Object> getDirty(long timestamp)
     
     /**
      * Return the cells priority
