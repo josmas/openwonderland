@@ -104,7 +104,7 @@ public class WonderlandSessionManager {
      * Register the session with the manager
      * @param session
      */
-    public void registerSession(CellClientSession session) {
+    public void registerSession(WonderlandSession session) {
         sessions.put(session.getServerInfo(), session);
     }
     

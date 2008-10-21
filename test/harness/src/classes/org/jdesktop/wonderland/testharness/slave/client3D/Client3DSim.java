@@ -80,16 +80,21 @@ public class Client3DSim
         // setup a classloader with the module jars
         ClassLoader loader = setupClassLoader();
         
+        
+        CellClientSession session = new CellClientSession(server, loader);
+        
+        
         // load any client plugins from that class loader
         Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
                                                       loader);
+
         while (it.hasNext()) {
             ClientPlugin plugin = it.next(); 
-            plugin.initialize();
+            plugin.initialize(session);
         }
         
+        
         // login
-        CellClientSession session = new CellClientSession(server, loader);
         session.addSessionStatusListener(this);
         session.login(login);
         

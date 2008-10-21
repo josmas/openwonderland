@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.webserver;
 
+import com.sun.enterprise.deployment.archivist.WebArchivist;
+import com.sun.enterprise.web.WebDeployer;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
 import com.sun.hk2.component.InhabitantsParser;
@@ -163,7 +165,16 @@ public class RunAppServer {
         @Override
         protected InhabitantsParser decorateInhabitantsParser(InhabitantsParser parser) {
             InhabitantsParser out = super.decorateInhabitantsParser(parser);
+
+            // replace the default ServerEvironmentImpl with one of our own
+            // that uses the Wonderland temp directory instead of "."
             parser.replace(ServerEnvironmentImpl.class, DirServerEnvironment.class);
+            
+            // repace the web archivist with one that ignores external
+            // DTDs
+            parser.replace(WebArchivist.class, LocalOnlyWebArchivist.class);
+            parser.replace(WebDeployer.class, LocalOnlyWebDeployer.class);
+            
             return out;
         }
 
@@ -180,6 +191,8 @@ public class RunAppServer {
         public EmbeddedVirtualServer createVirtualServer(final EmbeddedHttpListener listener) {
             EmbeddedVirtualServer out = super.createVirtualServer(listener);
 
+            // override the document root to forward to the
+            // Wonderland front page.
             try {
                 File docRoot = new File(RunUtil.getRunDir(), "docRoot");
                 docRoot.mkdirs();

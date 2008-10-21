@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.server.cell.view;
 
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingSphere;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jmex.model.collada.schema.rotateType;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
@@ -46,6 +48,14 @@ public class AvatarCellMO extends ViewCellMO {
         super(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()),
               new CellTransform(null, new Vector3f())  );
         this.userRef = AppContext.getDataManager().createReference(user);
+        
+        Vector3f location = new Vector3f(0,0,0);
+        Vector3f lookDirection = new Vector3f(0,0,-1);
+
+        Quaternion rotation = new Quaternion();
+        rotation.lookAt(lookDirection, new Vector3f(0f,1f,0f));
+        CellTransform initialLocation = new CellTransform(rotation, location);
+        setLocalTransform(initialLocation);
     }
     
     @Override 

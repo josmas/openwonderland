@@ -29,7 +29,6 @@ import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import java.util.logging.Logger;
 
 /**
@@ -247,6 +246,7 @@ public class DrawingSurface {
     /**
      * Enable or disabling the updating of the texture.
      */
+    // TODO: must tie processor enable in with setvisible. 
     public synchronized void setUpdateEnable (boolean enable) {
 	if (enable == updateEnable) return;
 	updateEnable = enable;
@@ -288,6 +288,7 @@ public class DrawingSurface {
 	/**
 	 * Initialze the processor to be called once per frame.
 	 */
+	// TODO: don't enable until the window is visible
 	public void initialize () {
 	    start();
 	}
@@ -308,8 +309,8 @@ public class DrawingSurface {
 		    if (window == null) return;
 		    window.forceTextureIdAssignment();
 		    if (texture.getTextureId() == 0) {
-			logger.severe("imageGraphics.update when texture id is still unassigned!!!!");
-			System.exit(1);
+			Thread.dumpStack();
+			logger.severe("********* imageGraphics.update when texture id is still unassigned!!!!");
 		    }
 		}
 		
