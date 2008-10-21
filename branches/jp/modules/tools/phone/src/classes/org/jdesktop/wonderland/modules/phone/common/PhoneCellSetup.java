@@ -41,8 +41,8 @@ public class PhoneCellSetup extends BasicCellSetup
     @XmlElement(name="locked")
     private boolean locked;
 
-    @XmlElement(name="demoMode")
-    private boolean demoMode;
+    @XmlElement(name="simulateCalls")
+    private boolean simulateCalls;
 
     @XmlElement(name="phoneNumber")
     private String phoneNumber;
@@ -78,12 +78,12 @@ public class PhoneCellSetup extends BasicCellSetup
     }
 
     @XmlTransient
-    public boolean getDemoMode() {
- 	return demoMode;
+    public boolean getSimulateCalls() {
+ 	return simulateCalls;
     }
 
-    public void setDemoMode(boolean demoMode) {
-	this.demoMode = demoMode;
+    public void setSimulateCalls(boolean simulateCalls) {
+	this.simulateCalls = simulateCalls;
     }
 
     @XmlTransient

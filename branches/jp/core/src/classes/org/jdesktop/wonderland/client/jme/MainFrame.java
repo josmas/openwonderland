@@ -119,6 +119,13 @@ public class MainFrame extends javax.swing.JFrame {
         toolsMenu = new javax.swing.JMenu();
         modelImportMI = new javax.swing.JMenuItem();
         cellViewerMI = new javax.swing.JMenuItem();
+        AudioMenu = new javax.swing.JMenu();
+        softphoneMenuItem = new javax.swing.JCheckBoxMenuItem();
+        testAudioMenuItem = new javax.swing.JMenuItem();
+        reconnectSoftphoneMenuItem = new javax.swing.JMenuItem();
+        transferCallMenuItem = new javax.swing.JMenuItem();
+        logAudioProblemMenuItem = new javax.swing.JMenuItem();
+        virtualPhoneMenuItem = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
 
@@ -157,6 +164,63 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         toolsMenu.add(cellViewerMI);
+
+        AudioMenu.setText("Audio");
+        AudioMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AudioMenuActionPerformed(evt);
+            }
+        });
+
+        softphoneMenuItem.setText("Softphone");
+        softphoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                softphoneMenuItemActionPerformed(evt);
+            }
+        });
+        AudioMenu.add(softphoneMenuItem);
+
+        testAudioMenuItem.setText("Test Audio");
+        testAudioMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testAudioMenuItemActionPerformed(evt);
+            }
+        });
+        AudioMenu.add(testAudioMenuItem);
+
+        reconnectSoftphoneMenuItem.setText("Reconnect Softphone");
+        reconnectSoftphoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reconnectSoftphoneMenuItemActionPerformed(evt);
+            }
+        });
+        AudioMenu.add(reconnectSoftphoneMenuItem);
+
+        transferCallMenuItem.setText("Transfer Call");
+        transferCallMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transferCallMenuItemActionPerformed(evt);
+            }
+        });
+        AudioMenu.add(transferCallMenuItem);
+
+        logAudioProblemMenuItem.setText("Log Audio Problem");
+        logAudioProblemMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logAudioProblemMenuItemActionPerformed(evt);
+            }
+        });
+        AudioMenu.add(logAudioProblemMenuItem);
+
+        virtualPhoneMenuItem.setText("Virtual Phone");
+        virtualPhoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                virtualPhoneMenuItemActionPerformed(evt);
+            }
+        });
+        AudioMenu.add(virtualPhoneMenuItem);
+
+        toolsMenu.add(AudioMenu);
 
         jMenuBar2.add(toolsMenu);
 
@@ -200,14 +264,70 @@ private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
     try {
         /* Just launch a browser for now */
-        WebBrowserLauncher.openURL("http://wonderland.dev.java.net");//GEN-LAST:event_help
+        WebBrowserLauncher.openURL("http://wonderland.dev.java.net");
     } catch (Exception ex) {
         Logger.getLogger(MainFrame.class.getName()).log(Level.WARNING, null, ex);
     }
+}//GEN-LAST:event_help
+
+private void AudioMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AudioMenuActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_AudioMenuActionPerformed
+
+private void logAudioProblemMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logAudioProblemMenuItemActionPerformed
+if (audioMenuListener != null) {
+	audioMenuListener.logAudioProblem();
+    }
+}//GEN-LAST:event_logAudioProblemMenuItemActionPerformed
+
+private void transferCallMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transferCallMenuItemActionPerformed
+if (audioMenuListener != null) {
+	audioMenuListener.transferCall();
+    }
+}//GEN-LAST:event_transferCallMenuItemActionPerformed
+
+private void reconnectSoftphoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reconnectSoftphoneMenuItemActionPerformed
+if (audioMenuListener != null) {
+	audioMenuListener.reconnectSoftphone();
+    }
+}//GEN-LAST:event_reconnectSoftphoneMenuItemActionPerformed
+
+private void testAudioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testAudioMenuItemActionPerformed
+if (audioMenuListener != null) {
+	audioMenuListener.testAudio();
+    }
+}//GEN-LAST:event_testAudioMenuItemActionPerformed
+
+private void softphoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_softphoneMenuItemActionPerformed
+if (audioMenuListener != null) {
+	audioMenuListener.showSoftphone(softphoneMenuItem.isSelected());
+    }
+}//GEN-LAST:event_softphoneMenuItemActionPerformed
+
+private VirtualPhoneListener virtualPhoneListener;
+
+public void addVirtualPhoneListener(VirtualPhoneListener virtualPhoneListener) {
+    this.virtualPhoneListener = virtualPhoneListener;
 }
 
+private void virtualPhoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualPhoneMenuItemActionPerformed
+if (virtualPhoneListener != null) {
+    virtualPhoneListener.virtualPhoneMenuItemSelected();
+}
+}//GEN-LAST:event_virtualPhoneMenuItemActionPerformed
+
+public void updateSoftphoneCheckBoxMenuItem(boolean isSelected) {
+    softphoneMenuItem.setSelected(isSelected);
+}
+
+private AudioMenuListener audioMenuListener;
+
+public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
+    this.audioMenuListener = audioMenuListener;
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenu AudioMenu;
     private javax.swing.JMenuItem cellViewerMI;
     private javax.swing.JMenuItem exitMI;
     private javax.swing.JMenu jMenu1;
@@ -215,8 +335,14 @@ private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem logAudioProblemMenuItem;
     private javax.swing.JMenuItem modelImportMI;
+    private javax.swing.JMenuItem reconnectSoftphoneMenuItem;
+    private javax.swing.JCheckBoxMenuItem softphoneMenuItem;
+    private javax.swing.JMenuItem testAudioMenuItem;
     private javax.swing.JMenu toolsMenu;
+    private javax.swing.JMenuItem transferCallMenuItem;
+    private javax.swing.JMenuItem virtualPhoneMenuItem;
     // End of variables declaration//GEN-END:variables
 
 }

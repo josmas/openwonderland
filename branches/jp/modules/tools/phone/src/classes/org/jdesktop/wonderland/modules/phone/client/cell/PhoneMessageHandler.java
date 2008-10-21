@@ -33,11 +33,27 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
+import org.jdesktop.wonderland.client.comms.ClientConnection;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage.PhoneAction;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallEstablishedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.EndCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PhoneControlMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PhoneResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
+
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.VirtualPhoneListener;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -50,7 +66,7 @@ import javax.swing.SwingUtilities;
  *
  * @author jprovino
  */
-public class PhoneMessageHandler {
+public class PhoneMessageHandler implements VirtualPhoneListener {
 
     private static final Logger logger =
             Logger.getLogger(PhoneMessageHandler.class.getName());
@@ -68,17 +84,24 @@ public class PhoneMessageHandler {
 
     private String name;
 
-    private PhoneClient client;
+    private ClientConnection connection;
         
     private PhoneForm phoneForm;
 
-    public PhoneMessageHandler(PhoneClient client, WonderlandSession session) {
-	this.client = client;
+    private PhoneCell phoneCell;
+
+    public PhoneMessageHandler(PhoneCell phoneCell, WonderlandSession session, 
+	    ClientConnection connection) {
+
+	this.phoneCell = phoneCell;
+	this.connection = connection;
 	this.session = session;
 
-	logger.warning("CREATED PHONEMESSAGEHANDLER");
+	JmeClientMain.getFrame().addVirtualPhoneListener(this);
+    }
 
-	phoneForm = new PhoneForm(client, session, this, false, "1", true);
+    public void virtualPhoneMenuItemSelected() {
+	phoneForm = new PhoneForm(connection, session, this, false, "1", true);
 	phoneForm.setVisible(true);
     }
 
@@ -86,104 +109,119 @@ public class PhoneMessageHandler {
 	return session;
     }
 	
-    public void processMessage(final PhoneMessage message) {
-        CallListing listing = message.getCallListing();
-        
-        switch (message.getAction()) {       
-        case START_HOVER:
-            //handleHoverOther(message.getSelectionID(), true);
-            //handleHoverOther(true);
-            break;
-            
-        case STOP_HOVER:
-            //handleHoverOther(message.getSelectionID(), false);
-            //handleHoverOther(false);
-            break;
-      
-        case PLACE_CALL:                
-            if (message.wasSuccessful()) {
-               
-                listing = message.getCallListing();
-                  
-                if (mostRecentCallListing == null ||
-			listing.equals(mostRecentCallListing) == false) {
+    public void processMessage(final Message message) {
+	if (message instanceof CallEndedResponseMessage) {
+	    final CallEndedResponseMessage msg = (CallEndedResponseMessage) message;
 
-		    break;
-		}
-
-		/*
-		 * Make sure the most recent listing has the right private 
-		 * client name.
-		 */
-		mostRecentCallListing.setPrivateClientName(
-		    listing.getPrivateClientName());
-
-		/*
-		 * Set the call ID used by the server.
-		 */
-		mostRecentCallListing.setCallID(listing.getCallID());
-
-                /*
-		 * This is a confirmation msg for OUR call. 
-		 * Update the form's selection.                        
-		 */
-                if (listing.isPrivate()) {
-                    //ChannelController.getController().getLocalUser().getAvatarCell().setUserWhispering(true);
-                }
-            } else {
-                logger.warning("PhoneCellGLO echo: Failed PLACE_CALL!");
-            }
-            break;
-            
-        case JOIN_CALL:
-            //Hearing back from the server means this call has joined the world.
-            if (message.wasSuccessful()) {               
-                if (mostRecentCallListing == null || 
-		        listing.equals(mostRecentCallListing) == false) {
-
-		    break;
-		}
-
-                //This is a JOIN confirmation msg for OUR call. So we should no longer be whispering...
-                 //ChannelController.getController().getLocalUser().getAvatarCell().setUserWhispering(false);                       
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        phoneForm.setCallEstablished(false);
-                    }
-                });
-                
-            } else {
-                logger.warning("PhoneCellGLO echo: Failed JOIN_CALL");
+            if (msg.wasSuccessful() == false) {    
+                logger.warning("Failed END_CALL");
+		return;
 	    }
-                        
-            break;        
-            
-	case LOCK_OR_UNLOCK:
-	    phoneForm.changeLocked(message.getLocked(), message.wasSuccessful());
-	    break;
 
-        case END_CALL:
-            if (message.wasSuccessful()) {    
-                if (mostRecentCallListing == null || 
-		        listing.equals(mostRecentCallListing) == false) {
-
-		    break;
-		}
-                
-                if (listing.isPrivate()) {
-                    //This was a private call...
-                    //ChannelController.getController().getLocalUser().getAvatarCell().setUserWhispering(false); 
-                }
-            } else {
-                logger.warning("PhoneCellGLO echo: Failed END_CALL");
-            }
-            break;
-            
-        case CALL_INVITED:
+            CallListing listing = msg.getCallListing();
+        
             if (mostRecentCallListing == null ||
 		    listing.equals(mostRecentCallListing) == false) {
 
-		break;  // we didn't start this call
+		return;
+	    }
+
+            if (mostRecentCallListing.isPrivate()) {
+		//This was a private call...
+                //ChannelController.getController().getLocalUser().getAvatarCell().setUserWhispering(false); 
+            }
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    phoneForm.setCallEnded(msg.getReasonCallEnded());
+                }
+            });
+
+	    return;
+	}
+
+	if (message instanceof LockUnlockResponseMessage) {
+	    LockUnlockResponseMessage msg = (LockUnlockResponseMessage) message;
+
+	    phoneForm.changeLocked(msg.getLocked(), msg.wasSuccessful());
+	    return;
+	}
+
+	if (message instanceof PhoneResponseMessage == false) {
+	    logger.warning("Invalid message:  " + message);
+	    return;
+	}
+
+	PhoneResponseMessage msg = (PhoneResponseMessage) message;
+
+        CallListing listing = msg.getCallListing();
+
+	if (msg instanceof PlaceCallResponseMessage) {
+	    logger.warning("Got place call response...");
+
+            if (msg.wasSuccessful() == false) {
+                logger.warning("Failed PLACE_CALL!");
+		return;
+	    }
+
+            if (mostRecentCallListing == null ||
+		    listing.equals(mostRecentCallListing) == false) {
+
+		logger.warning("Didn't find listing...");
+		return;
+	    }
+
+	    /*
+	     * Make sure the most recent listing has the right private 
+	     * client name.
+	     */
+	    mostRecentCallListing.setPrivateClientName(listing.getPrivateClientName());
+
+	    /*
+	     * Set the call ID used by the server.
+	     */
+	    logger.warning("Updating listing with " + listing.getCallID());
+
+	    mostRecentCallListing.setCallID(listing.getCallID());
+
+            /*
+	     * This is a confirmation msg for OUR call. 
+	     * Update the form's selection.                        
+	     */
+            if (listing.isPrivate()) {
+                //ChannelController.getController().getLocalUser().getAvatarCell().setUserWhispering(true);
+            }
+	    return;
+	}
+
+	if (msg instanceof JoinCallResponseMessage)  {
+            //Hearing back from the server means this call has joined the world.
+            if (msg.wasSuccessful() == false) {
+                logger.warning("Failed JOIN_CALL");
+		return;
+	    }
+
+	    if (mostRecentCallListing == null || 
+		    listing.equals(mostRecentCallListing) == false) {
+
+		return;
+	    }
+
+            //This is a JOIN confirmation msg for OUR call. So we should no longer be whispering...
+            //ChannelController.getController().getLocalUser().getAvatarCell().setUserWhispering(false);                       
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    phoneForm.setCallEstablished(false);
+                }
+            });
+	    return;
+	}
+            
+	if (msg instanceof CallInvitedResponseMessage) {
+            if (mostRecentCallListing == null ||
+		    listing.equals(mostRecentCallListing) == false) {
+
+		return;  // we didn't start this call
 	    }
 
             SwingUtilities.invokeLater(new Runnable() {
@@ -191,13 +229,14 @@ public class PhoneMessageHandler {
                     phoneForm.setCallInvited();
                 }
             });
-            break;
+            return;
+	}
             
-        case CALL_ESTABLISHED:
+	if (msg instanceof CallEstablishedResponseMessage) {
             if (mostRecentCallListing == null ||
 		    listing.equals(mostRecentCallListing) == false) {
 
-		break;  // we didn't start this call
+		return;  // we didn't start this call
 	    }
 
             SwingUtilities.invokeLater(new Runnable() {
@@ -209,29 +248,9 @@ public class PhoneMessageHandler {
                 }
             });
             
-            break;
-            
-        case CALL_ENDED:
-            if (mostRecentCallListing == null ||
-		    listing.equals(mostRecentCallListing) == false) {
-
-		break;
-	    }
-
-            if (mostRecentCallListing.isPrivate()) {
-		//This was a private call...
-                //ChannelController.getController().getLocalUser().getAvatarCell().setUserWhispering(false); 
-            }
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    phoneForm.setCallEnded(message.getReasonCallEnded());
-                }
-            });
-            break;
+            return;
         }
-        
-    }    
+    }
     
     public void leftChannel(ClientChannel arg0) {
         // ignore
@@ -241,14 +260,13 @@ public class PhoneMessageHandler {
 	 CellID clientCellID = 
 	    ((CellClientSession) session).getLocalAvatar().getViewCell().getCellID();
 
-        PhoneCellMessage msg = new PhoneCellMessage(PhoneAction.PLACE_CALL, clientCellID,
-	        PhoneCell.getInstance().getCellID(), listing);
+        PlaceCallMessage msg = new PlaceCallMessage(clientCellID, phoneCell.getCellID(), listing);
 
 	logger.warning("Sending place call message " + clientCellID + " " 
 	    + listing);
 
 	synchronized (phoneForm) {
-            session.send(client, msg);    
+            session.send(connection, msg);    
         
             mostRecentCallListing = listing;      
 	}
@@ -258,32 +276,29 @@ public class PhoneMessageHandler {
 	CellID clientCellID = 
 	    ((CellClientSession) session).getLocalAvatar().getViewCell().getCellID();
 
-        PhoneCellMessage msg = new PhoneCellMessage(PhoneAction.JOIN_CALL, 
+        JoinCallMessage msg = new JoinCallMessage(
 	    clientCellID, clientCellID, mostRecentCallListing);
 
-        session.send(client, msg);
+        session.send(connection, msg);
     }
     
     public void endCall() {        
 	CellID clientCellID = 
 	    ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
 
-        PhoneCellMessage msg = new PhoneCellMessage(PhoneAction.END_CALL,
-	    clientCellID, clientCellID, mostRecentCallListing);
+	logger.warning("call id is " + mostRecentCallListing.getCallID());
 
-        session.send(client, msg); 
+        EndCallMessage msg = new EndCallMessage(clientCellID, phoneCell.getCellID(), mostRecentCallListing);
+
+        session.send(connection, msg); 
     }
     
     public void dtmf(char c) {
         String treatment = "dtmf:" + c;
 
-	CellID clientCellID = 
-	    ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+        PlayTreatmentMessage msg = new PlayTreatmentMessage(mostRecentCallListing, treatment, true);
 
-        PhoneCellMessage msg = new PhoneCellMessage(clientCellID, null, 
-	    mostRecentCallListing, treatment, true);
-
-	session.send(client, msg);
+	session.send(connection, msg);
     }
     
         public void processEvent() {

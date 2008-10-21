@@ -23,9 +23,6 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.phone.common.PhoneConnectionType;
 
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage;
-
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
@@ -85,19 +82,7 @@ public class PhoneConnectionHandler implements ClientConnectionHandler,
     public void messageReceived(WonderlandClientSender sender, 
 	    ClientSession session, Message message) {
 
-	if (message instanceof PhoneCellMessage) {
-	    PhoneCellMessage msg = (PhoneCellMessage) message;
-
-	    logger.warning("Got PhoneCellMessage " + msg);
-
-	    phoneMessageHandlerRef.get().processMessage(sender, session, msg);
-
-	    logger.warning("Back from processing PhoneCellMessage");
-	} else {
-	    logger.warning("Unsupported message from: " + sender);
-
-            throw new UnsupportedOperationException("Not supported yet.");
-	}
+	phoneMessageHandlerRef.get().processMessage(sender, session, message);
     }
 
     public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {

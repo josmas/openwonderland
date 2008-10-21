@@ -24,10 +24,6 @@ import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
 
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage.PhoneAction;
-
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
@@ -85,7 +81,6 @@ import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
 
-
 /**
  * A server cell that provides conference phone functionality
  * @author jprovino
@@ -100,7 +95,7 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
     private final static double PRIVATE_DAMPING_COEFFICIENT = 0.5;
     
     private boolean locked;
-    private boolean demoMode;
+    private boolean simulateCalls;
     private String phoneNumber;
     private String password;
     private String phoneLocation;
@@ -133,7 +128,7 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
         PhoneCellConfig config = new PhoneCellConfig();
 
 	config.setLocked(locked);
-	config.setDemoMode(demoMode);
+	config.setSimulateCalls(simulateCalls);
 	config.setPhoneNumber(phoneNumber);
 	config.setPassword(password);
 	config.setPhoneLocation(phoneLocation);
@@ -150,7 +145,7 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
 	PhoneCellSetup pcs = (PhoneCellSetup) setup;
 
 	locked = pcs.getLocked();
-	demoMode = pcs.getDemoMode();
+	simulateCalls = pcs.getSimulateCalls();
 	phoneNumber = pcs.getPhoneNumber();
 	password = pcs.getPassword();
 	phoneLocation = pcs.getPhoneLocation();
@@ -207,7 +202,7 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
             locked = true;
         //}
 
-        //demoMode = cellSetup.getDemoMode();
+        //simulateCalls = cellSetup.getSimulateCalls();
 
         //phoneLocation = cellSetup.getPhoneLocation();
 
@@ -229,12 +224,12 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
 	this.locked = locked;
     }
 
-    public boolean getDemoMode() {
-	return demoMode;
+    public boolean getSimulateCalls() {
+	return simulateCalls;
     }
 
-    public void setDemoMode(boolean demoMode) {
-	this.demoMode = demoMode;
+    public void setSimulateCalls(boolean simulateCalls) {
+	this.simulateCalls = simulateCalls;
     }
 
     public String getPhoneNumber() {

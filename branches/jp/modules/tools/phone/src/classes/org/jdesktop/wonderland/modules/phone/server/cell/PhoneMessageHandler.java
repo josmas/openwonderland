@@ -23,9 +23,19 @@ import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
 
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage.PhoneAction;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallEstablishedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.EndCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.EndCallResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PhoneControlMessage;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
@@ -71,7 +81,6 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 
 import org.jdesktop.wonderland.server.UserManager;
 
@@ -82,7 +91,7 @@ import com.jme.math.Vector3f;
  * @author JHarris
  */
 public class PhoneMessageHandler implements 
-	ManagedCallStatusListener, TransformChangeListenerSrv, Serializable {
+	ManagedCallStatusListener, Serializable {
 
     private static final Logger logger =
         Logger.getLogger(PhoneCellMO.class.getName());
@@ -97,33 +106,46 @@ public class PhoneMessageHandler implements
     }
 
     public void processMessage(WonderlandClientSender sender, 
-	    ClientSession session, PhoneCellMessage message) {
+	    ClientSession session, Message message) {
 
-	ManagedReference<PhoneCellMO> phoneCellMORef = AppContext.getDataManager().createReference(
-	    (PhoneCellMO) CellManagerMO.getCell(message.getPhoneCellID()));
+	if (message instanceof PhoneControlMessage == false) {
+	    logger.warning("Invalid message:  " + message);
+	    return;
+	}
 
-	if (message.getAction() == PhoneAction.LOCK_OR_UNLOCK) {
+	PhoneControlMessage msg = (PhoneControlMessage) message;
+
+	ManagedReference<PhoneCellMO> externalCallCellMORef = null;
+
+	if (msg.getExternalCallCellID() != null) {
+	    externalCallCellMORef = AppContext.getDataManager().createReference(
+	        (PhoneCellMO) CellManagerMO.getCell(msg.getExternalCallCellID()));
+	}
+
+	if (message instanceof LockUnlockMessage) {
+	    LockUnlockMessage m = (LockUnlockMessage) message;
+
 	    boolean successful = 
-		message.getPassword().equals(phoneCellMORef.get().getPassword());
+		m.getPassword().equals(externalCallCellMORef.get().getPassword());
 
 	    if (successful) {
-		phoneCellMORef.get().setLocked(!phoneCellMORef.get().getLocked());
-	        phoneCellMORef.get().setKeepUnlocked(message.keepUnlocked());
+		externalCallCellMORef.get().setLocked(!externalCallCellMORef.get().getLocked());
+	        externalCallCellMORef.get().setKeepUnlocked(m.keepUnlocked());
 	    }
 
-	    logger.fine("locked " + phoneCellMORef.get().getLocked() + " successful " 
-		+ successful + " pw " + message.getPassword());
+	    logger.fine("locked " + externalCallCellMORef.get().getLocked() + " successful " 
+		+ successful + " pw " + m.getPassword());
 
-            PhoneMessage phoneMessage = 
-		new PhoneMessage(phoneCellMORef.get().getLocked(), successful);
+            LockUnlockResponseMessage response = 
+		new LockUnlockResponseMessage(externalCallCellMORef.get().getLocked(), successful);
 
-	    sender.send(phoneMessage);
+	    sender.send(response);
 	    return;
         }
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-	
-        CallListing listing = message.getCallListing();
+
+        CallListing listing = msg.getCallListing();
               
 	String externalCallID = getCallID(listing);
 
@@ -135,7 +157,7 @@ public class PhoneMessageHandler implements
 	    externalPlayer = externalCall.getPlayer();
 	}
 
-	CellMO clientCellMO = CellManagerMO.getCell(message.getClientCellID());
+	CellMO clientCellMO = CellManagerMO.getCell(msg.getClientCellID());
 
 	ManagedReference clientCellMORef = 
 	    AppContext.getDataManager().createReference(clientCellMO);
@@ -154,15 +176,46 @@ public class PhoneMessageHandler implements
 
 	AudioGroup audioGroup = vm.getAudioGroup(audioGroupId);
 
-	logger.warning("EXTERNAL CALLID IS " + externalCallID + " action " 
-	    + message.getAction());
+	logger.warning("EXTERNAL CALLID IS " + externalCallID + " " + msg);
 
-        //Our phone cell is asking us to begin a new call.
-        if (message.getAction() == PhoneAction.PLACE_CALL) {
-            //phoneCellMORef.get().addTransformChangeListener(this);
+	if (message instanceof PlayTreatmentMessage) {
+	    PlayTreatmentMessage m = (PlayTreatmentMessage) message;
 
-	    if (listing.demoMode() == false) {
-		relock(sender, phoneCellMORef);
+	    logger.warning("play treatment " + m.getTreatment() 
+		+ " to " + getCallID(listing) + " echo " + m.echo());
+
+            if (listing.simulateCalls() == true) {
+		return;
+	    }
+
+	    try {
+		externalCall.playTreatment(m.getTreatment());
+	    } catch (IOException e) {
+		logger.warning("Unable to play treatment to " + externalCall + ":  "
+		    + e.getMessage());
+	    }
+
+	    if (m.echo() == false) {
+		return;
+	    }
+
+	    logger.warning("echoing treatment to " + softphoneCallID);
+
+	    try {
+		softphoneCall.playTreatment(m.getTreatment());
+	    } catch (IOException e) {
+		logger.warning("Unable to play treatment to " + softphoneCall + ":  "
+		    + e.getMessage());
+	    }
+
+	    return;
+	}
+
+	if (msg instanceof PlaceCallMessage) {
+            //Our phone cell is asking us to begin a new call.
+
+	    if (listing.simulateCalls() == false) {
+		relock(sender, externalCallCellMORef);
 	    }
 
 	    logger.warning("Got place call message");
@@ -180,7 +233,7 @@ public class PhoneMessageHandler implements
 	    playerSetup.isOutworlder = true;
 	    playerSetup.isLivePlayer = true;
 
-            if (listing.demoMode()) {
+            if (listing.simulateCalls()) {
                 FakeVoiceManager.getInstance().setupCall(
 		    externalCallID, listing.getContactNumber());
             } else {                               
@@ -243,6 +296,10 @@ public class PhoneMessageHandler implements
 		logger.warning("done with audio groups");
             }
             
+	    externalCallID = externalCall.getId();
+
+	    logger.warning("Setting actual call id to " + externalCallID);
+
 	    listing.setCallID(externalCallID);  // set actual call Id
 
             //Check implicit privacy settings
@@ -258,7 +315,7 @@ public class PhoneMessageHandler implements
 		 * Set the call audio to whisper mode until the caller 
 		 * chooses to join the call.
 		 */
-                if (listing.demoMode() == false) {
+                if (listing.simulateCalls() == false) {
                     //Mute the two participants to the outside world
                     logger.warning("attenuate other groups");
 		    softphonePlayer.attenuateOtherGroups(audioGroup, 0, 0);
@@ -268,7 +325,7 @@ public class PhoneMessageHandler implements
                 spawnAvatarOrb(externalCallID, listing);
 	    }
 
-            if (listing.demoMode() == false) {
+            if (listing.simulateCalls() == false) {
                 //Place the calls audio at the phones position
                 //translation = new vector3f();                
                 //getOriginWorld().get(translation);                
@@ -276,23 +333,19 @@ public class PhoneMessageHandler implements
             }
           
             /*
-	     * Echo the PLACE_CALL message back to all the clients 
+	     * Send PLACE_CALL_RESPONSE message back to all the clients 
 	     * to signal success.
 	     */
-            PhoneMessage phoneMessage = 
-		new PhoneMessage(PhoneAction.PLACE_CALL, listing, true);
-
-	    logger.warning("NOtifying user...");
-            sender.send(phoneMessage);    
+            sender.send(new PlaceCallResponseMessage(listing, true));
 
 	    logger.warning("back from notifying user");
 	    return;
-        }
+	}
 
-	if (message.getAction() == PhoneAction.JOIN_CALL) {
+	if (msg instanceof JoinCallMessage) {
             //Our phone cell wants us to join the call into the world.
             
-            if (listing.demoMode() == false) {
+            if (listing.simulateCalls() == false) {
                 //Stop any current ringing.
 	        try {
                     softphoneCall.stopTreatment("ring_tone.au");
@@ -325,44 +378,18 @@ public class PhoneMessageHandler implements
             listing.setPrivateClientName("");
               
             //Inform the PhoneCells that the call has been joined successfully
-            PhoneMessage phoneMessage = new PhoneMessage(PhoneAction.JOIN_CALL, 
-		listing, true);
-
-            sender.send(phoneMessage);
+            sender.send(new JoinCallResponseMessage(listing, true));
             
             spawnAvatarOrb(externalCallID, listing);
 	    return;
-        } 
-
-	if (message.getAction() == PhoneAction.PLAY_TREATMENT) {
-	    logger.warning("play treatment " + message.getTreatment() 
-		+ " to " + externalCallID + " echo " + message.echo());
-
-            if (listing.demoMode() == false) {
-		try {
-		    externalCall.playTreatment(message.getTreatment());
-	        } catch (IOException e) {
-		    logger.warning("Unable to play treatment to " + externalCall + ":  "
-		        + e.getMessage());
-	        }
-
-		if (message.echo()) {
-		    logger.warning("echoing treatment to " + softphoneCallID);
-
-		    try {
-		        softphoneCall.playTreatment(message.getTreatment());
-	            } catch (IOException e) {
-		        logger.warning("Unable to play treatment to " + softphoneCall + ":  "
-		            + e.getMessage());
-	            }
-		}
-	    }
-	    return;
 	}
 
-        if (message.getAction() == PhoneAction.END_CALL) {
-            if (listing.demoMode() == false) {
-		relock(sender, phoneCellMORef);
+	if (msg instanceof EndCallMessage) {
+	    logger.warning("simulate is " + listing.simulateCalls() 
+		+ " external call " + externalCall);
+
+            if (listing.simulateCalls() == false) {
+		relock(sender, externalCallCellMORef);
 
 		if (externalCall != null) {
 		    try {
@@ -387,22 +414,25 @@ public class PhoneMessageHandler implements
                 FakeVoiceManager.getInstance().endCall(externalCallID);
             }         
             
-            //Echo SUCCESS to phone cell
-            PhoneMessage phoneMessage = 
-		new PhoneMessage(PhoneAction.END_CALL, listing, true);
-
-            sender.send(phoneMessage);
+            //Send SUCCESS to phone cell
+            sender.send(new EndCallResponseMessage(listing, true, "User requested call end"));
 	    return;
         } 
+
+	logger.warning("Uknown message type:  " + msg);
     }
    
-    private void relock(WonderlandClientSender sender, ManagedReference<PhoneCellMO> phoneCellMORef) {
-	if (phoneCellMORef.get().getKeepUnlocked() == false && phoneCellMORef.get().getLocked() == false) {
-	    phoneCellMORef.get().setLocked(true);
+    private void relock(WonderlandClientSender sender, ManagedReference<PhoneCellMO> externalCallCellMORef) {
+	if (externalCallCellMORef == null) {
+	    return;
+	}
 
-            PhoneMessage phoneMessage = new PhoneMessage(true, true);
+	if (externalCallCellMORef.get().getKeepUnlocked() == false && externalCallCellMORef.get().getLocked() == false) {
+	    externalCallCellMORef.get().setLocked(true);
 
-            sender.send(phoneMessage);
+            LockUnlockResponseMessage response = new LockUnlockResponseMessage(true, true);
+
+            sender.send(response);
 	}
     }
 
@@ -410,7 +440,7 @@ public class PhoneMessageHandler implements
 	String callID = listing.getCallID();
 
 	if (callID != null && callID.length() > 0) {
-	    logger.finer("using existing call id " + callID);
+	    logger.warning("using existing call id " + callID);
 	    return callID;
 	}
 
@@ -433,7 +463,7 @@ public class PhoneMessageHandler implements
 	synchronized (this) {
 	    callNumber++;
 
-	    callID += "_" + listing.getContactNumber() + "_" + callNumber;
+	    callID = listing.getContactName() + "_" + callID + "_" + callNumber;
 	}
 
         logger.finer("new call id " + callID);
@@ -452,7 +482,7 @@ public class PhoneMessageHandler implements
         //CellGLO cellGLO = CellGLOFactory.loadCellGLO(cellType, cellID, 
 	//    externalCallID, listing);
 
-        //if (listing.demoMode()) { 
+        //if (listing.simulateCalls()) { 
         //    FakeVoiceManager.getInstance().addCallStatusListener(
 	//	(ManagedCallStatusListener)cellGLO, externalCallID);
 	//} else {
@@ -481,8 +511,6 @@ public class PhoneMessageHandler implements
 	    return;
 	}
 
-        PhoneMessage phoneMessage;    
-    
 	CallListing listing;
 
 	synchronized(callListingMap) {
@@ -518,10 +546,10 @@ public class PhoneMessageHandler implements
 	        }
             }
             
-            phoneMessage = 
-		new PhoneMessage(PhoneAction.CALL_INVITED, listing, true);
+            CallInvitedResponseMessage invitedResponse = 
+		new CallInvitedResponseMessage(listing, true);
 
-            sender.send(phoneMessage);
+            sender.send(invitedResponse);
                 
             break;
 
@@ -536,10 +564,11 @@ public class PhoneMessageHandler implements
 		        + e.getMessage());
 	        }
             }
-            phoneMessage = 
-		new PhoneMessage(PhoneAction.CALL_ESTABLISHED, listing, true);
 
-            sender.send(phoneMessage);
+            CallEstablishedResponseMessage EstablishedResponse = 
+		new CallEstablishedResponseMessage(listing, true);
+
+            sender.send(EstablishedResponse);
             break;
 
         case CallStatus.STARTEDSPEAKING:
@@ -565,7 +594,7 @@ public class PhoneMessageHandler implements
             //This may appear redundant, but it's necessary for the VoiceManager
 	    // to remove its internal data structures.
 
-            if (listing.demoMode() == false) {
+            if (listing.simulateCalls() == false) {
 		if (externalCall != null) {
 		    try {
                         vm.endCall(externalCall, true);
@@ -600,38 +629,12 @@ public class PhoneMessageHandler implements
 
 	    senderMap.remove(callID);
 
-            phoneMessage = new PhoneMessage(PhoneAction.CALL_ENDED, listing, true);
-	    phoneMessage.setReasonCallEnded(status.getOption("Reason"));
-            sender.send(phoneMessage);
+            CallEndedResponseMessage endedResponse = new CallEndedResponseMessage(
+		listing, true, status.getOption("Reason"));
+
+            sender.send(endedResponse);
             break;
         }
-    }
-
-    
-    public void transformChanged(ManagedReference<CellMO> cellRef, 
-	    final CellTransform localTransform, final CellTransform localToWorldTransform) {
-
-	logger.warning("localTransform " + localTransform + " world " 
-	    + localToWorldTransform);
-
-	Player player = AppContext.getManager(
-	    VoiceManager.class).getPlayer(cellRef.getId().toString());
-
-	if (player == null) {
-	    logger.warning("got AvatarMovedMessage but can't find player");
-	} else {
-	    Vector3f heading = new Vector3f(0, 0, -1);
-
-	    Vector3f angleV = heading.clone();
-
-	    localToWorldTransform.transform(angleV);
-
-	    double angle = heading.angleBetween(angleV);
-
-	    Vector3f location = localToWorldTransform.getTranslation(null);
-	
-	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
-	}
     }
 
 }

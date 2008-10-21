@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.phone.common.PhoneConnectionType;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneMessage;
 
 import java.io.IOException;
 
@@ -78,22 +77,25 @@ public class PhoneClient extends BaseConnection {
 
 	    try {
 	        session.connect(client);
-		phoneMessageHandler = new PhoneMessageHandler(client, session);
 	    } catch (ConnectionFailureException e) {
 		logger.warning("FOO:  " + e.getMessage());
 	    }
 	}
     }
     
+    public void setPhoneMessageHandler(PhoneMessageHandler phoneMessageHandler) {
+	this.phoneMessageHandler = phoneMessageHandler;
+    }
+
     @Override
     public void handleMessage(Message message) {
 	logger.warning("got a message...");
 
-	if (phoneMessageHandler == null || (message instanceof PhoneMessage == false)) {
+	if (phoneMessageHandler == null) {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	phoneMessageHandler.processMessage((PhoneMessage) message);
+	phoneMessageHandler.processMessage(message);
     }
 
     public ConnectionType getConnectionType() {

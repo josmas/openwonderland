@@ -26,10 +26,14 @@ import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
-import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.client.comms.SessionLifecycleListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
+
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.AudioMenuListener;
+
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -39,10 +43,12 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 
 import java.io.IOException;
 
@@ -54,7 +60,9 @@ import org.jdesktop.wonderland.common.NetworkAddress;
  *
  * @author paulby
  */
-public class AudioManagerClient extends BaseConnection {
+public class AudioManagerClient extends BaseConnection 
+	implements AudioMenuListener, SoftphoneListener {
+
     private static final Logger logger =
         Logger.getLogger(AudioManagerClient.class.getName());
 
@@ -90,19 +98,74 @@ public class AudioManagerClient extends BaseConnection {
 	    try {
 	        session.connect(client);
 	    } catch (ConnectionFailureException e) {
-		logger.warning("FOO:  " + e.getMessage());
+		logger.warning("Unable to connect:  " + e.getMessage());
+		return;
 	    }
 
-	    CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+	    JmeClientMain.getFrame().addAudioMenuListener(client);
 
-	    session.send(client, new AvatarCellIDMessage(cellID));
+	    connectSoftphone();
+ 	}
+    }
 
-	    logger.warning("Sending message to server to get voice bridge...");
+    public void connectSoftphone() {
+        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
 
-	    session.send(client, new GetVoiceBridgeMessage());
-	}
+	session.send(this, new AvatarCellIDMessage(cellID));
+
+ 	logger.warning("Sending message to server to get voice bridge...");
+
+	session.send(this, new GetVoiceBridgeMessage());
     }
     
+    public void showSoftphone(boolean isVisible) {
+        SoftphoneControlImpl.getInstance().setVisible(isVisible);
+    }
+
+    public void testAudio() {
+        SoftphoneControlImpl.getInstance().runLineTest();
+    }
+
+    public void reconnectSoftphone() {
+        connectSoftphone();
+    }
+
+    public void transferCall() {
+	CallMigrationForm callMigrationForm = CallMigrationForm.getInstance();
+
+	callMigrationForm.setClient(this);
+	callMigrationForm.setVisible(true);
+    }
+
+    public void logAudioProblem() {
+        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+    }
+
+    public void softphoneVisible(boolean isVisible) {
+	JmeClientMain.getFrame().updateSoftphoneCheckBoxMenuItem(isVisible);
+    }
+
+    public void softphoneMuted(boolean muted) {
+    }
+
+    public void softphoneConnected(boolean connected) {
+    }
+
+    public void softphoneExited() {
+	JmeClientMain.getFrame().updateSoftphoneCheckBoxMenuItem(false);
+    }
+
+    public void microphoneGainTooHigh() {
+    }
+
+    public void transferCall(String phoneNumber) {
+        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+	session.send(this, new TransferCallMessage(cellID, phoneNumber));
+    }
+
+    public void cancelCallTransfer() {
+    }
+
     @Override
     public void handleMessage(Message message) {
 	logger.warning("got a message...");
@@ -125,9 +188,6 @@ public class AudioManagerClient extends BaseConnection {
 	    try {
 	        String sipURL = sc.startSoftphone(
 		    msg.getUsername(), registrarAddress, 10, localHost, AudioQuality.VPN);
-
-
-		sc.setVisible(true);
 
 	        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
 

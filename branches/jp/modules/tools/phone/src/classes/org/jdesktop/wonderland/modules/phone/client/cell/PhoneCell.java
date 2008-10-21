@@ -22,17 +22,16 @@ package org.jdesktop.wonderland.modules.phone.client.cell;
 
 import  org.jdesktop.wonderland.modules.phone.common.CallListing;
 
+import org.jdesktop.wonderland.modules.phone.common.PhoneConnectionType;
+
 import com.sun.sgs.client.ClientChannel;
 
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage.PhoneAction;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +45,9 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellConfig;
+
+import org.jdesktop.wonderland.client.comms.ClientConnection;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 /**
  *
@@ -68,29 +70,56 @@ public class PhoneCell extends Cell {
     //private ProjectorStateUpdater projectorStateUpdater;
         
     private boolean locked;
-    private boolean demoMode;
+    private boolean simulateCalls;
     private String phoneNumber;
     private String password;
     private String phoneLocation;
     private double zeroVolumeRadius;
     private double fullVolumeRadius;
 
-    private static PhoneCell phoneCell;
-
-    /*
-     * XXX This isn't right!  I don't know how to get the phoneCell to
-     * the PhoneMessageHandler;
-     */
-    public static PhoneCell getInstance() {
-	return phoneCell;
-    }
+    private PhoneMessageHandler phoneMessageHandler;
 
     public PhoneCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
 	logger.warning("CREATED NEW PHONE CELL " + cellID);
 
-	phoneCell = this;
+	new Connector(this, cellCache.getSession());
+    }
+
+    class Connector extends Thread {
+	
+	private PhoneCell phoneCell;
+	private WonderlandSession session;
+
+	public Connector(PhoneCell phoneCell, WonderlandSession session) {
+	    this.phoneCell = phoneCell;
+	    this.session = session;
+
+	    start();
+	}
+
+	public void run() {
+	    ClientConnection connection = null;
+
+	    while (connection == null) {
+	        try {
+		    Thread.sleep(5000);
+	        } catch (InterruptedException e) {
+	        }
+
+	        logger.warning("Trying to connect...");
+
+		connection = session.getConnection(PhoneConnectionType.CONNECTION_TYPE);
+
+		logger.warning("Session is " + session + " connection is " + connection);
+	    }
+
+	    PhoneClient phoneClient = (PhoneClient) connection;
+
+	    phoneClient.setPhoneMessageHandler(
+		new PhoneMessageHandler(phoneCell, session, connection));
+	}
     }
 
     /**
@@ -105,7 +134,7 @@ public class PhoneCell extends Cell {
 	PhoneCellConfig config = (PhoneCellConfig) setupData;
 
 	locked = config.getLocked();
-        demoMode = config.getDemoMode();
+        simulateCalls = config.getSimulateCalls();
         phoneNumber = config.getPhoneNumber();
         password = config.getPassword();
         phoneLocation = config.getPhoneLocation();
@@ -115,6 +144,8 @@ public class PhoneCell extends Cell {
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
+	WonderlandSession session = getCellCache().getSession();
+
         if (rendererType == RendererType.RENDERER_JME) {
             return new PhoneCellRenderer(this);
         }

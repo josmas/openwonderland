@@ -21,9 +21,10 @@ package org.jdesktop.wonderland.modules.phone.client.cell;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneCellMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockMessage;
 
 import javax.swing.JDialog;
 
@@ -33,13 +34,13 @@ import javax.swing.JDialog;
  */
 public class PhonePasswordDialog extends JDialog {
 
-    PhoneClient client;
+    ClientConnection connection;
     WonderlandSession session;
 
-    public PhonePasswordDialog(JDialog parent, PhoneClient client, WonderlandSession session) {
+    public PhonePasswordDialog(JDialog parent, ClientConnection connection, WonderlandSession session) {
         super(parent, false);
 
-	this.client = client;
+	this.connection = connection;
         this.session = session;
 
         initComponents();
@@ -192,11 +193,18 @@ public class PhonePasswordDialog extends JDialog {
 
     private void phonePasswordOkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phonePasswordOkButtonActionPerformed
 
-        PhoneCellMessage msg = new PhoneCellMessage(
-	    new CellID(1), phonePasswordText.getText(),
-            keepUnlockedCheckBox.isSelected());
+        String s = phonePasswordOkButton.getText();
 
-        session.send(client, msg);
+	boolean lock = false;
+
+	if (s.equals("Lock")) {
+	    lock = true;
+	}
+
+        LockUnlockMessage msg = new LockUnlockMessage(null, phonePasswordText.getText(),
+            lock, keepUnlockedCheckBox.isSelected());
+
+        session.send(connection, msg);
     }//GEN-LAST:event_phonePasswordOkButtonActionPerformed
 
     private void phonePasswordCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phonePasswordCancelButtonActionPerformed
