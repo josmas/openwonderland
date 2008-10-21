@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules.service.resources;
+package org.jdesktop.wonderland.web.asset.resources;
 
 import java.io.StringWriter;
 import java.util.logging.Logger;
@@ -81,12 +81,12 @@ public class ModuleRepositoryResource {
          * If there are any entries with %WL_SERVER%, then replace with the
          * server path to the asset.
          */
-        UriBuilder uriBuilder = context.getBaseUriBuilder().path(moduleName);
+        UriBuilder uriBuilder = context.getBaseUriBuilder().path(moduleName).path("/asset/get");
         String hostname = uriBuilder.build().toString();
         
         /* Fetch the module repository, return an error if it does not exist */
         ModuleRepository mr = module.getRepository();
-        if (mr == null) {
+        if (mr == null || mr.getResources() == null || mr.getResources().length == 0) {
             /*
              * If the repository doesn't exist (perhaps from a missing repository.xml
              * file, then create a fallback response with this server as the

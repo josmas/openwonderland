@@ -30,7 +30,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;
 
@@ -60,7 +59,18 @@ public class ModuleAssetResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    public Response getModuleAsset(@PathParam("modulename") String moduleName, @PathParam("path") String path) {        
+    public Response getModuleAsset(@PathParam("modulename") String moduleName, @PathParam("path") String path) {
+        Logger logger = Logger.getLogger(ModuleAssetResource.class.getName());
+        logger.warning("[ART] In module " + moduleName + " getting " + path);
+        
+        /*
+         * If the path has a leading slash, then remove it (this is typically
+         * the case with @PathParam).
+         */
+        if (path.startsWith("/") == true) {
+            path = path.substring(1);
+        }
+        
         /*
          * Get a map of all of the File objects for each art asset. We use the
          * convention that the first element of the 'path' is the asset type
@@ -68,10 +78,11 @@ public class ModuleAssetResource {
          */
         Map<DeployedAsset, File> assetMap = AssetDeployer.getFileMap();
         Iterator<DeployedAsset> it = assetMap.keySet().iterator();
+        DeployedAsset asset = null;
         File root = null;
         while (it.hasNext() == true) {
-            DeployedAsset asset = it.next();
-            if (path.startsWith(asset.assetType) == true) {
+            asset = it.next();
+            if (asset.moduleName.equals(moduleName) == true && path.startsWith(asset.assetType) == true) {
                 root = assetMap.get(asset);
                 break;
             }
@@ -80,24 +91,21 @@ public class ModuleAssetResource {
         /* Ask the deployer for the directory of the art */
         if (root == null) {
             /* Log an error and return an error response */
-            Logger logger = Logger.getLogger(ModuleAssetResource.class.getName());
             logger.warning("[ART] Unable to locate module " + moduleName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
-
+        logger.warning("[ART] Found asset " + path + " in " + root.getAbsolutePath());
+        
         /*
-         * If the path has a leading slash, then remove it (this is typically
-         * the case with @PathParam
+         * Strip off the asset type from the path before we look it up
          */
-        if (path.startsWith("/") == true) {
-            path = path.substring(1);
-        }
+        String prefix = asset.assetType + "/";
+        path = path.substring(prefix.length());
         
         File file = new File(root, path);
         if (file.exists() == false || file.isDirectory() == true) {
             /* Write an error to the log and return */
-            Logger logger = Logger.getLogger(ModuleAssetResource.class.getName());
             logger.warning("[ART] Unable to locate resource " + path +
                     " in module " + moduleName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
@@ -110,7 +118,6 @@ public class ModuleAssetResource {
             ResponseBuilder rb = Response.ok(is);
             return rb.build();
         } catch (Exception excp) {
-            Logger logger = Logger.getLogger(ModuleAssetResource.class.getName());
             logger.log(Level.WARNING, "[ART] Unable to locate resource", excp);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();            

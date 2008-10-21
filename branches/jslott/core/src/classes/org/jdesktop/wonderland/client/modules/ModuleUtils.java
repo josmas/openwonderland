@@ -53,8 +53,9 @@ public class ModuleUtils {
     public static RepositoryList fetchModuleRepositoryList(String uniqueName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-modules/modules/";
+            String base = BASE_URL + "wonderland-web-asset/asset/";
             URL url = new URL(base + uniqueName + "/repository");
+            logger.info("[MODULE] Fetching Repository list from " + url.toString());
             return RepositoryList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -76,6 +77,7 @@ public class ModuleUtils {
             /* Open an HTTP connection to the Jersey RESTful service */
             String base = BASE_URL + "wonderland-web-asset/asset/";
             URL url = new URL(base + uniqueName + "/checksums/get");
+            logger.info("[MODULES] Fetch modules from " + url.toString());
             return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */

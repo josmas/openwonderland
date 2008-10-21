@@ -74,6 +74,8 @@ public class DeployManager {
      * @throw DeployerException If the module cannot be deployed
      */
     public void deploy(Module module) throws DeployerException {
+        logger.info("[DEPLOY] Deploying module " + module.getName());
+        
         /*
          * If the deployment fails for one deployer, then keep an exception
          * around for it.
@@ -87,6 +89,8 @@ public class DeployManager {
          */
         Map<String, ModulePart> parts = module.getParts();
         Iterator<ModuleDeployerSPI> it = this.deployers.iterator();
+        logger.info("[DEPLOY] Module has parts " + parts.keySet().toString());
+        logger.info("[DEPLOY] Number of Deployers " + this.deployers.size());
         while (it.hasNext() == true) {
             /*
              * Fetch the module part types that the deployer supports. If none,
@@ -104,6 +108,7 @@ public class DeployManager {
             for (String partType : partTypes) {
                 if (parts.containsKey(partType) == true) {
                     try {
+                        logger.info("[DEPOY] Deploying " + module.getName() + " to " + deployer.getName());
                         deployer.deploy(partType, module, parts.get(partType));
                     } catch (java.lang.Exception excp) {
                         /*
