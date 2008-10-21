@@ -19,6 +19,8 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
 import org.jdesktop.wonderland.client.comms.ClientConnection;
@@ -48,28 +50,31 @@ public class PhoneForm extends JDialog implements KeypadListener {
 
     private PhoneMessageHandler phoneMessageHandler;
 
+    private CellID phoneCellID;
+
     public PhoneForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
     }
 
-    public PhoneForm(ClientConnection connection, WonderlandSession session, 
+    public PhoneForm(CellID phoneCellID, ClientConnection connection, WonderlandSession session, 
 	    PhoneMessageHandler phoneMessageHandler, boolean locked, 
 	    String phoneNumber, boolean passwordProtected) {
 
         initComponents();
         getRootPane().setDefaultButton(callButton);
 
+	this.phoneCellID = phoneCellID;
 	this.connection = connection;
 	this.session = session;
 	this.phoneMessageHandler = phoneMessageHandler;
         this.phoneNumber = phoneNumber;
 
         if (passwordProtected == false) {
-            unlockButton.setVisible(false);
+            unlockButton.setEnabled(false);
         } else {
             phonePasswordDialog = 
-		new PhonePasswordDialog(this, connection, session);
+		new PhonePasswordDialog(this, phoneCellID, connection, session);
         }
 
         setLocked(locked);

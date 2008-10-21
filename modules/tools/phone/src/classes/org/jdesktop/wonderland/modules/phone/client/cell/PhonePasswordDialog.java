@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.phone.client.cell;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
@@ -34,12 +35,14 @@ import javax.swing.JDialog;
  */
 public class PhonePasswordDialog extends JDialog {
 
+    CellID phoneCellID;  
     ClientConnection connection;
     WonderlandSession session;
 
-    public PhonePasswordDialog(JDialog parent, ClientConnection connection, WonderlandSession session) {
+    public PhonePasswordDialog(JDialog parent, CellID phoneCellID, ClientConnection connection, WonderlandSession session) {
         super(parent, false);
 
+	this.phoneCellID = phoneCellID;
 	this.connection = connection;
         this.session = session;
 
@@ -201,7 +204,10 @@ public class PhonePasswordDialog extends JDialog {
 	    lock = true;
 	}
 
-        LockUnlockMessage msg = new LockUnlockMessage(null, phonePasswordText.getText(),
+	CellID clientCellID = 
+	    ((CellClientSession) session).getLocalAvatar().getViewCell().getCellID();
+
+        LockUnlockMessage msg = new LockUnlockMessage(phoneCellID, phonePasswordText.getText(),
             lock, keepUnlockedCheckBox.isSelected());
 
         session.send(connection, msg);
