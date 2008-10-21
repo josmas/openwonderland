@@ -101,7 +101,10 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
     }
 
     public void virtualPhoneMenuItemSelected() {
-	phoneForm = new PhoneForm(connection, session, this, false, "1", true);
+	if (phoneForm == null) {
+	    phoneForm = new PhoneForm(connection, session, this, false, "1", true);
+	}
+
 	phoneForm.setVisible(true);
     }
 
