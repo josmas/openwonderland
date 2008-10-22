@@ -41,6 +41,16 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
+ * Here is an example of how to use <code>WindowSwing</code>. (Note that it is extremely important that the 
+ * Swing panel be parented as an descendant of the root frame).
+ * <br><br>
+ * <code>
+ * JPanel testPanel = new TestPanel();
+ * <br>
+ * JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
+ * <br>
+ * setComponent(testPanel);
+ * </code>
  */
 
 // TODO: currently this has JME dependencies. It would be nice to do this in a graphics library independent fashion.
