@@ -80,5 +80,12 @@
              
         </ant>
     </target>
-        
+    
+    <target name="-post-dist">
+        <jar jarfile="${dist.dir}/wonderland-webadmin-core.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="org/jdesktop/wonderland/front/admin/**"/>
+            </fileset>
+        </jar>
+    </target>      
 </project>

@@ -86,6 +86,7 @@
             <zipfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/asset/dist/wonderland-asset-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
+            <zipfileset file="${web.dir}/front/dist/wonderland-webadmin-core.jar" prefix="webserver"/>
             
             <!-- include wonderland client from core, since many web apps will
                  act as clients of the Wonderland system -->
@@ -106,10 +107,10 @@
             <zipfileset dir="${top.dir}/web/asset/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
-            <zipfileset dir="${top.dir}/web/runner/dist" prefix="deploy">
+            <zipfileset dir="${top.dir}/web/front/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
-            <zipfileset dir="${top.dir}/web/front/dist" prefix="deploy">
+            <zipfileset dir="${top.dir}/web/runner/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
             

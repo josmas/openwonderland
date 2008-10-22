@@ -22,7 +22,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.jdesktop.wonderland.servermanager.client.PingDataCollector;
-
+import org.jdesktop.wonderland.front.admin.AdminRegistration;
+        
 /**
  * Manage the installation and removal of the PingDataListener
  * @author jkaplan
@@ -39,12 +40,14 @@ public class DataCollectionManager implements ServletContextListener
         pdc = new PingDataCollector();
         context.setAttribute(PingDataCollector.KEY, pdc);
     
-        logger.warning("Created " + pdc);
+        AdminRegistration ar = 
+                new AdminRegistration("Server Performance", 
+                                      "/servermanager/servermanager-web");
+        AdminRegistration.register(ar, context);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
         if (pdc != null) {
-            logger.warning("Shutdown " + pdc);
             pdc.shutdown();
         } else {
             logger.warning("Data collector not found");
