@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
@@ -90,9 +92,6 @@ public abstract class InputManager
     implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener
 {
     private static final Logger logger = Logger.getLogger(InputManager.class.getName());
-
-    /* TODO: the non-embedded swing case is for prototyping only. Eventually this should be true */
-    private static boolean ENABLE_EMBEDDED_SWING = false;
 
     /** The singleton input manager */
     protected static InputManager inputManager;
@@ -168,8 +167,11 @@ public abstract class InputManager
 
     /**
      * Return the input manager singleton.
+     * <br>
+     * INTERNAL ONLY.
      */
-    static InputManager inputManager () {
+    @InternalAPI
+    static public InputManager inputManager () {
         return inputManager;
     }
 
@@ -210,16 +212,9 @@ public abstract class InputManager
 	setCameraComponent(cameraComp);
 
 	canvas.addKeyListener(this);
-
-	if (ENABLE_EMBEDDED_SWING) {
-	    logger.fine("Input System init: Embedded Swing case.");
-	} else {
-	    // When not using Embedded Swing the input manager receives events directly from the AWT canvas.
-	    logger.fine("Input System init: Non Swing case.");
-	    canvas.addMouseListener(this);
-	    canvas.addMouseMotionListener(this);
-	    canvas.addMouseWheelListener(this);
-	}
+	canvas.addMouseListener(this);
+	canvas.addMouseMotionListener(this);
+	canvas.addMouseWheelListener(this);
 
 	logger.fine("Input System initialization complete.");
     }
@@ -257,89 +252,73 @@ public abstract class InputManager
     /**
      * INTERNAL ONLY
      * {@inheritDoc}
-     * <br>
-     * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseClicked(MouseEvent e) {
-	inputPicker.pickMouseEventNonSwing(e);
+	inputPicker.pickMouseEvent3D(e);
     }
     
     /**
      * INTERNAL ONLY
      * {@inheritDoc}
-     * <br>
-     * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseEntered(MouseEvent e) {
-	inputPicker.pickMouseEventNonSwing(e);
+	inputPicker.pickMouseEvent3D(e);
     }
 
     /**
      * INTERNAL ONLY
      * {@inheritDoc}
-     * <br>
-     * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseExited(MouseEvent e) {
-	inputPicker.pickMouseEventNonSwing(e);
+	inputPicker.pickMouseEvent3D(e);
     }
 
     /**
      * INTERNAL ONLY
      * {@inheritDoc}
-     * <br>
-     * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mousePressed(MouseEvent e) {
-	inputPicker.pickMouseEventNonSwing(e);
+	inputPicker.pickMouseEvent3D(e);
     }
 
     /**
      * INTERNAL ONLY
      * {@inheritDoc}
-     * <br>
-     * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseReleased(MouseEvent e) {
-	inputPicker.pickMouseEventNonSwing(e);
+	inputPicker.pickMouseEvent3D(e);
     }
 
     /**
      * INTERNAL ONLY
      * {@inheritDoc}
-     * <br>
-     * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseDragged(MouseEvent e) {
-	inputPicker.pickMouseEventNonSwing(e);
+	inputPicker.pickMouseEvent3D(e);
     }
 
     /**
      * INTERNAL ONLY
      * {@inheritDoc}
-     * <br>
-     * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseMoved(MouseEvent e) {
-	inputPicker.pickMouseEventNonSwing(e);
+	inputPicker.pickMouseEvent3D(e);
     }
     
     /**
      * INTERNAL ONLY
      * {@inheritDoc}
-     * <br>
-     * Only used in the non-embedded swing case.
      */
     @InternalAPI
     public void mouseWheelMoved(MouseWheelEvent e) {
-	inputPicker.pickMouseEventNonSwing(e);
+	inputPicker.pickMouseEvent3D(e);
     }
     
     /**
@@ -508,4 +487,52 @@ public abstract class InputManager
     public void replaceKeyMouseFocus (Entity entity) {
 	replaceKeyMouseFocus(new Entity[] { entity });
     }
+
+    /**
+     * The return type for pickMouseEventSwing. If entity is non-null it is the entity hit by the pick.
+     * The pickDetails is the specific picking details for that entity.
+     * <br>
+     * FOR APP BASE ONLY.
+     */
+    public static class PickEventReturn {
+
+	/** The pick hit entity. */
+	public Entity entity;
+
+	/** One level of pick information for what is immediately under the event in eye space **/
+	public PickDetails pickDetails;
+
+	/** Constructs a new instance of PickEventReturn */
+	public PickEventReturn (Entity entity, PickDetails pickDetails) {
+	    this.entity = entity;
+	    this.pickDetails = pickDetails;
+	}
+    }    
+
+    /**
+     * FOR USE BY APP BASE ONLY.
+     * <br><br>
+     * Picker for mouse events for the Embedded Swing case.
+     * To be called by theEmbedded Swing toolkit createCoordinateHandler.
+     * <br><br>
+     * Returns non-null if window is a WindowSwing. If it is a WindowSwing then
+     * return the appropriate hit entity and the corresponding pick info.
+     *
+     * @param awtEvent The event whose entity and pickInfo need to be picked.
+     * @return An object of class PickEventReturn, which contains the return
+     * values entity and pickDetails.
+     */
+    public PickEventReturn pickMouseEventSwing (MouseEvent awtMouseEvent) {
+	if (inputPicker == null) {
+	    return null;
+	}
+	return inputPicker.pickMouseEventSwing(awtMouseEvent);
+    }
+
+    /** 
+     * An entity component which allows us to map a pick hit entity to a WindowSwing. 
+     * <br>
+     * FOR APP BASE ONLY.
+     */
+    public static class WindowSwingMarker extends EntityComponent {}
 }

@@ -36,6 +36,8 @@ import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.util.geom.BufferUtils;
 import java.awt.Point;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 // TODO: for debug
@@ -746,9 +748,8 @@ public abstract class Window2D extends Window {
     }
 
     /**
-     * Transform the given 3D point in local coordinates into the corresponding point
-     * in the pixel space of the image of the world view of the window. The given point must be on the surface 
-     * of the window.
+     * Transform the given 3D point in world coordinates into the corresponding point in the pixel space of the image 
+     * of the world view of the window. The given point must be on the surface of the window.
      * @param point The point to transform.
      * @return the 2D position of the pixel space the window's image, or null if the point is not within the window
      * or is not on the surface of the window.
@@ -756,4 +757,51 @@ public abstract class Window2D extends Window {
     public Point calcWorldPositionInPixelCoordinates (Vector3f point) { 
 	return viewWorld.calcPositionInPixelCoordinates(point);
     }
+
+    /**
+     * Add an event listener to this window's world view.
+     * @param listener The listener to add.
+     */
+    public void addWorldEventListener (EventListener listener) {
+	viewWorld.addEventListener(listener);
+    }
+
+    /**
+     * Remove an event listener from this window's world view.
+     * @param listener The listener to remove.
+     */
+    public void removeEventListener (EventListener listener) {
+	viewWorld.removeEventListener(listener);
+    }
+
+    /**
+     * Does this window's world view have the given listener attached to it?
+     * @param listener The listener to check.
+     */
+    public boolean hasEventListener (EventListener listener) {
+	return viewWorld.hasEventListener(listener);
+    }
+
+    /**
+     * Add an entity component to this window's world view.
+     */
+    public void addWorldEntityComponent (Class clazz, EntityComponent comp) {
+	viewWorld.addEntityComponent(clazz, comp);
+    }
+
+    /**
+     * Remove an entity component from this window's world view.
+     */
+    public void removeWorldEntityComponent (Class clazz) {
+	viewWorld.removeEntityComponent(clazz);
+    }
+
+    /**
+     * Return the entity component of the window's world view for the given class.
+     * @param listener The listener to check.
+     */
+    public EntityComponent getWorldEntityComponent (Class clazz) {
+	return viewWorld.getEntityComponent(clazz);
+    }
+
 }

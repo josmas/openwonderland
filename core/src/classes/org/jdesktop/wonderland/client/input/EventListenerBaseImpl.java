@@ -184,6 +184,20 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public boolean isListeningForEntity (Entity entity) {
+	EventListenerCollection collection = (EventListenerCollection) 
+	    entity.getComponent(EventListenerCollection.class);
+
+	if (collection == null) {
+	    return false;
+	}
+
+	return collection.contains(this);
+    }
+
+    /**
      * INTERNAL ONLY.
      * <br>
      * Deliver the given event to this collection. This is only ever called by the EventDeliverer.
