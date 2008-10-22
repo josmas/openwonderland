@@ -165,6 +165,12 @@ public interface EventListener  {
     public void removeFromEntity (Entity entity);
 
     /**
+     * Returns true if this listener is currently attached to the given entity.
+     * @param entity The entity to which to attach this event listener.
+     */
+    public boolean isListeningForEntity (Entity entity);
+
+    /**
      * INTERNAL ONLY.
      * <br>
      * Deliver the given event to this collection. This is only ever called by the <code>EventDeliverer</code>.

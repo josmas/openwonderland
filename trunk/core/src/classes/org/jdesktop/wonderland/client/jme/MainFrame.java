@@ -91,10 +91,10 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     /**
-     * Returns the main panel of the frame.
+     * Returns the panel of the frame in which the 3D canvas resides.
      */
-    public JPanel getMainPanel () {
-	return mainPanel;
+    public JPanel getCanvas3DPanel () {
+	return centerPanel;
     }
 
     /** This method is called from within the constructor to
