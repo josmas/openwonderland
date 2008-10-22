@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.runner;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,8 +75,6 @@ public class DarkstarRunner extends BaseRunner {
     @Override
     public synchronized void start(Properties props) throws RunnerException {
         ModuleManager mm = ModuleManager.getModuleManager();
-        
-        mm.redeployAll();
         
         // first tell the module manager to remove any modules scheduled for
         // removal
@@ -160,6 +159,61 @@ public class DarkstarRunner extends BaseRunner {
                 FileInputStream fis = new FileInputStream(f);
                 RunUtil.writeToFile(fis, newDest);
             }
+        }
+    }
+    
+    /**
+     * Override the setStatus() method to ignore the RUNNING status.  Instead,
+     * we notify other processes that Darkstar is RUNNING when the output
+     * reader gets the startup line successfully.
+     * @param status the status to set
+     */
+    @Override
+    protected synchronized void setStatus(Status status) {
+        if (status == Status.RUNNING) {
+            return;
+        }
+        
+        super.setStatus(status);
+    }
+    
+    /**
+     * Override the createOutputReader method to return a 
+     * DarkstarOutputReader that will notify us when Darkstar is really up
+     */
+    @Override
+    protected DarkstarOutputReader createOutputReader(InputStream in,
+                                                      Logger out)
+    {
+        return new DarkstarOutputReader(in, out);
+    }
+    
+    /**
+     * Called when Darkstar starts up
+     */
+    protected void darkstarStarted() {
+        super.setStatus(Status.RUNNING);
+    }
+    
+    /**
+     * Wait for Darkstar to fully startup
+     */
+    protected class DarkstarOutputReader extends BaseRunner.ProcessOutputReader {
+        private static final String DARKSTAR_STARTUP =
+                "Wonderland: application is ready";
+                
+        public DarkstarOutputReader(InputStream in, Logger out) {
+            super (in, out);
+        }
+        
+        @Override
+        protected void handleLine(String line) {
+            // see if this is a Darkstar startup message
+            if (line.contains(DARKSTAR_STARTUP)) {
+                darkstarStarted();
+            }
+            
+            super.handleLine(line);
         }
     }
 }

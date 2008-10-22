@@ -123,11 +123,11 @@ public class RunManager {
      * @return the list of runners matching the given class, or an empty
      * list if no runners match
      */
-    public synchronized Collection<Runner> getAll(Class clazz) {
-        Collection<Runner> out = new ArrayList<Runner>();
+    public synchronized <T extends Runner> Collection<T> getAll(Class<T> clazz) {
+        Collection<T> out = new ArrayList<T>();
         for (Runner r : getAll()) {
             if (clazz.isAssignableFrom(r.getClass())) {
-                out.add(r);
+                out.add(clazz.cast(r));
             }
         }
         return out;

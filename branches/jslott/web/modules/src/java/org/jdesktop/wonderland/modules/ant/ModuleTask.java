@@ -303,6 +303,11 @@ public class ModuleTask extends Jar {
     private void writeModuleJar(String partName, ModuleJar jar) 
         throws IOException
     {
+        String jarname = jar.getName();
+        if (jarname.indexOf(".") == -1) {
+            jarname += ".jar";
+        }
+        
         File jarFile;
         if (buildDir == null) {
             jarFile = File.createTempFile(jar.getName(), ".jar");
@@ -312,7 +317,7 @@ public class ModuleTask extends Jar {
             File jarBuildDir = new File(buildDir, partName);            
             jarBuildDir.mkdirs();
             
-            jarFile = new File(jarBuildDir, jar.getName() + ".jar");
+            jarFile = new File(jarBuildDir, jarname);
         }
         
         jar.setInternalDestFile(jarFile);
@@ -320,7 +325,7 @@ public class ModuleTask extends Jar {
             
         ZipFileSet zfs = new ZipFileSet();
         zfs.setFile(jarFile);
-        zfs.setFullpath(partName + "/" + jar.getName() + ".jar");
+        zfs.setFullpath(partName + "/" + jarname);
         
         super.addFileset(zfs);
     }
