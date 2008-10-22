@@ -217,6 +217,7 @@ public class AudioManagerConnectionHandler
 	    Call call = vm.getCall(callId);
 
 	    if (call == null) {
+		// XXX we should be nicer and place the call!
 		logger.warning("Unable to transfer call.  No Call for " + callId);
 		return;
 	    }
