@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import com.jme.math.Vector3f;
 import java.awt.Point;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.input.EventListener;
 
 /**
  * An interface used by view world objects provided by the gui factory.
@@ -81,4 +83,37 @@ public interface Window2DViewWorld {
      * or is not on the surface of the window.
      */
     public Point calcPositionInPixelCoordinates (Vector3f point);
+
+    /**
+     * Add an event listener to this view.
+     * @param listener The listener to add.
+     */
+    public void addEventListener (EventListener listener);
+
+    /**
+     * Remove an event listener from this view.
+     * @param listener The listener to remove.
+     */
+    public void removeEventListener (EventListener listener);
+
+    /**
+     * Does this view have the given listener attached to it?
+     * @param listener The listener to check.
+     */
+    public boolean hasEventListener (EventListener listener);
+
+    /**
+     * Add the given entity component to the view's entity.
+     */
+    public void addEntityComponent (Class clazz, EntityComponent comp);
+
+    /**
+     * Remove the given entity component from the view's entity.
+     */
+    public void removeEntityComponent (Class clazz);
+
+    /**
+     * Returns the given component of the view's entity.
+     */
+    public EntityComponent getEntityComponent (Class clazz);
 }

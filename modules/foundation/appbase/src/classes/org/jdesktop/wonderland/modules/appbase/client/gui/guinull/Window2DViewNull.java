@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guinull;
 
 import com.jme.math.Vector3f;
 import java.awt.Point;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
@@ -160,6 +162,40 @@ public class Window2DViewNull extends Window2DView implements Window2DViewWorld 
      * {@inheritDoc}
      */
     public Point calcPositionInPixelCoordinates (Vector3f point) {
+	return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addEventListener (EventListener listener) {}
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeEventListener (EventListener listener) {}
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasEventListener (EventListener listener) {
+	return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addEntityComponent (Class clazz, EntityComponent comp) {}
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeEntityComponent (Class clazz) {}
+
+    /**
+     * {@inheritDoc}
+     */
+    public EntityComponent getEntityComponent (Class clazz) {
 	return null;
     }
 }

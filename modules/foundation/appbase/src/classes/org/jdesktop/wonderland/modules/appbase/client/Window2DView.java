@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.appbase.client;
 //TODO: import org.jdesktop.lg3d.wg.event.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import com.jme.image.Texture;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.input.EventListener;
 
 /**
  * A window view is a visual representation of a window. A window can

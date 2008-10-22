@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.swing;
 
+import com.jme.math.Vector3f;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
@@ -25,11 +26,17 @@ import javax.swing.JComponent;
 import javax.swing.Popup;
 import com.sun.embeddedswing.EmbeddedToolkit;
 import com.sun.embeddedswing.EmbeddedPeer;
+import java.awt.Canvas;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
  * The main interface to Embedded Swing. This class provides access to the three basic capabilities
@@ -45,6 +52,8 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 class WindowSwingEmbeddedToolkit 
     extends EmbeddedToolkit<WindowSwingEmbeddedToolkit.WindowSwingEmbeddedPeer> 
 {
+    private static final Logger logger = Logger.getLogger(WindowSwingEmbeddedToolkit.class.getName());
+
     private static final WindowSwingEmbeddedToolkit embeddedToolkit = new WindowSwingEmbeddedToolkit();
 
     public static WindowSwingEmbeddedToolkit getWindowSwingEmbeddedToolkit() {
@@ -57,92 +66,35 @@ class WindowSwingEmbeddedToolkit
     }
     
     @Override
-    protected CoordinateHandler createCoordinateHandler(JComponent parent, Point2D point, MouseEvent mouseEvent) {
-	return null;
-	/*
-	System.err.println("Enter WSET.createCoordinateHandler, mouseEvent = " + mouseEvent);
-
-	FoundationWinSys fws = FoundationWinSys.getFoundationWinSys();
-	if (fws == null) {
-	    return null;
-	}
-	System.err.println("1");
-
-	final Canvas3D canvas = fws.getCanvas(0);
-	if (canvas == null) {
-	    return null;
-	}
-	System.err.println("2");
-
-	PickEngineAWT pickEngine = WinSysAWT.getPickEngineAWT();
-	if (pickEngine == null) {
-	    return null;
-	}
-	System.err.println("3");
-
-	int x = (int) point.getX();
-	int y = (int) point.getY();
-	PickInfo[] pickInfos = pickEngine.performPick(canvas, x, y);
-	//System.err.println("WSET: pickInfos = " + pickInfos);
-	if (pickInfos == null || pickInfos[0] == null) {
-	    System.err.println("WSET: pick missed");
-	    System.err.println("************* Direct inject pick miss");
-	    pickEngine.enqueue(mouseEvent);
-	    pickEngine.addPickInfos(null);
-	    
-	    return null;
-	}
-	//System.err.println("WSET: pick hit, pickInfos = " + pickInfos);
-	System.err.println("4");
-
-	Node pickedNode = pickInfos[0].getNode();
-	System.err.println("pickedNode = " + pickedNode);
-	Node parentNode = pickedNode.getParent();
-	int i = 0;
-	while (parentNode != null && 
-	       parentNode.getClass() != org.jdesktop.lg3d.wonderland.appshare.AppWindowImage.TexturedPanelObject.class) {
-	    //System.err.println((i++) + ": parent = " + parentNode);
-	    parentNode = parentNode.getParent();
-	}
-	System.err.println("5");
-	if (parentNode == null) {
-	    // We didn't hit a WindowSwing, but pass the pick info along to PickEngineAWT.
-	    System.err.println("Missed window");
-	    System.err.println("************* Direct inject pick hit");
-	    System.err.println("mouseEvent = " + mouseEvent);
-	    pickEngine.enqueue(mouseEvent);
-	    pickEngine.addPickInfos(pickInfos);
-	    return null;
-	}
-	System.err.println("6");
+    protected CoordinateHandler createCoordinateHandler(JComponent parent, Point2D point, MouseEvent e) {
+	logger.fine("Enter WSET.createCoordinateHandler, mouseEvent = " + e);
 	
-	final AppWindowImage.TexturedPanelObject tpo = (AppWindowImage.TexturedPanelObject) parentNode;
-	final WindowSwing windowSwing = (WindowSwing) tpo.getAuxObject();
-	if (windowSwing == null) {
-	    System.err.println("Missed swing window");
-	    System.err.println("************* Direct inject pick hit to app win");
-	    System.err.println("mouseEvent = " + mouseEvent);
-	    pickEngine.enqueue(mouseEvent);
-	    pickEngine.addPickInfos(pickInfos);
+	// Convert event from frame coords into canvas coords
+	Canvas canvas = JmeClientMain.getFrame().getCanvas();
+	JFrame frame = (JFrame) e.getSource();
+	Point framePoint = e.getPoint();
+	Point canvasPoint = SwingUtilities.convertPoint(frame, framePoint, canvas);
+	MouseEvent newEvent = new MouseEvent(canvas, e.getID(), e.getWhen(), e.getModifiers(), 
+					     e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), 
+					     e.getButton());
+	newEvent.translatePoint(canvasPoint.x - framePoint.x, canvasPoint.y - framePoint.y);
+	logger.fine("pick event = " + newEvent);
+
+	InputManager.PickEventReturn ret = InputManager.inputManager().pickMouseEventSwing(newEvent);
+	if (ret == null || ret.entity == null || ret.pickDetails == null) {
+	    logger.fine("WindowSwing miss");
 	    return null;
 	}
+	logger.fine("WindowSwing hit");
+	logger.fine("Pick hit entity = " + ret.entity);
 
-	final Point3d intersectionPointLocal = pickInfos[0].getClosestIntersectionPoint();
-	
-	// TODO: debug
-	final Component source = (Component) mouseEvent.getSource();
-	//System.err.println("Original source = " + source);
-	final Point sourcePoint = mouseEvent.getPoint();
-	Component root = SwingUtilities.getRoot(source);
-	//System.err.println("Root = " + root);
-	if (source != root) {
-	    System.err.println("Source doesn't equal root!");
-	    mouseEvent.setSource(root);
-	    Point rootPoint = 
-		SwingUtilities.convertPoint(source, sourcePoint, root);
-	    mouseEvent.translatePoint(rootPoint.x - sourcePoint.x, 
-				      rootPoint.y - sourcePoint.y);
-	}
+	EntityComponent comp = ret.entity.getComponent(WindowSwing.WindowSwingReference.class);
+	assert comp != null;
+	final WindowSwing windowSwing = ((WindowSwing.WindowSwingReference)comp).getWindowSwing();
+	assert windowSwing != null;
+
+	final Vector3f intersectionPointWorld = ret.pickDetails.getPosition();
+	logger.fine("intersectionPointWorld = " + intersectionPointWorld);
 
         final EmbeddedPeer targetEmbeddedPeer = windowSwing.getEmbeddedPeer();
         CoordinateHandler coordinateHandler = new CoordinateHandler() {
@@ -150,24 +102,29 @@ class WindowSwingEmbeddedToolkit
             public EmbeddedPeer getEmbeddedPeer() {
                 return targetEmbeddedPeer;
             }
+
             @Override
             public Point2D transform(Point2D src, Point2D dst) {
-		Point pt = windowSwing.calcPositionInComponent(new Point3f(intersectionPointLocal));
-		//System.err.println("pt = " + pt);
+		Point pt = windowSwing.calcWorldPositionInPixelCoordinates(intersectionPointWorld);
+		logger.fine("pt = " + pt);
 
 		if (dst == null) {
 		    dst = new Point2D.Double();
 		}
 		
+		if (pt == null) {
+		    logger.warning("Event world point is outside window bounds");
+		    return dst;
+		}
+
 		// TODO: for now
 		dst.setLocation(new Point2D.Double((double)pt.x, (double)pt.y));
-		//System.err.println("dst = " + dst);
+		logger.fine("dst = " + dst);
 
 		return dst;
             }
         };
         return coordinateHandler;
-	*/
     }
 
     @Override

@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
 import com.jme.light.PointLight;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
@@ -26,6 +25,8 @@ import com.jme.scene.state.LightState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.modules.appbase.client.AppCellRenderer;
@@ -119,9 +120,12 @@ public class AppCellRendererJME extends AppCellRenderer {
      */
     @Override
     public void attachView (WindowView view) {
+
+	// The view scene graph is directly attached to the root entity of the renderer.
 	ViewWorldDefault viewWorld = (ViewWorldDefault) view;
 	rootNode.attachChild(viewWorld.getBaseNode());
 
+	// TODO: the frame and its subcomponents should be attached to the children of the root entity
         FrameWorldDefault frame = viewWorld.getFrame();
 	if (frame != null) {
 	    rootNode.attachChild(frame.getBaseNode());
@@ -136,7 +140,56 @@ public class AppCellRendererJME extends AppCellRenderer {
 	ViewWorldDefault viewWorld = (ViewWorldDefault) view;
 	rootNode.detachChild(viewWorld.getBaseNode());
 
+	// TODO: the frame and its subcomponents should be attached to the children of the root entity
         FrameWorldDefault frame = viewWorld.getFrame();
 	rootNode.detachChild(frame.getBaseNode());
+    }
+
+    /**
+     * Add an event listener to the root entity of this renderer.
+     * @param listener The listener to add.
+     */
+    public void addEventListener (EventListener listener) {
+	listener.addToEntity(getEntity());
+    }
+
+    /**
+     * Remove an event listener from the root entity of this renderer.
+     * @param listener The listener to remove.
+     */
+    public void removeEventListener (EventListener listener) {
+	listener.removeFromEntity(getEntity());
+    }
+
+    /**
+     * Does the root entity of this renderer have the given listener attached to it?
+     * @param listener The listener to check whether it is attached this renderer's root entity.
+     */
+    public boolean hasEventListener (EventListener listener) {
+	return listener.isListeningForEntity(getEntity());
+    }
+
+    /**
+     * Add the given entity component to the renderer's entity.
+     */
+    public void addEntityComponent (Class clazz, EntityComponent comp) {
+	Entity entity = getEntity();
+	entity.addComponent(clazz, comp);
+	comp.setEntity(entity);
+    }
+
+    /**
+     * Remove the given entity component class from the renderer's entity.
+     */
+    public void removeEntityComponent (Class clazz) {
+	getEntity().removeComponent(clazz);
+
+    }
+
+    /**
+     * Returns the given component of the renderer's entity.
+     */
+    public EntityComponent getEntityComponent (Class clazz) {
+	return getEntity().getComponent(clazz);
     }
 }

@@ -17,8 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.image.Image;
 import com.jme.image.Texture;
+import com.jme.math.Matrix4f;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
@@ -37,6 +39,9 @@ import java.nio.FloatBuffer;
 import com.jme.util.geom.BufferUtils;
 import com.jme.scene.TexCoords;
 import java.awt.Point;
+import java.util.LinkedList;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.input.EventListener;
 
 /**
  * A view onto a window which exists in the 3D world.
@@ -117,6 +122,22 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     private int pointerLastX;
     private int pointerLastY;
 
+    /** The event listeners which are attached to this view while the view is attached to its cell */
+    private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
+
+    /** A type for entries in the entityComponents list. */
+    private class EntityComponentEntry {
+	private Class clazz;
+	private EntityComponent comp;
+	private EntityComponentEntry (Class clazz, EntityComponent comp) {
+	    this.clazz = clazz;
+	    this.comp = comp;
+	}
+    }
+
+    /** The entity components which should be attached to this view while the view is attached to its cell. */
+    private LinkedList<EntityComponentEntry> entityComponents = new LinkedList<EntityComponentEntry>();
+
     /**
      * Create a new instance of ViewWorldDefault.
      *
@@ -147,9 +168,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    frame = null;
         }
 	if (baseNode != null) {
-	    AppCell cell = getCell();
-	    if (cell != null) {
-		cell.detachView(this, RendererType.RENDERER_JME);
+	    if (connectedToCell) {
+		detachFromCell((AppCell)getCell());
 	    }
 	    baseNode = null;
 	}
@@ -387,17 +407,16 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /** Update the view's visibility */
     void updateVisibility() {
 	AppCell cell = getCell();
+
 	if (cell == null) return;
 	baseNode.setName("ViewWorldDefault Node for cell " + getCell().getCellID().toString());
 
 	visible = viewVisible && window.isVisible();
 	
 	if (visible && !connectedToCell) {
-	    cell.attachView(this, RendererType.RENDERER_JME);
-	    connectedToCell = true;
+	    attachToCell(cell);
 	} else if (!visible && connectedToCell) {
-	    cell.detachView(this, RendererType.RENDERER_JME);
-	    connectedToCell = false;
+	    detachFromCell(cell);
 	}
     }
 
@@ -410,7 +429,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      * If you want to customize the geometry of a view implement
      * this interface and pass an instance to view.setGeometry.
      */
-    public abstract static class ViewGeometryObject extends Node {
+    public abstract class ViewGeometryObject extends Node {
 
 	/** The view for which the geometry object was created. */
 	protected ViewWorldDefault view;
@@ -456,7 +475,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 */
 	public abstract void updateTexture ();
 
-	/**
+
+	/**  TODO: delete. obsolete
 	 * Transforms the given 3D point in world space into the window 
 	 * coordinate system assuming that the shape is a rectangle
 	 * the same size as the view. If this assumption does not hold
@@ -466,8 +486,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 * @return The 2D position of the world point in the window
 	 * or null if the point is outside the window's geometry.
 
-	// TODO: should I switch to using calcPositionInPixelCoordinates?
 	protected Point convertPoint3DTo2D (Point3f p3f) {
+
 	    // First calculate the actual coordinates of the corners of
 	    // the panel in world coords.
         
@@ -485,7 +505,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    t3d.transform(topRight);
 	    t3d.transform(bottomLeft);
 	    t3d.transform(bottomRight);
-        
+
 	    // Now calculate the x and y coords relative to the panel
         
 	    float y = Math3D.pointLineDistance(topLeft,topRight,p3f);
@@ -503,6 +523,61 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 			     (int)((y / heightWorld) * window2D.getHeight()));
 	}
         */
+
+	public Point calcPositionInPixelCoordinates (Vector3f point) {
+	    logger.fine("point = " + point);
+
+	    // First calculate the actual coordinates of the corners of the view in world coords.
+	    Vector3f topLeftLocal = new Vector3f( -width/2f, height/2f, 0f);
+	    Vector3f topRightLocal = new Vector3f( width/2f, height/2f, 0f);
+	    Vector3f bottomLeftLocal = new Vector3f( -width/2f, -height/2f, 0f);
+	    Vector3f bottomRightLocal = new Vector3f( width/2f, -height/2f, 0f);
+	    logger.fine("topLeftLocal = " + topLeftLocal);
+	    logger.fine("topRightLocal = " + topRightLocal);
+	    logger.fine("bottomLeftLocal = " + bottomLeftLocal);
+	    logger.fine("bottomRightLocal = " + bottomRightLocal);
+	    Matrix4f local2World = getLocalToWorldMatrix(null); // TODO: prealloc
+	    Vector3f topLeft = local2World.mult(topLeftLocal, new Vector3f()); // TODO:prealloc
+	    Vector3f topRight = local2World.mult(topRightLocal, new Vector3f()); // TODO:prealloc
+	    Vector3f bottomLeft = local2World.mult(bottomLeftLocal, new Vector3f()); // TODO:prealloc
+	    Vector3f bottomRight = local2World.mult(bottomRightLocal, new Vector3f()); // TODO:prealloc
+	    logger.fine("topLeft = " + topLeft);
+	    logger.fine("topRight = " + topRight);
+	    logger.fine("bottomLeft = " + bottomLeft);
+	    logger.fine("bottomRight = " + bottomRight);
+
+	    // Now calculate the x and y coords relative to the view
+
+	    float widthWorld = topRight.x - topLeft.x;
+	    float heightWorld = topLeft.y - bottomLeft.y;
+	    logger.fine("widthWorld = " + widthWorld);
+	    logger.fine("heightWorld = " + heightWorld);
+
+	    // TODO: doc: point must be on window
+	    float x = point.x - topLeft.x;
+	    float y = (topLeft.y - point.y);
+	    logger.fine("x = " + x);
+	    logger.fine("y = " + y);
+
+	    x /= widthWorld;
+	    y /= heightWorld;
+	    logger.fine("x pct = " + x);
+	    logger.fine("y pct = " + y);
+
+	    // Assumes window is never scaled
+	    if (x < 0 || x >= 1 || y < 0 || y >= 1) {
+		logger.fine("Outside!");
+		return null;
+	    }
+        
+	    int winWidth = ((Window2D)window).getWidth();
+	    int winHeight = ((Window2D)window).getHeight();
+	    logger.fine("winWidth = " + winWidth);
+	    logger.fine("winHeight = " + winHeight);
+
+	    logger.fine("Final xy " + (int)(x * winWidth) + ", "+ (int)(y * winHeight));
+	    return new Point((int)(x * winWidth), (int)(y * winHeight));
+	}
 
 	/**
 	 * Returns the texture width.
@@ -523,7 +598,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /** 
      * The geometry node used by the view.
      */
-    protected static class ViewGeometryObjectDefault extends ViewGeometryObject {
+    protected class ViewGeometryObjectDefault extends ViewGeometryObject {
                
 	/** The actual geometry */
         private TexturedQuad quad;
@@ -538,9 +613,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    super(view);
 
 	    quad = new TexturedQuad(null, "ViewWorldDefault-TexturedQuad");
+	    quad.setModelBound(new BoundingBox());
 	    attachChild(quad);
 
 	    updateSize();
+	    quad.updateModelBound();
 
 	    /* TODO: debug 
 	    quad.printRenderState();
@@ -659,30 +736,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      * {@inheritDoc}
      */
     public Point calcPositionInPixelCoordinates (Vector3f point) {
-        
-	Vector3f topLeft = new Vector3f( -width/2f, height/2f, 0f);
-	Vector3f topRight = new Vector3f( width/2f, height/2f, 0f);
-	Vector3f bottomLeft = new Vector3f( -width/2f, -height/2f, 0f);
-	Vector3f bottomRight = new Vector3f( width/2f, -height/2f, 0f);
-        
-	// Now calculate the x and y coords relative to the panel
-        
-	float y = pointLineDistance(topLeft,topRight,point);
-	float y1 = pointLineDistance(bottomLeft, bottomRight, point);
-        
-	float x = pointLineDistance(topLeft,bottomLeft,point);
-	float x1 = pointLineDistance(topRight,bottomRight,point);
-
-	if (y > height || y1> height || x>width || x1>width) {
-	    return null;
-	}
-        
-	int winWidth = ((Window2D)window).getWidth();
-	int winHeight = ((Window2D)window).getHeight();
-
-	//System.err.println("XY "+x+" "+y);
-	//System.err.println("XY "+(x/width)*winWidth+" "+(y/height)*winHeight);
-	return new Point((int)((x/width)*winWidth),(int)((y/height)*winHeight));
+	if (geometryObj == null) return null;
+	return geometryObj.calcPositionInPixelCoordinates(point);
     }
 
     /**
@@ -797,6 +852,164 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	logger.warning("ViewWorldDefault: allocated texture id " + texid);
 	if (texid == 0) {
 	    logger.severe("Texture Id is still 0!!!");
+	}
+    }
+
+    /**
+     * Connect this view to the given cell.
+     */
+    private void attachToCell (AppCell cell) {
+	cell.attachView(this, RendererType.RENDERER_JME);
+	
+	// Attach this view's event listeners
+	AppCellRendererJME cellRenderer = (AppCellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+	for (EventListener listener : eventListeners) {
+	    cellRenderer.addEventListener(listener);
+	}
+
+	// Attach this view's entity components
+	for (EntityComponentEntry entry : entityComponents) {
+	    cellRenderer.addEntityComponent(entry.clazz, entry.comp);
+	}
+
+	connectedToCell = true;
+    }
+
+    /**
+     * Disconnect this view from the given cell.
+     */
+    private void detachFromCell (AppCell cell) {
+	cell.detachView(this, RendererType.RENDERER_JME);
+
+	// Detach this view's event listeners
+	AppCellRendererJME cellRenderer = (AppCellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+	for (EventListener listener : eventListeners) {
+	    cellRenderer.removeEventListener(listener);
+	}
+
+	// Detach this view's entity components
+	for (EntityComponentEntry entry : entityComponents) {
+	    cellRenderer.removeEntityComponent(entry.clazz);
+	}
+
+	connectedToCell = false;
+    }
+
+    /**
+     * Add an event listener to this view.
+     * @param listener The listener to add.
+     */
+    public synchronized void addEventListener (EventListener listener) {
+	if (hasEventListener(listener)) return;
+	eventListeners.add(listener);
+	if (connectedToCell) {
+	    AppCellRendererJME cellRenderer = (AppCellRendererJME) getCell().getCellRenderer(RendererType.RENDERER_JME);
+	    cellRenderer.addEventListener(listener);
+	}
+    }
+
+    /**
+     * Remove an event listener from this view.
+     * @param listener The listener to remove.
+     */
+    public synchronized void removeEventListener (EventListener listener) {
+	if (!hasEventListener(listener)) return;
+	eventListeners.remove(listener);
+	if (connectedToCell) {
+	    AppCellRendererJME cellRenderer = (AppCellRendererJME) getCell().getCellRenderer(RendererType.RENDERER_JME);
+	    cellRenderer.removeEventListener(listener);
+	}
+    }
+
+    /**
+     * Does this view have the given listener attached to it?
+     * @param listener The listener to check.
+     */
+    public synchronized boolean hasEventListener (EventListener listener) {
+	return eventListeners.contains(listener);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized void addEntityComponent (Class clazz, EntityComponent comp) {
+	AppCellRendererJME cellRenderer = null;
+	if (connectedToCell) {
+	    cellRenderer = (AppCellRendererJME) getCell().getCellRenderer(RendererType.RENDERER_JME);
+            
+	}
+
+	// Is this class already in the list?
+	EntityComponentEntry entry = getEntityComponentEntry(clazz);
+	if (entry != null) {
+	    // If it already has the same component do nothing.
+	    if (entry.comp != comp) {
+
+		// Class is in the list but component has changed
+		if (cellRenderer != null) {
+		    cellRenderer.removeEntityComponent(clazz);
+		}
+		entry.comp = comp;
+		if (cellRenderer != null) {
+		    cellRenderer.addEntityComponent(clazz, entry.comp);
+		}
+	    }
+
+	} else {
+
+	    entityComponents.add(new EntityComponentEntry(clazz, comp));
+
+	    if (cellRenderer != null) {
+		cellRenderer.addEntityComponent(clazz, comp);
+	    }
+	}
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized void removeEntityComponent (Class clazz) {
+
+	AppCellRendererJME cellRenderer = null;
+	if (connectedToCell) {
+	    cellRenderer = (AppCellRendererJME) getCell().getCellRenderer(RendererType.RENDERER_JME);
+	}
+
+	// Is this class already not in the list?
+	EntityComponentEntry entry = getEntityComponentEntry(clazz);
+	if (entry == null) {
+	    return;
+	} else {
+
+	    entityComponents.remove(entry);
+
+	    if (cellRenderer != null) {
+		cellRenderer.removeEntityComponent(clazz);
+	    }
+	}
+    }
+
+    /**
+     * Returns the given entity component entry in the entity components list.
+     */
+    private synchronized EntityComponentEntry getEntityComponentEntry (Class clazz) {
+	for (EntityComponentEntry entry : entityComponents) {
+	    if (entry.clazz == clazz) {
+		return entry;
+	    }
+	}
+	return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized EntityComponent getEntityComponent (Class clazz) {
+	EntityComponentEntry entry = getEntityComponentEntry(clazz);
+	if (entry.comp == null) {
+	    return null;
+	} else {
+	    return entry.comp;
 	}
     }
 }
