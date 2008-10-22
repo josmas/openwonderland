@@ -98,12 +98,10 @@ class WindowSwingEmbeddedToolkit
 
         final EmbeddedPeer targetEmbeddedPeer = windowSwing.getEmbeddedPeer();
         CoordinateHandler coordinateHandler = new CoordinateHandler() {
-	    @Override
             public EmbeddedPeer getEmbeddedPeer() {
                 return targetEmbeddedPeer;
             }
 
-            @Override
             public Point2D transform(Point2D src, Point2D dst) {
 		Point pt = windowSwing.calcWorldPositionInPixelCoordinates(intersectionPointWorld);
 		logger.fine("pt = " + pt);
