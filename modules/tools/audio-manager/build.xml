@@ -11,7 +11,7 @@
 
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/lib/voicelib.jar"/>
-	<path location="${current.dir}/lib/bridge.jar"/>
+	<path location="${current.dir}/lib/voip.jar"/>
 	<path location="${current.dir}/lib/bridge_connector.jar"/>
     </pathconvert>
 

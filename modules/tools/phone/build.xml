@@ -10,9 +10,9 @@
     <property name="module.plugins" value="PhoneServerPlugin PhoneClientPlugin"/>
 
     <pathconvert property="module-server.classpath">
-        <path location="${current.dir}/lib/voicelib.jar"/>
-	<path location="${current.dir}/lib/bridge.jar"/>
-	<path location="${current.dir}/lib/bridge_connector.jar"/>
+        <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
+	<path location="${current.dir}/../audio-manager/lib/voip.jar"/>
+	<path location="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
     </pathconvert>
 
     <!-- import common build file -->
