@@ -31,11 +31,26 @@ import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.input.InputManager.WindowSwingMarker;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
+ * Here is an example of how to use <code>WindowSwing</code>. (Note that it is extremely important that the 
+ * Swing panel be parented as an descendant of the root frame).
+ * <br><br>
+ * <code>
+ * JPanel testPanel = new TestPanel();
+ * <br>
+ * JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
+ * <br>
+ * setComponent(testPanel);
+ * </code>
  */
 
 // TODO: currently this has JME dependencies. It would be nice to do this in a graphics library independent fashion.
@@ -53,6 +68,23 @@ public class WindowSwing extends WindowGraphics2D {
     /** The size of the window */
     protected Dimension size;
 
+    /** Is input enabled on this window? */
+    protected boolean inputEnabled = true;
+
+    /** The event listener for this window. */
+    protected class MyEventListener extends EventListenerBaseImpl {
+	public boolean propagatesToParent (Event event) {
+	    return inputEnabled;
+	}
+    }
+
+    /** An entity component which provides a back pointer from the entity of a WindowSwing to the WindowSwing. */
+    class WindowSwingReference extends EntityComponent {
+	WindowSwing getWindowSwing () {
+	    return WindowSwing.this;
+	}
+    }
+
     /** 
      * Create a new instance of WindowSwing.
      * @param app The application to which this window belongs.
@@ -68,6 +100,17 @@ public class WindowSwing extends WindowGraphics2D {
     {
         super(app, width, height, topLevel, pixelScale, new DrawingSurface(width, height));
 	initializeSurface();
+
+	/* TODO: For debug  
+	int i = 0;
+	while (i++ < 1000000) {
+	    try { Thread.sleep(1000); } catch (Exception ex) {}
+	}
+	*/
+
+	addWorldEntityComponent(InputManager.WindowSwingMarker.class, new WindowSwingMarker());
+	addWorldEntityComponent(WindowSwingReference.class, new WindowSwingReference());
+	addWorldEventListener(new MyEventListener());
     }
 
     /** Specify the Swing component displayed in this window */
@@ -106,12 +149,8 @@ public class WindowSwing extends WindowGraphics2D {
             return;
         }
 	
-	// TODO: is this sufficient?
-	// Old: JPanel embeddedParent = Main.getLg3dConnector();
 	MainFrame frame = JmeClientMain.getFrame();
-	System.err.println("Main frame = " + frame);
-	JPanel embeddedParent = frame.getMainPanel();
-	System.err.println("embeddedPeerParent (JPanel) = " + embeddedParent);
+	JPanel embeddedParent = frame.getCanvas3DPanel();
 	if (embeddedParent == null) {
 	    logger.warning("Embedded parent is null");
 	    return;
@@ -187,5 +226,19 @@ public class WindowSwing extends WindowGraphics2D {
      */
     Point calcPositionInComponent(Vector3f p3f) {
 	return calcWorldPositionInPixelCoordinates (p3f);
+    }
+
+    /** 
+     * Set the input enable for this window. By default, input for a WindowSwing is enabled.
+     */
+    public void setInputEnabled (boolean enabled) {
+	inputEnabled = enabled;
+    }
+
+    /** 
+     * Return the input enabled for this window.
+     */
+    public boolean getInputEnabled () {
+	return inputEnabled;
     }
 }

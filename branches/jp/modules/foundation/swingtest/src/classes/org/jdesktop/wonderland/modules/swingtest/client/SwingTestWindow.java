@@ -60,7 +60,7 @@ public class SwingTestWindow extends WindowSwing  {
 	JPanel testPanel = new TestPanel();
 	// Note: this seems to only be required for the swing set, but do it here for safety
 	// TODO: test without
-       	JmeClientMain.getFrame().getMainPanel().add(testPanel);
+       	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
 	setComponent(testPanel);
     }
 }
