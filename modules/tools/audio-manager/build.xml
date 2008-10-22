@@ -44,7 +44,7 @@
                 </server>    
 		<serverjar jarfile="${current.dir}/lib/voicelib.jar"/>
 		<serverjar jarfile="${current.dir}/lib/bridge_connector.jar"/>
-		<serverjar jarfile="${current.dir}/lib/bridge.jar"/>
+		<serverjar jarfile="${current.dir}/lib/voip.jar"/>
             </plugin>
         </module>
     </target>                                  
