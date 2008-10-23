@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.SessionLifecycleListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
@@ -60,10 +61,11 @@ import org.jdesktop.wonderland.common.NetworkAddress;
 
 /**
  *
- * @author paulby
+ * @author jprovino
  */
-public class AudioManagerClient extends BaseConnection 
-	implements AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener {
+public class AudioManagerClient extends BaseConnection implements 
+	AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener,
+	SessionStatusListener {
 
     private static final Logger logger =
         Logger.getLogger(AudioManagerClient.class.getName());
@@ -77,15 +79,21 @@ public class AudioManagerClient extends BaseConnection
 
 	this.session = session;
 
+	session.addSessionStatusListener(this);
+
 	((CellClientSession)session).getLocalAvatar().addViewCellConfiguredListener(this);
 
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
 
-	//logger.warning("Trying to connect...");
-	//session.connect(this);
+	//session.connect(this);  // timing problem, can't do this now or it will hang.
+
+	logger.warning("Starting AudioManagerCLient");
 	new Connector(this);
     }
 
+    /*
+     * Work around for timing problem.
+     */
     class Connector extends Thread {
 
 	AudioManagerClient client;
@@ -104,18 +112,45 @@ public class AudioManagerClient extends BaseConnection
 	    logger.warning("Trying to connect...");
 
 	    try {
-	        session.connect(client);
+		session.connect(client);
+		connected = true;
+		connectSoftphone();
 	    } catch (ConnectionFailureException e) {
 		logger.warning("Unable to connect:  " + e.getMessage());
 		return;
 	    }
 
+	    logger.warning("connected!");
 	    JmeClientMain.getFrame().addAudioMenuListener(client);
  	}
     }
 
+    private boolean connected;
+
+    public void sessionStatusChanged(WonderlandSession session, WonderlandSession.Status status) {
+	if (status.equals(WonderlandSession.Status.CONNECTED) == false) {
+	    return;
+	}
+
+	logger.warning("I never get here:  Got status " + status);
+
+	connected = true;
+
+	if (cellID != null) {
+	    connectSoftphone();
+	}
+    }
+
     public void viewConfigured(LocalAvatar localAvatar) {
+	logger.warning("View CONFIGURED!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
 	cellID = localAvatar.getViewCell().getCellID();
+
+	if (!connected) {
+	    logger.warning("Not connected!");
+	    return;
+	}
+
 	connectSoftphone();
     }
 
