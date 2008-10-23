@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="dist" name="phone">
+     <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.phone}"/>
+    <property name="modules.dir" location="${current.dir}/../.."/>
+        
+    <property name="module.src" value="org/jdesktop/wonderland/modules/phone"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.phone"/>
+    <property name="module.jarname" value="phone"/>
+    <property name="module.plugins" value="PhoneServerPlugin PhoneClientPlugin"/>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
+	<path location="${current.dir}/../audio-manager/lib/voip.jar"/>
+	<path location="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
+    </pathconvert>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+   
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="phone" version="1" minorversion="1"
+                jarfile="${module.dist.dir}/${module.jarname}.jar"
+                builddir="${build.lib.dir}">
+            <plugin name="phone">
+                <client basedir="${build.classes.dir}">
+                    <clientplugin provider="org.jdesktop.wonderland.modules.phone.client.PhoneClientPlugin"/>
+
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>                   
+                </client>
+                
+                <server basedir="${build.classes.dir}">
+                    <serverplugin provider="org.jdesktop.wonderland.modules.phone.server.PhoneServerPlugin"/>
+                    <cellsetup>
+                        <provider classname="org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup"/>
+                    </cellsetup>
+                    
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>                   
+                </server>    
+		<serverjar jarfile="${current.dir}/../audio-manager/lib/voicelib.jar"/>
+		<serverjar jarfile="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
+		<serverjar jarfile="${current.dir}/../audio-manager/lib/voip.jar"/>
+            </plugin>
+        </module>
+    </target>                                  
+                                           
+    <target name="clean" depends="-module-clean"/>
+</project>

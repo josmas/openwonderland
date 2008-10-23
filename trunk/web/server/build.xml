@@ -43,6 +43,19 @@
                 <exclude name="org/jdesktop/wonderland/webserver/launcher/**"/>
             </fileset>
         </jar>
+        
+        <!-- copy properties files into build/jar -->
+        <copy todir="${build.dir}/jar">
+            <fileset dir="${current.dir}">
+                <include name="web-default.properties"/>
+                <include name="web-logging.properties"/>
+            </fileset>
+            
+            <filterset begintoken="%" endtoken="%">
+                <filter token="WONDERLAND_VERSION" value="${wonderland.version}"/>
+            </filterset>
+        </copy>
+        
     </target>
     
     <!-- "package" target assumes that everything in all projects has already
@@ -96,7 +109,9 @@
             </zipfileset>
             
             <!-- modules -->
-            <zipfileset dir="${top.dir}/modules/dist" prefix="modules"/>
+            <zipfileset dir="${top.dir}/modules/dist" prefix="modules">
+                <include name="*.jar"/>
+            </zipfileset>
             
             <!-- include any generated META-INF.  These will be updated
                  below if they are out of date. -->

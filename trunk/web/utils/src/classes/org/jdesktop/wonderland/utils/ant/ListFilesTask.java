@@ -51,7 +51,6 @@ public class ListFilesTask extends Task {
         BufferedReader check = null;
         File tmpFile = FILE_UTILS.createTempFile("listfiles", ".out", 
                                                  jar.getParentFile());
-        
         // open the jar file and output file
         try {
             JarInputStream in = new JarInputStream(new FileInputStream(jar));
@@ -84,9 +83,11 @@ public class ListFilesTask extends Task {
             
             out.close();
             
-            // overwrite if the file changed
+            // overwrite only if the file changed
             if (changed) {
                 FILE_UTILS.rename(tmpFile, output);
+            } else {
+                tmpFile.delete();
             }
         } catch (IOException ioe) {
             throw new BuildException(ioe);

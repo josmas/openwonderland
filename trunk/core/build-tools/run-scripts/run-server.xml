@@ -30,8 +30,8 @@
             <filterset>
                 <filter token="SGS_ROOT_DIR" value="${sgs.data.dir}"/>
                 <filter token="SGS_PORT" value="${sgs.port}"/>
-                <filter token="SGS_SERVICES" value=""/>
-                <filter token="SGS_MANAGERS" value=""/>
+                <filter token="SGS_SERVICES" value="com.sun.mpk20.voicelib.impl.service.voice.VoiceServiceImpl"/>
+                <filter token="SGS_MANAGERS" value="com.sun.mpk20.voicelib.impl.app.VoiceManagerImpl"/>
             </filterset>            
         </copy>
     

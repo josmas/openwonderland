@@ -5,7 +5,11 @@
     
     <!-- all projects -->
     <fileset dir="${current.dir}" id="all.projects">
-        <include name="*/**/build.xml"/>
+        <include name="server-manager/build.xml"/>
+        <include name="audio-manager/build.xml"/>
+        <include name="voicebridge/build.xml"/>
+        <include name="phone/build.xml"/>
+<!--        <include name="phone/build.xml"/> -->
     </fileset>
     
     <!-- build and package all subprojects -->

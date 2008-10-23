@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -125,13 +126,35 @@ public abstract class BaseRunner implements Runner {
     }
         
     /**
+     * Return the file names needed for this runner.  This method returns
+     * the filename of the Wonderland core setup file.  Runners can include
+     * this file if they wish, or return a different value.
+     * @return the core setup file
+     */
+    public Collection<String> getDeployFiles() {
+        Collection<String> out = new ArrayList<String>();
+        out.add("wonderland-setup-dist.zip");
+        
+        return out;
+    }
+    
+    /**
      * Deploy files.  This just unzips the files into the run
      * directory.
+     * @param filename the filename
      * @param in the input file
      * @throws IOException if there is an error reading the file
      */
-    public void deploy(InputStream in) throws IOException {
+    public void deploy(String filename, InputStream in) throws IOException {
         RunUtil.extractZip(new ZipInputStream(in), getRunDir());
+    }
+
+    /**
+     * Get the default properties for this runner
+     * @return an empty properties list
+     */
+    public Properties getDefaultProperties() {
+        return new Properties();
     }
 
     /**
