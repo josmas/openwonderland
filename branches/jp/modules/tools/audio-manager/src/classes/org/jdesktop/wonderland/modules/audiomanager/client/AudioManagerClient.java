@@ -70,12 +70,16 @@ public class AudioManagerClient extends BaseConnection
 
     private WonderlandSession session;
 
+    private CellID cellID;
+
     public AudioManagerClient(WonderlandSession session)  
 	    throws ConnectionFailureException {
 
 	this.session = session;
 
 	((CellClientSession)session).getLocalAvatar().addViewCellConfiguredListener(this);
+
+        SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
 
 	//logger.warning("Trying to connect...");
 	//session.connect(this);
@@ -111,8 +115,11 @@ public class AudioManagerClient extends BaseConnection
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
-	CellID cellID = localAvatar.getViewCell().getCellID();
+	cellID = localAvatar.getViewCell().getCellID();
+	connectSoftphone();
+    }
 
+    public void connectSoftphone() {
 	session.send(this, new AvatarCellIDMessage(cellID));
 
  	logger.warning("Sending message to server to get voice bridge...");
@@ -154,7 +161,11 @@ public class AudioManagerClient extends BaseConnection
     }
 
     public void softphoneExited() {
+	logger.warning("Softphone exited, reconnect");
+
 	JmeClientMain.getFrame().updateSoftphoneCheckBoxMenuItem(false);
+
+   	connectSoftphone();
     }
 
     public void microphoneGainTooHigh() {
