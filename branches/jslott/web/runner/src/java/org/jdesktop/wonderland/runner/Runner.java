@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.runner;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Properties;
 
 /**
@@ -56,10 +57,27 @@ public interface Runner {
     public void configure(Properties props) throws RunnerConfigurationException;
 
     /**
-     * Deploy the given file
-     * @param in the inputstream of the file to deploy
+     * Get the set of files needed to deploy this runner.  It is assumed
+     * that files of the given name will be available to the RunManager.
+     * The contents of these files will then be passed into the "deploy" 
+     * method as input streams.
+     * @return a collection of file names.
      */
-    public void deploy(InputStream in) throws IOException;
+    public Collection<String> getDeployFiles();
+    
+    /**
+     * Deploy the given file
+     * @param filename the name of the file to deploy
+     * @param in an inputstream containing the data from the file to deploy
+     */
+    public void deploy(String filename, InputStream in) throws IOException;
+    
+    /**
+     * Get the default runtime properties for this runner.  Return an empty
+     * property list if there are no default properties.
+     * @return the default properties for this runner.
+     */
+    public Properties getDefaultProperties();
     
     /**
      * Start the given runner.  Only valid if the runner is in the

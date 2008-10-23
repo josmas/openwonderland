@@ -75,7 +75,17 @@
         </copy>
     </target>
     
-    <target name="-post-dist">
+    <target name="-post-dist"> 
+        <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="org/jdesktop/wonderland/runner/*.class"/>
+                <include name="org/jdesktop/wonderland/runner/darkstar/*.class"/>
+                <include name="org/jdesktop/wonderland/runner/ant/**"/>
+            </fileset>
+        </jar>
+    </target>
+    
+    <target name="package" depends="init">
         <jar jarfile="${dist.dir}/wonderland-runner-core.jar">
             <fileset dir="${build.classes.dir}">
                 <exclude name="org/jdesktop/wonderland/runner/servlet/**"/>
@@ -84,15 +94,12 @@
             <!-- package core distribution files -->
             <zipfileset dir="../../core/dist" prefix="META-INF/deploy"/>
             
+            <!-- package module distribution files -->
+            <zipfileset dir="../../modules/dist/runner/deploy" prefix="META-INF/deploy"/>
+            <zipfileset dir="../../modules/dist/runner/classes"/>
+            
             <!-- include config files we generated -->
             <!--fileset dir="${build.dir}/deploy"/-->
-        </jar>
-        
-        <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
-            <fileset dir="${build.classes.dir}">
-                <include name="org/jdesktop/wonderland/runner/*.class"/>
-                <include name="org/jdesktop/wonderland/runner/ant/**"/>
-            </fileset>
         </jar>
     </target>
 </project>

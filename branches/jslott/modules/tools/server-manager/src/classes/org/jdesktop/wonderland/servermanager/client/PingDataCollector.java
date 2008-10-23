@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
-import org.jdesktop.wonderland.runner.DarkstarRunner;
+import org.jdesktop.wonderland.runner.darkstar.DarkstarRunner;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.Runner.RunnerStatusListener;

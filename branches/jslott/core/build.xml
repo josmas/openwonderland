@@ -51,9 +51,15 @@
         <mkdir dir="log"/>
 
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
+            
+            <!-- arguments here must be replicated in some form in the
+                 jnlp file! -->
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
-	    <!--start debug-->
+	    <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${current.dir}/ext/softphone/softphone.jar"/>
+            <jvmarg value="-Dwonderland.version=${wonderland.version}"/>
+            
+            <!--start debug-->
 	    <!-- TODO: suspend=y doesn't work: it doesn't stop at bkpts after attach -->
 	    <!--
             <jvmarg value="-Xdebug"/>

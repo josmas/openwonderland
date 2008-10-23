@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
  */
 @InternalAPI
 public interface ClientPlugin {
-    /** 
+   /** 
      * Intialize this plugin.  The plugin can use static object in the
      * client such as the ClientContext to register itself with the
      * Wonderland environment.  In addition, a plugin is given the 

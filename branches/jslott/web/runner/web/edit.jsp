@@ -53,8 +53,10 @@
                             
                             <tr>
                                 <td></td>
-                                <td><input type="submit" name="button" value="Add Property"/></td>
-                         
+                                <td><input type="submit" name="button" value="Add Property"/>
+                                    <input type="submit" name="button" value="Restore Defaults"/>
+                                </td>
+       
                             </tr>
                     </table>
                   </td>

@@ -6,7 +6,11 @@
 
 <DeploymentPlan>
     <entry>
-        <runnerClass>org.jdesktop.wonderland.runner.DarkstarRunner</runnerClass>
+        <runnerClass>org.jdesktop.wonderland.runner.darkstar.DarkstarRunner</runnerClass>
         <runnerName>Darkstar Server</runnerName>
+    </entry>
+    <entry>
+        <runnerClass>org.jdesktop.wonderland.modules.voicebridge.server.VoicebridgeRunner</runnerClass>
+        <runnerName>Voice Bridge</runnerName>
     </entry>
 </DeploymentPlan>
