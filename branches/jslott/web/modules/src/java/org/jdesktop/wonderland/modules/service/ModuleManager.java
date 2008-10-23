@@ -199,7 +199,9 @@ public class ModuleManager {
      * that can be installed given dependency checks and whether the server
      * is started and stopped.
      */
-    public void installAll() {        
+    public void installAll() {
+        Map<String, Module> installed = new HashMap(this.installedMananger.getModules());
+       
         /*
          * Make a copy of the list of modules to be installed. Check whether
          * they can be deployed and remove from the list if not.
@@ -245,14 +247,28 @@ public class ModuleManager {
             Module module = entry.getValue();
             
             /*
+             * Check to see if the module is already installed. If we have
+             * reached here it means that we can safely uninstall the module.
+             * But we first have to undeploy it.
+             */
+            if (installed.containsKey(moduleName) == true) {
+                try {
+                    this.deployManager.undeploy(module);
+                } catch (DeployerException excp) {
+                    logger.log(Level.WARNING, "[MODULES] INSTALL ALL Unable to undeploy " + moduleName, excp);
+                }
+            }
+            
+            /*
              * Install the module into the installed/ directory. Fetch the
              * newly installed module (which differs from the pending Module)
              */
-            if (this.installedMananger.add(moduleName, module.getFile()) == false) {
+            File file = module.getFile();
+            module = this.installedMananger.add(moduleName,file);
+            if (module == null) {
                 logger.warning("[MODULES] INSTALL ALL Failed on " + moduleName);
                 continue;
             }
-            module = this.installedMananger.getModules().get(moduleName);
             
             /* Remove from the pending/ directory */
             this.pendingMananger.remove(moduleName);
@@ -275,7 +291,7 @@ public class ModuleManager {
          * Make a copy of the list of modules to be uninstalled. Check whether
          * they require the server to be stopped.
          */
-        Map<String, ModuleInfo> uninstall = this.uninstallManager.getModules();
+        Map<String, ModuleInfo> uninstall = new HashMap(this.uninstallManager.getModules());
         Iterator<Map.Entry<String, ModuleInfo>> it = uninstall.entrySet().iterator();
         Map<String, Module> installed = this.installedMananger.getModules();
         while (it.hasNext() == true) {
@@ -283,7 +299,7 @@ public class ModuleManager {
             String moduleName = entry.getKey();
             Module module = installed.get(moduleName);
             if (this.deployManager.canUndeploy(module) == false) {
-                uninstall.remove(module.getName());
+                it.remove();
             }
         }
         

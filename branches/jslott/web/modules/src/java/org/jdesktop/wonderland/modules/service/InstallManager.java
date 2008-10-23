@@ -91,9 +91,10 @@ public class InstallManager {
     /**
      * Adds a new module to installed. This simply copies files, it assumes all
      * preparations or checks have already been performed. It is given the
-     * module and the File root of where to copy.
+     * module and the File root of where to copy and returns the Module object
+     * representing the installed module
      */
-    public boolean add(String moduleName, File root) {
+    public Module add(String moduleName, File root) {
         /* The error logger */
         Logger logger = ModuleManager.getLogger();
         
@@ -106,7 +107,7 @@ public class InstallManager {
         if (ModuleManagerUtils.makeCleanDirectory(file) == false) {
             logger.log(Level.WARNING, "[MODULES] INSTALL Failed to Create " +
                     file.getAbsolutePath());
-            return false;
+            return null;
         }
 
         /* Next, expand the contents of the module into this directory */
@@ -116,7 +117,7 @@ public class InstallManager {
             logger.log(Level.WARNING, "[MODULES] INSTALL Failed to Copy " +
                     root.getAbsolutePath() + " To " + file.getAbsolutePath(),
                     excp);
-            return false;
+            return null;
         }
         
         /* Re-open module in the installed directory, add to the list */
@@ -127,9 +128,9 @@ public class InstallManager {
         } catch (java.lang.Exception excp) {
             /* Log the error and return false */
             logger.log(Level.WARNING, "[MODULES] PENDING Failed to Open Module", excp);
-            return false;
+            return null;
         }
-        return true;
+        return module;
     }
     
     /**

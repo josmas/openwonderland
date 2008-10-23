@@ -41,7 +41,7 @@
                 <td width="5%" class="installed"><input type="checkbox" name="remove" value="<%= moduleName%>"/></td>
                 <td width="15%" class="installed"><%= moduleName%></td>
                 <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
-                <td width="65%" class="installed"><%= (description != null) ? description : "[None}" %></td>
+                <td width="65%" class="installed"><%= (description != null) ? description : "[None]" %></td>
             </tr>
             <% }%>
         </table>
