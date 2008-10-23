@@ -80,9 +80,9 @@ public class TranslationAnimationProcessor extends AnimationProcessorComponent {
 
     public void timingEvent(float fraction, long totalElapsed) {
         synchronized(translation) {
-            translation.x = (endV3f.x - startV3f.x)*fraction;
-            translation.y = (endV3f.y - startV3f.y)*fraction;
-            translation.z = (endV3f.z - startV3f.z)*fraction;
+            translation.x = startV3f.x + (endV3f.x - startV3f.x)*fraction;
+            translation.y = startV3f.y + (endV3f.y - startV3f.y)*fraction;
+            translation.z = startV3f.z + (endV3f.z - startV3f.z)*fraction;
         }
     }
 
