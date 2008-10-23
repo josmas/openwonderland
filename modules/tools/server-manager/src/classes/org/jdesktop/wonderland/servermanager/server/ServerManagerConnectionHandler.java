@@ -47,7 +47,7 @@ public class ServerManagerConnectionHandler
     }
 
     public void registered(WonderlandClientSender sender) {
-        logger.info("Server manager connection registered");
+        logger.info("Sever manager connection registered");
     }
 
     public void clientConnected(WonderlandClientSender sender, ClientSession session, Properties properties) {
