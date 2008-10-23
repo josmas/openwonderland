@@ -25,7 +25,13 @@
             requestHeaders: { Accept:'application/json' },
             onSuccess: function(response){
                 var services = response.responseText.evalJSON(true)['service-list'];
-                updateService(services.service, 0);
+                if (services.service.length > 1) {
+                    for (var i = 0; i < services.service.length; i++) {
+                        updateService(services.service[i], i);
+                    }
+                } else {
+                    updateService(services.service, 0);
+                }
             }
         });
     }
@@ -85,7 +91,7 @@
     }
     
     function setStatus(service, action) {
-        new Ajax.Request('services/' + service + "/" + action +"?wait=true", { 
+        new Ajax.Request('services/' + service + "/" + action, { 
             method:'get', 
             requestHeaders: { Accept:'application/json' },
             onSuccess: function(response){
@@ -123,7 +129,7 @@
     }
 </script>
 </head>
-<body onload="updateServices(); setUpdatePeriod(0);">
+<body onload="updateServices(); setUpdatePeriod(15);">
 <h1>View Server Components</h1>
 
 <table class="installed" id="runnerTable">

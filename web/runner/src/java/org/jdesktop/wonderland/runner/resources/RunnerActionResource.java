@@ -29,6 +29,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import org.jdesktop.wonderland.runner.DeploymentEntry;
+import org.jdesktop.wonderland.runner.DeploymentManager;
+import org.jdesktop.wonderland.runner.DeploymentPlan;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.RunnerException;
@@ -117,7 +120,17 @@ public class RunnerActionResource {
         StatusWaiter out = null;
     
         if (runner.getStatus() == Runner.Status.NOT_RUNNING) {
-            runner.start(new Properties());
+            // find a properties file from the current deployment plan
+            Properties props;
+            DeploymentPlan dp = DeploymentManager.getInstance().getPlan();
+            DeploymentEntry de = dp.getEntry(runner.getName());
+            if (de != null && !de.getRunProps().isEmpty()) {
+                props = de.getRunProps();
+            } else {
+                props = runner.getDefaultProperties();
+            }
+            
+            runner.start(props);
         
             if (wait) {
                 out = new StatusWaiter(runner, Runner.Status.RUNNING);
