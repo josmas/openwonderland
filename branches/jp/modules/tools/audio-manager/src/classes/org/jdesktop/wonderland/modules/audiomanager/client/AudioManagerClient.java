@@ -21,6 +21,8 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
 
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
+import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
+
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 
 import org.jdesktop.wonderland.client.comms.BaseConnection;
@@ -61,7 +63,7 @@ import org.jdesktop.wonderland.common.NetworkAddress;
  * @author paulby
  */
 public class AudioManagerClient extends BaseConnection 
-	implements AudioMenuListener, SoftphoneListener {
+	implements AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener {
 
     private static final Logger logger =
         Logger.getLogger(AudioManagerClient.class.getName());
@@ -72,6 +74,8 @@ public class AudioManagerClient extends BaseConnection
 	    throws ConnectionFailureException {
 
 	this.session = session;
+
+	((CellClientSession)session).getLocalAvatar().addViewCellConfiguredListener(this);
 
 	//logger.warning("Trying to connect...");
 	//session.connect(this);
@@ -103,13 +107,11 @@ public class AudioManagerClient extends BaseConnection
 	    }
 
 	    JmeClientMain.getFrame().addAudioMenuListener(client);
-
-	    connectSoftphone();
  	}
     }
 
-    public void connectSoftphone() {
-        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+    public void viewConfigured(LocalAvatar localAvatar) {
+	CellID cellID = localAvatar.getViewCell().getCellID();
 
 	session.send(this, new AvatarCellIDMessage(cellID));
 
@@ -117,7 +119,7 @@ public class AudioManagerClient extends BaseConnection
 
 	session.send(this, new GetVoiceBridgeMessage());
     }
-    
+
     public void showSoftphone(boolean isVisible) {
         SoftphoneControlImpl.getInstance().setVisible(isVisible);
     }
