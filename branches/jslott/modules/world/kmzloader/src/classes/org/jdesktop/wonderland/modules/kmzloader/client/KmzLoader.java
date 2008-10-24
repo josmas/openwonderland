@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.kmzloader.client;
 
+import com.jme.math.Quaternion;
 import com.jme.scene.Node;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
@@ -105,11 +106,11 @@ class KmzLoader implements ModelLoader {
             }
             
             if (models.size()==1) {
-                ret = load(zipFile, models.get(0).getLink().getHref());
+                ret = load(zipFile, models.get(0));
             } else {
                 ret = new Node();
                 for(ModelType model : models) {
-                    ret.attachChild(load(zipFile, model.getLink().getHref()));
+                    ret.attachChild(load(zipFile, model));
                 }
             }
             
@@ -127,15 +128,15 @@ class KmzLoader implements ModelLoader {
         return ret;
     }
     
-    private Node load(ZipFile zipFile, String filename) throws IOException {
-        
+    private Node load(ZipFile zipFile, ModelType model) throws IOException {
+
+        String filename = model.getLink().getHref();
         String zipHost = WlzipManager.getWlzipManager().addZip(zipFile);
         ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile);
         ResourceLocatorTool.addResourceLocator(
                 ResourceLocatorTool.TYPE_TEXTURE,
                 zipResource);
 
-        
         logger.info("Loading MODEL " + filename);
         modelFiles.add(filename);
         
@@ -150,6 +151,9 @@ class KmzLoader implements ModelLoader {
         
         ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
         WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
+
+        // Correctly orient model
+        ret.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
 
         return ret;
     }

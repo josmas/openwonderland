@@ -54,8 +54,8 @@ public class TestWorld implements ServerPlugin {
             c3.addChild(c4);
             
             float cellSize = 20;
-            int xMax = 10;
-            int zMax = 10;
+            int xMax = 3;
+            int zMax = 3;
             
             for(int x=0; x<cellSize*xMax; x+=cellSize) {
                 for(int z=0; z<cellSize*zMax; z+=cellSize) {

@@ -35,4 +35,5 @@
     </target>                                                       
                                            
     <target name="clean" depends="-module-clean"/>
+    <target name="deploy" depends="dist, -module-deploy"/>
 </project>
