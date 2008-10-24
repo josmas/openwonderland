@@ -95,7 +95,6 @@ public class GraphicsUtils {
 	System.err.println("apply = " + texture.getApply());
 	System.err.println("wrapS = " + texture.getWrap(Texture.WrapAxis.S));
 	System.err.println("wrapT = " + texture.getWrap(Texture.WrapAxis.T));
-	System.err.println("wrapR = " + texture.getWrap(Texture.WrapAxis.R));
 	System.err.println("min filter = " + texture.getMinificationFilter());
 	System.err.println("mag filter = " + texture.getMagnificationFilter());
 	System.err.println("blendColor = " + texture.getBlendColor());
