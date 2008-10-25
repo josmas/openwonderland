@@ -22,6 +22,8 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.state.RenderState;
+import com.jme.scene.state.ZBufferState;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -56,6 +58,14 @@ public abstract class BasicRenderer implements CellRendererJME {
     private Vector3f tmpV3f = new Vector3f();
     private Quaternion tmpQuat = new Quaternion();
     
+    private static ZBufferState zbuf = null;
+    
+    static {
+        zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+    }
+    
     public BasicRenderer(Cell cell) {
         this.cell = cell;
     }
@@ -64,25 +74,44 @@ public abstract class BasicRenderer implements CellRendererJME {
         Entity ret = new Entity(this.getClass().getName()+"_"+cell.getCellID());
         
         rootNode = createSceneGraph(ret);
-        
+        addRenderState(rootNode);
+
+        addDefaultComponents(ret, rootNode);
+
+        return ret;        
+    }
+    
+    /**
+     * Add the default renderstate to the root node. Override this method
+     * if you want to apply a different RenderState
+     * @param node
+     */
+    protected void addRenderState(Node node) {
+        node.setRenderState(zbuf);
+    }
+    
+    protected void addDefaultComponents(Entity entity, Node rootNode) {
         if (cell.getComponent(MovableComponent.class)!=null) {
-            // The cell is movable so create a move processor
-            moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
-            ret.addComponent(ProcessorComponent.class, moveProcessor);
+            if (rootNode==null) {
+                logger.warning("Cell is movable, but has no root node !");
+            } else {           
+                // The cell is movable so create a move processor
+                moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
+                entity.addComponent(MoveProcessor.class, moveProcessor);
+            }
         }
 
         if (rootNode!=null) {
             RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-            ret.addComponent(RenderComponent.class, rc);
+            entity.addComponent(RenderComponent.class, rc);
 
             JMECollisionSystem collisionSystem = (JMECollisionSystem)
                     ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
 
             CollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
-            ret.addComponent(CollisionComponent.class, cc);
+            entity.addComponent(CollisionComponent.class, cc);
         }
 
-        return ret;        
     }
 
     /**
@@ -103,8 +132,11 @@ public abstract class BasicRenderer implements CellRendererJME {
     }
     
     public Entity getEntity() {
-        if (entity==null)
-            entity = createEntity();
+        synchronized(this) {
+            System.out.println("Get Entity "+this.getClass().getName());
+            if (entity==null)
+                entity = createEntity();
+        }
         return entity;
     }
     
@@ -125,6 +157,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         private WorldManager worldManager;
 
         private boolean isChained = false;
+        private NewFrameCondition postCondition = new NewFrameCondition(this);
         
         public MoveProcessor(WorldManager worldManager, Node node) {
             this.node = node;
@@ -144,15 +177,15 @@ public abstract class BasicRenderer implements CellRendererJME {
 //                    System.err.println("BasicRenderer.cellMoved "+tmpV3f);
                     dirty = false;
                     worldManager.addToUpdateList(node);
-                    if (!isChained)
-                        setArmingCondition(null);
+//            System.err.println("--------------------------------");
                 }
             }
-            //System.out.println("--------------------------------");
         }
 
         @Override
+        
         public void initialize() {
+            setArmingCondition(postCondition);
         }
 
         /**
@@ -164,13 +197,17 @@ public abstract class BasicRenderer implements CellRendererJME {
             synchronized(this) {
                 this.cellTransform = transform;
                 dirty = true;
-                if (!isChained)
-                    setArmingCondition(new NewFrameCondition(this));
+
+
             }
         }
 
         public void setChained(boolean isChained) {
             this.isChained = isChained;
+            if (isChained)
+                setArmingCondition(null);
+            else 
+                setArmingCondition(postCondition);
         }
     }
 }
