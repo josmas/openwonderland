@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="wonderland-core-IDE">
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#runsingle) -->
+    <target name="run-selected-file-in-classes">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <ant antfile="build.xml" inheritall="false">
+            <target name="jar"/>
+            <target name="modules-client-classpath"/>
+        </ant>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="build/current/debug/lib/wonderland-client.jar:build/current/debug/lib/wonderland-common.jar:ext/sgs/sgs-0.9.4-r3093/lib/sgs.jar:ext/sgs/sgs-client-0.9.4-r3093/lib/sgs-client.jar:ext/jme/jme/jme-audio.jar:ext/jme/jme/jme-awt.jar:ext/jme/jme/jme-collada.jar:ext/jme/jme/jme-editors.jar:ext/jme/jme/jme-effects.jar:ext/jme/jme/jme-font.jar:ext/jme/jme/jme-gamestates.jar:ext/jme/jme/jme-model.jar:ext/jme/jme/jme-scene.jar:ext/jme/jme/jme-terrain.jar:ext/jme/jme/jme-xml.jar:ext/jme/jme/jme.jar:ext/linux/jars/jai_imageio.jar:ext/linux/jars/jai_core.jar:ext/macosx/jars/jai_core.jar"/>
+            </classpath>
+        </java>
+    </target>
+</project>
