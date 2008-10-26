@@ -139,6 +139,9 @@ public class ModuleUploadServlet extends HttpServlet {
                 return;
             }
         }
+
+        /* Install all of the modules that are possible */
+        manager.installAll();
         
         /* If we have reached here, then post a simple message */
         logger.info("[MODULE] UPLOAD Added module successfuly");
