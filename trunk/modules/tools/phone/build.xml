@@ -28,15 +28,17 @@
         <module name="phone" version="1" minorversion="1"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
-            <plugin name="phone">
-                <client basedir="${build.classes.dir}">
+            <client>
+                <clientjar name="phone-client" basedir="${build.classes.dir}">
                     <clientplugin provider="org.jdesktop.wonderland.modules.phone.client.PhoneClientPlugin"/>
 
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
-                </client>
+                </clientjar>
+            </client>
                 
-                <server basedir="${build.classes.dir}">
+            <server>
+                <serverjar name="phone-server" basedir="${build.classes.dir}">
                     <serverplugin provider="org.jdesktop.wonderland.modules.phone.server.PhoneServerPlugin"/>
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup"/>
@@ -44,11 +46,8 @@
                     
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>                   
-                </server>    
-		<serverjar jarfile="${current.dir}/../audio-manager/lib/voicelib.jar"/>
-		<serverjar jarfile="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
-		<serverjar jarfile="${current.dir}/../audio-manager/lib/voip.jar"/>
-            </plugin>
+                </serverjar>    
+            </server>
         </module>
     </target>                                  
                                            

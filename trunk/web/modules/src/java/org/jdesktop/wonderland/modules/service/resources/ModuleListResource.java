@@ -19,7 +19,7 @@
 package org.jdesktop.wonderland.modules.service.resources;
 
 import java.io.StringWriter;
-import java.util.Collection;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -27,14 +27,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.modules.util.ModuleList;
+import org.jdesktop.wonderland.modules.Module;
+import org.jdesktop.wonderland.modules.ModuleList;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
-import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModuleListResource class is a Jersey RESTful service that returns the
  * names of all of the modules in a given state. The state is defined by
- * the state query argument which can be either "added", "pending", "installed",
+ * the state query argument which can be either "pending", "installed",
  * or "removed". The getModuleInfo() method handles the HTTP GET request.
  * <p>
  * @author Jordan Slott <jslott@dev.java.net>
@@ -69,8 +69,9 @@ public class ModuleListResource {
          * object, encoding and return
          */
         try {
-            Collection<String> modules = ModuleManager.getModuleManager().getModules(State.INSTALLED);
-            ModuleList moduleList = new ModuleList(modules.toArray(new String[] {}));
+            ModuleManager manager = ModuleManager.getModuleManager();
+            Map<String, Module> modules = manager.getInstalledModules();
+            ModuleList moduleList = new ModuleList(modules.keySet().toArray(new String[] {}));
             StringWriter sw = new StringWriter();
             moduleList.encode(sw);
             ResponseBuilder rb = Response.ok(sw.toString());

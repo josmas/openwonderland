@@ -19,14 +19,18 @@
 package org.jdesktop.wonderland.runner.darkstar;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModulePlugin;
+import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.runner.BaseRunner;
 import org.jdesktop.wonderland.runner.RunnerConfigurationException;
@@ -64,7 +68,7 @@ public class DarkstarRunner extends BaseRunner {
             setName(DEFAULT_NAME);
         }
     }
-
+ 
     /**
      * Add the Darkstar distribution file
      * @return a list containing the core distribution file as well
@@ -112,21 +116,20 @@ public class DarkstarRunner extends BaseRunner {
             RunUtil.deleteDir(moduleDir);
         }
         
-        // write all new modules to the module directory
-        moduleDir.mkdirs();
-        Collection<String> moduleNames = mm.getModules(ModuleManager.State.INSTALLED);
-        for (String moduleName : moduleNames) {
-            Module m = mm.getModule(moduleName, ModuleManager.State.INSTALLED);
-            
-            try {
-                writePlugins(m, moduleDir);
-            } catch (IOException ioe) {
-                // skip this module and keep going
-                logger.log(Level.WARNING, "Error writing plugins for " + m.getName(),
-                           ioe);
+        Map<Module, List<ModulePart>> deploy = DarkstarModuleDeployer.getModules();
+        for (Entry<Module, List<ModulePart>> e : deploy.entrySet()) {
+            for (ModulePart mp : e.getValue()) {
+                try {
+                    writeModulePart(moduleDir, e.getKey(), mp);
+                } catch (IOException ioe) {
+                    // skip this module and keep going
+                    logger.log(Level.WARNING, "Error writing module " + 
+                               e.getKey().getName() + " part " + mp.getName(),
+                               ioe);
+                }
             }
         }
-        
+       
         super.start(props);
     }
     
@@ -139,53 +142,105 @@ public class DarkstarRunner extends BaseRunner {
     }
 
     /**
-     * Write a module's plugins to the module directory
-     * @param module the module to write plugins for
+     * Write a module part to the module directory
      * @param moduleDir the directory to write to
+     * @param module the module to write a part for
+     * @param modulePart the part to write
+     
      */
-    protected void writePlugins(Module module, File moduleDir)
+    protected void writeModulePart(File moduleDir, Module module, 
+                                   ModulePart part)
         throws IOException
     {
         File moduleSpecificDir = new File(moduleDir, module.getName());
-        moduleSpecificDir.mkdirs();
+        File partDir = new File(moduleSpecificDir, part.getName());
+        partDir.mkdirs();
         
-        // got through each plugin
-        Collection<String> pluginNames = module.getModulePlugins();
-        for (String pluginName : pluginNames) {
-            // create a directory to put the data int
-            File pluginDir = new File(moduleSpecificDir, pluginName);
-            pluginDir.mkdirs();
+        // write each file from the part
+        copyFiles(part.getFile(), partDir);
+    }
+    
+    /**
+     * Recursively copy all files from a given source directory to a target 
+     * directory
+     * @param src the source directory
+     * @param target the target directory
+     */
+    private void copyFiles(File src, File dest) 
+        throws IOException
+    {
+        File[] files = src.listFiles();
+        if (files == null) {
+            return;
+        }
+        
+        for (File f : files) {
+            File newDest = new File(dest, f.getName());
             
-            // get the plugin
-            ModulePlugin mp = module.getModulePlugin(pluginName);
-            
-            // extract server jars
-            Collection<String> serverJars = mp.getServerJars();
-            if (!serverJars.isEmpty()) {
-                File serverDir = new File(pluginDir, "server");
-                serverDir.mkdirs();
-            
-                for (String serverJar : serverJars) {
-                    InputStream is = 
-                        module.getInputStreamForPlugin(pluginName, serverJar,
-                                                       "server/");
-                    RunUtil.writeToFile(is, new File(serverDir, serverJar));
-                }
+            if (f.isDirectory()) {
+                // recursively copy a directory
+                newDest.mkdir();
+                copyFiles(f, newDest);
+            } else {
+                // copy a single file
+                FileInputStream fis = new FileInputStream(f);
+                RunUtil.writeToFile(fis, newDest);
+            }
+        }
+    }
+    
+    /**
+     * Override the setStatus() method to ignore the RUNNING status.  Instead,
+     * we notify other processes that Darkstar is RUNNING when the output
+     * reader gets the startup line successfully.
+     * @param status the status to set
+     */
+    @Override
+    protected synchronized void setStatus(Status status) {
+        if (status == Status.RUNNING) {
+            return;
+        }
+        
+        super.setStatus(status);
+    }
+    
+    /**
+     * Override the createOutputReader method to return a 
+     * DarkstarOutputReader that will notify us when Darkstar is really up
+     */
+    @Override
+    protected DarkstarOutputReader createOutputReader(InputStream in,
+                                                      Logger out)
+    {
+        return new DarkstarOutputReader(in, out);
+    }
+    
+    /**
+     * Called when Darkstar starts up
+     */
+    protected void darkstarStarted() {
+        super.setStatus(Status.RUNNING);
+    }
+    
+    /**
+     * Wait for Darkstar to fully startup
+     */
+    protected class DarkstarOutputReader extends BaseRunner.ProcessOutputReader {
+        private static final String DARKSTAR_STARTUP =
+                "Wonderland: application is ready";
+                
+        public DarkstarOutputReader(InputStream in, Logger out) {
+            super (in, out);
+        }
+        
+        @Override
+        protected void handleLine(String line) {
+            // see if this is a Darkstar startup message
+            if (line.contains(DARKSTAR_STARTUP)) {
+                darkstarStarted();
             }
             
-            // extract common jars
-            Collection<String> commonJars = mp.getCommonsJars();
-            if (!commonJars.isEmpty()) {
-                File commonDir = new File(pluginDir, "common");
-                commonDir.mkdirs();
-            
-                for (String commonJar : commonJars) {
-                    InputStream is = 
-                        module.getInputStreamForPlugin(pluginName, commonJar,
-                                                       "common/");
-                    RunUtil.writeToFile(is, new File(commonDir, commonJar));
-                }
-            }
+            super.handleLine(line);
         }
     }
 }

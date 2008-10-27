@@ -5,7 +5,11 @@
     
     <property name="web.src" value="org/jdesktop/wonderland/webserver"/>
     
-    <import file="../build-tools/build-scripts/web-build.xml"/>
+    <!-- import web properties -->
+    <import file="${current.dir}/../build-tools/build-scripts/web-build.xml"/>
+    
+    <!-- import core properties -->
+    <import file="${core.dir}/build-tools/build-scripts/core-setup.xml"/>
     
     <target name="build" depends="-web-build-init">
         <!-- compile -->
@@ -41,6 +45,10 @@
             <fileset dir="${build.classes.dir}">
                 <include name="**"/>
                 <exclude name="org/jdesktop/wonderland/webserver/launcher/**"/>
+            </fileset>
+            
+            <fileset dir="${javasrc.dir}">
+                <include name="META-INF/**"/>
             </fileset>
         </jar>
         
@@ -89,7 +97,15 @@
             <zipfileset dir="${web.dir}/lib/restlib" prefix="webserver"/>
             <zipfileset dir="${web.dir}/lib/apache" prefix="webserver"/>
             <zipfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
+            <zipfileset file="${web.dir}/asset/dist/wonderland-asset-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
+            <zipfileset file="${web.dir}/front/dist/wonderland-webadmin-core.jar" prefix="webserver"/>
+            
+            <!-- include wonderland client from core, since many web apps will
+                 act as clients of the Wonderland system -->
+            <zipfileset file="${top.dir}/core/build/lib/wonderland-client.jar" prefix="webserver"/>
+            <zipfileset file="${top.dir}/core/build/lib/wonderland-common.jar" prefix="webserver"/>
+            <zipfileset dir="${core.sgs.client.dir}/lib" prefix="webserver"/>
             
             <!-- contents of the document root -->
             <zipfileset dir="${current.dir}/web" prefix="docroot"/>
@@ -101,10 +117,13 @@
             <zipfileset dir="${top.dir}/web/modules/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
-            <zipfileset dir="${top.dir}/web/runner/dist" prefix="deploy">
+            <zipfileset dir="${top.dir}/web/asset/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
             <zipfileset dir="${top.dir}/web/front/dist" prefix="deploy">
+                <include name="**/*.war"/>
+            </zipfileset>
+            <zipfileset dir="${top.dir}/web/runner/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
             

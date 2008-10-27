@@ -117,8 +117,10 @@ public interface Runner {
     /**
      * Add a listener to be notified when the status changes
      * @param listener the listener
+     * @return the current status of the runner.  The runner will be notified
+     * of any changes after this status
      */
-    public void addStatusListener(RunnerStatusListener listener);
+    public Status addStatusListener(RunnerStatusListener listener);
     
     /**
      * Remove a listener

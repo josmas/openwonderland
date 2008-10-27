@@ -25,6 +25,8 @@ import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.servermanager.common.PingRequestMessage;
+import org.jdesktop.wonderland.servermanager.common.PingResponseMessage;
 import org.jdesktop.wonderland.servermanager.common.ServerManagerConnectionType;
 
 /**
@@ -50,15 +52,26 @@ public class ServerManagerConnectionHandler
         logger.info("Sever manager connection registered");
     }
 
-    public void clientConnected(WonderlandClientSender sender, ClientSession session, Properties properties) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void clientConnected(WonderlandClientSender sender, 
+                                ClientSession session, 
+                                Properties properties) 
+    {
+        logger.info("ServerManager client connected");
     }
 
-    public void messageReceived(WonderlandClientSender sender, ClientSession session, Message message) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void messageReceived(WonderlandClientSender sender, 
+                                ClientSession session,
+                                Message message) 
+    {
+        if (message instanceof PingRequestMessage) {
+            logger.info("Received ping message");
+            PingRequestMessage req = (PingRequestMessage) message;
+            PingResponseMessage resp = new PingResponseMessage(req);
+            sender.send(session, resp);
+        }
     }
 
     public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        logger.info("ServerManager client disconnected");
     }
 }
