@@ -147,10 +147,20 @@ public abstract class InputEvent3D extends Event {
 	return event;
     }
 
-    void setPickInfo(PickInfo pickInfo) {
+    /**
+     * INTERNAL ONLY.
+     * <br>
+     * Used by the input system to specify the pickInfo for this input event.
+     */
+    public void setPickInfo(PickInfo pickInfo) {
         this.pickInfo = pickInfo;
     }
 
+    /**
+     * INTERNAL ONLY.
+     * <br>
+     * Returns the pickInfo for this event.
+     */
     public PickInfo getPickInfo() {
         return pickInfo;
     }
