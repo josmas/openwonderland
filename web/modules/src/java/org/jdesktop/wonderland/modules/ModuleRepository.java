@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlValue;
  * can be downloaded and also a list of mirror repositories. Both the master
  * and mirror repositories are optional. If no master or mirror is specified,
  * then it is assumed the artwork is made available by the Wonderland server
- * in which the module is installed (if use_server is not false).
+ * in which the module is installed.
  * <p>
  * If an entry contains the special string %WL_SERVER% then the hostname of
  * the machine on which the module is installed is inserted before send to
@@ -64,9 +64,11 @@ import javax.xml.bind.annotation.XmlValue;
  * <p>
  * By default, the hostname of the machine on which the module is installed is
  * inserted as the final mirror, in case other repositories cannot be found. This
- * happens only if no other entry contains the %WL_SERVER% tag and if the
- * use_server attribute is not set to false.
+ * happens only if no other entry contains the %WL_SERVER% tag.
  * <p>
+ * This class is annotation with JAXB XML elements and supports encoding and
+ * decoding to/from XML via the encode() and decode() methods, respectively.
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="module-repository")

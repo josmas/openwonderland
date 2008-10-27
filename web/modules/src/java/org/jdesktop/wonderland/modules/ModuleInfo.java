@@ -25,22 +25,29 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessOrder;
+import javax.xml.bind.annotation.XmlAccessorOrder;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * The ModuleInfo class represents the basic information about a module: its
- * unique name and its major.minor version.
+ * unique name, its major.minor version, and a string description.
  * <p>
- * This class follows the Java Bean pattern (default constructor, setter/getter
- * methods) so that it may be serialised to/from disk. The static decode() and
- * encode methods take an instance of a ModuleVersion class and perform the
- * loading and saving from/to disk.
+ * This class is annotation with JAXB XML elements and supports encoding and
+ * decoding to/from XML via the encode() and decode() methods, respectively.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -60,6 +67,16 @@ public class ModuleInfo implements Serializable {
     /* A textual description of the module */
     @XmlElement(name="description")
     private String description = null;
+    
+    /* A table of key-value parameters for the module */
+    @XmlElements({
+        @XmlElement(name="attribute")
+    })
+    private Attribute[] attributes = new Attribute[] {};
+    
+    /* The internal table of attributes */
+    @XmlTransient
+    private Map<String, String> attributeMap = new HashMap();
     
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
@@ -119,6 +136,29 @@ public class ModuleInfo implements Serializable {
         }
     }
     
+    /**
+     * The Attribute inner class stores a string key-value pair
+     */
+    @XmlAccessorOrder(value=XmlAccessOrder.ALPHABETICAL)
+    @XmlRootElement(name="attribute")
+    public static class Attribute {
+        /* The key and value strings */
+        @XmlAttribute(name="key")
+        public String key = null;
+        
+        @XmlAttribute(name="value")
+        public String value = null;
+                
+        /** Default constructor */
+        public Attribute() {}
+        
+        /** Constructor, takes key and value */
+        public Attribute(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+    
     /** Default constructor */
     public ModuleInfo() {}
     
@@ -147,6 +187,35 @@ public class ModuleInfo implements Serializable {
     public void setDescription(String description) { this.description = description; }
     
     /**
+     * Returns a copy of the map of key-value pairs of attributes
+     */
+    public Map<String, String> getAttributes() {
+        return new HashMap(this.attributeMap);
+    }
+    
+    /**
+     * Adds a key-value attribute pair to the attribute map
+     */
+    public void putAttribute(String key, String value) {
+        this.attributeMap.put(key, value);
+    }
+    
+    /**
+     * Returns an attribute givens it key, or null if it does not exist
+     */
+    public String getAttribute(String key) {
+        return this.attributeMap.get(key);
+    }
+    
+    /**
+     * Removes an attribute given its key. Does nothing if the attribute does
+     * not exist
+     */
+    public void removeAttribute(String key) {
+        this.attributeMap.remove(key);
+    }
+    
+    /**
      * Returns the version as a string: <major>.<minor>
      */
     @Override
@@ -165,7 +234,15 @@ public class ModuleInfo implements Serializable {
      * @throw JAXBException Upon error reading the XML file
      */
     public static ModuleInfo decode(Reader r) throws JAXBException {
-        return (ModuleInfo)ModuleInfo.unmarshaller.unmarshal(r);        
+        /* Read in from stream */
+        ModuleInfo info = (ModuleInfo)ModuleInfo.unmarshaller.unmarshal(r);
+        
+        /* Convert array into hash map */
+        info.attributeMap.clear();
+        for (Attribute attribute : info.attributes) {
+            info.attributeMap.put(attribute.key, attribute.value);
+        }       
+        return info;
     }
     
     /**
@@ -175,6 +252,16 @@ public class ModuleInfo implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
+        /* Convert the internal map into an array */
+        List<Attribute> list = new LinkedList<Attribute>();
+        Iterator<Map.Entry<String, String>> it = this.attributeMap.entrySet().iterator();
+        while (it.hasNext() == true) {
+            Map.Entry<String, String> entry = it.next();
+            list.add(new Attribute(entry.getKey(), entry.getValue()));
+        }
+        this.attributes = list.toArray(new Attribute[] {});
+            
+        /* Write out to the stream */
         ModuleInfo.marshaller.marshal(this, w);
     }
 
@@ -185,6 +272,16 @@ public class ModuleInfo implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
+        /* Convert the internal map into an array */
+        List<Attribute> list = new LinkedList<Attribute>();
+        Iterator<Map.Entry<String, String>> it = this.attributeMap.entrySet().iterator();
+        while (it.hasNext() == true) {
+            Map.Entry<String, String> entry = it.next();
+            list.add(new Attribute(entry.getKey(), entry.getValue()));
+        }
+        this.attributes = list.toArray(new Attribute[] {});
+        
+        /* Write out to the stream */
         ModuleInfo.marshaller.marshal(this, os);
     }
     
@@ -223,12 +320,15 @@ public class ModuleInfo implements Serializable {
             info.setName("MPK20 Demo");
             info.setMajor(5);
             info.setMinor(3);
+            info.putAttribute("system-installed", "");
+            info.putAttribute("owner", "darkstar");
             info.encode(new FileWriter(new File("/Users/jordanslott/module.xml")));
             
             info = ModuleInfo.decode(new FileReader(new File("/Users/jordanslott/module.xml")));
             System.out.println(info.getName());
             System.out.println(info.getMajor());
             System.out.println(info.getMinor());
+            System.out.println(info.getAttributes());
         } catch (java.lang.Exception excp) {
             System.out.println(excp.toString());
         }

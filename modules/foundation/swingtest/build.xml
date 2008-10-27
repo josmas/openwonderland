@@ -8,9 +8,9 @@
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.swingtest"/>
     <property name="module.jarname" value="swingtest"/>
     
-    <property name="module-common.classpath" value="${current.dir}/../appbase/build/appbase/client/appbase-client.jar"/>
-    <property name="module-client.classpath" value="${current.dir}/../appbase/build/appbase/client/appbase-client.jar"/>
-    <property name="module-server.classpath" value="${current.dir}/../appbase/build/appbase/server/appbase-server.jar"/>
+    <property name="module-common.classpath" value="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+    <property name="module-client.classpath" value="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+    <property name="module-server.classpath" value="${current.dir}/../appbase/build/server/appbase-server.jar"/>
 
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
@@ -23,21 +23,24 @@
         
         <module name="swingtest" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.dir}">
-                    
-           <plugin name="swingtest">
-                <client basedir="${build.classes.dir}">
+                
+            <client>
+                <clientjar name="swingtest-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
-                </client> 
+                </clientjar>
+            </client>
                 
-                <server basedir="${build.classes.dir}">
+            <server>
+                <serverjar name="swingtest-server" basedir="${build.classes.dir}">
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.swingtest.server.SwingTestCellSetup"/>
                     </cellsetup>
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
-                </server>
-            </plugin>
+                </serverjar>
+            </server>
+            
             <art dir="${current.dir}/art"/>
         </module>
     </target>                                                       

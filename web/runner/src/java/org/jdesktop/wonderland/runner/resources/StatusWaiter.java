@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.runner.resources;
 
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.runner.Runner;
 
 /**
@@ -26,6 +27,9 @@ import org.jdesktop.wonderland.runner.Runner;
  * @author jkaplan
  */
 public class StatusWaiter implements Runner.RunnerStatusListener {
+    private static final Logger logger =
+            Logger.getLogger(StatusWaiter.class.getName());
+    
     private Runner runner;
     private Runner.Status currentStatus;
     private Runner.Status targetStatus;
@@ -35,13 +39,7 @@ public class StatusWaiter implements Runner.RunnerStatusListener {
      * @param runner the runner to listen for status on
      */
     public StatusWaiter(Runner runner) {
-        this.runner = runner;
-       
-        // initializ current status
-        currentStatus = runner.getStatus();
-       
-        // register for any status changes
-        runner.addStatusListener(this); 
+        this (runner, null);
     }
     
     /**
@@ -54,11 +52,8 @@ public class StatusWaiter implements Runner.RunnerStatusListener {
         this.runner = runner;
         this.targetStatus = targetStatus;
         
-        // initializ current status
-        currentStatus = runner.getStatus();
-       
         // register for any status changes
-        runner.addStatusListener(this); 
+        currentStatus = runner.addStatusListener(this); 
     }
     
     /**

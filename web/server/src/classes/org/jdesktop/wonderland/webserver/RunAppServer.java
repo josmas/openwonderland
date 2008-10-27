@@ -24,12 +24,17 @@ import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
 import com.sun.hk2.component.InhabitantsParser;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -45,7 +50,9 @@ import org.glassfish.embed.EmbeddedException;
 import org.glassfish.embed.EmbeddedHttpListener;
 import org.glassfish.embed.EmbeddedVirtualServer;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jdesktop.wonderland.modules.service.AddedModule;
+import org.jdesktop.wonderland.modules.Module;
+import org.jdesktop.wonderland.modules.ModuleAttributes;
+import org.jdesktop.wonderland.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jvnet.hk2.component.Habitat;
@@ -72,8 +79,14 @@ public class RunAppServer {
     }
     
     public RunAppServer() throws IOException {
+        // remove old modules
+        uninstallModules();
+        
         // install the default modules
         installModules();
+        
+        // redeploy any other modules that haven't yet been deployed
+        ModuleManager.getModuleManager().redeployAll();
         
         // now deploy web apps
         deployWebApps();
@@ -116,6 +129,20 @@ public class RunAppServer {
         }
     }
     
+    private void uninstallModules() throws IOException {
+        ModuleManager mm = ModuleManager.getModuleManager();
+        Map<String, Module> system = 
+                mm.getInstalledModulesByKey(ModuleAttributes.SYSTEM_MODULE);
+        
+        logger.warning("Uninstalling " + system.size() + " modules.");
+        
+        // add to the list of modules to uninstall
+        mm.addToUninstall(system.keySet());
+        
+        // actually uninstall all modules on the uninstall list
+        mm.uninstallAll();
+    }
+    
     private void installModules() throws IOException {
         // read the list of .war files to deploy
         InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/module.jars");
@@ -123,25 +150,46 @@ public class RunAppServer {
     
         // extract modules to a directory, and make a list of the extracted
         // modules
-        File moduleDir = ModuleManager.getModuleManager().getModuleStateDirectory(ModuleManager.State.ADD);
-        moduleDir.mkdirs();
-        
-        // make sure the modules directory exists
-        Collection<AddedModule> modules = new ArrayList<AddedModule>();
+        File moduleDir = RunUtil.createTempDir("module", ".jar");
+       
+        // keep a collection of File object that we want to add
+        Collection<File> modules = new ArrayList<File>();
         
         String line;
         while ((line = in.readLine()) != null) {
             File f = RunUtil.extract(getClass(), line, moduleDir);
-            modules.add(new AddedModule(f));
+            modules.add(f);
         }
         
         // add all modules at once to the module manager.  This will ensure
-        // that dependency checks take all modules into account.
-        ModuleManager.getModuleManager().addAll(modules, true);
+        // that dependency checks take all modules into account. This can also
+        // check return values.
+        Collection<Module> added = ModuleManager.getModuleManager().addToInstall(modules);
+        
+        // now go through each module we added, and tag it with the 
+        // system module metadata tag so we can be sure it gets removed
+        // next time we install the jar
+        for (Module m : added) {
+            tagModule(m);
+        }
+    }
+    
+    private void tagModule(Module m) throws IOException {
+        try {
+            File infoFile = new File(m.getFile(), Module.MODULE_INFO);
+            ModuleInfo info = ModuleInfo.decode(new FileReader(infoFile));
+            info.putAttribute(ModuleAttributes.SYSTEM_MODULE,
+                              String.valueOf(true));
+            info.encode(new FileWriter(infoFile));
+        } catch (JAXBException je) {
+            IOException ioe = new IOException("Error writing module info");
+            ioe.initCause(je);
+            throw ioe;
+        }
     }
     
     // get the main instance
-    private synchronized static WonderlandAppServer getAppServer() {
+    public synchronized static WonderlandAppServer getAppServer() {
         if (appServer == null) {
             appServer = new WonderlandAppServer(port);
         }
@@ -180,11 +228,15 @@ public class RunAppServer {
 
         @Override
         public App deploy(File archive) throws IOException {
+            return deploy(archive, null);
+        }
+        
+        public App deploy(File archive, Properties props) throws IOException {
             // override because we know this will always be a
             // a directory, and we don't want it extracted to
             // the current working directory
             ReadableArchive a = archiveFactory.openArchive(archive);
-            return deploy(a);
+            return deploy(a, props);
         }
 
         @Override

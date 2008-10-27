@@ -18,10 +18,16 @@
 
 package org.jdesktop.wonderland.front.servlet;
 
+import javax.servlet.ServletContextEvent;
+import org.jdesktop.wonderland.front.admin.AdminRegistration;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -31,17 +37,9 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author jkaplan
  */
-public class AdminServlet extends HttpServlet {
+public class AdminServlet extends HttpServlet implements ServletContextListener {
    private static final String DEFAULT_PAGE_URL = "/wonderland-web-front/admin_default.jsp";
     
-   // hardcode for now
-   private static Map<String, AdminEntry> adminPages = 
-           new LinkedHashMap<String, AdminEntry>();
-   static {
-       adminPages.put("runner", new AdminEntry("Start/Stop Server", "/wonderland-web-runner"));
-       adminPages.put("modules", new AdminEntry("Manage Modules", "/wonderland-web-modules"));
-   }
-   
    /** 
     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
     * @param request servlet request
@@ -53,7 +51,7 @@ public class AdminServlet extends HttpServlet {
         String pageURL = request.getParameter("pageURL");
         if (pageURL == null) {
             String page = request.getParameter("page");
-            AdminEntry ae = mapPage(page);
+            AdminRegistration ae = mapPage(page);
             if (ae != null) {
                 pageURL = ae.getUrl();
             }
@@ -64,14 +62,30 @@ public class AdminServlet extends HttpServlet {
         }           
         
         request.setAttribute("pageURL", pageURL);
-        request.setAttribute("adminPages", adminPages.values());
+        request.setAttribute("adminPages", getRegistry());
         
         RequestDispatcher rd = request.getRequestDispatcher("/admin.jsp");
         rd.forward(request, response);
     } 
 
-    private AdminEntry mapPage(String page) {
-        return adminPages.get(page);
+    private AdminRegistration mapPage(String page) {
+        if (page == null) {
+            return null;
+        }
+        
+        for (AdminRegistration reg : getRegistry()) {
+            if (page.equalsIgnoreCase(reg.getShortName())) {
+                return reg;
+            }
+        }
+        
+        return null;
+    }
+    
+    private List<AdminRegistration> getRegistry() {
+        ServletContext sc = getServletContext();
+        return (List<AdminRegistration>) 
+                sc.getAttribute(AdminRegistration.ADMIN_REGISTRY_PROP);
     }
         
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -102,4 +116,22 @@ public class AdminServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    public void contextInitialized(ServletContextEvent sce) {
+        // create the registry
+        List<AdminRegistration> registry = new ArrayList<AdminRegistration>();
+        
+        // add built-in registrations
+        registry.add(new AdminRegistration("runner", "Server Status", 
+                                           "/wonderland-web-runner"));
+        registry.add(new AdminRegistration("modules", "Manage Modules",
+                                           "/wonderland-web-modules"));
+       
+        // add the registry to the context
+        ServletContext sc = sce.getServletContext();
+        sc.setAttribute(AdminRegistration.ADMIN_REGISTRY_PROP, registry);
+    }
+
+    public void contextDestroyed(ServletContextEvent arg0) {
+        // ignore
+    }
 }
