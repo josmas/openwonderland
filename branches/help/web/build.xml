@@ -11,6 +11,9 @@
        <ant dir="runner" target="dist" inheritall="false">
           <propertyset refid="web.project.properties"/>
        </ant>
+       <ant dir="help" target="dist" inheritall="false">
+          <propertyset refid="web.project.properties"/>
+       </ant>
        <ant dir="webstart" target="dist"/>
        <ant dir="front" target="dist" inheritall="false">
           <propertyset refid="web.project.properties"/>
@@ -55,6 +58,7 @@
     <target name="clean">
        <ant dir="utils"    target="clean" inheritall="false"/>
        <ant dir="wfs"      target="clean" inheritall="false"/>
+       <ant dir="help"     target="clean" inheritall="false"/>
        <ant dir="modules"  target="clean" inheritall="false"/>
        <ant dir="runner"   target="clean" inheritall="false"/>
        <ant dir="webstart" target="clean" inheritall="false"/>

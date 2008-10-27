@@ -19,22 +19,15 @@ package org.jdesktop.wonderland.client.jme;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
+import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.common.LogControl;
@@ -66,6 +59,11 @@ public class MainFrame extends javax.swing.JFrame {
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
         initComponents();
+        
+        // Add the help menu to the main menu bar
+        HelpSystem helpSystem = new HelpSystem();
+        JMenu helpMenu = helpSystem.getHelpJMenu();
+        jMenuBar2.add(helpMenu);
         
         // make the canvas:
         canvas = wm.getRenderManager().createCanvas(width, height);
@@ -134,8 +132,6 @@ public class MainFrame extends javax.swing.JFrame {
         transferCallMenuItem = new javax.swing.JMenuItem();
         logAudioProblemMenuItem = new javax.swing.JMenuItem();
         virtualPhoneMenuItem = new javax.swing.JMenuItem();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
 
         jLabel1.setText("jLabel1");
 
@@ -321,18 +317,6 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(toolsMenu);
 
-        jMenu1.setText(bundle.getString("Help")); // NOI18N
-
-        jMenuItem1.setText(bundle.getString("User_Guide")); // NOI18N
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                help(evt);
-            }
-        });
-        jMenu1.add(jMenuItem1);
-
-        jMenuBar2.add(jMenu1);
-
         setJMenuBar(jMenuBar2);
 
         pack();
@@ -355,15 +339,6 @@ private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
     cellViewerFrame.setVisible(true);
 }//GEN-LAST:event_cellViewerMIActionPerformed
-
-private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
-    try {
-        /* Just launch a browser for now */
-        WebBrowserLauncher.openURL("http://wonderland.dev.java.net");
-    } catch (Exception ex) {
-        Logger.getLogger(MainFrame.class.getName()).log(Level.WARNING, null, ex);
-    }
-}//GEN-LAST:event_help
 
 private void AudioMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AudioMenuActionPerformed
 // TODO add your handling code here:
@@ -466,11 +441,9 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     private javax.swing.JMenuItem exitMI;
     private javax.swing.JLabel fpsLabel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton logAudioProblemButton;

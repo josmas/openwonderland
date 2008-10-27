@@ -104,6 +104,9 @@
             <zipfileset dir="${top.dir}/web/runner/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
+            <zipfileset dir="${top.dir}/web/help/dist" prefix="deploy">
+                <include name="**/*.war"/>
+            </zipfileset>
             <zipfileset dir="${top.dir}/web/front/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </zipfileset>
