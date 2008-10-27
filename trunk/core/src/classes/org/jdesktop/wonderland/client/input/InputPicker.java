@@ -32,7 +32,9 @@ import com.jme.math.Ray;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.Camera;
+import java.awt.Button;
 import java.util.Iterator;
+import java.util.LinkedList;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.EntityComponent;
@@ -41,6 +43,7 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 
 /**
  * The abstract base class for an InputPicker singleton. The InputPicker is the part of the 
@@ -146,6 +149,38 @@ public abstract class InputPicker {
     private LinkedBlockingQueue<PickInfoQueueEntry> swingPickInfos = 
 	new LinkedBlockingQueue<PickInfoQueueEntry>();
 
+
+    /**
+     * As we example the entities along the pick ray we need to keep
+     * track of the entities which are visible (that is not obscured
+     * by an entity whose listeners doesn't propagate to under). We also
+     * need to keep track the pick details which will be ultimately sent
+     * in the enter/exit events.
+     */
+    private static class EntityAndPickDetails {
+	private Entity entity;
+	private PickDetails pickDetails;
+	private EntityAndPickDetails (Entity entity, PickDetails pickDetails) {
+	    this.entity = entity;
+	    this.pickDetails = pickDetails;
+	}
+    }
+
+    /** The entities that the pointer is inside for the current event. */
+    LinkedList<EntityAndPickDetails> insideEntities = new LinkedList<EntityAndPickDetails>();
+
+    /** The entities that the pointer was inside for the last event. */
+    LinkedList<EntityAndPickDetails> insideEntitiesPrev = new LinkedList<EntityAndPickDetails>();
+
+    /** The entities that no longer have the pointer inside. */
+    LinkedList<EntityAndPickDetails> noLongerInsideEntities = new LinkedList<EntityAndPickDetails>();
+
+    /** The entities that newly have the pointer inside. */
+    LinkedList<EntityAndPickDetails> newlyInsideEntities = new LinkedList<EntityAndPickDetails>();
+
+    /** A dummy AWT component used in enter/exit events. */
+    private static Button dummyButton = new Button();
+
     /**
      * Create a new instance of InputPicker.
      */
@@ -190,16 +225,18 @@ public abstract class InputPicker {
 
 	int eventID = awtMouseEvent.getID();
 	if (eventID == MouseEvent.MOUSE_MOVED ||
-	    eventID == MouseEvent.MOUSE_DRAGGED) {
+	    eventID == MouseEvent.MOUSE_DRAGGED ||
+	    eventID == MouseEvent.MOUSE_ENTERED ||
+	    eventID == MouseEvent.MOUSE_EXITED) {
 	    generateEnterExitEvents(awtMouseEvent, destPickInfo);
 	}
 
-	boolean propagateToUnder = true;
+	boolean propagatesToUnder = true;
 	PickDetails pickDetails = destPickInfo.get(0);
 	logger.fine("Picker: pickDetails = " + pickDetails);
 	MouseEvent3D event = (MouseEvent3D) createWonderlandEvent(awtMouseEvent);
 	int idx = 0;
-	while (pickDetails != null && idx < destPickInfo.size() && propagateToUnder) {
+	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
 
             // Search through the entity space to find the first input sensitive 
 	    // Window Swing entity for the pickInfo that will consume the event.
@@ -208,8 +245,7 @@ public abstract class InputPicker {
 	    logger.fine("Picker: entity = " + entity);
 
 	    boolean consumesEvent = false;
-            boolean propagatesToUnder = false;
-            
+            propagatesToUnder = false;
 	    EventListenerCollection listeners = (EventListenerCollection) 
 		entity.getComponent(EventListenerCollection.class);
 	    if (listeners == null) { 
@@ -220,13 +256,15 @@ public abstract class InputPicker {
                 Iterator<EventListener> it = listeners.iterator();
 		while (it.hasNext()) {
                     EventListener listener = it.next();
-		    Event distribEvent = EventDistributor.createEventForEntity(event, entity);
-		    logger.finest("Invoke event listener consumesEvent");
-		    logger.finest("Listener = " + listener);
-		    logger.finest("Event = " + distribEvent);
-		    consumesEvent |= listener.consumesEvent(distribEvent);
-		    propagatesToUnder |= listener.propagatesToUnder(distribEvent);
-		    logger.finest("consumesEvent = " + consumesEvent);
+		    if (listener.isEnabled()) {
+			Event distribEvent = EventDistributor.createEventForEntity(event, entity);
+			logger.finest("Invoke event listener consumesEvent");
+			logger.finest("Listener = " + listener);
+			logger.finest("Event = " + distribEvent);
+			consumesEvent |= listener.consumesEvent(distribEvent);
+			propagatesToUnder |= listener.propagatesToUnder(distribEvent);
+			logger.finest("consumesEvent = " + consumesEvent);
+		    }
 		}
 	    }
 
@@ -239,7 +277,7 @@ public abstract class InputPicker {
 		return new InputManager.PickEventReturn(entity, pickDetails);
 	    }
 
-	    if (propagateToUnder) {
+	    if (propagatesToUnder) {
 		// Search next depth level for entities willing to consume this event
 		idx++;
 		if (idx < destPickInfo.size()) {
@@ -247,7 +285,6 @@ public abstract class InputPicker {
 		} else {
 		    pickDetails = null;
 		}
-		continue;
 	    }
 	}
 
@@ -295,7 +332,9 @@ public abstract class InputPicker {
 
 	int eventID = awtEvent.getID();
 	if (eventID == MouseEvent.MOUSE_MOVED ||
-	    eventID == MouseEvent.MOUSE_DRAGGED) {
+	    eventID == MouseEvent.MOUSE_DRAGGED ||
+	    eventID == MouseEvent.MOUSE_ENTERED ||
+	    eventID == MouseEvent.MOUSE_EXITED) {
 	    generateEnterExitEvents(awtEvent, destPickInfo);
 	}
 
@@ -552,28 +591,6 @@ public abstract class InputPicker {
 	return pgModifiers;
     }
 
-    /**
-     * Generate object enter/exit events based on the determined destination pick info.
-     *
-     * @param event The mouse event.
-     * @param destPickInfo The destination pick info.
-     */
-    private void generateEnterExitEvents (MouseEvent event, PickInfo destPickInfo) {
-	/*
-
-	if event is mouse exit, send exit events to all prev pickInfo
-	if event is mouse enter do ??
-
-	// TODO: Compare new pickInfo with previous pickInfo
-	// Determine list of added and deleted pick info
-	// Determine the entities for the added and deleted pick info 
-	// Generate enter events for added pickInfo and exit events for deleted pickInfo
-	// Enqueue enter/exit events to the EventDeliverer to be propagated through the entity and its parents, checking consumesEvent and propagatesToParent
-	*/
-
-	destPickInfoPrev = destPickInfo;
-    }
-
     public static Entity pickDetailsToEntity (PickDetails pickDetails) {
         if (pickDetails==null)
             return null;
@@ -586,5 +603,163 @@ public abstract class InputPicker {
      * Converts a 2D AWT event into a Wonderland event.
      */
     protected abstract Event createWonderlandEvent (AWTEvent awtEvent);
+
+    /**
+     * Generate the appropriate enter/exit events. 
+     *
+     * NOTE: the pointer can be inside an entity, but if this entity is obscured by
+     * an entity with event listeners that don't propagate to under then the obscured
+     * entity is effectively exitted. This is an example of an "event shadow."
+     */
+    private void generateEnterExitEvents (MouseEvent awtEvent, PickInfo pickInfo) {
+
+	MouseEnterExitEvent3D enterEventProto = 
+	    createEnterExitEventFromAwtEvent(awtEvent, MouseEvent.MOUSE_ENTERED);
+	MouseEnterExitEvent3D exitEventProto = 
+	    createEnterExitEventFromAwtEvent(awtEvent, MouseEvent.MOUSE_EXITED);
+
+	// Calculate which entities have the pointer inside
+	calcInsideEntities(awtEvent, enterEventProto, pickInfo);
+
+	// Calculate entities which had the pointer inside on the last event
+	// but which no longer have the pointer inside
+	noLongerInsideEntities.clear();
+	for (EntityAndPickDetails entry : insideEntitiesPrev) {
+	    if (!insideEntities.contains(entry.entity)) {
+		noLongerInsideEntities.add(entry);
+	    }
+	}
+
+	// Calculate entities which did not have the pointer inside on the last
+	// event but now have the pointer inside.
+	newlyInsideEntities.clear();
+	for (EntityAndPickDetails entry : insideEntitiesPrev) {
+	    if (!insideEntitiesPrev.contains(entry.entity)) {
+		newlyInsideEntities.add(entry);
+	    }
+	}
+
+	// Send the exit events to the no longer inside entities.
+	sendExitEvents(exitEventProto, pickInfo);
+
+	// Send the enter events to the newly inside entities.
+	sendEnterEvents(enterEventProto, pickInfo);
+
+	// Remember the inside entities for the event
+	insideEntitiesPrev.clear();
+	insideEntitiesPrev.addAll(insideEntities);
+    }
+
+
+    /**
+     * Calculate the current set of entities the pointer is inside.
+     */
+    private void calcInsideEntities (MouseEvent awtEvent, MouseEnterExitEvent3D enterEventProto,
+				     PickInfo pickInfo) {
+	
+	// Calculate the current set of entities the pointer is inside.
+	insideEntities.clear();
+	if (awtEvent.getID() == MouseEvent.MOUSE_EXITED) {
+	    // Canvas exit event is treated just like a pick miss (pickInfo is null)
+	    return;
+	}
+
+	// Gather up entities which intersect the pick ray until we encounter an
+	// entity which doesn't propagate to under.
+	boolean propagatesToUnder = true;
+	PickDetails pickDetails = pickInfo.get(0);
+	int idx = 0;
+	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
+	    Entity entity = pickDetailsToEntity(pickDetails);
+	    insideEntities.add(new EntityAndPickDetails(entity, pickDetails));
+	    
+	    propagatesToUnder = false;
+	    EventListenerCollection listeners = (EventListenerCollection) 
+		entity.getComponent(EventListenerCollection.class);
+	    
+	    if (listeners == null) { 
+		propagatesToUnder = false;
+	    } else {
+		Iterator<EventListener> it = listeners.iterator();
+		while (it.hasNext()) {
+		    EventListener listener = it.next();
+		    if (listener.isEnabled()) {
+			MouseEnterExitEvent3D distribEvent = (MouseEnterExitEvent3D) 
+			    EventDistributor.createEventForEntity(enterEventProto, entity);
+			distribEvent.setPickDetails(pickDetails);
+			distribEvent.setPickInfo(pickInfo);
+			propagatesToUnder |= listener.propagatesToUnder(distribEvent);
+		    }
+		}
+		if (propagatesToUnder) {
+		    idx++;
+		    if (idx < destPickInfo.size()) {
+			pickDetails = destPickInfo.get(idx);
+		    } else {
+			pickDetails = null;
+		    }
+		}
+	    }	    
+	}
+    }
+
+    /**
+     * Send the exit events to the no longer inside entities.
+     */
+    private void sendExitEvents (MouseEnterExitEvent3D exitEventProto, PickInfo pickInfo) {
+	for (EntityAndPickDetails entry : noLongerInsideEntities) {
+	    MouseEnterExitEvent3D exitEvent = (MouseEnterExitEvent3D) 
+		EventDistributor.createEventForEntity(exitEventProto, entry.entity);
+	    exitEvent.setPickDetails(entry.pickDetails);
+	    exitEvent.setPickInfo(pickInfo);
+	    tryListenersForEntity(entry.entity, exitEvent);
+	}
+    }
+
+    /**
+     * Send the enter events to the newly inside entities.
+     */
+    private void sendEnterEvents (MouseEnterExitEvent3D enterEventProto, PickInfo pickInfo) {
+	for (EntityAndPickDetails entry : newlyInsideEntities) {
+	    MouseEnterExitEvent3D enterEvent = (MouseEnterExitEvent3D) 
+		EventDistributor.createEventForEntity(enterEventProto, entry.entity);
+	    enterEvent.setPickDetails(entry.pickDetails);
+	    enterEvent.setPickInfo(pickInfo);
+	    tryListenersForEntity(entry.entity, enterEvent);
+	}
+    }
+
+    /**
+     * Try to send the given event to the listeners for the given entity.
+     */
+    private void tryListenersForEntity (Entity entity, Event event) {
+	EventListenerCollection listeners = 
+	    (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+	if (listeners != null && listeners.size() > 0) { 
+	    Iterator<EventListener> it = listeners.iterator();
+	    while (it.hasNext()) {
+		EventListener listener = it.next();
+		if (listener.isEnabled()) {
+		    logger.fine("Calling consume for listener " + listener);
+		    if (listener.consumesEvent(event)) {
+			logger.fine("CONSUMED by entity " + entity);
+			listener.postEvent(event);
+		    }
+		}
+	    }
+	}
+    }
+
+    private MouseEnterExitEvent3D createEnterExitEventFromAwtEvent (MouseEvent awtEvent, int id) {
+	int x = awtEvent.getX();
+	int y = awtEvent.getY();
+	long when = awtEvent.getWhen();
+	int modifiers = awtEvent.getModifiers();
+	int button = awtEvent.getButton();
+	MouseEvent me = new MouseEvent(dummyButton, id, when, modifiers, x, y, 0, false, button);
+	return (MouseEnterExitEvent3D) createWonderlandEvent(me);
+    }
 }
+
+
 
