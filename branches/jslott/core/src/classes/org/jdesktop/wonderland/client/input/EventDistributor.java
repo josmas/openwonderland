@@ -159,7 +159,7 @@ public abstract class EventDistributor implements Runnable {
 		    logger.fine("Calling consume for listener " + listener);
 		    Event distribEvent = createEventForEntity(event, entity);
 		    if (listener.consumesEvent(distribEvent)) {
-			logger.fine("CONSUMED.");
+			logger.fine("CONSUMED by entity " + entity);
 			listener.postEvent(distribEvent);
 		    }
 		    propState.toParent |= listener.propagatesToParent(distribEvent);
