@@ -19,6 +19,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.client.ClientPlugin;
@@ -31,30 +32,54 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
  * Plugin to support the audio manager
  * @author jprovino
  */
-public class AudioManagerClientPlugin implements ClientPlugin,
-	SessionStatusListener {
-
+public class AudioManagerClientPlugin 
+        implements ClientPlugin, SessionStatusListener 
+{
     private static final Logger logger =
             Logger.getLogger(AudioManagerClientPlugin.class.getName());
     
+    private AudioManagerClient client;
+    
     public void initialize(WonderlandSession session) {
-	session.addSessionStatusListener(this);
-
 	logger.warning("Audio manager initialized, session " + session);
+        
+        session.addSessionStatusListener(this);
+        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+            connectClient(session);
+        }
     }
     
     public void sessionStatusChanged(WonderlandSession session, 
-	    WonderlandSession.Status status) {
-
-	logger.warning("session status changed " + session + " status " + status);
-
-	if (status.equals(WonderlandSession.Status.CONNECTED)) {
-	    try {
-	        new AudioManagerClient(session);
-	    } catch (ConnectionFailureException e) {
-	        logger.warning(e.getMessage());
-	    }
-	}
+                                     WonderlandSession.Status status)
+    {
+        logger.warning("session status changed " + session + " status " + status);
+        if (status.equals(WonderlandSession.Status.CONNECTED)) {
+            connectClient(session);
+        } else if (status.equals(WonderlandSession.Status.DISCONNECTED)) {
+            disconnectClient();
+        }
+    }
+    
+    /**
+     * Connect the client.
+     * @param session the WonderlandSession to connect to, guaranteed to
+     * be in the CONNECTED state.
+     */
+    protected void connectClient(WonderlandSession session) {
+        if (client == null) {
+            try {
+                client = new AudioManagerClient(session);
+            } catch (ConnectionFailureException e) {
+                logger.log(Level.WARNING, "Connect client error", e);
+            }
+        }
     }
 
+    /**
+     * Disconnect the client
+     */
+    protected void disconnectClient() {
+        client.disconnect();
+        client = null;
+    }
 }

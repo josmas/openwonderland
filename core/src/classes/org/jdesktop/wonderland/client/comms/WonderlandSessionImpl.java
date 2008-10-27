@@ -21,8 +21,6 @@ import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.ClientChannelListener;
 import com.sun.sgs.client.simple.SimpleClient;
 import com.sun.sgs.client.simple.SimpleClientListener;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.PasswordAuthentication;
@@ -35,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -46,7 +46,6 @@ import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.DetachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.SessionInitializationMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageException;
 import org.jdesktop.wonderland.common.messages.MessageID;
@@ -103,6 +102,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
     /** the unique id of this session */
     private BigInteger sessionID;
     
+    /** an executor to use when sending data to listeners */
+    private ExecutorService notifier;
+    
     /**
      * Create a new client to log in to the given server
      * @param server the server to connect to
@@ -131,6 +133,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
         sessionStatusListeners =
                 new CopyOnWriteArrayList<SessionStatusListener>();
       
+        // initialize the notifier
+        notifier = Executors.newSingleThreadExecutor();
+        
         // initialize list of clients
         clients = Collections.synchronizedMap(
                 new HashMap<ConnectionType, ClientRecord>());
@@ -444,8 +449,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
         
         if (logger.isLoggable(Level.FINEST)) {
-            logger.finest(getName() + " received session message for handler " + 
-                          record.getClient().getConnectionType()+"  message type "+message.getClass().getName());
+            logger.finest(getName() + " received session message for " +
+                          "handler " + record.getClient().getConnectionType() +
+                          "  message type "+ message.getClass().getName());
         }
         
         record.handleMessage(message);
@@ -456,11 +462,20 @@ public class WonderlandSessionImpl implements WonderlandSession {
      * @param session the session that changed
      * @param status the new status
      */
-    protected void fireClientStatusChanged(WonderlandSession.Status status) 
+    protected void fireClientStatusChanged(final WonderlandSession.Status status) 
     {
-        for (SessionStatusListener listener : sessionStatusListeners) {
-            listener.sessionStatusChanged(this, status);
-        }
+        // We don't want to do this in the same thread where
+        // setStatus() was called, since that is a Darkstar thread.
+        // If a listener blocks the Darkstar thread (for example by
+        // waiting on a new connection type) this could cause a hang.
+        notifier.submit(new Runnable() {
+            public void run() {
+                for (SessionStatusListener listener : sessionStatusListeners) {
+                    listener.sessionStatusChanged(WonderlandSessionImpl.this, 
+                                                  status);
+                }
+            }
+        });
     }
     
     /**
