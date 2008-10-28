@@ -27,7 +27,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 
 /**
@@ -38,13 +37,20 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 @ExperimentalAPI
 public class SimpleShapeCellMO extends CellMO {
     
+    private SimpleShapeConfig.Shape shape;
+    
     /** Default constructor, used when cell is created via WFS */
     public SimpleShapeCellMO() {
-        this(new Vector3f(), 50);
+        this(new Vector3f(), 1);
     }
 
     public SimpleShapeCellMO(Vector3f center, float size) {
+        this(center, size, SimpleShapeConfig.Shape.BOX);
+    }
+    
+    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
+        this.shape = shape;
     }
     
     @Override
@@ -54,7 +60,7 @@ public class SimpleShapeCellMO extends CellMO {
 
     @Override
     public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new SimpleShapeConfig(SimpleShapeConfig.Shape.BOX);
+        return new SimpleShapeConfig(shape);
     }
 
     @Override

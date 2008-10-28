@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -34,6 +36,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -85,6 +88,9 @@ public class CellViewerFrame extends javax.swing.JFrame {
 //            // TODO Implement multi session support in CellViewFrame
 //            logger.warning("CellViewFrame only supports a single session at the moment");
 //        }
+        
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+        ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
         initComponents();
         cellViewerListener = new CellViewerEventListener();
@@ -117,7 +123,10 @@ public class CellViewerFrame extends javax.swing.JFrame {
 
             public void valueChanged(TreeSelectionEvent e) {
                 Object selectedNode = jmeTree.getLastSelectedPathComponent();
-                System.out.println("Selected "+selectedNode);
+                System.out.print("Selected "+selectedNode);
+                if (selectedNode!=null)
+                    System.out.print("  "+((Spatial)selectedNode).getLocalTranslation()+"  world "+((Spatial)selectedNode).getWorldTranslation());
+                System.out.println();
             }
             
         });
@@ -155,6 +164,8 @@ public class CellViewerFrame extends javax.swing.JFrame {
      */
     private void refreshCells(WonderlandSession session) {
         CellCache cache = ClientContext.getCellCache(session);
+        if (cache==null)
+            return;
         
         for(Cell rootCell : cache.getRootCells()) {
             rootCells.add(rootCell);
@@ -186,7 +197,6 @@ public class CellViewerFrame extends javax.swing.JFrame {
             DefaultMutableTreeNode entityNode = new DefaultMutableTreeNode(e);
             entityNodes.put(e, entityNode);
             ret.add(entityNode);
-            // TODO find children entity, but don't traverse into child cells entities
 
             addChildEntities(e, entityNode);
         }
@@ -255,10 +265,9 @@ public class CellViewerFrame extends javax.swing.JFrame {
             entityNameTF.setText(entity.getName());
             DefaultListModel listModel = (DefaultListModel) cellComponentList.getModel();
             listModel.clear();
-            logger.warning("TODO Need to add getComponents() to entity");
-//            for(CellComponent c : entity.getComponents()) {
-//                listModel.addElement(c.getClass().getName());
-//            }
+            for(EntityComponent c : entity.getComponents()) {
+                listModel.addElement(c.getClass().getName());
+            }
         }
     }
     

@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.config.*;
 
 /**
@@ -28,14 +30,18 @@ import org.jdesktop.wonderland.common.cell.config.*;
 public class JmeColladaCellConfig extends CellConfig {
     /* The unique URL that describes the model data */
     private String modelURI = null;
+    private Vector3f geometryTranslation;
+    private Quaternion geometryRotation;
     
     /** Default constructor */
     public JmeColladaCellConfig() {
     }
     
     /** Constructor, takes the model URI */
-    public JmeColladaCellConfig(String modelURI) {
+    public JmeColladaCellConfig(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
         this.modelURI = modelURI;
+        this.geometryRotation = geometryRotation;
+        this.geometryTranslation = geometryTranslation;
     }
     
     /**
@@ -54,5 +60,13 @@ public class JmeColladaCellConfig extends CellConfig {
      */
     public void setModelURI(String modelURI) {
         this.modelURI = modelURI;
+    }
+
+    public Vector3f getGeometryTranslation() {
+        return geometryTranslation;
+    }
+
+    public Quaternion getGeometryRotation() {
+        return geometryRotation;
     }
 }
