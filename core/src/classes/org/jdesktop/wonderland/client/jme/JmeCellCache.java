@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.jme.input.test.EnterExitEvent3DLogger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
@@ -70,9 +71,15 @@ class JmeCellCache extends CellCacheBasicImpl {
 
                 thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(ret));
 
+//                  Test code for mouse event listeners
 //		    MouseEvent3DLogger mouseEventListener =
 //			new MouseEvent3DLogger(className+"_"+cellID);
 //		    mouseEventListener.addToEntity(thisEntity);
+
+//                  Test code for enter/exit event listeners
+//		    EnterExitEvent3DLogger enterExitEventListener = 
+//			new EnterExitEvent3DLogger(className+"_"+cellID);
+//		    enterExitEventListener.addToEntity(thisEntity);
 
                 if (parentEntity!=null)
                     parentEntity.addEntity(thisEntity);
