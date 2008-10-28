@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -86,7 +87,7 @@ public class Cell {
      */
     protected static Logger logger = Logger.getLogger(Cell.class.getName());
     
-    private ArrayList<TransformChangeListener> transformChangeListeners = null;
+    private HashSet<TransformChangeListener> transformChangeListeners = null;
     
     /**
      * Instantiate a new cell
@@ -610,7 +611,7 @@ public class Cell {
      */
     public void addTransformChangeListener(TransformChangeListener listener) {
         if (transformChangeListeners==null)
-            transformChangeListeners = new ArrayList();
+            transformChangeListeners = new HashSet();
         transformChangeListeners.add(listener);
     }
     

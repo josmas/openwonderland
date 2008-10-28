@@ -71,11 +71,6 @@ class JmeCellCache extends CellCacheBasicImpl {
 
                 thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(ret));
 
-//                  Test code for mouse event listeners
-//		    MouseEvent3DLogger mouseEventListener =
-//			new MouseEvent3DLogger(className+"_"+cellID);
-//		    mouseEventListener.addToEntity(thisEntity);
-
 //                  Test code for enter/exit event listeners
 //		    EnterExitEvent3DLogger enterExitEventListener = 
 //			new EnterExitEvent3DLogger(className+"_"+cellID);
@@ -85,23 +80,6 @@ class JmeCellCache extends CellCacheBasicImpl {
                     parentEntity.addEntity(thisEntity);
                 else
                     ClientContextJME.getWorldManager().addEntity(thisEntity);
-
-//		    /* TODO: temporary
-//		    MouseEvent3DLogger mouseEventListener =
-//			new MouseEvent3DLogger(className+"_"+cellID);
-//		    mouseEventListener.addToEntity(thisEntity);
-//		    */
-
-                /* TODO: temporary
-                KeyEvent3DLogger keyEventListener =
-                    new KeyEvent3DLogger(className+"_"+cellID);
-                keyEventListener.addToEntity(thisEntity);
-                */
-
-                /* TODO: temporary
-                SpinObjectEventListener spinEventListener = new SpinObjectEventListener();
-                spinEventListener.addToEntity(thisEntity);
-                */
 
                 // Figure out the correct parent entity for this cells entity.
                 if (parentEntity!=null && thisEntity!=null) {

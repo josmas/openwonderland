@@ -50,4 +50,8 @@ public class ClientContextJME extends ClientContext {
     public static WorldManager getWorldManager() {
         return worldManager;
     }
+
+    public static EnvironmentManager getEnvironmentManager() {
+        return EnvironmentManager.getEnvironmentManager();
+    }
 }

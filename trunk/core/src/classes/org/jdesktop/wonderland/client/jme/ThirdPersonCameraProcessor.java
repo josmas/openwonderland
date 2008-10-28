@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.client.jme;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.CameraNode;
-import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -37,7 +36,7 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
     private Vector3f offset = new Vector3f(0,4,-10);
     private boolean commitRequired = false;
 
-    private Vector3f cameraLook = new Vector3f(0,0,-1);
+    private Vector3f cameraLook = new Vector3f(0,0,1);
     private Vector3f yUp = new Vector3f(0,1,0);
 
     private Vector3f tmp=new Vector3f();
@@ -59,7 +58,6 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
             if (commitRequired) {
                 cameraNode.setLocalRotation(rotation);
                 cameraNode.setLocalTranslation(translation);
-//                System.err.println("Camera moved "+tmp);
                 wm.addToUpdateList(cameraNode);
                 commitRequired = false;
             }
@@ -69,7 +67,7 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
 
     @Override
     public void initialize() {
-//        setArmingCondition(new NewFrameCondition(this));
+        // Camera is chained so does not need it's own ArmingCondition
     }
 
     @Override
@@ -84,8 +82,8 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
 //            System.out.println("Camera trans "+cameraTrans );
             translation.addLocal(cameraTrans);
             commitRequired=true;
-            
-//            rotation.lookAt(rotation.mult(cameraLook), yUp);
+
+            rotation.lookAt(rotation.mult(cameraLook), yUp);
         }
     }
 
