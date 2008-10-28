@@ -84,7 +84,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         sessionFrame = session;
         initComponents();
 
-        Float value = new Float(50); 
+        Float value = new Float(0); 
         Float min = new Float(Float.NEGATIVE_INFINITY);
         Float max = new Float(Float.POSITIVE_INFINITY); 
         Float step = new Float(0.1); 
@@ -840,14 +840,14 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             System.err.println("AvatarControlBehavior listeners not implemented");
 //        if (userMotionListener==null)
 //            return;
-//        
-//        if (avatarMoveCB.isSelected()) {
-//            enableSpinners(false);
+        
+        if (avatarMoveCB.isSelected()) {
+            enableSpinners(false);
 //            AvatarControlBehavior.getAvatarControlBehavior().addUserMoveListener(userMotionListener);
-//        } else {
-//            enableSpinners(true);
+        } else {
+            enableSpinners(true);
 //            AvatarControlBehavior.getAvatarControlBehavior().removeUserMoveListener(userMotionListener);
-//        }
+        }
 
     }//GEN-LAST:event_avatarMoveCBActionPerformed
 
