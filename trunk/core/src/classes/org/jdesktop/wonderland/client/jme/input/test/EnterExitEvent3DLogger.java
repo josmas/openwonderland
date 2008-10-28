@@ -17,25 +17,25 @@
  */
 package org.jdesktop.wonderland.client.jme.input.test;
 
+import java.awt.event.MouseEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * A test listener for mouse events. Add this to an entity and it will log all mouse events that
- * occur over the entity.
+ * A test listener for enter and exit events. Add this to an entity and it will log all enter and
+ * exit that occur over the entity. This particular listener propagates to under.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class MouseEvent3DLogger extends EventClassListener {
+public class EnterExitEvent3DLogger extends EventClassListener {
 
-    private static final Logger logger = Logger.getLogger(MouseEvent3DLogger.class.getName());
+    private static final Logger logger = Logger.getLogger(EnterExitEvent3DLogger.class.getName());
 
     static {
 	logger.setLevel(Level.INFO);
@@ -44,17 +44,17 @@ public class MouseEvent3DLogger extends EventClassListener {
     private String name;
 
     /**
-     * Create an instance of MouseEvent3DLogger.
+     * Create an instance of MouseEnterExitEvent3DLogger.
      */
-    public MouseEvent3DLogger () {
+    public EnterExitEvent3DLogger () {
 	this(null);
     }
 
     /**
-     * Create an instance of MouseEvent3DLogger.
+     * Create an instance of MouseEnterExitEvent3DLogger.
      * @param name The name of the logger.
      */
-    public MouseEvent3DLogger (String name) {
+    public EnterExitEvent3DLogger (String name) {
 	this.name = name;
     }
 
@@ -62,16 +62,25 @@ public class MouseEvent3DLogger extends EventClassListener {
      * Consume all mouse events.
      */
     public Class[] eventClassesToConsume () {
-	return new Class[] { MouseEvent3D.class };
+	return new Class[] { MouseEnterExitEvent3D.class };
     }
 
     public void commitEvent (Event event) {
+	MouseEnterExitEvent3D eeEvent = (MouseEnterExitEvent3D) event;
+
 	StringBuffer sb = new StringBuffer();
 	if (name != null) {
 	    sb.append(name + ": ");
 	}
-	sb.append("Received mouse event, event = " + event + ", entity = " + event.getEntity());
+	String typeStr = eeEvent.getID() == MouseEvent.MOUSE_ENTERED ? "Enter" : "Exit";
+	sb.append("Received " + typeStr + " event =");
+	sb.append(event + ", entity = " + event.getEntity());
 	logger.info(sb.toString());
+	//System.err.println("******** " + sb.toString());
+    }
+
+    public boolean propagatesToUnder (Event event) {
+	return true;
     }
 }
 
