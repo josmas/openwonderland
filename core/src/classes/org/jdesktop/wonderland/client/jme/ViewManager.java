@@ -20,8 +20,11 @@ package org.jdesktop.wonderland.client.jme;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
+import imi.loaders.repository.Repository;
+import imi.scene.processors.JSceneEventProcessor;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.InputManager;
@@ -39,6 +42,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer.MoveProcess
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import imi.scene.processors.JSceneEventProcessor;
 
 /**
  * 
@@ -89,10 +93,24 @@ public class ViewManager {
     private HashMap<WonderlandSession, ViewCell> sessionViewCells = new HashMap();
 
     private ViewCell primaryViewCell = null;
+    private ProcessorComponent avatarControls = null;
+
+    // TODO remove this
+    public boolean useAvatars = false;
     
-    ViewManager() {  
+    ViewManager() {
         createCameraEntity(ClientContextJME.getWorldManager());
         listener = new CellListener();
+
+        if (useAvatars) {
+            // Create and register the avatar controls
+            avatarControls = new AvatarControls();
+            ClientContextJME.getWorldManager().addUserData(JSceneEventProcessor.class, avatarControls);
+        } 
+
+        
+        // Add the avatar repository
+        ClientContextJME.getWorldManager().addUserData(Repository.class, new Repository(ClientContextJME.getWorldManager()));
     }
     
     public static ViewManager getViewManager() {
@@ -159,36 +177,39 @@ public class ViewManager {
      */
     public void attach(Cell cell) {
         if (attachCell!=null) {
-            System.err.println("VIEW ALREADY ATTACHED TO CELL (BUT CONTINUE ANYWAY)");
+            Logger.getAnonymousLogger().warning("VIEW ALREADY ATTACHED TO CELL (BUT CONTINUE ANYWAY)");
             return;
 //            throw new RuntimeException("View already attached to cell");
         }
         
-        Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
+        if (avatarControls==null) {
+            // This will need to be updated in the future. AvatarControls can
+            // only drive true avatars, if the Camera is being attached to
+            // another type of cell then another control system will be
+            // required.
 
-        if (eventProcessor==null) {
             // Create the input listener and process to control the avatar
             WorldManager wm = ClientContextJME.getWorldManager();
-            eventProcessor = new SimpleAvatarControls(cell, wm);
-            eventProcessor.setRunInRenderer(true);
-
-            // Chaining the camera here does not seem to work...
-            eventProcessor.addToChain(cameraProcessor);
+            avatarControls = new SimpleAvatarControls(cell, wm);
+            avatarControls.setRunInRenderer(true);
         }
-        
+
+        Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
+
         CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         if (renderer!=null && renderer instanceof BasicRenderer) {
             BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
             if (moveProc!=null) {
-                eventProcessor.addToChain(moveProc);
+                avatarControls.addToChain(moveProc);
                 moveProc.setChained(true);
+                avatarControls.addToChain(cameraProcessor);
             }
         }
 
         // Set initial camera position
         cameraProcessor.viewMoved(cell.getWorldTransform());
         
-        entity.addComponent(ProcessorComponent.class, eventProcessor);
+        entity.addComponent(AvatarControls.class, avatarControls);
         attachCell = cell;
         attachCell.addTransformChangeListener(listener);
     }
@@ -207,7 +228,8 @@ public class ViewManager {
         if (renderer!=null && renderer instanceof BasicRenderer) {
             BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
             if (moveProc!=null) {
-                eventProcessor.removeFromChain(moveProc);
+                avatarControls.removeFromChain(moveProc);
+                moveProc.removeFromChain(cameraProcessor);
             }
         }
         
@@ -257,7 +279,7 @@ public class ViewManager {
         camera.addComponent(CameraComponent.class, cameraComponent);
         
         cameraProcessor = new ThirdPersonCameraProcessor(cameraNode);
-        camera.addComponent(ProcessorComponent.class, cameraProcessor);
+//        camera.addComponent(CameraProcessor.class, cameraProcessor);
         
         wm.addEntity(camera);         
     }
@@ -286,8 +308,9 @@ public class ViewManager {
     class CellListener implements TransformChangeListener {
 
         public void transformChanged(Cell cell, ChangeSource source) {
-//            System.out.println("TransformChange "+cell.getWorldTransform().getTranslation(null));
-            cameraProcessor.viewMoved(cell.getWorldTransform());
+            if (source==ChangeSource.LOCAL) {
+                cameraProcessor.viewMoved(cell.getWorldTransform());
+            }
         }
         
     }

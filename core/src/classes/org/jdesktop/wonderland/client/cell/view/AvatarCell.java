@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.client.cell.view;
 
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -41,7 +43,11 @@ public class AvatarCell extends ViewCell {
                 // No 2D Renderer yet
                 break;
             case RENDERER_JME :
-                ret= new AvatarJME(this);
+                if (ViewManager.getViewManager().useAvatars) {
+                    ret= new AvatarImiJME(this);
+                } else {
+                    ret = new AvatarJME(this);
+                }
                 break;                
         }
         
