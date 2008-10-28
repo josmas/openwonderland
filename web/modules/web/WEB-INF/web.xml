@@ -10,10 +10,6 @@
         <servlet-class>org.jdesktop.wonderland.modules.servlets.ModuleUploadServlet</servlet-class>
         <url-pattern>/ModuleUploadServlet</url-pattern>
     </servlet>
-    <servlet>
-        <servlet-name>TestChart</servlet-name>
-        <servlet-class>org.jdesktop.wonderland.modules.servlets.TestChart</servlet-class>
-    </servlet>
     <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/modules/*</url-pattern>
@@ -21,10 +17,6 @@
     <servlet-mapping>
         <servlet-name>ModuleUploadServlet</servlet-name>
         <url-pattern>/ModuleUploadServlet</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>TestChart</servlet-name>
-        <url-pattern>/TestChart</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
