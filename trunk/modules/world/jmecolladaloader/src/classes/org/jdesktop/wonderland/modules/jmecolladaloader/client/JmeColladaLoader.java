@@ -55,7 +55,7 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMECol
 
 /**
  *
- * Loader for SketchUp .kmz files
+ * Loader for Collada files using JME loader
  * 
  * @author paulby
  */
