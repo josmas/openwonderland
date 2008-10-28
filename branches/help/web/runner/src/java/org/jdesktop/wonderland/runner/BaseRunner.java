@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -228,16 +227,17 @@ public abstract class BaseRunner implements Runner {
             pb.directory(getRunDir());
             
             proc = pb.start();
-            Thread outReader = new Thread(
-                    new ProcessOutputReader(proc.getInputStream(), logWriter));
+            ProcessOutputReader reader = createOutputReader(
+                                             proc.getInputStream(), logWriter);
+            Thread outReader = new Thread(reader);
             outReader.setName(getName() + " output reader");
             outReader.start();
             
             // start a thread to wait for the process to die
-            Thread waiter = new Thread(
-                    new ProcessWaiter(proc, outReader, logWriter));
-            waiter.setName(getName() + " process waiter");
-            waiter.start();
+            ProcessWaiter waiter = new ProcessWaiter(proc, outReader, logWriter);
+            Thread waiterThread = new Thread(waiter);
+            waiterThread.setName(getName() + " process waiter");
+            waiterThread.start();
         } catch (IOException ioe) {
             logWriter.log(Level.WARNING, "Error starting process " + getName(), 
                           ioe);
@@ -291,10 +291,18 @@ public abstract class BaseRunner implements Runner {
         statusUpdater = new Thread(new Runnable() {
             public void run() {
                 for (RunnerStatusListener l : listeners) {
-                    l.statusChanged(BaseRunner.this, status);
-                }
+                    try {
+                        l.statusChanged(BaseRunner.this, status);
+                    } catch (Error e) {
+                        // log the exception, since it seems to get
+                        // swallowed otherwise
+                        logger.log(Level.WARNING, "Error notifying " + l, e);
+                        throw e;
+                    }
+                }                
             }
         });
+        
         statusUpdater.setName(getName() + " status update notifier");
         statusUpdater.start();
     }
@@ -392,8 +400,39 @@ public abstract class BaseRunner implements Runner {
         return logFileHandler;
     }
     
-    public void addStatusListener(RunnerStatusListener listener) {
+    /**
+     * Create a new process output listener to handle the output from
+     * a process.  This method is provided so subclasses can create their own
+     * readers
+     * @param in the data from the process
+     * @param out the logger to log results to
+     * @return a ProcessOutputReader that will be used to read output from
+     * this process.
+     */
+    protected ProcessOutputReader createOutputReader(InputStream in,
+                                                     Logger out) 
+    {
+        return new ProcessOutputReader(in, out);
+    }
+    
+    /**
+     * Create a new process waiter that waits for a process to end.  This
+     * method is provided so subclasses can create their own waiters.
+     * @param proc the process to wait for
+     * @param outReader the output reader thread
+     * @param logWriter the logger to write information to
+     * @return the new ProcessWaiter
+     */
+    protected ProcessWaiter createWaiter(Process proc, Thread outReader,
+                                         Logger logWriter) 
+    {
+        return new ProcessWaiter(proc, outReader, logWriter);
+    }
+    
+    public synchronized Status addStatusListener(RunnerStatusListener listener) 
+    {
         listeners.add(listener);
+        return getStatus();
     }
 
     public void removeStatusListener(RunnerStatusListener listener) {
@@ -429,7 +468,7 @@ public abstract class BaseRunner implements Runner {
     }
     
     /** read a stream from a process and write it to the given log file */
-    static class ProcessOutputReader implements Runnable {
+    protected static class ProcessOutputReader implements Runnable {
         private BufferedReader in;
         private Logger out;
         
@@ -443,7 +482,7 @@ public abstract class BaseRunner implements Runner {
             
             try {
                 while ((line = in.readLine()) != null) {
-                    out.info(line);
+                    handleLine(line);
                 }
             } catch (IOException ioe) {
                 // oh well
@@ -453,11 +492,15 @@ public abstract class BaseRunner implements Runner {
                 logger.log(Level.WARNING, "Exception in process output reader",
                            ioe);
             }
-        }        
+        }   
+        
+        protected void handleLine(String line) {
+            out.info(line);
+        }
     } 
     
     /** wait for a process to end */
-    class ProcessWaiter implements Runnable {
+    protected class ProcessWaiter implements Runnable {
         private Process proc;
         private Thread outReader;
         private Logger logWriter;

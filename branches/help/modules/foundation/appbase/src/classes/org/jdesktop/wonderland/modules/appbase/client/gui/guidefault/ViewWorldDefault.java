@@ -97,7 +97,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     // TODO private Point3f tmpP3f = new Point3f();
 
     /** A dummy AWT component used by deliverEvent(Window2D,MouseEvent3D) */
-    private Button dummyButton = new Button();
+    private static Button dummyButton = new Button();
 
     /*
     ** TODO: WORKAROUND FOR A WONDERLAND PICKER PROBLEM:

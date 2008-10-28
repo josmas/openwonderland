@@ -13,17 +13,19 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
-import org.jdesktop.wonderland.modules.service.AddedModule;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
+import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
-import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  *
@@ -52,19 +54,34 @@ public class ModuleUploadServlet extends HttpServlet {
          * Create a factory for disk-base file items to handle the request. Also
          * place the file in add/.
          */
-        System.out.println("IN MODULE UPLOAD SERVLET");
         PrintWriter writer = response.getWriter();
         ModuleManager manager = ModuleManager.getModuleManager();
         Logger logger = ModuleManager.getLogger();
         
-        /* Create the servlet handler and parse the request */
-        DiskFileUpload upload = new DiskFileUpload();
+        /* Check that we have a file upload request */
+        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+        if (isMultipart == false) {
+            logger.warning("[MODULE] UPLOAD Bad request");
+            writer.println("Unable to recognize upload request. Press the ");
+            writer.println("Back button on your browser and try again.<br><br>");
+            return;
+        }
+        
+        /* Create a factory for disk-based file items, set parameters */
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+        factory.setSizeThreshold((int)(100 * FileUtils.ONE_MB));
+
+        /*Create a new upload handler, set maximum file size */
+        ServletFileUpload upload = new ServletFileUpload(factory);
+        upload.setFileSizeMax(100 * FileUtils.ONE_MB);
+
+        /* Parse the requests */
         List items = null;
         try {
             items = upload.parseRequest(request);
         } catch (FileUploadException excp) {
             /* Log an error to the log and write an error message back */
-            logger.warning("[MODULE] UPLOAD Failed to parse request " + excp.toString());
+            logger.log(Level.WARNING, "[MODULE] UPLOAD Failed to parse request", excp);
             writer.println("Unable to deal with the upload request. Press the ");
             writer.println("Back button on your browser and try again.<br><br>");
             writer.println(excp.toString());
@@ -93,39 +110,28 @@ public class ModuleUploadServlet extends HttpServlet {
             logger.info("[MODULE] UPLOAD Install module " + moduleName + " with file name " + moduleJar);
             
             /*
-             * Write the file to the add/ directory using the name of the file.
+             * Write the file a temporary file
              */
-            File file = null;
+            File tmpFile = null;
             try {
-                file = new File(manager.getModuleStateDirectory(State.ADD), moduleJar);
-                item.write(file);
-                logger.info("[MODULE] UPLOAD Wrote added module to " + file.getAbsolutePath());
+                tmpFile = File.createTempFile(moduleName, ".jar");
+                tmpFile.deleteOnExit();
+                item.write(tmpFile);
+                logger.info("[MODULE] UPLOAD Wrote added module to " + tmpFile.getAbsolutePath());
             } catch (java.lang.Exception excp) {
                 /* Log an error to the log and write an error message back */
-                logger.warning("[MODULE] UPLOAD Failed to save file to " + file.getAbsolutePath());
-                logger.warning("[MODULE] UPLOAD " + excp.toString());
+                logger.log(Level.WARNING, "[MODULE] UPLOAD Failed to save file", excp);
                 writer.println("Unable to save the file to the module directory. Press the ");
                 writer.println("Back button on your browser and try again.<br><br>");
                 writer.println(excp.toString());
                 return;
             }
             
-            /*
-             * Open the module and attempt to add it
-             */
-            AddedModule am = (AddedModule) manager.getModule(moduleName, State.ADD);
-            if (am == null) {
-                /* Log an error to the log and write an error message back */
-                logger.warning("[MODULE] UPLOAD Failed to find added module for some reason " + moduleName);
-                writer.println("Cannot find the module " + moduleName + " just added. Press the ");
-                writer.println("Back button on your browser and try again.<br><br>");
-                return;
-            }
-            
-            Collection<AddedModule> modules = new LinkedList<AddedModule>();
-            modules.add(am);
-            Collection<String> result = manager.addAll(modules, true);
-            if (result.contains(moduleName) == false) {
+            /* Add the new module */
+            Collection<File> moduleFiles = new LinkedList<File>();
+            moduleFiles.add(tmpFile);
+            Collection<Module> result = manager.addToInstall(moduleFiles);
+            if (result.isEmpty() == true) {
                 /* Log an error to the log and write an error message back */
                 logger.warning("[MODULE] UPLOAD Failed to install module " + moduleName);
                 writer.println("Unable to install module for some reason. Press the ");
@@ -133,6 +139,9 @@ public class ModuleUploadServlet extends HttpServlet {
                 return;
             }
         }
+
+        /* Install all of the modules that are possible */
+        manager.installAll();
         
         /* If we have reached here, then post a simple message */
         logger.info("[MODULE] UPLOAD Added module successfuly");

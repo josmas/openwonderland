@@ -17,18 +17,11 @@
  */
 package org.jdesktop.wonderland.common.comms;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 import java.util.HashMap;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
-import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**
  * A specialized ObjectInputStream that reduces the size of serialized core
@@ -46,17 +39,36 @@ public class WonderlandObjectOutputStream extends ObjectOutputStream {
     
     private static HashMap<String, Integer> descToId = new HashMap();
         
-    private static Class[] coreClass = new Class[] {
-        MovableMessage.class,
-        MovableMessage.ActionType.class,
-        CellMessage.class,
-        MessageID.class,
-        Enum.class,
-        Vector3f.class,
-        Quaternion.class,
-        Message.class,
-        CellID.class,
+    // XXX replace with Strings to avoid problems with clients that
+    // don't have JME.  This is prone to typos, so should be replaced
+    // by a more automatic system XXX
+    private static String[] coreClass = new String[] {
+        // MovableMessage.class.getName(),
+        "org.jdesktop.wonderland.common.cell.messages.MovableMessage",
         
+        // MovableMessage.ActionType.class.getName(),
+        "org.jdesktop.wonderland.common.cell.messages.MovableMessage$ActionType",
+        
+        // CellMessage.class.getName(),
+        "org.jdesktop.wonderland.common.cell.messages.CellMessage",
+        
+        // MessageID.class.getName(),
+        "org.jdesktop.wonderland.common.messages.MessageID",
+        
+        //Enum.class.getName(),
+        "java.lang.Enum",
+        
+        // Vector3f.class.getName(),
+        "com.jme.math.Vector3f",
+        
+        // Quaternion.class.getName(),
+        "com.jme.math.Quaternion",
+        
+        // Message.class.getName(),
+        "org.jdesktop.wonderland.common.messages.Message",
+        
+        // CellID.class.getName(),
+        "org.jdesktop.wonderland.common.cell.CellID"
     };
   
     static {
@@ -83,15 +95,15 @@ public class WonderlandObjectOutputStream extends ObjectOutputStream {
     
     static void populateDescToId(HashMap<String, Integer> map) {
         int id = firstID;
-        for(Class clazz : coreClass) {
-            map.put(clazz.getName(), id++);
+        for(String clazz : coreClass) {
+            map.put(clazz, id++);
         }
     }
     
     static void populateIdToDesc(HashMap<Integer, String> map) {
         int id = firstID;
-        for(Class clazz : coreClass) {
-            map.put(id++, clazz.getName());
+        for(String clazz : coreClass) {
+            map.put(id++, clazz);
         }
         
     }

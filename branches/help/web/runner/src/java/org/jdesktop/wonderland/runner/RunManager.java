@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.runner;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -111,6 +112,25 @@ public class RunManager {
     public synchronized Collection<Runner> getAll() {
         return runners.values();
     }
+    
+    /**
+     * Get all runners of the given type. Each runner will be tested
+     * using "instanceof", and this method will return the list of
+     * runners that implement the given type.
+     * @param clazz the class of runner to get
+     * @return the list of runners matching the given class, or an empty
+     * list if no runners match
+     */
+    public synchronized <T extends Runner> Collection<T> getAll(Class<T> clazz) {
+        Collection<T> out = new ArrayList<T>();
+        for (Runner r : getAll()) {
+            if (clazz.isAssignableFrom(r.getClass())) {
+                out.add(clazz.cast(r));
+            }
+        }
+        return out;
+    }
+        
     
     /**
      * Remove a runner by name

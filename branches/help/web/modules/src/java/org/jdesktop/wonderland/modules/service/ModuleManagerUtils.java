@@ -20,7 +20,12 @@
 package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 
@@ -80,5 +85,52 @@ public class ModuleManagerUtils {
             return false;
         }
         return true;
+    }
+    
+    /* The chunk size to write out while expanding archive files to disk */
+    private static final int CHUNK_SIZE = (8 * 1024);
+    
+    /**
+     * Expands a jar file into a given directory, given the jar file and the
+     * directory into which the contents should be written.
+     * 
+     * @throw IOException Upon error expanding the Jar file
+     */
+    public static void expandJar(JarFile jarFile, File root) throws IOException {
+        /*
+         * Loop through each entry, fetchs its input stream, and write to an
+         * output stream for the file.
+         */
+        Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements() == true) {
+            JarEntry entry = entries.nextElement();
+            InputStream is = jarFile.getInputStream(entry);
+            String entryName = entry.getName();
+            
+            /* Don't expand anything that beings with META-INF */
+            if (entryName.startsWith("META-INF") == true) {
+                continue;
+            }
+            
+            /* Ignore if it is a directory, then create it */
+            if (entryName.endsWith("/") == true) {
+                File file = new File(root, entryName);
+                file.mkdirs();
+                continue;
+            }
+            
+            /* Write out to a file in 'root' */
+            File file = new File(root, entryName);
+            FileOutputStream os = new FileOutputStream(file);
+            byte[] b = new byte[CHUNK_SIZE];
+            while (true) {
+                int len = is.read(b);
+                if (len == -1) {
+                    break;
+                }
+                os.write(b, 0, len);
+            }
+            os.close();
+        }
     }
 }

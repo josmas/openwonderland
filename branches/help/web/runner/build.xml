@@ -69,15 +69,17 @@
 
     -->
     <target name="-pre-dist">
-        <mkdir dir="${build.dir}/deploy/META-INF/deploy"/>
-        <copy todir="${build.dir}/deploy/META-INF/deploy"
-              file="${current.dir}/DeploymentPlan.xml"/>
+        <mkdir dir="${build.dir}/deploy/META-INF"/>
+        <copy todir="${build.dir}/deploy/META-INF">
+            <fileset dir="${current.dir}/src/java/META-INF"/>
+        </copy>
     </target>
     
     <target name="-post-dist"> 
         <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
             <fileset dir="${build.classes.dir}">
                 <include name="org/jdesktop/wonderland/runner/*.class"/>
+                <include name="org/jdesktop/wonderland/runner/darkstar/*.class"/>
                 <include name="org/jdesktop/wonderland/runner/ant/**"/>
             </fileset>
         </jar>
@@ -97,7 +99,7 @@
             <zipfileset dir="../../modules/dist/runner/classes"/>
             
             <!-- include config files we generated -->
-            <fileset dir="${build.dir}/deploy"/>
+            <!--fileset dir="${build.dir}/deploy"/-->
         </jar>
     </target>
 </project>

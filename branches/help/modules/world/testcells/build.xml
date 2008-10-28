@@ -20,8 +20,8 @@
         <module name="testcells" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.dir}">
                     
-           <plugin name="testcells">
-                <client basedir="${build.classes.dir}">
+           <client>
+                <clientjar name="testcells-client" basedir="${build.classes.dir}">
 <!--
                     <clientplugin provider="org.jdesktop.wonderland.modules.testcells.client.JmeColladaLoaderFactory"/>
                     <service type="org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI">
@@ -32,9 +32,11 @@
 
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
-                </client> 
-                
-                <server basedir="${build.classes.dir}">
+                </clientjar> 
+            </client>
+            
+            <server>
+                <serverjar name="testcells-server" basedir="${build.classes.dir}">
                     <serverplugin provider="org.jdesktop.wonderland.modules.testcells.server.cell.TestWorld"/>
                     <!--<cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.testcells.client.LoaderFactory"/>
@@ -42,8 +44,9 @@
                     
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
-                </server>
-            </plugin>
+                </serverjar>
+            </server>
+            
             <art dir="${current.dir}/art"/>
         </module>
     </target>                                                       

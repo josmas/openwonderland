@@ -52,7 +52,7 @@ public class ModuleTask extends Jar {
     private String moduleDescription;
     
     private List<Requires> requires = new ArrayList<Requires>();
-    private List<Plugin> plugins = new ArrayList<Plugin>();
+    private List<ModulePart> parts = new ArrayList<ModulePart>();
    
     private File buildDir;
     private boolean overwrite = false;
@@ -91,20 +91,38 @@ public class ModuleTask extends Jar {
         return r;
     }
     
-    public void addArt(ZipFileSet art) {
-        // set the art prefix and pass it up
-        art.setPrefix("art/");
-        super.addFileset(art);
+    public void addConfiguredPart(ModulePart part) {
+        part.validate();
+        
+        // add the fileset portion of the part as a normal fileset
+        if (part.getDir() != null) {
+            part.setPrefixInternal(part.getName());
+            super.addFileset(part);
+        }
+        
+        // add to our list to process any additional jars at execute()
+        // time
+        parts.add(part);
     }
     
-    public void addWFS(ZipFileSet wfs) {
-        // set the wfs prefix and pass it up
-        wfs.setPrefix("wfs/");
-        super.addFileset(wfs);
+    public void addConfiguredArt(ArtPart art) {
+        addConfiguredPart(art);
     }
     
-    public void addPlugin(Plugin p) {
-        plugins.add(p);
+    public void addConfiguredWfs(WFSPart wfs) {
+        addConfiguredPart(wfs);
+    }
+    
+    public void addConfiguredServer(ServerPart server) {
+        addConfiguredPart(server);
+    }
+    
+    public void addConfiguredCommon(CommonPart common) {
+        addConfiguredPart(common);
+    }
+    
+    public void addConfiguredClient(ClientPart client) {
+        addConfiguredPart(client);
     }
     
     @Override
@@ -134,9 +152,9 @@ public class ModuleTask extends Jar {
             // next write required files
             writeRequires();
             
-            // write plugins
-            for (Plugin p : plugins) {
-                writePlugin(p);
+            // write parts
+            for (ModulePart p : parts) {
+                writePart(p);
             }
         } catch (IOException ioe) {
             throw new BuildException(ioe);
@@ -276,68 +294,38 @@ public class ModuleTask extends Jar {
         return false;
     }
     
-    private void writePlugin(Plugin p) throws IOException {
-        if (p.clientJar != null) {
-            writePluginJar(p.name, p.clientJar, "client");
-        }
-        if (p.commonJar != null) {
-            writePluginJar(p.name, p.commonJar, "common");
-        }
-        if (p.serverJar != null) {
-            writePluginJar(p.name, p.serverJar, "server");
-        }
-        
-        for (ExtraJar e : p.extraClientJars) {
-            writePluginExtraJar(p.name, e, "client");
-        }
-        
-        for (ExtraJar e : p.extraCommonJars) {
-            writePluginExtraJar(p.name, e, "common");
-        }
-        
-        for (ExtraJar e : p.extraServerJars) {
-            writePluginExtraJar(p.name, e, "server");
+    private void writePart(ModulePart p) throws IOException {
+        for (ModuleJar jar : p.jars) {
+            writeModuleJar(p.getName(), jar);
         }
     }
     
-    private void writePluginJar(String pluginName, PluginJar pluginJar, 
-                                String pluginDir)
+    private void writeModuleJar(String partName, ModuleJar jar) 
         throws IOException
     {
-        String pluginJarName = pluginName + "-" + pluginDir + ".jar";
+        String jarname = jar.getName();
+        if (jarname.indexOf(".") == -1) {
+            jarname += ".jar";
+        }
         
-        File pluginFile;
+        File jarFile;
         if (buildDir == null) {
-            pluginFile = File.createTempFile("plugin", ".jar");
-            pluginFile.delete();
-            pluginFile.deleteOnExit();
+            jarFile = File.createTempFile(jar.getName(), ".jar");
+            jarFile.delete();
+            jarFile.deleteOnExit();
         } else {
-            File pluginBuildDir = new File(buildDir, pluginName);
-            File pluginInstDir = new File(pluginBuildDir, pluginDir);
-            pluginInstDir.mkdirs();
+            File jarBuildDir = new File(buildDir, partName);            
+            jarBuildDir.mkdirs();
             
-            pluginFile = new File(pluginInstDir, pluginJarName);
+            jarFile = new File(jarBuildDir, jarname);
         }
         
-        pluginJar.setInternalDestFile(pluginFile);
-        pluginJar.execute();
+        jar.setInternalDestFile(jarFile);
+        jar.execute();
             
         ZipFileSet zfs = new ZipFileSet();
-        zfs.setFile(pluginFile);
-        zfs.setFullpath(Module.MODULE_PLUGINS + "/" + pluginName + "/" + 
-                        pluginDir + "/" + pluginJarName);
-        
-        super.addFileset(zfs);
-    }
-    
-    private void writePluginExtraJar(String pluginName, ExtraJar e, 
-                                     String pluginDir)
-        throws IOException
-    {
-        ZipFileSet zfs = new ZipFileSet();
-        zfs.setFile(e.jarFile);
-        zfs.setFullpath(Module.MODULE_PLUGINS + "/" + pluginName + "/" + 
-                        pluginDir + "/" + e.jarFile.getName());
+        zfs.setFile(jarFile);
+        zfs.setFullpath(partName + "/" + jarname);
         
         super.addFileset(zfs);
     }
@@ -366,11 +354,6 @@ public class ModuleTask extends Jar {
         // check any included requirements
         for (Requires r : requires) {
             r.validate();
-        }
-        
-        // check any included plugins
-        for (Plugin p : plugins) {
-            p.validate();
         }
     }
     
@@ -402,74 +385,109 @@ public class ModuleTask extends Jar {
         }
     }
     
-    public static class Plugin {
+    public static class ModulePart extends ZipFileSet {
         private String name;
+        private List<ModuleJar> jars = new ArrayList<ModuleJar>();
         
-        private ClientJar clientJar;
-        private PluginJar commonJar;
-        private ServerJar serverJar;
+        public ModulePart() {
+        }
         
-        private List<ExtraJar> extraClientJars = new ArrayList<ExtraJar>();
-        private List<ExtraJar> extraCommonJars = new ArrayList<ExtraJar>();
-        private List<ExtraJar> extraServerJars = new ArrayList<ExtraJar>();
+        protected ModulePart(String name) {
+            this.name = name;
+        }
         
         public void setName(String name) {
             this.name = name;
         }
         
-        public void addClient(ClientJar clientJar) {
-            if (this.clientJar != null) {
-                throw new BuildException("Only one <client> allowed.");
-            }
+        public String getName() {
+            return name;
+        }
+        
+        public void addConfiguredJar(ModuleJar jar) {
+            // make sure it is OK
+            jar.validate();
             
-            this.clientJar = clientJar;
+            // add it to our list
+            jars.add(jar);
+        }
+
+        @Override
+        public void setPrefix(String prefix) {
+            throw new BuildException("Cannot set prefix for module part");
         }
         
-        public void addCommon(PluginJar commonJar) {
-            if (this.commonJar != null) {
-                throw new BuildException("Only one <common> allowed.");
-            }
-            
-            this.commonJar = commonJar;
+        protected void setPrefixInternal(String prefix) {
+            super.setPrefix(prefix);
         }
         
-        public void addServer(ServerJar serverJar) {
-            if (this.serverJar != null) {
-                throw new BuildException("Only one <server> allowed.");
-            }
-            
-            this.serverJar = serverJar;
-        }
-        
-        public void addClientJar(ExtraJar jar) {
-            extraClientJars.add(jar);
-        }
-        
-        public void addCommonJar(ExtraJar jar) {
-            extraCommonJars.add(jar);
-        }
-        
-        public void addServerJar(ExtraJar jar) {
-            extraServerJars.add(jar);
-        }
-        
-        private void validate() throws BuildException {
+        public void validate() {
             if (name == null) {
-                throw new BuildException("Plugin without name.");
+                throw new BuildException("Module parts requires name");
             }
         }
     }
     
-    public static class ExtraJar {
-        private File jarFile;
-        
-        public void setJarFile(File jarFile) {
-            this.jarFile = jarFile;
+    public static class ArtPart extends ModulePart {
+        public ArtPart() {
+            super ("art");
         }
     }
     
-    public static class PluginJar extends Jar {
+    public static class WFSPart extends ModulePart {
+        public WFSPart() {
+            super ("wfs");
+        }
+    }
+    
+    public static class ServerPart extends ModulePart {
+        public ServerPart() {
+            super ("server");
+        }
+        
+        public void addConfiguredServerJar(ServerJar serverJar) {
+            addConfiguredJar(serverJar);
+        }
+    }
+    
+    public static class CommonPart extends ModulePart {
+        public CommonPart() {
+            super ("common");
+        }
+        
+        public void addConfiguredCommonJar(ModuleJar commonJar) {
+            addConfiguredJar(commonJar);
+        }
+    }
+    
+    public static class ClientPart extends ModulePart {
+        public ClientPart() {
+            super ("client");
+        }
+        
+        public void addConfiguredClientJar(ClientJar clientJar) {
+            addConfiguredJar(clientJar);
+        }
+    }
+    
+    public static class ModuleJar extends Jar {
+        private String name;
         private List<Service> services = new ArrayList<Service>();
+        
+        public ModuleJar() {
+        }
+        
+        protected ModuleJar(String name) {
+            this.name = name;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getName() {
+            return name;
+        }
         
         @Override
         public void setDestFile(File file) {
@@ -529,9 +547,15 @@ public class ModuleTask extends Jar {
                         ZipFileSet.DEFAULT_FILE_MODE);
             }
         }
+        
+        public void validate() {
+            if (name == null) {
+                throw new BuildException("ModuleJar requires a name");
+            }
+        }
     }
     
-    public static class ServerJar extends PluginJar {
+    public static class ServerJar extends ModuleJar {
         public void addConfiguredServerPlugin(ServerPlugin serverPlugin) {
             addConfiguredService(serverPlugin);
         }
@@ -553,7 +577,7 @@ public class ModuleTask extends Jar {
         }
     }
     
-    public static class ClientJar extends PluginJar {
+    public static class ClientJar extends ModuleJar {
         public void addConfiguredClientPlugin(ClientPlugin clientPlugin) {
             addConfiguredService(clientPlugin);
         }

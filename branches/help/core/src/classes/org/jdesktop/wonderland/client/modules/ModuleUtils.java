@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  */
 public class ModuleUtils {
     /* The base URL of the web server */
-    private static final String BASE_URL = "http://localhost:8080/wonderland-web-modules/modules/";
+    private static final String BASE_URL = "http://localhost:8080/";
     
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(ModuleUtils.class.getName());
@@ -32,7 +32,8 @@ public class ModuleUtils {
     public static ModuleIdentity fetchModuleIdentity(String uniqueName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(BASE_URL + uniqueName + "/info");
+            String base = BASE_URL + "wonderland-web-modules/modules/";
+            URL url = new URL(base + uniqueName + "/info");
             return ModuleIdentity.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -52,8 +53,9 @@ public class ModuleUtils {
     public static RepositoryList fetchModuleRepositoryList(String uniqueName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(BASE_URL + uniqueName + "/repository");
-            System.out.println("url = " + url.toExternalForm());
+            String base = BASE_URL + "wonderland-web-asset/asset/";
+            URL url = new URL(base + uniqueName + "/repository");
+            logger.info("[MODULE] Fetching Repository list from " + url.toString());
             return RepositoryList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -73,7 +75,9 @@ public class ModuleUtils {
     public static ChecksumList fetchModuleChecksums(String uniqueName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(BASE_URL + uniqueName + "/checksums");
+            String base = BASE_URL + "wonderland-web-asset/asset/";
+            URL url = new URL(base + uniqueName + "/checksums/get");
+            logger.info("[MODULES] Fetch modules from " + url.toString());
             return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -92,7 +96,7 @@ public class ModuleUtils {
     public static ModulePluginList fetchPluginJars() {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(BASE_URL + "plugins/jars");
+            URL url = new URL(BASE_URL + "wonderland-web-asset/asset/jars/get");
             return ModulePluginList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */

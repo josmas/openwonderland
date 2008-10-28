@@ -19,21 +19,16 @@
 package org.jdesktop.wonderland.modules.file;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.LinkedList;
-import org.apache.commons.io.FileUtils;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModuleArtResource;
-import org.jdesktop.wonderland.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.ModuleInfo;
-import org.jdesktop.wonderland.modules.ModulePlugin;
+import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.ModuleRepository;
 import org.jdesktop.wonderland.modules.ModuleRequires;
-import org.jdesktop.wonderland.modules.ModuleResource;
 
 /**
  * The FileModule class extends the Module abstract base class and represents
@@ -43,224 +38,127 @@ import org.jdesktop.wonderland.modules.ModuleResource;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class FileModule extends Module {
-    /* The root of the module directory structure on disk */
-    private File root = null;
-
     
     /** Default constructor, takes a reference to the module directory root */
     public FileModule(File root) {
         super();
-        this.root = root;
-    }
-    
-    /**
-     * Returns the file root for the module.
-     * 
-     * @return The File root for the module
-     */
-    public File getRoot() {
-        return this.root;
-    }
-    
-    /**
-     * Returns the name of the module given its file object.
-     * 
-     * @param file The file pointing to the module
-     * @return The name of the module
-     */
-    public static String getModuleName(File file) {
-        /* Just return the name of the file */
-        return file.getName();
-    }
-    
-    /**
-     * Returns an input stream for the given resource, null upon error.
-     *
-     * @param resource A resource contained within the archive
-     * @return An input stream to the resource
-     */
-    public InputStream getInputStreamForResource(ModuleResource resource) {
-        try {
-            String resourcePath = Module.MODULE_ART + "/" + resource.getPathName();
-            File entry = new File(this.root, resourcePath);
-            return new FileInputStream(entry);
-        } catch (java.io.IOException excp) {
-            // print stack trace
-            return null;
+        this.setFile(root);
+        
+        /*
+         * Fetch the module info, this is pretty bad if module.xml doesn't exist
+         */
+        ModuleInfo info = this.fetchModuleInfo();
+        if (info == null) {
+            info = new ModuleInfo();
         }
-    }
-    
-    /**
-     * Returns an input stream for the given JAR file from a plugin, null
-     * upon error
-     * 
-     * @param name The name of the plugin
-     * @param jar The name of the jar file
-     * @param type The type of the jar file (CLIENT, SERVER, COMMON)
-     */
-    public InputStream getInputStreamForPlugin(String name, String jar, String type) {
-        try {
-            String path = Module.MODULE_PLUGINS + "/" + name + "/" + type + jar;
-            File entry = new File(this.root, path);
-            return new FileInputStream(entry);
-        } catch (java.io.IOException excp) {
-            // print stack trace
-            return null;
+        this.setInfo(info);
+        
+        /*
+         * Fetch the module dependencies, this isn't terrible if it doesn't exist
+         */
+        ModuleRequires requires = this.fetchModuleRequires();
+        if (requires == null) {
+            requires = new ModuleRequires();
         }
+        this.setRequires(requires);
+        
+        /*
+         * Fetch the module asset servers, this isn't terrible if it doesn't exist
+         */
+        ModuleRepository repository = this.fetchModuleRepository();
+        if (repository == null) {
+            repository = new ModuleRepository();
+        }
+        this.setRepository(repository);
+        
+        /*
+         * Fetch the module parts, at least this should return an empty map
+         */
+        this.setParts(this.fetchModuleParts());
     }
 
-    @Override
-    public ModuleInfo getModuleInfo() {
+    /**
+     * Reads the module info from the module.
+     */
+    private ModuleInfo fetchModuleInfo() {
+        Logger logger = Logger.getLogger(Module.class.getName());
         try {
             /* Fetch the entry, return null if it does not exist */
-            File entry = new File(root, Module.MODULE_INFO);
+            File entry = new File(this.getFile(), Module.MODULE_INFO);
+            if (entry.exists() == false) {
+                logger.info("[MODULE] No module.xml for Module " + this.getFile());
+                return null;
+            }
             return ModuleInfo.decode(new FileReader(entry));
         } catch (java.lang.Exception excp) {
-            // print stack trace
+            /* This is pretty bad -- if this doesn't exist, then the module is invalid */
+            logger.log(Level.WARNING, "[MODULE] Invalid Module " + this.getFile(), excp);
             return null;
         }
     }
 
-    @Override
-    public ModuleRequires getModuleRequires() {
-         try {
-            /* Fetch the entry, return null if it does not exist */
-            File entry = new File(root, Module.MODULE_REQUIRES);
-            return ModuleRequires.decode(new FileReader(entry));
-        } catch (java.lang.Exception excp) {
-            // print stack trace
-            return null;
-        }
-    }
-
-    @Override
-    public ModuleRepository getModuleRepository() {
-         try {
-            /* Fetch the entry, return null if it does not exist */
-            File entry = new File(root, Module.MODULE_REPOSITORY);
-            return ModuleRepository.decode(new FileReader(entry));
-        } catch (java.lang.Exception excp) {
-            // print stack trace
-            return null;
-        }
-    }
-
-    
-    @Override
-    public ModuleChecksums getModuleChecksums() {
+    /**
+     * Reads the dependency info from the module.
+     */
+    private ModuleRequires fetchModuleRequires() {
+        Logger logger = Logger.getLogger(Module.class.getName());
         try {
             /* Fetch the entry, return null if it does not exist */
-            File entry = new File(root, Module.MODULE_CHECKSUMS);
-            return ModuleChecksums.decode(new FileReader(entry));
+            File entry = new File(this.getFile(), Module.MODULE_REQUIRES);
+            if (entry.exists() == false) {
+                logger.info("[MODULE] No requires.xml for Module " + this.getFile());
+                return null;
+            }
+            return ModuleRequires.decode(new FileReader(entry));
         } catch (java.lang.Exception excp) {
-            // print stack trace
+            /* This is not too bad if it does not exist */
+            logger.log(Level.INFO, "[MODULE] Error reading requires.xml for Module " + this.getFile(), excp);
+            return null;
+        }
+    }
+
+    /**
+     * Reads the asset server info from the module.
+     */
+    private ModuleRepository fetchModuleRepository() {
+        Logger logger = Logger.getLogger(Module.class.getName());
+        try {
+            /* Fetch the entry, return null if it does not exist */
+            File entry = new File(this.getFile(), Module.MODULE_REPOSITORY);
+            if (entry.exists() == false) {
+                logger.info("[MODULE] No repository.xml for Module " + this.getFile());
+                return null;
+            }
+            return ModuleRepository.decode(new FileReader(entry));
+        } catch (java.lang.Exception excp) {
+            /* This is not too bad if it does not exist */
+            logger.log(Level.INFO, "[MODULE] Error reading repository.xml for Module " + this.getFile(), excp);
             return null;
         }
     }
     
-    @Override
-    public Collection<String> getModuleArtResources() {
-        /* Find the "art/" subdirectory and recursively list */
-        File artFile = new File(root, Module.MODULE_ART);
-        if (artFile.exists() == false || artFile.isDirectory() == false) {
-            // print error message
-            return null;
+    /**
+     * Reads the module parts.
+     */
+    private Map<String, ModulePart> fetchModuleParts() {
+        /* Create a map to store the entries, get the entries */
+        Map<String, ModulePart> map = new HashMap<String, ModulePart>();
+        File[] files = this.getFile().listFiles();
+        if (files == null) {
+            return map;
         }
-        return FileModuleUtil.listModuleArt(artFile, artFile);
-    }
 
-    @Override
-    public ModuleArtResource getModuleArtResource(String path) {
-        File file = new File(this.root, Module.MODULE_ART + "/" + path);
-        if (file.exists() == true && file.isFile() == true && file.canRead() == true) {
-            return new ModuleArtResource(path);
-        }
-        return null;
-    }
-
-    @Override
-    public Collection<String> getModuleWFSs() {
-        /* Find the "wfs/" subdirectory and list just the topmost entries */
-        File wfsFile = new File(root, Module.MODULE_WFS);
-        if (wfsFile.exists() == false || wfsFile.isDirectory() == false) {
-            // print error message
-            return null;
-        }
-        LinkedList<String> wfsList = new LinkedList<String>();
-        
-        /* List all of the files, take only directories ending in -wfs */
-        File[] files = wfsFile.listFiles();
+        /*
+         * Loop through each entry and see if its a directory. If so, create
+         * a new part.
+         */
         for (File file : files) {
-            /* If a directory, then recursively descend and append */
-            String name = file.getName();
-            if (file.isDirectory() == true && file.isHidden() == false && name.endsWith("-wfs") == true) {
-                /* Strip off the name of the wfs from the path */
-                name = name.substring(0, name.length() - 4);
-                wfsList.addLast(name);
-            } 
-        }
-        return wfsList;
-    }
-
-    @Override
-    public Collection<String> getModulePlugins() {
-         /* Find the "plugins/" subdirectory and list just the topmost entries */
-        File pluginFile = new File(root, Module.MODULE_PLUGINS);
-        if (pluginFile.exists() == false || pluginFile.isDirectory() == false) {
-            // print error message
-            return null;
-        }
-        LinkedList<String> pluginList = new LinkedList<String>();
-        
-        /* List all of the files, take only directories ending in -wfs */
-        File[] files = pluginFile.listFiles();
-        for (File file : files) {
-            /* If a directory and is not hidden then is it ok */
             if (file.isDirectory() == true && file.isHidden() == false) {
-              pluginList.addLast(file.getName());
-            } 
+                String name = file.getName();
+                ModulePart part = new ModulePart(name, file);
+                map.put(name, part);
+            }
         }
-        return pluginList;
-    }
-
-    @Override
-    public ModulePlugin getModulePlugin(String name) {
-        /* Filter for only files ending in .jar */
-        JarFileFilter filter = new JarFileFilter();
-        
-        /* Construct the directory in which the module resides, check it exists */
-        File file = new File(this.root, Module.MODULE_PLUGINS + "/" + name);
-        if (file.exists() == false || file.canRead() == false || file.isDirectory() == false) {
-            return null;
-        }
-        
-        /* Fetch all of its jar entries in client/, common/, and server/. */
-        File clientFile = new File(file, ModulePlugin.CLIENT_JAR);
-        File serverFile = new File(file, ModulePlugin.SERVER_JAR);
-        File commonFile = new File(file, ModulePlugin.COMMON_JAR);
-
-        /* List each of the JAR files */
-        String[] client = clientFile.list(filter);
-        String[] server = serverFile.list(filter);
-        String[] common = commonFile.list(filter);
-
-        /* Make sure each are not null */
-        client = (client != null) ? client : new String[]{};
-        server = (server != null) ? server : new String[]{};
-        common = (common != null) ? common : new String[]{};
-
-        /* Create the ModulePlugin object, add, and continue */
-        return new ModulePlugin(name, client, server, common);
-    }
-
-    @Override
-    public boolean delete() {
-        return FileUtils.deleteQuietly(this.root);
-    }
-
-    @Override
-    public String getName() {
-        /* Just return the name of the directory */
-        return FileModule.getModuleName(this.root);
+        return map;
     }
 }

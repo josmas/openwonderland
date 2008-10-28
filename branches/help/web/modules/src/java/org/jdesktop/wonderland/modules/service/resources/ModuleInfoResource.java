@@ -26,10 +26,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleInfo;
-import org.jdesktop.wonderland.modules.service.InstalledModule;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
-import org.jdesktop.wonderland.modules.service.ModuleManager.State;
 
 /**
  * The ModuleInfoResource class is a Jersey RESTful service that returns the
@@ -62,9 +61,9 @@ public class ModuleInfoResource {
         Logger logger = ModuleManager.getLogger();
         
         /* Fetch the module from the module manager */
-        ModuleManager mm = ModuleManager.getModuleManager();
-        InstalledModule im = (InstalledModule)mm.getModule(moduleName, State.INSTALLED);
-        if (im == null) {
+        ModuleManager manager = ModuleManager.getModuleManager();
+        Module module = manager.getInstalledModules().get(moduleName);
+        if (module == null) {
             /* Log an error and return an error response */
             logger.warning("ModuleManager: unable to locate module " + moduleName);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
@@ -72,7 +71,7 @@ public class ModuleInfoResource {
         }
         
         /* Check to see that the module info exists -- it's really bad if it doesn't */
-        ModuleInfo moduleInfo = im.getModuleInfo();
+        ModuleInfo moduleInfo = module.getInfo();
         if (moduleInfo == null) {
             /* Log an error and return an error response */
             logger.warning("ModuleManager: unable to locate module info: " + moduleName);

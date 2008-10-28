@@ -13,84 +13,95 @@
 <link href="modules.css" rel="stylesheet" type="text/css" media="screen" />
 </head>
 <body>
-<h3>Installed Modules</h3>
-<form action="removeAll.jsp">
+    <%@ page import="java.util.Map" %>
+    <%@ page import="java.util.Iterator" %>
+    <%@ page import="org.jdesktop.wonderland.modules.Module" %>
+    <%@ page import="org.jdesktop.wonderland.modules.ModuleInfo" %>
+    <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
+    <h3>Installed Modules</h3>
+    <form action="removeAll.jsp">
+        <table class="installed">
+            <tr class="header">
+                <td width="5%" class="installed"></td>
+                <td width="15%" class="installed"><b>Module Name</b></td>
+                <td width="15%" class="installed"><b>Module Version</b></td>
+                <td width="65%" class="installed"><b>Description</b></td>
+            </tr>
+            <%
+            ModuleManager manager = ModuleManager.getModuleManager();
+            Map<String, Module> installed = manager.getInstalledModules();
+            Iterator<Map.Entry<String, Module>> it = installed.entrySet().iterator();
+            while (it.hasNext() == true) {
+                Map.Entry<String, Module> entry = it.next();
+                String moduleName = entry.getKey();
+                ModuleInfo moduleInfo = entry.getValue().getInfo();
+                String description = moduleInfo.getDescription();
+            %>
+            <tr class="installed_a">
+                <td width="5%" class="installed"><input type="checkbox" name="remove" value="<%= moduleName%>"/></td>
+                <td width="15%" class="installed"><%= moduleName%></td>
+                <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
+                <td width="65%" class="installed"><%= (description != null) ? description : "[None]" %></td>
+            </tr>
+            <% }%>
+        </table>
+        <input type="submit" value="Remove Selected Modules">
+    </form>
+    <h3>Pending Modules (will be installed during next restart)</h3>
     <table class="installed">
         <tr class="header">
-            <td width="5%" class="installed"></td>
             <td width="15%" class="installed"><b>Module Name</b></td>
             <td width="15%" class="installed"><b>Module Version</b></td>
-            <td width="65%" class="installed"><b>Description</b></td>
+            <td width="70%" class="installed"><b>Description</b></td>
         </tr>
-        <%@ page import="org.jdesktop.wonderland.modules.ModuleUtils" %>
-        <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
-        <%@ page import="org.jdesktop.wonderland.modules.service.InstalledModule" %>
-        <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager.State" %>
-        <% ModuleManager mm = ModuleManager.getModuleManager();%>
-        <% String modules[] = mm.getModules(State.INSTALLED).toArray(new String[]{});%>
-        <% for (String moduleName : modules) {%>
-        <% InstalledModule im = (InstalledModule) mm.getModule(moduleName, State.INSTALLED);%>
+        <%
+        Map<String, Module> pending = manager.getPendingModules();
+            Iterator<Map.Entry<String, Module>> it2 = pending.entrySet().iterator();
+            while (it2.hasNext() == true) {
+                Map.Entry<String, Module> entry = it2.next();
+                String moduleName = entry.getKey();
+                ModuleInfo moduleInfo = entry.getValue().getInfo();
+        %>
         <tr class="installed_a">
-            <td width="5%" class="installed"><input type="checkbox" name="remove" value="<%= moduleName%>"/></td>
             <td width="15%" class="installed"><%= moduleName%></td>
-            <td width="15%" class="installed">v<%= im.getModuleInfo().getMajor()%>.<%= im.getModuleInfo().getMinor()%></td>
-            <td width="65%" class="installed"><%= im.getModuleInfo().getDescription()%></td>
+            <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
+            <td width="70%" class="installed"><%= moduleInfo.getDescription()%></td>
         </tr>
         <% }%>
     </table>
-    <input type="submit" value="Remove Selected Modules">
-</form>
-<h3>Pending Modules (will be installed during next restart)</h3>
-<table class="installed">
-    <tr class="header">
-        <td width="15%" class="installed"><b>Module Name</b></td>
-        <td width="15%" class="installed"><b>Module Version</b></td>
-        <td width="70%" class="installed"><b>Description</b></td>
-    </tr>
-    <%@ page import="org.jdesktop.wonderland.modules.service.PendingModule" %>
-    <% for (String pendingModuleName : mm.getModules(State.PENDING).toArray(new String[]{})) {%>
-    <% PendingModule pm = (PendingModule) mm.getModule(pendingModuleName, State.PENDING);%>
-    <tr class="installed_a">
-        <td width="15%" class="installed"><%= pendingModuleName%></td>
-        <td width="15%" class="installed">v<%= pm.getModuleInfo().getMajor()%>.<%= pm.getModuleInfo().getMinor()%></td>
-        <td width="70%" class="installed"><%= pm.getModuleInfo().getDescription()%></td>
-    </tr>
-    <% }%>
-</table>
-<br>
-<h3>Removed Modules (will be removed during next restart)</h3>
-<table class="installed">
-    <tr class="header">
-        <td width="15%" class="installed"><b>Module Name</b></td>
-        <td width="15%" class="installed"><b>Module Version</b></td>
-        <td width="70%" class="installed"><b>Descrption</b></td>
-    </tr>
-    <%@ page import="org.jdesktop.wonderland.modules.ModuleInfo" %>
-    <% for (ModuleInfo info : mm.getUninstalledModuleInfos()) {%>
-    <tr class="installed_a">
-        <td width="15%" class="installed"><%= info.getName()%></td>
-        <td width="15%" class="installed">v<%= info.getMajor()%>.<%= info.getMinor()%></td>
-        <td width="70%" class="installed"><%= info.getDescription()%></td>
-    </tr>
-    <% }%>
-</table>
-<br>
-<h3>Install a New Module</h3>
-<p>
-    Select a new module JAR to install and click INSTALL. If successfull
-    the module will be installed during the next restart.
-</p>
-<form method="post" enctype="multipart/form-data" action="ModuleUploadServlet">
-    Module JAR file: <input type="file" name="moduleJAR">
-    <input type="submit" value="INSTALL">
-</form>
-<br>
-<h3>Test Buttons, just for fun</h3>
-<form action="installAll.jsp">
-    <input type="submit" value="INSTALL ALL">
-</form>
-<form action="uninstallAll.jsp">
-    <input type="submit" value="UNINSTALL ALL">
-</form>
+    <br>
+    <h3>Removed Modules (will be removed during next restart)</h3>
+    <table class="installed">
+        <tr class="header">
+            <td width="15%" class="installed"><b>Module Name</b></td>
+            <td width="15%" class="installed"><b>Module Version</b></td>
+            <td width="70%" class="installed"><b>Descrption</b></td>
+        </tr>
+        <%
+        Map<String, ModuleInfo> uninstall = manager.getUninstallModuleInfos();
+            Iterator<Map.Entry<String, ModuleInfo>> it3 = uninstall.entrySet().iterator();
+            while (it3.hasNext() == true) {
+                Map.Entry<String, ModuleInfo> entry = it3.next();
+                String moduleName = entry.getKey();
+                ModuleInfo moduleInfo = entry.getValue();
+        %>
+        <tr class="installed_a">
+            <td width="15%" class="installed"><%= moduleInfo.getName()%></td>
+            <td width="15%" class="installed">v<%= moduleInfo.getMajor()%>.<%= moduleInfo.getMinor()%></td>
+            <td width="70%" class="installed"><%= moduleInfo.getDescription()%></td>
+        </tr>
+        <% }%>
+    </table>
+    <br>
+    <h3>Install a New Module</h3>
+    <p>
+        Select a new module JAR to install and click INSTALL. If successfull
+        the module will be installed during the next restart.
+    </p>
+    <form method="post" enctype="multipart/form-data" action="ModuleUploadServlet">
+        Module JAR file: <input type="file" name="moduleJAR">
+        <input type="submit" value="INSTALL">
+    </form>
+    <br>
 </body>
 </html>
