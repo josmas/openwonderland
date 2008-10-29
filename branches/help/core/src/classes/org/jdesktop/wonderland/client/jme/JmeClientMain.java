@@ -17,14 +17,21 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import imi.loaders.repository.Repository;
+import imi.scene.processors.JSceneAWTEventProcessor;
+import imi.scene.processors.JSceneEventProcessor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
@@ -86,12 +93,14 @@ public class JmeClientMain {
         // Dont start the client manager until JME has been initialized, many JME components
         // expect the renderer to be ready during init.
         ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
-        
+        ClientContext.getWonderlandSessionManager().setPrimaryServer(
+                    new WonderlandServerInfo(serverName,
+                                             Integer.parseInt(serverPort)));    
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
         
     }
-
+    
     /**
      * @param args the command line arguments
      */

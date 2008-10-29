@@ -19,18 +19,14 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.StaticModelCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.StaticModelCellConfig;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 
 /**
@@ -39,7 +35,7 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
  * @deprecated
  */
 @ExperimentalAPI
-public class StaticModelCellMO extends CellMO implements BeanSetupMO { 
+public class StaticModelCellMO extends CellMO { 
     	
     /** Default constructor, used when cell is created via WFS */
     public StaticModelCellMO() {

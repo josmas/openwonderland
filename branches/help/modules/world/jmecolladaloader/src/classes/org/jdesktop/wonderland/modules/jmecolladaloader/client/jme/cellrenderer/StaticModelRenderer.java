@@ -36,6 +36,7 @@ import com.jme.scene.state.WireframeState;
 import com.jme.scene.state.ZBufferState;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -53,28 +54,20 @@ public class StaticModelRenderer extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         ColorRGBA color = new ColorRGBA();
 
-        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        buf.setEnabled(true);
-        buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-
-        PointLight light = new PointLight();
-        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
-        light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
-        light.setLocation(new Vector3f(100, 100, 100));
-        light.setEnabled(true);
-        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
-        lightState.setEnabled(true);
-        lightState.attach(light);
-
         Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        return createFloorEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);
-//        return createWireframeEntity();
+        return createFloorEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, color);
+    }
+    
+    @Override
+    protected void addDefaultComponents(Entity entity, Node rootNode) {
+        super.addDefaultComponents(entity, rootNode);
     }
 
+
     public Node createFloorEntity(String name, float xoff, float yoff, float zoff, 
-            ZBufferState buf, LightState ls, ColorRGBA color) {
+            ColorRGBA color) {
         MaterialState matState = null;
         
         Node ret = new Node();
@@ -101,7 +94,6 @@ public class StaticModelRenderer extends BasicRenderer {
         matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
         matState.setDiffuse(color);
 //        node.setRenderState(matState);
-        ret.setRenderState(buf);
 //        node.setRenderState(ls);
         ret.setLocalTranslation(xoff, yoff, zoff);
 

@@ -213,6 +213,17 @@ public abstract class InputPicker {
 
 	// Determine the destination pick info by performing a pick, considering grabs. etc.
         destPickInfo = determineDestPickInfo(awtMouseEvent);
+
+	// Generate enter/exit events associated with this mouse event
+	int eventID = awtMouseEvent.getID();
+	if (eventID == MouseEvent.MOUSE_MOVED ||
+	    eventID == MouseEvent.MOUSE_DRAGGED ||
+	    eventID == MouseEvent.MOUSE_ENTERED ||
+	    eventID == MouseEvent.MOUSE_EXITED) {
+	    generateEnterExitEvents(awtMouseEvent, destPickInfo);
+	}
+
+	// Check for pick miss
 	if (destPickInfo == null || destPickInfo.size() <= 0) {
 	    // Pick miss. Send it to the event distributor without pick info.
 	    logger.finest("Picker: pick miss");
@@ -223,27 +234,17 @@ public abstract class InputPicker {
 	}
 	logger.fine("Picker: pick hit: destPickInfo = " + destPickInfo);
 
-	int eventID = awtMouseEvent.getID();
-	if (eventID == MouseEvent.MOUSE_MOVED ||
-	    eventID == MouseEvent.MOUSE_DRAGGED ||
-	    eventID == MouseEvent.MOUSE_ENTERED ||
-	    eventID == MouseEvent.MOUSE_EXITED) {
-	    generateEnterExitEvents(awtMouseEvent, destPickInfo);
-	}
-
+	// Search through the entity space to find the first input sensitive 
+	// Window Swing entity for the pickInfo that will consume the event.
+	// Note: WindowSwing entities are always leaf nodes so we don't need to search the parent chains.
 	boolean propagatesToUnder = true;
 	PickDetails pickDetails = destPickInfo.get(0);
 	logger.fine("Picker: pickDetails = " + pickDetails);
 	MouseEvent3D event = (MouseEvent3D) createWonderlandEvent(awtMouseEvent);
 	int idx = 0;
 	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
-
-            // Search through the entity space to find the first input sensitive 
-	    // Window Swing entity for the pickInfo that will consume the event.
-	    // Note: WindowSwing entities are always leaf nodes so we don't need to search the parent chains.
 	    Entity entity = pickDetailsToEntity(pickDetails);
 	    logger.fine("Picker: entity = " + entity);
-
 	    boolean consumesEvent = false;
             propagatesToUnder = false;
 	    EventListenerCollection listeners = (EventListenerCollection) 
@@ -321,6 +322,17 @@ public abstract class InputPicker {
 	// Determine the destination pick info by reading from the pickInfo Queue, performing a pick, 
 	// considering grabs. etc.
         destPickInfo = determineDestPickInfo(awtEvent);
+
+	// Generate enter/exit events associated with this mouse event
+	int eventID = awtEvent.getID();
+	if (eventID == MouseEvent.MOUSE_MOVED ||
+	    eventID == MouseEvent.MOUSE_DRAGGED ||
+	    eventID == MouseEvent.MOUSE_ENTERED ||
+	    eventID == MouseEvent.MOUSE_EXITED) {
+	    generateEnterExitEvents(awtEvent, destPickInfo);
+	}
+
+	// Check for pick miss
 	if (destPickInfo == null || destPickInfo.size() <= 0) {
 	    // Pick miss. Send it along without pick info.
 	    logger.finest("Picker: pick miss");
@@ -329,14 +341,6 @@ public abstract class InputPicker {
 	    return;
 	}
 	logger.fine("Picker: pick hit: destPickInfo = " + destPickInfo);
-
-	int eventID = awtEvent.getID();
-	if (eventID == MouseEvent.MOUSE_MOVED ||
-	    eventID == MouseEvent.MOUSE_DRAGGED ||
-	    eventID == MouseEvent.MOUSE_ENTERED ||
-	    eventID == MouseEvent.MOUSE_EXITED) {
-	    generateEnterExitEvents(awtEvent, destPickInfo);
-	}
 
 	// Do the rest of the work in the EventDistributor
 	event = (MouseEvent3D) createWonderlandEvent(awtEvent);
@@ -621,23 +625,44 @@ public abstract class InputPicker {
 	// Calculate which entities have the pointer inside
 	calcInsideEntities(awtEvent, enterEventProto, pickInfo);
 
+	//System.err.println("awtEvent = " + awtEvent);
+	//System.err.println("insideEntities = " + insideEntities);
+
 	// Calculate entities which had the pointer inside on the last event
 	// but which no longer have the pointer inside
 	noLongerInsideEntities.clear();
 	for (EntityAndPickDetails entry : insideEntitiesPrev) {
-	    if (!insideEntities.contains(entry.entity)) {
+	    boolean found = false;
+	    for (EntityAndPickDetails entryInside : insideEntities) {
+		if (entry.entity.equals(entryInside.entity)) {
+		    found = true;
+		    break;
+		}
+	    }
+	    if (!found) {
 		noLongerInsideEntities.add(entry);
 	    }
 	}
 
+	//System.err.println("noLongerInsideEntities = " + noLongerInsideEntities);
+
 	// Calculate entities which did not have the pointer inside on the last
 	// event but now have the pointer inside.
 	newlyInsideEntities.clear();
-	for (EntityAndPickDetails entry : insideEntitiesPrev) {
-	    if (!insideEntitiesPrev.contains(entry.entity)) {
+	for (EntityAndPickDetails entry : insideEntities) {
+	    boolean found = false;
+	    for (EntityAndPickDetails entryInsidePrev : insideEntitiesPrev) {
+		if (entry.entity.equals(entryInsidePrev.entity)) {
+		    found = true;
+		    break;
+		}
+	    }
+	    if (!found) {
 		newlyInsideEntities.add(entry);
 	    }
 	}
+
+	//System.err.println("newlyInsideEntities = " + newlyInsideEntities);
 
 	// Send the exit events to the no longer inside entities.
 	sendExitEvents(exitEventProto, pickInfo);
@@ -659,8 +684,8 @@ public abstract class InputPicker {
 	
 	// Calculate the current set of entities the pointer is inside.
 	insideEntities.clear();
-	if (awtEvent.getID() == MouseEvent.MOUSE_EXITED) {
-	    // Canvas exit event is treated just like a pick miss (pickInfo is null)
+	if (awtEvent.getID() == MouseEvent.MOUSE_EXITED || pickInfo == null) {
+	    // Note: Canvas exit event is treated just like a pick miss (pickInfo is null)
 	    return;
 	}
 
@@ -712,6 +737,8 @@ public abstract class InputPicker {
 		EventDistributor.createEventForEntity(exitEventProto, entry.entity);
 	    exitEvent.setPickDetails(entry.pickDetails);
 	    exitEvent.setPickInfo(pickInfo);
+	    //System.err.println("Try sending exitEvent = " + exitEvent);
+	    //System.err.println("Try entity = " + entry.entity);
 	    tryListenersForEntity(entry.entity, exitEvent);
 	}
     }

@@ -52,27 +52,14 @@ public class RoomTestRenderer extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         ColorRGBA color = new ColorRGBA();
 
-        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        buf.setEnabled(true);
-        buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-
-        PointLight light = new PointLight();
-        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
-        light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
-        light.setLocation(new Vector3f(100, 100, 100));
-        light.setEnabled(true);
-        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
-        lightState.setEnabled(true);
-        lightState.attach(light);
-
         Vector3f translation = cell.getLocalTransform().getTranslation(null);
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        return createRoom(cell.getCellID().toString(), translation.x, translation.y, translation.z, buf, lightState, color);        
+        return createRoom(cell.getCellID().toString(), translation.x, translation.y, translation.z, color);        
     }
 
     public Node createRoom(String name, float xoff, float yoff, float zoff, 
-            ZBufferState buf, LightState ls, ColorRGBA color) {
+            ColorRGBA color) {
         
         float radius=16;
         
@@ -109,8 +96,6 @@ public class RoomTestRenderer extends BasicRenderer {
         forceFieldNode.attachChild(forceFieldX2);
         forceFieldNode.attachChild(forceFieldZ1);
         forceFieldNode.attachChild(forceFieldZ2);
-        forceFieldNode.setRenderState(buf);
-        forceFieldNode.setRenderState(ls);
         forceFieldNode.setLocalTranslation(xoff, zoff, zoff);
 
         //load a texture for the force field elements

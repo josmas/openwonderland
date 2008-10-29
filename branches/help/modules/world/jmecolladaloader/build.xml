@@ -44,8 +44,10 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
+            <art dir="${current.dir}/art"/>
         </module>
     </target>                                                       
                                            
+    <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>
 </project>

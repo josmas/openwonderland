@@ -13,6 +13,7 @@
 	<path location="${core.jme.dir}/target/jme-collada.jar"/>
 	<path location="${core.jme.dir}/target/jme-xml.jar"/>
 	<path location="${core.jme.dir}/target/jme-terrain.jar"/>
+	<path location="${core.jme.dir}/lib/lwjgl/lwjgl_util.jar"/>
         
         <!-- jogl -->
         <path location="${core.lib.os.dir}/jogl.jar"/>
@@ -30,6 +31,8 @@
 	<path location="${core.common.dir}/mtgame.jar"/>
 	<path location="${core.common.dir}/jbullet.jar"/>
 	<path location="${core.common.dir}/vecmath.jar"/>
+	<path location="${core.common.dir}/avatars.jar"/>
+	<path location="${core.common.dir}/javolution.jar"/>
     </pathconvert>
     
     <pathconvert property="darkstar.server.classpath">

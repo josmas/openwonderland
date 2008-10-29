@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
@@ -72,6 +73,11 @@ public class TestWorld implements ServerPlugin {
 //            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
             WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
 
+//            WonderlandContext.getCellManager().insertCellInWorld(
+//                    new JmeColladaCellMO(new Vector3f(0,0,0), 15,
+//                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
+//                            null,
+//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
             
             Task t = new TestTask(c3, c2);
 

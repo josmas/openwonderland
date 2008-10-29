@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -42,13 +43,21 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
     
     /* The unique model URI */
     private String modelURI = null;
+    private Vector3f geometryTranslation;
+    private Quaternion geometryRotation;
     	
     /** Default constructor, used when cell is created via WFS */
     public JmeColladaCellMO() {
     }
-
-    public JmeColladaCellMO(Vector3f center, float size) {
+    public JmeColladaCellMO(Vector3f center, float size, String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
+        this.modelURI = modelURI;
+        this.geometryRotation = geometryRotation;
+        this.geometryTranslation = geometryTranslation;
+    }
+
+    public JmeColladaCellMO(Vector3f center, float size, String modelURI) {
+        this(center, size,  modelURI, null, null);
     }
     
     public JmeColladaCellMO(BoundingVolume bounds, CellTransform transform) {
@@ -61,7 +70,7 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
 
     @Override
     public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new JmeColladaCellConfig(this.modelURI);
+        return new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation);
     }
 
     @Override
