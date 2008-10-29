@@ -28,5 +28,10 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 @ExperimentalAPI
 public interface CellStatusChangeListener {
 
+    /**
+     * Notification that the cells status has changed.
+     * @param cell the cells whoes status has changed
+     * @param status the new status for the cell
+     */
     public void cellStatusChanged(Cell cell, CellStatus status);
 }

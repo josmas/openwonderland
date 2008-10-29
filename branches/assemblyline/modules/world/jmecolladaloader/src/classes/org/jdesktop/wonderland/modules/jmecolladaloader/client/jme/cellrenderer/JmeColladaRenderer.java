@@ -18,6 +18,8 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer;
 
+import java.net.MalformedURLException;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -30,6 +32,8 @@ import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import com.jme.util.resource.ResourceLocator;
+import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.InputStream;
 import java.net.URL;
@@ -54,26 +58,14 @@ public class JmeColladaRenderer extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         ColorRGBA color = new ColorRGBA();
 
-        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        buf.setEnabled(true);
-        buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-
-        PointLight light = new PointLight();
-        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
-        light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
-        light.setLocation(new Vector3f(100, 100, 100));
-        light.setEnabled(true);
-        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
-        lightState.setEnabled(true);
-        lightState.attach(light);
-
-        Vector3f translation = cell.getLocalTransform().getTranslation(null);
-        
-        return loadColladaAsset(cell.getCellID().toString(), buf);        
+        return loadColladaAsset(cell.getCellID().toString());        
     }
 
-    public Node loadCollada(String name, float xoff, float yoff, float zoff, 
-            ZBufferState buf, LightState ls) {
+    /**
+     * Load a collada model from a local file, used to import art during
+     * world building
+     */
+    public Node loadCollada(String name, float xoff, float yoff, float zoff, LightState ls) {
         MaterialState matState = null;
         
         Node ret;
@@ -95,10 +87,6 @@ public class JmeColladaRenderer extends BasicRenderer {
         ret.updateModelBound();
 //        System.out.println("Triangles "+ret.getTriangleCount());
 
-        matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
-//        node.setRenderState(matState);
-        ret.setRenderState(buf);
-//        node.setRenderState(ls);
         ret.setLocalTranslation(xoff, yoff, zoff);
         
         ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
@@ -112,8 +100,9 @@ public class JmeColladaRenderer extends BasicRenderer {
     /**
      * Loads a collada cell from the asset managergiven an asset URL
      */
-    public Node loadColladaAsset(String name, ZBufferState buf) {        
-        Node node = null;
+    public Node loadColladaAsset(String name) {        
+        Node node = new Node();
+        Node model=null;
 
         /* Fetch the basic info about the cell */
         CellTransform transform = cell.getLocalTransform();
@@ -124,14 +113,26 @@ public class JmeColladaRenderer extends BasicRenderer {
         try {
             URL url = new URL(((JmeColladaCell)cell).getModelURI());
             InputStream input = url.openStream();
-            System.out.println("Resource stream "+input);
+//            System.out.println("Resource stream "+input);
+
+            ResourceLocatorTool.addResourceLocator(
+                    ResourceLocatorTool.TYPE_TEXTURE,
+                    new AssetResourceLocator(url));
+
             ColladaImporter.load(input, "Test");
-            node = ColladaImporter.getModel();
+            model = ColladaImporter.getModel();
             ColladaImporter.cleanUp();
+            
+            // Adjust model origin wrt to cell
+            if (((JmeColladaCell)cell).getGeometryTranslation()!=null)
+                model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
+            if (((JmeColladaCell)cell).getGeometryRotation()!=null)
+                model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
+            node.attachChild(model);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error loading Collada file", e);
-            node = new Node();
+            logger.log(Level.SEVERE, "Error loading Collada file "+((JmeColladaCell)cell).getModelURI(), e);
         }
+        
         
         /* Create the scene graph object and set its wireframe state */
         node.setModelBound(new BoundingBox());
@@ -139,9 +140,64 @@ public class JmeColladaRenderer extends BasicRenderer {
         node.setLocalTranslation(translation);
         node.setLocalScale(scaling);
         node.setLocalRotation(rotation);
-        node.setRenderState(buf);
         node.setName(name);
 
         return node;
+    }
+
+    class AssetResourceLocator implements ResourceLocator {
+
+        private String modulename;
+        private String path;
+
+        /**
+         * Locate resources for the given file
+         * @param url
+         */
+        public AssetResourceLocator(URL url) {
+            modulename = url.getHost();
+            path = url.getPath();
+            path = path.substring(0, path.lastIndexOf('/')+1);
+        }
+
+        public URL locateResource(String resource) {
+            System.err.println("Looking for resource "+resource);
+            System.err.println("Module "+modulename+"  path "+path);
+            try {
+                if (resource.startsWith("/")) {
+                    URL url = new URL("wla://"+modulename+resource);
+                    System.err.println("Using alternate "+url.toExternalForm());
+                    return url;
+                } else {
+                    String urlStr = trimUrlStr("wla://"+modulename+path + resource);
+
+                    URL url = new URL(urlStr);
+                    System.err.println(url.toExternalForm());
+                    return url;
+                }
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
+
+        /**
+         * Trim ../ from url
+         * @param urlStr
+         */
+        private String trimUrlStr(String urlStr) {
+            int pos = urlStr.indexOf("/../");
+            if (pos==-1)
+                return urlStr;
+
+            StringBuffer buf = new StringBuffer(urlStr);
+            int start = pos;
+            while(buf.charAt(--start)!='/') {}
+            buf.replace(start, pos+4, "/");
+            System.out.println("Trimmed "+buf.toString());
+            
+           return buf.toString();
+        }
+
     }
 }

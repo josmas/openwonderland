@@ -24,7 +24,10 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.scene.TexCoords;
 import com.jme.scene.TriMesh;
 //import com.jme.scene.batch.TriangleBatch;
+import com.jme.scene.state.MaterialState;
+import com.jme.scene.state.RenderState;
 import com.jme.util.geom.BufferUtils;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 public class Floor extends TriMesh {
 
@@ -74,7 +77,7 @@ public class Floor extends TriMesh {
         setVertexCount(4);
         setVertexBuffer(BufferUtils.createVector3Buffer(getVertexCount()));
         setNormalBuffer(BufferUtils.createVector3Buffer(getVertexCount()));
-        setColorBuffer(BufferUtils.createColorBuffer(getVertexCount()));
+//        setColorBuffer(BufferUtils.createColorBuffer(getVertexCount()));
         
         FloatBuffer tbuf = BufferUtils.createVector2Buffer(getVertexCount());
         setTextureCoords(new TexCoords(tbuf));
@@ -92,15 +95,15 @@ public class Floor extends TriMesh {
         getNormalBuffer().put(0).put(1).put(0);
         getNormalBuffer().put(0).put(1).put(0);
 
-        ColorRGBA c1 = ColorRGBA.blue;
-        ColorRGBA c2 = ColorRGBA.cyan;
-        ColorRGBA c3 = ColorRGBA.green;
-        ColorRGBA c4 = ColorRGBA.red;
-        
-        getColorBuffer().put(c1.getColorArray());
-        getColorBuffer().put(c2.getColorArray());
-        getColorBuffer().put(c3.getColorArray());
-        getColorBuffer().put(c4.getColorArray());
+//        ColorRGBA c1 = ColorRGBA.blue;
+//        ColorRGBA c2 = ColorRGBA.cyan;
+//        ColorRGBA c3 = ColorRGBA.green;
+//        ColorRGBA c4 = ColorRGBA.red;
+//        
+//        getColorBuffer().put(c1.getColorArray());
+//        getColorBuffer().put(c2.getColorArray());
+//        getColorBuffer().put(c3.getColorArray());
+//        getColorBuffer().put(c4.getColorArray());
 
         tbuf.put(0).put(1);
         tbuf.put(0).put(0);

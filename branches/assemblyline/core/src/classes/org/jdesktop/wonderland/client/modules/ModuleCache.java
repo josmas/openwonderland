@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * The ModuleCache class represents the cache associated with a single server,
@@ -43,6 +44,9 @@ public class ModuleCache {
 
     /* A hashmap of module names already searched and not found */
     private Set<String> modulesNotFound = null;
+    
+    /* The error logger */
+    private static Logger logger = Logger.getLogger(ModuleCache.class.getName());
     
     /** Constructor, takes the unique name of the server */
     public ModuleCache(String serverName) {
@@ -116,6 +120,8 @@ public class ModuleCache {
         synchronized (this.checksums) {
             ChecksumList checksums = this.checksums.get(uniqueName);
             if (checksums == null) {
+                logger.info("[MODULE] Fetching checksums for " + uniqueName);
+                
                 /*
                  * If the module does not exist, see if we have already checked
                  * (so that we don't repeatedly ping the server), and only try
@@ -160,6 +166,8 @@ public class ModuleCache {
         synchronized (this.repositories) {
             RepositoryList repositoryList = this.repositories.get(uniqueName);
             if (repositoryList == null) {
+                logger.info("[MODULE] Loading Repository list for module " + uniqueName);
+                
                 /*
                  * If the module does not exist, see if we have already checked
                  * (so that we don't repeatedly ping the server), and only try

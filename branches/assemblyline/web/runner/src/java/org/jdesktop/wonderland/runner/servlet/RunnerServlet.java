@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
@@ -22,7 +23,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.jdesktop.wonderland.runner.DarkstarRunner;
+import org.jdesktop.wonderland.runner.darkstar.DarkstarRunner;
+import org.jdesktop.wonderland.runner.DeploymentEntry;
+import org.jdesktop.wonderland.runner.DeploymentManager;
+import org.jdesktop.wonderland.runner.DeploymentPlan;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.RunnerException;
@@ -55,17 +59,27 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
             });
         }
         
-        // Add a new Darkstar runner and start it.
-        // TODO this should read an XML file describing all the components
-        // to deploy, and then execute that deployment plan by creating
-        // and optionally starting components.
+        // Add all runners in the current deployment plan
         try {
-            Runner r = RunnerFactory.create(DarkstarRunner.class.getName(), 
-                                        new Properties());
-            r = RunManager.getInstance().add(r);
+            boolean start = 
+                    Boolean.parseBoolean(SystemPropertyUtil.getProperty(START_PROP));
             
-            if (Boolean.parseBoolean(SystemPropertyUtil.getProperty(START_PROP))) {
-                r.start(new Properties());
+            DeploymentPlan dp = DeploymentManager.getInstance().getPlan();
+            for (DeploymentEntry de : dp.getEntries()) {
+                // copy System properties to pass into this runner
+                Properties props = new Properties(System.getProperties());
+                props.setProperty("runner.name", de.getRunnerName());
+                
+                Runner r = RunnerFactory.create(de.getRunnerClass(), props);
+                r = RunManager.getInstance().add(r);
+                if (start) {
+                    Properties runProps = de.getRunProps();
+                    if (runProps == null || runProps.isEmpty()) {
+                        runProps = r.getDefaultProperties();
+                    }
+                    
+                    r.start(runProps);
+                }
             }
         } catch (Exception ex) {
             throw new ServletException(ex);
@@ -91,52 +105,22 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
             runner = RunManager.getInstance().get(runnerName);
         }
               
-        try {
-            if (action.equalsIgnoreCase("start")) {
-                doStart(request, response, runner);
-            } else if (action.equalsIgnoreCase("stop")) {
-                doStop(request, response, runner);
-            } else if (action.equalsIgnoreCase("log")) {
-                doLog(request, response, runner);
-            } else {
-                // default case -- show the view page
-                doView(request, response);
-            }
-        } catch (RunnerException re) {
-            throw new ServletException(re);
+        if (action.equalsIgnoreCase("log")) {
+            doLog(request, response, runner);
+        } else if (action.equalsIgnoreCase("edit")) {
+            doEdit(request, response, runner, null);
+        } else if (action.equalsIgnoreCase("editForm")) {
+            doEditForm(request, response, runner);
+        } else {
+            // default case -- show the view page
+            doView(request, response);
         }
-    }
-    
-    private void doStart(HttpServletRequest request,
-                         HttpServletResponse response,
-                         Runner runner)
-        throws ServletException, IOException, RunnerException
-    {
-        runner.start(new Properties());
-        
-        // redirect to the main page
-        response.sendRedirect("run");
-    }
-    
-    private void doStop(HttpServletRequest request,
-                        HttpServletResponse response,
-                        Runner runner)
-        throws ServletException, IOException
-    {
-        runner.stop();
-        
-        // redirect to the main page
-        response.sendRedirect("run");
     }
     
     private void doView(HttpServletRequest request,
                         HttpServletResponse response)
         throws ServletException, IOException
     {
-        // fill in the list of all runners
-        Collection<Runner> runners = RunManager.getInstance().getAll();
-        request.setAttribute("runnerList", runners);
-        
         // forward to the view page
         RequestDispatcher rd = request.getRequestDispatcher("/view.jsp");
         rd.forward(request, response);
@@ -154,6 +138,122 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
         rd.forward(request, response);
     }
 
+    protected void doEdit(HttpServletRequest request, 
+                         HttpServletResponse response,
+                         Runner runner, DeploymentEntry de)
+        throws ServletException, IOException
+    {
+        if (de == null) {
+            de = DeploymentManager.getInstance().getEntry(runner.getName());
+        }
+        
+        // if the deployment entry has no properties, use the defaults
+        if (de.getRunProps().isEmpty()) {
+            de.setRunProps(runner.getDefaultProperties());
+        }
+        
+        request.setAttribute("entry", de);
+       
+        RequestDispatcher rd = request.getRequestDispatcher("/edit.jsp");
+        rd.forward(request, response);
+    }
+    
+    protected void doEditForm(HttpServletRequest request,
+                              HttpServletResponse response,
+                              Runner runner)
+        throws ServletException, IOException
+    {
+        DeploymentEntry de = getEntry(request);
+        
+        String button = request.getParameter("button");
+        if (button.equalsIgnoreCase("Save")) {
+            doEditSave(request, response, runner, de);
+        } else if (button.equalsIgnoreCase("Cancel")) {
+            redirectToRun(response);
+        } else if (button.equalsIgnoreCase("Restore Defaults")) {
+            de.setRunProps(runner.getDefaultProperties());
+            doEdit(request, response, runner, de);
+        } else {
+            doEdit(request, response, runner, de);
+        }
+    }
+    
+    protected void doEditSave(HttpServletRequest request, 
+                              HttpServletResponse response,
+                              Runner runner,
+                              DeploymentEntry de)
+        throws ServletException, IOException
+    {
+        DeploymentManager dm = DeploymentManager.getInstance();
+        DeploymentPlan dp = dm.getPlan();
+        
+        // if the properties are the same as the default property set,
+        // remove all properties so we preserve the fact that these
+        // are defaults
+        if (de.getRunProps().equals(runner.getDefaultProperties())) {
+            de.getRunProps().clear();
+        }
+        
+        // replace the existing entry with the new one
+        dp.removeEntry(de);
+        dp.addEntry(de);
+        dm.savePlan();
+        
+        redirectToRun(response);
+    }
+    
+    protected void redirectToRun(HttpServletResponse response) 
+        throws IOException
+    {
+        String page = "/wonderland-web-runner/run";
+        String url = "/wonderland-web-front/admin?pageURL=" +
+                URLEncoder.encode(page, "utf-8");
+        
+        response.getWriter().println("<script>");
+        response.getWriter().println("parent.location.replace('" + url + "');");
+        response.getWriter().println("</script>");
+        response.getWriter().close();
+    }
+    
+    protected DeploymentEntry getEntry(HttpServletRequest request) 
+        throws ServletException
+    {
+        // read name and class
+        String name = request.getParameter("name");
+        String clazz = request.getParameter("class");
+        
+        // read properties
+        Properties props = new Properties();
+        int c = 1;
+        String key;
+        String value;
+        while (true) {
+            key = request.getParameter("key-" + c);
+            value = request.getParameter("value-" + c);
+            
+            if (key == null) {
+                break;
+            }
+            
+            if (key.trim().length() > 0) {
+                props.put(key, value);
+            }
+            c++;
+        } 
+        
+        // read new property
+        key = request.getParameter("key-new");
+        value = request.getParameter("value-new");
+        if (key != null && key.trim().length() > 0) {
+            props.put(key, value);
+        }
+        
+        DeploymentEntry de = new DeploymentEntry(name, clazz);
+        de.setRunProps(props);
+        
+        return de;
+    }
+    
     static class LogReader implements Iterator<String> {
         private BufferedReader log;
         private String line;

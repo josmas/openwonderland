@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -58,13 +59,35 @@ public class Cell {
     
     private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
     
-    public enum RendererType { RENDERER_JME, RENDERER_2D };
+    /**
+     * An enum representing the various render types supported by Wonderland.
+     * A Cell represents the state, the renderer the visual representation of
+     * that state.
+     * 
+     */
+    public enum RendererType {
+
+        /**
+         * A 3D renderer for the JME client
+         */
+        RENDERER_JME,
+        /**
+         * A 2D rendering (not yet implemented)
+         */
+        RENDERER_2D
+        /**
+         * Low end 3D rendering, cell phone renderer etc, TBD
+         */
+    };
     
     private HashMap<RendererType, CellRenderer> cellRenderers = new HashMap();
     
+    /**
+     * The logger for Cell (and possibly it's subclasses)
+     */
     protected static Logger logger = Logger.getLogger(Cell.class.getName());
     
-    private ArrayList<TransformChangeListener> transformChangeListeners = null;
+    private HashSet<TransformChangeListener> transformChangeListeners = null;
     
     /**
      * Instantiate a new cell
@@ -149,13 +172,11 @@ public class Cell {
     }
     
     /**
-     * If this cell supports the capabilities of cellComponent then
-     * return an instance of cellComponent associated with this cell. Otherwise
+     * Return this cells instance of the specified component class if defined. Otherwise
      * return null.
      * 
-     * @see MovableCellComponent
-     * @param cellComponent
-     * @return
+     * @param <T> The class of the component being queried
+     * @return the cells component of the requested class (or null)
      */
     public <T extends CellComponent> T getComponent(Class<T> cellComponentClass) {
         return (T) components.get(cellComponentClass);
@@ -169,7 +190,7 @@ public class Cell {
      * When a component is added component.setStatus is called automatically with
      * the current status of this cell.
      * 
-     * @param component
+     * @param component the componnet to be added
      */
     public void addComponent(CellComponent component) {
         CellComponent previous = components.put(component.getClass(),component);
@@ -179,7 +200,10 @@ public class Cell {
     }
     
     /**
-     * Remove the cell component of the specified class
+     * Remove the cell component of the specified class, the components
+     * setStatus method will be called with CellStatus.DISK to trigger cleanup
+     * of any component state.
+     * 
      * TODO Test me
      *  
      * @param componentClass
@@ -240,7 +264,7 @@ public class Cell {
      * 
      * @param localTransform
      */
-    void setLocalTransform(CellTransform localTransform) {
+    void setLocalTransform(CellTransform localTransform, TransformChangeListener.ChangeSource source) {
         // Don't process the same transform twice
         if (this.localTransform!=null && this.localTransform.equals(localTransform))
             return;
@@ -252,7 +276,7 @@ public class Cell {
             while(current!=null) {
                 CellTransform parentWorldTransform = current.getWorldTransform();
                 if (parentWorldTransform!=null) {
-                    setWorldTransform(parentWorldTransform);  // this method also calls notifyTransformChangeListeners
+                    setWorldTransform(parentWorldTransform, source);  // this method also calls notifyTransformChangeListeners
                     current = null;
                 } else
                     current = current.getParent();
@@ -274,7 +298,7 @@ public class Cell {
                 worldTransform.transform(cachedVWBounds);                
             }
             
-            notifyTransformChangeListeners();
+            notifyTransformChangeListeners(source);
         }
         
         if (cachedVWBounds==null) {
@@ -283,7 +307,7 @@ public class Cell {
         }
                 
         for(Cell child : getChildren())
-            transformTreeUpdate(this, child);      
+            transformTreeUpdate(this, child, source);      
 
         // Notify Renderers that the cell has moved
         for(CellRenderer rend : cellRenderers.values())
@@ -303,6 +327,11 @@ public class Cell {
         return (CellTransform) local2VW.clone(null);
     }
 
+    /**
+     * Return the world transform of the cell.
+     *
+     * @return the world transform of this cell.
+     */
     public CellTransform getWorldTransform() {
         return (CellTransform)worldTransform.clone(null);
     }
@@ -312,13 +341,13 @@ public class Cell {
      * Set the localToVWorld transform for this cell
      * @param localToVWorld
      */
-    void setWorldTransform(CellTransform worldTransform) {
+    void setWorldTransform(CellTransform worldTransform, TransformChangeListener.ChangeSource source) {
         worldTransform = (CellTransform) worldTransform.clone(null);
         cachedVWBounds = localBounds.clone(cachedVWBounds);
         worldTransform.transform(cachedVWBounds);
         local2VW = null; // force local2VW to be recalculated
         
-        notifyTransformChangeListeners();
+        notifyTransformChangeListeners(source);
     }
     
     /**
@@ -352,23 +381,23 @@ public class Cell {
      * @param child
      * @return the combined bounds of the child and all it's children
      */
-    private BoundingVolume transformTreeUpdate(Cell parent, Cell child) {
+    private BoundingVolume transformTreeUpdate(Cell parent, Cell child, TransformChangeListener.ChangeSource source) {
         CellTransform parentWorldTransform = parent.getWorldTransform();
 
         CellTransform childTransform = child.getLocalTransform();
         
         if (childTransform!=null) {
             childTransform.mul(parentWorldTransform);
-            child.setWorldTransform(childTransform);
+            child.setWorldTransform(childTransform, source);
         } else {
-            child.setWorldTransform(parentWorldTransform);
+            child.setWorldTransform(parentWorldTransform, source);
         }
         
         BoundingVolume ret = child.getWorldBounds();
         
         Iterator<Cell> it = child.getChildren().iterator();
         while(it.hasNext()) {
-            ret.mergeLocal(transformTreeUpdate(child, it.next()));
+            ret.mergeLocal(transformTreeUpdate(child, it.next(), source));
         }
         
         child.setWorldBounds(ret);
@@ -433,6 +462,7 @@ public class Cell {
 
     /**
      * Return the cell cache which instantiated and owns this cell.
+     * @return the cell cache which instantiated this cell.
      */
     public CellCache getCellCache() {
         return cellCache;
@@ -549,6 +579,8 @@ public class Cell {
     
     /**
      * Create the renderer for this cell
+     * @param rendererType The type of renderer required
+     * @return the renderer for the specified type if available, or null
      */
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         Logger.getAnonymousLogger().warning(this.getClass().getName()+" createEntity returning null");
@@ -558,7 +590,8 @@ public class Cell {
     /**
      * Return the renderer of the given type for this cell. If a renderer of the
      * requested type is not available null will be returned
-     * @return
+     * @param rendererType the type of the render to return
+     * @return the renderer, or null if no renderer of the specified type is available
      */
     public CellRenderer getCellRenderer(RendererType rendererType) {
         CellRenderer ret = cellRenderers.get(rendererType);
@@ -578,7 +611,7 @@ public class Cell {
      */
     public void addTransformChangeListener(TransformChangeListener listener) {
         if (transformChangeListeners==null)
-            transformChangeListeners = new ArrayList();
+            transformChangeListeners = new HashSet();
         transformChangeListeners.add(listener);
     }
     
@@ -590,11 +623,11 @@ public class Cell {
         transformChangeListeners.remove(listener);
     }
     
-    private void notifyTransformChangeListeners() {
+    private void notifyTransformChangeListeners(TransformChangeListener.ChangeSource source) {
         if (transformChangeListeners==null)
             return;
         
         for(TransformChangeListener listener : transformChangeListeners)
-            listener.transformChanged(this);
+            listener.transformChanged(this, source);
     }
 }

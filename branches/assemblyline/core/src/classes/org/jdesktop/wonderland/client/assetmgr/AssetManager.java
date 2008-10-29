@@ -197,7 +197,7 @@ public class AssetManager {
         ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache("server");
         if (cache != null) {
             ChecksumList checksums = cache.getModuleChecksums(assetURI.getModuleName());
-            logger.fine("[ASSET] GET checksums for module " + checksums);
+            logger.fine("[ASSET] GET checksums for asset " + assetURI.getRelativePath() + " in " + checksums);
             if (checksums != null) {
                 Checksum c = checksums.getChecksums().get(assetURI.getRelativePath());
                 if (c != null) {
@@ -450,6 +450,9 @@ public class AssetManager {
             logger.warning("[ASSET] FETCH unable to locate repository list, cache: " + cache);
             return false;
         }
+        
+        Repository[] repositories = list.getAllRepositories();
+        logger.info("[ASSET] FETCH Repository for module " + moduleName + " has " + repositories.length);
 
         /*
          * Try each repository in turn and return true when one succeeds. Save

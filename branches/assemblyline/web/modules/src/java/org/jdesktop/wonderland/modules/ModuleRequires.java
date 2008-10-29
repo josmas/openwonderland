@@ -1,4 +1,20 @@
-
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
+ */
 
 package org.jdesktop.wonderland.modules;
 
@@ -26,11 +42,9 @@ import javax.xml.bind.annotation.XmlTransient;
  * returns true whether it satisfies the dependency specified by the instance
  * of the ModuleRequires class.
  * <p>
- * This class follows the Java Bean pattern (default constructor, setter/getter
- * methods) so that it may be serialised to/from disk. The static decode() and
- * encode methods take an instance of a ModuleRequires class and perform the
- * loading and saving from/to disk.
- * <p>
+ * This class is annotation with JAXB XML elements and supports encoding and
+ * decoding to/from XML via the encode() and decode() methods, respectively.
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="module-requires")

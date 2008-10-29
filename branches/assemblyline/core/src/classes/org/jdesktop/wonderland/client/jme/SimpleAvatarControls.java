@@ -157,6 +157,8 @@ public class SimpleAvatarControls extends ProcessorComponent {
         rotX = (float) Math.toDegrees(angles[0]);
         rotY = (float) Math.toDegrees(angles[1]);
 
+//        System.out.println("********** "+angles[0]+", "+angles[1]+", "+angles[2]);
+
         // Setup the rotated vectors
         directionRotation.fromAngleAxis(rotY*(float)Math.PI/180.0f, yDir);
         directionRotation.mult(fwdDirection, rotatedFwdDirection);

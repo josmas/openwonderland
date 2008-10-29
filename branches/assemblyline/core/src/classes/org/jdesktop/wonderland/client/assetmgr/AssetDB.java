@@ -132,11 +132,11 @@ public class AssetDB {
         this.dbName = AssetDB.DB_NAME;
 
         /* Log a message saying we are kicking off the database */
-        ConsoleHandler ch = new ConsoleHandler();
-        ch.setLevel(Level.ALL);
-        logger.addHandler(ch);
-        logger.setLevel(Level.ALL);
-        logger.setUseParentHandlers(false);
+//        ConsoleHandler ch = new ConsoleHandler();
+//        ch.setLevel(Level.ALL);
+//        logger.addHandler(ch);
+//        logger.setLevel(Level.ALL);
+//        logger.setUseParentHandlers(false);
         logger.fine("AssetDB: Initializing the asset database, name=" + this.dbName);
                 
         /*

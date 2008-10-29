@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.jme.input;
 
 import java.awt.event.InputEvent;
+import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -28,7 +29,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-abstract class InputEvent3D extends Event {
+public abstract class InputEvent3D extends Event {
+
+    private PickInfo pickInfo;
 
     /** The originating AWT input event. */
     protected InputEvent awtEvent;
@@ -140,6 +143,25 @@ abstract class InputEvent3D extends Event {
     @Override
     public Event clone (Event event) {
 	((InputEvent3D)event).awtEvent = awtEvent;
+        ((InputEvent3D)event).pickInfo = pickInfo;
 	return event;
+    }
+
+    /**
+     * INTERNAL ONLY.
+     * <br>
+     * Used by the input system to specify the pickInfo for this input event.
+     */
+    public void setPickInfo(PickInfo pickInfo) {
+        this.pickInfo = pickInfo;
+    }
+
+    /**
+     * INTERNAL ONLY.
+     * <br>
+     * Returns the pickInfo for this event.
+     */
+    public PickInfo getPickInfo() {
+        return pickInfo;
     }
 }

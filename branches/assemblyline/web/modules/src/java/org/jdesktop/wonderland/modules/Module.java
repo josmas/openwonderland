@@ -18,10 +18,14 @@
 
 package org.jdesktop.wonderland.modules;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Iterator;
+import java.util.Map;
+import javax.xml.bind.JAXBException;
 
 /**
  * The Module class represents a single module within Wonderland. A module
@@ -44,15 +48,21 @@ import java.util.Iterator;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public abstract class Module {
-
+    
     /* Useful names of files within the archive */
     public static final String MODULE_INFO       = "module.xml";
     public static final String MODULE_REQUIRES   = "requires.xml";
     public static final String MODULE_REPOSITORY = "repository.xml";
-    public static final String MODULE_ART        = "art";
-    public static final String MODULE_CHECKSUMS  = "checksums.xml";
-    public static final String MODULE_WFS        = "wfs";
-    public static final String MODULE_PLUGINS    = "plugins";
+ 
+    /* The File root of the module */
+    private File root = null;
+    
+    private ModuleInfo       moduleInfo       = null; /* Basic module info   */
+    private ModuleRequires   moduleRequires   = null; /* Module dependencies */
+    private ModuleRepository moduleRepository = null; /* Module repository   */
+    
+    /* A map of module parts and their objects */
+    private Map<String, ModulePart> moduleParts = null;
     
     /** Default constructor */
     protected Module() {}
@@ -62,106 +72,98 @@ public abstract class Module {
      * 
      * @return The module's name
      */
-    public abstract String getName();
+    public String getName() {
+        return this.moduleInfo.getName();
+    }
+
+    /**
+     * Returns the location of the module as a File.
+     * 
+     * @return The location of the module (either as a directory or JAR).
+     */
+    public File getFile() {
+        return this.root;
+    }
     
     /**
-     * Removes the module entirely. Returns true upon success, false upon
-     * failure.
-     * 
-     * @return True if the module was successfully deleted, false if not.
+     * Sets the file root of the module
      */
-    public abstract boolean delete();
+    public void setFile(File root) {
+        this.root = root;
+    }
     
     /**
      * Returns the basic information about a module: its name and version.
      * <p>
      * @return The basic module information
      */
-    public abstract ModuleInfo getModuleInfo();
+    public ModuleInfo getInfo() {
+        return this.moduleInfo;
+    }
+    
+    /**
+     * Sets the basic information about a module, assumes the given argument
+     * is not null.
+     * <p>
+     * @param moduleInfo The basic module information
+     */
+    protected void setInfo(ModuleInfo moduleInfo) {
+        this.moduleInfo = moduleInfo;
+    }
     
     /**
      * Returns the module's dependencies.
      * <p>
      * @return The module's dependencies
      */
-    public abstract ModuleRequires getModuleRequires();
-
+    public ModuleRequires getRequires() {
+        return this.moduleRequires;
+    }
+    
+    /**
+     * Sets the module's dependencies, assumes the given argument is not null.
+     * <p>
+     * @param moduleRequires The module dependencies
+     */
+    protected void setRequires(ModuleRequires moduleRequires) {
+        this.moduleRequires = moduleRequires;
+    }
+    
     /**
      * Returns the module's repository information.
      * <p>
      * @return The module's repository information
      */
-    public abstract ModuleRepository getModuleRepository();
-
-    /**
-     * Returns the module's collection of artwork resources.
-     * <p>
-     * @return The module's collection of artwork
-     */
-    public abstract Collection<String> getModuleArtResources();
-
-    /**
-     * Returns the module artwork resource given its relative path, or null if
-     * it does not exist
-     * 
-     * @return The module's artwork or null if it does not exist
-     */
-    public abstract ModuleArtResource getModuleArtResource(String path);
-
-    /**
-     * Returns a map of WFS objects for all WFSs contained within the module.
-     * The key for each entry of the map is the name of the WFS (without the
-     * -wfs extension) and the value is its WFS object. If no WFSs exist within
-     * the module, this method returns an empty map.
-     *
-     * @return A map of WFS entries within the module
-     */
-    public abstract Collection<String> getModuleWFSs();
-
-    /**
-     * Returns a map of ModulePlugin objects for all plugins contained within
-     * the module. The key for each entry of the map is the name of the plugin
-     * and the value is its ModulePlugin object. If no plugins exist within
-     * the module, this method returns an empty map.
-     *
-     * @return A map of plugin entries within the module
-     */
-    public abstract Collection<String> getModulePlugins();
-
-    /**
-     * Returns a module's plugin given its name, null if the plugin does not
-     * exists.
-     * 
-     * @param name The unique name of the plugin
-     * @return The ModulePlugin object
-     */
-    public abstract ModulePlugin getModulePlugin(String name);
-
-    /**
-     * Returns a collection of checksums for the resources in the module.
-     * 
-     * @returns The collection of resource checksums
-     */
-    public abstract ModuleChecksums getModuleChecksums();
+    public ModuleRepository getRepository() {
+        return this.moduleRepository;
+    }
     
     /**
-     * Returns an input stream for the given resource, null upon error.
+     * Sets the module's repository information, assumes the argument is not
+     * null.
      * <p>
-     * @param resource A resource contained within the archive
-     * @return An input stream to the resource
+     * @param moduleRepository The module's repository information
      */
-    public abstract InputStream getInputStreamForResource(ModuleResource resource);
-
+    protected void setRepository(ModuleRepository moduleRepository) {
+        this.moduleRepository = moduleRepository;
+    }
+    
     /**
-     * Returns an input stream for the given JAR file from a plugin, null
-     * upon error
+     * Returns a map of module part names and their module part objects.
      * 
-     * @param name The name of the plugin
-     * @param jar The name of the jar file
-     * @param type The type of the jar file (CLIENT, SERVER, COMMON)
+     * @return A map of module parts
      */
-    public abstract InputStream getInputStreamForPlugin(String name, String jar, String type);
-        
+    public Map<String, ModulePart> getParts() {
+        return this.moduleParts;
+    }
+    
+    /**
+     * Sets the map of module part names and their module part objects
+     */
+    public void setParts(Map<String, ModulePart> moduleParts) {
+        this.moduleParts = moduleParts;
+    }
+    
     /**
      * Returns a string representing this module.
      */
@@ -169,28 +171,26 @@ public abstract class Module {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("---------------------------------------------------------------------------\n");
-        sb.append(this.getModuleInfo().toString() + "\n");
-        sb.append("Depends upon " + this.getModuleRequires().toString() + "\n");
-        sb.append("Repositories\n" + this.getModuleRepository().toString() + "\n");
-        sb.append("\nPlugins\n");
-        Iterator<String> it = this.getModulePlugins().iterator();
+        sb.append(this.getInfo().toString() + "\n");
+        sb.append("Depends upon " + this.getRequires().toString() + "\n");
+        sb.append("Repositories\n" + this.getRepository().toString() + "\n");
+        sb.append("Parts: ");
+        
+        Map<String, ModulePart> parts = this.getParts();
+        Iterator<Map.Entry<String, ModulePart>> it = parts.entrySet().iterator();
         while (it.hasNext() == true) {
-            ModulePlugin plugin = this.getModulePlugin(it.next());
-            sb.append("\t" + plugin.toString() + "\n");
+            Map.Entry<String, ModulePart> entry = it.next();
+            ModulePart part = entry.getValue();
+            sb.append("\t" + part.getName() + " " + part.getFile().getAbsolutePath() + "\n");
         }
-        sb.append("\nArtwork resources\n");
-        Iterator<String> it2 = this.getModuleArtResources().iterator();
-        while (it2.hasNext() == true) {
-            ModuleArtResource art = this.getModuleArtResource(it2.next());
-            sb.append("\t" + art.getPathName() + "\n");
-        }
-        sb.append("\nWFS\n");
-        Iterator<String> it3 = this.getModuleWFSs().iterator();
-        while (it3.hasNext() == true) {
-            String name = it3.next();
-            sb.append("\t" + name + "\n");
-        }
+        sb.append("\n");
         sb.append("---------------------------------------------------------------------------\n");
         return sb.toString();
+    }
+    
+    public static void main(String args[]) throws MalformedURLException, FileNotFoundException, IOException, JAXBException {
+        File file = new File("/Users/jordanslott/src/moduletest/tmp/example.jar");
+        Module module = ModuleFactory.open(file);
+        System.out.println(module.toString());
     }
 }

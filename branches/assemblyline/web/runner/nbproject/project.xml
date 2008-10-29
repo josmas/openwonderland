@@ -15,6 +15,12 @@
                 <library files="1">
                     <file>${file.reference.glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar}</file>
                 </library>
+                <library>
+                    <file>${libs.restapi.classpath}</file>
+                </library>
+                <library files="14">
+                    <file>${libs.restlib.classpath}</file>
+                </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>

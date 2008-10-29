@@ -17,14 +17,21 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import imi.loaders.repository.Repository;
+import imi.scene.processors.JSceneAWTEventProcessor;
+import imi.scene.processors.JSceneEventProcessor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
@@ -37,6 +44,9 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
  */
 public class JmeClientMain {
     
+    /** The frame of the Wonderland client window. */
+    private static MainFrame frame;
+
     // properties
     private Properties props;
     
@@ -83,25 +93,22 @@ public class JmeClientMain {
         // Dont start the client manager until JME has been initialized, many JME components
         // expect the renderer to be ready during init.
         ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
-        
+        ClientContext.getWonderlandSessionManager().setPrimaryServer(
+                    new WonderlandServerInfo(serverName,
+                                             Integer.parseInt(serverPort)));    
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
         
     }
-
-    /**
-     * @deprecated 
-     * @return
-     */
-    static WorldManager getWorldManager() {
-        return ClientContextJME.getWorldManager();
-    }
-    
     
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        if (Webstart.isWebstart()) {
+            Webstart.webstartSetup();
+        }
+        
         JmeClientMain worldTest = new JmeClientMain(args);
         
     }
@@ -123,7 +130,7 @@ public class JmeClientMain {
      * Create all of the Swing windows - and the 3D window
      */
     private void createUI(WorldManager wm) {             
-        MainFrame frame = new MainFrame(wm, width, height);
+        frame = new MainFrame(wm, width, height);
         // center the frame
         frame.setLocationRelativeTo(null);
 
@@ -161,7 +168,17 @@ public class JmeClientMain {
 		}
     	    });
     }
-    
+
+    /**
+     * Load system properties and properties from the named file
+     */
+    /**
+     * Returns the frame of the Wonderland client window.
+     */
+    public static MainFrame getFrame () {
+	return frame;
+    }
+
     private static Properties loadProperties(String fileName) {
         // start with the system properties
         Properties props = new Properties(System.getProperties());
@@ -179,17 +196,4 @@ public class JmeClientMain {
         return props;
     }
     
-//    class NodeMoveListener implements GeometricUpdateListener {
-//
-//        private ClientManager clientManager;
-//        
-//        public NodeMoveListener(ClientManager clientManager) {
-//            this.clientManager = clientManager;
-//        }
-//        
-//        public void geometricDataChanged(Spatial arg0) {
-//            clientManager.nodeMoved(arg0);
-//        }
-//        
-//    }
 }

@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -71,7 +72,7 @@ public class ModuleChecksums {
      * serialization
      */
     @XmlTransient
-    public HashMap<String, Checksum> internalChecksums = new HashMap<String, Checksum>();
+    public Map<String, Checksum> internalChecksums = new HashMap<String, Checksum>();
     
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
@@ -129,10 +130,10 @@ public class ModuleChecksums {
     /**
      * Sets the array of individual checksums.
      * 
-     * @param checksums An hash map of Checksum objects
+     * @param checksums A map of Checksum objects
      */
-    public void setChecksums(HashMap<String, Checksum> checksums) {
-        this.internalChecksums = checksums;
+    public void setChecksums(Map<String, Checksum> checksums) {
+        this.internalChecksums = Collections.synchronizedMap(new HashMap(checksums));
     }
     
     /**
@@ -141,8 +142,18 @@ public class ModuleChecksums {
      * @return An array of Checksum objects
      */
     @XmlTransient
-    public HashMap<String, Checksum> getChecksums() {
+    public Map<String, Checksum> getChecksums() {
         return this.internalChecksums;
+    }
+    
+    /**
+     * Takes a map of checksums and puts it in this map, overwriting any existing
+     * entries.
+     * 
+     * @param checksums A map of Checksums objects to add
+     */
+    public void putChecksums(Map<String, Checksum> checksums) {
+        this.internalChecksums.putAll(checksums);
     }
     
     /**
@@ -221,14 +232,14 @@ public class ModuleChecksums {
      * string, all files will be included. If the list of regular expressions
      * to exclude is either null or an empty string, no files are excluded.
      * 
-     * @param root The root directory from which to start
-     * @param dirs The directories to search
+     * @param root The root directory from which to label assets
+     * @param file The directory in which to generate checksums
      * @param algorithm The checksum algorithm
      * @param includes An array of regular expressions of files to include
      * @throws NoSuchAlgorithmException If the given checksum algorithm is invalid
      * @throws PatternSynaxException If either includes or excludes is invalid
      */
-    public static ModuleChecksums generate(File root, String[] dirs, String algorithm,
+    public static ModuleChecksums generate(File root, File dir, String algorithm,
             String[] includes, String excludes[]) throws NoSuchAlgorithmException {
         
         /* Try creating hte message digest, throws NoSuchAlgorithmException */
@@ -236,10 +247,8 @@ public class ModuleChecksums {
         
         /* Recursively generate checksums, then convert list to an array */
         HashMap<String, Checksum> list = new HashMap<String, Checksum>();
-        for (String dir : dirs) {
-            File file = new File(root, dir);
-            list.putAll(ModuleChecksums.generateChecksumForDirectory(root, file, digest, includes, excludes));
-        }
+        list.putAll(ModuleChecksums.generateChecksumForDirectory(root, dir, digest, includes, excludes));
+
         ModuleChecksums rc = new ModuleChecksums();
         rc.setChecksums(list);
         return rc;
@@ -385,7 +394,7 @@ public class ModuleChecksums {
         String includes[] = new String[0];
         String excludes[] = new String[0];
         
-        ModuleChecksums checksums = ModuleChecksums.generate(root, new String[] { "art", "plugins"}, SHA1_CHECKSUM_ALGORITHM, includes, excludes);
+        ModuleChecksums checksums = ModuleChecksums.generate(root, root, SHA1_CHECKSUM_ALGORITHM, includes, excludes);
         checksums.encode(new FileWriter(file));
     }
 }

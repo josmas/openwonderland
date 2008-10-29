@@ -1,25 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="package" name="wonderland-modules-tools">  
+<project basedir="." default="dist" name="wonderland-modules-tools">  
      <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-modules-tools}"/>
     
     <!-- all projects -->
     <fileset dir="${current.dir}" id="all.projects">
-        <include name="*/**/build.xml"/>
+        <include name="server-manager/build.xml"/>
+        <include name="audio-manager/build.xml"/>
+        <include name="voicebridge/build.xml"/>
+        <include name="phone/build.xml"/>
+<!--        <include name="phone/build.xml"/> -->
     </fileset>
     
-    <!-- setup -->
-    <target name="init">
-    </target>
-    
-    <!-- build all subprojects -->
-    <target name="compile" depends="init">
-        <build-subprojects fileset="all.projects" target="build"/>
-    </target>
-    
-    <!-- jar all subprojects -->
-    <target name="package" depends="compile">
-        <build-subprojects fileset="all.projects" target="package"/>
+    <!-- build and package all subprojects -->
+    <target name="dist">
+        <build-subprojects fileset="all.projects" target="dist"/>
     </target>
     
     <!-- clean all sub-projects -->

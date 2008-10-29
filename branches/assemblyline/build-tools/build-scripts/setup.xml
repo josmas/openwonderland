@@ -28,6 +28,14 @@
     <import file="${setup.build-scripts.dir}/platform-setup.xml"/>
 
     <!-- 
+        Use my.build.properties at the top level to override default values in
+        *.properties. You can specify an alternate build.properties override 
+        file by running with "ant -Dmy.build.properties.file=<file>" 
+    -->
+    <property name="my.build.properties.file" location="${top.dir}/my.build.properties"/>
+    <property file="${my.build.properties.file}"/>
+
+    <!-- 
         Include setup properties after platform-specific setup has been done,
         so we can include platform-specific values ostype and arch.
     -->

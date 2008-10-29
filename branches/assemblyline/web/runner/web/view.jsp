@@ -6,78 +6,147 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-   "http://www.w3.org/TR/html4/loose.dtd">
+"http://www.w3.org/TR/html4/loose.dtd">
 
 <%@ page import="org.jdesktop.wonderland.runner.Runner" %>
 
 <%@ taglib uri="/WEB-INF/tlds/c.tld" prefix="c" %>
 
-<link href="runner.css" rel="stylesheet" type="text/css" media="screen" />
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Project Wonderland Server Management</title>
-    </head>
-    <body>
-        <div id="header">
-            <img style="float:left" src="images/banner-left.jpg" />
-            <img src="images/banner-right-wonderland.jpg" />
-            <h1>
-                <span id="labs">Project Wonderland</span><br/>
-                Server Management
-            </h1>
-        </div>
-        <div id="contents">
-            <h3>Server Components</h3>
-            <table class="installed">
-                <tr class="header">
-                    <td class="installed"><b>Name</b></td>
-                    <td class="installed"><b>Location</b></td>
-                    <td class="installed"><b>Status</b></td>
-                    <td class="installed"><b>Actions</b></td>
-                </tr>
+<head>    
+<link href="runner.css" rel="stylesheet" type="text/css" media="screen" />
+<script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var pe;
+    
+    function updateServices() {
+        new Ajax.Request('services/list', { 
+            method:'get', 
+            requestHeaders: { Accept:'application/json' },
+            onSuccess: function(response){
+                var services = response.responseText.evalJSON(true)['service-list'];
+                if (services.service.length > 1) {
+                    for (var i = 0; i < services.service.length; i++) {
+                        updateService(services.service[i], i);
+                    }
+                } else {
+                    updateService(services.service, 0);
+                }
+            }
+        });
+    }
+    
+    function updateService(service, index) {
+        processStatus(service);
+        
+        var row = $('runnerTable').down('tr', index + 2);
+        if (row == null) {
+            row = new Element('tr');
+            row.insert(new Element('td', { 'class': 'installed' }));
+            row.insert(new Element('td', { 'class': 'installed' }));
+            row.insert(new Element('td', { 'class': 'installed' }));
+            row.insert(new Element('td', { 'class': 'installed' }));
+            $('runnerTable').insert(row);
+        }
+        
+        row.down('td', 0).update(service.name);
+        row.down('td', 1).update(service.location);
+        row.down('td', 2).update(service.status_text);
+        
+        var actions = row.down('td', 3);
+        actions.update();
+        for (var i = 0; i < service.link.length; i++) {
+            actions.insert(service.link[i]);
+            actions.insert(' ');
+        }
+    }
+    
+    function processStatus(service) {
+        switch (service.status) {
+             case 'NOT_RUNNING':
+                service.status_text = 'Not Running';
+                service.link = [ new Element('a', { 'href': 'javascript:void(0);',
+                                                  'onclick': 'setStatus(\'' + service.name + '\', \'start\')' }).update("start") ];
+                break;
+             case 'RUNNING':
+                service.status_text = 'Running';
+                service.link = [ new Element('a', { 'href': 'javascript:void(0);',
+                                                     'onclick': 'setStatus(\'' + service.name + '\', \'stop\')' }).update("stop"),
+                                                                                
+                                 new Element('a', { 'href': 'javascript:void(0);',
+                                                     'onclick': 'setStatus(\'' + service.name + '\', \'restart\')' }).update("restart") ];
+                break;
                 
-                <c:forEach var="runner" items="${requestScope['runnerList']}">
-                    <tr>
-                        <td class="installed">${runner.name}</td>
-                        <td class="installed">localhost</td>
-                     
-                        <c:choose>
-                                <c:when test="${runner.status == 'NOT_RUNNING'}" >
-                                    <td class="installed">Not Running</td>
-                                    <td class="installed">
-                                        <a href="run?action=start&name=${runner.name}">start</a>
-                                </c:when>
-                                <c:when test="${runner.status == 'STARTING_UP'}" >
-                                    <td class="installed">Starting up</td>
-                                    <td class="installed">
-                                </c:when>
-                                <c:when test="${runner.status == 'RUNNING'}" >
-                                    <td class="installed">Running</td>
-                                    <td class="installed">
-                                        <a href="run?action=stop&name=${runner.name}">stop</a>
-                                </c:when>
-                                <c:when test="${runner.status == 'SHUTTING_DOWN'}" >
-                                    <td class="installed">Shutting Down</td>
-                                    <td class="installed">
-                                </c:when>
-                                <c:when test="${runner.status == 'ERROR'}" >
-                                    <td class="installed">Error</td>
-                                    <td class="installed">
-                                </c:when>
-                                <c:otherwise>
-                                    Unknown
-                                </c:otherwise>
-                            </c:choose>
-                            
-                            <c:if test="${!empty runner.logFile}">
-                                <a href="run?action=log&name=${runner.name}">log</a>
-                            </c:if>
-                        </td>
-                    </tr>
-                </c:forEach>
-            </table>
-            <br>            
-        </div>
-    </body>
-</html>
+             default:
+                service.status_text = service.status;
+        }
+        
+        service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name=' + service.name,
+                                             'target': '_top'}).update("edit"));
+        
+        if (service.hasLog) {
+            service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name=' + service.name,
+                                                 'target': '_top'}).update("log"));
+        }
+    }
+    
+    function setStatus(service, action) {
+        new Ajax.Request('services/' + service + "/" + action, { 
+            method:'get', 
+            requestHeaders: { Accept:'application/json' },
+            onSuccess: function(response){
+                updateServices();
+            }
+        });
+    }
+    
+    function setUpdatePeriod(period) {
+        if (pe) { pe.stop(); }
+        if (period > 0) {
+            pe = new PeriodicalExecuter(updateServices, period);
+        }
+    
+        // clear the list
+        $('periods').update("refresh:");
+        
+        var times = [0, 15, 60];
+        for (var i = 0; i < times.length; i++) {
+            var timeStr = times[i] + " sec.";
+            if (times[i] == 0) {
+                timeStr = "none";
+            }
+            
+            if (times[i] == period) {
+                $('periods').insert(timeStr);    
+            } else {
+                $('periods').insert(new Element('a', { 'href': 'javascript:void(0);',
+                                                'onclick' : 'setUpdatePeriod(' + times[i] +')'}
+                                               ).update(timeStr));
+            }
+            
+            $('periods').insert(' ');
+        }
+    }
+</script>
+</head>
+<body onload="updateServices(); setUpdatePeriod(15);">
+<h1>View Server Components</h1>
+
+<table class="installed" id="runnerTable">
+    <tr>
+        <td colspan="3"><h3>Server Components</h3></td>
+        <td class="refresh" id="periods"></td>
+    </tr>
+    <tr class="header">
+        <td class="installed"><b>Name</b></td>
+        <td class="installed"><b>Location</b></td>
+        <td class="installed"><b>Status</b></td>
+        <td class="installed"><b>Actions</b></td>
+    </tr>
+</table>    
+
+<a href="javascript:void(0);" onclick="setStatus('all', 'stop')">Stop all</a>
+<a href="javascript:void(0);" onclick="setStatus('all', 'start')">Start all</a>
+<a href="javascript:void(0);" onclick="setStatus('all', 'restart')">Restart all</a>
+
+</body>

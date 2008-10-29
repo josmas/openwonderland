@@ -17,21 +17,34 @@
  */
 package org.jdesktop.wonderland.modules.testcells.client.cell;
 
+import com.jme.renderer.ColorRGBA;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.ShapeRenderer;
+import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
 /**
- * Test for skybox
+ * Simple shape
  * 
- * @deprecated
  * @author paulby
  */
 public class SimpleShapeCell extends Cell {
-    
+
+    private SimpleShapeConfig.Shape shape;
+    private ColorRGBA color;
+
     public SimpleShapeCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
+    
+    @Override
+    public void configure(CellConfig configData) {
+        super.configure(configData);
+        SimpleShapeConfig c = (SimpleShapeConfig) configData;
+        this.shape = c.getShape();
+    }
+
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
@@ -47,6 +60,17 @@ public class SimpleShapeCell extends Cell {
         
         return ret;
     }
-    
+
+    public SimpleShapeConfig.Shape getShape() {
+        return shape;
+    }
+
+    /**
+     * Return the color of this shape
+     * @return
+     */
+//    public ColorRGBA getColor() {
+//        return color;
+//    }
 
 }
