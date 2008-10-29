@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.runner.RunManager;
@@ -46,7 +46,7 @@ public class RunnerListResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @ProduceMime({"text/plain", "application/xml", "application/json"})
+    @Produces({"text/plain", "application/xml", "application/json"})
     public Response getRunnerList() {
         Collection<Runner> runners = RunManager.getInstance().getAll();
         RunnerListWrapper out = new RunnerListWrapper(runners);

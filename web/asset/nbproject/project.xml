@@ -15,7 +15,7 @@
                 <library>
                     <file>${libs.restapi.classpath}</file>
                 </library>
-                <library files="1">
+                <library>
                     <file>${file.reference.wonderland-wfs.jar}</file>
                 </library>
                 <library files="1">
@@ -42,7 +42,7 @@
                 <library files="1">
                     <file>${file.reference.commons-fileupload-1.2.1.jar}</file>
                 </library>
-                <library files="1">
+                <library>
                     <file>${file.reference.wonderland-modules-core.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>

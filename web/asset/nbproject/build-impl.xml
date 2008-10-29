@@ -535,11 +535,9 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy-ear-war file="${file.reference.wonderland-server.jar}" propname="included.lib.file.reference.wonderland-server.jar.X"/>
         <basename file="${file.reference.wonderland-client.jar}" property="included.lib.file.reference.wonderland-client.jar"/>
         <copy-ear-war file="${file.reference.wonderland-client.jar}" propname="included.lib.file.reference.wonderland-client.jar.X"/>
-        <basename file="${file.reference.wonderland-modules-core.jar}" property="included.lib.file.reference.wonderland-modules-core.jar"/>
-        <copy-ear-war file="${file.reference.wonderland-modules-core.jar}" propname="included.lib.file.reference.wonderland-modules-core.jar.X"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${included.lib.file.reference.wonderland-common.jar} ${included.lib.file.reference.wonderland-server.jar} ${included.lib.file.reference.wonderland-client.jar} ${included.lib.file.reference.wonderland-modules-core.jar} "/>
+            <attribute name="Class-Path" value="${included.lib.file.reference.wonderland-common.jar} ${included.lib.file.reference.wonderland-server.jar} ${included.lib.file.reference.wonderland-client.jar} "/>
         </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
@@ -547,7 +545,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy file="${file.reference.wonderland-common.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-server.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-client.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.wonderland-modules-core.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest" name="do-ear-dist">
         <dirname file="${dist.ear.war}" property="dist.jar.dir"/>

@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -53,7 +53,7 @@ public class RunnerActionResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @ProduceMime({"text/plain", "application/xml", "application/json"})
+    @Produces({"text/plain", "application/xml", "application/json"})
     public Response get(@PathParam(value="runner") String runner,
                         @PathParam(value="action") String action,
                         @QueryParam(value="wait")  String waitParam) 
