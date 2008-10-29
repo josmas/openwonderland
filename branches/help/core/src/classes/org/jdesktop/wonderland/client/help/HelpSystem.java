@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.client.help;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.common.help.HelpInfo;
@@ -66,14 +68,30 @@ public class HelpSystem {
      */
     private JMenu buildJMenu(String name, HelpInfo.HelpMenuEntry[] entries) {
         JMenu menu = new JMenu(name);
+        if (entries == null) {
+            return menu;
+        }
+        
+        /* Loop through all of the entries and recursively create submenus */
         for (HelpInfo.HelpMenuEntry entry : entries) {
             if (entry instanceof HelpInfo.HelpMenuFolder) {
                 HelpInfo.HelpMenuFolder folder = (HelpInfo.HelpMenuFolder)entry;
-                menu.add(this.buildJMenu(folder.name, folder.entries));
+                    menu.add(this.buildJMenu(folder.name, folder.entries));
             }
             else if (entry instanceof HelpInfo.HelpMenuItem) {
                 HelpInfo.HelpMenuItem item = (HelpInfo.HelpMenuItem)entry;
+                final String uri = item.helpURI;
                 JMenuItem menuItem = new JMenuItem(item.name);
+                menuItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        try {
+                            System.out.println("URL: " + uri);
+                            WebBrowserLauncher.openURL(uri);
+                        } catch (Exception excp) {
+                            excp.printStackTrace();
+                        }
+                    }
+                });
                 menu.add(menuItem);
             }
             else if (entry instanceof HelpInfo.HelpMenuSeparator) {

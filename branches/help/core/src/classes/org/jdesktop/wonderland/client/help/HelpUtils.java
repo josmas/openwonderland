@@ -72,8 +72,4 @@ public class HelpUtils {
         }
         return helpMenu;
     }
-    
-    /**
-     * Given a root menu, returns the 
-     */
 }

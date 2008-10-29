@@ -66,19 +66,19 @@ public class MainFrame extends javax.swing.JFrame {
         jMenuBar2.add(helpMenu);
         
         // make the canvas:
-        canvas = wm.getRenderManager().createCanvas(width, height);
-        canvas.setVisible(true);
-        wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
-            public void currentFramerate(float framerate) {
-                fpsLabel.setText("FPS: "+framerate);
-            }                
-        }, 100);
-        wm.getRenderManager().setCurrentCanvas(canvas);
-
-        setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
-
-        canvas.setBounds(0, 0, width, height);
-        centerPanel.add(canvas, BorderLayout.CENTER);
+//        canvas = wm.getRenderManager().createCanvas(width, height);
+//        canvas.setVisible(true);
+//        wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
+//            public void currentFramerate(float framerate) {
+//                fpsLabel.setText("FPS: "+framerate);
+//            }                
+//        }, 100);
+//        wm.getRenderManager().setCurrentCanvas(canvas);
+//
+//        setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
+//
+//        canvas.setBounds(0, 0, width, height);
+//        centerPanel.add(canvas, BorderLayout.CENTER);
 
         pack();
     }

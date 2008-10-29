@@ -22,10 +22,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Collection;
+import java.util.LinkedList;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
@@ -41,9 +44,7 @@ import javax.xml.bind.annotation.XmlTransient;
 public class HelpInfo {
 
     /*
-     * An array of entries, either folders or items. This list should be
-     * alphabetical s othat folders are properly created, although a folder
-     * entry is not necessary (only if you want separators)
+     * An array of entries, either folders, items, or separators.
      */
     @XmlElementRefs({
         @XmlElementRef()
@@ -66,11 +67,11 @@ public class HelpInfo {
      */
     @XmlRootElement(name="folder")
     public static class HelpMenuFolder extends HelpMenuEntry {
-        @XmlElement(name="name")
+        @XmlAttribute(name="name")
         public String name = null;
         
-        @XmlElements({
-         @XmlElement()
+        @XmlElementRefs({
+         @XmlElementRef()
         })
         public HelpMenuEntry[] entries = null;
         
@@ -97,18 +98,14 @@ public class HelpInfo {
         @XmlElement(name="help-page-uri")
         public String helpURI = null;
         
-        @XmlElement(name="help-page-external")
-        public String helpExternal = null;
-        
         /** Default constructor */
         public HelpMenuItem() {
         }
         
         /** Constructor */
-        public HelpMenuItem(String name, String uri, String url) {
+        public HelpMenuItem(String name, String uri) {
             this.name = name;
             this.helpURI = uri;
-            this.helpExternal = url;
         }
     }
     
@@ -122,6 +119,24 @@ public class HelpInfo {
         }
     }
     
+    /**
+     * A category in the help menu, to be replaced by other entries
+     */
+    @XmlRootElement(name="category")
+    public static class HelpMenuCategory extends HelpMenuEntry {
+        @XmlAttribute(name="name")
+        public String name = null;
+        
+        /** Default constructor */
+        public HelpMenuCategory() {
+        }
+        
+        /** Constructor, takes the category name */
+        public HelpMenuCategory(String name) {
+            this.name = name;
+        }
+    }
+    
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
     private static Unmarshaller unmarshaller = null;
@@ -129,20 +144,35 @@ public class HelpInfo {
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(HelpInfo.class,
-                    HelpMenuEntry.class, HelpMenuItem.class, HelpMenuFolder.class,
-                    HelpMenuSeparator.class);
+            Collection<Class> clazz = getJAXBClasses();
+            JAXBContext jc = JAXBContext.newInstance(clazz.toArray(new Class[] {}));
             HelpInfo.unmarshaller = jc.createUnmarshaller();
             HelpInfo.marshaller = jc.createMarshaller();
             HelpInfo.marshaller.setProperty("jaxb.formatted.output", true);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
-    }    
+    }
+    
     /**
      * Default Constructor
      */
     public HelpInfo() {
+    }
+    
+    /**
+     * Returns a collection of classes to initialize the JAXBContext path
+     */
+    public static Collection<Class> getJAXBClasses() {
+        Collection<Class> list = new LinkedList();
+        list.add(HelpInfo.class);
+        list.add(HelpMenuEntry.class);
+        list.add(HelpMenuItem.class);
+        list.add(HelpMenuFolder.class);
+        list.add(HelpMenuSeparator.class);
+        list.add(HelpMenuCategory.class);
+        
+        return list;
     }
     
     /** Setters and getters */
@@ -174,11 +204,11 @@ public class HelpInfo {
     public static void main(String[] args) throws JAXBException, IOException {
         HelpInfo info = new HelpInfo();
         info.setHelpEntries(new HelpMenuEntry[] {
-            new HelpMenuItem("Moving About", "wlh://fubar", "http://www.fubar.com"),
-            new HelpMenuItem("Audio", "fubar", "fubar"),
+            new HelpMenuItem("Moving About", "wlh://fubar"),
+            new HelpMenuItem("Audio", "fubar"),
             new HelpMenuSeparator(),
             new HelpMenuFolder("My item", new HelpMenuEntry[] {
-                new HelpMenuItem("New Imte", "fubar1", "fubar1")
+                new HelpMenuItem("New Imte", "fubar1")
             })
         });
         info.encode(new FileWriter("fubar.xml"));
