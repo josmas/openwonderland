@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.web.help.deployer.HelpDeployer;
@@ -48,7 +48,7 @@ public class GetHelpResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @ProduceMime({"text/html", "images/*"})
+    @Produces({"text/html", "images/*"})
     public Response getHelp(@PathParam("modulename") String moduleName, @PathParam("path") String path) {
         Logger logger = Logger.getLogger(GetHelpResource.class.getName());
         

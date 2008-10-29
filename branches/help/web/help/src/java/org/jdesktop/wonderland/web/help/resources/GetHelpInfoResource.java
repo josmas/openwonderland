@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -52,7 +52,7 @@ public class GetHelpInfoResource {
      * TBD
      */
     @GET
-    @ProduceMime("text/plain")
+    @Produces("text/plain")
     public Response getHelpInfo() {
         /* Formulate the HTTP response and send the string */
         HelpInfo info = HelpDeployer.buildHelpInfo();
