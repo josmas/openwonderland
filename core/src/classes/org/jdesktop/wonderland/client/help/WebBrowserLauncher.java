@@ -50,7 +50,7 @@ public class WebBrowserLauncher {
         if (osName.startsWith("Mac OS") == true) {
             Class fileMgr = Class.forName("com.apple.eio.FileManager");
             Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[]{String.class});
-            openURL.invoke(null, new Object[]{url});
+            openURL.invoke(null, new Object[] { url });
         }
         else if (osName.startsWith("Windows") == true) {
             Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
@@ -61,7 +61,7 @@ public class WebBrowserLauncher {
             };
             String browser = null;
             for (int count = 0; count < browsers.length && browser == null; count++) {
-                if (Runtime.getRuntime().exec(new String[]{"which", browsers[count]}).waitFor() == 0) {
+                if (Runtime.getRuntime().exec(new String[]{ "which", browsers[count] }).waitFor() == 0) {
                     browser = browsers[count];
                 }
             }
@@ -69,7 +69,7 @@ public class WebBrowserLauncher {
                 throw new Exception("Could not find web browser");
             }
             else {
-                Runtime.getRuntime().exec(new String[]{browser, url});
+                Runtime.getRuntime().exec(new String[]{ browser, url });
             }
         }
     }

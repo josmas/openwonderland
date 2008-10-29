@@ -6,7 +6,6 @@
         <fail unless="run.class">Must set property 'run.class'</fail>
         <ant antfile="build.xml" inheritall="false">
             <target name="jar"/>
-            <target name="modules-client-classpath"/>
         </ant>
         <java classname="${run.class}" failonerror="true" fork="true">
             <classpath>

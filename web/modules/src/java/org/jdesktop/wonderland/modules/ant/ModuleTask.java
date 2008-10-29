@@ -108,7 +108,11 @@ public class ModuleTask extends Jar {
     public void addConfiguredArt(ArtPart art) {
         addConfiguredPart(art);
     }
-    
+
+    public void addConfiguredHelp(HelpPart help) {
+        addConfiguredPart(help);
+    }
+        
     public void addConfiguredWfs(WFSPart wfs) {
         addConfiguredPart(wfs);
     }
@@ -439,7 +443,13 @@ public class ModuleTask extends Jar {
             super ("wfs");
         }
     }
-    
+ 
+    public static class HelpPart extends ModulePart {
+        public HelpPart() {
+            super ("help");
+        }
+    }
+        
     public static class ServerPart extends ModulePart {
         public ServerPart() {
             super ("server");
