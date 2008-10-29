@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="package" name="wonderland">
 
-<!-- Use my.build.properties to override default values in build.properties.
-     You can specify an alternate build.properties override file by
-     running with "ant -Dbuild.properties.file=<file>" -->
-<property name="build.properties.file" value="${basedir}/my.build.properties"/>
-<property file="${build.properties.file}"/>
+<!-- set the current directory -->
+<dirname property="current.dir" file="${ant.file.wonderland}"/>
+
+<!-- import generic setup -->
+<import file="build-tools/build-scripts/setup.xml"/>
     
 <target name="build" description="Build everything">
     <!-- build areas in correct order, use default build target -->
@@ -25,7 +25,7 @@
 </target>
 
 <target name="javadoc" description="Build javadoc">
-    <ant dir="core" target="javadoc"/>
+    <ant dir="core" target="javadoc" inheritall="false"/>
 </target>
 
 <target name="clean" description="Clean all rebuildable stuff.">
@@ -50,9 +50,22 @@
 </target>
 
 <target name="daily-build" depends="release" description="Do the daily build">
-  <copy todir="/export/home/lg3dadmin/lg3d/packages/api-update">
+  <fail unless="daily.build.dir" message="No ${daily.build.dir} directory specified"/>
+  
+  <tstamp>
+     <format property="daily.build.date" pattern="yyyy-MM-dd"/>
+  </tstamp>
+  
+  <property name="daily.build.today.dir" location="${daily.build.dir}/daily-${wonderland.version}/${daily.build.date}"/>
+  <mkdir dir="${daily.build.today.dir}"/>
+
+  <!-- copy javadoc to javadoc directory -->
+  <copy todir="${daily.build.dir}/api-update">
     <fileset dir="core/release/javadoc"/>
   </copy>
+  
+  <!-- copy Wonderland.jar -->
+  <copy todir="${daily.build.today.dir}" file="${dist.dir}/Wonderland.jar"/>
 </target>
 
 <target name="run-server" depends="package, -run-setup, -run-with-properties, -run-without-properties" 
