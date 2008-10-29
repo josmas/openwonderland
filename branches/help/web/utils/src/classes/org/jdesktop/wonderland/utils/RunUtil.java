@@ -134,8 +134,12 @@ public class RunUtil {
         
         // write to a file with the same name as the source
         String fileName = srcURL.substring(srcURL.lastIndexOf("/"));
-        File out = new File(destDir, fileName);
-            
+        if (fileName.length() == 1) {
+            // ignore directories
+            return null;
+        }
+        
+        File out = new File(destDir, fileName);    
         return writeToFile(is, out);
     }
     

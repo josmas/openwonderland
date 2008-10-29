@@ -42,7 +42,8 @@ import org.jdesktop.wonderland.web.help.deployer.HelpDeployer;
 public class GetHelpInfoResource {
  
     /* From this, get information about the base URL of the web service */
-    @Context private UriInfo context;
+    @Context
+    private UriInfo context;
 
     /* The error logger */
     private static Logger logger = Logger.getLogger(GetHelpInfoResource.class.getName());
