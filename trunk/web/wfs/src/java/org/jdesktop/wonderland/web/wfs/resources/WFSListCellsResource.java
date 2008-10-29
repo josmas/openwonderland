@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -65,7 +65,7 @@ public class WFSListCellsResource {
      * @return The XML serialization of the cell setup information via HTTP GET.
      */
     @GET
-    @ProduceMime("text/plain")
+    @Produces("text/plain")
     public Response getCellResource(@PathParam("wfsname") String wfsName, @QueryParam("reload") String reload) {
         /* Fetch thhe error logger for use in this method */
         Logger logger = WFSManager.getLogger();

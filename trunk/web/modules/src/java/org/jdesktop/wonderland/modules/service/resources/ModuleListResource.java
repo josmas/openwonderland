@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.modules.Module;
@@ -58,7 +58,7 @@ public class ModuleListResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @ProduceMime("text/plain")
+    @Produces("text/plain")
     public Response getModuleInfo(@PathParam("state") String state) {
         /* Fetch thhe error logger for use in this method */
         Logger logger = ModuleManager.getLogger();
