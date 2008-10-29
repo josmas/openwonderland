@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.web.wfs.WFSManager;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/{wfsname}/cell/{path}", limited=false)
+@Path(value="/{wfsname}/cell/{path:.*}")
 public class WFSCellResource {
     
     /**

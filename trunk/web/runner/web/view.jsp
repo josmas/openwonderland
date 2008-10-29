@@ -24,7 +24,7 @@
             method:'get', 
             requestHeaders: { Accept:'application/json' },
             onSuccess: function(response){
-                var services = response.responseText.evalJSON(true)['service-list'];
+                var services = response.responseText.evalJSON(true);
                 if (services.service.length > 1) {
                     for (var i = 0; i < services.service.length; i++) {
                         updateService(services.service[i], i);

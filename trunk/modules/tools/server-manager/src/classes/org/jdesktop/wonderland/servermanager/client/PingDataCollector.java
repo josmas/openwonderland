@@ -112,6 +112,11 @@ public class PingDataCollector
         int remaining = data.size() - firstIdx;
         int lastIdx = firstIdx + Math.min(remaining, count);
     
+        // make sure these are valid values
+        if (firstIdx < 0 || lastIdx < 0) {
+            return Collections.emptyList();
+        }
+        
         return data.subList(firstIdx, lastIdx);
     }
     

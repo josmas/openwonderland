@@ -121,8 +121,10 @@ public class WebServerLauncher {
             List<URL> urls = new ArrayList<URL>();
             while ((line = in.readLine()) != null) {
                 File f = RunUtil.extract(WebServerLauncher.class, line, webDir);
-                System.out.println("Adding URL " + f.toURL());
-                urls.add(f.toURL());
+                if (f != null) {
+                    System.out.println("Adding URL " + f.toURL());
+                    urls.add(f.toURL());
+                }
             }
             
             // create a classloader with those files and use it

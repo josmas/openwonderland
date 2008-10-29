@@ -9,7 +9,7 @@
             <name>wonderland-web-asset</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
-                <library files="14">
+                <library files="11">
                     <file>${libs.restlib.classpath}</file>
                 </library>
                 <library>

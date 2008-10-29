@@ -56,7 +56,7 @@ public class ServerManagerConnectionHandler
                                 ClientSession session, 
                                 Properties properties) 
     {
-        logger.info("ServerManager client connected");
+        logger.fine("ServerManager client connected");
     }
 
     public void messageReceived(WonderlandClientSender sender, 
@@ -64,7 +64,7 @@ public class ServerManagerConnectionHandler
                                 Message message) 
     {
         if (message instanceof PingRequestMessage) {
-            logger.info("Received ping message");
+            logger.fine("Received ping message");
             PingRequestMessage req = (PingRequestMessage) message;
             PingResponseMessage resp = new PingResponseMessage(req);
             sender.send(session, resp);
@@ -72,6 +72,6 @@ public class ServerManagerConnectionHandler
     }
 
     public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
-        logger.info("ServerManager client disconnected");
+        logger.fine("ServerManager client disconnected");
     }
 }
