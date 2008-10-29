@@ -192,7 +192,6 @@ public class HelpDeployer implements ModuleDeployerSPI {
         /* Loop through the layout recursively and populate with content */
         if (helpLayout.getHelpEntries() != null) {
             for (HelpInfo.HelpMenuEntry entry : helpLayout.getHelpEntries()) {
-                logger.warning("[HELP] Building for entry " + entry.getClass().getName());
                 HelpInfo.HelpMenuEntry[] children = HelpDeployer.buildHelpEntries(entry);
                 for (HelpInfo.HelpMenuEntry child : children) {
                     entryList.add(child);
@@ -214,12 +213,10 @@ public class HelpDeployer implements ModuleDeployerSPI {
     private static HelpInfo.HelpMenuEntry[] buildHelpEntries(HelpInfo.HelpMenuEntry entry) {
         if (entry instanceof HelpInfo.HelpMenuFolder) {
             HelpInfo.HelpMenuFolder helpFolder = (HelpInfo.HelpMenuFolder)entry;
-            logger.warning("[HELP] Folder " + helpFolder.name);
             List<HelpInfo.HelpMenuEntry> childList = new LinkedList();
             
             /* Create a new folder, return as an array and recurse */
             if (helpFolder.entries != null) {
-                logger.warning("[HELP] Folder Entries "+ helpFolder.entries.length);
                 for (HelpInfo.HelpMenuEntry folderEntry : helpFolder.entries) {
                     HelpInfo.HelpMenuEntry[] children = HelpDeployer.buildHelpEntries(folderEntry);
                     for (HelpInfo.HelpMenuEntry child : children) {
@@ -239,20 +236,17 @@ public class HelpDeployer implements ModuleDeployerSPI {
             String itemName = helpItem.name;
             String itemURI = helpItem.helpURI;
             HelpInfo.HelpMenuItem item = new HelpInfo.HelpMenuItem(itemName, itemURI);
-            logger.warning("[HELP] Item " + itemName);
             return new HelpInfo.HelpMenuEntry[] { item };
         }
         else if (entry instanceof HelpInfo.HelpMenuCategory) {
             /* Fill in the entries with the category return as array */
             HelpInfo.HelpMenuCategory helpCategory = (HelpInfo.HelpMenuCategory)entry;
             String categoryName = helpCategory.name;
-            logger.warning("[HELP] Category " + categoryName);
             return HelpDeployer.getEntriesByCategory(categoryName);
         }
         else if (entry instanceof HelpInfo.HelpMenuSeparator) {
             /* Create a new separator, return as an array */
             HelpInfo.HelpMenuSeparator separator = new HelpInfo.HelpMenuSeparator();
-            logger.warning("[HELP] Separator");
             return new HelpInfo.HelpMenuEntry[] { separator };
         }
         return new HelpInfo.HelpMenuEntry[] {} ;
@@ -268,7 +262,6 @@ public class HelpDeployer implements ModuleDeployerSPI {
         
         /* Fetch the list of deployed contents for the category */
         List<DeployedHelpContent> deployedHelpContents = contentMap.get(category);
-        logger.warning("[HELP] Splicing in category " + category);
         if (deployedHelpContents == null) {
             return list.toArray(new HelpInfo.HelpMenuEntry[] {});
         }
@@ -277,7 +270,6 @@ public class HelpDeployer implements ModuleDeployerSPI {
         ListIterator<DeployedHelpContent> it = deployedHelpContents.listIterator();
         while (it.hasNext() == true) {
             HelpContent.HelpMenuContent entry = it.next().content;
-            logger.warning("[HELP] Entry " + entry.entries);
             if (entry.entries != null) {
                 for (HelpInfo.HelpMenuEntry content : entry.entries) {
                     list.add(content);

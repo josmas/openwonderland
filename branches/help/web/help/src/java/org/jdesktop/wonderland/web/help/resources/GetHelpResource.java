@@ -52,7 +52,6 @@ public class GetHelpResource {
     @ProduceMime({"text/html", "images/*"})
     public Response getHelp(@PathParam("modulename") String moduleName, @PathParam("path") String path) {
         Logger logger = Logger.getLogger(GetHelpResource.class.getName());
-        logger.warning("[HELP] In module " + moduleName + " getting " + path);
         
         /*
          * If the path has a leading slash, then remove it (this is typically
@@ -68,10 +67,6 @@ public class GetHelpResource {
          * (e.g. art, client, etc). Look for the entry that matches.
          */
         Map<String, File> assetMap = HelpDeployer.getFileMap();
-        Iterator<String> it = assetMap.keySet().iterator();
-        while (it.hasNext() == true) {
-            logger.warning("[HELP] Module " + it.next());
-        }
         File root = assetMap.get(moduleName);
         if (root == null) {
             /* Log an error and return an error response */
@@ -79,7 +74,6 @@ public class GetHelpResource {
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
-        logger.warning("[HELP] Found asset " + path + " in " + root.getAbsolutePath());
         
         File file = new File(root, path);
         if (file.exists() == false || file.isDirectory() == true) {
