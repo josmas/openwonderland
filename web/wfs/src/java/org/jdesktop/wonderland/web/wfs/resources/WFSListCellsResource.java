@@ -51,7 +51,7 @@ import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/{wfsname}/cells/{reload}", limited=false)
+@Path(value="/{wfsname}/cells")
 public class WFSListCellsResource {
     
     /**
