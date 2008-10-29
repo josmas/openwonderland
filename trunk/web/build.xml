@@ -18,6 +18,9 @@
        <ant dir="front" target="dist" inheritall="false">
           <propertyset refid="web.project.properties"/>
        </ant>
+       <ant dir="help" target="dist" inheritall="false">
+          <propertyset refid="web.project.properties"/>
+       </ant>
        <ant dir="server" target="jar" inheritall="false"/>
     </target>
     
@@ -73,6 +76,9 @@
            <propertyset refid="web.project.properties"/>
        </ant> 
        <ant dir="front"    target="clean" inheritall="false">
+           <propertyset refid="web.project.properties"/>
+       </ant>
+       <ant dir="help"     target="clean" inheritall="false">
            <propertyset refid="web.project.properties"/>
        </ant>
        <ant dir="server"   target="clean" inheritall="false"/>
