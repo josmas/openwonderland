@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    This file will be renamed run.xml at the top level.  It just imports
+    the core run-server.xml file, and executes the run method in there.
+-->
+<project basedir="." default="run" name="wonderland.run.server">
+    <!-- current directory needed in all scripts -->
+    <property name="current.dir" value="core"/>
+
+    <!-- override properties -->
+    <property name="core.build.lib.dir" location="core/lib"/>
+    <property name="core.lib.dir" location="core/lib"/>
+
+    <!-- import the core build script -->
+    <import file="core/build-tools/run-scripts/run-server.xml"/>
+    
+    <target name="run" depends="core-run-server"/>
+</project>
