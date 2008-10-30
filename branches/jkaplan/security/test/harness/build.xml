@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="testharness" default="build" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-serverprotocoltest}"/>
+    <property name="test.dir" location="${current.dir}/.."/>
+    
+    <!--Runtime Class Path for JTRunner -->
+    <property name="harness.lib.dir" value="${current.dir}/ext"/>
+    <pathconvert property="jtr.runtime.classpath">
+        <fileset dir="${harness.lib.dir}/common/jtr" includes="*.jar"/>
+    </pathconvert>
+
+    <!-- import common build file -->
+    <import file="${test.dir}/build-tools/build-scripts/test-build.xml"/>
+
+    <!-- import our properties.  Clients can override these in
+         my.build.properties.  The logic to include my.build.properties is
+         in test-setup.xml
+    -->
+    <property file="${current.dir}/build.properties"/>
+
+    <target name="build" depends="compile-master, jar-slave, jar-jtr-slave">
+    </target>
+    
+    <target name="compile-common" depends="-test-init">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/testharness/common/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${core-common.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="compile-manager-common" depends="-test-init">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/testharness/manager/common/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${core-common.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+     <target name="jar-manager-common" depends="jar-common, compile-manager-common" 
+            description="Build manager common jar">
+       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-manager-common.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/manager/common/**"/>
+            </fileset>
+         </jar>
+    </target>
+    
+    <target name="compile-manager-ui" depends="compile-manager-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/testharness/manager/ui/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${core-client.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="compile-master" depends="compile-common, compile-manager-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/testharness/master/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${core-common.classpath}"/>
+                <path location="${core.lib.dir}/wonderland-common.jar"/>
+                <!-- include manager common jar-->
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="compile-slave" depends="compile-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="org/jdesktop/wonderland/testharness/slave/**"/>
+            </compile-classes>
+            
+            <compile-classpath>
+                <pathelement path="${jtr.runtime.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="run-master" depends="jar-master, jar-manager-common">
+        <java classname="org.jdesktop.wonderland.testharness.master.MasterMain" fork="true">
+            <classpath>
+                <path location="${build.lib.dir}/testharness-master.jar"/>
+                <path location="${build.lib.dir}/testharness-common.jar"/>
+                <path location="${build.lib.dir}/testharness-manager-common.jar"/>
+		<pathelement path="${core-client.classpath}"/>  <!-- for vecmath-->
+                <path location="${core.lib.dir}/wonderland-common.jar"/>
+            </classpath>    
+            
+            <arg value="${harness.master.port}"/>
+            <arg value="props/wonderland-server.properties"/>
+        </java>
+    </target>
+    
+    <target name="run-slave" depends="jar-slave">
+        <java classname="org.jdesktop.wonderland.testharness.slave.SlaveMain" fork="true">
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+            <classpath>
+                <path location="${build.lib.dir}/testharness-slave.jar"/>
+                <path location="${build.lib.dir}/testharness-common.jar"/>
+		<pathelement path="${core-client.classpath}"/>
+            </classpath>  
+            
+            <arg value="${harness.master.hostname}"/>
+            <arg value="${harness.master.port}"/>
+        </java>
+    </target>
+
+    <target name="run-jtr" depends="jar-slave">
+        <echo>JTR Classpath: ${jtr.runtime.classpath}</echo>
+        <java classname="jtr.test.Test" dir="./" fork="true">
+            <classpath>
+                <path location="${build.lib.dir}/testharness-slave.jar"/>
+                <path location="${build.lib.dir}/testharness-common.jar"/>
+                <pathelement path="${jtr.runtime.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>             
+            </classpath>
+            
+            <!-- JTR standard properties -->
+            <jvmarg value="-Djtr.test.Test.config=config/jtr.xml"/>
+            <jvmarg value="-Dlog4j.configuration=config/log4j.xml"/>
+        
+            <!-- Required JVM properties for distributed testing -->
+            <jvmarg value="-Djtr.remote.test.host=localhost"/>
+            <jvmarg value="-Djava.security.policy=config/java.policy"/>
+        
+            <!-- Optional JVM useful property -->
+            <jvmarg value="-Dcom.sun.management.jmxremote"/>
+        </java>
+    </target>
+
+    <target name="run-manager" depends="compile-manager-ui">
+        <java classname="org.jdesktop.wonderland.testharness.manager.ui.HarnessManagerUI" fork="true">
+            <classpath>
+                <path location="${build.classes.dir}"/>
+		<pathelement path="${core-client.classpath}"/>
+            </classpath>    
+        </java>
+    </target>
+    
+    <target name="run-chart" depends="compile-manager-ui">
+        <java classname="org.jdesktop.wonderland.testharness.manager.ui.analysis.TimeChart" fork="true">
+            <classpath>
+                <path location="${build.classes.dir}"/>
+		<pathelement path="${core-client.classpath}"/>
+            </classpath>    
+        </java>
+    </target>
+    
+     <target name="jar-common" depends="compile-common" 
+            description="Build common jar">
+       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-common.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/common/**"/>
+            </fileset>
+         </jar>
+    </target>
+    
+     <target name="jar-slave" depends="jar-common, compile-slave" 
+            description="Build slave jar">
+       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-slave.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/slave/**"/>
+            </fileset>
+            <fileset dir="${javasrc.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/slave/resources/**"/>
+            </fileset>
+         </jar>
+    </target>
+    
+     <target name="jar-master" depends="jar-common, compile-master" 
+            description="Build master jar">
+       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-master.jar">    
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/master/**"/>
+            </fileset>
+            <fileset dir="${javasrc.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/master/resources/**"/>
+            </fileset>
+         </jar>
+    </target>
+
+    <!-- Packages up files that we need to drop onto the JTR save machines -->
+    <target name="jar-jtr-slave" depends="jar-common, compile-slave" description="Build JTR Slave jar">
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/jtr-slave-dummy.jar">
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/slave/jtr/dummy/**"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <target name="clean" depends="-test-clean"/>
+</project>
