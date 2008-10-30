@@ -10,7 +10,6 @@
             <!-- include entire Darkstar server .zip -->
             <zipfileset src="${core.lib.zip.dir}/sgs-server.zip" prefix="core/lib/sgs">
                 <include name="sgs-${core.sgs.version}/lib/*.jar"/>
-                <include name="sgs-${core.sgs.version}/sgs-logging.properties"/>
                 <include name="bdb-4.5.20/**"/>
             </zipfileset>
             
@@ -43,6 +42,7 @@
             
             <!-- include wonderland properties -->
             <zipfileset file="${src.dir}/darkstar_config/WonderlandMain.cfg" prefix="core"/>
+            <zipfileset file="${src.dir}/darkstar_config/sgs-logging.properties" prefix="core/lib/sgs/sgs-${core.sgs.version}"/>
         </zip> 
     </target>
 </project>
