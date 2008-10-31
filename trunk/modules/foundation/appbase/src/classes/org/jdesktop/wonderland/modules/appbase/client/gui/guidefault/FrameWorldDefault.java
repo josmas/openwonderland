@@ -18,13 +18,18 @@
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DFrame;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A simple implementation of Window2DFrame that uses 3D rendering.
@@ -34,7 +39,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 @ExperimentalAPI
 public class FrameWorldDefault extends Window2DFrame {
-
+    
     private static final Logger logger = Logger.getLogger(FrameWorldDefault.class.getName());
 
     /** The height of the header */
@@ -70,6 +75,11 @@ public class FrameWorldDefault extends Window2DFrame {
      */
     protected Node frameNode;
 
+    /** 
+     * The root entity for this frame.
+     */
+    protected Entity entity;
+
     /**
      * Create a new instance of FrameWorldDefault.
      *
@@ -78,19 +88,26 @@ public class FrameWorldDefault extends Window2DFrame {
     public FrameWorldDefault (WindowView frameView) {
 	super((Window2DView)frameView);
 
-        header = new FrameHeader(view, closeListeners);
-	leftSide = new FrameSide(view, FrameSide.Side.LEFT, null/*TODO new Gui2DSide(view)*/);
-	rightSide = new FrameSide(view, FrameSide.Side.RIGHT, null/*TODO new Gui2DSide(view)*/);
-	bottomSide = new FrameSide(view, FrameSide.Side.BOTTOM, null/*TODO new Gui2DSide(view)*/);
-	resizeCorner = new FrameResizeCorner(view, rightSide, bottomSide);
-
+	entity = new Entity("Frame Entity");
 	frameNode = new Node("FrameWorldDefault Node");
+	RenderComponent rc = 
+	    ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(frameNode);
+	entity.addComponent(RenderComponent.class, rc);
 
-	frameNode.attachChild(header);
-	frameNode.attachChild(leftSide);
-	frameNode.attachChild(rightSide);
-	frameNode.attachChild(bottomSide);
-	frameNode.attachChild(resizeCorner);	
+        header = new FrameHeader(view, closeListeners);
+	header.setParentEntity(entity);
+
+	leftSide = new FrameSide(view, FrameSide.Side.LEFT, new Gui2DSide(view));
+	leftSide.setParentEntity(entity);
+
+	rightSide = new FrameSide(view, FrameSide.Side.RIGHT, new Gui2DSide(view));
+	rightSide.setParentEntity(entity);
+
+	bottomSide = new FrameSide(view, FrameSide.Side.BOTTOM, new Gui2DSide(view));
+	bottomSide.setParentEntity(entity);
+
+	resizeCorner = new FrameResizeCorner(view, rightSide, bottomSide);
+	resizeCorner.setParentEntity(entity);
 
 	updateVisibility();
     }
@@ -100,7 +117,6 @@ public class FrameWorldDefault extends Window2DFrame {
      */
     public void cleanup () {
 	super.cleanup();
-	disconnect();
 
 	if (header != null) {
 	    header.cleanup();
@@ -122,6 +138,31 @@ public class FrameWorldDefault extends Window2DFrame {
 	    resizeCorner.cleanup();
 	    resizeCorner = null;
 	}
+	setParentEntity(null);
+	if (entity != null) {
+	    entity.removeComponent(RenderComponent.class);
+	    frameNode = null;
+	    entity = null;
+	}
+    }
+    
+    public Entity getEntity () {
+	return entity;
+    }
+
+    public void setParentEntity (Entity parentEntity) {
+	if (entity == null) return;
+
+	// Detach from previous parent entity
+	Entity prevParentEntity = entity.getParent();
+	if (prevParentEntity != null) {
+	    prevParentEntity.removeEntity(entity);
+	}
+	
+	// Attach to new parent entity
+	if (parentEntity != null) {
+	    parentEntity.addEntity(entity);
+	}
     }
 
     /**
@@ -131,37 +172,6 @@ public class FrameWorldDefault extends Window2DFrame {
 	return getView().getWindow().getCell();
     }
 
-    /**
-     * Returns the root node of the frame scene graph.
-     */
-    Node getBaseNode () {
-	return frameNode;
-    }
-
-    /**
-     * Disconnect the frame components from the frame's window view.
-     */
-    void disconnect () {
-	if (view == null) return;
-
-
-	if (header != null) {
-	    frameNode.detachChild(header);
-	}
-	if (leftSide != null) {
-	    frameNode.detachChild(leftSide);
-	}
-	if (rightSide != null) {
-	    frameNode.detachChild(rightSide);
-	}
-	if (bottomSide != null) {
-	    frameNode.detachChild(bottomSide);
-	}
-	if (resizeCorner != null) {
-	    frameNode.detachChild(resizeCorner);
-	}
-    }
-
     /** 
      * The size of the view has changed. Make the corresponding
      * position and/or size updates for the frame components.
@@ -169,7 +179,6 @@ public class FrameWorldDefault extends Window2DFrame {
      * @throw InstantiationException if couldn't allocate resources for the visual representation.
      */
     void update () throws InstantiationException {
-	// Sometimes some of these are null during debugging
 	if (header != null) {
 	    header.update();
 	}
@@ -231,6 +240,48 @@ public class FrameWorldDefault extends Window2DFrame {
 	}
 	if (resizeCorner != null) {
 	    resizeCorner.updateControl(controlArb);
+	}
+    }
+
+    /**
+     * Attach the event listeners of this frame to the given entity.
+     */
+    void attachEventListeners (Entity entity) {
+	if (header != null) {
+	    header.attachEventListeners(entity);
+	}
+	if (leftSide != null) {
+	    leftSide.attachEventListeners(entity);
+	}
+	if (rightSide != null) {
+	    rightSide.attachEventListeners(entity);
+	}
+	if (bottomSide != null) {
+	    bottomSide.attachEventListeners(entity);
+	}
+	if (resizeCorner != null) {
+	    resizeCorner.attachEventListeners(entity);
+	}
+    }
+    
+    /**
+     * Detach the event listeners of this frame from the entity to which they are attached.
+     */
+    void detachEventListeners (Entity entity) {
+	if (header != null) {
+	    header.detachEventListeners(entity);
+	}
+	if (leftSide != null) {
+	    leftSide.detachEventListeners(entity);
+	}
+	if (rightSide != null) {
+	    rightSide.detachEventListeners(entity);
+	}
+	if (bottomSide != null) {
+	    bottomSide.detachEventListeners(entity);
+	}
+	if (resizeCorner != null) {
+	    resizeCorner.detachEventListeners(entity);
 	}
     }
 }

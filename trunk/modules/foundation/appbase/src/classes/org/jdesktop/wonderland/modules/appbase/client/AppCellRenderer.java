@@ -46,4 +46,10 @@ public abstract class AppCellRenderer extends BasicRenderer {
      * @param view The view to detach.
      */
     public abstract void detachView (WindowView view);
+
+    /**
+     * Log this cell renderer's scene graph.
+     */
+    public abstract void logSceneGraph ();
+
 }

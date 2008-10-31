@@ -17,8 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Geometry;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -94,27 +96,27 @@ public class FrameResizeCorner extends FrameComponent {
      * @param view The frame's view.
      */
     public FrameResizeCorner (Window2DView view, FrameSide rightSide, FrameSide bottomSide) {
-        super("FrameResizeCorner", view, null/*TODO new Gui2DResizeCorner(view)*/);
+        super("FrameResizeCorner", view, new Gui2DResizeCorner(view));
 	this.rightSide = rightSide;
 	this.bottomSide = bottomSide;
-	//TODO ((Gui2DResizeCorner)gui).setComponent(this);
+	((Gui2DResizeCorner)gui).setComponent(this);
     }
 
-    /**
+    /** 
      * {@inheritDoc}
      */
     public void cleanup () {
 	super.cleanup();
 	if (horizBar != null) {
-	    removeChild(horizBar);
 	    horizBar.cleanup();
 	    horizBar = null;
 	}
-	if (horizBar != null) {
-	    removeChild(vertBar);
-	    horizBar.cleanup();
-	    horizBar = null;
+	if (vertBar != null) {
+	    vertBar.cleanup();
+	    vertBar = null;
 	}
+	rightSide = null;
+	bottomSide = null;
     }
 
     /**
@@ -124,28 +126,15 @@ public class FrameResizeCorner extends FrameComponent {
         updateLayout();
 
 	// Translate the resize corner's coordinate system
-	setTranslation(origin);
+	localToCellNode.setLocalTranslation(origin);
 
-        if (horizBar == null) {
-	    
-	    // First time creation
-
-	    horizBar = new FrameRect("HorizontalBar", view, gui, horizWidthWorld, horizHeightWorld);
-	    attachChild(horizBar);
-
-	    vertBar = new FrameRect("Vertical Bar", view, gui, vertWidthWorld, vertHeightWorld);
-	    attachChild(vertBar);
-
-	} else {
-
-	    // Update size
-	    horizBar.resize(horizWidthWorld, horizHeightWorld);
-	    vertBar.resize(vertWidthWorld, vertHeightWorld);
-	}
+	// Update size
+	horizBar.resize(horizWidthWorld, horizHeightWorld);
+	vertBar.resize(vertWidthWorld, vertHeightWorld);
 
 	// Update position
-	horizBar.setTranslation(new Vector3f(horizX, horizY, Z_OFFSET));
-	vertBar.setTranslation(new Vector3f(vertX, vertY, Z_OFFSET));
+	horizBar.setLocalTranslation(new Vector3f(horizX, horizY, Z_OFFSET));
+	vertBar.setLocalTranslation(new Vector3f(vertX, vertY, Z_OFFSET));
 
 	super.update();
     }
@@ -177,7 +166,6 @@ public class FrameResizeCorner extends FrameComponent {
 	logger.warning("vertY = " + vertY);
 	logger.warning("vertWidthWorld = " + vertWidthWorld);
 	logger.warning("vertHeightWorld = " + vertHeightWorld);
-
     }
 
     /**
@@ -226,6 +214,26 @@ public class FrameResizeCorner extends FrameComponent {
 		setColor(NO_CONTROL_COLOR);
 	    }
 	}               
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Geometry[] getGeometries () {
+
+	if (horizBar == null) {
+	    horizBar = new FrameRect("HorizontalBar", view, gui, horizWidthWorld, horizHeightWorld);
+	}
+	Geometry horizGeom = horizBar.getGeometries()[0];
+
+	if (vertBar == null) {
+	    vertBar = new FrameRect("Vertical Bar", view, gui, vertWidthWorld, vertHeightWorld);
+	}
+	Geometry vertGeom = vertBar.getGeometries()[0];
+
+	// Rude hack: We use the geometry from this textured rect, but not its transform nodes
+	return new Geometry[] { horizGeom, vertGeom };
     }
 }
 
