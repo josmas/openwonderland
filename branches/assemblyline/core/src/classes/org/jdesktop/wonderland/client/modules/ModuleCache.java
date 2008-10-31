@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 
 /**
  * The ModuleCache class represents the cache associated with a single server,
@@ -38,7 +39,7 @@ public class ModuleCache {
     private String serverName = null;
     
     /* Maps of the unique module names and info (identity, checksum, etc). */
-    private HashMap<String, ModuleIdentity> identities = new HashMap();
+    private HashMap<String, ModuleInfo> identities = new HashMap();
     private HashMap<String, RepositoryList> repositories = new HashMap();
     private HashMap<String, ChecksumList> checksums = new HashMap();
 
@@ -68,13 +69,13 @@ public class ModuleCache {
      * @param uniqueName The unique name of the module
      * @return The module identity
      */
-    public ModuleIdentity getModuleIdentity(String uniqueName) {
+    public ModuleInfo getModuleIdentity(String uniqueName) {
         /*
          * First check to see whether the information already exists, and if
          * so, return it.
          */
         synchronized (this.identities) {
-            ModuleIdentity identity = this.identities.get(uniqueName);
+            ModuleInfo identity = this.identities.get(uniqueName);
             if (identity == null) {
                 /*
                  * If the module does not exist, see if we have already checked

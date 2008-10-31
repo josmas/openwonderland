@@ -15,14 +15,12 @@
     
     <!-- Other wonderland specific supporting jars -->
     <pathconvert property="web.restlib.classpath">
-        <path location="${web.restlib.dir}/jaxws-api.jar"/>
-        <path location="${web.restlib.dir}/jdom-1.0.jar"/>
-        <path location="${web.restlib.dir}/jersey.jar"/>
-        <path location="${web.restlib.dir}/jettison-1.0-RC1.jar"/>
-        <path location="${web.restlib.dir}/jsr250-api.jar"/>
-        <path location="${web.restlib.dir}/jsr311-api.jar"/>
-        <path location="${web.restlib.dir}/rome-0.9.jar"/>
-        <path location="${web.restlib.dir}/wadl2java.jar"/>
+        <path location="${web.restlib.dir}/asm-3.1.jar"/>
+        <path location="${web.restlib.dir}/jersey-core-1.0.jar"/>
+        <path location="${web.restlib.dir}/jersey-json-1.0.jar"/>
+        <path location="${web.restlib.dir}/jersey-server-1.0.jar"/>
+        <path location="${web.restlib.dir}/jettison-1.0.1.jar"/>
+        <path location="${web.restlib.dir}/jsr311-api-1.0.jar"/>
     </pathconvert>
 
     <!-- web utlities -->

@@ -34,25 +34,31 @@ public class DataCollectionManager implements ServletContextListener
             Logger.getLogger(DataCollectionManager.class.getName());
     
     private PingDataCollector pdc;
+    private AdminRegistration ar;
     
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
+        
         pdc = new PingDataCollector();
         context.setAttribute(PingDataCollector.KEY, pdc);
     
-        AdminRegistration ar = 
-                new AdminRegistration("Server Performance", 
-                                      "/servermanager/servermanager-web");
+        ar = new AdminRegistration("Server Performance", 
+                                   "/servermanager/servermanager-web");
         AdminRegistration.register(ar, context);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
+        ServletContext context = sce.getServletContext();
+        
         if (pdc != null) {
             pdc.shutdown();
         } else {
             logger.warning("Data collector not found");
         }
-        
         pdc = null;
+    
+        if (ar != null) {
+            AdminRegistration.unregister(ar, context);
+        }
     }
 }

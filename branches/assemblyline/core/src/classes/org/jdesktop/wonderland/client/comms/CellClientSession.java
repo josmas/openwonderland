@@ -23,11 +23,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
 import org.jdesktop.wonderland.client.cell.CellChannelConnection;
-import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
-import org.jdesktop.wonderland.client.comms.LoginFailureException;
-import org.jdesktop.wonderland.client.comms.LoginParameters;
-import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
+import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 
 /**
  * An extension of WonderlandSession that attaches all the relevant
@@ -40,6 +36,7 @@ public class CellClientSession extends WonderlandSessionImpl {
     private CellCacheConnection cellCacheConnection;
     private LocalAvatar localAvatar;
     private CellChannelConnection cellChannelConnection;
+    private CellEditChannelConnection cellEditChannelConnection;
     private CellCache cellCache;
     
     public CellClientSession(WonderlandServerInfo serverInfo) {
@@ -53,7 +50,8 @@ public class CellClientSession extends WonderlandSessionImpl {
  
         cellCacheConnection = new CellCacheConnection(localAvatar);        
         cellChannelConnection = new CellChannelConnection();
-    
+        cellEditChannelConnection = new CellEditChannelConnection();
+        
         // create the cell cache
         cellCache = createCellCache();
     }
@@ -91,6 +89,14 @@ public class CellClientSession extends WonderlandSessionImpl {
     }
     
     /**
+     * Get the cell edit channel connection
+     * @return the cell edit channel connection
+     */
+    public CellEditChannelConnection getCellEditChannelConnection() {
+        return cellEditChannelConnection;
+    }
+    
+    /**
      * Override the login message to connect clients after the login
      * succeeds.  If a client fails to connect, the login will be aborted and
      * a LoginFailureException will be thrown
@@ -116,6 +122,10 @@ public class CellClientSession extends WonderlandSessionImpl {
             // Now connect to the cellCache. The view will be determined via the
             // localAvatar object.
             cellCacheConnection.connect(this);
+            
+            // Finally, connect to the edit channel for cells. This will let
+            // cells be added, removed, etc.
+            cellEditChannelConnection.connect(this);
         } catch (ConnectionFailureException afe) {
             // a client failed to connect -- logout
             logout();

@@ -36,6 +36,10 @@
             <server>
                 <serverjar name="jmecolladaloader-server" basedir="${build.classes.dir}">
                     <serverplugin provider="org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.TestWorld"/>
+                    <cellextensiontype>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellExtensionType"/>
+                    </cellextensiontype>
+
                     <!--<cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.client.LoaderFactory"/>
                     </cellsetup>-->

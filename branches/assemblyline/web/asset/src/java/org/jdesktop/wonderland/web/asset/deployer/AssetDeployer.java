@@ -159,7 +159,7 @@ public class AssetDeployer implements ModuleDeployerSPI {
     }
     
     /**
-     * Returns the file root for the module name, or null if it does not exist.
+     * Returns the file root for the module part, or null if it does not exist.
      * 
      * @param type The assset type
      * @param moduleName The module name

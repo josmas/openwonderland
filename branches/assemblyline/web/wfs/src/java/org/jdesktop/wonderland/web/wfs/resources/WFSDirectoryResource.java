@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.xml.bind.JAXBException;
@@ -51,7 +51,7 @@ import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/{wfsname}/directory/{path}", limited=false)
+@Path(value="/{wfsname}/directory/{path:.*}")
 public class WFSDirectoryResource {
     
     /**
@@ -65,7 +65,7 @@ public class WFSDirectoryResource {
      * @return The XML serialization of the cell setup information via HTTP GET.
      */
     @GET
-    @ProduceMime("text/plain")
+    @Produces("text/plain")
     public Response getCellResource(@PathParam("wfsname") String wfsName, @PathParam("path") String path) {
         /* Fetch thhe error logger for use in this method */
         Logger logger = WFSManager.getLogger();

@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules;
 
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;

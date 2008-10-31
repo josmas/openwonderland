@@ -37,7 +37,7 @@ import org.apache.tools.ant.types.spi.Service;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.zip.ZipOutputStream;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.ModuleRequires;
 
 /**
@@ -108,7 +108,11 @@ public class ModuleTask extends Jar {
     public void addConfiguredArt(ArtPart art) {
         addConfiguredPart(art);
     }
-    
+
+    public void addConfiguredHelp(HelpPart help) {
+        addConfiguredPart(help);
+    }
+        
     public void addConfiguredWfs(WFSPart wfs) {
         addConfiguredPart(wfs);
     }
@@ -439,7 +443,13 @@ public class ModuleTask extends Jar {
             super ("wfs");
         }
     }
-    
+ 
+    public static class HelpPart extends ModulePart {
+        public HelpPart() {
+            super ("help");
+        }
+    }
+        
     public static class ServerPart extends ModulePart {
         public ServerPart() {
             super ("server");
@@ -563,6 +573,10 @@ public class ModuleTask extends Jar {
         public void addConfiguredCellSetup(CellSetup cellSetup) {
             addConfiguredService(cellSetup);
         }
+        
+        public void addConfiguredCellExtensionType(CellExtensionType cellExtensionType) {
+            addConfiguredService(cellExtensionType);
+        }
     }
     
     public static class ServerPlugin extends Service {
@@ -576,7 +590,13 @@ public class ModuleTask extends Jar {
             setType("org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI");
         }
     }
-    
+
+    public static class CellExtensionType extends Service {
+        public CellExtensionType() {
+            setType("org.jdesktop.wonderland.common.cell.setup.spi.CellExtensionTypeSPI");
+        }
+    }
+        
     public static class ClientJar extends ModuleJar {
         public void addConfiguredClientPlugin(ClientPlugin clientPlugin) {
             addConfiguredService(clientPlugin);

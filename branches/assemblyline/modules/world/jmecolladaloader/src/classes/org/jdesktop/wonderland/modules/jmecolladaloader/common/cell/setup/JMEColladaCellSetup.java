@@ -62,7 +62,7 @@ public class JMEColladaCellSetup extends BasicCellSetup implements Serializable,
     }
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.server.cell.JmeColladaCellMO";
+        return "org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.JmeColladaCellMO";
     }
     
     /**

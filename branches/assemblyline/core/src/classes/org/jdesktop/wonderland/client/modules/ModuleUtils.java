@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.client.modules;
@@ -9,6 +22,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.modules.ModuleArtList;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleList;
+import org.jdesktop.wonderland.common.modules.ModuleWFSList;
 
 /**
  *
@@ -22,6 +39,66 @@ public class ModuleUtils {
     private static Logger logger = Logger.getLogger(ModuleUtils.class.getName());
     
     /**
+     * Asks the web server for a list of all modules. Returned is a ModuleList
+     * object with the basic module information (ModuleInfo) objects for all
+     * modules.
+     * 
+     * @return A list of modules
+     */
+    public static ModuleList fetchModuleList() {
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            String base = BASE_URL + "wonderland-web-modules/modules/list/get/installed";
+            URL url = new URL(base);
+            return ModuleList.decode(new InputStreamReader(url.openStream()));
+        } catch (java.lang.Exception excp) {
+            /* Log an error and return null */
+            logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
+            return new ModuleList();
+        }
+    }
+    
+    /**
+     * Asks the web server for a list of all artwork assets in a given module.
+     * Returned is a ModuleArtList object identifying each object.
+     * 
+     * @param moduleName The name of the module
+     * @return A list of module art
+     */
+    public static ModuleArtList fetchModuleArtList(String moduleName) {
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            String base = BASE_URL + "wonderland-web-asset/asset/" + moduleName + "/art/get";
+            URL url = new URL(base);
+            return ModuleArtList.decode(new InputStreamReader(url.openStream()));
+        } catch (java.lang.Exception excp) {
+            /* Log an error and return null */
+            logger.log(Level.WARNING, "[MODULES] FETCH MODULE ART Failed", excp);
+            return new ModuleArtList();
+        }
+    }
+ 
+    /**
+     * Asks the web server for a list of all wfs in a given module. Returned is
+     * a ModuleWFSList object identifying each object.
+     * 
+     * @param moduleName The name of the module
+     * @return A list of module art
+     */
+    public static ModuleWFSList fetchModuleWFSList(String moduleName) {
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            String base = BASE_URL + "wonderland-web-modules/modules/" + moduleName + "/wfs/get";
+            URL url = new URL(base);
+            return ModuleWFSList.decode(new InputStreamReader(url.openStream()));
+        } catch (java.lang.Exception excp) {
+            /* Log an error and return null */
+            logger.log(Level.WARNING, "[MODULES] FETCH MODULE ART Failed", excp);
+            return new ModuleWFSList();
+        }
+    }
+    
+    /**
      * Asks the web server for the module's basic information given its name,
      * returns null if the module does not exist or upon some general I/O
      * error.
@@ -29,12 +106,12 @@ public class ModuleUtils {
      * @param uniqueName The unique name of a module
      * @return The identity information for a module (e.g. version)
      */
-    public static ModuleIdentity fetchModuleIdentity(String uniqueName) {
+    public static ModuleInfo fetchModuleIdentity(String uniqueName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             String base = BASE_URL + "wonderland-web-modules/modules/";
             URL url = new URL(base + uniqueName + "/info");
-            return ModuleIdentity.decode(new InputStreamReader(url.openStream()));
+            return ModuleInfo.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);

@@ -51,7 +51,7 @@
 
 <target name="daily-build" depends="release" description="Do the daily build">
   <copy todir="/export/home/lg3dadmin/lg3d/packages/api-update">
-    <fileset dir="core/release/linux-i686/debug/javadoc"/>
+    <fileset dir="core/release/javadoc"/>
   </copy>
 </target>
 

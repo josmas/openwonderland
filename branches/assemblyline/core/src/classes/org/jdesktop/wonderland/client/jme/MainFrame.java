@@ -19,27 +19,16 @@ package org.jdesktop.wonderland.client.jme;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
+import org.jdesktop.wonderland.client.assembly.ModulePaletteFrame;
+import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.common.LogControl;
@@ -60,9 +49,7 @@ public class MainFrame extends javax.swing.JFrame {
     
     private ImportSessionFrame importSessionFrame = null;
     private CellViewerFrame cellViewerFrame = null;
-    
-    private DropTarget dropTarget = null;
-    private DropTargetListener dtListener = null;
+    private ModulePaletteFrame modulePaletteFrame = null;
     
     static {
         new LogControl(MainFrame.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
@@ -74,6 +61,11 @@ public class MainFrame extends javax.swing.JFrame {
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
         initComponents();
+        
+        // Add the help menu to the main menu bar
+        HelpSystem helpSystem = new HelpSystem();
+        JMenu helpMenu = helpSystem.getHelpJMenu();
+        jMenuBar2.add(helpMenu);
         
         // make the canvas:
         canvas = wm.getRenderManager().createCanvas(width, height);
@@ -90,37 +82,9 @@ public class MainFrame extends javax.swing.JFrame {
         canvas.setBounds(0, 0, width, height);
         centerPanel.add(canvas, BorderLayout.CENTER);
 
-        // AssemblyLine: Add Drop and Drop Support
-        this.dtListener = new DTListener();
-        this.dropTarget = new DropTarget(this, DnDConstants.ACTION_COPY,
-                this.dtListener, true);
         pack();
     }
 
-     class DTListener implements DropTargetListener {
-         public void dragEnter(DropTargetDragEvent e) {
-             System.out.println("DRAG ENTER");
-             e.acceptDrag(DnDConstants.ACTION_COPY);
-         }
-         public void dragOver(DropTargetDragEvent e) {
-             System.out.println("DRAG OVER");
-             e.acceptDrag(DnDConstants.ACTION_COPY);
-         }
-         public void dropActionChanged(DropTargetDragEvent e) {
-             System.out.println("DRAG ACTION CHANGED");
-             e.acceptDrag(DnDConstants.ACTION_COPY);
-         }
-         public void dragExit(DropTargetEvent e) {
-             System.out.println("DRAG EXIT");
-         }
-
-        public void drop(DropTargetDropEvent e) {
-            System.out.println("DROP");
-            e.acceptDrop(DnDConstants.ACTION_COPY);
-        }
-     }
-
-    
     /**
      * Returns the canvas of the frame.
      */
@@ -357,12 +321,12 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(toolsMenu);
 
-        jMenu1.setText(bundle.getString("Help")); // NOI18N
+        jMenu1.setText("Assembly");
 
-        jMenuItem1.setText(bundle.getString("User_Guide")); // NOI18N
+        jMenuItem1.setText("Module Palette");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                help(evt);
+                modulePaletteMIActionPerformed(evt);
             }
         });
         jMenu1.add(jMenuItem1);
@@ -391,15 +355,6 @@ private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
     cellViewerFrame.setVisible(true);
 }//GEN-LAST:event_cellViewerMIActionPerformed
-
-private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
-    try {
-        /* Just launch a browser for now */
-        WebBrowserLauncher.openURL("http://wonderland.dev.java.net");
-    } catch (Exception ex) {
-        Logger.getLogger(MainFrame.class.getName()).log(Level.WARNING, null, ex);
-    }
-}//GEN-LAST:event_help
 
 private void AudioMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AudioMenuActionPerformed
 // TODO add your handling code here:
@@ -484,6 +439,13 @@ if (virtualPhoneListener != null) {
 }
 }//GEN-LAST:event_virtualPhoneButtonActionPerformed
 
+private void modulePaletteMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modulePaletteMIActionPerformed
+    if (modulePaletteFrame == null) {
+        modulePaletteFrame = new ModulePaletteFrame();
+    }
+    modulePaletteFrame.setVisible(true);
+}//GEN-LAST:event_modulePaletteMIActionPerformed
+
 public void updateSoftphoneCheckBoxMenuItem(boolean isSelected) {
     softphoneMenuItem.setSelected(isSelected);
 }
@@ -524,9 +486,5 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     private javax.swing.JButton virtualPhoneButton;
     private javax.swing.JMenuItem virtualPhoneMenuItem;
     // End of variables declaration//GEN-END:variables
-
-        public void drop(DropTargetDropEvent dtde) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
 
 }

@@ -18,7 +18,7 @@
                 <library>
                     <file>${libs.restapi.classpath}</file>
                 </library>
-                <library files="14">
+                <library files="11">
                     <file>${libs.restlib.classpath}</file>
                 </library>
             </web-module-libraries>

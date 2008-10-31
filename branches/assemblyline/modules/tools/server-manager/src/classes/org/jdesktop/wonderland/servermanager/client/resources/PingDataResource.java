@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -51,7 +51,7 @@ public class PingDataResource {
      * @return An XML encoding of the module's basic information
      */
     @GET
-    @ProduceMime({"text/plain", "application/xml", "application/json"})
+    @Produces({"text/plain", "application/xml", "application/json"})
     public Response getPingData(@QueryParam(value="after") String afterParam,
                                 @QueryParam(value="count") String countParam) 
     {

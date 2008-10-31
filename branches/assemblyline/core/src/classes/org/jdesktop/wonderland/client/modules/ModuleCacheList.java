@@ -60,7 +60,7 @@ public class ModuleCacheList {
     /**
      * Create an instance of this class if one does not exist
      * <p>
-     * @return An instance of the ModuleCache class.
+     * @return An instance of the CachedModule class.
      */
     public static final ModuleCacheList getModuleCacheList() {
         return ModuleCacheListHolder.moduleCache;
