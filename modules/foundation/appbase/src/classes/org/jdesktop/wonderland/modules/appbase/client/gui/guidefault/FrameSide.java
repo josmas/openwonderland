@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Geometry;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -60,9 +61,12 @@ public class FrameSide extends FrameComponent {
      *
      * @param view The view the frame encloses.
      * @param whichSide The side of the frame.
+     * @param gui The event controller of this component.
      */
-    public FrameSide (Window2DView view, Side whichSide, /*TODO Gui2D*/ Object gui) {
-        this("FrameSide", view, whichSide, gui);
+    public FrameSide (Window2DView view, Side whichSide, Gui2D gui) {
+        this("FrameSide " + whichSide, view, whichSide, gui);
+	width = 1;
+	height = 1;
     }
 
     /** 
@@ -72,19 +76,17 @@ public class FrameSide extends FrameComponent {
      * @param view The view the frame encloses.
      * @param whichSide The side of the frame.
      */
-    public FrameSide (String name, Window2DView view, Side whichSide, /*TODO Gui2D*/ Object gui) {
+    public FrameSide (String name, Window2DView view, Side whichSide, Gui2D gui) {
         super(name, view, gui);
 	this.whichSide = whichSide;        
     }
 
-
-    /**
+    /** 
      * {@inheritDoc}
      */
     public void cleanup () {
-        super.cleanup();
+	super.cleanup();
 	if (rect != null) {
-	    removeChild(rect);
 	    rect.cleanup();
 	    rect = null;
 	}
@@ -96,26 +98,9 @@ public class FrameSide extends FrameComponent {
     public void update () throws InstantiationException {
         updateLayout();
 
-        if (rect == null) {
-	
-	    // First time creation
-	    rect = new FrameRect(view, gui, width, height);
-	    attachChild(rect);
+	rect.resize(width, height);
 
-	    /* TODO: debug
-	    if (!getName().equals("FrameHeader")) {
-		attachChild(rect);		
-	    }
-	    */
-
-        } else {
-
-	    // Size update
-	    rect.resize(width, height);
-
-        }
-
-	setTranslation(new Vector3f(x, y, 0f));
+	localToCellNode.setLocalTranslation(new Vector3f(x, y, 0f));
 
 	super.update();
 
@@ -232,5 +217,16 @@ public class FrameSide extends FrameComponent {
 	return rect.height;
     }
 
-}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Geometry[] getGeometries () {
+	if (rect == null) {
+	    rect = new FrameRect(view, gui, width, height);
+	} 
 
+	// Rude hack: We use the geometry from this textured rect, but not its transform nodes
+	return rect.getGeometries();
+    }
+}

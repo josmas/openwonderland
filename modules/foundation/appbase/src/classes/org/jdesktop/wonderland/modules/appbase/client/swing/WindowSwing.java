@@ -73,6 +73,7 @@ public class WindowSwing extends WindowGraphics2D {
 
     /** The event listener for this window. */
     protected class MyEventListener extends EventListenerBaseImpl {
+	// TODO: should this really be propagatesToParent, or should it be consumesEvent?
 	public boolean propagatesToParent (Event event) {
 	    return inputEnabled;
 	}

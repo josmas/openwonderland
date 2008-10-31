@@ -23,11 +23,18 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.RenderState;
-import com.jme.scene.state.ZBufferState;
+//import com.jme.scene.state.ZBufferState;
+import java.awt.event.KeyEvent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
+import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.modules.appbase.client.AppCellRenderer;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
@@ -42,11 +49,11 @@ import org.jdesktop.wonderland.modules.appbase.client.WindowView;
  */
 public class AppCellRendererJME extends AppCellRenderer {
 
-    /** The root node of the cell. */
+    /** The root node of the cell renderer. */
     protected Node rootNode;
 
     /** The Z buffer state. */
-    protected ZBufferState zBufferState;
+    //protected ZBufferState zBufferState;
     
     /** The light state. */
     protected LightState lightState;
@@ -58,47 +65,53 @@ public class AppCellRendererJME extends AppCellRenderer {
     public AppCellRendererJME (AppCell cell) {
         super(cell);
 
-	rootNode = new Node();
-        rootNode.setName("Root node for cell " + cell.getCellID().toString());
+	rootNode = new Node("Root node for cell " + cell.getCellID().toString());
 
-	initZBufferState();
+	//	initZBufferState();
 	initLightState();
-	rootNode.setRenderState(zBufferState);
+	//	rootNode.setRenderState(zBufferState);
 	rootNode.setRenderState(lightState);
-	
-	// TODO: workaround: flip the window 180 degrees around Y axis until initial
-	// avatar look direction can be flipped.
-	//hack(rootNode);
+
+	// For debug
+	ClientContext.getInputManager().addGlobalEventListener(new SceneGraphPrinter());
     }
     
-    /* TODO: delete: didn't work
-    private void hack (Node node) {
-	Quaternion nodeQuat = node.getLocalRotation();
-	Quaternion flipRotQuat = new Quaternion();
-        flipRotQuat.fromAngles(0f, 180f *(float)Math.PI/180.0f, 0.0f);
-        nodeQuat.multLocal(flipRotQuat);
-	node.setLocalRotation(nodeQuat);
+    // For debug
+    private class SceneGraphPrinter extends EventClassListener {
+	public Class[] eventClassesToConsume () {
+	    return new Class[] { KeyEvent3D.class };
+	}
+	public void commitEvent (Event event) {
+	    KeyEvent3D ke3d = (KeyEvent3D) event;
+	    if (ke3d.isPressed()) {
+		KeyEvent ke = (KeyEvent)ke3d.getAwtEvent();
+		if (ke.getKeyCode() == KeyEvent.VK_P) {
+		    printEntitySceneGraphs(AppCellRendererJME.this.getEntity(), 0);
+		}
+	    }
+	}
     }
-    */
 
     /**
      * {@inheritDoc}
      */
     @Override
     protected Node createSceneGraph (Entity entity) {
-        applyTransform(rootNode, cell.getLocalTransform());
+	System.err.println("In APRJ.createSceneGraph, cell transform = " + cell.getLocalTransform());
 	return rootNode;
     }
 
     /**
      * Initialize the Z buffer state.
      */
+    /*
     protected void initZBufferState () {
 	zBufferState = (ZBufferState) 
 	    ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
 	zBufferState.setEnabled(true);
 	zBufferState.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
     }
+    */
 
     /**
      * Initialize the light state.
@@ -123,13 +136,15 @@ public class AppCellRendererJME extends AppCellRenderer {
 
 	// The view scene graph is directly attached to the root entity of the renderer.
 	ViewWorldDefault viewWorld = (ViewWorldDefault) view;
-	rootNode.attachChild(viewWorld.getBaseNode());
+	getEntity().addEntity(viewWorld.getEntity());
 
-	// TODO: the frame and its subcomponents should be attached to the children of the root entity
+	/** TODO: not yet: the frame has bugs */
         FrameWorldDefault frame = viewWorld.getFrame();
 	if (frame != null) {
-	    rootNode.attachChild(frame.getBaseNode());
+	    getEntity().addEntity(frame.getEntity());
+	    frame.setParentEntity(getEntity());
 	}
+	/**/
     }
 
     /**
@@ -138,19 +153,56 @@ public class AppCellRendererJME extends AppCellRenderer {
     @Override
     public void detachView (WindowView view) {
 	ViewWorldDefault viewWorld = (ViewWorldDefault) view;
-	rootNode.detachChild(viewWorld.getBaseNode());
+	getEntity().removeEntity(viewWorld.getEntity());
 
-	// TODO: the frame and its subcomponents should be attached to the children of the root entity
         FrameWorldDefault frame = viewWorld.getFrame();
-	rootNode.detachChild(frame.getBaseNode());
+	if (frame != null) {
+	    getEntity().removeEntity(frame.getEntity());
+	    frame.setParentEntity(null);
+	}
     }
 
     /**
-     * Add an event listener to the root entity of this renderer.
-     * @param listener The listener to add.
+     * {@inheritDoc}
      */
-    public void addEventListener (EventListener listener) {
-	listener.addToEntity(getEntity());
+    public void logSceneGraph () {
+	EntityLogger.logEntity(getEntity());
+	//printEntitySceneGraphs(getEntity(), 0);
+    }
+
+    private static String INDENT = "    ";
+
+    private static void printIndentLevel (int indentLevel) {
+	for (int i = 0; i < indentLevel; i++) {
+	    System.err.print(INDENT);
+	}
+    }
+
+    static void printEntitySceneGraphs (Entity entity, int indentLevel) {
+	System.err.println("********** printEntitySceneGraphs");
+	printIndentLevel(indentLevel); System.err.println("Entity = " + entity);
+
+	printIndentLevel(indentLevel);	System.err.print("sceneRoot = ");
+	RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
+	if (rc == null) {
+	    System.err.println("null");
+	} else {
+	    Node sceneRoot = rc.getSceneRoot();
+	    System.err.println(sceneRoot);
+	    if (sceneRoot != null) {
+		GraphicsUtils.printNode(sceneRoot);
+	    }
+	    
+	}
+
+	int numChildren = entity.numEntities();
+	for (int i = 0; i < numChildren; i++) {
+	    Entity child = entity.getEntity(i);
+	    printIndentLevel(indentLevel); System.err.println("==================");
+	    printIndentLevel(indentLevel); System.err.println("Child Entity " + i + ": " + child);
+	    printEntitySceneGraphs(child, indentLevel+1);
+	    printIndentLevel(indentLevel); System.err.println( "==================");
+	}
     }
 
     /**
@@ -167,23 +219,6 @@ public class AppCellRendererJME extends AppCellRenderer {
      */
     public boolean hasEventListener (EventListener listener) {
 	return listener.isListeningForEntity(getEntity());
-    }
-
-    /**
-     * Add the given entity component to the renderer's entity.
-     */
-    public void addEntityComponent (Class clazz, EntityComponent comp) {
-	Entity entity = getEntity();
-	entity.addComponent(clazz, comp);
-	comp.setEntity(entity);
-    }
-
-    /**
-     * Remove the given entity component class from the renderer's entity.
-     */
-    public void removeEntityComponent (Class clazz) {
-	getEntity().removeComponent(clazz);
-
     }
 
     /**
