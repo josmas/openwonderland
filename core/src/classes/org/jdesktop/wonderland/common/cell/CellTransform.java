@@ -261,6 +261,8 @@ public class CellTransform implements Serializable {
 
     @Override
     public String toString() {
-        return translation.toString();
+        return "Trans=" + translation.toString() + "," +
+	       "Rot=" + rotation.toString() + "," +
+	       "Scale=" + scale.toString();
     }
 }
