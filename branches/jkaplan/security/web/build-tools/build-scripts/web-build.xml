@@ -18,10 +18,27 @@
     <target name="-web-build-init">
         <mkdir dir="${build.classes.dir}"/>
         <mkdir dir="${build.lib.dir}"/>
+
+        <!-- default paths.  Override to add test-specific paths -->
+        <property name="web-extra.classpath" value=""/>
     </target>
-   
+
+   <target name="-web-compile" depends="-web-build-init">
+        <wl-compile>
+            <compile-classes>
+                <include name="**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${web.classpath}"/>
+                <pathelement path="${web-extra.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+
     <target name="-web-clean">
         <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
         <delete dir="data"/>
         <delete dir="log"/>
     </target>

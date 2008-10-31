@@ -1,52 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-web" default="build" basedir=".">    
-    <target name="build" depends="-set-j2ee-platform">
-       <ant dir="utils" target="jar"/>
-       <ant dir="wfs" target="dist" inheritall="false">
-          <propertyset refid="web.project.properties"/> 
-       </ant>
-       <ant dir="modules" target="dist" inheritall="false">
-          <propertyset refid="web.project.properties"/>
-       </ant>
-      <ant dir="asset" target="dist" inheritall="false">
-          <propertyset refid="web.project.properties"/>
-       </ant>
-       <ant dir="runner"  target="dist" inheritall="false">
-          <propertyset refid="web.project.properties"/>
-       </ant>
-       <ant dir="webstart" target="dist"/>
-       <ant dir="front" target="dist" inheritall="false">
-          <propertyset refid="web.project.properties"/>
-       </ant>
-       <ant dir="help" target="dist" inheritall="false">
-          <propertyset refid="web.project.properties"/>
-       </ant>
-       <ant dir="server" target="jar" inheritall="false"/>
+    <target name="build">
+       <ant dir="utils"    target="jar"  inheritall="false"/>
+       <ant dir="wfs"      target="dist" inheritall="false"/>
+       <ant dir="modules"  target="dist" inheritall="false"/>
+       <ant dir="asset"    target="dist" inheritall="false"/>
+       <ant dir="runner"   target="dist" inheritall="false"/>
+       <ant dir="webstart" target="dist" inheritall="false"/>
+       <ant dir="front"    target="dist" inheritall="false"/>
+       <ant dir="help"     target="dist" inheritall="false"/>
+       <ant dir="server"   target="jar"  inheritall="false"/>
     </target>
     
     <!-- this target assumes build has been called, but doesn't
          explicitly depend on to avoid duplication.  Don't use this
          directly, call the top level "package" target instead, since
          that will build everything that is needed. -->
-    <target name="-package" depends="-set-j2ee-platform">
-        <ant dir="runner" target="package" inheritall="false">
-            <propertyset refid="web.project.properties"/> 
-        </ant>
-       
+    <target name="-package">
+        <ant dir="runner" target="package" inheritall="false"/>
         <ant dir="server" target="package" inheritall="false">
             <property name="server.package.dir" value="${server.package.dir}"/>
         </ant>
-    </target>
-    
-    <!-- workaround for some issues with NetBeans projects, particularly
-         the tendency of NetBeans to remove the j2ee.platform.classpath
-         variable. -->
-    <target name="-set-j2ee-platform">
-       <property name="j2ee.platform.classpath"
-                 location="${web.glassfish.dir}/glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar"/>       
-       <propertyset id="web.project.properties">
-           <propertyref name="j2ee.platform.classpath"/>
-       </propertyset>
     </target>
     
     <target name="run-web" depends="build, -set-server-package-dir, -package">
@@ -58,29 +32,15 @@
         <property name="server.package.dir" location="${basedir}/server/build/lib"/>
     </target>
     
-    <target name="clean" depends="-set-j2ee-platform">
-       <ant dir="asset"    target="clean" inheritall="false">
-           <propertyset refid="web.project.properties"/>
-       </ant>
+    <target name="clean">
+       <ant dir="asset"    target="clean" inheritall="false"/>
        <ant dir="utils"    target="clean" inheritall="false"/>
-       <ant dir="wfs"      target="clean" inheritall="false">
-           <propertyset refid="web.project.properties"/>
-       </ant>
-       <ant dir="modules"  target="clean" inheritall="false">
-           <propertyset refid="web.project.properties"/>
-       </ant>
-       <ant dir="runner"   target="clean" inheritall="false">
-           <propertyset refid="web.project.properties"/>
-       </ant>
-       <ant dir="webstart" target="clean" inheritall="false">
-           <propertyset refid="web.project.properties"/>
-       </ant> 
-       <ant dir="front"    target="clean" inheritall="false">
-           <propertyset refid="web.project.properties"/>
-       </ant>
-       <ant dir="help"     target="clean" inheritall="false">
-           <propertyset refid="web.project.properties"/>
-       </ant>
+       <ant dir="wfs"      target="clean" inheritall="false"/>
+       <ant dir="modules"  target="clean" inheritall="false"/>
+       <ant dir="runner"   target="clean" inheritall="false"/>
+       <ant dir="webstart" target="clean" inheritall="false"/>
+       <ant dir="front"    target="clean" inheritall="false"/>
+       <ant dir="help"     target="clean" inheritall="false"/>
        <ant dir="server"   target="clean" inheritall="false"/>
     </target>
 </project>

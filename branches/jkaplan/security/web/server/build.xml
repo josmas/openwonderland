@@ -3,32 +3,20 @@
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-webserver}"/>
     
-    <property name="web.src" value="org/jdesktop/wonderland/webserver"/>
-    
     <!-- import web properties -->
     <import file="${current.dir}/../build-tools/build-scripts/web-build.xml"/>
     
     <!-- import core properties -->
     <import file="${core.dir}/build-tools/build-scripts/core-setup.xml"/>
     
-    <target name="build" depends="-web-build-init">
-        <!-- compile -->
-        <wl-compile>
-            <compile-classes>
-                <include name="${web.src}/**"/>
-            </compile-classes>
-            
-            <compile-classpath>
-                <pathelement path="${web.classpath}"/>
-                <pathelement location="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
-                
-                <fileset dir="lib">
-                    <include name="**/*.jar"/>
-                </fileset>
-            </compile-classpath>
-        </wl-compile>
-    </target>
+    <target name="build" depends="-set-extra-classpath, -web-compile"/>
     
+    <target name="-set-extra-classpath">
+        <pathconvert property="web-extra.classpath">
+            <path path="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+        </pathconvert>
+    </target>
+
     <target name="-declare-ant-task">
          <taskdef name="listfiles"
                   classname="org.jdesktop.wonderland.utils.ant.ListFilesTask"
@@ -101,7 +89,7 @@
             <zipfileset file="${web.dir}/help/dist/wonderland-help-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/front/dist/wonderland-webadmin-core.jar" prefix="webserver"/>
-            
+
             <!-- include wonderland client from core, since many web apps will
                  act as clients of the Wonderland system -->
             <zipfileset file="${top.dir}/core/build/lib/wonderland-client.jar" prefix="webserver"/>
