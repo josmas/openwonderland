@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="package" name="server-manager">
-     <!-- current directory needed in all scripts -->
+    <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.server-manager}"/>
     <property name="modules.dir" location="${current.dir}/../.."/>
     <property name="web.dir" location="${modules.dir}/../web"/>
