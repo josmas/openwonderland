@@ -73,6 +73,8 @@ public class WhiteboardWindow extends WindowGraphics2D  {
 	
         addMouseMotionListener(new MouseMotionListener() {
             public void mouseDragged(MouseEvent e) {
+		logger.fine("Whiteboard mouseDragged, e = " + e);
+
                 dragTo(e.getPoint());
                 
                 // notify other clients
@@ -84,6 +86,8 @@ public class WhiteboardWindow extends WindowGraphics2D  {
             }
             
             public void mouseMoved(MouseEvent e) {
+		logger.fine("Whiteboard mouseMoved, e = " + e);
+
                 moveTo(e.getPoint());
                 
                 // notify other clients
@@ -98,6 +102,8 @@ public class WhiteboardWindow extends WindowGraphics2D  {
         
         addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
+		logger.fine("Whiteboard mouseClicked, e = " + e);
+
                 selectPen(e.getPoint());
                 
                 // notify other clients
