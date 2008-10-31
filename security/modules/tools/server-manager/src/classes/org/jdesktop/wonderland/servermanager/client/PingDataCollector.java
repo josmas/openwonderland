@@ -218,8 +218,8 @@ public class PingDataCollector
     // connect to a server
     protected void connectTo(DarkstarRunner dr) {
         // TODO get from runner
-        String serverHost = "localhost";
-        int serverPort = 1139;
+        String serverHost = dr.getHostname();
+        int serverPort = dr.getPort();
         
         logger.warning("Connect to " + serverHost + " " + serverPort);
         
@@ -251,8 +251,8 @@ public class PingDataCollector
     // disconnect from the server
     protected void disconnectFrom(DarkstarRunner dr) {
         // TODO get from runner
-        String serverHost = "localhost";
-        int serverPort = 1139;
+        String serverHost = dr.getHostname();
+        int serverPort = dr.getPort();
         
         logger.warning("Disconnect from " + serverHost + " " + serverPort);
         

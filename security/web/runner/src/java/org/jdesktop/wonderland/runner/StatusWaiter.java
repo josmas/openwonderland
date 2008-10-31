@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.runner.resources;
+package org.jdesktop.wonderland.runner;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.runner.Runner;
