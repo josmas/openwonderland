@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  * Singleton manager for starting and stopping services.
@@ -44,6 +47,14 @@ import java.util.Map;
  * @author jkaplan
  */
 public class RunManager {
+    /** a logger */
+    private static final Logger logger =
+            Logger.getLogger(RunManager.class.getName());
+
+    /** the properties for starting and stopping */
+    private static final String START_PROP = "wonderland.runner.autostart";
+    private static final String STOP_PROP  = "wonderland.runner.autostop";
+
     /** the singleton instance */
     private static RunManager runManager;
     
@@ -71,6 +82,65 @@ public class RunManager {
     private RunManager() {
     }
     
+    /**
+     * Initialize this manager by loading all runners from the
+     * default deployment plan, and starting them if they are set
+     * to autostart.
+     * @throws RunnerException if there is a problem starting one of the
+     * runners.
+     */
+    public void initialize() throws RunnerException {
+        logger.info("[RunManager] Starting all apps");
+
+        if (Boolean.parseBoolean(SystemPropertyUtil.getProperty(STOP_PROP))) {
+            // Add a listener that will stop all active processes when the
+            // container shuts down
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    shutdown();
+                }
+            });
+        }
+
+        boolean start =
+            Boolean.parseBoolean(SystemPropertyUtil.getProperty(START_PROP));
+
+        DeploymentPlan dp = DeploymentManager.getInstance().getPlan();
+        for (DeploymentEntry de : dp.getEntries()) {
+            // copy System properties to pass into this runner
+            Properties props = new Properties(System.getProperties());
+            props.setProperty("runner.name", de.getRunnerName());
+
+            try {
+                Runner r = RunnerFactory.create(de.getRunnerClass(), props);
+                r = add(r);
+                if (start) {
+                    r.start(getStartProperties(r));
+                }
+            } catch (IOException ioe) {
+                throw new RunnerException("Error adding runner " +
+                                          de.getRunnerName(), ioe);
+            }
+        }
+    }
+
+    /**
+     * Stop all existing applications.
+     */
+    public void shutdown() {
+        logger.info("[RunManager] Stopping all apps");
+
+        // stop all active applications
+        for (Runner runner : getAll()) {
+            if (runner.getStatus() == Runner.Status.RUNNING ||
+                    runner.getStatus() == Runner.Status.STARTING_UP)
+            {
+                runner.stop();
+            }
+        }
+    }
+
     /**
      * Add a new <code>Runner</code> managed by this manager.  Note that
      * the returned runner may be different than the original one you
@@ -140,7 +210,77 @@ public class RunManager {
     public synchronized Runner remove(String name) {
         return runners.remove(name);
     } 
-    
+
+    /**
+     * Start the given runner.
+     * @param runner the runner to start
+     * @param wait whether or not to wait for the runner to start
+     * @return the StatusWaiter that waits for this runner to start, or
+     * null if wait is false
+     * @throws RunnerException if there is a problem starting the runner
+     */
+    public StatusWaiter start(Runner runner, boolean wait)
+        throws RunnerException
+    {
+        StatusWaiter out = null;
+
+        if (runner.getStatus() == Runner.Status.NOT_RUNNING) {
+            runner.start(getStartProperties(runner));
+
+            if (wait) {
+                out = new StatusWaiter(runner, Runner.Status.RUNNING);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Stop the given runner.
+     * @param runner the runner to stop
+     * @param wait whether or not to wait for the runner to stop
+     * @return the StatusWaiter that waits for this runner to stop, or
+     * null if wait is false
+     * @throws RunnerException if there is a problem stopping the runner
+     */
+    public StatusWaiter stop(Runner runner, boolean wait)
+        throws RunnerException
+    {
+        StatusWaiter out = null;
+
+        if (runner.getStatus() == Runner.Status.RUNNING || 
+                runner.getStatus() == Runner.Status.STARTING_UP)
+        {
+            runner.stop();
+
+            if (wait) {
+                out = new StatusWaiter(runner, Runner.Status.NOT_RUNNING);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Get the run properties for starting the given runner.  Properties are
+     * determined by getting the deployment entry for the given runner.
+     * If the deployment entry doesn't have any properties, the defaults
+     * as specified by the runner are used.
+     *
+     * @param runner the runner to get properties for
+     * @return the properties to use when starting that runner
+     */
+    public Properties getStartProperties(Runner runner) {
+        // find a properties file from the current deployment plan
+        DeploymentPlan dp = DeploymentManager.getInstance().getPlan();
+        DeploymentEntry de = dp.getEntry(runner.getName());
+        if (de != null && !de.getRunProps().isEmpty()) {
+            return de.getRunProps();
+        } else {
+            return runner.getDefaultProperties();
+        }
+    }
+
     /**
      * Deploy zips to a runner.  This will find the appropriate zips
      * based on the classname of the runner, and deploy each of them

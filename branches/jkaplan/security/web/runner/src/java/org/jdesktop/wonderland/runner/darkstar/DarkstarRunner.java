@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,7 @@ import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.runner.BaseRunner;
+import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.RunnerConfigurationException;
 import org.jdesktop.wonderland.runner.RunnerException;
 import org.jdesktop.wonderland.utils.RunUtil;
@@ -44,11 +47,17 @@ import org.jdesktop.wonderland.utils.RunUtil;
 public class DarkstarRunner extends BaseRunner {
     /** the default name if none is specified */
     private static final String DEFAULT_NAME = "Darkstar Server";
-    
+
+    /** the default port to run on */
+    private static final int DEFAULT_PORT = 1139;
+
     /** the logger */
     private static final Logger logger =
             Logger.getLogger(DarkstarRunner.class.getName());
-    
+
+    /** the sgs port.  Only valid when starting up or running */
+    private int currentPort;
+
     /**
      * Configure this runner.  This method sets values to the default for the
      * Darkstar server.
@@ -86,11 +95,9 @@ public class DarkstarRunner extends BaseRunner {
     @Override
     public Properties getDefaultProperties() {
         Properties props = new Properties();
-        props.setProperty("sgs.port", "1139");
+        props.setProperty("sgs.port", String.valueOf(DEFAULT_PORT));
         return props;
     }
-    
-    
     
     /**
      * Start the Darkstar server with the given properties.  This method first
@@ -129,10 +136,60 @@ public class DarkstarRunner extends BaseRunner {
                 }
             }
         }
+
+        // set the current port to the one we are now running with.  This
+        // will stay valid until the runner is stopped.
+        currentPort = getPort(props);
        
         super.start(props);
     }
-    
+
+    /**
+     * Get the Darkstar server name for clients to connect to.
+     * @return the external hostname of the Darkstar server
+     */
+    public String getHostname() {
+        try {
+            return InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException uhe) {
+            logger.log(Level.WARNING, "Unable to determine hostname", uhe);
+            return "localhost";
+        }
+    }
+
+    /**
+     * Get the Darkstar server port for clients to connect to.  This method
+     * returns the port of the currently running server.  If the server
+     * is not running, it returns what the port will be the next time the
+     * server starts up.
+     * @return the port
+     */
+    public synchronized int getPort() {
+        // if the server is running, us the current port variable
+        if (getStatus() == Status.RUNNING ||
+                getStatus() == Status.STARTING_UP)
+        {
+            return currentPort;
+        } else {
+            return getPort(RunManager.getInstance().getStartProperties(this));
+        }
+    }
+
+    /**
+     * Get the port to run on from a set of properties
+     * @param properties the properties to look at
+     * @return the port to run on
+     */
+    private int getPort(Properties props) {
+        // determine the current port
+        String portProp = props.getProperty("sgs.port");
+        if (portProp != null) {
+            return Integer.parseInt(portProp);
+        } else {
+            return DEFAULT_PORT;
+        }
+    }
+
     /**
      * Get the Darkstar server module directory
      * @return the server module directory
@@ -159,7 +216,7 @@ public class DarkstarRunner extends BaseRunner {
         // write each file from the part
         copyFiles(part.getFile(), partDir);
     }
-    
+
     /**
      * Recursively copy all files from a given source directory to a target 
      * directory
@@ -227,7 +284,7 @@ public class DarkstarRunner extends BaseRunner {
      */
     protected class DarkstarOutputReader extends BaseRunner.ProcessOutputReader {
         private static final String DARKSTAR_STARTUP =
-                "Wonderland: application is ready";
+                "Wonderland server started successfully";
                 
         public DarkstarOutputReader(InputStream in, Logger out) {
             super (in, out);
