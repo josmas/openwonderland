@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
@@ -29,7 +30,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
-import sun.awt.SunToolkit;
 import javax.media.opengl.GLContext;
 
 /**
@@ -44,6 +44,22 @@ import javax.media.opengl.GLContext;
 public class Gui2DInterior extends Gui2D {
 
     private static final Logger logger = Logger.getLogger(Gui2DInterior.class.getName());
+
+    // We need to call this method reflectively because it isn't available in Java 5
+    // BTW: we don't support Java 5 on Linux, so this is okay.
+    private static boolean isLinux = System.getProperty("os.name").equals("Linux");
+    private static Method isAWTLockHeldByCurrentThreadMethod;
+    static {
+	if (isLinux) {
+	    try {
+		Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
+		isAWTLockHeldByCurrentThreadMethod = 
+		    awtToolkitClass.getMethod("isAWTLockHeldByCurrentThread");
+	    } catch (ClassNotFoundException ex) {
+	    } catch (NoSuchMethodException ex) {
+	    }
+	}
+    }
 
     /** A listener for keys pressed and released */
     protected InteriorKeyListener keyListener;
@@ -61,9 +77,9 @@ public class Gui2DInterior extends Gui2D {
      * {@inheritDoc}
      */
     protected void attachMouseListener (Entity entity) {
+	logger.severe("&&&&&&& entity = " + entity);
 	mouseListener = new InteriorMouseListener();
 	mouseListener.addToEntity(entity);
-	System.err.println("!!!!!!!!!!! added mouseListener " + mouseListener + " to entity " + entity);
     }
 
     /**
@@ -95,9 +111,14 @@ public class Gui2DInterior extends Gui2D {
 	    // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
 	    // the AWT lock afterward.
 	    GLContext glContext = null;
-	    if (SunToolkit.isAWTLockHeldByCurrentThread()) {
-		glContext = GLContext.getCurrent();
-		glContext.release();
+	    if (isAWTLockHeldByCurrentThreadMethod != null) {
+		try {
+		    Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
+		    if (ret.booleanValue()) {
+			glContext = GLContext.getCurrent();
+			glContext.release();
+		    }
+		} catch (Exception ex) {}
 	    }
 
 	    // When user has control all events over the interior are sent to the app.
