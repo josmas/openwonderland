@@ -20,7 +20,11 @@
     </target>
     
     <!-- unpack zips -->
-    <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-scenegraph, unpack-javolution">
+    <!-- We are going to use our own modified version of Scenario.jar until the popup bug fix can
+	 be integrated into the master Scenario.jar
+	 <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-scenegraph, unpack-javolution">
+    -->
+    <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-javolution">
         <!-- darkstar -->
    	<unpack-lib-zip pkgname="sgs-server"
 			srcdir="${core.lib.zip.dir}" destdir="${core.sgs.dir}"/>
