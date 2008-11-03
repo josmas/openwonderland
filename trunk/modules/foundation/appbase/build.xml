@@ -50,4 +50,55 @@
 
     <target name="clean" depends="-module-clean"/>
 
+     <!-- javadoc -->
+     <!-- TODO: NOTYET <target name="javadoc" depends="javadoc-api, javadoc-all"/> -->
+     <target name="javadoc" depends="javadoc-all"/>
+         
+     <target name="javadoc-all" description="All Wonderland App Base Javadoc" unless="nojavadoc">
+        <mkdir dir="${release.javadoc.dir}"/>
+
+        <javadoc destdir="${release.javadoc.dir}/all"
+            sourcepath="${javasrc.dir}"
+            packagenames="org.jdesktop.wonderland.modules.appbase.*"
+            windowtitle="Wonderland App Base">
+
+            <classpath>
+		<pathelement path="${core-server.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>
+		<pathelement path="${module-client.classpath}"/>
+            </classpath>
+            
+            <doctitle><![CDATA[<h1>Project Wonderland App Base</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Project Wonderland App Base</i>]]></bottom>
+
+        </javadoc>
+    </target>
+
+    <!-- TODO: NOTYET
+    <target name="javadoc-api" 
+            description="Wonderland App Base API Javadoc" unless="nojavadoc">
+        <mkdir dir="${release.javadoc.dir}"/>
+
+        <javadoc destdir="${release.javadoc.dir}/api"
+            sourcepath="${javasrc.dir}"
+            packagenames="org.jdesktop.wonderland.modules.appbase.*"
+            windowtitle="Wonderland App Base API">
+                
+            <classpath>
+		<pathelement path="${core-server.classpath}"/>
+		<pathelement path="${core-client.classpath}"/>
+		<pathelement path="${module-client.classpath}"/>
+            </classpath>
+            
+            <doclet name="org.jdesktop.wonderland.utils.doclet.WonderlandDoclet"
+                    path="${wonderland.doclet.dir}/dist/wonderland-doclet.jar">
+                <param name="-wonderlandAPI" value="stable,experimental"/> 
+            </doclet>
+            
+            <doctitle><![CDATA[<h1>Project Wonderland App Base API</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Project Wonderland App Base API</i>]]></bottom>
+        </javadoc>
+    </target>
+    -->
+
 </project>
