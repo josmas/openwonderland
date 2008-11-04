@@ -30,8 +30,11 @@
             <filterset>
                 <filter token="SGS_ROOT_DIR" value="${sgs.data.dir}"/>
                 <filter token="SGS_PORT" value="${sgs.port}"/>
-                <filter token="SGS_SERVICES" value="com.sun.mpk20.voicelib.impl.service.voice.VoiceServiceImpl"/>
-                <filter token="SGS_MANAGERS" value="com.sun.mpk20.voicelib.impl.app.VoiceManagerImpl"/>
+                <filter token="SGS_SERVICES" value="com.sun.mpk20.voicelib.impl.service.voice.VoiceServiceImpl:org.jdesktop.wonderland.server.spatial.UniverseService"/>
+                <filter token="SGS_MANAGERS" value="com.sun.mpk20.voicelib.impl.app.VoiceManagerImpl:org.jdesktop.wonderland.server.spatial.UniverseServiceManagerImpl"/>
+                
+                <!--<filter token="SGS_SERVICES" value="org.jdesktop.wonderland.server.spatial.UniverseService"/>
+                <filter token="SGS_MANAGERS" value="org.jdesktop.wonderland.server.spatial.UniverseServiceManagerImpl"/>-->
             </filterset>            
         </copy>
     
