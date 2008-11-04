@@ -275,7 +275,7 @@ public class LoginManager {
      */
     private ClassLoader setupClassLoader(String serverURL) {
         // TODO: use the serverURL
-        ModulePluginList list = ModuleUtils.fetchPluginJars();
+        ModulePluginList list = ModuleUtils.fetchPluginJars(serverURL);
         List<URL> urls = new ArrayList<URL>();
         if (list==null) {
             logger.warning("Unable to configure classlaoder, falling back to " +
