@@ -72,15 +72,9 @@ public class EnterExitEvent3DLogger extends EventClassListener {
 	if (name != null) {
 	    sb.append(name + ": ");
 	}
-	String typeStr = eeEvent.getID() == MouseEvent.MOUSE_ENTERED ? "Enter" : "Exit";
-	sb.append("Received " + typeStr + " event =");
-	sb.append(event + ", entity = " + event.getEntity());
+	String typeStr = eeEvent.getID() == MouseEvent.MOUSE_ENTERED ? "ENTER" : "EXIT";
+	sb.append(typeStr + ", entity = " + event.getEntity());
 	logger.info(sb.toString());
-	//System.err.println("******** " + sb.toString());
-    }
-
-    public boolean propagatesToUnder (Event event) {
-	return true;
     }
 }
 
