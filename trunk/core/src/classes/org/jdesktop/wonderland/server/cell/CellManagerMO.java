@@ -46,13 +46,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
     // Used to generate unique cell ids
     private long cellCounter=CellID.getFirstCellID();
     
-    private ManagedReference<CellMO> rootCellRef;
-    
     private static final String BINDING_NAME=CellManagerMO.class.getName();
     private static final Logger logger = Logger.getLogger(CellManagerMO.class.getName());
     
-    private static CellID rootCellID;
-
     static boolean useCellService = true;
     
     /**
@@ -60,27 +56,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     CellManagerMO() {
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
-        createRootCell();
-    }
-    
-    private void createRootCell() {
-        BoundingSphere rootBounds = new BoundingSphere(Float.MAX_VALUE, new Vector3f());
-        CellTransform orig = new CellTransform(null, new Vector3f());
-        CellMO root = new RootCellMO(rootBounds, orig);
-        rootCellID = root.getCellID();
-        root.setName("root");
-        root.setLive(true);   
-        
-        rootCellRef = AppContext.getDataManager().createReference(root);
-    }
-    
-    /**
-     * Return the root cell id, used by ViewCellCacheMO. Currently we only use
-     * a single root on the server, but the client can support multiple roots.
-     * @return
-     */
-    static CellID getRootCellID() {
-        return rootCellID;
     }
     
     /**
@@ -127,12 +102,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * Insert the cell into the world. 
      */
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
-        if (useCellService) {
-            UniverseManager.getUniverseManager().addRootToUniverse(cell);
-            cell.setLive(true);
-        } else {
-            rootCellRef.getForUpdate().addChild(cell);
-        }
+        UniverseManager.getUniverseManager().addRootToUniverse(cell);
+        cell.setLive(true);
     }
 
     public void removeCellFromWorld(CellMO cell) {
@@ -149,19 +120,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
 //        test();
     }
     
-    private void test() {
-        try {
-            Class.forName("org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.TestWorld").newInstance();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-
     /**
      * Builds a world defined by a wonderland file system (e.g. on disk). The
      * world's root directory must be setTranslation in the system property 

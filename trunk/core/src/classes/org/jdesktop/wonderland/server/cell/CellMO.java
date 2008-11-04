@@ -186,8 +186,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
            child.setLive(true);
         }
 
-        if (!(this instanceof RootCellMO))
-            UniverseManager.getUniverseManager().addChild(this, child);
+        UniverseManager.getUniverseManager().addChild(this, child);
     }
     
     /**

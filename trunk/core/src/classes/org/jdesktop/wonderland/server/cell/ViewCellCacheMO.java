@@ -126,9 +126,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
-        CellMO rootCell = CellManagerMO.getCell(CellManagerMO.getRootCellID());
-        msg = newCreateCellMessage(rootCell, capabilities);
-        sender.send(session, msg);
+//        CellMO rootCell = CellManagerMO.getCell(CellManagerMO.getRootCellID());
+//        msg = newCreateCellMessage(rootCell, capabilities);
+//        sender.send(session, msg);
         
         // set up the revalidate scheduler
         scheduler = new ImmediateRevalidateScheduler(sender, session);
