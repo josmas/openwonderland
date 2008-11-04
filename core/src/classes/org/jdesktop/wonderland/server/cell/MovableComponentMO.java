@@ -34,7 +34,6 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.cell.CellMO.SpaceInfo;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -46,7 +45,6 @@ public class MovableComponentMO extends CellComponentMO {
 
     private ArrayList<ManagedReference<CellTransformChangeListener>> listeners = null;
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
-    private ManagedReference<SpaceMO> currentSpaceRef = null;
     private long transformTimestamp;
     private CellTransform cellTransformTmp = new CellTransform(new Quaternion(), new Vector3f());
     private Vector3f v3fTmp = new Vector3f();
@@ -59,7 +57,6 @@ public class MovableComponentMO extends CellComponentMO {
     public MovableComponentMO(CellMO cell) {
         super(cell);
         
-        cell.setMovable(true);
         ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
         if (channelComponent==null)
             throw new IllegalStateException("Cell does not have a ChannelComponent");
@@ -70,14 +67,6 @@ public class MovableComponentMO extends CellComponentMO {
     
     @Override
     public void setLive(boolean live) {
-        if (live) {
-            CellMO cell = cellRef.get();
-            SpaceMO[] currentSpace = WonderlandContext.getCellManager().getEnclosingSpace(
-                                        cell.getWorldTransform(null).getTranslation(null));
-            currentSpaceRef = AppContext.getDataManager().createReference(currentSpace[0]);  
-        } else {
-            currentSpaceRef = null;
-        }
     }
     
     /**
@@ -90,40 +79,12 @@ public class MovableComponentMO extends CellComponentMO {
         cell.setLocalTransform(transform);
         
         channelComponent = channelComponentRef.getForUpdate();
-        
-        // TODO only handles a single space at the moment
-        CellTransform cellWorld = cell.getWorldTransform(cellTransformTmp);
-        SpaceMO[] spaceSet = WonderlandContext.getCellManager().getEnclosingSpace(cellWorld.getTranslation(v3fTmp));
-        SpaceMO newSpace = spaceSet[0];
-        ManagedReference<SpaceMO> newSpaceRef = AppContext.getDataManager().createReference(newSpace);
-        if (newSpaceRef!=currentSpaceRef) {
-            cell.removeFromSpace(currentSpaceRef.getForUpdate());
-            cell.addToSpace(newSpace);
-            currentSpaceRef = newSpaceRef;
-        }
-        transformTimestamp = TimeManager.getWonderlandTime();
-        
+
         if (cell.isLive()) {
             channelComponent.sendAll(MovableMessage.newMovedMessage(cell.getCellID(), transform));
         }
     }
     
-    /**
-     * Check if the object needs to be added as 'in' other spaces
-     */
-    private void checkForNewSpace(CellMO cell, Collection<SpaceInfo> currentSpaces) {
-        Vector3f origin = cell.getWorldTransform(cellTransformTmp).getTranslation(v3fTmp);
-        
-        for(SpaceInfo spaceInfo : currentSpaces) {
-            Collection<ManagedReference<SpaceMO>> proximity = spaceInfo.getSpaceRef().get().getSpaces(cell.getWorldBounds());
-            for(ManagedReference<SpaceMO> spaceCellRef : proximity) {
-                if (spaceCellRef.get().getWorldBounds(null).contains(origin)) {
-                    cell.addToSpace(spaceCellRef.getForUpdate());
-                }
-            }
-        }
-    }
-       
     /**
      * Listener inteface for cell movement
      */

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.spatial.impl;
 
 import com.jme.bounding.BoundingVolume;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -52,7 +53,10 @@ class Space {
         }
         
         synchronized(viewCaches) {
-            cell.addViewCache(viewCaches);
+            cell.addViewCache(viewCaches, this);
+
+            for(ViewCache cache : viewCaches)
+                cache.rootCellAdded(cell);
         }
     }
 
@@ -62,13 +66,23 @@ class Space {
         }
         
         synchronized(viewCaches) {
-            cell.removeViewCache(viewCaches);
+            cell.removeViewCache(viewCaches, this);
+            
+            for(ViewCache cache : viewCaches)
+                cache.rootCellRemoved(cell);
         }
     }
 
     public void addViewCache(ViewCache cache) {
         synchronized(viewCaches) {
             viewCaches.add(cache);
+            ArrayList<ViewCache> tmp = new ArrayList();
+            tmp.add(cache);
+            synchronized(rootCells) {
+                for(SpatialCellImpl rootCell : rootCells) {
+                    rootCell.addViewCache(tmp, this);
+                }
+            }
         }
     }
 
