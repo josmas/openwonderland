@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 /**
  * Concrete implementation of CellCache for the JME Client
  */
-class JmeCellCache extends CellCacheBasicImpl {
+public class JmeCellCache extends CellCacheBasicImpl {
 
     public JmeCellCache(CellClientSession session, ClassLoader loader) {
         super(session, loader,
