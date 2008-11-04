@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
 import imi.loaders.repository.Repository;
 import imi.scene.processors.JSceneAWTEventProcessor;
 import imi.scene.processors.JSceneEventProcessor;
@@ -32,6 +33,7 @@ import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
@@ -43,7 +45,9 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
  *
  */
 public class JmeClientMain {
-    
+    private static final Logger logger =
+            Logger.getLogger(JmeClientMain.class.getName());
+
     /** The frame of the Wonderland client window. */
     private static MainFrame frame;
 
@@ -51,13 +55,11 @@ public class JmeClientMain {
     private Properties props;
     
     // standard properties
-    private static final String SERVER_NAME_PROP = "sgs.server";
-    private static final String SERVER_PORT_PROP = "sgs.port";
+    private static final String SERVER_URL_PROP = "sgs.server";
     private static final String USER_NAME_PROP   = "cellboundsviewer.username";
     
     // default values
-    private static final String SERVER_NAME_DEFAULT = "localhost";
-    private static final String SERVER_PORT_DEFAULT = "1139";
+    private static final String SERVER_URL_DEFAULT = "http://localhost:8080";
     private static final String USER_NAME_DEFAULT   = "jmetest";
    
     /**
@@ -74,10 +76,8 @@ public class JmeClientMain {
     public JmeClientMain(String[] args) {
         props = loadProperties("run-client.properties");
    
-        String serverName = props.getProperty(SERVER_NAME_PROP,
-                                              SERVER_NAME_DEFAULT);
-        String serverPort = props.getProperty(SERVER_PORT_PROP,
-                                              SERVER_PORT_DEFAULT);
+        String serverURL = props.getProperty(SERVER_URL_PROP,
+                                              SERVER_URL_DEFAULT);
         String userName   = props.getProperty(USER_NAME_PROP,
                                               USER_NAME_DEFAULT);
         
@@ -92,10 +92,23 @@ public class JmeClientMain {
 
         // Dont start the client manager until JME has been initialized, many JME components
         // expect the renderer to be ready during init.
-        ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
+        JmeLoginUI login = new JmeLoginUI(serverURL, frame);
+        WonderlandSession session = null;
+
+        try {
+            session = login.doLogin();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error connecting to server " + serverURL,
+                       ioe);
+        }
+
+        if (session == null) {
+            logger.log(Level.SEVERE, "Unable to connect to server, exiting");
+            System.exit(-1);
+        }
+
         ClientContext.getWonderlandSessionManager().setPrimaryServer(
-                    new WonderlandServerInfo(serverName,
-                                             Integer.parseInt(serverPort)));    
+                                                       session.getServerInfo());
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
         
@@ -194,6 +207,5 @@ public class JmeClientMain {
         }
         
         return props;
-    }
-    
+    }    
 }
