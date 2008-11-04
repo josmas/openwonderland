@@ -93,10 +93,10 @@ public class ModuleUtils {
      * 
      * @return The list of client and common plugin jars in all modules.
      */
-    public static ModulePluginList fetchPluginJars() {
+    public static ModulePluginList fetchPluginJars(String serverURL) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(BASE_URL + "wonderland-web-asset/asset/jars/get");
+            URL url = new URL(new URL(serverURL), "wonderland-web-asset/asset/jars/get");
             return ModulePluginList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
