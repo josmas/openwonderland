@@ -1,12 +1,27 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.server.spatial.impl;
 
+import com.sun.sgs.auth.Identity;
+import java.math.BigInteger;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.server.spatial.SpatialCell;
+import org.jdesktop.wonderland.server.spatial.impl.SpatialCell;
 
 /**
  *
@@ -16,18 +31,16 @@ public class ViewCellImpl extends SpatialCellImpl {
 
     private ViewCache viewCache = null;
 
-    public ViewCellImpl(CellID id, SpaceManager spaceManager) {
+    public ViewCellImpl(CellID id, SpaceManager spaceManager, Identity identity, BigInteger cellCacheId) {
         super(id);
-        viewCache = new ViewCache(this, spaceManager);
     }
 
     public ViewCache getViewCache() {
         return viewCache;
     }
 
-    @Override
-    public void setRoot(SpatialCell root) {
-        super.setRoot(root);
-        viewCache.cellMoved(this, getWorldTransform());
+    public void setViewCache(ViewCache viewCache) {
+        this.viewCache = viewCache;
     }
+
 }

@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.server;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.server.cell.CacheManager;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
@@ -40,7 +39,6 @@ public class WonderlandContext {
         CommsManagerFactory.initialize();
         CellManagerMO.initialize();
         UserManager.initialize();
-        CacheManager.initialize();
     }
     
     /**

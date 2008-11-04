@@ -196,7 +196,6 @@ public class CellListMO implements Serializable {
             cellTransform = cell.getLocalTransform(null);
             name = cell.getName();
             cellClass = cell.getClass();
-            isMovable = cell.isMovable();
             worldBounds = cell.getWorldBounds();
         }
 

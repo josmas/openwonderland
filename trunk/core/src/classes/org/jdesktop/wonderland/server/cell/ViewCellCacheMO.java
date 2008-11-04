@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
 /**
  * Container for the cell cache for an avatar.
@@ -77,35 +78,15 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private ManagedReference<ClientSession> sessionRef;
     
     private ClientCapabilities capabilities = null;
-     
-    /**
-     * List of currently active static cells
-     */
-    private ManagedReference<Map<CellID, CellDescription>> currentStaticCellsRef;
-    /**
-     * List of currently active dynamic cells
-     */
-    private ManagedReference<Map<CellID, CellDescription>> currentDynamicCellsRef;
-    
+         
     private PeriodicTaskHandle task = null;
     
     // handle revalidates
     private RevalidateScheduler scheduler;
     
     // whether or not to aggregate messages
-    private static final boolean AGGREGATE_MESSAGES = false;
-    
-    private Collection<ManagedReference<SpaceMO>> proximitySpaces=null;
-    private ManagedReference<SpaceMO> currentSpaceRef = null;
-    private CellListMO allCells = new CellListMO();
-    
-    private long lastRevalidationTimestamp;     // Last time we did a validation
-    private BoundingSphere proximityBounds;
-    
-    private boolean showStats = false;
-    
-    private CellTransform cellTransformTmp = new CellTransform(new Quaternion(), new Vector3f());
-    
+    private static final boolean AGGREGATE_MESSAGES = true;
+            
     private HashSet<ViewCellCacheRevalidationListener> revalidationsListeners = new HashSet();
     
     /**
@@ -114,24 +95,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     public ViewCellCacheMO(ViewCellMO view) {
         logger.config("Creating ViewCellCache");
         
-        username = view.getUser().getUsername();
-        
         DataManager dm = AppContext.getDataManager();
         viewRef = dm.createReference(view);
         dm.setBinding(username + "_CELL_CACHE", this);
         
-        if (username.startsWith("jmetest")) {   // TODO use a login property once they are supported
-            showStats = true;
-        }
-        
-        UserSecurityContextMO securityContextMO = view.getUser().getUserSecurityContext();
-        if (securityContextMO!=null)
-            securityContextRef = dm.createReference(securityContextMO);
-        else
-            securityContextRef = null;
-        
-        // Test code
-//        view.addTransformChangeListener(new TestTransformChangeListenerMO());
     }
     
     /**
@@ -139,13 +106,18 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     void login(WonderlandClientSender sender, ClientSession session) {
         this.sender = sender;
-        currentSpaceRef = null;
+
+        ViewCellMO view = viewRef.get();
+        UniverseManager.getUniverseManager().viewLogin(view);
+
+        username = view.getUser().getUsername();
         
-        lastRevalidationTimestamp=0;
-        if (allCells.size()!=0) {
-            logger.warning("User login, allCells is not empty !");
-        }
-        
+        UserSecurityContextMO securityContextMO = view.getUser().getUserSecurityContext();
+        if (securityContextMO!=null)
+            securityContextRef = AppContext.getDataManager().createReference(securityContextMO);
+        else
+            securityContextRef = null;
+
         DataManager dm = AppContext.getDataManager();
         sessionRef = dm.createReference(session);
         
@@ -158,26 +130,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         msg = newCreateCellMessage(rootCell, capabilities);
         sender.send(session, msg);
         
-        Map<CellID, CellDescription> currentStaticCells = new ManagedHashMap<CellID, CellDescription>();
-        currentStaticCellsRef = dm.createReference(currentStaticCells);
-        Map<CellID, CellDescription> currentDynamicCells = new ManagedHashMap<CellID, CellDescription>();
-        currentDynamicCellsRef = dm.createReference(currentDynamicCells);
-        
         // set up the revalidate scheduler
         scheduler = new ImmediateRevalidateScheduler(sender, session);
         
-        // schedule a task for revalidating
-        if (CacheManager.USE_CACHE_MANAGER) {
-            CacheManager.addCache(this);            
-        } else {
-            // Periodically revalidate the cache
-             task = AppContext.getTaskManager().schedulePeriodicTask(
-                    new ViewCellCacheRevalidateTask(this), 1000, 2000);  // Start delay, duration
-        }
-        
-        ViewCellMO view = viewRef.get();
-        Vector3f translation = view.getWorldTransform(cellTransformTmp).getTranslation(null);
-        proximityBounds = AvatarBoundsHelper.getProximityBounds(translation);        
     }
     
     /**
@@ -185,194 +140,44 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     void logout(ClientSession session) {
         logger.warning("DEBUG - logout");
-        
-        allCells.clear();
-        currentSpaceRef = null;
-        
-        if (CacheManager.USE_CACHE_MANAGER) {
-            CacheManager.removeCache(this);
-        } else {
-            if (task!=null)  // In case logout is called before login is complete (seen in testing)
-               task.cancel();
-            task=null;
-        }
+        UniverseManager.getUniverseManager().viewLogout(viewRef.get());
     }
      
-    /**
-     * Revalidate cell cache. This first finds the new list of visible cells
-     * and if the cell does not exist in the current list of visible cells, then
-     * creates the cell on the client. If the visible cell exists, check to see
-     * if it has been modified, and send the appropriate message to the client.
-     * Finally, remove all of the cells which are no longer visibe.
-     */
-    void revalidate() {
-        // make sure the user is still logged on
-        ClientSession session = getSession();        
-        if (session == null) {
-            logger.warning("Null session, have not seen a logout - terminating ViewCellCache for user");
-            logout(null);
-            return;
-        }
-        
-        revalidateFromSpaces(session);
-    }
 
-    /**
-     * @param session
-     */    
-    void revalidateFromSpaces(ClientSession session) {
-        // create a performance monitor
-        RevalidatePerformanceMonitor monitor = new RevalidatePerformanceMonitor();
-        long startTime = System.nanoTime();
-        
-        if (logger.isLoggable(Level.FINER)) {
-            logger.finer("Revalidating CellCache for   " + 
-                          session.getName());
-        }
-        
-        try {
-            // getTranslation the current user's bounds
-            ViewCellMO view = viewRef.get();
-            Vector3f translation = view.getWorldTransform(cellTransformTmp).getTranslation(null);
-            proximityBounds.setCenter(translation);            
-            
-            CellListMO dynamicCellList = new CellListMO();
-            
-            // notify the schduler
-            scheduler.startRevalidate();
-            
-            CacheStats dynamicStats = null;
-            CacheStats staticStats = null;
-                         
-            // TODO - only supports a single current space at the moment, should
-            // support multiple current spaces
-            SpaceMO space = CellManagerMO.getCellManager().getEnclosingSpace(translation)[0];
-//            System.out.println("Current SPACE "+space.getSpaceID());
-            if (AppContext.getDataManager().createReference(space)!=currentSpaceRef) {
-//                System.err.println("----------> Full revalidation "+space.position);
-                // copy the existing cells into the list of old cells 
-                CellListMO oldCells = (CellListMO) allCells.clone();
-                CellListMO currentCells = new CellListMO();  // Cells found during this revalidation
-                
-                if (showStats) {
-                    dynamicStats = new CacheStats();
-                    staticStats = new CacheStats();
-                }
-                
-                proximitySpaces = space.getSpaces(proximityBounds);
-                currentSpaceRef = AppContext.getDataManager().createReference(space);
-                CellListMO staticCellList = space.getStaticCells(proximitySpaces, proximityBounds, currentCells, staticStats);   
-               
-                generateLoadMessages(staticCellList);
-                                
-                // Get all dynamics cells, no matter when they were last updated
-                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, currentCells, dynamicStats);    
-                generateLoadMessages(dynamicCellList);
-                
-                Collection<CellDescription> descList = currentCells.getCells();
-                for(CellDescription desc : descList)
-                    oldCells.removeCell(desc);
-                generateUnloadMessages(oldCells);
-                oldCells.clear();
-            } else {           
-                if (showStats) {
-                    dynamicStats = new CacheStats();
-                }
-                
-                // Get only the dynamic cells that have been updated since our last revalidation
-                dynamicCellList = space.getDynamicCells(proximitySpaces, proximityBounds, null, dynamicStats, lastRevalidationTimestamp);
-                generateLoadMessages(dynamicCellList);
-            }
-            
-            
-            StringBuffer statsOut = new StringBuffer();
-    
-            if (staticStats!=null) {
-                statsOut.append("Static\n");
-                staticStats.report(statsOut);                
-            }
-            
-            if (dynamicStats!=null) {
-                statsOut.append("Dynamic\n");
-                dynamicStats.report(statsOut);
-            }
-            
-            if (dynamicStats!=null || staticStats!=null) {
-                logger.info(statsOut.toString());
-            }
-            
-            // Notify the cache revalidation listeners
-            synchronized(revalidationsListeners) {
-                for(ViewCellCacheRevalidationListener rl : revalidationsListeners) {
-                    rl.cacheRevalidate(cellTransformTmp);
-                }
-            }
-                   
-            lastRevalidationTimestamp = TimeManager.getWonderlandTime();
-            
-            scheduler.endRevalidate();
-            
-        } catch(RuntimeException e) {
-            monitor.setException(true);
-            
-            if (logger.isLoggable(Level.WARNING)) {
-                logger.log(Level.WARNING, "Rethrowing exception", e);
-            }
-            
-            throw e;
-        } finally {
-            monitor.incTotalTime(System.nanoTime() - startTime);
-            monitor.updateTotals();
-        }
-    }
-    
-    private void generateLoadMessages(CellListMO visCellList) {
-        
+    public void generateLoadMessagesService(Collection<CellDescription> cellInfoList) {
         ManagedReference<ViewCellCacheMO> viewCellCacheRef = AppContext.getDataManager().createReference(this);
-        Collection<CellDescription> cellInfoList = visCellList.getCells();
+        scheduler.startRevalidate();
         for(CellDescription cellDescription : cellInfoList) {
             // find the cell in our current list of cells
-
             // check this client's access to the cell
             if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellDescription)) {
                 // the user doesn't have access to this cell -- just skip
-                // it and go on                
+                // it and go on
                 continue;
             }
-            
-            if (!allCells.contains(cellDescription)) {
-                // schedule the add operation
 
-                if (logger.isLoggable(Level.FINER)) 
-                    logger.finer("Entering cell " + cellDescription.getCellID() +
+                if (logger.isLoggable(Level.FINER))
+                    logger.fine("Entering cell " + cellDescription.getCellID() +
                                  " cellcache for user "+username);
-                
-                allCells.addCell(cellDescription);
+
                 CellLoadOp op = new CellLoadOp(cellDescription,
                                              sessionRef,
                                              viewCellCacheRef,
                                              capabilities);
                 scheduler.schedule(op);
-             } else {
-                if (logger.isLoggable(Level.FINER)) 
-                    logger.finer("Cell already visible " + cellDescription.getCellID() +
-                                 " cellcache for user "+username);
-                
-            }
         }
+        scheduler.endRevalidate();
     }
     
-    private void generateUnloadMessages(CellListMO removeList) {
-
+    public void generateUnloadMessagesService(Collection<CellDescription> removeCells) {
         ManagedReference<ViewCellCacheMO> viewCellCacheRef = AppContext.getDataManager().createReference(this);
-        Collection<CellDescription> removeCells = removeList.getCells();
+        scheduler.startRevalidate();
         // oldCells contains the set of cells to be removed from client memory
         for(CellDescription ref : removeCells) {
-            if (logger.isLoggable(Level.FINER)) 
-                logger.finer("Leaving cell " + ref.getCellID() +
+//            if (logger.isLoggable(Level.FINER))
+                logger.warning("Leaving cell " + ref.getCellID() +
                              " cellcache for user "+username);
-            
-            allCells.removeCell(ref);
+
             // schedule the add operation
             CellUnloadOp op = new CellUnloadOp(ref,
                                                sessionRef,
@@ -380,9 +185,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                                                capabilities);
             scheduler.schedule(op);
         }
-        
+        scheduler.endRevalidate();
     }
-    
+
+
     private void addRevalidationListener(ViewCellCacheRevalidationListener listener) {
         // Called from the scheduler via a reference so does not need synchronization
         revalidationsListeners.add(listener);
@@ -391,13 +197,6 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private void removeRevalidationListener(ViewCellCacheRevalidationListener listener) {
         // Called from the scheduler via a reference so does not need synchronization
         revalidationsListeners.remove(listener);
-    }
-    
-     /**
-     * Utility method to mark ourself for update
-     */
-    private void markForUpdate() {
-        AppContext.getDataManager().markForUpdate(this);
     }
     
     /**

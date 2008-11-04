@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
+import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
 /**
  * Superclass for all server side representation of a cell
@@ -76,8 +77,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
     // ManagedReferences of ClientSessions
     protected HashSet<ManagedReference<ClientSession>> clientSessionRefs = null;
     
-    private HashSet<SpaceInfo> inSpaces = new HashSet();
-    
     private HashMap<Class, ManagedReference<CellComponentMO>> components = new HashMap();
     
     private CellTransform worldTransform = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
@@ -91,6 +90,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
         this.localBounds = null;
         this.localTransform = null;
         this.cellID = WonderlandContext.getCellManager().createCellID(this);
+        
+        UniverseManager.getUniverseManager().createCell(this);
     }
     
     /**
@@ -108,6 +109,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
         cellID = WonderlandContext.getCellManager().createCellID(this);
         this.localTransform = transform;
         setLocalBounds(localBounds);
+
+        UniverseManager.getUniverseManager().createCell(this);
     }
     
     /**
@@ -116,13 +119,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     public void setLocalBounds(BoundingVolume bounds) {
         localBounds = bounds.clone(null);
-//        boundsChanged = true;
-        
-//        if (live) {
-//            BoundsManager.get().cellBoundsChanged(cellID, bounds);
-//        }
         if (live) {
-            calcWorldBounds();
+            throw new RuntimeException("SetBounds on live cells is not implemented yet");
+//            UniverseManager.getUniverseManager().setLocalBounds(bounds);
         }
     }
     
@@ -145,24 +144,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (!live)
             throw new IllegalStateException("Cell is not live");
         
-//        if (boundsChanged) {
-//            CellTransform t = computeLocalToVWorld(this);
-////            logger.warning("LocalBounds have been changed, "
-////                    + "cached bounds not valid until the transaction commits ");
-//            BoundingVolume ret = getLocalBounds();
-//                    
-//            ret = ret.transform(t.getRotation(null), t.getTranslation(null), t.getScaling(null));
-//            return ret;
-//        }
-//        
-//        return BoundsManager.get().getCachedVWBounds(cellID);
-        
-        if (vwBounds==null) {
-            logger.severe("NULL BOUNDS "+getName());
-            return null;
-        }
-        
-        return vwBounds.clone(null);
+        return UniverseManager.getUniverseManager().getWorldBounds(this, null);
     }
    
     /**
@@ -180,23 +162,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (!live)
             throw new IllegalStateException("Unsupported Operation, only valid for a live Cell "+this.getClass().getName());
         
-//        if (boundsChanged) {
-//            logger.warning("LocalBounds have been changed, "
-//                    + "cached bounds not valid until the transaction commits, so computing on the fly...");
-//            return computeLocalToVWorld(this);
-//        }
-//        
-//        return BoundsManager.get().getLocalToVWorld(cellID);
-        return (CellTransform) worldTransform.clone(result);
-    }
-    
-    private CellTransform computeWorldTransform(CellMO currentCell) {
-        if (currentCell instanceof RootCellMO)
-            return currentCell.getLocalTransform(null);
-        
-        CellTransform ret = currentCell.computeWorldTransform(currentCell.getParent());
-        ret.mul(currentCell.getLocalTransform(null));
-        return ret;
+        return UniverseManager.getUniverseManager().getWorldTransform(this, result);
     }
     
     /**
@@ -219,6 +185,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (live) {
            child.setLive(true);
         }
+
+        if (!(this instanceof RootCellMO))
+            UniverseManager.getUniverseManager().addChild(this, child);
     }
     
     /**
@@ -237,6 +206,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 if (live) {
                     child.setLive(false);
                 }
+                UniverseManager.getUniverseManager().removeChild(this, child);
                 return true;
             } catch (MultipleParentException ex) {
                 // This should never happen
@@ -342,74 +312,13 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param transform
      */
     protected void setLocalTransform(CellTransform transform) {
-        if (!isMovable() && isLive()) {
-            throw new RuntimeException("Modifying Static Cell");
-        } 
         
         this.localTransform = (CellTransform) transform.clone(null);
         
-//        if (live) {
-//            BoundsManager.get().cellTransformChanged(cellID, transform);
-//        }
-        
-        if (live) {
-            long timestamp = TimeManager.getWonderlandTime();
-            processTransformChange(timestamp);
-            notifySpacesTransformChanged(transform, timestamp);
-        }
+        UniverseManager.getUniverseManager().setLocalTransform(this, localTransform);
     }
     
-    /**
-     * Notify children that the transform of this node has changed, as this
-     * call recurses down into the children the processParentTransformChange
-     * method is called. This is to allow different handling of space notification.
-     * 
-     * For changes to this cell, both the transform and world bounds are updated
-     * in the space, for children only the world bounds is updated in the space
-     * 
-     * @param parent
-     */
-    private void processTransformChange(long timestamp) {
-        calcWorldTransform();
-        calcWorldBounds();
-            
-        Collection<ManagedReference<CellMO>> childrenRef = getAllChildrenRefs();
-        for(ManagedReference<CellMO> childRef : childrenRef) {
-            childRef.getForUpdate().processParentTransformChange(timestamp);
-        }
-        
-        notifyTransformChangeListeners();
-    }
-    
-    /**
-     * 
-     * @param timestamp
-     */
-    private void processParentTransformChange(long timestamp) {
-        processTransformChange(timestamp);
-        notifySpacesWorldBoundsChanged(TimeManager.getWonderlandTime());
-    }
-    
-    /**
-     * Calculate the vw bounds
-     */
-    private void calcWorldBounds() {
-        assert(live);
-        vwBounds = localBounds.clone(vwBounds);
-        worldTransform.transform(vwBounds);
-    }
-    
-    /**
-     * Calculate the local2VWorld transform
-     */
-    private void calcWorldTransform() {
-        assert(live);
-        worldTransform = (CellTransform) localTransform.clone(null);
-        if (parentRef!=null) {
-             worldTransform.mul(parentRef.get().getWorldTransform(null));  
-        }
-    }
-    
+
     /**
      * Return the cells transform
      * 
@@ -453,45 +362,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             return;
         
         this.live = live;
-        
-        if (live) {
-//            BoundsManager.get().createBounds(this);
-            if (getParent()!=null) { // Root cell has a null parent
-//                    System.out.println("setLive "+getCellID()+" "+getParent().getCellID());
-//                BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, true);
-            }
-            if (localBounds==null)
-                throw new IllegalStateException("localBounds must not be null");
-            if (localTransform==null)
-                throw new IllegalStateException("transform must not be null");
-        
-            calcWorldTransform();
-            calcWorldBounds();
-            
-            if (!(this instanceof RootCellMO)) {
-                // Find the space in which the center of cell is located
-                SpaceMO[] space = CellManagerMO.getCellManager().getEnclosingSpace(localTransform.getTranslation(null));
-                if (space[0]==null) {
-                    logger.severe("Unable to find space to contain cell at "+localTransform.getTranslation(null) +" aborting addCell");
-                    this.live = false;
-                    return;
-                }
 
-                // Now search all nearby spaces to find spaces which intersect or encapsulate the cells bounds
-                Collection<ManagedReference<SpaceMO>> spaces = space[0].getSpaces(vwBounds);
-                for(ManagedReference<SpaceMO> spaceRef : spaces) {
-                    addToSpace(spaceRef.get());
-                }
-            }
-        } else {
-//            BoundsManager.get().cellChildrenChanged(getParent().getCellID(), cellID, false);
-//            BoundsManager.get().removeBounds(this);
-            if (!(this instanceof RootCellMO)) {
-                notifySpacesDetach(TimeManager.getWonderlandTime());
-            }
-        
-        }
-        
         // Notify all components of new live state
         Collection<ManagedReference<CellComponentMO>> compList = components.values();
         for(ManagedReference<CellComponentMO> c : compList) {
@@ -679,145 +550,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
             throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
     }
     
-    /**
-     * Return the leaf spaces which this cell is in.
-     * A cell is in a space when the origin of the cell is contained
-     * within the bounds of the space, and that space is a leaf space, ie is has 
-     * no child spaces.
-     * 
-     * The returned collection is a shallow clone of the underlying data so 
-     * modifications to the underlying data or return data can take place without
-     * causing ConcurrentModificationExceptions.
-     * 
-     * @return
-     */
-    public Collection<SpaceInfo> inSpaces() {
-        return (Collection<SpaceInfo>) inSpaces.clone();
-    }
-    
-    /**
-     * Return the number of spaces this cell is currently in
-     * 
-     * @return
-     */
-    public int numInSpaces() {
-        return inSpaces.size();
-    }
-    
-    /**
-     * Static (non movable) cells do not change in any way, so their state is not checked
-     * periodically. If a cell changes in any way (moves, bounds update)
-     * then isMovable will be true;
-     * 
-     * @return
-     */
-    public boolean isMovable() {
-        return isMovable;
-    }
-    
-    /**
-     * Set the isMovable property of this cell
-     * @param isMovable
-     */
-    public void setMovable(boolean isMovable) {
-        if (this.isMovable = isMovable)
-            return;
-        
-        if (isLive()) {
-            if (!isMovable)
-                throw new RuntimeException("Changing state to isMovable=false is not currently supported");
-            
-            for(SpaceInfo spaceInfo : inSpaces) {
-                spaceInfo.getSpaceRef().getForUpdate().setCellDynamic(this, isMovable);
-            }
-        }
-        
-        this.isMovable = isMovable;
-        
-        // Mark all children as movable
-        for(ManagedReference<CellMO> cellRef : childCellRefs) {
-            cellRef.getForUpdate().setParentMovable(isMovable | isParentMovable);
-        }
-    }
-    
-    /**
-     * A parent of this cell is movable
-     * @param isParentMovable
-     */
-    private void setParentMovable(boolean isParentMovable) {
-        this.isParentMovable = isParentMovable;
-    }
-    
-    /**
-     * Add this cell to the space.
-     * The space must be live otherwise an IllegalArgumentException will be thrown.
-     * @param space
-     */
-    void addToSpace(SpaceMO space) {
-        inSpaces.add(new SpaceInfo(space));
-        space.addCell(this);
-    }
-    
-    void removeFromSpace(SpaceMO space) {
-        inSpaces.remove(new SpaceInfo(space));
-        space.removeCell(this);
-    }
-    
-    /**
-     * Update the transform timestamp in the cell descriptions
-     * @param timestamp
-     */
-    private void notifySpacesTransformChanged(CellTransform transform, long timestamp) {
-        boolean spaceTransition = false;
-        
-        ArrayList<SpaceMO> removeList = null;
-        
-        for(SpaceInfo spaceInfo : inSpaces) {
-            if (spaceInfo.getSpaceBounds().intersects(vwBounds)) {
-                // Cell still in space
-                spaceInfo.getSpaceRef().getForUpdate().notifyCellTransformChanged(this, timestamp);
-            } else {
-                if (removeList==null)
-                     removeList = new ArrayList();
-                
-                // Cell left space
-                removeList.add(spaceInfo.getSpaceRef().getForUpdate());
-                spaceTransition = true;
-            }
-        }
-        
-        
-        if (spaceTransition) {
-            for(SpaceMO remove : removeList)
-                removeFromSpace(remove);
-            
-            // This is really too expensive to do every transform change, so we only do this when we leave a space
-            // Besides we should avoid space overlap where possible
-            SpaceMO[] spaces = WonderlandContext.getCellManager().getEnclosingSpace(transform.getTranslation(null));
-            ArrayList<SpaceMO> addList = new ArrayList();
-            for(SpaceMO space : spaces) {
-                if (!inSpaces.contains(this)) {
-                    addList.add(space);
-                }
-            }
-            
-            for(SpaceMO space : addList) {
-                addToSpace(space);
-            }
-        }
-    }
-    
-    private void notifySpacesDetach(long timestamp) {
-        for(SpaceInfo spaceInfo : inSpaces) {
-            spaceInfo.getSpaceRef().getForUpdate().notifyCellDetached(this, timestamp);
-        }
-    }
-    
-    private void notifySpacesWorldBoundsChanged(long timestamp) {
-        for(SpaceInfo spaceInfo : inSpaces) {
-            spaceInfo.getSpaceRef().getForUpdate().notifyCellWorldBoundsChanged(this, timestamp);
-        }
-    }
     
     /**
      * Add a TransformChangeListener to this cell. The listener will be
@@ -864,52 +596,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         }
     }
     
-    public static class SpaceInfo implements Serializable {
-        private ManagedReference<SpaceMO> space;
-        private BoundingVolume spaceBounds;
-        private SpaceID spaceID;
-        
-        public SpaceInfo(SpaceMO space) {
-            this.space = AppContext.getDataManager().createReference(space);
-            spaceBounds = null;
-            spaceID = space.getSpaceID();
-        }
-        
-        public BoundingVolume getSpaceBounds() {
-            if (spaceBounds==null)
-                spaceBounds = space.get().getWorldBounds(null);
-            return spaceBounds;
-        }
-        
-        /**
-         * Return the managed reference for the space
-         * @return
-         */
-        public ManagedReference<SpaceMO> getSpaceRef() {
-            return space;
-        }
-        
-        public SpaceID getSpaceID() {
-            return spaceID;
-        }
 
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 97 * hash + (this.space != null ? this.space.hashCode() : 0);
-            return hash;
-        }
-        
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof SpaceMO && ((SpaceMO)o).getSpaceID().equals(spaceID))
-                return true;
-            
-            if (!(o instanceof SpaceInfo))
-                return false;
-            return ((SpaceInfo)o).space.equals(space);
-        }
-        
-    }
 }
 

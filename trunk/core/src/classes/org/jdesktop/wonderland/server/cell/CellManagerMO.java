@@ -17,16 +17,13 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
-import com.sun.sgs.app.Task;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -36,7 +33,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.wfs.cell.WFSCellMO;
+import org.jdesktop.wonderland.server.spatial.UniverseManager;
 import org.jdesktop.wonderland.wfs.loader.CellLoader;
 
 /**
@@ -54,9 +51,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
     private static final String BINDING_NAME=CellManagerMO.class.getName();
     private static final Logger logger = Logger.getLogger(CellManagerMO.class.getName());
     
-    private SpaceManager spaceManager = new SpaceManagerGridImpl();
-    
     private static CellID rootCellID;
+
+    static boolean useCellService = true;
     
     /**
      * Creates a new instance of CellManagerMO
@@ -64,7 +61,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
     CellManagerMO() {
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
         createRootCell();
-        spaceManager.initialize();
     }
     
     private void createRootCell() {
@@ -114,15 +110,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
 
     
     /**
-     * Return the space that encloses this point, if the space does not exist, create it
-     * @param position
-     * @return
-     */
-    SpaceMO[] getEnclosingSpace(Vector3f point) {
-        return spaceManager.getEnclosingSpace(point);
-    }
-    
-    /**
      * Return the cell with the given ID, or null if the id is invalid
      * 
      * @param cellID the cell ID to getTranslation
@@ -140,8 +127,18 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * Insert the cell into the world. 
      */
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
-        rootCellRef.getForUpdate().addChild(cell);
-    }        
+        if (useCellService) {
+            UniverseManager.getUniverseManager().addRootToUniverse(cell);
+            cell.setLive(true);
+        } else {
+            rootCellRef.getForUpdate().addChild(cell);
+        }
+    }
+
+    public void removeCellFromWorld(CellMO cell) {
+        UniverseManager.getUniverseManager().removeRootFromUniverse(cell);
+        cell.setLive(false);
+    }
     
     /**
      * For testing.....
