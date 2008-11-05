@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.web.asset.resources;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -31,6 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;
 
@@ -47,7 +49,8 @@ public class ModuleJarListResource {
      */
     @GET
     public Response getJarList() {
-        Collection<String> jarURIs = new LinkedList<String>();
+        Logger logger = Logger.getLogger(ModuleJarListResource.class.getName());
+        Collection<AssetURI> jarURIs = new LinkedList<AssetURI>();
 
         /*
          * Get a map of all of the File objects for each art asset. We use the
@@ -65,7 +68,11 @@ public class ModuleJarListResource {
                 }
                 for (String file : files) {
                     if (file.endsWith(".jar") == true) {
-                        jarURIs.add(this.getPluginJarURI(asset.moduleName, file, asset.assetType));
+                        try {
+                            jarURIs.add(this.getPluginJarURI(asset.moduleName, file, asset.assetType));
+                        } catch (URISyntaxException excp) {
+                            logger.log(Level.WARNING, "[MODULES] GET PLUGINS Invalid JAR URI", excp);
+                        }
                     }
                 }
             }
@@ -73,7 +80,7 @@ public class ModuleJarListResource {
         
         /* Otherwise, return a response with the input stream */
         ModulePluginList mpl = new ModulePluginList();
-        mpl.setJarURIs(jarURIs.toArray(new String[] {}));
+        mpl.setJarURIs(jarURIs.toArray(new AssetURI[] {}));
 
         /* Write the XML encoding to a writer and return it2 */
         StringWriter sw = new StringWriter();
@@ -83,8 +90,7 @@ public class ModuleJarListResource {
             return rb.build();
         } catch (javax.xml.bind.JAXBException excp) {
             /* Log an error and return an error response */
-            Logger logger = Logger.getLogger(ModuleJarListResource.class.getName());
-            logger.log(Level.WARNING, "[MODULES] REST GET PLUGINS Unable to encode", excp);
+            logger.log(Level.WARNING, "[MODULES] GET PLUGINS Unable to encode", excp);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
@@ -94,7 +100,7 @@ public class ModuleJarListResource {
      * Takes a module name, jar name, and jar type (client or common) and
      * returns the URL to represent it.
      */
-    private String getPluginJarURI(String moduleName, String jarName, String type) {
-        return new String("wlj://" + moduleName + "/" + type + "/" + jarName);
+    private AssetURI getPluginJarURI(String moduleName, String jarName, String type) throws URISyntaxException {
+        return new AssetURI("wla://" + moduleName + "/" + type + "/" + jarName);
     }
 }

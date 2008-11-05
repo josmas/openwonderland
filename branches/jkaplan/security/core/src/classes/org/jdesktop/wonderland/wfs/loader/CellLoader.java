@@ -21,6 +21,8 @@ package org.jdesktop.wonderland.wfs.loader;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,13 +34,7 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
-import org.jdesktop.wonderland.wfs.loader.CellList;
 import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
-import org.jdesktop.wonderland.wfs.loader.CellMap;
-import org.jdesktop.wonderland.wfs.loader.CellLoaderDefs;
-import org.jdesktop.wonderland.wfs.loader.CellLoaderUtils;
-import org.jdesktop.wonderland.wfs.loader.CellRoots;
-
 
 
 /**
@@ -57,8 +53,16 @@ public class CellLoader {
     /* Contains a map of canonical cell names in WFS to last modified dates */
     private CellMap<Long> cellModifiedMap = new CellMap();
     
+    /* The URL for the web server for this loader instance */
+    private URL webServerURL = null;
+    
     /** Default Constructor */
     public CellLoader() {
+        try {
+            this.webServerURL = CellLoaderUtils.getWebServerURL();
+        } catch (MalformedURLException excp) {
+            logger.log(Level.WARNING, "[WFS] No web server URL", excp);
+        }
     }
     
     /**
@@ -224,7 +228,13 @@ public class CellLoader {
              * Download and parse the cell configuration information. Create a
              * new cell based upon the information.
              */
-            BasicCellSetup setup = CellLoaderUtils.getWFSCell(root, relativePath, child.name);
+            URL url = null;
+            try {
+                url = new URL("http://localhost:8080/");
+            } catch (MalformedURLException excp) {
+                logger.log(Level.WARNING, "[WFS] Invalid server url", excp);
+            }
+            BasicCellSetup setup = CellLoaderUtils.getWFSCell(url, root, relativePath, child.name);
             if (setup == null) {
                 logger.info("WFSLoader: unable to read cell setup info " + relativePath + "/" + child.name);
                 continue;

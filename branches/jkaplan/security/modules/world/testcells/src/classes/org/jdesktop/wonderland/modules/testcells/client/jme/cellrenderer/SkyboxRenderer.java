@@ -45,9 +45,10 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 public class SkyboxRenderer implements CellRendererJME {
 
     private Entity entity = null;
-
+    private Cell cell = null;
+    
     public SkyboxRenderer(Cell cell) {
-
+        this.cell = cell;
     }
 
     public Entity getEntity() {
@@ -59,15 +60,18 @@ public class SkyboxRenderer implements CellRendererJME {
     
     private Entity createEntity() {
         try {
+            /* Form the asset URIs */
+//            WonderlandSession session = cell.getCellCache().getSession();
+//            session.getServerInfo().
             WorldManager wm = ClientContextJME.getWorldManager();
             Skybox skybox = new Skybox("skybox", 1000, 1000, 1000);
             String dir = "jmetest/data/skybox1/";
-            Texture north = TextureManager.loadTexture(new URL("wla://testcells/skybox1/1.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture south = TextureManager.loadTexture(new URL("wla://testcells/skybox1/3.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture east = TextureManager.loadTexture(new URL("wla://testcells/skybox1/2.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture west = TextureManager.loadTexture(new URL("wla://testcells/skybox1/4.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture up = TextureManager.loadTexture(new URL("wla://testcells/skybox1/6.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture down = TextureManager.loadTexture(new URL("wla://testcells/skybox1/5.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture north = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/1.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture south = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/3.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture east = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/2.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture west = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/4.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture up = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/6.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture down = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/5.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
             skybox.setTexture(Skybox.Face.North, north);
             skybox.setTexture(Skybox.Face.West, west);
             skybox.setTexture(Skybox.Face.South, south);

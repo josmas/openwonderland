@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
+import org.jdesktop.wonderland.common.AssetURI;
 import sun.misc.Service;
 
 /**
@@ -283,9 +284,10 @@ public class LoginManager {
             return getClass().getClassLoader();
         }
 
-        for (String uri : list.getJarURIs()) {
+        for (AssetURI uri : list.getJarURIs()) {
             try {
-                urls.add(new URL(uri));
+                logger.warning("[JARS] " + uri.getURI().toString());
+                urls.add(uri.getURI().toURL());
             } catch (Exception excp) {
                 excp.printStackTrace();
            }
