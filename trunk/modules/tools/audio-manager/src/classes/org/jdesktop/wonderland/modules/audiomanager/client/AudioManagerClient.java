@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.AudioMenuListener;
+import org.jdesktop.wonderland.modules.audiomanager.client.AudioMenuListener;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
@@ -94,7 +94,8 @@ public class AudioManagerClient extends BaseConnection implements
         }
         
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
-        JmeClientMain.getFrame().addAudioMenuListener(this);
+
+        JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
         
 	logger.warning("Starting AudioManagerCLient");
     }
@@ -152,7 +153,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void softphoneVisible(boolean isVisible) {
-	JmeClientMain.getFrame().updateSoftphoneCheckBoxMenuItem(isVisible);
+        AudioMenu.updateSoftphoneCheckBoxMenuItem(isVisible);
     }
 
     public void softphoneMuted(boolean muted) {
@@ -162,11 +163,11 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void softphoneExited() {
-	logger.warning("Softphone exited, reconnect");
+        logger.warning("Softphone exited, reconnect");
 
-	JmeClientMain.getFrame().updateSoftphoneCheckBoxMenuItem(false);
+        AudioMenu.updateSoftphoneCheckBoxMenuItem(false);
 
-   	connectSoftphone();
+        connectSoftphone();
     }
 
     public void microphoneGainTooHigh() {
