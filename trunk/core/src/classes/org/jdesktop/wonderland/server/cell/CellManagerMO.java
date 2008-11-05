@@ -102,8 +102,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * Insert the cell into the world. 
      */
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
-        UniverseManager.getUniverseManager().addRootToUniverse(cell);
         cell.setLive(true);
+        UniverseManager.getUniverseManager().addRootToUniverse(cell);
     }
 
     public void removeCellFromWorld(CellMO cell) {

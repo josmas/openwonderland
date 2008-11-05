@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -91,7 +92,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         this.localTransform = null;
         this.cellID = WonderlandContext.getCellManager().createCellID(this);
         
-        UniverseManager.getUniverseManager().createCell(this);
     }
     
     /**
@@ -110,7 +110,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
         this.localTransform = transform;
         setLocalBounds(localBounds);
 
-        UniverseManager.getUniverseManager().createCell(this);
     }
     
     /**
@@ -186,7 +185,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
            child.setLive(true);
         }
 
-        UniverseManager.getUniverseManager().addChild(this, child);
     }
     
     /**
@@ -313,8 +311,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
     protected void setLocalTransform(CellTransform transform) {
         
         this.localTransform = (CellTransform) transform.clone(null);
-        
-        UniverseManager.getUniverseManager().setLocalTransform(this, localTransform);
+
+        if (live)
+            UniverseManager.getUniverseManager().setLocalTransform(this, localTransform);
     }
     
 
@@ -361,6 +360,23 @@ public abstract class CellMO implements ManagedObject, Serializable {
             return;
         
         this.live = live;
+
+        if (live) {
+            if (localBounds==null) {
+                logger.severe("CELL HAS NULL BOUNDS, defaulting to unit sphere");
+                localBounds = new BoundingSphere(1f, new Vector3f());
+            }
+
+            UniverseManager.getUniverseManager().createCell(this);
+            System.err.println("CREATING SPATIAL CELL");
+            
+            if (parentRef!=null)
+                UniverseManager.getUniverseManager().addChild(parentRef.getForUpdate(), this);
+
+        }
+//        else
+//            UniverseManager.getUniverseManager().removeCell(this);
+
 
         // Notify all components of new live state
         Collection<ManagedReference<CellComponentMO>> compList = components.values();
