@@ -17,19 +17,18 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.Dimension;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
-import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
-import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.common.LogControl;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
@@ -42,13 +41,6 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 public class MainFrame extends javax.swing.JFrame {
     private static final ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle", Locale.getDefault());
 
-    JPanel mainPanel = new JPanel();
-    Canvas canvas = null;
-    private JPanel contentPane;
-    
-    private ImportSessionFrame importSessionFrame = null;
-    private CellViewerFrame cellViewerFrame = null;
-    
     static {
         new LogControl(MainFrame.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
     }
@@ -63,22 +55,17 @@ public class MainFrame extends javax.swing.JFrame {
         // Add the help menu to the main menu bar
         HelpSystem helpSystem = new HelpSystem();
         JMenu helpMenu = helpSystem.getHelpJMenu();
-        jMenuBar2.add(helpMenu);
+        mainMenuBar.add(helpMenu);
         
-        // make the canvas:
-        canvas = wm.getRenderManager().createCanvas(width, height);
-        canvas.setVisible(true);
         wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
             public void currentFramerate(float framerate) {
                 fpsLabel.setText("FPS: "+framerate);
-            }                
+            }
         }, 100);
-        wm.getRenderManager().setCurrentCanvas(canvas);
 
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
-
-        canvas.setBounds(0, 0, width, height);
-        centerPanel.add(canvas, BorderLayout.CENTER);
+        centerPanel.setMinimumSize(new Dimension(width, height));
+        centerPanel.setPreferredSize(new Dimension(width, height));
 
         pack();
     }
@@ -87,14 +74,25 @@ public class MainFrame extends javax.swing.JFrame {
      * Returns the canvas of the frame.
      */
     public Canvas getCanvas () {
-	return canvas;
+        return ViewManager.getViewManager().getCanvas();
     }
 
     /**
      * Returns the panel of the frame in which the 3D canvas resides.
      */
     public JPanel getCanvas3DPanel () {
-	return centerPanel;
+        return centerPanel;
+    }
+
+    /**
+     * Add the specified menu item to the tool menu.
+     * 
+     * TODO - design a better way to manage the menus and toolsbars
+     * 
+     * @param menuItem
+     */
+    public void addToToolMenu(JMenuItem menuItem) {
+        toolsMenu.add(menuItem);
     }
 
     /** This method is called from within the constructor to
@@ -118,13 +116,11 @@ public class MainFrame extends javax.swing.JFrame {
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         fpsLabel = new javax.swing.JLabel();
-        jMenuBar2 = new javax.swing.JMenuBar();
-        jMenu3 = new javax.swing.JMenu();
+        mainMenuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
         exitMI = new javax.swing.JMenuItem();
-        jMenu4 = new javax.swing.JMenu();
+        editMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
-        modelImportMI = new javax.swing.JMenuItem();
-        cellViewerMI = new javax.swing.JMenuItem();
         AudioMenu = new javax.swing.JMenu();
         softphoneMenuItem = new javax.swing.JCheckBoxMenuItem();
         testAudioMenuItem = new javax.swing.JMenuItem();
@@ -224,7 +220,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
-        jMenu3.setText(bundle.getString("File")); // NOI18N
+        fileMenu.setText(bundle.getString("File")); // NOI18N
 
         exitMI.setText(bundle.getString("Exit")); // NOI18N
         exitMI.addActionListener(new java.awt.event.ActionListener() {
@@ -232,31 +228,14 @@ public class MainFrame extends javax.swing.JFrame {
                 exitMIActionPerformed(evt);
             }
         });
-        jMenu3.add(exitMI);
+        fileMenu.add(exitMI);
 
-        jMenuBar2.add(jMenu3);
+        mainMenuBar.add(fileMenu);
 
-        jMenu4.setText(bundle.getString("Edit")); // NOI18N
-        jMenuBar2.add(jMenu4);
+        editMenu.setText(bundle.getString("Edit")); // NOI18N
+        mainMenuBar.add(editMenu);
 
         toolsMenu.setText(bundle.getString("Tools")); // NOI18N
-
-        modelImportMI.setText(bundle.getString("Model_Importer...")); // NOI18N
-        modelImportMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                modelImportMIActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(modelImportMI);
-
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
-        cellViewerMI.setText(bundle.getString("Cell_Viewer...")); // NOI18N
-        cellViewerMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cellViewerMIActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(cellViewerMI);
 
         AudioMenu.setText("Audio");
         AudioMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -315,9 +294,9 @@ public class MainFrame extends javax.swing.JFrame {
 
         toolsMenu.add(AudioMenu);
 
-        jMenuBar2.add(toolsMenu);
+        mainMenuBar.add(toolsMenu);
 
-        setJMenuBar(jMenuBar2);
+        setJMenuBar(mainMenuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -327,17 +306,8 @@ private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     System.exit(0);
 }//GEN-LAST:event_exitMIActionPerformed
 
-private void modelImportMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelImportMIActionPerformed
-if (importSessionFrame==null) 
-        importSessionFrame = new ImportSessionFrame();
-    importSessionFrame.setVisible(true);
-}//GEN-LAST:event_modelImportMIActionPerformed
-
 private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cellViewerMIActionPerformed
-    if (cellViewerFrame==null) {
-        cellViewerFrame = new CellViewerFrame();
-    }
-    cellViewerFrame.setVisible(true);
+
 }//GEN-LAST:event_cellViewerMIActionPerformed
 
 private void AudioMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AudioMenuActionPerformed
@@ -435,20 +405,18 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu AudioMenu;
-    private javax.swing.JMenuItem cellViewerMI;
     private javax.swing.JButton cellViewerTTB;
     private javax.swing.JPanel centerPanel;
+    private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMI;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel fpsLabel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
-    private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton logAudioProblemButton;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
-    private javax.swing.JMenuItem modelImportMI;
+    private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JButton reconnectSoftphoneButton;
     private javax.swing.JMenuItem reconnectSoftphoneMenuItem;
     private javax.swing.JButton softphoneButton;

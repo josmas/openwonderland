@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -129,13 +130,19 @@ public class JmeClientMain {
     /**
      * Create all of the Swing windows - and the 3D window
      */
-    private void createUI(WorldManager wm) {             
+    private void createUI(WorldManager wm) {
+        ViewManager.initialize(width, height); // Initialize an onscreen view
+        
         frame = new MainFrame(wm, width, height);
         // center the frame
         frame.setLocationRelativeTo(null);
 
         // show frame
         frame.setVisible(true);
+
+        ViewManager.getViewManager().attachViewCanvas(frame.getCanvas3DPanel());
+
+
 
 	// Initialize the input manager.
 	// Note: this also creates the view manager.
@@ -176,7 +183,7 @@ public class JmeClientMain {
      * Returns the frame of the Wonderland client window.
      */
     public static MainFrame getFrame () {
-	return frame;
+        return frame;
     }
 
     private static Properties loadProperties(String fileName) {
