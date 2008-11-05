@@ -43,6 +43,10 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import imi.scene.processors.JSceneEventProcessor;
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import javax.swing.JPanel;
+import org.jdesktop.mtgame.RenderBuffer;
 
 /**
  * 
@@ -80,9 +84,9 @@ public class ViewManager {
     /**
      * The width and height of our 3D window
      */
-    private int width = 800;
-    private int height = 600;
-    private float aspect = 800.0f/600.0f;
+    private int width;
+    private int height;
+    private float aspect;
     
     private Cell attachCell = null;
     private CellListener listener = null;
@@ -97,8 +101,36 @@ public class ViewManager {
 
     // TODO remove this
     public boolean useAvatars = false;
+
+    private RenderBuffer rb;
     
-    ViewManager() {
+    ViewManager(int width, int height) {
+        this.width = width;
+        this.height = height;
+        this.aspect = width/height;
+    }
+
+    public static void initialize(int width, int height) {
+        viewManager = new ViewManager(width, height);
+    }
+    
+    public static ViewManager getViewManager() {
+        if (viewManager==null)
+            throw new RuntimeException("View has not been initialized");
+        
+        return viewManager;
+    }
+
+    void attachViewCanvas(JPanel panel) {
+        rb = new RenderBuffer(RenderBuffer.Target.ONSCREEN, width, height);
+        ClientContextJME.getWorldManager().getRenderManager().addRenderBuffer(rb);
+        Canvas canvas = rb.getCanvas();
+
+        canvas.setVisible(true);
+        canvas.setBounds(0, 0, width, height);
+
+        panel.add(canvas, BorderLayout.CENTER);
+
         createCameraEntity(ClientContextJME.getWorldManager());
         listener = new CellListener();
 
@@ -106,20 +138,15 @@ public class ViewManager {
             // Create and register the avatar controls
             avatarControls = new AvatarControls();
             ClientContextJME.getWorldManager().addUserData(JSceneEventProcessor.class, avatarControls);
-        } 
+        }
 
-        
         // Add the avatar repository
         ClientContextJME.getWorldManager().addUserData(Repository.class, new Repository(ClientContextJME.getWorldManager()));
     }
-    
-    public static ViewManager getViewManager() {
-        if (viewManager==null)
-            viewManager = new ViewManager();
-        
-        return viewManager;
+
+    Canvas getCanvas() {
+        return rb.getCanvas();
     }
-    
     
     /**
      * Register a ViewCell for a session with the ViewManager
@@ -280,6 +307,8 @@ public class ViewManager {
         
         cameraProcessor = new ThirdPersonCameraProcessor(cameraNode);
 //        camera.addComponent(CameraProcessor.class, cameraProcessor);
+
+        rb.setCameraComponent(cameraComponent);
         
         wm.addEntity(camera);         
     }
