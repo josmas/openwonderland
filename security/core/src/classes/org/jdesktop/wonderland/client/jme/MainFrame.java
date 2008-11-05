@@ -25,6 +25,8 @@ import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
@@ -48,7 +50,9 @@ public class MainFrame extends javax.swing.JFrame {
     
     private ImportSessionFrame importSessionFrame = null;
     private CellViewerFrame cellViewerFrame = null;
-    
+
+    private String serverURL;
+
     static {
         new LogControl(MainFrame.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
     }
@@ -80,6 +84,31 @@ public class MainFrame extends javax.swing.JFrame {
         canvas.setBounds(0, 0, width, height);
         centerPanel.add(canvas, BorderLayout.CENTER);
 
+        locationField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void checkButtons() {
+                String cur = locationField.getText();
+                if (cur != null && cur.length() > 0 &&
+                        !cur.equals(serverURL))
+                {
+                    goButton.setEnabled(true);
+                } else {
+                    goButton.setEnabled(false);
+                }
+            }
+        });
+
         pack();
     }
 
@@ -97,6 +126,14 @@ public class MainFrame extends javax.swing.JFrame {
 	return centerPanel;
     }
 
+    /**
+     * Set the current server in the toolbar
+     */
+    public void setServerURL(String serverURL) {
+        this.serverURL = serverURL;
+        locationField.setText(serverURL);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -107,6 +144,9 @@ public class MainFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        locationField = new javax.swing.JTextField();
         jToolBar1 = new javax.swing.JToolBar();
         cellViewerTTB = new javax.swing.JButton();
         softphoneButton = new javax.swing.JButton();
@@ -115,6 +155,7 @@ public class MainFrame extends javax.swing.JFrame {
         transferCallButton = new javax.swing.JButton();
         logAudioProblemButton = new javax.swing.JButton();
         virtualPhoneButton = new javax.swing.JButton();
+        goButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         fpsLabel = new javax.swing.JLabel();
@@ -136,6 +177,10 @@ public class MainFrame extends javax.swing.JFrame {
         jLabel1.setText("jLabel1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel2.setPreferredSize(new java.awt.Dimension(687, 59));
+
+        jLabel2.setText("Location:");
 
         jToolBar1.setRollover(true);
 
@@ -216,7 +261,39 @@ public class MainFrame extends javax.swing.JFrame {
         });
         jToolBar1.add(virtualPhoneButton);
 
-        getContentPane().add(jToolBar1, java.awt.BorderLayout.PAGE_START);
+        goButton.setText("Go!");
+        goButton.setEnabled(false);
+        goButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(locationField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(goButton))
+            .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 687, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(locationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(goButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        getContentPane().add(jPanel2, java.awt.BorderLayout.NORTH);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
         fpsLabel.setText("FPS :");
@@ -423,6 +500,18 @@ if (virtualPhoneListener != null) {
 }
 }//GEN-LAST:event_virtualPhoneButtonActionPerformed
 
+private ServerURLListener serverListener;
+
+public void addServerURLListener(ServerURLListener listener) {
+    serverListener = listener;
+}
+
+private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
+    if (serverListener != null) {
+        serverListener.serverURLChanged(locationField.getText());
+    }
+}//GEN-LAST:event_goButtonActionPerformed
+
 public void updateSoftphoneCheckBoxMenuItem(boolean isSelected) {
     softphoneMenuItem.setSelected(isSelected);
 }
@@ -433,6 +522,10 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     this.audioMenuListener = audioMenuListener;
 }
 
+public interface ServerURLListener {
+    public void serverURLChanged(String serverURL);
+}
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu AudioMenu;
     private javax.swing.JMenuItem cellViewerMI;
@@ -440,12 +533,16 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenuItem exitMI;
     private javax.swing.JLabel fpsLabel;
+    private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JTextField locationField;
     private javax.swing.JButton logAudioProblemButton;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
     private javax.swing.JMenuItem modelImportMI;

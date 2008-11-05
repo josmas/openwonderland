@@ -55,6 +55,9 @@ public class DarkstarRunner extends BaseRunner {
     private static final Logger logger =
             Logger.getLogger(DarkstarRunner.class.getName());
 
+    /** the webserver URL to link back to */
+    private String webserverURL;
+
     /** the sgs port.  Only valid when starting up or running */
     private int currentPort;
 
@@ -76,6 +79,9 @@ public class DarkstarRunner extends BaseRunner {
         if (!props.containsKey("runner.name")) {
             setName(DEFAULT_NAME);
         }
+
+        // record the webserver URL
+        webserverURL = props.getProperty("wonderland.web.server.url");
     }
  
     /**
@@ -96,6 +102,7 @@ public class DarkstarRunner extends BaseRunner {
     public Properties getDefaultProperties() {
         Properties props = new Properties();
         props.setProperty("sgs.port", String.valueOf(DEFAULT_PORT));
+        props.setProperty("wonderland.web.server.url", webserverURL);
         return props;
     }
     
@@ -150,7 +157,7 @@ public class DarkstarRunner extends BaseRunner {
      */
     public String getHostname() {
         try {
-            return InetAddress.getLocalHost().getCanonicalHostName();
+            return InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException uhe) {
             logger.log(Level.WARNING, "Unable to determine hostname", uhe);
             return "localhost";

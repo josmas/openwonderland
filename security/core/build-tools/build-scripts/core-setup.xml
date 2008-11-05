@@ -20,7 +20,7 @@
     </target>
     
     <!-- unpack zips -->
-    <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-scenegraph, unpack-javolution">
+    <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-javolution">
         <!-- darkstar -->
    	<unpack-lib-zip pkgname="sgs-server"
 			srcdir="${core.lib.zip.dir}" destdir="${core.sgs.dir}"/>

@@ -38,6 +38,23 @@
         <!-- copy logging properties also -->
         <copy file="${core.sgs.server.dir}/sgs-logging.properties"
               tofile="${sgs.data.dir}/sgs-logging.properties"/>
+
+        <!-- Generate a set containing all properties passed on the
+             commandline.  The way we do this is a little strange, since
+             we want to ignore ant internal properties.  So we take
+             the inverese of what we want, add in the ant properties,
+             and then take the inverse of the whole thing.
+        -->
+        <propertyset id="noncommandline.properties" negate="true">
+            <propertyref builtin="commandline"/>
+        </propertyset>
+        <propertyset id="ant.internal.properties">
+            <propertyref prefix="ant"/>
+        </propertyset>
+        <propertyset id="commandline.properties" negate="true">
+            <propertyset refid="ant.internal.properties"/>
+            <propertyset refid="noncommandline.properties"/>
+        </propertyset>
     </target>
         
     <target name="-core-server-setup-bdb-platform">    
@@ -149,7 +166,8 @@
             <assertions refid="sgs.assertions"/>
             
             <env key="${env.path.name}" path="${env.path.defvalue}"/>
-	    
+
+            <syspropertyset refid="commandline.properties"/>
             <syspropertyset refid="master.props"/>
             <syspropertyset refid="appnode.props"/>
             

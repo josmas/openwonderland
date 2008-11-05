@@ -211,7 +211,9 @@ public abstract class BaseRunner implements Runner {
                 cmd.add("-D" + propName + "=" + 
                         props.getProperty((String) propName));
             }
-            
+
+            cmd.add("-v");
+
             cmd.add("-f");
             cmd.add(runHome + fileSep + "run.xml");
                

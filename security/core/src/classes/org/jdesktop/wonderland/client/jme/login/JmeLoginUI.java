@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.JmeCellCache;
+import org.jdesktop.wonderland.client.jme.JmeClientSession;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -41,24 +42,19 @@ import org.jdesktop.wonderland.client.login.LoginUI;
  * @author paulby
  */
 public class JmeLoginUI implements LoginUI {
-    private JmeCellCache cellCache = null;
-    private String serverURL;
     private MainFrame parent;
 
-    public JmeLoginUI(String serverURL, MainFrame parent) {
-        this.serverURL = serverURL;
+    public JmeLoginUI(MainFrame parent) {
         this.parent = parent;
-
-        LoginManager.setLoginUI(this);
     }
 
-    public WonderlandSession doLogin() throws IOException {
+    public JmeClientSession doLogin(String serverURL) throws IOException {
         LoginManager lm = LoginManager.getInstance(serverURL);
         if (!lm.isAuthenicated()) {
             lm.authenticate();
         }
 
-        return lm.getSession();
+        return (JmeClientSession) lm.getSession();
     }
 
     public void requestLogin(final NoAuthLoginControl control) {
@@ -81,26 +77,9 @@ public class JmeLoginUI implements LoginUI {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public WonderlandSession createSession(WonderlandServerInfo server,
-                                           ClassLoader loader)
+    public JmeClientSession createSession(WonderlandServerInfo server,
+                                          ClassLoader loader)
     {
-
-        final ClassLoader finalLoader = loader;
-
-        // create a session
-        CellClientSession session = new CellClientSession(server, loader) {
-            // createCellCache is called in the constructor fo CellClientSession
-            // so the cellCache will be set before we proceed
-            @Override
-            protected CellCache createCellCache() {
-                System.out.println("CREATING CELL CACHE");
-                cellCache = new JmeCellCache(this, finalLoader);  // this session
-                getCellCacheConnection().addListener(cellCache);
-                return cellCache;
-            }
-        };
-
-        return session;
+        return new JmeClientSession(server, loader);
     }
-
 }

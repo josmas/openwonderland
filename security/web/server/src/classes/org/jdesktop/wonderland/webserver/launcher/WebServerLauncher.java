@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -47,7 +48,9 @@ import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 public class WebServerLauncher {
     // properties
     public static final String WEBSERVER_PORT_PROP = "wonderland.webserver.port";
-    
+    public static final String WEBSERVER_HOST_PROP = "wonderland.webserver.host";
+    public static final String WEBSERVER_URL_PROP  = "wonderland.web.server.url";
+
     private static final Logger logger = 
             Logger.getLogger(WebServerLauncher.class.getName());
     
@@ -135,7 +138,7 @@ public class WebServerLauncher {
             
             Class c = cl.loadClass("org.jdesktop.wonderland.webserver.RunAppServer");
             c.newInstance();
-        
+
             // log that everything is started up
             System.out.println("-----------------------------------------------------------");
             System.out.println("Wonderland web server started successfully.");
@@ -144,9 +147,9 @@ public class WebServerLauncher {
             
             // get the port the web server is running on
             // TODO: get the host too
-            System.out.println("Web server running on http://localhost:" +
+            System.out.println("Web server running on " +
                                SystemPropertyUtil.getProperty(
-                                    WebServerLauncher.WEBSERVER_PORT_PROP, "8080"));
+                                    WebServerLauncher.WEBSERVER_URL_PROP));
             System.out.println("-----------------------------------------------------------");
         
         } catch (Exception ex) {
@@ -154,7 +157,7 @@ public class WebServerLauncher {
             System.exit(-1);
         }
     }
-    
+
     private static void usage() {
         System.err.println("Usage: WebServerLauncher [-p port] [-d directory]" +
                            " [properties file]");
@@ -201,11 +204,36 @@ public class WebServerLauncher {
         // override the port and directory if specified
         if (port != null) {
             System.setProperty(WEBSERVER_PORT_PROP, port);
+        } else {
+            System.setProperty(WEBSERVER_PORT_PROP, "8080");
         }
+
         if (directory != null) {
             System.setProperty(RunUtil.RUN_DIR_PROP, directory);
         }
-        
+
+        // set guess the hostname for this server
+        if (System.getProperty(WEBSERVER_HOST_PROP) == null) {
+            System.setProperty(WEBSERVER_HOST_PROP, getHostname());
+        }
+
+        // set the web server URL based on the hostname and port
+        if (System.getProperty(WEBSERVER_URL_PROP) == null) {
+            System.setProperty(WEBSERVER_URL_PROP,
+                "http://" + System.getProperty(WEBSERVER_HOST_PROP) +
+                ":" + System.getProperty(WEBSERVER_PORT_PROP) + "/");
+        }
+
         return true;
+    }
+
+    // get the hostname to send out
+    private static String getHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error determining host name", ioe);
+            return "localhost";
+        }
     }
 }
