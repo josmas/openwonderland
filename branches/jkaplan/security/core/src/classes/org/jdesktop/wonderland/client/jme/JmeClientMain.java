@@ -37,9 +37,11 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
  *
@@ -73,6 +75,10 @@ public class JmeClientMain {
     private int width = 800;
     private int height = 600;
     
+    // the current Wonderland login and session
+    private JmeLoginUI login;
+    private JmeClientSession curSession;
+
     public JmeClientMain(String[] args) {
         props = loadProperties("run-client.properties");
    
@@ -90,30 +96,59 @@ public class JmeClientMain {
         
         createUI(worldManager);
 
-        // Dont start the client manager until JME has been initialized, many JME components
-        // expect the renderer to be ready during init.
-        JmeLoginUI login = new JmeLoginUI(serverURL, frame);
-        WonderlandSession session = null;
+        // Register our loginUI for login requests
+        login = new JmeLoginUI(frame);
+        LoginManager.setLoginUI(login);
 
+        // add a listener that will be notified when the user selects a new
+        // server
+        frame.addServerURLListener(new ServerURLListener() {
+            public void serverURLChanged(final String serverURL) {
+                // run in a new thread so we don't block the AWT thread
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            loadServer(serverURL);
+                        } catch (IOException ioe) {
+                            logger.log(Level.WARNING, "Error connecting to " +
+                                       serverURL, ioe);
+                        }
+                    }
+                }).start();
+            }
+        });
+
+        // connect to the default server
         try {
-            session = login.doLogin();
+            loadServer(serverURL);
         } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error connecting to server " + serverURL,
-                       ioe);
+            logger.log(Level.WARNING, "Error connecting to default server " +
+                       serverURL, ioe);
         }
-
-        if (session == null) {
-            logger.log(Level.SEVERE, "Unable to connect to server, exiting");
-            System.exit(-1);
-        }
-
-        ClientContext.getWonderlandSessionManager().setPrimaryServer(
-                                                       session.getServerInfo());
+        
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
         
     }
-    
+
+    protected void loadServer(String serverURL) throws IOException {
+        // disconnect from the current session
+        if (curSession != null) {
+            curSession.getCellCache().detachRootEntities();
+            curSession.logout();
+        }
+
+        curSession = login.doLogin(serverURL);
+        if (curSession == null) {
+            logger.log(Level.WARNING, "Unable to connect to session");
+        } else {
+            frame.setServerURL(serverURL);
+        }
+
+        ClientContext.getWonderlandSessionManager().setPrimaryServer(
+                                                    curSession.getServerInfo());
+    }
+
     /**
      * @param args the command line arguments
      */
