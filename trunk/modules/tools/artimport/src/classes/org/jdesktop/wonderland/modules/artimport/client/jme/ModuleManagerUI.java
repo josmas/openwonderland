@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
 import java.io.File;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 
 /**
@@ -33,12 +34,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
     public ModuleManagerUI() {
         initComponents();
 
-        File defaultDir=new File(".."+File.separatorChar+"modules"+File.separatorChar+"World");
-        if (defaultDir.exists()) {
-            fc.setCurrentDirectory(defaultDir);
-            parentDirTF.setText(defaultDir.getAbsolutePath());
-            parentDir = defaultDir;
-        }
+        parentDirButtonActionPerformed(null);
     }
 
     /** This method is called from within the constructor to
@@ -50,6 +46,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        parentDirGroup = new javax.swing.ButtonGroup();
         createModulePanel = new javax.swing.JPanel();
         createModuleB = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
@@ -57,10 +54,16 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         moduleNameTF = new javax.swing.JTextField();
         parentDirTF = new javax.swing.JTextField();
         chooseDirB = new javax.swing.JButton();
-        artCB = new javax.swing.JCheckBox();
-        clientPackageCB = new javax.swing.JCheckBox();
-        serverPackageCB = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
         commonPackageCB = new javax.swing.JCheckBox();
+        serverPackageCB = new javax.swing.JCheckBox();
+        clientPackageCB = new javax.swing.JCheckBox();
+        artCB = new javax.swing.JCheckBox();
+        jPanel2 = new javax.swing.JPanel();
+        toolsDirCB = new javax.swing.JCheckBox();
+        worldDirCB = new javax.swing.JCheckBox();
+        foundationDirCB = new javax.swing.JCheckBox();
+        samplesDirCB = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Module Manager");
@@ -81,6 +84,11 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         moduleNameTF.setText("example");
 
         parentDirTF.setEnabled(false);
+        parentDirTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parentDirTFActionPerformed(evt);
+            }
+        });
 
         chooseDirB.setText("Choose...");
         chooseDirB.setEnabled(false);
@@ -90,19 +98,104 @@ public class ModuleManagerUI extends javax.swing.JFrame {
             }
         });
 
-        artCB.setText("Include Art");
-
-        clientPackageCB.setSelected(true);
-        clientPackageCB.setText("Client Package");
-        clientPackageCB.setEnabled(false);
+        commonPackageCB.setSelected(true);
+        commonPackageCB.setText("Common Package");
+        commonPackageCB.setEnabled(false);
 
         serverPackageCB.setSelected(true);
         serverPackageCB.setText("Server Package");
         serverPackageCB.setEnabled(false);
 
-        commonPackageCB.setSelected(true);
-        commonPackageCB.setText("Common Package");
-        commonPackageCB.setEnabled(false);
+        clientPackageCB.setSelected(true);
+        clientPackageCB.setText("Client Package");
+        clientPackageCB.setEnabled(false);
+
+        artCB.setText("Include Art");
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(artCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 35, Short.MAX_VALUE)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(commonPackageCB)
+                    .add(clientPackageCB)
+                    .add(serverPackageCB))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(17, 17, 17)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(clientPackageCB)
+                    .add(artCB))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(commonPackageCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(serverPackageCB)
+                .add(188, 188, 188))
+        );
+
+        parentDirGroup.add(toolsDirCB);
+        toolsDirCB.setText("Tools");
+        toolsDirCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parentDirButtonActionPerformed(evt);
+            }
+        });
+
+        parentDirGroup.add(worldDirCB);
+        worldDirCB.setSelected(true);
+        worldDirCB.setText("World");
+        worldDirCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parentDirButtonActionPerformed(evt);
+            }
+        });
+
+        parentDirGroup.add(foundationDirCB);
+        foundationDirCB.setText("Foundation");
+        foundationDirCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parentDirButtonActionPerformed(evt);
+            }
+        });
+
+        parentDirGroup.add(samplesDirCB);
+        samplesDirCB.setText("Samples");
+        samplesDirCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parentDirButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(worldDirCB)
+                    .add(foundationDirCB)
+                    .add(toolsDirCB)
+                    .add(samplesDirCB))
+                .addContainerGap(322, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(toolsDirCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(worldDirCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(foundationDirCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(samplesDirCB)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         org.jdesktop.layout.GroupLayout createModulePanelLayout = new org.jdesktop.layout.GroupLayout(createModulePanel);
         createModulePanel.setLayout(createModulePanelLayout);
@@ -119,25 +212,21 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                             .add(jLabel2)
                             .add(jLabel1))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(moduleNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(createModulePanelLayout.createSequentialGroup()
-                                .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, parentDirTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 277, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, createModulePanelLayout.createSequentialGroup()
-                                        .add(artCB)
-                                        .add(40, 40, 40)
-                                        .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(commonPackageCB)
-                                            .add(clientPackageCB)
-                                            .add(serverPackageCB))))
-                                .add(18, 18, 18)
-                                .add(chooseDirB)))))
-                .addContainerGap(92, Short.MAX_VALUE))
+                                .add(parentDirTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 277, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(45, 45, 45)
+                                .add(chooseDirB))
+                            .add(createModulePanelLayout.createSequentialGroup()
+                                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(254, 254, 254)))))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         createModulePanelLayout.setVerticalGroup(
             createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, createModulePanelLayout.createSequentialGroup()
+            .add(createModulePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(moduleNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -145,17 +234,13 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(parentDirTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(chooseDirB))
-                .add(18, 18, 18)
-                .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(artCB)
-                    .add(clientPackageCB))
+                    .add(chooseDirB)
+                    .add(parentDirTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(commonPackageCB)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(44, 44, 44)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 171, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(serverPackageCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 176, Short.MAX_VALUE)
                 .add(createModuleB)
                 .addContainerGap())
         );
@@ -165,16 +250,14 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(createModulePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(51, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(createModulePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 585, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(createModulePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap(20, Short.MAX_VALUE)
+                .add(createModulePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 484, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -197,6 +280,36 @@ public class ModuleManagerUI extends javax.swing.JFrame {
 
 }//GEN-LAST:event_chooseDirBActionPerformed
 
+    private void parentDirTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parentDirTFActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_parentDirTFActionPerformed
+
+    private void parentDirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parentDirButtonActionPerformed
+
+        String dir;
+
+        if (toolsDirCB.isSelected())
+            dir = "tools";
+        else if (worldDirCB.isSelected())
+            dir = "world";
+        else if (foundationDirCB.isSelected())
+            dir = "foundation";
+        else if (samplesDirCB.isSelected())
+            dir = "samples";
+        else {
+            Logger.getAnonymousLogger().severe("Unknown directory selection, assuming world");
+            dir = "world";
+        }
+
+        File defaultDir=new File(".."+File.separatorChar+"modules"+File.separatorChar+dir);
+        if (defaultDir.exists()) {
+            fc.setCurrentDirectory(defaultDir);
+            parentDirTF.setText(defaultDir.getAbsolutePath());
+            parentDir = defaultDir;
+        }
+
+    }//GEN-LAST:event_parentDirButtonActionPerformed
+
     /**
     * @param args the command line arguments
     */
@@ -215,11 +328,18 @@ public class ModuleManagerUI extends javax.swing.JFrame {
     private javax.swing.JCheckBox commonPackageCB;
     private javax.swing.JButton createModuleB;
     private javax.swing.JPanel createModulePanel;
+    private javax.swing.JCheckBox foundationDirCB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField moduleNameTF;
+    private javax.swing.ButtonGroup parentDirGroup;
     private javax.swing.JTextField parentDirTF;
+    private javax.swing.JCheckBox samplesDirCB;
     private javax.swing.JCheckBox serverPackageCB;
+    private javax.swing.JCheckBox toolsDirCB;
+    private javax.swing.JCheckBox worldDirCB;
     // End of variables declaration//GEN-END:variables
 
 }
