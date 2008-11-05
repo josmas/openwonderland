@@ -49,7 +49,7 @@ public class ModuleSourceManager {
     public void createModule(String moduleName, File parentDirectory, boolean includeArt) {
         File moduleDir = new File(parentDirectory.getAbsolutePath()+File.separatorChar+moduleName);
         if (moduleDir.exists())
-            throw new RuntimeException("Module Directory already exists");
+            throw new RuntimeException("Module Directory already exists "+moduleDir.getAbsolutePath());
 
         moduleDir.mkdir();
 
@@ -74,7 +74,7 @@ public class ModuleSourceManager {
             copyFile(ModuleSourceManager.class.getClassLoader().getResourceAsStream("org/jdesktop/wonderland/modules/artimport/client/jme/resources/module_build_template.xml"),
                     new FileOutputStream(buildXML),
                     new LineConditioner[] { new LineSubstituteConditioner("@ART@",
-                                                includeArt ? "<art dir=\"${current.dir}/art\"/>" : ""),
+                                                includeArt ? "<art dir=\"${current.dir}/art\"/>" : "<!--<art dir=\"${current.dir}/art\"/>-->"),
                                             new LineSubstituteConditioner("@MODULE_NAME@", moduleName),
                                             new LineSubstituteConditioner("@MODULE_PKG@", srcPkg)}
             );
