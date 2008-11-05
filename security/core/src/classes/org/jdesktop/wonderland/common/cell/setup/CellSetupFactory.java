@@ -38,7 +38,7 @@ import sun.misc.Service;
  * <p>
  * Classes that provide such a service must have an entry in the JAR file in
  * which they are contained. In META-INF/services, a file named
- * org.jdesktop.wonderland.server.cell.setup.CellSetupSPI should contain the
+ * org.jdesktop.wonderland.common.cell.setup.CellSetupSPI should contain the
  * fully-qualified class name(s) of all classes that implement the CellSetupSPI
  * interface.
  * 
@@ -47,12 +47,12 @@ import sun.misc.Service;
 public class CellSetupFactory {
     /* A list of core cell setup class names, currently only for components */
     private static String[] coreSetup = {
-        "org.jdesktop.wonderland.common.cell.setup.CellComponentSetup"
+        "org.jdesktop.wonderland.common.cell.setup.CellComponentSetup",
+        "org.jdesktop.wonderland.common.AssetURI",
     };
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB contexts used to create marshallers and unmarshallers */
+    private static JAXBContext jaxbContext = null;
     
     /* The Logger for this class */
     private static Logger logger = Logger.getLogger(CellSetupFactory.class.getName());
@@ -67,10 +67,7 @@ public class CellSetupFactory {
                 names.add(it.next().getClass());
             }
 
-            JAXBContext jc = JAXBContext.newInstance(names.toArray(new Class[] {}));
-            CellSetupFactory.unmarshaller = jc.createUnmarshaller();
-            CellSetupFactory.marshaller = jc.createMarshaller();
-            CellSetupFactory.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(names.toArray(new Class[]{}));
         } catch (javax.xml.bind.JAXBException excp) {
             CellSetupFactory.logger.log(Level.SEVERE, "[CELL] SETUP FACTORY Failed to create JAXBContext", excp);
         }
@@ -84,11 +81,13 @@ public class CellSetupFactory {
      * @return A marhsaller for JAXB-annotated classes
      */
     public static Marshaller getMarshaller(ClassLoader classLoader) {
-        if (classLoader==null) {
-            return CellSetupFactory.marshaller;
-        }
-        
         try {
+            if (classLoader == null) {
+                Marshaller m = jaxbContext.createMarshaller();
+                m.setProperty("jaxb.formatted.output", true);
+                return m;
+            }
+        
             Class[] clazz = getClasses(classLoader);
             JAXBContext jc = JAXBContext.newInstance(clazz);
             Marshaller m = jc.createMarshaller();
@@ -111,11 +110,11 @@ public class CellSetupFactory {
      * @return An unmarshaller for XML
      */
     public static Unmarshaller getUnmarshaller(ClassLoader classLoader) {
-        if (classLoader == null) {
-            return CellSetupFactory.unmarshaller;
-        }
-
         try {
+            if (classLoader == null) {
+                return jaxbContext.createUnmarshaller();
+            }
+
             Class[] clazz = getClasses(classLoader);
             JAXBContext jc = JAXBContext.newInstance(clazz);
             return jc.createUnmarshaller();
