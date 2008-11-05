@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="@MODULE_NAME@" default="package" basedir=".">
+<project name="@MODULE_NAME@" default="dist" basedir=".">
     <property file="my.module.properties"/>
 
     <!-- current directory needed in all scripts -->
