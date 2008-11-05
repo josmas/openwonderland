@@ -132,6 +132,24 @@ public class LoginManager {
     }
 
     /**
+     * Get the login manager that is responsible for a particular session.
+     * @param session the session to find a login manager for.
+     * @return the LoginManager associated with the given session, or null
+     * if no login manager is associated with the given session.
+     */
+    public static LoginManager findLoginManager(WonderlandSession session) {
+        synchronized (managers) {
+            for (LoginManager lm : managers.values()) {
+                if (lm.getSession().equals(session)) {
+                    return lm;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get the server URL this login manager represents.  This is the
      * canonical URL returned by the server that was originally requested,
      * not necessarily the original URL that was passed in
