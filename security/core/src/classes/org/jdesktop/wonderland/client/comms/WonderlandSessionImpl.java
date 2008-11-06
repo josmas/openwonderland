@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 import org.jdesktop.wonderland.common.comms.SessionInternalConnectionType;
@@ -93,15 +94,18 @@ public class WonderlandSessionImpl implements WonderlandSession {
     private SimpleClient simpleClient;
    
     /** listeners to notify when our status changes */
-    private List<SessionStatusListener> sessionStatusListeners;
+    private final List<SessionStatusListener> sessionStatusListeners;
  
     /** connected clients */
-    private Map<ConnectionType, ClientRecord> clients;
-    private Map<Short, ClientRecord> clientsByID;
+    private final Map<ConnectionType, ClientRecord> clients;
+    private final Map<Short, ClientRecord> clientsByID;
     
     /** the unique id of this session */
     private BigInteger sessionID;
-    
+
+    /** the user information */
+    private WonderlandIdentity userID;
+
     /** an executor to use when sending data to listeners */
     private ExecutorService notifier;
     
@@ -240,6 +244,15 @@ public class WonderlandSessionImpl implements WonderlandSession {
         }
         
         return sessionID;
+    }
+
+    public synchronized WonderlandIdentity getUserID() {
+        if (getStatus() != WonderlandSession.Status.CONNECTED) {
+            throw new IllegalArgumentException("User ID is only valid when " +
+                                               "the session is connected.");
+        }
+
+        return userID;
     }
     
     public void connect(final ClientConnection client) 
@@ -604,6 +617,15 @@ public class WonderlandSessionImpl implements WonderlandSession {
     private synchronized void setID(BigInteger sessionID) {
         this.sessionID = sessionID;
     }
+
+    /**
+     * Set the user ID.  Called when a SessionInitializationMessage
+     * is received from the server.
+     * @param userID the new userID
+     */
+    private synchronized void setUserID(WonderlandIdentity userID) {
+        this.userID = userID;
+    }
     
     /**
      * Start a new login attempt.
@@ -818,6 +840,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
                 // we got an initialization message.  Read the session id
                 // and then notify everyone that login has succeeded
                 setID(initMessage.getSessionID());
+                setUserID(initMessage.getUserID());
                 setSessionInitialized();
             }
         }

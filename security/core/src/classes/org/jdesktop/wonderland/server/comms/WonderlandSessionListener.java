@@ -26,9 +26,8 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +38,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.comms.SessionInternalConnectionType;
 import org.jdesktop.wonderland.common.comms.messages.AttachClientMessage;
@@ -46,12 +46,12 @@ import org.jdesktop.wonderland.common.comms.messages.AttachedClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.DetachClientMessage;
 import org.jdesktop.wonderland.common.comms.messages.SessionInitializationMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
+import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 
 /**
  * This is the default session listener is used by Wonderland clients.
@@ -119,7 +119,10 @@ public class WonderlandSessionListener
         // connection.  The client's unique ID is the ID of the ClientSession
         // managed object.  This id is guaranteed by Darkstar to be unique
         // across the whole Darkstar cluster.
-        Message sim = new SessionInitializationMessage(sessionRef.getId());
+        BigInteger sessionID = sessionRef.getId();
+        WonderlandIdentity userID =
+               AppContext.getManager(ClientIdentityManager.class).getClientID();
+        Message sim = new SessionInitializationMessage(sessionID, userID);
         sendToSession(SESSION_INTERNAL_CLIENT_ID, sim);
     }
         

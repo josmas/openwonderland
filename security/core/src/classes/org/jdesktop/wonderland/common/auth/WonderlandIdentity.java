@@ -15,16 +15,15 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.auth;
+package org.jdesktop.wonderland.common.auth;
 
-import com.sun.sgs.auth.Identity;
 import java.io.Serializable;
 
 /**
  * An identity for the Wonderland system
  * @author jkaplan
  */
-public class WonderlandIdentity implements Identity, Serializable {
+public class WonderlandIdentity implements Serializable {
 
     private String username;
     private String fullname;
@@ -39,7 +38,7 @@ public class WonderlandIdentity implements Identity, Serializable {
     public String getName() {
         return username;
     }
-    
+
     public String getFullName() {
         return fullname;
     }
@@ -48,11 +47,34 @@ public class WonderlandIdentity implements Identity, Serializable {
         return email;
     }
 
-    public void notifyLoggedIn() {
-        // do nothing
+    @Override
+    public String toString() {
+        return "WonderlandIdentity: username=" + getName() +
+               " fullname=" + getFullName() + " email=" + getEmail();
     }
 
-    public void notifyLoggedOut() {
-        // do nothing
+    /**
+     * WonderlandIdentities are equal if they have the same username
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WonderlandIdentity other = (WonderlandIdentity) obj;
+        if ((this.username == null) ? (other.username != null) : !this.username.equals(other.username)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 41 * hash + (this.username != null ? this.username.hashCode() : 0);
+        return hash;
     }
 }
