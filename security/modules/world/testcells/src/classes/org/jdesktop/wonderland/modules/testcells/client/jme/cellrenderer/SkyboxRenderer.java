@@ -27,15 +27,18 @@ import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.TextureManager;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.SkyboxComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -61,17 +64,26 @@ public class SkyboxRenderer implements CellRendererJME {
     private Entity createEntity() {
         try {
             /* Form the asset URIs */
-//            WonderlandSession session = cell.getCellCache().getSession();
-//            session.getServerInfo().
+            WonderlandSession session = cell.getCellCache().getSession();
+            LoginManager manager = LoginManager.findLoginManager(session);
+            String serverURL = manager.getServerURL();
+            
+            AssetURI northURI = new AssetURI("wla://testcells/art/skybox1/1.jpg", serverURL);
+            AssetURI southURI = new AssetURI("wla://testcells/art/skybox1/2.jpg", serverURL);
+            AssetURI eastURI = new AssetURI("wla://testcells/art/skybox1/3.jpg", serverURL);
+            AssetURI westURI = new AssetURI("wla://testcells/art/skybox1/4.jpg", serverURL);
+            AssetURI downURI = new AssetURI("wla://testcells/art/skybox1/5.jpg", serverURL);
+            AssetURI upURI = new AssetURI("wla://testcells/art/skybox1/6.jpg", serverURL);
+
             WorldManager wm = ClientContextJME.getWorldManager();
             Skybox skybox = new Skybox("skybox", 1000, 1000, 1000);
             String dir = "jmetest/data/skybox1/";
-            Texture north = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/1.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture south = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/3.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture east = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/2.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture west = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/4.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture up = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/6.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
-            Texture down = TextureManager.loadTexture(new URL("wla://testcells/art/skybox1/5.jpg"), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture north = TextureManager.loadTexture(northURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture south = TextureManager.loadTexture(southURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture east = TextureManager.loadTexture(eastURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture west = TextureManager.loadTexture(westURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture up = TextureManager.loadTexture(upURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture down = TextureManager.loadTexture(downURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
             skybox.setTexture(Skybox.Face.North, north);
             skybox.setTexture(Skybox.Face.West, west);
             skybox.setTexture(Skybox.Face.South, south);
@@ -100,6 +112,8 @@ public class SkyboxRenderer implements CellRendererJME {
             return e;
         } catch (MalformedURLException ex) {
             Logger.getLogger(SkyboxRenderer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(SkyboxRenderer.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -107,5 +121,4 @@ public class SkyboxRenderer implements CellRendererJME {
     public void cellTransformUpdate(CellTransform cellLocal2World) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }

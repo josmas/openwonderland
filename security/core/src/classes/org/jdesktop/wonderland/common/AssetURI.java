@@ -20,8 +20,10 @@
 package org.jdesktop.wonderland.common;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -70,12 +72,28 @@ public class AssetURI {
     }
     
     /**
+     * Constructor which takes the module uri and server name
+     */
+    public AssetURI(String uri, String serverURL) throws URISyntaxException {
+        this.uri = new URI(uri + "?server=" + serverURL);
+    }
+    
+    /**
      * Returns the URI object
      * 
      * @return The actual URI object
      */
     public URI getURI() {
         return this.uri;
+    }
+    
+    /**
+     * Returns a URL from the URI.
+     * 
+     * @return A URL
+     */
+    public URL toURL() throws MalformedURLException {
+        return this.uri.toURL();
     }
     
     /**
