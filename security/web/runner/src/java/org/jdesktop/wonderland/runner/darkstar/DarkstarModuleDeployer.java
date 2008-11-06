@@ -17,9 +17,7 @@
  */
 package org.jdesktop.wonderland.runner.darkstar;
 
-import org.jdesktop.wonderland.runner.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +25,8 @@ import java.util.Map;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
+import org.jdesktop.wonderland.runner.RunManager;
+import org.jdesktop.wonderland.runner.Runner;
 
 /**
  * Deploy server and common jars to the Darkstar server
