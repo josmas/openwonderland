@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 import com.jme.image.Texture;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Geometry;
 import com.jme.util.TextureManager;
 import java.net.URL;
 import java.util.LinkedList;
@@ -79,8 +80,8 @@ public class FrameCloseButton extends FrameComponent {
      * @param closeListeners The listeners to be notified when the header's close button is pressed.
      */
     public FrameCloseButton (Window2DView view, LinkedList<Window2DFrame.CloseListener> closeListeners) {
-        super("FrameCloseButton", view, null /*TODO new Gui2DCloseButton(view)*/);
-	//TODO ((Gui2DCloseButton)gui).setComponent(this);
+        super("FrameCloseButton", view, new Gui2DCloseButton(view));
+	((Gui2DCloseButton)gui).setComponent(this);
 	this.closeListeners = closeListeners;
     }
 
@@ -88,16 +89,15 @@ public class FrameCloseButton extends FrameComponent {
      * {@inheritDoc}
      */
     public void cleanup () {
-	super.cleanup();
 	if (closeListeners != null) {
 	    closeListeners.clear();
 	    closeListeners = null;
 	}
 	if (rect != null) {
-	    detachChild(rect);
 	    rect.cleanup();
 	    rect = null;
 	}
+	super.cleanup();
     }
 
     /**
@@ -138,20 +138,10 @@ public class FrameCloseButton extends FrameComponent {
 	    createTexture();
 	}
 
-	if (rect == null) {
-
-	    // First time creation
-	    rect = new FrameTexRect(view, gui, texture, CLOSE_BUTTON_WIDTH, CLOSE_BUTTON_HEIGHT);
-	    attachChild(rect);
-
-	} else {
-	    // Size is constant
-	}
-
 	updateLayout();
 
 	// Update position relative to view
-	rect.setTranslation(new Vector3f(x, y, Z_OFFSET));
+	localToCellNode.setLocalTranslation(new Vector3f(x, y, Z_OFFSET));
 
 	super.update();
 
@@ -223,19 +213,16 @@ public class FrameCloseButton extends FrameComponent {
     }
 
     /**
-     * For debug: Print the contents of this component's render state.
+     * {@inheritDoc}
      */
-    public void printRenderState () {
-	logger.warning("Rect RenderState");
-	rect.printRenderState();
-    }
-    
-    /**
-     * For debug: Print the contents of this component's geometry.
-     */
-    public void printGeometry () {
-	logger.warning("Rect geometry");
-        rect.printGeometry();
+    @Override
+    protected Geometry[] getGeometries () {
+	if (rect == null) {
+	    rect = new FrameTexRect(view, gui, texture, CLOSE_BUTTON_WIDTH, CLOSE_BUTTON_HEIGHT);
+	} 
+
+	// Rude hack: We use the geometry from this textured rect, but not its transform nodes
+	return rect.getGeometries();
     }
 }
 

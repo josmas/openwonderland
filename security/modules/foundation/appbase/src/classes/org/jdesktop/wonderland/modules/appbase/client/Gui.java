@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-//TODO: import org.jdesktop.lg3d.wg.internal.j3d.j3dnodes.J3dLgBranchGroup;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -58,17 +58,10 @@ public abstract class Gui {
 	controlArb = null;
     }
 
-
     /**
      * Return the GUI's control arb
      */
     protected ControlArb getControlArb () {
 	return controlArb;
     }
-
-    /**
-     * Initialize event handling for the given event node.
-     * @param eventNode The event node for which to initialize event handling.
-     */
-    // TODO: public abstract void initEventHandling (J3dLgBranchGroup eventNode);
 }

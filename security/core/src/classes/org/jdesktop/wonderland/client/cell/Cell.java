@@ -268,7 +268,7 @@ public class Cell {
         // Don't process the same transform twice
         if (this.localTransform!=null && this.localTransform.equals(localTransform))
             return;
-        
+
         if (localTransform==null) {
             this.localTransform=null;
             // Get parent worldTransform
@@ -290,7 +290,7 @@ public class Cell {
                 worldTransform.transform(cachedVWBounds);                
 
                 local2VW = null;
-            } else if (this instanceof RootCell) {
+            } else if (parent==null) { // ROOT
                 worldTransform = (CellTransform)localTransform.clone(null);
                 local2VW = null;
                 
@@ -554,7 +554,7 @@ public class Cell {
             try {
                 Class compClazz = Class.forName(compClassname);
                 if (!components.containsKey(compClazz)) {
-                    logger.info("Installing component "+compClassname);
+                    logger.fine("Installing component "+compClassname);
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
                     addComponent(constructor.newInstance(this));
                 }

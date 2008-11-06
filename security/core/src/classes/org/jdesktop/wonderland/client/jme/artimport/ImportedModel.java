@@ -32,7 +32,7 @@ public class ImportedModel implements Serializable {
     private transient Node rootBG;
     private transient Entity entity;
 
-    ImportedModel(String origModel,
+    public ImportedModel(String origModel,
                  String wonderlandName,
                  String texturePrefix,
                  Vector3f translation,

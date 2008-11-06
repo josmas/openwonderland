@@ -39,7 +39,7 @@ public class FrameLabelController extends FrameLabel {
      * @param gui The event handler.
      * @param closeButton The close button which is next to this component in the frame header.
      */
-    public FrameLabelController (Window2DView view, /*TODO: Gui2D*/ Object gui, FrameCloseButton closeButton) {
+    public FrameLabelController (Window2DView view, Gui2D gui, FrameCloseButton closeButton) {
 	super("FrameLabelController", view, gui);
 	this.closeButton = closeButton;
 

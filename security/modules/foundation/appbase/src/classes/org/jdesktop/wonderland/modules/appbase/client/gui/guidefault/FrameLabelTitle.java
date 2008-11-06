@@ -35,7 +35,7 @@ public class FrameLabelTitle extends FrameLabel {
      * @param view The view the frame encloses.
      * @param gui The event handler.
      */
-    public FrameLabelTitle (Window2DView view, /*TODO: Gui2D*/ Object gui) {
+    public FrameLabelTitle (Window2DView view, Gui2D gui) {
 	super("FrameLabelTitle", view, gui);
     }
 
@@ -48,13 +48,8 @@ public class FrameLabelTitle extends FrameLabel {
 	width = view.getWidth() / 2f;
 	height = LABEL_HEIGHT;
 
-	// TODO
-	//width = 50f;
-	//height = 50f;
-
 	//	x = FrameWorldDefault.SIDE_THICKNESS;
 	x = -(view.getWidth() - width) / 2f;
 	y = 0f;
-
     }
 }

@@ -40,8 +40,14 @@ public class WonderlandConfigUtil implements Serializable {
     
     public static Logger logger = Logger.getLogger("wonderland.config");
 
+    private static String usernameDir = "";
+
     public static String getSystemConfigDir() {
         return System.getProperty("wonderland.config.system-dir");
+    }
+
+    public static void setUsername(String username) {
+        usernameDir = File.separatorChar+username;
     }
     
     /**
@@ -62,7 +68,7 @@ public class WonderlandConfigUtil implements Serializable {
             return System.getProperty("wonderland.user.dir");
         }
         
-        return homeDir + ".wonderland";
+        return homeDir + ".wonderland"+File.separatorChar+"0.5-dev"+usernameDir;
     }
     
     public static String getUserConfigDir() {

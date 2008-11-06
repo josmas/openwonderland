@@ -85,8 +85,8 @@ public class ChannelComponent extends CellComponent {
 //        System.out.println("Receved "+message);
         ComponentMessageReceiver recvRef = messageReceivers.get(message.getClass());
         if (recvRef==null) {
-            Logger.getAnonymousLogger().warning("No listener for message "+message.getClass());
-             
+            Logger.getAnonymousLogger().warning("No listener for message "+message.getClass()+"  from cell "+cell.getClass().getName());
+           
             return;
         }
         
@@ -112,5 +112,28 @@ public class ChannelComponent extends CellComponent {
     
     static public interface ComponentMessageReceiver {
         public void messageReceived(CellMessage message );        
+    }
+
+    class ClassWrapper {
+        private Class clazz;
+
+        public ClassWrapper(Class clazz) {
+            this.clazz = clazz;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 59 * hash + (this.clazz != null ? this.clazz.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Class))
+                return false;
+
+            return ((Class)o).isAssignableFrom(clazz);
+        }
     }
 }

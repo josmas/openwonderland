@@ -19,10 +19,12 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
 import com.jme.renderer.ColorRGBA;
 import java.util.LinkedList;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DFrame;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * The frame header (top side) for FrameWorldDefault.
@@ -49,18 +51,15 @@ public class FrameHeader extends FrameSide {
      * @param closeListeners The listeners to be notified when the header's close button is pressed.
      */
     public FrameHeader (Window2DView view, LinkedList<Window2DFrame.CloseListener> closeListeners) {
-	super("FrameHeader", view, Side.TOP, null/*TODO new Gui2DSide(view)*/);
+	super("FrameHeader", view, Side.TOP, new Gui2DSide(view));
 
-	// TODO
-	//closeButton = new FrameCloseButton(view, closeListeners);
-	//attachChild(closeButton);
+	// TODO: bug: currently getting an instantiation exception on the image resource.
+       	//closeButton = new FrameCloseButton(view, closeListeners);
 
 	title = new FrameLabelTitle(view, gui);
-	attachChild(title);
 
 	// The position of the controller label depends on the position of the close button
 	controller = new FrameLabelController(view, gui, closeButton);
-	attachChild(controller);
     }
 
     /**
@@ -70,19 +69,16 @@ public class FrameHeader extends FrameSide {
 	super.cleanup();
 
 	if (title != null) {
-	    detachChild(title);
 	    title.cleanup();
 	    title = null;
 	}
 
 	if (controller != null) {
-	    detachChild(controller);
 	    controller.cleanup();
 	    controller = null;
 	}
 	
 	if (closeButton != null) {
-	    detachChild(closeButton);
 	    closeButton.cleanup();
 	    closeButton = null;
 	}
@@ -148,6 +144,36 @@ public class FrameHeader extends FrameSide {
 	}
 	if (closeButton != null) {
 	    closeButton.setColor(color);
+	}
+    }
+
+    /**
+     * Attach this component's event listeners to the given entity.
+     */
+    protected void attachEventListeners (Entity entity) {
+	if (title != null) {
+	    title.attachEventListeners(entity);
+	}
+	if (controller != null) {
+	    controller.attachEventListeners(entity);
+	}
+	if (closeButton != null) {
+	    closeButton.attachEventListeners(entity);
+	}
+    }
+
+    /**
+     * Detach this component's event listeners from the given entity.
+     */
+    protected void detachEventListeners (Entity entity) {
+	if (title != null) {
+	    title.detachEventListeners(entity);
+	}
+	if (controller != null) {
+	    controller.detachEventListeners(entity);
+	}
+	if (closeButton != null) {
+	    closeButton.detachEventListeners(entity);
 	}
     }
 }
