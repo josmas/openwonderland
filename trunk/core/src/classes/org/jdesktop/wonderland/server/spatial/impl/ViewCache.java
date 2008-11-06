@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.spatial.impl;
 
+import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Matrix4f;
 import com.jme.math.Vector3f;
@@ -35,6 +36,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellDescription;
@@ -65,6 +67,8 @@ class ViewCache {
     private CacheProcessor cacheProcessor;
     private BigInteger cellCacheId;
     private DataService dataService;
+
+    private BoundingSphere proximityBounds = new BoundingSphere(AvatarBoundsHelper.PROXIMITY_SIZE, new Vector3f());
 
     public ViewCache(SpatialCellImpl cell, SpaceManager spaceManager, Identity identity, BigInteger cellCacheId) {
         this.viewCell = cell;
@@ -100,7 +104,7 @@ class ViewCache {
             spaces.clear();
         }
         
-        System.err.println("-----------------> LOGOUT");
+//        System.err.println("-----------------> LOGOUT");
     }
 
     void cellMoved(SpatialCellImpl cell, CellTransform worldTransform) {
@@ -146,8 +150,13 @@ class ViewCache {
 
         HashSet<Space> oldSpaces = (HashSet<Space>) spaces.clone();
 
-        Iterable<Space> newSpaces = spaceManager.getEnclosingSpace(viewCell.getWorldBounds());
+        proximityBounds.setCenter(viewCell.getWorldTransform().getTranslation(null));
+
+        Iterable<Space> newSpaces = spaceManager.getEnclosingSpace(proximityBounds);
+//        System.err.println("ViewCell Bounds "+viewCell.getWorldBounds());
+//        StringBuffer buf = new StringBuffer("View in spaces ");
         for(Space sp : newSpaces) {
+//            buf.append(sp.getName()+", ");
             if (spaces.add(sp)) {
                 // Entered a new space
                 synchronized(pendingCacheUpdates) {
@@ -157,6 +166,8 @@ class ViewCache {
             oldSpaces.remove(sp);
             sp.addViewCache(this);
         }
+
+//        System.err.println(buf.toString());
 
 //        System.out.println("Old spaces "+oldSpaces.size());
         for(Space sp : oldSpaces) {
@@ -174,11 +185,11 @@ class ViewCache {
             }
         }
 
-        System.out.print("ViewCell moved, current spaces ");
-        for(Space sp : spaces) {
-            System.out.print(sp.getName()+", ");
-        }
-        System.out.println();
+//        System.out.print("ViewCell moved, current spaces ");
+//        for(Space sp : spaces) {
+//            System.out.print(sp.getName()+", ");
+//        }
+//        System.out.println();
 
         viewCell.releaseRootReadLock();
     }
@@ -291,7 +302,7 @@ class ViewCache {
                     ArrayList<CellDescription> newCells = new ArrayList();
                     spaceRoots = space.getRootCells();
 
-                    System.err.println("EnteringSpace "+space.getName()+"  roots "+spaceRoots.size());
+//                    System.err.println("EnteringSpace "+space.getName()+"  roots "+spaceRoots.size());
 
                     synchronized(rootCells) {
                         for(SpatialCellImpl root : spaceRoots) {
@@ -321,7 +332,7 @@ class ViewCache {
                 addRootCellImpl(rootCell, newCells);
             }
 
-            System.out.println("RootCell Added "+rootCell.getCellID()+"  "+newCells.size());
+//            System.out.println("RootCell Added "+rootCell.getCellID()+"  "+newCells.size());
             UniverseImpl.getUniverse().scheduleTransaction(new ViewCacheUpdateTask((Collection<CellDescription>) newCells, true), identity);
         }
 
