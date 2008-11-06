@@ -31,8 +31,6 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
 
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
 /**
  * The Main JFrame for the wonderland jme client
  * 
