@@ -153,7 +153,6 @@ public class CellLoaderUtils {
      * Returns the base URL of the web server.
      */
     public static URL getWebServerURL() throws MalformedURLException {
-        //return new URL(System.getProperty("wonderland.web.server.url"));
-        return new URL("http://localhost:8080");
+        return new URL(System.getProperty("wonderland.web.server.url"));
     }
 }
