@@ -91,14 +91,14 @@ public class AudioManagerConnectionHandler
     }
 
     public void registered(WonderlandClientSender sender) {
-	logger.info("Audio Server manager connection registered");
+	logger.fine("Audio Server manager connection registered");
     }
 
     public void clientConnected(WonderlandClientSender sender, 
 	    ClientSession session, Properties properties) {
 
         //throw new UnsupportedOperationException("Not supported yet.");
-	logger.warning("client connected...");
+	logger.fine("client connected...");
     }
 
     public void messageReceived(WonderlandClientSender sender, 
@@ -118,7 +118,7 @@ public class AudioManagerConnectionHandler
 	    String username = 
 		UserManager.getUserManager().getUser(session).getUsername();
 
-	    logger.warning("Got voice bridge request message from " + username);
+	    logger.fine("Got voice bridge request message from " + username);
 
 	    try {
 		String voiceBridge = vm.getVoiceBridge().toString();
@@ -127,7 +127,7 @@ public class AudioManagerConnectionHandler
 	        msg.setBridgeInfo(voiceBridge);
 		msg.setUsername(username);
 	    } catch (IOException e) {
-		logger.info("unable to get voice bridge:  " + e.getMessage());
+		logger.warning("unable to get voice bridge:  " + e.getMessage());
 		return;
 	    }
 
@@ -136,7 +136,7 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof PlaceCallMessage) {
-	    logger.warning("Got place call message");
+	    logger.fine("Got place call message");
 
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
 
@@ -146,15 +146,17 @@ public class AudioManagerConnectionHandler
 
 	    setup.cp = cp;
 
-	    String callId = getCallId(msg.getCellID());
+	    String callID = msg.getSoftphoneCallID();
 
-	    if (callId == null) {
-	        logger.warning("Can't place call to " + msg.getSipURL()
-		    + ".  No cell for " + msg.getCellID());
+	    logger.fine("callID " + callID);
+
+	    if (callID == null) {
+	        logger.fine("Can't place call to " + msg.getSipURL()
+		    + ".  No cell for " + callID);
 		return;
 	    }
 
-	    cp.setCallId(callId);
+	    cp.setCallId(callID);
 	    cp.setName(UserManager.getUserManager().getUser(session).getUsername());
             cp.setPhoneNumber(msg.getSipURL());
             cp.setConferenceId(vm.getConferenceId());
@@ -165,18 +167,20 @@ public class AudioManagerConnectionHandler
             cp.setJoinConfirmationTimeout(0);
 	    cp.setCallAnsweredTreatment(null);
 
-            vm.addCallStatusListener(this);
+            vm.addCallStatusListener(this, null);
 
 	    Call call;
 
             try {
-                call = vm.createCall(callId, setup);
+                call = vm.createCall(callID, setup);
             } catch (IOException e) {
                 logger.warning("Unable to create call " + cp + ": " + e.getMessage());
 		return;
             }
 
-	    callId = call.getId();
+	    callID = call.getId();
+
+            vm.addCallStatusListener(this, callID);
 
             PlayerSetup ps = new PlayerSetup();
             ps.x = (double) msg.getX();
@@ -186,7 +190,7 @@ public class AudioManagerConnectionHandler
                 msg.getDirection());
             ps.isLivePlayer = true;
 
-            Player player = vm.createPlayer(callId, ps);
+            Player player = vm.createPlayer(callID, ps);
 
             call.setPlayer(player);
             player.setCall(call);
@@ -206,19 +210,19 @@ public class AudioManagerConnectionHandler
 	if (message instanceof TransferCallMessage) {
 	    TransferCallMessage msg = (TransferCallMessage) message;
 
-	    String callId = getCallId(msg.getCellID());
+	    String callID = msg.getSoftphoneCallID();
 
-	    if (callId == null) {
-		logger.warning("Unable to transfer call.  Can't get callId for " 
-		    + msg.getCellID());
+	    if (callID == null) {
+		logger.warning("Unable to transfer call.  Can't get callID for " 
+		    + callID);
 		return;
 	    }
 
-	    Call call = vm.getCall(callId);
+	    Call call = vm.getCall(callID);
 
 	    if (call == null) {
 		// XXX we should be nicer and place the call!
-		logger.warning("Unable to transfer call.  No Call for " + callId);
+		logger.warning("Unable to transfer call.  No Call for " + callID);
 		return;
 	    }
 
@@ -258,24 +262,12 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private String getCallId(CellID cellID) {
-	CellMO cellMO = CellManagerMO.getCell(cellID);
-
-	if (cellMO == null) {
-	    return null;
-	}
-
-	ManagedReference cellMORef = AppContext.getDataManager().createReference(cellMO);
-
-	return cellMORef.getId().toString();
-    }
-
     public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void callStatusChanged(CallStatus status) {
-	logger.warning("got status " + status);
+	logger.fine("got status " + status);
     }
 
     /*

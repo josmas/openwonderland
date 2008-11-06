@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import javax.swing.JMenuItem;
-import org.jdesktop.wonderland.modules.audiomanager.client.AudioMenuListener;
 
 /**
  *

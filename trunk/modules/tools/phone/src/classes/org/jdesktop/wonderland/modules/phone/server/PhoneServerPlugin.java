@@ -19,8 +19,6 @@
  */
 package org.jdesktop.wonderland.modules.phone.server;
 
-import org.jdesktop.wonderland.modules.phone.server.cell.PhoneConnectionHandler;
-
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -35,10 +33,7 @@ public class PhoneServerPlugin implements ServerPlugin {
             Logger.getLogger(PhoneServerPlugin.class.getName());
     
     public void initialize() {
-        CommsManager cm = WonderlandContext.getCommsManager();
-        cm.registerClientHandler(new PhoneConnectionHandler());
-
-	logger.warning("phone initialized");
+	logger.fine("phone initialized");
     }
     
 }

@@ -30,10 +30,8 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class EndCallMessage extends PhoneControlMessage {   
     
-    public EndCallMessage(CellID clientCellID, CellID externalCallCellID,
-	    CallListing listing) {
-
-	super(clientCellID, externalCallCellID, listing);
+    public EndCallMessage(CellID phoneCellID, CallListing listing) {
+	super(phoneCellID, listing);
     }
 
 }

@@ -17,9 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
+import com.jme.animation.SpatialTransformer;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.light.PointLight;
+import com.jme.light.SimpleLightNode;
+import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
@@ -31,6 +34,7 @@ import com.jme.scene.state.LightState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.WireframeState;
 import com.jme.scene.state.ZBufferState;
+
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -69,7 +73,7 @@ public class PhoneCellRenderer extends BasicRenderer {
     /**
      * Creates a wireframe box or sphere with the same size as the bounds.
      */
-    public Node createWireframeEntity() {
+    private Node createWireframeEntity() {
         /* Fetch the basic info about the cell */
         String name = cell.getCellID().toString();
         CellTransform transform = cell.getLocalTransform();
@@ -106,6 +110,8 @@ public class PhoneCellRenderer extends BasicRenderer {
         node.setRenderState(wiState);
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
+	logger.fine("WIRE FRAME ENTITY CREATED");
         return node;
     }
+
 }

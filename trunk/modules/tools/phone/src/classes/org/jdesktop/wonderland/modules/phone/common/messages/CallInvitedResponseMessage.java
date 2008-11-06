@@ -22,6 +22,8 @@ package org.jdesktop.wonderland.modules.phone.common.messages;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import org.jdesktop.wonderland.common.messages.Message;
 
 /*
@@ -30,8 +32,8 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class CallInvitedResponseMessage extends PhoneResponseMessage {
     
-    public CallInvitedResponseMessage(CallListing listing, boolean wasSuccessful) {
-	super(listing, wasSuccessful);
+    public CallInvitedResponseMessage(CellID cellID, CallListing listing, boolean wasSuccessful) {
+	super(cellID, listing, wasSuccessful);
     }
 
 }

@@ -34,11 +34,12 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.modules.audiomanager.client.AudioMenuListener;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
@@ -64,15 +65,16 @@ import org.jdesktop.wonderland.common.NetworkAddress;
  * @author jprovino
  */
 public class AudioManagerClient extends BaseConnection implements 
-	AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener
-{
+	AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener {
+
     private static final Logger logger =
         Logger.getLogger(AudioManagerClient.class.getName());
 
     private WonderlandSession session;
+
     private CellID cellID;
     private boolean connected = true;
-    
+
     /** 
      * Create a new AudioManagerClient
      * @param session the session to connect to, guaranteed to be in
@@ -80,43 +82,40 @@ public class AudioManagerClient extends BaseConnection implements
      * @throws org.jdesktop.wonderland.client.comms.ConnectionFailureException
      */
     public AudioManagerClient(WonderlandSession session)  
-	    throws ConnectionFailureException 
-    {
+	    throws ConnectionFailureException {
 
 	this.session = session;
-        session.connect(this);
-        
+	session.connect(this);
+
         LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
         if (avatar.getViewCell() != null) {
             // if the view is already configured, fake an event
             viewConfigured(avatar);
         }
-        
+
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
 
         JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
         
-	logger.warning("Starting AudioManagerCLient");
+	logger.fine("Starting AudioManagerCLient");
     }
 
     @Override
     public void disconnect() {
         // remove listeners
-        
+
         // TODO: add methods to remove listeners!
-        
+
         // LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         // avatar.removeViewCellConfiguredListener(this);
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
-        
+
         super.disconnect();
     }
-    
-    public void viewConfigured(LocalAvatar localAvatar) {
-	logger.warning("View CONFIGURED!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
+    public void viewConfigured(LocalAvatar localAvatar) {
 	cellID = localAvatar.getViewCell().getCellID();
 	connectSoftphone();
     }
@@ -124,7 +123,7 @@ public class AudioManagerClient extends BaseConnection implements
     public void connectSoftphone() {
 	session.send(this, new AvatarCellIDMessage(cellID));
 
- 	logger.warning("Sending message to server to get voice bridge...");
+ 	logger.fine("Sending message to server to get voice bridge...");
 
 	session.send(this, new GetVoiceBridgeMessage());
     }
@@ -174,8 +173,9 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void transferCall(String phoneNumber) {
-        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
-	session.send(this, new TransferCallMessage(cellID, phoneNumber));
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+	session.send(this, new TransferCallMessage(sc.getCallID(), phoneNumber));
     }
 
     public void cancelCallTransfer() {
@@ -183,12 +183,12 @@ public class AudioManagerClient extends BaseConnection implements
 
     @Override
     public void handleMessage(Message message) {
-	logger.warning("got a message...");
+	logger.fine("got a message...");
 
 	if (message instanceof GetVoiceBridgeMessage) {
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
-	    logger.warning("Got voice bridge " + msg.getBridgeInfo());
+	    logger.fine("Got voice bridge " + msg.getBridgeInfo());
 
 	    SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
@@ -206,9 +206,13 @@ public class AudioManagerClient extends BaseConnection implements
 
 	        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
 
+		logger.fine("Softphone call id is " + cellID.toString());
+
+		sc.setCallID(cellID.toString());
+
 	        // XXX need location and direction
 	        session.send(this, new PlaceCallMessage(
-		    cellID, sipURL, 0., 0., 0., 0., false));
+		    cellID.toString(), sipURL, 0., 0., 0., 0., false));
 	    } catch (IOException e) {
 		logger.warning(e.getMessage());
 	    }

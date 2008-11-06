@@ -22,24 +22,24 @@ package org.jdesktop.wonderland.modules.phone.common.messages;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
 import org.jdesktop.wonderland.common.messages.Message;
 
 /*
  *
  * @author: jprovino
  */
-public class LockUnlockResponseMessage extends Message {
+public class LockUnlockResponseMessage extends PhoneResponseMessage {
     
-    private boolean wasSuccessful;
     private boolean locked;
 
-    public LockUnlockResponseMessage(boolean locked, boolean wasSuccessful) {   
+    public LockUnlockResponseMessage(CellID cellID, boolean locked, boolean wasSuccessful) {   
+	super(cellID, null, wasSuccessful);
+
 	this.locked = locked;
-        this.wasSuccessful = wasSuccessful;
-    }
-    
-    public boolean wasSuccessful() {
-        return wasSuccessful;
     }
     
     public boolean getLocked() {

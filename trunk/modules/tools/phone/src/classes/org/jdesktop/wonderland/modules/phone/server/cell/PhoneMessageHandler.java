@@ -58,7 +58,15 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.voip.CallParticipant;
 import com.sun.voip.client.connector.CallStatus;
 
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
+import org.jdesktop.wonderland.server.WonderlandContext;
+
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -74,73 +82,95 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.common.cell.MultipleParentException;
+
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 import org.jdesktop.wonderland.server.UserManager;
+
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellMOFactory;
+
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
+
+import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
+
+import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
 
 import com.jme.math.Vector3f;
 
 /**
  * A server cell that provides conference phone functionality
- * @author JHarris
+ * @author jprovino
  */
-public class PhoneMessageHandler implements 
-	ManagedCallStatusListener, Serializable {
+public class PhoneMessageHandler implements Serializable, ComponentMessageReceiver {
 
     private static final Logger logger =
-        Logger.getLogger(PhoneCellMO.class.getName());
+        Logger.getLogger(PhoneMessageHandler.class.getName());
      
+    private ManagedReference<PhoneCellMO> phoneCellMORef;
+
+    private ManagedReference<ChannelComponentMO> channelComponentRef = null;
+
+    private ManagedReference<PhoneStatusListener> phoneStatusListenerRef;
+
     private int callNumber = 0;
 
-    private ConcurrentHashMap<String, WonderlandClientSender> senderMap =
-	new ConcurrentHashMap();
+    public PhoneMessageHandler(PhoneCellMO phoneCellMO) {
+	phoneCellMORef = AppContext.getDataManager().createReference(
+	        (PhoneCellMO) CellManagerMO.getCell(phoneCellMO.getCellID()));
 
-    public PhoneMessageHandler() {
-	AppContext.getManager(VoiceManager.class).addCallStatusListener(this);
-    }
+	PhoneStatusListener phoneStatusListener = new PhoneStatusListener(phoneCellMORef);
+	
+	phoneStatusListenerRef =  AppContext.getDataManager().createReference(phoneStatusListener);
 
-    public void processMessage(WonderlandClientSender sender, 
-	    ClientSession session, Message message) {
+        ChannelComponentMO channelComponent = (ChannelComponentMO) 
+	    phoneCellMO.getComponent(ChannelComponentMO.class);
 
-	if (message instanceof PhoneControlMessage == false) {
-	    logger.warning("Invalid message:  " + message);
-	    return;
+        if (channelComponent == null) {
+            throw new IllegalStateException("Cell does not have a ChannelComponent");
 	}
 
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
+
+        channelComponent.addMessageReceiver(EndCallMessage.class, this);
+        channelComponent.addMessageReceiver(JoinCallMessage.class, this);
+        channelComponent.addMessageReceiver(LockUnlockMessage.class, this);
+        channelComponent.addMessageReceiver(PlaceCallMessage.class, this);
+        channelComponent.addMessageReceiver(PlayTreatmentMessage.class, this);
+    }
+
+    public void messageReceived(final WonderlandClientSender sender, 
+	    final ClientSession session, final CellMessage message) {
+
 	PhoneControlMessage msg = (PhoneControlMessage) message;
+
+	logger.fine("got message " + msg);
 
 	if (message instanceof LockUnlockMessage) {
 	    LockUnlockMessage m = (LockUnlockMessage) message;
 
 	    boolean successful = true;
 
-	    ManagedReference<PhoneCellMO> clientCellMORef = null;
-
-	    if (msg.getClientCellID() != null) {
-	        clientCellMORef = AppContext.getDataManager().createReference(
-	            (PhoneCellMO) CellManagerMO.getCell(msg.getClientCellID()));
-	    }
-
 	    if (m.getPassword() != null) {
-		successful = m.getPassword().equals(clientCellMORef.get().getPassword());
+		successful = m.getPassword().equals(phoneCellMORef.get().getPassword());
 	    }
 
 	    if (successful) {
-		clientCellMORef.get().setLocked(!clientCellMORef.get().getLocked());
-	        clientCellMORef.get().setKeepUnlocked(m.keepUnlocked());
+		phoneCellMORef.get().setLocked(!phoneCellMORef.get().getLocked());
+	        phoneCellMORef.get().setKeepUnlocked(m.keepUnlocked());
 	    }
 
-	    logger.fine("locked " + clientCellMORef.get().getLocked() + " successful " 
+	    logger.fine("locked " + phoneCellMORef.get().getLocked() + " successful " 
 		+ successful + " pw " + m.getPassword());
 
             LockUnlockResponseMessage response = 
-		new LockUnlockResponseMessage(clientCellMORef.get().getLocked(), successful);
+		new LockUnlockResponseMessage(phoneCellMORef.get().getCellID(), phoneCellMORef.get().getLocked(), successful);
 
 	    sender.send(response);
 	    return;
@@ -150,7 +180,7 @@ public class PhoneMessageHandler implements
 
         CallListing listing = msg.getCallListing();
               
-	String externalCallID = getCallID(listing);
+	String externalCallID = getExternalCallID(listing);
 
 	Call externalCall = vm.getCall(externalCallID);
 
@@ -160,32 +190,37 @@ public class PhoneMessageHandler implements
 	    externalPlayer = externalCall.getPlayer();
 	}
 
-	CellMO clientCellMO = CellManagerMO.getCell(msg.getClientCellID());
+	String softphoneCallID = listing.getSoftphoneCallID();
 
-	ManagedReference clientCellMORef = 
-	    AppContext.getDataManager().createReference(clientCellMO);
-
-	String softphoneCallID = clientCellMORef.getId().toString();
-
-	Call softphoneCall = vm.getCall(softphoneCallID);
+	Call softphoneCall = null;
 
 	Player softphonePlayer = null;
 
-	if (softphoneCall != null) {
-	    softphonePlayer = softphoneCall.getPlayer();
-	}
+	AudioGroup audioGroup = null;
+
+	String audioGroupId = null;
+
+	if (softphoneCallID != null) {
+	    softphoneCall = vm.getCall(softphoneCallID);
+
+	    if (softphoneCall != null) {
+	        softphonePlayer = softphoneCall.getPlayer();
+	    }
         
-	String audioGroupId = softphoneCallID + "_" + externalCallID;
+	    audioGroupId = softphoneCallID + "_" + externalCallID;
 
-	AudioGroup audioGroup = vm.getAudioGroup(audioGroupId);
+	    audioGroup = vm.getAudioGroup(audioGroupId);
+	}
 
-	logger.warning("EXTERNAL CALLID IS " + externalCallID + " " + msg);
+	logger.fine("EXTERNAL CALLID IS " + externalCallID + " " + msg
+	    + " softphone callID " + softphoneCallID + " softphone call " 
+	    + softphoneCall + " softphone player " + softphonePlayer);
 
 	if (message instanceof PlayTreatmentMessage) {
 	    PlayTreatmentMessage m = (PlayTreatmentMessage) message;
 
-	    logger.warning("play treatment " + m.getTreatment() 
-		+ " to " + getCallID(listing) + " echo " + m.echo());
+	    logger.fine("play treatment " + m.getTreatment() 
+		+ " to " + listing.getExternalCallID() + " echo " + m.echo());
 
             if (listing.simulateCalls() == true) {
 		return;
@@ -202,7 +237,7 @@ public class PhoneMessageHandler implements
 		return;
 	    }
 
-	    logger.warning("echoing treatment to " + softphoneCallID);
+	    logger.fine("echoing treatment to " + softphoneCallID);
 
 	    try {
 		softphoneCall.playTreatment(m.getTreatment());
@@ -214,27 +249,16 @@ public class PhoneMessageHandler implements
 	    return;
 	}
 
-	ManagedReference<PhoneCellMO> externalCallCellMORef = null;
-
-	if (msg.getExternalCallCellID() != null) {
-	    externalCallCellMORef = AppContext.getDataManager().createReference(
-	        (PhoneCellMO) CellManagerMO.getCell(msg.getExternalCallCellID()));
-	}
-
 	if (msg instanceof PlaceCallMessage) {
             //Our phone cell is asking us to begin a new call.
 
 	    if (listing.simulateCalls() == false) {
-		relock(sender, externalCallCellMORef);
+		relock(sender);
 	    }
 
-	    logger.warning("Got place call message");
+	    logger.fine("Got place call message " + externalCallID);
 
-	    synchronized (callListingMap) {
-	        callListingMap.put(externalCallID, listing);
-	    }
-
-	    senderMap.put(externalCallID, sender);
+	    phoneStatusListenerRef.get().mapCall(externalCallID, sender, listing);
 
 	    PlayerSetup playerSetup = new PlayerSetup();
 	    //playerSetup.x =  translation.x;
@@ -269,6 +293,13 @@ public class PhoneMessageHandler implements
 		cp.setVoiceDetectionWhileMuted(true);
 		cp.setHandleSessionProgress(true);
 
+        	if (listing.simulateCalls()) { 
+            	    FakeVoiceManager.getInstance().addCallStatusListener(
+			phoneStatusListenerRef.get(), externalCallID);
+		} else {
+		    vm.addCallStatusListener(phoneStatusListenerRef.get(), null);
+		}
+
 		try {
                     externalCall = vm.createCall(externalCallID, callSetup);
 	 	} catch (IOException e) {
@@ -277,17 +308,17 @@ public class PhoneMessageHandler implements
 		    return;
 		}
 
-		logger.warning("About to create call");
+		logger.fine("About to create call");
 	    	externalPlayer = vm.createPlayer(externalCallID, playerSetup);
-		logger.warning("back from creating call");
+		logger.fine("back from creating call");
 
 		externalCall.setPlayer(externalPlayer);
 
-		logger.warning("set external player");
+		logger.fine("set external player");
 
 		externalPlayer.setCall(externalCall);
 
-		logger.warning("set external call");
+		logger.fine("set external call");
 
 		/*
 		 * Allow caller and callee to hear each other
@@ -303,14 +334,17 @@ public class PhoneMessageHandler implements
 		    new AudioGroupPlayerInfo(true, 
 		    AudioGroupPlayerInfo.ChatType.PRIVATE));
 
-		logger.warning("done with audio groups");
+		logger.fine("done with audio groups");
             }
             
-	    externalCallID = externalCall.getId();
+	    if (externalCall != null) {
+	        externalCallID = externalCall.getId();
+	        vm.addCallStatusListener(phoneStatusListenerRef.get(), externalCallID);
+	    }
 
-	    logger.warning("Setting actual call id to " + externalCallID);
+	    logger.fine("Setting actual call id to " + externalCallID);
 
-	    listing.setCallID(externalCallID);  // set actual call Id
+	    listing.setExternalCallID(externalCallID);  // set actual call Id
 
             //Check implicit privacy settings
             if (listing.isPrivate()) {
@@ -327,12 +361,12 @@ public class PhoneMessageHandler implements
 		 */
                 if (listing.simulateCalls() == false) {
                     //Mute the two participants to the outside world
-                    logger.warning("attenuate other groups");
+                    logger.fine("attenuate other groups");
 		    softphonePlayer.attenuateOtherGroups(audioGroup, 0, 0);
-                    logger.warning("back from attenuate other groups");
+                    logger.fine("back from attenuate other groups");
                 }
             } else {
-                spawnAvatarOrb(externalCallID, listing);
+                spawnOrb(externalCallID);
 	    }
 
             if (listing.simulateCalls() == false) {
@@ -346,9 +380,9 @@ public class PhoneMessageHandler implements
 	     * Send PLACE_CALL_RESPONSE message back to all the clients 
 	     * to signal success.
 	     */
-            sender.send(new PlaceCallResponseMessage(listing, true));
+            sender.send(new PlaceCallResponseMessage(phoneCellMORef.get().getCellID(), listing, true));
 
-	    logger.warning("back from notifying user");
+	    logger.fine("back from notifying user");
 	    return;
 	}
 
@@ -360,7 +394,7 @@ public class PhoneMessageHandler implements
 	        try {
                     softphoneCall.stopTreatment("ring_tone.au");
 	        } catch (IOException e) {
-		    logger.warning("Unable to stop treatment to " + softphoneCall + ":  "
+		    logger.fine("Unable to stop treatment to " + softphoneCall + ":  "
 		        + e.getMessage());
 	        }
 
@@ -388,18 +422,18 @@ public class PhoneMessageHandler implements
             listing.setPrivateClientName("");
               
             //Inform the PhoneCells that the call has been joined successfully
-            sender.send(new JoinCallResponseMessage(listing, true));
+            sender.send(new JoinCallResponseMessage(phoneCellMORef.get().getCellID(), listing, true));
             
-            spawnAvatarOrb(externalCallID, listing);
+            spawnOrb(externalCallID);
 	    return;
 	}
 
 	if (msg instanceof EndCallMessage) {
-	    logger.warning("simulate is " + listing.simulateCalls() 
+	    logger.fine("simulate is " + listing.simulateCalls() 
 		+ " external call " + externalCall);
 
             if (listing.simulateCalls() == false) {
-		relock(sender, externalCallCellMORef);
+		relock(sender);
 
 		if (externalCall != null) {
 		    try {
@@ -425,226 +459,74 @@ public class PhoneMessageHandler implements
             }         
             
             //Send SUCCESS to phone cell
-            sender.send(new EndCallResponseMessage(listing, true, "User requested call end"));
+            sender.send(new EndCallResponseMessage(phoneCellMORef.get().getCellID(), listing, true, 
+		"User requested call end"));
 	    return;
         } 
 
-	logger.warning("Uknown message type:  " + msg);
+	logger.fine("Uknown message type:  " + msg);
     }
    
-    private void relock(WonderlandClientSender sender, ManagedReference<PhoneCellMO> externalCallCellMORef) {
-	if (externalCallCellMORef == null) {
-	    return;
-	}
+    private void relock(WonderlandClientSender sender) {
+	if (phoneCellMORef.get().getKeepUnlocked() == false && phoneCellMORef.get().getLocked() == false) {
+	    phoneCellMORef.get().setLocked(true);
 
-	if (externalCallCellMORef.get().getKeepUnlocked() == false && externalCallCellMORef.get().getLocked() == false) {
-	    externalCallCellMORef.get().setLocked(true);
-
-            LockUnlockResponseMessage response = new LockUnlockResponseMessage(true, true);
+            LockUnlockResponseMessage response = new LockUnlockResponseMessage(phoneCellMORef.get().getCellID(), true, true);
 
             sender.send(response);
 	}
     }
 
-    private String getCallID(CallListing listing) {
-	String callID = listing.getCallID();
+    private String getExternalCallID(CallListing listing) {
+	String externalCallID = listing.getExternalCallID();
 
-	if (callID != null && callID.length() > 0) {
-	    logger.warning("using existing call id " + callID);
-	    return callID;
-	}
-
-	callID = listing.getContactNumber();
-
-	int ix;
-
-	if ((ix = callID.indexOf("@")) >= 0) {
-	    callID = callID.substring(0, ix);
-
-	    String pattern = "sip:";
-	
-	    if ((ix = callID.indexOf(pattern)) >= 0) {
-	        callID = callID.substring(ix + pattern.length());
-	    }
-
-	    callID = callID.replaceAll(":", "_");
+	if (externalCallID != null && externalCallID.length() > 0) {
+	    logger.fine("using existing call id " + externalCallID);
+	    return externalCallID;
 	}
 
 	synchronized (this) {
 	    callNumber++;
 
-	    callID = listing.getContactName() + "_" + callID + "_" + callNumber;
+            return phoneCellMORef.get().getCellID() + "_" + callNumber;
 	}
-
-        logger.finer("new call id " + callID);
-	return callID;
     }
 
-    private void spawnAvatarOrb(String externalCallID, CallListing listing) {
+    private void spawnOrb(String externalCallID) {
 	/*
 	 * XXX I was trying to get this to delay for 2 seconds,
 	 * But there are no managers in the system context in which run() runs.
 	 */
-        //Spawn the AvatarOrb to represent the new public call.
+        //Spawn the Orb to represent the new public call.
+
+	logger.fine("Spawning orb...");
+
         String cellType = 
-	    "com.sun.labs.mpk20.avatarorb.server.cell.AvatarOrbCellGLO";
+	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
 
-        //CellGLO cellGLO = CellGLOFactory.loadCellGLO(cellType, cellID, 
-	//    externalCallID, listing);
+        OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, externalCallID);
 
-        //if (listing.simulateCalls()) { 
-        //    FakeVoiceManager.getInstance().addCallStatusListener(
-	//	(ManagedCallStatusListener)cellGLO, externalCallID);
-	//} else {
-	//    VoiceManager vm = AppContext.getManager(VoiceManager.class);
-        //    vm.addCallStatusListener((ManagedCallStatusListener)cellGLO);
-	//}
+	if (orbCellMO == null) {
+	    logger.warning("Unable to spawn orb");
+	    return;
+	}
+
+	try {
+            ((BeanSetupMO)orbCellMO).setupCell(new OrbCellSetup());
+        } catch (ClassCastException e) {
+            logger.warning("Error setting up new cell " +
+                orbCellMO.getName() + " of type " +
+                orbCellMO.getClass() + ", it does not implement " +
+                "BeanSetupMO. " + e.getMessage());
+            return;
+        }
+
+	try {
+	    WonderlandContext.getCellManager().insertCellInWorld(orbCellMO);
+	} catch (MultipleParentException e) {
+	    logger.warning("Can't insert orb in world:  " + e.getMessage());
+	    return;
+	}
     }
     
-    private ConcurrentHashMap<String, CallListing> callListingMap = 
-	new ConcurrentHashMap();
-
-    public void callStatusChanged(CallStatus status) {    
-	logger.warning("got status " + status);
-
-        String callID = status.getCallId();
-
-	if (callID == null || callID.length() == 0) {
-	    logger.warning("Missing call id in status:  " + status);
-	    return;
-	}
-
-	WonderlandClientSender sender = senderMap.get(callID);
-
-	if (sender == null) {
-	    logger.warning("Can't find sender for status:  " + status);
-	    return;
-	}
-
-	CallListing listing;
-
-	synchronized(callListingMap) {
-	    listing = callListingMap.get(callID);
-	}
-
-	if (listing == null) {
-	    logger.finer("No callListing for " + callID);
-	    return;
-	}
-
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	Call externalCall = vm.getCall(callID);
-	Call softphoneCall = vm.getCall(listing.getPrivateClientName());
-
-        switch(status.getCode()) {
-
-        //The call has been placed, the phone should be ringing
-        case CallStatus.INVITED:
-            /** HARRISDEBUG: It should be tested whether or not we'll catch
-             * callStatus changes for calls which we've just set up.
-             * If not, this code will have to be moved back to the
-             * "messageReceived->PlaceCall" function.
-             **/
-            if (listing.isPrivate()) {
-                //Start playing the phone ringing sound                    
-		try {
-                    softphoneCall.playTreatment("ring_tone.au");
-	        } catch (IOException e) {
-		    logger.warning("Unable to play treatment " + softphoneCall + ":  "
-		        + e.getMessage());
-	        }
-            }
-            
-            CallInvitedResponseMessage invitedResponse = 
-		new CallInvitedResponseMessage(listing, true);
-
-            sender.send(invitedResponse);
-                
-            break;
-
-        //Something's picked up, the call has been connected
-        case CallStatus.ESTABLISHED:
-            if (listing.isPrivate()) {
-                //Stop playing the phone ringing sound
-		try {
-                    softphoneCall.stopTreatment("ring_tone.au");
-	        } catch (IOException e) {
-		    logger.warning("Unable to stop treatment " + softphoneCall + ":  "
-		        + e.getMessage());
-	        }
-            }
-
-            CallEstablishedResponseMessage EstablishedResponse = 
-		new CallEstablishedResponseMessage(listing, true);
-
-            sender.send(EstablishedResponse);
-            break;
-
-        case CallStatus.STARTEDSPEAKING:
-            break;
-
-        case CallStatus.STOPPEDSPEAKING:
-            break;
-
-        case CallStatus.ENDED: 
-            //Stop the ringing
-	    if (softphoneCall != null) {
-	        try {
-                    softphoneCall.stopTreatment("ring_tone.au");
-	        } catch (IOException e) {
-		    logger.warning(
-			"Unable to stop treatment " + softphoneCall + ":  "
-		    	+ e.getMessage());
-	        }
-	    }
-                
-            String softphoneCallID = listing.getPrivateClientName();
-                
-            //This may appear redundant, but it's necessary for the VoiceManager
-	    // to remove its internal data structures.
-
-            if (listing.simulateCalls() == false) {
-		if (externalCall != null) {
-		    try {
-                        vm.endCall(externalCall, true);
-	            } catch (IOException e) {
-		        logger.warning(
-			    "Unable to end call " + externalCall + ":  "
-		            + e.getMessage());
-	            }
-		}
-
-		String audioGroupId = softphoneCallID + "_" 
-		    + listing.getPrivateClientName();
-
-		AudioGroup audioGroup = vm.getAudioGroup(audioGroupId);
-
-		if (audioGroup != null) {
-		    if (softphoneCall.getPlayer() != null) {
-	        	softphoneCall.getPlayer().attenuateOtherGroups(audioGroup, 
-			    AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
-		    	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
-		    }
-
-	            vm.removeAudioGroup(audioGroupId);
-		}
-            } else {
-                //   FakeVoiceHandler.getInstance().endCall(callID);
-            }    
-                
-	    synchronized (callListingMap) {
-		callListingMap.remove(callID);
-	    }
-
-	    senderMap.remove(callID);
-
-            CallEndedResponseMessage endedResponse = new CallEndedResponseMessage(
-		listing, true, status.getOption("Reason"));
-
-            sender.send(endedResponse);
-            break;
-        }
-    }
-
 }
