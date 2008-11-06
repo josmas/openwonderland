@@ -19,18 +19,18 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/@MODULE_NAME@.jar"
-                moduleDescription="${module.description}" builddir="${build.dir}">
+        <module name="@MODULE_NAME@" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/@MODULE_NAME@.jar"
+                moduleDescription="@MODULE_DESC@" builddir="${build.dir}">
                     
             <client>
-                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                <clientjar name="@MODULE_NAME@-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar> 
             </client>
                 
             <server>
-                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                <serverjar name="@MODULE_NAME@-server" basedir="${build.classes.dir}">
                     <cellsetup>
                         <provider classname="${module.plugin.cellsetup}"/>
                     </cellsetup>
