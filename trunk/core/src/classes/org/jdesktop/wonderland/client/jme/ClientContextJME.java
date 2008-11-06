@@ -54,4 +54,8 @@ public class ClientContextJME extends ClientContext {
     public static EnvironmentManager getEnvironmentManager() {
         return EnvironmentManager.getEnvironmentManager();
     }
+
+    public static AvatarRenderManager getAvatarRenderManager() {
+        return AvatarRenderManager.getAvatarRenderManager();
+    }
 }
