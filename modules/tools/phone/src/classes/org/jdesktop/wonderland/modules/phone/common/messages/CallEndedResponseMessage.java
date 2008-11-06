@@ -22,6 +22,8 @@ package org.jdesktop.wonderland.modules.phone.common.messages;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import org.jdesktop.wonderland.common.messages.Message;
 
 /*
@@ -32,10 +34,10 @@ public class CallEndedResponseMessage extends PhoneResponseMessage {
     
     private String reasonCallEnded;
 
-    public CallEndedResponseMessage(CallListing listing, boolean wasSuccessful, 
+    public CallEndedResponseMessage(CellID cellID, CallListing listing, boolean wasSuccessful, 
 	    String reasonCallEnded) {
 
-	super(listing, wasSuccessful);
+	super(cellID, listing, wasSuccessful);
     }
 
     public String getReasonCallEnded() {

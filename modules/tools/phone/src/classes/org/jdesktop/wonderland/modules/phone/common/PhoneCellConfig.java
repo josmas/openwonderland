@@ -50,7 +50,6 @@ public class PhoneCellConfig extends CellConfig {
 
     /** Default constructor */
     public PhoneCellConfig() {
-	System.out.println("FOOO:  PHONCELLCONFIG");
     }
     
     public boolean getLocked() {
