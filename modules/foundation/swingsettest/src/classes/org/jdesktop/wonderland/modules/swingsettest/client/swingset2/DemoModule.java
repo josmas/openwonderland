@@ -137,7 +137,8 @@ public class DemoModule extends JApplet {
 	    if(getSwingSet2() != null) {
 		bundle = getSwingSet2().getResourceBundle();
 	    } else {
-		bundle = ResourceBundle.getBundle("resources.swingset");
+		//bundle = ResourceBundle.getBundle("resources.swingset");
+		bundle = ResourceBundle.getBundle("org.jdesktop.wonderland.modules.swingsettest.client.swingset2.resources.swingset");
 	    }
 	}
 	try {
