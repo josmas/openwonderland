@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */ 
 
 @ExperimentalAPI
-public class FrameLabel extends /*TODO: FrameTranspTexRect */ FrameTexRect {
+public class FrameLabel extends FrameTexRect {
        
     private static final Logger logger = Logger.getLogger(FrameLabel.class.getName());
 
@@ -75,7 +75,7 @@ public class FrameLabel extends /*TODO: FrameTranspTexRect */ FrameTexRect {
      * @param view The view the frame encloses.
      * @param gui The event handler.
      */
-    public FrameLabel (Window2DView view, /*TODO: Gui2D */ Object gui) {
+    public FrameLabel (Window2DView view, Gui2D gui) {
 	this("FrameLabel", view, gui);
     }
 
@@ -86,9 +86,9 @@ public class FrameLabel extends /*TODO: FrameTranspTexRect */ FrameTexRect {
      * @param view The view the frame encloses.
      * @param gui The event handler.
      */
-    public FrameLabel (String name, Window2DView view, /*TODO: Gui2D */ Object gui) {
+    public FrameLabel (String name, Window2DView view, Gui2D gui) {
 	// The texture and size is calculated in update() based on the text string.
-	super(name, view, gui, /*TODO */null, /**/ 0f, 0f);
+	super(name, view, gui, null, 0f, 0f);
     }
 
     /**
@@ -110,7 +110,6 @@ public class FrameLabel extends /*TODO: FrameTranspTexRect */ FrameTexRect {
 
 	// Force all geometry and render state to be recalculated
 	if (quad != null) {
-	    detachChild(quad);
 	    quad = null;
 	}
 	try {
@@ -128,11 +127,8 @@ public class FrameLabel extends /*TODO: FrameTranspTexRect */ FrameTexRect {
 
 	updateTexture();
 
-	// Labels have transparent backgrounds
-	//TODO: setAlpha(1f);
-        
         // Update position relative to view
-	setTranslation(new Vector3f(x, y, Z_OFFSET));
+	localToCellNode.setLocalTranslation(new Vector3f(x, y, Z_OFFSET));
     }
 
     /**

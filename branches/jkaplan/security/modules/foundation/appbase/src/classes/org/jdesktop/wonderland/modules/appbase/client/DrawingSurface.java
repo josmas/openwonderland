@@ -172,17 +172,6 @@ public class DrawingSurface {
     }
     
     /**
-     * Draw the cursor onto the surface at the current pen position.
-     */
-    protected void renderCursor() {
-        imageGraphics.setXORMode(cursorColor);
-        imageGraphics.translate(penX, penY);
-        imageGraphics.drawLine(-5, 0, 5, 0);
-        imageGraphics.drawLine(0,-5, 0, 5);
-        imageGraphics.translate(penX, penY);
-    }
-    
-    /**
      * Given an (x,y) coordinate, where both x and y are in the range [-1,1]
      * relative to the center of the image, calculate the corresponding
      * pixel location in the image.

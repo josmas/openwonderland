@@ -53,7 +53,7 @@ import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMe
 import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.VirtualPhoneListener;
+import org.jdesktop.wonderland.modules.phone.client.cell.VirtualPhoneListener;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.modules.phone.client.cell.PhoneMenu;
 
 /**
  *
@@ -97,7 +98,7 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
 	this.connection = connection;
 	this.session = session;
 
-	JmeClientMain.getFrame().addVirtualPhoneListener(this);
+        JmeClientMain.getFrame().addToToolMenu(PhoneMenu.getPhoneMenu(this));
     }
 
     public void virtualPhoneMenuItemSelected() {

@@ -17,11 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
+import com.jme.scene.Node;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
 import com.jme.system.DisplaySystem;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
 import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
 import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
@@ -54,7 +59,7 @@ public class FrameTexRect extends FrameRect {
      * @param width The width of side in local coordinates.
      * @param height The height of side in local coordinates.
      */
-    public FrameTexRect (WindowView view, /*TODO Gui2D*/ Object gui, Texture texture, float width, float height) {
+    public FrameTexRect (WindowView view, Gui2D gui, Texture texture, float width, float height) {
         this("FrameTexRect", view, gui, texture, width, height);
     }
 
@@ -68,7 +73,7 @@ public class FrameTexRect extends FrameRect {
      * @param width The width of side in local coordinates.
      * @param height The height of side in local coordinates.
      */
-    public FrameTexRect (String name, WindowView view, /*TODO Gui2D*/ Object gui, Texture texture, 
+    public FrameTexRect (String name, WindowView view, Gui2D gui, Texture texture, 
 			 float width, float height) {
         super(name, view, gui, width, height);
 	this.texture = texture;
@@ -94,18 +99,16 @@ public class FrameTexRect extends FrameRect {
     public void update () throws InstantiationException {
 	updateLayout();
 
-	if (quad == null) {
-	    // Init GUI only once
-	    if (gui != null) {
-		// TODO: gui.initEventHandling(this);
-	    }
-	} else {
-	    detachChild(quad);
-	}
+	System.err.println("********** Enter update: entity = " + entity);
 
-	// Create state
-	quad = new TexturedQuad(texture, "FrameTexRect-Quad", width, height);
-	attachChild(quad);
+	if (quad == null) {
+	    quad = new TexturedQuad(texture, "FrameTexRect-Quad", width, height);
+	    quad.setModelBound(new BoundingBox());
+	} else {
+	    System.err.println("******** quad = " + quad);
+	    quad.resize(width, height);
+	}
+	quad.updateModelBound();
 
 	// This should be the same as FrameComponent.update
 	updateColor();
@@ -129,21 +132,4 @@ public class FrameTexRect extends FrameRect {
     public Texture getTexture () {
 	return texture;
     }
-
-    /**
-     * For debug: Print the contents of this component's render state.
-     */
-    public void printRenderState () {
-	super.printRenderState();
-	TextureState ts = (TextureState) quad.getRenderState(RenderState.RS_TEXTURE);
-	GraphicsUtils.printRenderState(ts);
-    }
-
-    /**
-     * For debug: Print the contents of this component's geometry
-     */
-    public void printGeometry () {
-	super.printGeometry();
-	GraphicsUtils.printGeometry(quad, true);
-    }    
 }

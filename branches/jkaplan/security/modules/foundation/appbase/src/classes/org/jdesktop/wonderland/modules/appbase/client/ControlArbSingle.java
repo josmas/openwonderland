@@ -75,7 +75,7 @@ abstract public class ControlArbSingle extends ControlArb {
     /**
      * {@inheritDoc}
      */
-    void deliverEvent (Window2D window, MouseEvent event) {
+    public void deliverEvent (Window2D window, MouseEvent event) {
 	if (hasControl()) {
 	    window.deliverEvent(event);
 	}

@@ -77,6 +77,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
 
         avatar.detach();    // Detach avatar from world
         avatar.getCellCache().logout(session);
+        WonderlandContext.getCellManager().removeCellFromWorld(avatar);
     }
     
     public void messageReceived(WonderlandClientSender sender,

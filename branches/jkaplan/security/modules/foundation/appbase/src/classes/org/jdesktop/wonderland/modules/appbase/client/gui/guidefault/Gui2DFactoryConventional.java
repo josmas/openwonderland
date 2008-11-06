@@ -67,7 +67,7 @@ public class Gui2DFactoryConventional implements GuiFactory {
 	if        ("World".equals(spaceName)) {
 	    return new ViewWorldConventionalDefault((Window2D)window);
 	} else if ("HUD".equals(spaceName)) {
-	    // TODO: not yet
+	    // TODO: app windows in HUD: not yet
 	    //return new ViewHUD(window);
 	    return null;
 	}
@@ -81,7 +81,7 @@ public class Gui2DFactoryConventional implements GuiFactory {
 	if (view instanceof ViewWorldDefault) {
 	    return new FrameWorldDefault(view);
 	} else {
-	    // TODO: notyet
+	    // TODO: app windows in HUD: not yet
 	    // return new FrameHUD(view);
 	    return null;
 	}

@@ -458,7 +458,12 @@ public abstract class InputPicker {
 	// If a grab is active, the event destination pick info will be the grabbed pick info
 	PickInfo pickInfo;
 	if (grabIsActive) {
-	    pickInfo = grabPickInfo;
+	    // TODO: HACK: is this the right way to fix this?
+	    if (eventID == MouseEvent.MOUSE_DRAGGED) {
+		pickInfo = hitPickInfo;
+	    } else {
+		pickInfo = grabPickInfo;
+	    }
 	} else {
 	    pickInfo = hitPickInfo;
 	}

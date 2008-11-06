@@ -76,15 +76,13 @@
         </java>
     </target>
     
-    <target name="runsp" depends="jar" description="Run Spatial Test">
-        <java classname="org.jdesktop.wonderland.server.spatial.test.SpatialTest" fork="true">
-            
-            <!-- arguments here must be replicated in some form in the
-                 jnlp file! -->
+    <target name="avatargui" depends="jar">
+        <!--<java classname="imi.tests.GUITest" fork="true">-->
+        <!--<java classname="imi.tests.COLLADA_CharacterTest" fork="true">-->
+        <java classname="imi.tests.MusicalChairs" fork="true">
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
-            
-            <!--start debug-->
+	    <!--start debug-->
 	    <!-- TODO: suspend=y doesn't work on linux: it doesn't stop at bkpts after attach -->
 	    <!--
             <jvmarg value="-Xdebug"/>
@@ -94,21 +92,17 @@
             
             <classpath>
 		<pathelement path="${core-client.classpath}"/>
-		<pathelement path="${core-server.classpath}"/>
 	    </classpath>
             
 	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
         </java>
     </target>
 
-    <target name="avatargui" depends="jar">
-        <!--<java classname="imi.tests.GUITest" fork="true">-->
-        <!--<java classname="imi.tests.COLLADA_CharacterTest" fork="true">-->
-        <java classname="imi.tests.MusicalChairs" fork="true">
+    <target name="run-moduleui" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.jme.artimport.ModuleManagerUI" fork="true">
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
 	    <!--start debug-->
-	    <!-- TODO: suspend=y doesn't work on linux: it doesn't stop at bkpts after attach -->
 	    <!--
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>

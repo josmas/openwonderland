@@ -27,7 +27,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.server.spatial.SpatialCell;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.server.spatial.impl.SpatialCell;
 
 /**
  *
@@ -37,8 +38,8 @@ public class SpatialCellImpl implements SpatialCell {
 
     private BoundingVolume worldBounds = new BoundingSphere();
     private BoundingVolume localBounds = null;
-    private Matrix4f localTransform = null;
-    private Matrix4f worldTransform = null;
+    private CellTransform localTransform = null;
+    private CellTransform worldTransform = null;
     private SpatialCellImpl rootNode = null;
     private SpatialCellImpl parent = null;
     private CellID cellID;
@@ -52,7 +53,7 @@ public class SpatialCellImpl implements SpatialCell {
 
     private HashSet<Space> spaces = null;
 
-    private HashMap<ViewCache, Integer> viewCache = null;
+    private HashMap<ViewCache, HashSet<Space>> viewCache = null;
 
     public SpatialCellImpl(CellID id) {
 //        System.out.println("Creating SpatialCell "+id);
@@ -89,11 +90,11 @@ public class SpatialCellImpl implements SpatialCell {
      * Users should call acquireRootReadLock while they are using the results of this call
      * @return
      */
-    public Matrix4f getLocalTransform() {
+    public CellTransform getLocalTransform() {
         return localTransform;
     }
 
-    public void setLocalTransform(Matrix4f transform) {
+    public void setLocalTransform(CellTransform transform) {
         acquireRootWriteLock();
         this.localTransform = transform;
         
@@ -103,7 +104,7 @@ public class SpatialCellImpl implements SpatialCell {
         releaseRootWriteLock();
     }
 
-    public Matrix4f getWorldTransform() {
+    public CellTransform getWorldTransform() {
         return worldTransform;
     }
 
@@ -134,17 +135,17 @@ public class SpatialCellImpl implements SpatialCell {
      * @return
      */
     private BoundingVolume updateWorldTransform() {
-        Matrix4f oldWorld;
+        CellTransform oldWorld;
         if (worldTransform==null)
             oldWorld=null;
         else
-            oldWorld = worldTransform.clone();
+            oldWorld = worldTransform.clone(null);
 
         if (parent!=null) {
-            Matrix4f parentWorld = parent.worldTransform;
-            worldTransform = parentWorld.mult(localTransform);
+            CellTransform parentWorld = parent.worldTransform;
+            worldTransform = parentWorld.mul(localTransform);
         } else {
-            worldTransform = localTransform.clone();
+            worldTransform = localTransform.clone(null);
         }
 
         if (!worldTransform.equals(oldWorld)) {         // TODO should be epsilonEquals
@@ -163,7 +164,7 @@ public class SpatialCellImpl implements SpatialCell {
                 boundsChangeListener.worldBoundsChanged(this);
         }
 
-        System.err.println("Cell "+cellID+"  "+worldTransform.toTranslationVector());
+//        System.err.println("Cell "+cellID+"  "+worldTransform.toTranslationVector());
 
         return worldBounds;
     }
@@ -174,12 +175,13 @@ public class SpatialCellImpl implements SpatialCell {
     private void computeWorldBounds() {
         // TODO support scale
         worldBounds = localBounds.clone(worldBounds);
-        worldBounds.transform(worldTransform.toRotationQuat(), 
-                              worldTransform.toTranslationVector(), 
-                              new Vector3f(1f,1f,1f), worldBounds);
+//        worldBounds.transform(worldTransform.toRotationQuat(),
+//                              worldTransform.toTranslationVector(),
+//                              new Vector3f(1f,1f,1f), worldBounds);
+        worldTransform.transform(worldBounds);
     }
 
-    Iterable getChildren() {
+    Iterable<SpatialCellImpl> getChildren() {
         return children;
     }
 
@@ -191,6 +193,10 @@ public class SpatialCellImpl implements SpatialCell {
 
     public void setAttribute(Object attr) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public CellID getCellID() {
+        return cellID;
     }
 
     /**
@@ -211,7 +217,7 @@ public class SpatialCellImpl implements SpatialCell {
             viewCache = new HashMap();
 
             // This node is the root of a graph, so set the world transform
-            worldTransform = localTransform.clone();
+            worldTransform = localTransform.clone(null);
             computeWorldBounds();
 
             if (children!=null) {
@@ -248,71 +254,50 @@ public class SpatialCellImpl implements SpatialCell {
             rootNode.readWriteLock.writeLock().unlock();;
     }
 
-    void acquireRootReadLock() {
+    public void acquireRootReadLock() {
         if (rootNode!=null)
             rootNode.readWriteLock.readLock().lock();
     }
     
-    void releaseRootReadLock() {
+    public void releaseRootReadLock() {
         if (rootNode!=null)
             rootNode.readWriteLock.readLock().unlock();
     }
 
-//    void setWorldBoundsChangeListener(WorldBoundsChangeListener listener) {
-//        boundsChangeListener = listener;
-//    }
-//
-//    void setWorldTransformChangeListener(TransformChangeListener listener) {
-//        worldTransformChangeListener = listener;
-//    }
-
-//    void addSpace(Space space) {
-//        synchronized(spaces) {
-//            spaces.add(space);
-//        }
-//    }
-//
-//    void removeSpace(Space space) {
-//        synchronized(spaces) {
-//            spaces.remove(space);
-//        }
-//    }
-
-    void addViewCache(Collection<ViewCache> caches) {
+    void addViewCache(Collection<ViewCache> caches, Space space) {
         synchronized(viewCache) {
             for(ViewCache c : caches) {
-                Integer i = viewCache.get(c);
-                if (i==null) {
-                    i = new Integer(1);
+                HashSet<Space> s = viewCache.get(c);
+                if (s==null) {
+                    s = new HashSet();
+                    s.add(space);
+                    viewCache.put(c, s);
                 } else {
-                    i++;
+                    s.add(space);
                 }
-                viewCache.put(c, i);
             }
         }
     }
 
-    void removeViewCache(Collection<ViewCache> caches) {
+    void removeViewCache(Collection<ViewCache> caches, Space space) {
         synchronized(viewCache) {
             for(ViewCache c : caches) {
-                Integer i = viewCache.get(c);
-                if (i==null) {
+                HashSet<Space> s = viewCache.get(c);
+                if (s==null) {
                     throw new RuntimeException("ERROR, cache not in set");
                 } else {
-                    i--;
+                    s.remove(space);
                 }
                 
-                if (i==0)
+                if (s.size()==0)
                     viewCache.remove(c);
-                else
-                    viewCache.put(c, i);
             }
         }
     }
 
 
 
-    private void notifyViewCaches(Matrix4f worldTransform) {
+    private void notifyViewCaches(CellTransform worldTransform) {
         // Called from updateWorldBounds so we have a write lock on the graph
         SpatialCellImpl root = (SpatialCellImpl) getRoot();
         if (root==null)

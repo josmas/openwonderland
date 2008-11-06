@@ -22,18 +22,24 @@ package org.jdesktop.wonderland.client.jme.utils.graphics;
 
 import com.jme.image.Image;
 import com.jme.image.Texture;
+import com.jme.light.Light;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.TexCoords;
 import com.jme.scene.TriMesh;
+import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
+import com.jme.scene.state.ZBufferState;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.List;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -135,6 +141,57 @@ public class GraphicsUtils {
     }
 
     /**
+     * Print the pertinent attributes of the given light state.
+     */
+    private static void printLightState (LightState ls) {
+	System.err.println("ls = " + ls);
+	if (ls != null) {
+	    System.err.println("globalAmbient = " + ls.getGlobalAmbient());
+	    System.err.println("localViewer = " + ls.getLocalViewer());
+	    System.err.println("separateSpecular = " + ls.getSeparateSpecular());
+	    System.err.println("twoSidedLighting = " + ls.getTwoSidedLighting());
+	    if (ls.getQuantity() == 0) {
+		System.err.println("No lights");
+	    }
+	    System.err.println("lightMask = " + Integer.toHexString(ls.getLightMask()));
+	    System.err.println("lights = ");
+	    ArrayList<Light> lights = ls.getLightList();
+	    int i = 0;
+	    for (Light light : lights) {
+		System.err.println("Light " + (++i) + " = ");
+		printLight(light);
+	    }
+	}
+    }
+
+    /**
+     * Print the pertinent attributes of the given light.
+     */
+    private static void printLight (Light light) {
+	System.err.println("light = " + light);
+	System.err.println("type = " + light.getType());
+	System.err.println("lightMask = " + Integer.toHexString(light.getLightMask()));
+	System.err.println("ambient = " + light.getAmbient());
+	System.err.println("diffuse = " + light.getDiffuse());
+	System.err.println("specular = " + light.getSpecular());
+	System.err.println("constantAtten " + light.getConstant());
+	System.err.println("linearAtten " + light.getLinear());
+	System.err.println("quadraticAtten " + light.getQuadratic());
+    }
+
+    /**
+     * Print the pertinent attributes of the given Z Buffer state.
+     */
+    private static void printZBufferState (ZBufferState zs) {
+	System.err.println("zs = " + zs);
+	if (zs != null) {
+	    System.err.println("type = " + zs.getType());
+	    System.err.println("isWritable = " + zs.isWritable());
+	    System.err.println("func = " + zs.getFunction());
+	}
+    }
+
+    /**
      * Print the pertinent attributes of the given render state.
      */
     public static void printRenderState (RenderState rs) {
@@ -144,6 +201,10 @@ public class GraphicsUtils {
 
 	if        (rs instanceof MaterialState) {
 	    printMaterialState((MaterialState)rs);
+	} else if (rs instanceof LightState) {
+	    printLightState((LightState)rs);
+	} else if (rs instanceof ZBufferState) {
+	    printZBufferState((ZBufferState)rs);
 	} else if (rs instanceof TextureState) {
 	    printTextureState((TextureState)rs);
 	} else {
@@ -308,5 +369,99 @@ public class GraphicsUtils {
 	    System.err.print(indices.get(i) + " ");
 	}
 	System.err.println();
+    }
+
+    /**
+     * Print the contents of the given node.
+     */
+    public static void printNode (Node node) {
+	System.err.println("node = " + node);
+	if (node == null) return;
+
+	System.err.println("Spatial attributes of this node = ");
+	printSpatial(node);
+
+	System.err.println("Node render states = ");
+	printCommonRenderStates(node);
+
+	List<Spatial> children = node.getChildren();
+	if (children == null || children.size() <= 0) return;
+	for (Spatial child : children) {
+	    System.err.println("Child spatial " + node.getChildIndex(child) + ": ");
+	    printSpatial(child);
+	}
+    }
+
+    /**
+     * Print render states that are commonly of interest.
+     */
+    public static void printCommonRenderStates (Spatial spatial) {
+
+	System.err.println("Material State =");
+	MaterialState ms = (MaterialState) spatial.getRenderState(RenderState.RS_MATERIAL);
+	if (ms == null) {
+	    System.err.println("null");
+	} else {
+	    GraphicsUtils.printRenderState(ms);
+	} 
+
+	System.err.println("Light State =");
+	LightState ls = (LightState) spatial.getRenderState(RenderState.RS_LIGHT);
+	if (ls == null) {
+	    System.err.println("null");
+	} else {
+	    GraphicsUtils.printRenderState(ls);
+	}
+
+	System.err.println("Z Buffer State =");
+	ZBufferState zs = (ZBufferState) spatial.getRenderState(RenderState.RS_ZBUFFER);
+	if (zs == null) {
+	    System.err.println("null");
+	} else {
+	    GraphicsUtils.printRenderState(zs);
+	}
+
+	System.err.println("Texture State =");
+	TextureState ts = (TextureState) spatial.getRenderState(RenderState.RS_TEXTURE);
+	if (ts == null) {
+	    System.err.println("null");
+	} else {
+	    GraphicsUtils.printRenderState(ts);
+	}
+    }
+
+    /**
+     * Print the contents of the given spatial.
+     */
+    public static void printSpatial (Spatial spatial) {
+	System.err.println("spatial = " + spatial);
+	if (spatial == null) return;
+	if (spatial instanceof TriMesh) {
+	    printGeometry((TriMesh)spatial, true);
+	} else {
+	    System.err.println("name = " + spatial.getName());
+	    System.err.println("parent = " + spatial.getParent());
+	    System.err.println("localRotation = " + spatial.getLocalRotation());
+	    System.err.println("localScale = " + spatial.getLocalScale());
+	    System.err.println("localTranslation = " + spatial.getLocalTranslation());
+	    System.err.println("worldRotation = " + spatial.getWorldRotation());
+	    System.err.println("worldScale = " + spatial.getWorldScale());
+	    System.err.println("worldTranslation = " + spatial.getWorldTranslation());
+	    System.err.println("cullHint = " + spatial.getCullHint());
+	    System.err.println("lightCombineMode = " + spatial.getLightCombineMode());
+	    System.err.println("localCullHint = " + spatial.getLocalCullHint());
+	    System.err.println("localLightCombineMode = " + spatial.getLocalLightCombineMode());
+	    System.err.println("localNormalsMode = " + spatial.getLocalNormalsMode());
+	    System.err.println("localRenderQueueMode = " + spatial.getLocalRenderQueueMode());
+	    System.err.println("localTextureCombineMode = " + spatial.getLocalTextureCombineMode());
+	    System.err.println("textureCombineMode = " + spatial.getTextureCombineMode());
+	    System.err.println("normalsMode = " + spatial.getNormalsMode());
+	    System.err.println("renderQueueMode = " + spatial.getRenderQueueMode());
+	    System.err.println("worldBound = " + spatial.getWorldBound());
+	    System.err.println("zOrder = " + spatial.getZOrder());
+	}
+
+	System.err.println("Spatial render states = ");
+	printCommonRenderStates(spatial);
     }
 }

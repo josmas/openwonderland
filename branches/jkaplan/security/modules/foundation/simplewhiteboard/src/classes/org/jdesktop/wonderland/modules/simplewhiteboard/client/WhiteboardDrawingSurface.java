@@ -96,15 +96,12 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
     }
     
     public void penMove(Point loc) {
-        renderCursor();
         penX = loc.x;
         penY = loc.y;
-        renderCursor();
     }
     
     public void penDrag(Point loc) {
         Graphics2D g = getGraphics();
-        renderCursor();
         setClip(g, true);
         g.setColor(selectedColor);
         g.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -112,7 +109,6 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
         penX = loc.x;
         penY = loc.y;
         setClip(g, false);
-        renderCursor();
     }
     
     public void penSelect(Point loc) {

@@ -138,7 +138,6 @@ public abstract class AppCell extends Cell {
      */
     @InternalAPI
     public void attachView (WindowView view, RendererType rendererType) {
-        CellRenderer renderer = null;
         switch(rendererType) {
 	case RENDERER_JME :
 	    ((AppCellRenderer)getCellRenderer(rendererType)).attachView(view);
@@ -155,10 +154,25 @@ public abstract class AppCell extends Cell {
      */
     @InternalAPI
     public void detachView (WindowView view, RendererType rendererType) {
-        CellRenderer renderer = null;
         switch(rendererType) {
 	case RENDERER_JME :
 	    ((AppCellRenderer)getCellRenderer(rendererType)).detachView(view);
+	    break;                
+	default:
+	    throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+        }
+    }
+
+    /**
+     * Log this cell's scene graph.
+     * <br>
+     * FOR DEBUG. INTERNAL ONLY.
+     */
+    @InternalAPI
+    public void logSceneGraph (RendererType rendererType) {
+        switch(rendererType) {
+	case RENDERER_JME :
+	    ((AppCellRenderer)getCellRenderer(rendererType)).logSceneGraph();
 	    break;                
 	default:
 	    throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
