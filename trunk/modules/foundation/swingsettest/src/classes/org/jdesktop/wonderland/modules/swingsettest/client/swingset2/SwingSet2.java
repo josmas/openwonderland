@@ -961,8 +961,7 @@ public class SwingSet2 extends JPanel {
     public ResourceBundle getResourceBundle() {
 	if(bundle == null) {
 	    //bundle = ResourceBundle.getBundle("resources.swingset");
-	    bundle = ResourceBundle.getBundle("org.jdesktop.lg3d.wonderland.whiteboard.client.cell.swingset2.resources.swingset");
-
+	    bundle = ResourceBundle.getBundle("org.jdesktop.wonderland.modules.swingsettest.client.swingset2.resources.swingset");
 	}
 	return bundle;
     }
@@ -979,9 +978,9 @@ public class SwingSet2 extends JPanel {
      * Creates an icon from an image contained in the "images" directory.
      */
     public ImageIcon createImageIcon(String filename, String description) {
-	String fileName = "/home/dj/wl/cvs/swing/lg3d-wonderland/modules/whiteboard/src/classes/org/jdesktop/lg3d/wonderland/whiteboard/client/cell/swingset2/resources/images/" + filename;
-	System.err.println("ImageIcon fileName = " + fileName);
-	return new ImageIcon(fileName);
+	//String path = "/resources/images/" + filename;
+	String path = "/org/jdesktop/wonderland/modules/swingsettest/client/swingset2/resources/images/" + filename;
+	return new ImageIcon(getClass().getResource(path)); 
     }
 
     /**
