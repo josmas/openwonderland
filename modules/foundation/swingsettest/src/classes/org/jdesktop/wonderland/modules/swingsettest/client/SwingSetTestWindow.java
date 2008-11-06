@@ -24,6 +24,8 @@ import com.jme.math.Vector2f;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import java.awt.GraphicsEnvironment;
+import org.jdesktop.wonderland.modules.swingsettest.client.swingset2.SwingSet2;
 
 /**
  *
@@ -56,10 +58,14 @@ public class SwingSetTestWindow extends WindowSwing  {
 
 	setTitle("SwingSet2 Test");
 	
-	SwingSet2Panel panel = new SwingSet2Panel();
+	SwingSet2 swingset = new SwingSet2(null, GraphicsEnvironment.
+                                             getLocalGraphicsEnvironment().
+                                             getDefaultScreenDevice().
+                                             getDefaultConfiguration());
+
 	// Note: this seems to only be required for the swing set, but do it here for safety
 	// TODO: test without
-       	JmeClientMain.getFrame().getCanvas3DPanel().add(panel);
-	setComponent(panel);
+       	JmeClientMain.getFrame().getCanvas3DPanel().add(swingset);
+	setComponent(swingset);
     }
 }
