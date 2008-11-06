@@ -22,6 +22,8 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.GraphicsEnvironment;
+import org.jdesktop.wonderland.modules.swingsettest.client.swingset2.SwingSet2;
 
 /**
  * A standalone program for the SwingSet2Panel (outside of Wonderland).
@@ -44,7 +46,10 @@ public class TestSwingSet2Panel extends JFrame {
     class Frame extends JFrame {
 
         JPanel contentPane;
-        JPanel panel = new SwingSet2Panel();
+	SwingSet2 swingset = new SwingSet2(null, GraphicsEnvironment.
+                                             getLocalGraphicsEnvironment().
+                                             getDefaultScreenDevice().
+                                             getDefaultConfiguration());
 
         // Construct the frame
         public Frame () {
@@ -59,7 +64,7 @@ public class TestSwingSet2Panel extends JFrame {
             contentPane.setLayout(new BorderLayout());
             setTitle("TestSwingSet2Panel");
 
-            contentPane.add(panel, BorderLayout.NORTH);
+            contentPane.add(swingset, BorderLayout.NORTH);
 
             pack();
         }
