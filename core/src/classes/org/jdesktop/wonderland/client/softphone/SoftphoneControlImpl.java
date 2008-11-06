@@ -56,6 +56,8 @@ public class SoftphoneControlImpl {
 
     private boolean isTooLoud;
 
+    private String callID;
+
     private static SoftphoneControlImpl softphoneControlImpl;
 
     private SoftphoneControlImpl() {
@@ -101,7 +103,7 @@ public class SoftphoneControlImpl {
 
 	        register(registrar);
 	    } else {
-		logger.info(
+		logger.fine(
 		    "startSoftphone:  new registrar same as previous "
 		    + " registrar");
 	    }
@@ -179,7 +181,7 @@ public class SoftphoneControlImpl {
 	    }
 
 	    if (softphoneAddress == null) {
-                logger.warning("Softphone not starting.  Abandoning!");
+                logger.warning("Softphone failed to start!");
 	    }
 	}
 
@@ -347,6 +349,14 @@ public class SoftphoneControlImpl {
 	}
     }
     
+    public void setCallID(String callID) {
+	this.callID = callID;
+    }
+
+    public String getCallID() {
+	return callID;
+    }
+
     public void register(String registrarAddress) {
 	sendCommandToSoftphone("ReRegister=" + registrarAddress);
     }
