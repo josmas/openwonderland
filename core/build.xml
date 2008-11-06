@@ -64,7 +64,7 @@
 	    <!-- TODO: suspend=y doesn't work on linux: it doesn't stop at bkpts after attach -->
 	    <!--
             <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
             -->
 	    <!--end debug-->
             
