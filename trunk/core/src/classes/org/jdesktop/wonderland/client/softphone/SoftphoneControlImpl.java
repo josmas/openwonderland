@@ -489,7 +489,7 @@ public class SoftphoneControlImpl {
         }
     }
 
-    private boolean quiet = true;
+    private boolean quiet = false;
 
     private void lineReceived(ProcOutputListener source, String line) {
         if (source == stdErrListener) {
