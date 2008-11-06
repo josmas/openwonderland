@@ -92,22 +92,17 @@ public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
     }// </editor-fold>//GEN-END:initComponents
 
     private void mainCellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainCellViewerMIActionPerformed
-}
-
-private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {
-    if (cellViewerFrame==null) {
-        cellViewerFrame = new CellViewerFrame();
-    }
-    cellViewerFrame.setVisible(true);
-
+        if (cellViewerFrame==null) {
+            cellViewerFrame = new CellViewerFrame();
+        }
+        cellViewerFrame.setVisible(true);
     }//GEN-LAST:event_mainCellViewerMIActionPerformed
 
     private void mainModelmportersMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainModelmportersMIActionPerformed
-    if (importSessionFrame==null) {
-            importSessionFrame = new ImportSessionFrame();
-    }
-    importSessionFrame.setVisible(true);
-
+        if (importSessionFrame==null) {
+                importSessionFrame = new ImportSessionFrame();
+        }
+        importSessionFrame.setVisible(true);
     }//GEN-LAST:event_mainModelmportersMIActionPerformed
 
     private void createSrcModuleMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createSrcModuleMIActionPerformed
