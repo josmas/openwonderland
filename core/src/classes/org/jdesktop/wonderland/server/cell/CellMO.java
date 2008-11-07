@@ -370,11 +370,16 @@ public abstract class CellMO implements ManagedObject, Serializable {
             UniverseManager.getUniverseManager().createCell(this);
             System.err.println("CREATING SPATIAL CELL "+getCellID().toString()+" "+this.getClass().getName());
             
+            if (transformChangeListeners!=null)
+                for(TransformChangeListenerSrv listener : transformChangeListeners)
+                    UniverseManager.getUniverseManager().addTransformChangeListener(this, listener);
+
             if (parentRef!=null)
                 UniverseManager.getUniverseManager().addChild(parentRef.getForUpdate(), this);
 
-        } else
+        } else {
             UniverseManager.getUniverseManager().removeCell(this);
+        }
 
 
         // Notify all components of new live state
@@ -581,6 +586,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (transformChangeListeners==null)
             transformChangeListeners = new HashSet();
         transformChangeListeners.add(listener);
+
+        if (isLive())
+            UniverseManager.getUniverseManager().addTransformChangeListener(this, listener);
+
     }
     
     /**
@@ -589,27 +598,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     public void removeTransformChangeListener(TransformChangeListenerSrv listener) {
         transformChangeListeners.remove(listener);
+        if (isLive())
+            UniverseManager.getUniverseManager().removeTransformChangeListener(this, listener);
     }
     
-    private void notifyTransformChangeListeners() {
-        if (transformChangeListeners==null)
-            return;
-        
-        // Dispatch listener notifications in new tasks
-        ManagedReference<CellMO> thisRef = AppContext.getDataManager().createReference(this);
-        CellTransform newLocal = (CellTransform) localTransform.clone(null);
-        CellTransform newL2VW = (CellTransform) worldTransform.clone(null);
-        
-        for(TransformChangeListenerSrv listenerRef : transformChangeListeners) {
-            if (listenerRef instanceof ManagedReference) {
-                ((ManagedReference<TransformChangeListenerSrv>)listenerRef).get().transformChanged(thisRef, newLocal, newL2VW);
-            } else {
-                listenerRef.transformChanged(thisRef, newLocal, newL2VW);
-            }
-                
-        }
-    }
-    
-
 }
 

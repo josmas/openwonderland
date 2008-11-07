@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.spatial;
 import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 /**
@@ -30,6 +31,8 @@ public interface UniverseServiceManager {
 
     public void addChild(CellMO parent, CellMO child);
 
+    public void addTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener);
+
     public void createCell(CellMO cellMO);
 
     public void removeCell(CellMO cellMO);
@@ -39,6 +42,8 @@ public interface UniverseServiceManager {
     public  void addRootToUniverse(CellMO rootCellMO);
 
     public void removeRootFromUniverse(CellMO rootCellMO);
+
+    public void removeTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener);
 
     public void setLocalTransform(CellMO cell, CellTransform localCellTransform);
 

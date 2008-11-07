@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.spatial;
 
 import java.util.logging.Level;
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.spatial.impl.SpatialCell;
 import org.jdesktop.wonderland.server.spatial.impl.Universe;
 import com.jme.bounding.BoundingVolume;
@@ -123,17 +124,19 @@ public class UniverseService implements UniverseServiceManager, Service {
     }
 
     public void addRootToUniverse(CellMO rootCellMO) {
+        final Identity identity = proxy.getCurrentOwner();
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
-                universe.addRootSpatialCell(cellID);
+                universe.addRootSpatialCell(cellID, identity);
             }
         });
     }
 
     public void removeRootFromUniverse(CellMO rootCellMO) {
+        final Identity identity = proxy.getCurrentOwner();
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
-                universe.removeRootSpatialCell(cellID);
+                universe.removeRootSpatialCell(cellID, identity);
             }
         });
     }
@@ -146,7 +149,7 @@ public class UniverseService implements UniverseServiceManager, Service {
             public void run() {
                 SpatialCell sc = universe.createSpatialCell(cellID, cellCacheId, identity);
                 sc.setLocalBounds(localBounds);
-                sc.setLocalTransform(localTransform);
+                sc.setLocalTransform(localTransform, identity);
             }
         });
 
@@ -162,10 +165,11 @@ public class UniverseService implements UniverseServiceManager, Service {
     }
 
     public void addChild(CellMO parent, CellMO child) {
+        final Identity identity = proxy.getCurrentOwner();
         scheduleChange(new Change(parent.getCellID(), child.getCellID()) {
             public void run() {
                 SpatialCell parent = universe.getSpatialCell(cellID);
-                parent.addChild(universe.getSpatialCell(childCellID));
+                parent.addChild(universe.getSpatialCell(childCellID), identity);
             }
         });
 
@@ -181,10 +185,11 @@ public class UniverseService implements UniverseServiceManager, Service {
     }
 
     public void setLocalTransform(CellMO cellMO, CellTransform localTransform) {
+        final Identity identity = proxy.getCurrentOwner();
         scheduleChange(new Change(cellMO.getCellID(), null, localTransform) {
             public void run() {
                 SpatialCell sc = universe.getSpatialCell(cellID);
-                sc.setLocalTransform(localTransform);
+                sc.setLocalTransform(localTransform, identity);
             }
         });
     }
@@ -231,6 +236,22 @@ public class UniverseService implements UniverseServiceManager, Service {
         spatial.releaseRootReadLock();
 
         return ret;
+    }
+
+    public void addTransformChangeListener(CellMO cell, final TransformChangeListenerSrv listener) {
+        scheduleChange(new Change(cell.getCellID(), null, null) {
+            public void run() {
+                universe.addTransformChangeListener(cellID, listener);
+            }
+        });
+    }
+
+    public void removeTransformChangeListener(CellMO cell, final TransformChangeListenerSrv listener) {
+        scheduleChange(new Change(cell.getCellID(), null, null) {
+            public void run() {
+                universe.removeTransformChangeListener(cellID, listener);
+            }
+        });
     }
 
     /**
