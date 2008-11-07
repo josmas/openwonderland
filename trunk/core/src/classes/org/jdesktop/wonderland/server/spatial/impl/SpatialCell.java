@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.server.spatial.impl;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Matrix4f;
+import com.sun.sgs.auth.Identity;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -62,13 +63,13 @@ public interface SpatialCell {
      *
      * @param transform the transform to set
      */
-    public void setLocalTransform(CellTransform transform);
+    public void setLocalTransform(CellTransform transform, Identity identity);
 
     /**
      * Add the supplied object as a child of this.
      * @param child
      */
-    public void addChild(SpatialCell child);
+    public void addChild(SpatialCell child, Identity identity);
 
     /**
      * Get the set of children for this SpatialCell

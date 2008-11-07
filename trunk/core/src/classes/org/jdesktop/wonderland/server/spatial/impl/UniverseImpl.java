@@ -25,9 +25,11 @@ import com.sun.sgs.kernel.TransactionScheduler;
 import com.sun.sgs.service.DataService;
 import com.sun.sgs.service.TransactionProxy;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 
 /**
  *
@@ -36,7 +38,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 public class UniverseImpl implements Universe {
 
     private SpaceManager spaceManager = new SpaceManagerGridImpl();
-    private HashMap<CellID, SpatialCell> cells = new HashMap();
+    private HashMap<CellID, SpatialCellImpl> cells = new HashMap();
     private TaskScheduler taskScheduler;
     private static UniverseImpl universe;
     private TransactionProxy transactionProxy;
@@ -73,10 +75,10 @@ public class UniverseImpl implements Universe {
         transactionScheduler.scheduleTask(transaction, identity);
     }
 
-    public void addRootSpatialCell(CellID cellID) {
+    public void addRootSpatialCell(CellID cellID, Identity identity) {
         SpatialCellImpl cellImpl = (SpatialCellImpl)getSpatialCell(cellID);
         
-        cellImpl.setRoot(cellImpl);
+        cellImpl.setRoot(cellImpl, identity);
         
         cellImpl.acquireRootReadLock();
         System.out.println("Getting spaces for "+cellImpl.getWorldBounds());
@@ -88,7 +90,7 @@ public class UniverseImpl implements Universe {
         cellImpl.releaseRootReadLock();
     }
 
-    public void removeRootSpatialCell(CellID cellID) {
+    public void removeRootSpatialCell(CellID cellID, Identity identity) {
         logger.fine("removeSpatialCell "+cellID);
         SpatialCellImpl cellImpl = (SpatialCellImpl)getSpatialCell(cellID);
 
@@ -97,7 +99,7 @@ public class UniverseImpl implements Universe {
             return;
         }
 
-        cellImpl.setRoot(null);
+        cellImpl.setRoot(null, identity);
 
         cellImpl.acquireRootReadLock();
 //        System.out.println("Getting spaces for "+cell.getWorldBounds());
@@ -111,7 +113,7 @@ public class UniverseImpl implements Universe {
 
     public SpatialCell createSpatialCell(CellID id, BigInteger cellCacheId, Identity identity) {
         logger.fine("createSpatialCell "+id);
-        SpatialCell ret;
+        SpatialCellImpl ret;
         if (cellCacheId!=null) {
             ret = new ViewCellImpl(id, spaceManager, identity, cellCacheId);
         } else
@@ -162,5 +164,21 @@ public class UniverseImpl implements Universe {
         }
         viewCell.getViewCache().logout();
     }
+
+    public void addTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener) {
+        synchronized(cells) {
+            SpatialCellImpl cell = cells.get(cellID);
+            cell.addTransformChangeListener(listener);
+        }
+    }
+
+    public void removeTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener) {
+        synchronized(cells) {
+            SpatialCellImpl cell = cells.get(cellID);
+            cell.removeTransformChangeListener(listener);
+        }
+    }
+
+
 
 }

@@ -143,7 +143,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         
         // set up the revalidate scheduler
         scheduler = new ImmediateRevalidateScheduler(sender, session);
-        
+
     }
     
     /**
