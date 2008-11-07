@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<!-- ===================================================================== -->
+<!--                                                                       -->
+<!--  Log4j Configuration                                                  -->
+<!--                                                                       -->
+<!-- ===================================================================== -->
+
+<!-- $Id: log4j.xml,v 1.7 2007/06/16 18:19:59 frusso Exp $ -->
+
+<!--
+   | For more configuration infromation and examples see the Jakarta Log4j
+   | owebsite: http://jakarta.apache.org/log4j
+ -->
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="true">
+
+   <!--================================-->
+   <!-- Appenders -->
+   <!--================================-->
+   <!-- Appender for console stdout -->
+   <appender name="jtr.appender.console" class="org.apache.log4j.ConsoleAppender">
+     <param name="Target" value="System.out"/>
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %C %M %L - Log Message: %m%n"/>
+     </layout>
+   </appender>
+
+   <!-- Appenders for log file -->
+   <appender name="jtr.appender.file" class="org.apache.log4j.FileAppender">
+     <param name="Append" value="true"/>
+     <param name="File" value="log/jtr.log"/>
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
+     </layout>
+   </appender>
+
+   <appender name="jtr.appender.dailyFile" class="org.apache.log4j.DailyRollingFileAppender">
+     <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+     <param name="Append" value="true"/>
+     <param name="File" value="log/jtr-rolling.log"/>
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
+     </layout>
+   </appender>
+   
+   <appender name="jtr.remote.cl.appender.dailyFile" class="org.apache.log4j.DailyRollingFileAppender">
+     <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+     <param name="Append" value="true"/>
+     <param name="File" value="log/jtr.remote.cl-rolling.log"/>
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
+     </layout>
+   </appender>
+
+   <!-- ======================= -->
+   <!-- Logger definitions      -->
+   <!-- ======================= -->
+
+   <logger name="jtr" additivity="false">
+     <level value="WARN"/>
+     <appender-ref ref="jtr.appender.dailyFile"/>
+   </logger>
+
+   <logger name="jtr.remote.cl" additivity="false">
+     <level value="WARN"/>
+     <appender-ref ref="jtr.remote.cl.appender.dailyFile"/>
+   </logger>
+   
+   <root>
+     <level value="OFF"/>
+     <appender-ref ref="jtr.appender.dailyFile"/>
+   </root>
+
+</log4j:configuration>
