@@ -21,7 +21,8 @@ import com.jme.bounding.BoundingBox;
 import com.jme.light.PointLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import com.jme.scene.Geometry;
+import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
@@ -100,7 +101,6 @@ public class FrameRect extends FrameComponent {
      * {@inheritDoc}
      */
     public void update () throws InstantiationException {
-	System.err.println("########### FrameRect.update");
 	updateLayout();
 
 	if (quad == null) {
@@ -110,7 +110,8 @@ public class FrameRect extends FrameComponent {
 	    quad.resize(width, height);
 	}
 	quad.updateModelBound();
-	
+	localToCellNode.attachChild(quad);
+
 	super.update();
     }
 
@@ -188,7 +189,6 @@ public class FrameRect extends FrameComponent {
      * @param height The new height.
      */
     public void resize (float width, float height) throws InstantiationException {
-	System.err.println("########### FrameRect.size");
 	this.width = width;
 	this.height = height;
 	update();
@@ -205,8 +205,8 @@ public class FrameRect extends FrameComponent {
      * {@inheritDoc}
      */
     @Override
-    protected Geometry[] getGeometries () {
-	return new Quad[] { quad };
+    protected Spatial[] getSpatials () {
+	return new Node[] { localToCellNode };
     }
 }
 

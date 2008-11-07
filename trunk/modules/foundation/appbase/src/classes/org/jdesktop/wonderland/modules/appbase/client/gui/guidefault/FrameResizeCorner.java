@@ -17,10 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
-import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import com.jme.scene.Geometry;
+import com.jme.scene.Spatial;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -220,20 +219,19 @@ public class FrameResizeCorner extends FrameComponent {
      * {@inheritDoc}
      */
     @Override
-    protected Geometry[] getGeometries () {
+    protected Spatial[] getSpatials () {
 
 	if (horizBar == null) {
 	    horizBar = new FrameRect("HorizontalBar", view, gui, horizWidthWorld, horizHeightWorld);
 	}
-	Geometry horizGeom = horizBar.getGeometries()[0];
+	Spatial horizSpatial = horizBar.getSpatials()[0];
 
 	if (vertBar == null) {
 	    vertBar = new FrameRect("Vertical Bar", view, gui, vertWidthWorld, vertHeightWorld);
 	}
-	Geometry vertGeom = vertBar.getGeometries()[0];
+	Spatial vertSpatial = vertBar.getSpatials()[0];
 
-	// Rude hack: We use the geometry from this textured rect, but not its transform nodes
-	return new Geometry[] { horizGeom, vertGeom };
+	return new Spatial[] { horizSpatial, vertSpatial };
     }
 }
 

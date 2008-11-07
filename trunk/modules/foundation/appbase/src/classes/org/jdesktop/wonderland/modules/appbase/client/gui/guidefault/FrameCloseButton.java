@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 import com.jme.image.Texture;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import com.jme.scene.Geometry;
+import com.jme.scene.Spatial;
 import com.jme.util.TextureManager;
 import java.net.URL;
 import java.util.LinkedList;
@@ -216,13 +216,11 @@ public class FrameCloseButton extends FrameComponent {
      * {@inheritDoc}
      */
     @Override
-    protected Geometry[] getGeometries () {
+    protected Spatial[] getSpatials () {
 	if (rect == null) {
 	    rect = new FrameTexRect(view, gui, texture, CLOSE_BUTTON_WIDTH, CLOSE_BUTTON_HEIGHT);
 	} 
-
-	// Rude hack: We use the geometry from this textured rect, but not its transform nodes
-	return rect.getGeometries();
+	return rect.getSpatials();
     }
 }
 
