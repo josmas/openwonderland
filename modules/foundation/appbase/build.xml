@@ -8,10 +8,6 @@
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.appbase"/>
     <property name="module.jarname" value="appbase"/>
     
-    <pathconvert property="module-client.classpath">
-      <path location="${current.dir}/lib/Scenario.jar"/>
-    </pathconvert>
-
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
@@ -25,10 +21,6 @@
                 builddir="${build.dir}">
         
             <client dir="${current.dir}/lib">
-                <!--TODO: use the latest version of scenario in core common 
-	        <include name="Scenario.jar"/>
-                -->
-
                 <clientjar name="appbase-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
