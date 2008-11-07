@@ -77,7 +77,6 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
 
         avatar.detach();    // Detach avatar from world
         avatar.getCellCache().logout(session);
-        WonderlandContext.getCellManager().removeCellFromWorld(avatar);
     }
     
     public void messageReceived(WonderlandClientSender sender,
@@ -130,16 +129,6 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
             avatar = new AvatarCellMO(user);
             viewID = msg.getViewID();
             user.putAvatar(session, viewID, avatar);
-        }
-
-        try {
-            // HACK !
-            if (!avatar.isLive())
-                WonderlandContext.getCellManager().insertCellInWorld(avatar);
-
-        } catch (MultipleParentException ex) {
-            // the isLive check means we should never get here
-            logger.log(Level.SEVERE, "Failed to attach avatar, it's already attached", ex);
         }
         
         avatar.getCellCache().login(sender, session);

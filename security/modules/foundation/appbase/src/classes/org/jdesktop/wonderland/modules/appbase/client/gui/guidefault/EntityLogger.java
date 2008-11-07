@@ -75,7 +75,6 @@ public class EntityLogger {
     }
 
     private static void appendSceneGraph (StringBuffer sb, int indentLevel, Node node) {
-	System.err.println("*************** appendSceneGraph");
 	if (node == null) return;
 	appendLine(sb, indentLevel, node.toString());
 	
