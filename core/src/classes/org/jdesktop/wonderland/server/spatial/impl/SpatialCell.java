@@ -88,4 +88,9 @@ public interface SpatialCell {
      * @param attr the attr state
      */
     public void setAttribute(Object attr);
+
+    /**
+     * Destroy this cell, removing it from all the view caches
+     */
+    public void destroy();
 }

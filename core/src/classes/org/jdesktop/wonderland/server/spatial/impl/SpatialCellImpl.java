@@ -309,6 +309,21 @@ public class SpatialCellImpl implements SpatialCell {
         }
     }
 
+    public void destroy() {
+        acquireRootWriteLock();
+
+        SpatialCellImpl root = (SpatialCellImpl) getRoot();
+        if (root==null)
+            return;
+
+        Iterable<ViewCache> caches = root.viewCache.keySet();
+        for(ViewCache cache : caches) {
+            cache.cellDestroyed(this);
+        }
+
+        releaseRootWriteLock();
+    }
+
     public interface WorldBoundsChangeListener {
         public void worldBoundsChanged(SpatialCellImpl cell);
     }

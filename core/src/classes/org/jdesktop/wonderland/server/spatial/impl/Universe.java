@@ -32,13 +32,13 @@ public interface Universe {
      * Add a SpatialCell (and all it's children) to the universe
      * @param cell
      */
-    public void addRootSpatialCell(SpatialCell cell);
+    public void addRootSpatialCell(CellID cellID);
 
     /**
      * Remove the root cell (and all it's children)
      * @param cell
      */
-    public void removeRootSpatialCell(SpatialCell cell);
+    public void removeRootSpatialCell(CellID cellID);
 
     /**
      * Create a Spatial cell
@@ -49,6 +49,7 @@ public interface Universe {
      */
     public SpatialCell createSpatialCell(CellID id, BigInteger cellCacheId, Identity identity);
 
+    public void removeCell(CellID id);
 
     public SpatialCell getSpatialCell(CellID cellID);
 
