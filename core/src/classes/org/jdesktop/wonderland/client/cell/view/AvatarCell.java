@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.client.cell.view;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailable;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -44,7 +47,12 @@ public class AvatarCell extends ViewCell {
                 break;
             case RENDERER_JME :
                 if (ViewManager.getViewManager().useAvatars) {
-                    ret= new AvatarImiJME(this);
+                    try {
+                        ret = ClientContextJME.getAvatarRenderManager().createRenderer("org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME", this);
+                    } catch (RendererUnavailable ex) {
+                        Logger.getLogger(AvatarCell.class.getName()).log(Level.SEVERE, null, ex);
+                        ret = new AvatarJME(this);
+                    }
                 } else {
                     ret = new AvatarJME(this);
                 }
