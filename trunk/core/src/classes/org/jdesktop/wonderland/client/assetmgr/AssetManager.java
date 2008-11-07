@@ -735,7 +735,7 @@ public class AssetManager {
                 if (this.server == false) {
                     /* If we can load the asset, then all is well and return */
                     if (getAssetFromCache(this.asset) == true) {
-                        logger.warning("[ASSET] CALL Loaded asset from local cache, uri=" + uri);
+                        logger.config("[ASSET] CALL Loaded asset from local cache, uri=" + uri);
                         this.asset.setFailureInfo(null);
                         this.asset.notifyAssetReadyListeners();
                         return this.asset;
