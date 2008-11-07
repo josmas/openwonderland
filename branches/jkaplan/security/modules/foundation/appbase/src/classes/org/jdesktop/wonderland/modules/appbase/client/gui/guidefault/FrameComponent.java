@@ -17,20 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
-import com.jme.light.PointLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import com.jme.scene.Geometry;
 import com.jme.scene.Node;
-import com.jme.scene.state.RenderState;
+import com.jme.scene.Spatial;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * The generic superclass of window frame components.
@@ -137,7 +133,7 @@ public abstract class FrameComponent {
     /**
      * Construct this component's scene graph. This consists of the following nodes.
      *
-     * parentEntity attachPoint -> localToCellNode -> Geometry (subclass provided)
+     * parentEntity attachPoint -> localToCellNode -> Spatial, Spatial, etc. (subclass provided)
      */
     protected void initSceneGraph () {
 	
@@ -147,13 +143,11 @@ public abstract class FrameComponent {
 	    createRenderComponent(localToCellNode);
 	entity.addComponent(RenderComponent.class, rc);
 	rc.setEntity(entity);
-	System.err.println("initSceneGraph: rc = " + rc);
-	System.err.println("entity = " + getEntity());
 
-	// Attach the subclass geometries to the localToCell node
-	Geometry[] geoms = getGeometries();
-	for (Geometry geom : geoms) {
-	    localToCellNode.attachChild(geom);
+	// Attach the subclass spatials to the localToCell node
+	Spatial[] spatials = getSpatials();
+	for (Spatial spatial : spatials) {
+	    localToCellNode.attachChild(spatial);
 	}
     }
 
@@ -163,14 +157,14 @@ public abstract class FrameComponent {
     protected void cleanupSceneGraph () {
 	entity.removeComponent(RenderComponent.class);
 	localToCellNode = null;
-	// Note: the subclasses cleanup routine is responsible for cleaning up the geometries.
+	// Note: the subclasses cleanup routine is responsible for cleaning up the spatials.
     }
 
     /**
-     * Returns a list of this component's geometry spatials. Non-container subclasses should
-     * override this to return actual geometries.
+     * Returns a list of this component's spatials. Non-container subclasses should
+     * override this to return actual spatials
      */
-    protected Geometry[] getGeometries () {
+    protected Spatial[] getSpatials () {
 	return null;
     }
 
@@ -183,12 +177,6 @@ public abstract class FrameComponent {
 	    RenderComponent rcParentEntity = 
 		(RenderComponent) parentEntity.getComponent(RenderComponent.class);
 	    RenderComponent rcEntity = (RenderComponent)entity.getComponent(RenderComponent.class);
-	    System.err.println("rcEntity = " + rcEntity);
-	    System.err.println("rcEntity.getEntity() = " + rcEntity.getEntity());
-
-	    // TODO: hack
-	    ClientContextJME.getWorldManager().addEntity(rcEntity.getEntity());
-
 	    if (rcParentEntity != null && rcParentEntity.getSceneRoot() != null && rcEntity != null) {
 		rcEntity.setAttachPoint(rcParentEntity.getSceneRoot());
 	    }
@@ -218,9 +206,6 @@ public abstract class FrameComponent {
 	}
 	this.parentEntity = parentEntity;
 	if (this.parentEntity != null) {
-	    System.err.println("Attach to parentEntity");
-	    System.err.println("this = " + this);
-	    System.err.println("parentEntity = " + parentEntity);
 	    attachToParentEntity();
 	}
     }

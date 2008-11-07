@@ -29,7 +29,6 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2DFrame;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A simple implementation of Window2DFrame that uses 3D rendering.
@@ -157,11 +156,26 @@ public class FrameWorldDefault extends Window2DFrame {
 	Entity prevParentEntity = entity.getParent();
 	if (prevParentEntity != null) {
 	    prevParentEntity.removeEntity(entity);
+	    RenderComponent rcEntity = (RenderComponent)entity.getComponent(RenderComponent.class);
+	    if (rcEntity != null) {
+		rcEntity.setAttachPoint(null);
+	    }
 	}
 	
 	// Attach to new parent entity
 	if (parentEntity != null) {
 	    parentEntity.addEntity(entity);
+
+	    RenderComponent rcParentEntity = 
+		(RenderComponent) parentEntity.getComponent(RenderComponent.class);
+	    RenderComponent rcEntity = (RenderComponent)entity.getComponent(RenderComponent.class);
+
+	    // TODO: hack
+	    ClientContextJME.getWorldManager().addEntity(rcEntity.getEntity());
+
+	    if (rcParentEntity != null && rcParentEntity.getSceneRoot() != null && rcEntity != null) {
+		rcEntity.setAttachPoint(rcParentEntity.getSceneRoot());
+	    }
 	}
     }
 

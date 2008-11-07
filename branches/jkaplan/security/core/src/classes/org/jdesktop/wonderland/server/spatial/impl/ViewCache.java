@@ -91,6 +91,7 @@ class ViewCache {
     }
 
     void login() {
+        // Trigger a revalidation
         cellMoved(viewCell, viewCell.getWorldTransform());
     }
 
@@ -116,6 +117,10 @@ class ViewCache {
                 pendingCacheUpdates.add(new CacheUpdate(cell, worldTransform));
             }
         }
+    }
+
+    void cellDestroyed(SpatialCellImpl cell) {
+        Logger.getAnonymousLogger().warning("ViewCache.cellDestroyed not implemented");
     }
 
     /**

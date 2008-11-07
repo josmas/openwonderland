@@ -848,10 +848,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	cell.attachView(this, RendererType.RENDERER_JME);
 	attachEventListeners(getEntity());
 
-	// TODO: try this: SEEMS TO WORK
-	System.err.println("In VWD.attachToCell, cell transform = " + cell.getLocalTransform());
-        applyTransform(baseNode, cell.getLocalTransform());
-
 	// For debug
 	//logger.severe("SCENE GRAPH AT ATTACH TO CELL:");
 	//cell.logSceneGraph(RendererType.RENDERER_JME);
@@ -868,12 +864,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	}
 
 	connectedToCell = true;
-    }
-
-    private static void applyTransform (Spatial node, CellTransform transform) {
-        node.setLocalRotation(transform.getRotation(null));
-        node.setLocalScale(transform.getScaling(null));
-        node.setLocalTranslation(transform.getTranslation(null));
     }
 
     /**
@@ -1018,6 +1008,31 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      */
     Entity getEntity () {
 	return entity;
+    }
+
+    public void setParentEntity (Entity parentEntity) {
+	if (entity == null) return;
+
+	// Detach from previous parent entity
+	Entity prevParentEntity = entity.getParent();
+	if (prevParentEntity != null) {
+	    prevParentEntity.removeEntity(entity);
+	    RenderComponent rcEntity = (RenderComponent)entity.getComponent(RenderComponent.class);
+	    if (rcEntity != null) {
+		rcEntity.setAttachPoint(null);
+	    }
+	}
+	
+	// Attach to new parent entity
+	if (parentEntity != null) {
+	    parentEntity.addEntity(entity);
+	    RenderComponent rcParentEntity = 
+		(RenderComponent) parentEntity.getComponent(RenderComponent.class);
+	    RenderComponent rcEntity = (RenderComponent)entity.getComponent(RenderComponent.class);
+	    if (rcParentEntity != null && rcParentEntity.getSceneRoot() != null && rcEntity != null) {
+		rcEntity.setAttachPoint(rcParentEntity.getSceneRoot());
+	    }
+	}
     }
 }
 

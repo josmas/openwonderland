@@ -99,13 +99,10 @@ public class FrameTexRect extends FrameRect {
     public void update () throws InstantiationException {
 	updateLayout();
 
-	System.err.println("********** Enter update: entity = " + entity);
-
 	if (quad == null) {
 	    quad = new TexturedQuad(texture, "FrameTexRect-Quad", width, height);
 	    quad.setModelBound(new BoundingBox());
 	} else {
-	    System.err.println("******** quad = " + quad);
 	    quad.resize(width, height);
 	}
 	quad.updateModelBound();

@@ -29,6 +29,8 @@ import com.sun.embeddedswing.EmbeddedPeer;
 import java.awt.Point;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.EntityComponent;
@@ -131,8 +133,16 @@ public class WindowSwing extends WindowGraphics2D {
             //FocusHandler.addNotify(this);
         }
 
+	// TODO: NOTYET: component.addMouseListener(new MyEnterListener());
+
 	setSize(size);
         embeddedPeer.repaint();
+    }
+
+    private class MyEnterListener extends MouseAdapter {
+	public void mouseEntered(MouseEvent e) {
+	    component.requestFocus();
+	}
     }
 
     /** Returned the Swing component displayed in this window */

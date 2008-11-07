@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import com.jme.scene.Geometry;
+import com.jme.scene.Spatial;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -221,12 +221,10 @@ public class FrameSide extends FrameComponent {
      * {@inheritDoc}
      */
     @Override
-    protected Geometry[] getGeometries () {
+    protected Spatial[] getSpatials () {
 	if (rect == null) {
 	    rect = new FrameRect(view, gui, width, height);
 	} 
-
-	// Rude hack: We use the geometry from this textured rect, but not its transform nodes
-	return rect.getGeometries();
+	return rect.getSpatials();
     }
 }

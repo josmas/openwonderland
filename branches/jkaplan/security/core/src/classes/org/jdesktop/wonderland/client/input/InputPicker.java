@@ -622,7 +622,7 @@ public abstract class InputPicker {
      */
     private void generateEnterExitEvents (MouseEvent awtEvent, PickInfo pickInfo) {
 
-	MouseEnterExitEvent3D enterEventProto = 
+        MouseEnterExitEvent3D enterEventProto = 
 	    createEnterExitEventFromAwtEvent(awtEvent, MouseEvent.MOUSE_ENTERED);
 	MouseEnterExitEvent3D exitEventProto = 
 	    createEnterExitEventFromAwtEvent(awtEvent, MouseEvent.MOUSE_EXITED);

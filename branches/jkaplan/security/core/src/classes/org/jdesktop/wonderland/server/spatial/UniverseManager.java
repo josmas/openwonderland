@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 /**
@@ -53,6 +54,10 @@ public class UniverseManager {
         serviceMgr.createCell(cellMO);
     }
 
+    public void removeCell(CellMO cellMO) {
+        serviceMgr.removeCell(cellMO);
+    }
+
     public void removeChild(CellMO parent, CellMO child) {
         serviceMgr.removeChild(parent, child);
     }
@@ -83,6 +88,13 @@ public class UniverseManager {
 
     public void viewLogout(ViewCellMO viewCell) {
         serviceMgr.viewLogout(viewCell);
+    }
 
+    public void addTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener) {
+        serviceMgr.addTransformChangeListener(cell, listener);
+    }
+
+    public void removeTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener) {
+        serviceMgr.removeTransformChangeListener(cell, listener);
     }
 }
