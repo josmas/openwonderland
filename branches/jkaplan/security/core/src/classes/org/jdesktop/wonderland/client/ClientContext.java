@@ -134,4 +134,18 @@ public class ClientContext {
         userDir = out;
         return out;
     }
+
+    /**
+     * Return a subdirectory of the wonderland user directory for this user
+     * @param dirName the name of the subdirectory
+     * @return the user directory subdirectory, created if it doesn't exist
+     */
+    public synchronized static File getUserDirectory(String dirName) {
+        File dir = new File(getUserDirectory(), dirName);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+
+        return dir;
+    }
 }
