@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$
+     $Revision$
+     $Date$
+     $Author$
+-->
+<project basedir="." default="dist" name="wonderland-core">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-core}"/>
+    
+    <!-- import the core build script -->
+    <import file="build-tools/build-scripts/core-build.xml"/>
+    
+    <!-- compile Wonderland -->
+    <target name="compile" depends="-core-compile"/>
+    
+    <!-- build wonderland jars -->
+    <target name="jar" depends="-core-jar"/>
+
+    <!-- package -->
+    <target name="dist" depends="-core-package" description="Build server distribution"/>
+
+    <!-- javadoc -->
+    <target name="javadoc" depends="javadoc-api, javadoc-all" description="Javadoc for Wonderland"/>
+    <target name="javadoc-api" depends="-core-javadoc-api"/>
+    <target name="javadoc-all" depends="-core-javadoc-all"/>
+    
+    
+    <!-- run targets -->
+    <target name="run-manager" depends="jar" description="Run manager UI">
+        <java classname="org.jdesktop.lg3d.wonderland.management.ManagerUI" fork="true">
+            <jvmarg value="-Dsgs.port=${sgs.port}"/>
+            <jvmarg value="-Dsgs.server=${sgs.server}"/>
+           
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run-scripttest" depends="jar" description="Run script test">
+        <java classname="org.jdesktop.wonderland.client.scripting.ScriptTest" fork="true">
+           
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+       </java>
+    </target>
+    
+    <target name="run" depends="jar" description="Run the Wonderland client">
+        <mkdir dir="log"/>
+
+        <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
+            
+            <!-- arguments here must be replicated in some form in the
+                 jnlp file! -->
+            <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+            <jvmarg value="-Xmx512m"/>
+	    <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${current.dir}/ext/softphone/softphone.jar"/>
+            <jvmarg value="-Dwonderland.version=${wonderland.version}"/>
+            
+            <!--start debug-->
+	    <!-- TODO: suspend=y doesn't work on linux: it doesn't stop at bkpts after attach -->
+	    <!--
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
+            -->
+	    <!--end debug-->
+            
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+            
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+    
+    <target name="avatargui" depends="jar">
+        <!--<java classname="imi.tests.GUITest" fork="true">-->
+        <!--<java classname="imi.tests.COLLADA_CharacterTest" fork="true">-->
+        <java classname="imi.tests.MusicalChairs" fork="true">
+            <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+	    <!--start debug-->
+	    <!-- TODO: suspend=y doesn't work on linux: it doesn't stop at bkpts after attach -->
+	    <!--
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
+            -->
+	    <!--end debug-->
+            
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+            
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+
+    <target name="run-moduleui" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.jme.artimport.ModuleManagerUI" fork="true">
+            <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+	    <!--start debug-->
+	    <!--
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
+            -->
+	    <!--end debug-->
+            
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+            
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+
+    <target name="run-dbtest" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.assetmgr.AssetDB" fork="true">
+            <classpath>
+                <pathelement path="${core-client.classpath}"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <!-- clean -->
+    <target name="clean" depends="-core-clean" description="Clean core directories"/>
+    
+    <!-- remove libraries too -->
+    <target name="scrub" depends="-core-clean, -core-scrub-libs"/>
+</project>
