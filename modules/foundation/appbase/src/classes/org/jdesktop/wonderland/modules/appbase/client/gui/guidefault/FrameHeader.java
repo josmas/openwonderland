@@ -24,7 +24,6 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DFrame;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * The frame header (top side) for FrameWorldDefault.
@@ -56,10 +55,11 @@ public class FrameHeader extends FrameSide {
 	// TODO: bug: currently getting an instantiation exception on the image resource.
        	//closeButton = new FrameCloseButton(view, closeListeners);
 
-	title = new FrameLabelTitle(view, gui);
+	// TODO: bug 12: this sometimes makes the entire frame disappear! 
+	// title = new FrameLabelTitle(view, gui);
 
 	// The position of the controller label depends on the position of the close button
-	controller = new FrameLabelController(view, gui, closeButton);
+	//controller = new FrameLabelController(view, gui, closeButton);
     }
 
     /**

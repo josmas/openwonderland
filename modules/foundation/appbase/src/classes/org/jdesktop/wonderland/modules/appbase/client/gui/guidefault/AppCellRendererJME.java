@@ -21,6 +21,7 @@ import com.jme.light.PointLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.RenderState;
 //import com.jme.scene.state.ZBufferState;
@@ -35,6 +36,7 @@ import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 import org.jdesktop.wonderland.modules.appbase.client.AppCellRenderer;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
@@ -97,7 +99,12 @@ public class AppCellRendererJME extends AppCellRenderer {
      */
     @Override
     protected Node createSceneGraph (Entity entity) {
-	System.err.println("In APRJ.createSceneGraph, cell transform = " + cell.getLocalTransform());
+
+	RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().
+	    createRenderComponent(rootNode);
+	entity.addComponent(RenderComponent.class, rc);
+	rc.setEntity(entity);
+
 	return rootNode;
     }
 
@@ -137,14 +144,16 @@ public class AppCellRendererJME extends AppCellRenderer {
 	// The view scene graph is directly attached to the root entity of the renderer.
 	ViewWorldDefault viewWorld = (ViewWorldDefault) view;
 	getEntity().addEntity(viewWorld.getEntity());
+	viewWorld.setParentEntity(getEntity());
 
-	/** TODO: not yet: the frame has bugs */
+	AppCell cell = viewWorld.getCell();
+        applyTransform(rootNode, cell.getLocalTransform());
+
         FrameWorldDefault frame = viewWorld.getFrame();
 	if (frame != null) {
 	    getEntity().addEntity(frame.getEntity());
 	    frame.setParentEntity(getEntity());
 	}
-	/**/
     }
 
     /**
@@ -179,7 +188,6 @@ public class AppCellRendererJME extends AppCellRenderer {
     }
 
     static void printEntitySceneGraphs (Entity entity, int indentLevel) {
-	System.err.println("********** printEntitySceneGraphs");
 	printIndentLevel(indentLevel); System.err.println("Entity = " + entity);
 
 	printIndentLevel(indentLevel);	System.err.print("sceneRoot = ");
