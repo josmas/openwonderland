@@ -24,14 +24,16 @@ import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 /*
  *
  * @author: jprovino
  */
 public class PlaceCallResponseMessage extends PhoneResponseMessage {
     
-    public PlaceCallResponseMessage(CallListing listing, boolean wasSuccessful) {
-	super(listing, wasSuccessful);
+    public PlaceCallResponseMessage(CellID cellID, CallListing listing, boolean wasSuccessful) {
+	super(cellID, listing, wasSuccessful);
     }
 
 }

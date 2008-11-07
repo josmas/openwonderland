@@ -129,7 +129,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
     public static void initialize() {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	vm.addCallStatusListener(incomingCallHandler);
+	vm.addCallStatusListener(incomingCallHandler, null);
 
 	vm.addCallBeginEndListener(incomingCallHandler);
     }
@@ -338,7 +338,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	}
 
 	public void addCallStatusListener(ManagedCallStatusListener listener) {
-	    AppContext.getManager(VoiceManager.class).addCallStatusListener(listener);
+	    AppContext.getManager(VoiceManager.class).addCallStatusListener(listener, null);
 	}
 
 	public void removeCallStatusListener(ManagedCallStatusListener listener) {
@@ -511,7 +511,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
 		    return;
 		} else if (!dtmfKey.equals("#")) {
-		    logger.warning("Unrecognized response:  " + dtmfKey);
+		    logger.fine("Unrecognized response:  " + dtmfKey);
 		    playTreatment("unrecognized_respone.au");
 		    return;
 		}

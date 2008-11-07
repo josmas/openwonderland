@@ -34,6 +34,10 @@ public interface SoftphoneControl {
     
     public void stopSoftphone();
 
+    public void setCallID(String callID);
+
+    public String getCallID();
+
     public void register(String registrarAddress) throws IOException;
 
     public boolean isRunning();

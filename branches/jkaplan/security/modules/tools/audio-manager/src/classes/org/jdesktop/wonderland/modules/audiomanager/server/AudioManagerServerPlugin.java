@@ -36,7 +36,7 @@ public class AudioManagerServerPlugin implements ServerPlugin {
         CommsManager cm = WonderlandContext.getCommsManager();
         cm.registerClientHandler(new AudioManagerConnectionHandler());
 
-	logger.warning("audio manager initialized");
+	logger.finest("audio manager initialized");
     }
     
 }

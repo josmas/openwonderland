@@ -27,21 +27,25 @@ import com.sun.sgs.client.ClientChannel;
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
-import org.jdesktop.wonderland.client.comms.ClientConnection;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
-import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEstablishedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.EndCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.EndCallResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockMessage;
@@ -81,24 +85,40 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
     
     private ProjectorStateUpdater projectorStateUpdater;
 
-    private WonderlandSession session;
-
     private String name;
-
-    private ClientConnection connection;
-        
-    private PhoneForm phoneForm;
 
     private PhoneCell phoneCell;
 
-    public PhoneMessageHandler(PhoneCell phoneCell, WonderlandSession session, 
-	    ClientConnection connection) {
+    private PhoneForm phoneForm;
 
+    private ChannelComponent channelComp;
+
+    public PhoneMessageHandler(PhoneCell phoneCell) {
 	this.phoneCell = phoneCell;
-	this.connection = connection;
-	this.session = session;
 
         JmeClientMain.getFrame().addToToolMenu(PhoneMenu.getPhoneMenu(this));
+
+	channelComp = phoneCell.getComponent(ChannelComponent.class);
+
+	logger.fine("Channel comp is " + channelComp);
+
+        ChannelComponent.ComponentMessageReceiver msgReceiver =
+	    new ChannelComponent.ComponentMessageReceiver() {
+                public void messageReceived(CellMessage message) {
+                    PhoneResponseMessage msg = (PhoneResponseMessage)message;
+
+		    processMessage((PhoneResponseMessage) message);
+                }
+            };
+
+        channelComp.addMessageReceiver(CallEndedResponseMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(CallEstablishedResponseMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(CallInvitedResponseMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(EndCallResponseMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(JoinCallResponseMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(LockUnlockResponseMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(PhoneResponseMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(PlaceCallResponseMessage.class, msgReceiver);
     }
 
     public void virtualPhoneMenuItemSelected() {
@@ -111,18 +131,14 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
 		passwordProtected = false;
 	    }
 
-	    phoneForm = new PhoneForm(phoneCell.getCellID(), connection, session, 
-		this, locked, "1", passwordProtected);
+	    phoneForm = new PhoneForm(phoneCell.getCellID(), channelComp,
+		this, locked, phoneCell.getPhoneNumber(), passwordProtected);
 	}
 
 	phoneForm.setVisible(true);
     }
 
-    public WonderlandSession getSession() {
-	return session;
-    }
-	
-    public void processMessage(final Message message) {
+    public void processMessage(final PhoneResponseMessage message) {
 	if (message instanceof CallEndedResponseMessage) {
 	    final CallEndedResponseMessage msg = (CallEndedResponseMessage) message;
 
@@ -170,7 +186,7 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
         CallListing listing = msg.getCallListing();
 
 	if (msg instanceof PlaceCallResponseMessage) {
-	    logger.warning("Got place call response...");
+	    logger.fine("Got place call response...");
 
             if (msg.wasSuccessful() == false) {
                 logger.warning("Failed PLACE_CALL!");
@@ -193,9 +209,9 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
 	    /*
 	     * Set the call ID used by the server.
 	     */
-	    logger.warning("Updating listing with " + listing.getCallID());
+	    logger.fine("Updating listing with " + listing.getExternalCallID());
 
-	    mostRecentCallListing.setCallID(listing.getCallID());
+	    mostRecentCallListing.setExternalCallID(listing.getExternalCallID());
 
             /*
 	     * This is a confirmation msg for OUR call. 
@@ -246,8 +262,13 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
 	}
             
 	if (msg instanceof CallEstablishedResponseMessage) {
+	    logger.fine("Got est resp");
+
             if (mostRecentCallListing == null ||
 		    listing.equals(mostRecentCallListing) == false) {
+
+		logger.warning("no listing " + mostRecentCallListing 
+		    + " listing " + listing);
 
 		return;  // we didn't start this call
 	    }
@@ -270,48 +291,50 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
     }
     
     public void placeCall(CallListing listing) {
-	 CellID clientCellID = 
-	    ((CellClientSession) session).getLocalAvatar().getViewCell().getCellID();
+	WonderlandSession session = phoneCell.getCellCache().getSession();
 
-        PlaceCallMessage msg = new PlaceCallMessage(clientCellID, phoneCell.getCellID(), listing);
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	logger.warning("Sending place call message " + clientCellID + " " 
-	    + listing);
+	listing.setSoftphoneCallID(sc.getCallID());
+
+        PlaceCallMessage msg = new PlaceCallMessage(phoneCell.getCellID(), 
+	    listing);
+
+	logger.fine("Sending place call message " + phoneCell.getCellID() + " " 
+	    + " softphoneCallID " + sc.getCallID() + " " + listing);
 
 	synchronized (phoneForm) {
-            session.send(connection, msg);    
-        
             mostRecentCallListing = listing;      
+
+            channelComp.send(msg);    
 	}
     }
     
     public void joinCall() {
-	CellID clientCellID = 
-	    ((CellClientSession) session).getLocalAvatar().getViewCell().getCellID();
+	WonderlandSession session = phoneCell.getCellCache().getSession();
 
-        JoinCallMessage msg = new JoinCallMessage(
-	    clientCellID, clientCellID, mostRecentCallListing);
+        JoinCallMessage msg = new JoinCallMessage(phoneCell.getCellID(), 
+	    mostRecentCallListing);
 
-        session.send(connection, msg);
+        channelComp.send(msg);
     }
     
     public void endCall() {        
-	CellID clientCellID = 
-	    ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+	logger.fine("call id is " + mostRecentCallListing.getExternalCallID());
 
-	logger.warning("call id is " + mostRecentCallListing.getCallID());
+        EndCallMessage msg = new EndCallMessage(phoneCell.getCellID(), 
+	    mostRecentCallListing);
 
-        EndCallMessage msg = new EndCallMessage(clientCellID, phoneCell.getCellID(), mostRecentCallListing);
-
-        session.send(connection, msg); 
+        channelComp.send(msg); 
     }
     
     public void dtmf(char c) {
         String treatment = "dtmf:" + c;
 
-        PlayTreatmentMessage msg = new PlayTreatmentMessage(mostRecentCallListing, treatment, true);
+        PlayTreatmentMessage msg = new PlayTreatmentMessage(phoneCell.getCellID(), 
+	    mostRecentCallListing, treatment, true);
 
-	session.send(connection, msg);
+	channelComp.send(msg);
     }
     
         public void processEvent() {

@@ -22,34 +22,27 @@ package org.jdesktop.wonderland.modules.phone.common.messages;
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  *
  * @author jprovino
  */
-public class PhoneControlMessage extends Message {   
+public class PhoneControlMessage extends CellMessage {   
     
-    private CellID clientCellID;
-    private CellID externalCallCellID;
     private CallListing listing;    
 
-    public PhoneControlMessage(CellID clientCellID, CellID externalCallCellID, 
-	    CallListing listing) {
+    public PhoneControlMessage(CellID phoneCellID) {
+	this(phoneCellID, null);
+    }
 
-	this.clientCellID = clientCellID;
-	this.externalCallCellID = externalCallCellID;
+    public PhoneControlMessage(CellID phoneCellID, CallListing listing) {
+	super(phoneCellID);
+
         this.listing = listing;
     }
     
-    public CellID getClientCellID() {
-	return clientCellID;
-    }
-
-    public CellID getExternalCallCellID() {
-	return externalCallCellID;
-    }
-
     public CallListing getCallListing() {
 	return listing;
     }

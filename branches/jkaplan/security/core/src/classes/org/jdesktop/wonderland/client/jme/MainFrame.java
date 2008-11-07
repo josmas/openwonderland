@@ -33,7 +33,6 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
 
-
 /**
  * The Main JFrame for the wonderland jme client
  * 

@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 @ExperimentalAPI
 public class PlaceCallMessage extends Message {
-    private CellID cellID;
+    private String softphoneCallID;
     private String sipURL;	      // URL of softphone to call
     private double x;	      	      // location of the call
     private double y;
@@ -38,10 +38,10 @@ public class PlaceCallMessage extends Message {
     private double direction;	      // direction of avatar
     private boolean confirmAnswered;  // user has to press 1
 
-    public PlaceCallMessage(CellID cellID, String sipURL, double x, double y,
+    public PlaceCallMessage(String softphoneCallID, String sipURL, double x, double y,
 	    double z, double direction, boolean confirmAnswered) {
 
-	this.cellID = cellID;
+	this.softphoneCallID = softphoneCallID;
 	this.sipURL = sipURL;
 	this.x = x;
 	this.y = y;
@@ -50,56 +50,28 @@ public class PlaceCallMessage extends Message {
 	this.confirmAnswered = confirmAnswered;
     }
 
-    public void setCellID(CellID cellID) {
-        this.cellID = cellID;
-    }
-
-    public CellID getCellID() {
-        return cellID;
-    }
-
-    public void setSipURL(String sipURL) {
-	this.sipURL = sipURL;
+    public String getSoftphoneCallID() {
+        return softphoneCallID;
     }
 
     public String getSipURL() {
 	return sipURL;
     }
 
-    public void setX(double x) {
-	this.x = x;
-    }
-
     public double getX() {
 	return x;
-    }
-
-    public void setY(double y) {
-	this.y = y;
     }
 
     public double getY() {
 	return y;
     }
 
-    public void setZ(double z) {
-	this.z = z;
-    }
-
     public double getZ() {
 	return z;
     }
 
-    public void setDirection(double direction) {
-	this.direction = direction;
-    }
-
     public double getDirection() {
 	return direction;
-    }
-
-    public void setConfirmAnswered(boolean confirmAnswered) {	
-	this.confirmAnswered = confirmAnswered;
     }
 
     public boolean getConfirmAnswered() {

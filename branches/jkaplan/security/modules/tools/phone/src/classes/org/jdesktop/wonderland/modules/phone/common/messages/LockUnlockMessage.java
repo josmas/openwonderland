@@ -37,7 +37,7 @@ public class LockUnlockMessage extends PhoneControlMessage {
     public LockUnlockMessage(CellID phoneCellID, String password, boolean lock, 
 	    boolean keepUnlocked) {
 
-	super(phoneCellID, null, null);
+	super(phoneCellID);
 
 	this.password = password;
 	this.lock = lock;
