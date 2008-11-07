@@ -18,6 +18,10 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     
+    <servlet>
+        <servlet-name>ClientPropertiesServlet</servlet-name>
+        <servlet-class>org.jdesktop.wonderland.front.servlet.ClientPropertiesServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>JnlpDownloadServlet</servlet-name>
         <url-pattern>/app/*</url-pattern>
@@ -31,6 +35,10 @@
         <url-pattern>/admin</url-pattern>
     </servlet-mapping>
     
+    <servlet-mapping>
+        <servlet-name>ClientPropertiesServlet</servlet-name>
+        <url-pattern>/config/run-client.properties</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30

@@ -24,6 +24,7 @@
     %LOCAL_JAR_FILES%
     
     <property name="wonderland.server.url" value="$$wonderland.server.url"/>
+    <property name="wonderland.client.config.dir" value="$$wonderland.client.config.dir"/>
     <property name="wonderland.protocol.handler.pkgs" value="org.jdesktop.wonderland.client.protocols"/>
     <property name="wonderland.version" value="%VERSION%"/>
   </resources>
