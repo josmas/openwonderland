@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenu;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.help.HelpInfo;
 
 /**
@@ -34,7 +35,7 @@ import org.jdesktop.wonderland.common.help.HelpInfo;
 public class HelpUtils {
 
     /* The base URL of the web server */
-    private static final String BASE_URL = "http://localhost:8080/wonderland-web-help/help/";
+    private static final String BASE_URL = "wonderland-web-help/help/";
     
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(HelpUtils.class.getName());
@@ -45,7 +46,8 @@ public class HelpUtils {
     public static HelpInfo fetchHelpInfo() {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(BASE_URL + "info/get");
+            URL serverURL = new URL(System.getProperty(JmeClientMain.SERVER_URL_PROP));
+            URL url = new URL(serverURL, BASE_URL + "info/get");
             return HelpInfo.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
