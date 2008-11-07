@@ -46,7 +46,7 @@ public class ModuleSourceManager {
      * @param moduleName
      * @param parentDirectory
      */
-    public void createModule(String moduleName, File parentDirectory, boolean includeArt) {
+    public void createModule(String moduleName, String moduleDescription, File parentDirectory, boolean includeArt) {
         File moduleDir = new File(parentDirectory.getAbsolutePath()+File.separatorChar+moduleName);
         if (moduleDir.exists())
             throw new RuntimeException("Module Directory already exists "+moduleDir.getAbsolutePath());
@@ -76,14 +76,15 @@ public class ModuleSourceManager {
                     new LineConditioner[] { new LineSubstituteConditioner("@ART@",
                                                 includeArt ? "<art dir=\"${current.dir}/art\"/>" : "<!--<art dir=\"${current.dir}/art\"/>-->"),
                                             new LineSubstituteConditioner("@MODULE_NAME@", moduleName),
-                                            new LineSubstituteConditioner("@MODULE_PKG@", srcPkg)}
+                                            new LineSubstituteConditioner("@MODULE_DESC@", moduleDescription),
+                                            new LineSubstituteConditioner("@MODULE_PKG@", srcPkg.replaceAll("\\.", File.separator))}
             );
 
-            copyFile(ModuleSourceManager.class.getClassLoader().getResourceAsStream("org/jdesktop/wonderland/modules/artimport/client/jme/resources/module_properties_template.xml"),
-                    new FileOutputStream(myBuildProp),
-                    new LineConditioner[] { new LineSubstituteConditioner("@MODULE_NAME@", moduleName),
-                                            new LineSubstituteConditioner("@MODULE_PKG@", srcPkg)}
-                    );
+//            copyFile(ModuleSourceManager.class.getClassLoader().getResourceAsStream("org/jdesktop/wonderland/modules/artimport/client/jme/resources/module_properties_template.xml"),
+//                    new FileOutputStream(myBuildProp),
+//                    new LineConditioner[] { new LineSubstituteConditioner("@MODULE_NAME@", moduleName),
+//                                            new LineSubstituteConditioner("@MODULE_PKG@", srcPkg)}
+//                    );
             
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ModuleSourceManager.class.getName()).log(Level.SEVERE, null, ex);

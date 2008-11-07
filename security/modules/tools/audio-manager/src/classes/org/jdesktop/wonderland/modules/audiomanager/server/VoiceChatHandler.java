@@ -111,7 +111,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	String calleeList = message.getCalleeList();
 	VoiceChatMessage.ChatType chatType = message.getChatType();
 
-	logger.warning(action + " group " + group + " caller " + caller 
+	logger.fine(action + " group " + group + " caller " + caller 
 	    + " calleeList " + calleeList + " " + chatType);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
@@ -183,7 +183,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		Player player = vm.getPlayer(players[i]);
 
 		if (audioGroup.getPlayerInfo(player) != null) {
-		    logger.warning("Player " + players[i] 
+		    logger.fine("Player " + players[i] 
 			+ " is already in audio group " + audioGroup);
 		    continue;
 		}
@@ -263,7 +263,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    String group, String caller, String callee, String calleeList, 
 	    VoiceChatMessage.ChatType chatType) {
 
-	logger.warning("Asking " + callee + " to join audio group " + group + " chatType " 
+	logger.fine("Asking " + callee + " to join audio group " + group + " chatType " 
 	    + chatType);
 
 	VoiceChatMessage message = new VoiceChatMessage(
@@ -276,7 +276,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     private void sendVoiceChatBusyMessage(WonderlandClientSender sender,
 	    VoiceChatMessage message) {
 
-	logger.warning("Sending busy message to " + message.getCaller());
+	logger.fine("Sending busy message to " + message.getCaller());
 
 	VoiceChatMessage msg = new VoiceChatMessage(
 	     VoiceChatMessage.ActionType.BUSY, null,
@@ -365,7 +365,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		continue;
 	    }
 
-	    logger.warning("Creating virtual players for " + p);
+	    logger.fine("Creating virtual players for " + p);
 	    createVirtualPlayer(audioGroup, p);
 	}
     }
@@ -417,7 +417,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    setup.isLivePlayer = true;
 	    setup.isVirtualPlayer = true;
 
-	    logger.warning("Created virtual player " + callId);
+	    logger.fine("Created virtual player " + callId);
 
 	    Player vp = vm.createPlayer(callId, setup);
 
@@ -428,7 +428,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    String phoneNumber = call.getSetup().cp.getPhoneNumber();
 
-	    logger.warning("Spawning orb at " + p);
+	    logger.info("Spawning orb at " + p);
 
 	    //CellGLO cellGLO = spawnOrb(callId, phoneNumber, p.getX(), p.getY(), p.getZ());
 
@@ -475,7 +475,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    for (int i = 0; i < virtualPlayers.length; i++) {
 		VirtualPlayer virtualPlayer = virtualPlayers[i];
 
-		logger.warning("possible vp for " + virtualPlayers[i] + " at " + player
+		logger.fine("possible vp for " + virtualPlayers[i] + " at " + player
 		    + " vp.call " + virtualPlayer.realPlayer);
 
 		if (virtualPlayer.realPlayer.equals(player)) {
@@ -486,7 +486,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    }
 	}
 
-	logger.warning("othersToRemoveSize " + othersToRemove.size());
+	logger.fine("othersToRemoveSize " + othersToRemove.size());
 
 	removeOrbs(othersToRemove.toArray(new VirtualPlayer[0]));
     }
@@ -537,10 +537,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    //try {
 	    //	callEnded.invoke(cellGLO);
 	    //} catch (Exception e) {
-	    //	logger.warning("Can't tell orb to end call:  " + e.getMessage());
+	    //	logger.fine("Can't tell orb to end call:  " + e.getMessage());
 	    //} 
 
-	    logger.warning("Detaching orb " + virtualPlayers[i].player);
+	    logger.fine("Detaching orb " + virtualPlayers[i].player);
 	}
     }
 
@@ -577,7 +577,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	
 		for (int i = 0; i < virtualPlayers.length; i++) {
 		    if (virtualPlayers[i].realPlayer.equals(player)) {
-			logger.warning("Moving " + virtualPlayers[i] + " to " + player);
+			logger.fine("Moving " + virtualPlayers[i] + " to " + player);
 			moveVirtualPlayer(virtualPlayers[i], x, y, z, direction);
 		    }
 		}
@@ -601,13 +601,13 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	//AvatarCellMessage message = new AvatarCellMessage(cellGLO.getCellID(),
 	//    position, direction);
 
-	//logger.warning(virtualPlayer + " cellGLO " + cellGLO + " cell name " 
+	//logger.fine(virtualPlayer + " cellGLO " + cellGLO + " cell name " 
 	//    + virtualPlayer.cellName);
 
 	//try {
 	//    avatarMoved.invoke(cellGLO, message);
 	//} catch (Exception e) {
-	//    logger.warning("Can't tell orb to move:  " + e.getMessage());
+	//    logger.fine("Can't tell orb to move:  " + e.getMessage());
 	//    e.printStackTrace();
 	//}
     }
@@ -621,7 +621,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	String clientId = cellMORef.getId().toString();
 
-	logger.warning("localTransform " + localTransform + " world " 
+	logger.fine("localTransform " + localTransform + " world " 
 	    + localToWorldTransform);
 
 	Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);

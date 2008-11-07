@@ -24,11 +24,11 @@
             <fileset dir="${current.dir}/src/classes/${module.src}/client/jme/resources"/>
         </copy>
 
-        <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
-                moduleDescription="${module.description}" builddir="${build.dir}">
+        <module name="artimport" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/artimport.jar"
+                moduleDescription="Art Import tools" builddir="${build.dir}">
                     
             <client>
-                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                <clientjar name="artimport-client" basedir="${build.classes.dir}">
                     <clientplugin provider="org.jdesktop.wonderland.modules.artimport.client.jme.ArtToolsPlugin"/>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
@@ -36,7 +36,7 @@
             </client>
                 
             <server>
-                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                <serverjar name="artimport-server" basedir="${build.classes.dir}">
                     <cellsetup>
                         <provider classname="${module.plugin.cellsetup}"/>
                     </cellsetup>

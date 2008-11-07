@@ -9,6 +9,7 @@
         <include name="audio-manager/build.xml"/>
         <include name="voicebridge/build.xml"/>
         <include name="phone/build.xml"/>
+	<include name="orb/build.xml"/>
 <!--        <include name="phone/build.xml"/> -->
     </fileset>
     

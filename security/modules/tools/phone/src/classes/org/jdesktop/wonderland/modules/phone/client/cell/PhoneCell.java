@@ -18,11 +18,7 @@
 
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
-//import org.jdesktop.wonderland.avatarorb.client.cell.AvatarOrbCell;
-
 import  org.jdesktop.wonderland.modules.phone.common.CallListing;
-
-import org.jdesktop.wonderland.modules.phone.common.PhoneConnectionType;
 
 import com.sun.sgs.client.ClientChannel;
 
@@ -39,8 +35,13 @@ import java.util.Iterator;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
+
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
@@ -53,7 +54,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
  *
  * @author jkaplan
  */
-public class PhoneCell extends Cell {
+public class PhoneCell extends Cell implements CellStatusChangeListener {
 
     private static final Logger logger =
             Logger.getLogger(PhoneCell.class.getName());
@@ -82,43 +83,20 @@ public class PhoneCell extends Cell {
     public PhoneCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
-	logger.warning("CREATED NEW PHONE CELL " + cellID);
+	logger.fine("CREATED NEW PHONE CELL " + cellID);
 
-	new Connector(this, cellCache.getSession());
+	CellManager.getCellManager().addCellStatusChangeListener(this);
     }
 
-    class Connector extends Thread {
-	
-	private PhoneCell phoneCell;
-	private WonderlandSession session;
+    public void cellStatusChanged(Cell cell, CellStatus status) {
+	logger.fine("got status " + status + " for cell " + cell.getCellID());
 
-	public Connector(PhoneCell phoneCell, WonderlandSession session) {
-	    this.phoneCell = phoneCell;
-	    this.session = session;
+        if (cell.getCellID() != getCellID()) {
+            return;
+        }
 
-	    start();
-	}
-
-	public void run() {
-	    ClientConnection connection = null;
-
-	    while (connection == null) {
-	        try {
-		    Thread.sleep(5000);
-	        } catch (InterruptedException e) {
-	        }
-
-	        logger.warning("Trying to connect...");
-
-		connection = session.getConnection(PhoneConnectionType.CONNECTION_TYPE);
-
-		logger.warning("Session is " + session + " connection is " + connection);
-	    }
-
-	    PhoneClient phoneClient = (PhoneClient) connection;
-
-	    phoneClient.setPhoneMessageHandler(
-		new PhoneMessageHandler(phoneCell, session, connection));
+	if (status.equals(CellStatus.ACTIVE) && phoneMessageHandler == null) {
+	    phoneMessageHandler = new PhoneMessageHandler(this);
 	}
     }
 
@@ -131,6 +109,8 @@ public class PhoneCell extends Cell {
      */
     @Override
     public void configure(CellConfig setupData) {
+	super.configure(setupData);
+
 	PhoneCellConfig config = (PhoneCellConfig) setupData;
 
 	locked = config.getLocked();
@@ -142,6 +122,10 @@ public class PhoneCell extends Cell {
 	fullVolumeRadius = config.getFullVolumeRadius();
     }
 
+    public String getPhoneNumber() {
+	return phoneNumber;
+    }
+
     public boolean getLocked() {
 	return locked;
     }
@@ -150,10 +134,12 @@ public class PhoneCell extends Cell {
 	return password;
     }
 
+    public WonderlandSession getSession() {
+	return getCellCache().getSession();
+    }
+
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-	WonderlandSession session = getCellCache().getSession();
-
         if (rendererType == RendererType.RENDERER_JME) {
             return new PhoneCellRenderer(this);
         }

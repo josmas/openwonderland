@@ -30,8 +30,9 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class JoinCallMessage extends PhoneControlMessage {   
     
-    public JoinCallMessage(CellID clientCellID, CellID externalCallCellID, CallListing listing) {
-	super(clientCellID, externalCallCellID, listing);
+    public JoinCallMessage(CellID phoneCellID, CallListing listing) {
+
+	super(phoneCellID, listing);
     }
-    
+
 }

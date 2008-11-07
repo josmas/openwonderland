@@ -229,15 +229,6 @@ private void phoneTransferRadioButtonActionPerformed(java.awt.event.ActionEvent 
 }//GEN-LAST:event_phoneTransferRadioButtonActionPerformed
     
     public void setCallStatus(String callId, String callStatus) {
-	//String localUserName = ChannelController.getController().getLocalUserName();
-
-	//System.out.println("callId " + callId + " status " + callStatus 
-	//    + " localUserName " + localUserName);
-
-	//if (callId.equals(localUserName) == false) {
-	//    return;
-	//}
-
 	if (callStatus.indexOf("Ended") >= 0) {
 	    if (callStatus.indexOf("Not Found") >= 0) {
 		callStatusLabel.setText("Invalid phone number");

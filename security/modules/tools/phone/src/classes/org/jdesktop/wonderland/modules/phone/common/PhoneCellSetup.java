@@ -61,7 +61,6 @@ public class PhoneCellSetup extends BasicCellSetup
 
     /** Default constructor */
     public PhoneCellSetup() {
-	System.out.println("BAR PHONECELLSETUP");
     }
     
     public String getServerClassName() {

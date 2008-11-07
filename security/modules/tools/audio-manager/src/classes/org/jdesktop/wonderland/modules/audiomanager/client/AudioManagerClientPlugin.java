@@ -61,7 +61,7 @@ public class AudioManagerClientPlugin
     public void sessionStatusChanged(WonderlandSession session, 
                                      WonderlandSession.Status status)
     {
-        logger.warning("session status changed " + session + " status " + status);
+        logger.fine("session status changed " + session + " status " + status);
         if (status.equals(WonderlandSession.Status.CONNECTED)) {
             connectClient(session);
         } else if (status.equals(WonderlandSession.Status.DISCONNECTED)) {

@@ -29,7 +29,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
-import org.jdesktop.wonderland.modules.phone.client.cell.PhoneClient;
 
 /**
  * Plugin to support the phone
@@ -57,15 +56,7 @@ public class PhoneClientPlugin implements ClientPlugin,
     public void sessionStatusChanged(WonderlandSession session, 
 	    WonderlandSession.Status status) {
 
-	logger.warning("session status changed " + session + " status " + status);
-
-	if (status.equals(WonderlandSession.Status.CONNECTED)) {
-	    try {
-	        new PhoneClient(session);
-	    } catch (ConnectionFailureException e) {
-	        logger.warning(e.getMessage());
-	    }
-	}
+	logger.fine("session status changed " + session + " status " + status);
     }
 
 }

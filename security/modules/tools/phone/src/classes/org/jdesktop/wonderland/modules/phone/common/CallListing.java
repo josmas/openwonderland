@@ -37,7 +37,8 @@ public class CallListing implements Serializable {
         
     private boolean simulateCalls;
 
-    private String callID;
+    private String softphoneCallID;
+    private String externalCallID;
 
     /**
      * This constructor allows you to fully specify all of the listings
@@ -82,12 +83,20 @@ public class CallListing implements Serializable {
 	this.simulateCalls = simulateCalls;
     }
 
-    public void setCallID(String callID) {
-	this.callID = callID;
+    public void setSoftphoneCallID(String softphoneCallID) {
+	this.softphoneCallID = softphoneCallID;
     }
 
-    public String getCallID() {
-	return callID;
+    public String getSoftphoneCallID() {
+	return softphoneCallID;
+    }
+
+    public void setExternalCallID(String externalCallID) {
+	this.externalCallID = externalCallID;
+    }
+
+    public String getExternalCallID() {
+	return externalCallID;
     }
 
     @Override
@@ -95,7 +104,7 @@ public class CallListing implements Serializable {
         if (privateClientName.length() > 0) {
             return "(Private) " + privateClientName + " with " + contactName + "@" + contactNumber;
         } else {
-            return callID + "::" + contactName + " @ " + contactNumber;
+            return externalCallID + "::" + contactName + " @ " + contactNumber;
         }      
     }
         
