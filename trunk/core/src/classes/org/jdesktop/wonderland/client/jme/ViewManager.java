@@ -122,7 +122,7 @@ public class ViewManager {
     }
 
     void attachViewCanvas(JPanel panel) {
-        rb = new RenderBuffer(RenderBuffer.Target.ONSCREEN, width, height);
+        rb = ClientContextJME.getWorldManager().getRenderManager().createRenderBuffer(RenderBuffer.Target.ONSCREEN, width, height);
         ClientContextJME.getWorldManager().getRenderManager().addRenderBuffer(rb);
         Canvas canvas = rb.getCanvas();
 
