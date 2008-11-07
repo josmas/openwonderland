@@ -368,14 +368,13 @@ public abstract class CellMO implements ManagedObject, Serializable {
             }
 
             UniverseManager.getUniverseManager().createCell(this);
-            System.err.println("CREATING SPATIAL CELL");
+            System.err.println("CREATING SPATIAL CELL "+getCellID().toString()+" "+this.getClass().getName());
             
             if (parentRef!=null)
                 UniverseManager.getUniverseManager().addChild(parentRef.getForUpdate(), this);
 
-        }
-//        else
-//            UniverseManager.getUniverseManager().removeCell(this);
+        } else
+            UniverseManager.getUniverseManager().removeCell(this);
 
 
         // Notify all components of new live state

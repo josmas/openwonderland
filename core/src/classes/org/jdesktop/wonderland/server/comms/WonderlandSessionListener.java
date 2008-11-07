@@ -191,7 +191,7 @@ public class WonderlandSessionListener
      * @param forced true if the disconnect was forced
      */
     public void disconnected(boolean forced) {
-        logger.warning("Session " + getSession().getName() + " disconnected");
+        logger.warning("Session  disconnected");
         
         // Detach all handlers. Convert IDs to an array first because
         // the map is modified in the handleDetach method, which causes

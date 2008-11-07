@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
@@ -50,6 +51,7 @@ import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
@@ -108,6 +110,15 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         this.sender = sender;
 
         ViewCellMO view = viewRef.get();
+
+        if (!view.isLive()) {
+            try {
+                WonderlandContext.getCellManager().insertCellInWorld(view);
+            } catch (MultipleParentException ex) {
+                Logger.getLogger(ViewCellCacheMO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         UniverseManager.getUniverseManager().viewLogin(view);
 
         username = view.getUser().getUsername();
@@ -140,7 +151,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     void logout(ClientSession session) {
         logger.warning("DEBUG - logout");
-        UniverseManager.getUniverseManager().viewLogout(viewRef.get());
+        ViewCellMO view = viewRef.get();
+        UniverseManager.getUniverseManager().viewLogout(view);
+        WonderlandContext.getCellManager().removeCellFromWorld(view);
     }
      
 
@@ -289,7 +302,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             }
 //            cellRef.setCellSessionProperties(prop);
                     
-            logger.info("Sending NEW CELL to Client: " + cell.getCellID().toString());
+            logger.warning("Sending NEW CELL to Client: " + cell.getCellID().toString()+"  "+cell.getClass().getName());
             sendMessage(newCreateCellMessage(cell, capabilities));
         }
     }
