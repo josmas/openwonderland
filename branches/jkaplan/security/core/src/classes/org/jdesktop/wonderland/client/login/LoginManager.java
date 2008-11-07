@@ -74,6 +74,9 @@ public class LoginManager {
     /** the primary manager */
     private static LoginManager primaryLoginManager;
 
+    /** whether to load plugins */
+    private static boolean loadPlugins = true;
+
     /** the server this manager represents */
     private String serverURL;
 
@@ -195,6 +198,22 @@ public class LoginManager {
      */
     public synchronized static void setPrimary(LoginManager primary) {
         LoginManager.primaryLoginManager = primary;
+    }
+
+    /**
+     * Get whether or not plugins are being loaded.
+     * @return true if plugins are being loaded, or false if not
+     */
+    public synchronized static boolean getLoadPlugins() {
+        return LoginManager.loadPlugins;
+    }
+
+    /**
+     * Set whether or not to load plugins
+     * @param loadPlugins true to load plugins, or false to skip them
+     */
+    public synchronized static void setLoadPlugins(boolean loadPlugins) {
+        LoginManager.loadPlugins = loadPlugins;
     }
 
     /**
@@ -546,12 +565,13 @@ public class LoginManager {
         protected synchronized void loginComplete(LoginParameters params) {
             this.params = params;
             if (params != null) {
-                // setup the classloader
-                this.classLoader = setupClassLoader(getServerURL());
+                if (getLoadPlugins()) {
+                    // setup the classloader
+                    this.classLoader = setupClassLoader(getServerURL());
 
-                // initialize plugins
-                initPlugins(classLoader);
-
+                    // initialize plugins
+                    initPlugins(classLoader);
+                }
                 this.success = true;
             }
 
