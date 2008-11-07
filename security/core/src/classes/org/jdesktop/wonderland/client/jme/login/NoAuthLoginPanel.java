@@ -11,9 +11,16 @@
 
 package org.jdesktop.wonderland.client.jme.login;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
 import org.jdesktop.wonderland.client.login.LoginManager.NoAuthLoginControl;
@@ -34,6 +41,9 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
         initComponents();
 
+        // load any saved credentials
+        loadCredentials();
+
         // set the server location
         naServerField.setText(serverURL);
     }
@@ -43,9 +53,14 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
     }
 
     public String doLogin() {
+        String username = naUsernameField.getText();
+        String fullname = naFullNameField.getText();
         try {
-            control.authenticate(naUsernameField.getText(),
-                                 naFullNameField.getText());
+            control.authenticate(username, fullname);
+
+            // If we got here, it means login succeeded.  Save the successful
+            // login information.
+            storeCredentials(username, fullname);
             return null;
         } catch (LoginFailureException lfe) {
             logger.log(Level.WARNING, "Login failed", lfe);
@@ -55,6 +70,43 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
     public void cancel() {
         control.cancel();
+    }
+
+    protected void storeCredentials(String username, String fullname) {
+        Properties props = new Properties();
+        props.put("username", username);
+        props.put("fullname", fullname);
+
+        File configDir = ClientContext.getUserDirectory("config");
+
+        try {
+            FileWriter outWriter =
+                    new FileWriter(new File(configDir, "login.properties"));
+            props.list(new PrintWriter(outWriter));
+            outWriter.close();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error writing login data", ioe);
+        }
+    }
+
+    protected void loadCredentials() {
+        File configDir = ClientContext.getUserDirectory("config");
+        File propsFile = new File(configDir, "login.properties");
+        if (!propsFile.exists()) {
+            return;
+        }
+
+        try {
+            FileReader inReader = new FileReader(propsFile);
+
+            Properties props = new Properties();
+            props.load(inReader);
+
+            naUsernameField.setText(props.getProperty("username"));
+            naFullNameField.setText(props.getProperty("fullname"));
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading login data", ioe);
+        }
     }
 
     /** This method is called from within the constructor to
