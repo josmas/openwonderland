@@ -125,7 +125,7 @@ public class UniverseService implements UniverseServiceManager, Service {
     public void addRootToUniverse(CellMO rootCellMO) {
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
-                universe.addRootSpatialCell(universe.getSpatialCell(cellID));
+                universe.addRootSpatialCell(cellID);
             }
         });
     }
@@ -133,8 +133,7 @@ public class UniverseService implements UniverseServiceManager, Service {
     public void removeRootFromUniverse(CellMO rootCellMO) {
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
-                System.err.println("RemovingRoot "+cellID);
-                universe.removeRootSpatialCell(universe.getSpatialCell(cellID));
+                universe.removeRootSpatialCell(cellID);
             }
         });
     }
@@ -153,10 +152,18 @@ public class UniverseService implements UniverseServiceManager, Service {
 
     }
 
+    public void removeCell(CellMO cell) {
+        scheduleChange(new Change(cell.getCellID(), null, null) {
+
+            public void run() {
+                universe.removeCell(cellID);
+            }
+        });
+    }
+
     public void addChild(CellMO parent, CellMO child) {
         scheduleChange(new Change(parent.getCellID(), child.getCellID()) {
             public void run() {
-                System.err.println("AddChild "+cellID+" : "+childCellID);
                 SpatialCell parent = universe.getSpatialCell(cellID);
                 parent.addChild(universe.getSpatialCell(childCellID));
             }
@@ -298,6 +305,7 @@ public class UniverseService implements UniverseServiceManager, Service {
             changeList.addAll(changes);
         }
 
+        @Override
         public void run() {
             Change change;
 

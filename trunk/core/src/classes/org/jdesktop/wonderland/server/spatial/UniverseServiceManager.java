@@ -32,6 +32,8 @@ public interface UniverseServiceManager {
 
     public void createCell(CellMO cellMO);
 
+    public void removeCell(CellMO cellMO);
+
     public void removeChild(CellMO parent, CellMO child);
 
     public  void addRootToUniverse(CellMO rootCellMO);

@@ -53,6 +53,10 @@ public class UniverseManager {
         serviceMgr.createCell(cellMO);
     }
 
+    public void removeCell(CellMO cellMO) {
+        serviceMgr.removeCell(cellMO);
+    }
+
     public void removeChild(CellMO parent, CellMO child) {
         serviceMgr.removeChild(parent, child);
     }

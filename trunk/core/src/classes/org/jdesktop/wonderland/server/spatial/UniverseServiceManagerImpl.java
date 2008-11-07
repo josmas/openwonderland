@@ -30,6 +30,10 @@ public class UniverseServiceManagerImpl implements UniverseServiceManager {
         service.createCell(cellMO);
     }
 
+    public void removeCell(CellMO cellMO) {
+        service.removeCell(cellMO);
+    }
+
     public void removeChild(CellMO parent, CellMO child) {
         service.removeChild(parent, child);
     }
