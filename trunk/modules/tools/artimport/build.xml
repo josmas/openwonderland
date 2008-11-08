@@ -34,7 +34,8 @@
                     <include name="${module.src}/common/**"/>
                 </clientjar> 
             </client>
-                
+
+             <!--
             <server>
                 <serverjar name="artimport-server" basedir="${build.classes.dir}">
                     <cellsetup>
@@ -44,6 +45,7 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
+            -->
             <!--<art dir="${current.dir}/art"/>-->
         </module>
     </target>                                  
