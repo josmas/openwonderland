@@ -119,6 +119,14 @@ public class JmeClientMain {
                     }
                 }).start();
             }
+
+            public void logout() {
+                new Thread(new Runnable() {
+                    public void run() {
+                        JmeClientMain.this.logout();
+                    }
+                }).start();
+            }
         });
 
         // connect to the default server
@@ -135,11 +143,7 @@ public class JmeClientMain {
     }
 
     protected void loadServer(String serverURL) throws IOException {
-        // disconnect from the current session
-        if (curSession != null) {
-            curSession.getCellCache().detachRootEntities();
-            curSession.logout();
-        }
+        logout();
 
         // get the login manager for the given server
         LoginManager lm = LoginManager.getInstance(serverURL);
@@ -164,6 +168,15 @@ public class JmeClientMain {
         LoginManager.setPrimary(lm);
         lm.setPrimarySession(curSession);
         frame.setServerURL(serverURL);
+    }
+
+    protected void logout() {
+        // disconnect from the current session
+        if (curSession != null) {
+            curSession.getCellCache().detachRootEntities();
+            curSession.logout();
+            curSession = null;
+        }
     }
 
     protected URL getPropsURL() {

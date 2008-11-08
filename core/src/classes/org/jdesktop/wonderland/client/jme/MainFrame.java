@@ -140,6 +140,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     public interface ServerURLListener {
         public void serverURLChanged(String serverURL);
+        public void logout();
     }
 
     /** This method is called from within the constructor to
@@ -161,6 +162,8 @@ public class MainFrame extends javax.swing.JFrame {
         fpsLabel = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        logoutMI = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JSeparator();
         exitMI = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
@@ -200,6 +203,15 @@ public class MainFrame extends javax.swing.JFrame {
 
         fileMenu.setText(bundle.getString("File")); // NOI18N
 
+        logoutMI.setText("Log out");
+        logoutMI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logoutMIActionPerformed(evt);
+            }
+        });
+        fileMenu.add(logoutMI);
+        fileMenu.add(jSeparator1);
+
         exitMI.setText(bundle.getString("Exit")); // NOI18N
         exitMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -236,6 +248,12 @@ private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     }
 }//GEN-LAST:event_goButtonActionPerformed
 
+private void logoutMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutMIActionPerformed
+    if (serverListener != null) {
+        serverListener.logout();
+    }
+}//GEN-LAST:event_logoutMIActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
@@ -245,6 +263,8 @@ private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JMenuItem logoutMI;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JTextField serverField;
     private javax.swing.JLabel serverLabel;
