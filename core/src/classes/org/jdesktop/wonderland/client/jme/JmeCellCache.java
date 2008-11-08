@@ -68,42 +68,14 @@ public class JmeCellCache extends CellCacheBasicImpl {
                            cellTransform,
                            setup,
                            cellName);
-//            logger.warning("Loaded Cell "+ret.getClass().getName());
+        logger.warning("Loaded Cell "+ret.getClass().getName());
 
-        CellRenderer rend = ret.getCellRenderer(Cell.RendererType.RENDERER_JME);
-        if (ret!=null && rend!=null) {
-            if (rend instanceof CellRendererJME) {
-                Entity parentEntity= findParentEntity(ret.getParent());
-                Entity thisEntity = ((CellRendererJME)rend).getEntity();
+        // Force the cell to create the JME renderer entity
+        ret.getCellRenderer(Cell.RendererType.RENDERER_JME);
 
-                thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(ret));
+        // Renderers are now responsible for adding themselves to the scene
+        // when their setStatus call is called
 
-//                  Test code for enter/exit event listeners
-//		    EnterExitEvent3DLogger enterExitEventListener = 
-//			new EnterExitEvent3DLogger(className+"_"+cellID);
-//		    enterExitEventListener.addToEntity(thisEntity);
-
-                if (parentEntity!=null) {
-                    parentEntity.addEntity(thisEntity);
-                } else {
-                    ClientContextJME.getWorldManager().addEntity(thisEntity);
-                    rootEntities.add(thisEntity);
-                }
-
-                // Figure out the correct parent entity for this cells entity.
-                if (parentEntity!=null && thisEntity!=null) {
-                    RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
-                    RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
-                    if (parentRendComp!=null && parentRendComp.getSceneRoot()!=null && thisRendComp!=null) {
-                        thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
-                    }
-                }
-
-            } else
-                logger.warning("Unexpected renderer class "+rend.getClass().getName());
-        } else {
-            logger.info("No Entity for Cell "+ret.getClass().getName());
-        }
         return ret;
     }
 
@@ -158,25 +130,6 @@ public class JmeCellCache extends CellCacheBasicImpl {
         rootEntities.clear();
     }
 
-    /**
-     * Traverse up the cell hierarchy and return the first Entity
-     * @param cell
-     * @return
-     */
-    private Entity findParentEntity(Cell cell) {
-        if (cell==null)
-            return null;
-
-        CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-        if (cell!=null && rend!=null) {
-            if (rend instanceof CellRendererJME) {
-//                    System.out.println("FOUND PARENT ENTITY on CELL "+cell.getName());
-                return ((CellRendererJME)rend).getEntity();
-            }
-        }
-
-        return findParentEntity(cell.getParent());
-    }
 }
 
 
