@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.front.servlet;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
 import org.jdesktop.deployment.jnlp.servlet.DefaultJnlpSubstitutionHandler;
 import org.jdesktop.wonderland.utils.ServletPropertyUtil;
 
@@ -50,7 +51,8 @@ public class WonderlandSubstitutionHandler
         // substitute $$sgs.server with the sgs server URL
         String serverURL = ServletPropertyUtil.getProperty("wonderland.server.url", context);
         if (serverURL == null) {
-            serverURL = request.getRequestURL().toString();
+            UriBuilder builder = UriBuilder.fromUri(request.getRequestURL().toString());
+            serverURL = builder.replacePath("/").build().toString();
             
             /*try {
                 serverName = InetAddress.getLocalHost().getCanonicalHostName();
@@ -60,7 +62,15 @@ public class WonderlandSubstitutionHandler
             }*/
         }
         jnlpTemplate = substitute(jnlpTemplate, "$$wonderland.server.url", serverURL);
-        
+
+        // substitute in the config directory
+        String configDirURL = ServletPropertyUtil.getProperty("wonderland.client.config.dir", context);
+        if (configDirURL == null) {
+            UriBuilder builder = UriBuilder.fromUri(request.getRequestURL().toString());
+            configDirURL = builder.replacePath("/wonderland-web-front/config/").build().toString();
+        }
+        jnlpTemplate = substitute(jnlpTemplate, "$$wonderland.client.config.dir", configDirURL);
+
         // return the result
         return jnlpTemplate;
     }

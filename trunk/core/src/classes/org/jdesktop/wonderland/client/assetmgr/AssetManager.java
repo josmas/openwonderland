@@ -52,7 +52,7 @@ import org.jdesktop.wonderland.client.modules.RepositoryList;
 import org.jdesktop.wonderland.client.modules.RepositoryList.Repository;
 import org.jdesktop.wonderland.client.modules.RepositoryUtils;
 import org.jdesktop.wonderland.common.AssetType;
-import org.jdesktop.wonderland.common.ResourceURI;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 
@@ -181,25 +181,30 @@ public class AssetManager {
      * @param assetURI The unique URI of the asset to load
      * @param assetType The type of the asset being loaded
      */
-    public Asset getAsset(ResourceURI assetURI, AssetType assetType) {
+    public Asset getAsset(AssetURI assetURI, AssetType assetType) {
+        /* Fetch some basic information from the asset uri */
         String uri = assetURI.toString();
+        String moduleName = assetURI.getModuleName();
+        String path = assetURI.getRelativePath();
+        String serverURL = assetURI.getServer();
         
         /* Log a bunch of informative messages */
         logger.fine("[ASSET] GET asset " + uri + " [" + assetType + "]");
-        logger.fine("[ASSET] GET module name " + assetURI.getModuleName());
-        logger.fine("[ASSET] GET module relative path " + assetURI.getRelativePath());
+        logger.fine("[ASSET] GET module name " + moduleName);
+        logger.fine("[ASSET] GET module relative path " + path);
+        logger.fine("[ASSET] GET server " + serverURL);
         
         /*
          * First construct an Asset object that represents the asset we want.
          * This consists of both the Asset URI and the desired checksum.
          */
         String checksum = null;
-        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache("server");
+        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache(serverURL);
         if (cache != null) {
-            ChecksumList checksums = cache.getModuleChecksums(assetURI.getModuleName());
-            logger.fine("[ASSET] GET checksums for asset " + assetURI.getRelativePath() + " in " + checksums);
+            ChecksumList checksums = cache.getModuleChecksums(moduleName);
+            logger.fine("[ASSET] GET checksums for asset " + path + " in " + checksums);
             if (checksums != null) {
-                Checksum c = checksums.getChecksums().get(assetURI.getRelativePath());
+                Checksum c = checksums.getChecksums().get(path);
                 if (c != null) {
                     checksum = c.getChecksum();
                 }
@@ -437,6 +442,7 @@ public class AssetManager {
      * to download the asset from each server.
      */
     private boolean getAssetFromRepository(Asset asset) {
+        
         logger.fine("[ASSET] FETCH asset: " + asset.getAssetURI() + " [" + asset.checksum + "]");
         
         /*
@@ -444,7 +450,8 @@ public class AssetManager {
          * this information from the module in which the asset is contained.
          */
         String moduleName = asset.getAssetURI().getModuleName();
-        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache("server");
+        String serverURL = asset.getAssetURI().getServer();
+        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache(serverURL);
         RepositoryList list = cache.getModuleRepositoryList(moduleName);
         if (list == null) {
             logger.warning("[ASSET] FETCH unable to locate repository list, cache: " + cache);
@@ -481,6 +488,7 @@ public class AssetManager {
             
             /* Form the URL of where to find the asset */
             String url = RepositoryUtils.getAssetURL(repository, asset.getAssetURI());
+            logger.warning("[ASSET] FETCH Loading from url " + url);
             
             /*
              * Try to synchronously download the asset. Upon failure log

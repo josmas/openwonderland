@@ -67,10 +67,10 @@
             
             // add note if any
             if (pingData[i].pingNoteText != null) {
-                data.setValue(idx, 2, pingData[i].pingNoteText);
+                data.setValue(idx, 3, pingData[i].pingNoteText);
             }
             if (pingData[i].pingNoteTitle != null) {
-                data.setValue(idx, 3, pingData[i].pingNoteTitle);
+                data.setValue(idx, 2, pingData[i].pingNoteTitle);
             }
         }
         

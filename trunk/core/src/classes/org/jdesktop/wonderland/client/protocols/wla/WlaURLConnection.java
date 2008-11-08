@@ -30,7 +30,6 @@ import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
-import org.jdesktop.wonderland.common.ResourceURI;
 
 /**
  * The WlaURLConnection class is the URL connection to URLs that have the 'wla'

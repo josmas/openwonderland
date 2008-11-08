@@ -18,6 +18,9 @@
 package org.jdesktop.wonderland.client.jme;
 
 import com.jme.bounding.BoundingVolume;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -26,7 +29,6 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.client.jme.input.test.EnterExitEvent3DLogger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
@@ -38,12 +40,17 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 /**
  * Concrete implementation of CellCache for the JME Client
  */
-class JmeCellCache extends CellCacheBasicImpl {
+public class JmeCellCache extends CellCacheBasicImpl {
+
+    // a list of top-level cells we have added
+    private final Set<Entity> rootEntities;
 
     public JmeCellCache(CellClientSession session, ClassLoader loader) {
         super(session, loader,
               session.getCellCacheConnection(),
               session.getCellChannelConnection());
+
+        rootEntities = Collections.synchronizedSet(new HashSet<Entity>());
     }
 
     @Override
@@ -76,10 +83,12 @@ class JmeCellCache extends CellCacheBasicImpl {
 //			new EnterExitEvent3DLogger(className+"_"+cellID);
 //		    enterExitEventListener.addToEntity(thisEntity);
 
-                if (parentEntity!=null)
+                if (parentEntity!=null) {
                     parentEntity.addEntity(thisEntity);
-                else
+                } else {
                     ClientContextJME.getWorldManager().addEntity(thisEntity);
+                    rootEntities.add(thisEntity);
+                }
 
                 // Figure out the correct parent entity for this cells entity.
                 if (parentEntity!=null && thisEntity!=null) {
@@ -103,10 +112,13 @@ class JmeCellCache extends CellCacheBasicImpl {
         Cell cell = getCell(cellID);
         CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         if (cell!=null && rend!=null) {
-            if (rend instanceof CellRendererJME)
-                ClientContextJME.getWorldManager().removeEntity(((CellRendererJME)rend).getEntity());
-            else
+            if (rend instanceof CellRendererJME) {
+                Entity e = ((CellRendererJME) rend).getEntity();
+                ClientContextJME.getWorldManager().removeEntity(e);
+                rootEntities.remove(e);
+            } else {
                 logger.warning("Unexpected renderer class "+rend.getClass().getName());
+            }
         }
         super.unloadCell(cellID);
     }
@@ -122,6 +134,28 @@ class JmeCellCache extends CellCacheBasicImpl {
         // TODO this will not work for federation, need to determine primary view cell in a
         // higher level manager
         ClientContextJME.getViewManager().setPrimaryViewCell(viewCell);
+    }
+
+    /**
+     * Get all root entities in this cache
+     * @return the set of root entities in this cache
+     */
+    public Set<Entity> getRootEntities() {
+        return rootEntities;
+    }
+
+
+    /**
+     * Remove all top-level entities in this cache from the scene graph
+     */
+    public void detachRootEntities() {
+        synchronized (rootEntities) {
+            for (Entity e : rootEntities) {
+                ClientContextJME.getWorldManager().removeEntity(e);
+            }
+        }
+
+        rootEntities.clear();
     }
 
     /**

@@ -3,7 +3,7 @@
     <display-name>Wonderland Server Runner</display-name>
     <listener>
         <description>Notify of initialization and shutdown</description>
-        <listener-class>org.jdesktop.wonderland.runner.servlet.RunnerServlet</listener-class>
+        <listener-class>org.jdesktop.wonderland.runner.servlet.RunnerContextListener</listener-class>
     </listener>
     <servlet>
         <servlet-name>RunServlet</servlet-name>

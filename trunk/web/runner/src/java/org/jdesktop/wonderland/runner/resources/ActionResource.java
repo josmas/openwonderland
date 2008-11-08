@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response.Status;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.RunnerException;
+import org.jdesktop.wonderland.runner.StatusWaiter;
 
 /**
  * The ActionResource class is a Jersey RESTful service that allows
@@ -42,7 +43,7 @@ import org.jdesktop.wonderland.runner.RunnerException;
  * @author jkaplan
  */
 @Path(value="/all/{action}")
-public class ActionResource extends BaseActionResource {
+public class ActionResource {
     private static final Logger logger =
             Logger.getLogger(ActionResource.class.getName());
     
@@ -59,21 +60,23 @@ public class ActionResource extends BaseActionResource {
         if (waitParam != null) {
             wait = Boolean.parseBoolean(waitParam);
         }
-        
-        Collection<Runner> runners = RunManager.getInstance().getAll();
+
+        RunManager rm = RunManager.getInstance();
+
+        Collection<Runner> runners = rm.getAll();
         Collection<StatusWaiter> waiters = new ArrayList<StatusWaiter>();
         
         try {
             if (action.equalsIgnoreCase("start")) {
                 for (Runner r : runners) {
-                    StatusWaiter w = startRunner(r, wait);
+                    StatusWaiter w = rm.start(r, wait);
                     if (w != null) {
                         waiters.add(w);
                     }
                 }
             } else if (action.equalsIgnoreCase("stop")) {
                 for (Runner r : runners) {
-                    StatusWaiter w = stopRunner(r, wait);
+                    StatusWaiter w = rm.stop(r, wait);
                     if (w != null) {
                         waiters.add(w);
                     }
@@ -81,7 +84,7 @@ public class ActionResource extends BaseActionResource {
             } else if (action.equalsIgnoreCase("restart")) {
                 // first stop everyone
                 for (Runner r : runners) {
-                    StatusWaiter w = stopRunner(r, true);
+                    StatusWaiter w = rm.stop(r, true);
                     if (w != null) {
                         waiters.add(w);
                     }
@@ -99,7 +102,7 @@ public class ActionResource extends BaseActionResource {
                 
                 // now start everyone back up
                 for (Runner r : runners) {
-                    StatusWaiter w = startRunner(r, wait);
+                    StatusWaiter w = rm.start(r, wait);
                     if (w != null) {
                         waiters.add(w);
                     }

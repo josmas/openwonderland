@@ -26,6 +26,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
@@ -42,7 +44,11 @@ public class MainFrame extends javax.swing.JFrame {
     static {
         new LogControl(MainFrame.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
     }
-    
+
+    // variables for the location field
+    private String serverURL;
+    private ServerURLListener serverListener;
+
     /** Creates new form MainFrame */
     public MainFrame(WorldManager wm, int width, int height) {
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
@@ -64,6 +70,32 @@ public class MainFrame extends javax.swing.JFrame {
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
         centerPanel.setMinimumSize(new Dimension(width, height));
         centerPanel.setPreferredSize(new Dimension(width, height));
+
+        serverField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void checkButtons() {
+                String cur = serverField.getText();
+                if (cur != null && cur.length() > 0 &&
+                        !cur.equals(serverURL))
+                {
+                    goButton.setEnabled(true);
+                } else {
+                    goButton.setEnabled(false);
+                }
+            }
+        });
+
 
         pack();
     }
@@ -93,6 +125,23 @@ public class MainFrame extends javax.swing.JFrame {
         toolsMenu.add(menuItem);
     }
 
+    /**
+     * Set the server URL in the location field
+     * @param serverURL the server URL to set
+     */
+    public void setServerURL(String serverURL) {
+        this.serverURL = serverURL;
+        serverField.setText(serverURL);
+    }
+
+    public void addServerURLListener(ServerURLListener listener) {
+        serverListener = listener;
+    }
+
+    public interface ServerURLListener {
+        public void serverURLChanged(String serverURL);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -103,6 +152,10 @@ public class MainFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        serverPanel = new javax.swing.JPanel();
+        serverLabel = new javax.swing.JLabel();
+        serverField = new javax.swing.JTextField();
+        goButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         fpsLabel = new javax.swing.JLabel();
@@ -115,6 +168,29 @@ public class MainFrame extends javax.swing.JFrame {
         jLabel1.setText("jLabel1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        serverPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        serverPanel.setLayout(new java.awt.BorderLayout());
+
+        serverLabel.setText("Location:");
+        serverPanel.add(serverLabel, java.awt.BorderLayout.WEST);
+
+        serverField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverFieldActionPerformed(evt);
+            }
+        });
+        serverPanel.add(serverField, java.awt.BorderLayout.CENTER);
+
+        goButton.setText("Go!");
+        goButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goButtonActionPerformed(evt);
+            }
+        });
+        serverPanel.add(goButton, java.awt.BorderLayout.EAST);
+
+        getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
         fpsLabel.setText("FPS :");
@@ -150,15 +226,29 @@ private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     System.exit(0);
 }//GEN-LAST:event_exitMIActionPerformed
 
+private void serverFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverFieldActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_serverFieldActionPerformed
+
+private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
+    if (serverListener != null) {
+        serverListener.serverURLChanged(serverField.getText());
+    }
+}//GEN-LAST:event_goButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMI;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel fpsLabel;
+    private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JMenuBar mainMenuBar;
+    private javax.swing.JTextField serverField;
+    private javax.swing.JLabel serverLabel;
+    private javax.swing.JPanel serverPanel;
     private javax.swing.JMenu toolsMenu;
     // End of variables declaration//GEN-END:variables
 

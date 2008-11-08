@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.AssetURIAdapter;
 
 /**
  * The BasicCellSetup class is the base class for all classes that represent
@@ -310,20 +311,37 @@ public abstract class BasicCellSetup implements Serializable {
     }
     
     /**
-     * Takes the input stream of the XML file and instantiates an instance of
+     * Takes the input reader of the XML data and instantiates an instance of
      * the BasicCellSetup class
      * <p>
-     * @param is The input stream of the version XML file
-     * @throw ClassCastException If the input file does not map to BasicCellSetup
-     * @throw JAXBException Upon error reading the XML file
+     * @param r The input reader of the XML data
+     * @throw ClassCastException If the input data does not map to BasicCellSetup
+     * @throw JAXBException Upon error reading the XML data
      */
     public static BasicCellSetup decode(Reader r) throws JAXBException {
-        return decode(r, null);
+        return decode(r, null, null);
     }
 
-    public static BasicCellSetup decode(Reader r, ClassLoader classLoader) throws JAXBException {
-        /* Read from XML */
-        Unmarshaller u = CellSetupFactory.getUnmarshaller(classLoader);
+    /**
+     * Takes the input reader of the XML file and instantiates an instance of
+     * the BasicCellSetup class. Also takes the class loader and server name
+     * associated with the context.
+     * <p>
+     * @param r The input data of the version XML data
+     * @param cl The class loader
+     * @param server The name of the server
+     * @throw ClassCastException If the input data does not map to BasicCellSetup
+     * @throw JAXBException Upon error reading the XML data
+     */
+    public static BasicCellSetup decode(Reader r, ClassLoader cl, String server) throws JAXBException {
+        /*
+         * De-serialize from XML. We set up an adapter to handle XML elements
+         * of type AssetURI. This will properly decode them and also fill in
+         * the name of the server context.
+         */
+        Unmarshaller u = CellSetupFactory.getUnmarshaller(cl);
+        AssetURIAdapter adapter = new AssetURIAdapter(server);
+        u.setAdapter(adapter);
         BasicCellSetup setup = (BasicCellSetup)u.unmarshal(r);
         
         /* Convert metadata to internal representation */
@@ -342,17 +360,24 @@ public abstract class BasicCellSetup implements Serializable {
     }
     
     /**
-     * Writes the BasicCellSetup class to an output stream.
+     * Writes the BasicCellSetup class to an output writer.
      * <p>
-     * @param os The output stream to write to
-     * @throw JAXBException Upon error writing the XML file
+     * @param w The output write to write to
+     * @throw JAXBException Upon error writing the XML data
      */
     public void encode(Writer w) throws JAXBException {
         encode(w, null);
     }
     
-    
-    public void encode(Writer w, ClassLoader classLoader) throws JAXBException {
+    /**
+     * Writes the BasicCellSetup class to an output writer. Also takes the
+     * class loader context.
+     * <p>
+     * @param w The output write to write to
+     * @param cl The class loader
+     * @throw JAXBException Upon error writing the XML data
+     */   
+    public void encode(Writer w, ClassLoader cl) throws JAXBException {
         /* Convert internal metadata hash to one suitable for serialization */
         if (this.internalMetaData != null) {
             this.metadata = new MetaDataHashMap();
@@ -368,7 +393,7 @@ public abstract class BasicCellSetup implements Serializable {
         }
 
         /* Write out as XML */
-        Marshaller m = CellSetupFactory.getMarshaller(classLoader);
+        Marshaller m = CellSetupFactory.getMarshaller(cl);
         m.marshal(this, w);
     }
     
@@ -385,10 +410,4 @@ public abstract class BasicCellSetup implements Serializable {
                 " scaling=(" + this.scaling.x + "," + this.scaling.y + "," +
                 this.scaling.z + ")";
     }
-    
-//    public static void main(String[] args) throws JAXBException, IOException {
-//        StaticModelCellSetup setup = new StaticModelCellSetup();
-//        //setup.setMetaData(null);
-//        setup.encode(new FileWriter("setup.xml"));
-//    }
 }
