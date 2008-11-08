@@ -25,8 +25,8 @@
         <mkdir dir="${sgs.data.dir}/dsdb"/>
 
         <!-- default empty values for services and managers -->
-        <property name="sgs.services" value=""/>
-        <property name="sgs.managers" value=""/>
+        <property name="sgs.services" value=":com.sun.mpk20.voicelib.impl.service.voice.VoiceServiceImpl"/>
+        <property name="sgs.managers" value=":com.sun.mpk20.voicelib.impl.app.VoiceManagerImpl"/>
 
         <!-- copy the config file to the right place -->
         <copy file="${current.dir}/WonderlandMain.cfg" 
