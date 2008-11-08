@@ -44,6 +44,22 @@ public class AssetDeployer implements ModuleDeployerSPI {
     /* Holds map of deployed asset info and their checksums */
     private static Map<DeployedAsset, ModuleChecksums> checksumMap = new HashMap();
     
+    // General idea:
+    // asset managements all types of assets, whether deployed from modules or
+    // whether deployed from elsewhere (document manager). This just keeps a
+    // string identifying collection of assets. For modules, it is modules/
+    // <module name>. For documents, it could be documents/username. Following
+    // this is the path (for modules, that includes the type).
+    //
+    // On client, AssetURI and DocumentURI can do the translation into the
+    // proper URI.
+    //
+    // Checksums is a general concept, not necessarily "ModuleChecksums"
+    //
+    // There is an "AssetManager" that manages all of the assets, and can
+    // deploy the assets and generate checksums. There is an adapter for
+    // assets deployed from modules. (like below)
+    
     /**
      * A DeployedAsset represents the <module name, asset type> pair and
      * uniquely identifies a collection of assets managed by this deployer. It

@@ -17,32 +17,30 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
+import com.jme.scene.Line;
 import com.jme.scene.Node;
 import imi.loaders.repository.Repository;
-import imi.scene.processors.JSceneEventProcessor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.InputManager;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer.MoveProcessor;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import imi.scene.processors.JSceneEventProcessor;
+import org.jdesktop.mtgame.RenderManager;
 
 /**
  * 
@@ -277,7 +275,16 @@ public class ViewManager {
         cameraComponent.setCameraSceneGraph(cameraSG);
         cameraComponent.setCameraNode(cameraNode);
         camera.addComponent(CameraComponent.class, cameraComponent);
-        
+//        cameraComponent.getCamera().setParallelProjection(true);
+//        cameraComponent.getCamera().setFrustum(-100, 1000, -20 * aspect, 20 * aspect, -20, 20);
+//        cameraComponent.getCamera().setFrame(
+//                new Vector3f(0, 100, 0),
+//                new Vector3f(1, 0, 0),
+//                new Vector3f(0, 0, 1),
+//                new Vector3f(0, -1, 0));
+//        cameraComponent.getCamera().setFrame(   new Vector3f(0,50,0), 
+//            new Quaternion().fromAngleAxis(-90*FastMath.DEG_TO_RAD, Vector3f.UNIT_X)
+//                           .multLocal(new Quaternion().fromAngleAxis(180*FastMath.DEG_TO_RAD, Vector3f.UNIT_Y)));
         cameraProcessor = new ThirdPersonCameraProcessor(cameraNode);
 //        camera.addComponent(CameraProcessor.class, cameraProcessor);
         

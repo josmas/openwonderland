@@ -18,36 +18,46 @@
 package org.jdesktop.wonderland.common.cell.messages;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- * Message sent to edit the cell hierarchy.
+ * Message sent to add a cell hierarchy.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public class CellEditMessage extends Message {
-
-    /** The message type */
-    private EditType editType;
-    
-    /** Enumeration of kinds of editing */
-    public enum EditType { CREATE_CELL, DELETE_CELL };
+public class CellCreateMessage extends CellEditMessage {
+    /** The ID of the cell of the parent */
+    private CellID parentCellID;
+   
+    /** The uri of the asset for the new cell */
+    private String assetURI;
     
     /**
      * Create a new cell message to the given cellID of the parent.
      * 
      * @param parentID the id of the parent cell
      */
-    public CellEditMessage(EditType editType) {
-        this.editType = editType;
+    public CellCreateMessage(CellID parentCellID) {
+        super(EditType.CREATE_CELL);
+        this.parentCellID = parentCellID;
+    }
+    
+    /**
+     * Get the ID of the cell of the parent
+     * 
+     * @return the parent cellID
+     */
+    public CellID getParentCellID() {
+        return this.parentCellID;
+    }
+    
+    public String getAssetURI() {
+        return assetURI;
     }
 
-    public EditType getEditType() {
-        return editType;
+    public void setAssetURI(String assetURI) {
+        this.assetURI = assetURI;
     }
 
-    public void setEditType(EditType editType) {
-        this.editType = editType;
-    }
 }

@@ -23,18 +23,15 @@ import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial.CullHint;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Cone;
 import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Sphere;
-import com.jme.scene.state.RenderState;
-import com.jme.scene.state.ZBufferState;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell;
-import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
 /**
  * Render basic jme shapes
@@ -59,7 +56,9 @@ public class ShapeRenderer extends BasicRenderer {
         
         switch(((SimpleShapeCell)cell).getShape()) {
             case BOX :
-                ret.attachChild(geom = new Box("Box", new Vector3f(), xExtent, yExtent, zExtent));
+                geom = new Box("Box", new Vector3f(), xExtent, yExtent, zExtent);
+                geom.setCullHint(CullHint.Never);
+                ret.attachChild(geom);
                 break;
             case CYLINDER :
                 ret.attachChild(geom = new Cylinder("Cylinder", 10, 10, xExtent, yExtent));
@@ -83,6 +82,14 @@ public class ShapeRenderer extends BasicRenderer {
             
         }
 
+//        Line line = new Line("fubar",
+//                new Vector3f[] { new Vector3f(-1000, 50, 0), new Vector3f(1000, 50, 0) },
+//                null, null, null);
+//        line.setLineWidth(10.0f);
+//        line.setSolidColor(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.0f));        
+//        ret.attachChild(line);
+
+        
         // Set the transform
         applyTransform(ret, cell.getLocalTransform());
         

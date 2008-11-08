@@ -36,6 +36,9 @@ public class SimpleShapeCell extends Cell {
 
     public SimpleShapeCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        this.addComponent(new SelectableComponent(this));
+        this.addComponent(new ChannelComponent(this));
+        this.addComponent(new MovableComponent(this));
     }
     
     @Override

@@ -58,16 +58,16 @@ public class MouseSpinCell extends SimpleShapeCell {
         Vector3f dest = new Vector3f(currentLoc);
         dest.y+=0.3;
 
-        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, node, 0f, (float)Math.PI*2f);
-        Clip clip2 = Clip.create(1000, spinner);
-        clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
-
-        Mouse3DTrigger.addTrigger(entity, clip2, Mouse3DTriggerEvent.PRESS);
-
-        TranslationAnimationProcessor trans = new TranslationAnimationProcessor(entity, node, currentLoc, dest);
-        Clip clip = Clip.create(500, Clip.INDEFINITE, trans);
-        clip.setAutoReverse(true);
-        clip.start();
+//        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, node, 0f, (float)Math.PI*2f);
+//        Clip clip2 = Clip.create(1000, spinner);
+//        clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
+//
+//        Mouse3DTrigger.addTrigger(entity, clip2, Mouse3DTriggerEvent.PRESS);
+//
+//        TranslationAnimationProcessor trans = new TranslationAnimationProcessor(entity, node, currentLoc, dest);
+//        Clip clip = Clip.create(500, Clip.INDEFINITE, trans);
+//        clip.setAutoReverse(true);
+//        clip.start();
 //        Mouse3DTrigger.addTrigger(entity, clip, Mouse3DTriggerEvent.ENTER);
 
         return ret;

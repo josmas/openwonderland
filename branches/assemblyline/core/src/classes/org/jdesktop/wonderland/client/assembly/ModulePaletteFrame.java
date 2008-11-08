@@ -16,8 +16,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.modules.CachedModule;
 import org.jdesktop.wonderland.client.modules.ServerCache;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellEditMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellEditMessage.EditType;
+import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.modules.ModuleArtList;
 
 /**
@@ -141,8 +140,7 @@ private void importActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     WonderlandServerInfo server = ClientContext.getWonderlandSessionManager().getPrimaryServer();
     WonderlandSession session = ClientContext.getWonderlandSessionManager().getSession(server);
     CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-    CellEditMessage msg = new CellEditMessage(null);
-    msg.setEditTpe(EditType.CREATE_CELL);
+    CellCreateMessage msg = new CellCreateMessage(null);
     msg.setAssetURI("wla://" + moduleName + "/" + artPath);
     connection.send(msg);
 }//GEN-LAST:event_importActionPerformed

@@ -109,6 +109,7 @@ public class MainFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        jSlider1 = new javax.swing.JSlider();
         jToolBar1 = new javax.swing.JToolBar();
         cellViewerTTB = new javax.swing.JButton();
         softphoneButton = new javax.swing.JButton();
@@ -120,6 +121,10 @@ public class MainFrame extends javax.swing.JFrame {
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         fpsLabel = new javax.swing.JLabel();
+        heightSlider = new javax.swing.JSlider();
+        jPanel2 = new javax.swing.JPanel();
+        zoomInButton = new javax.swing.JButton();
+        zoomOutButton = new javax.swing.JButton();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         exitMI = new javax.swing.JMenuItem();
@@ -138,6 +143,8 @@ public class MainFrame extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
 
         jLabel1.setText("jLabel1");
+
+        jSlider1.setOrientation(javax.swing.JSlider.VERTICAL);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -227,6 +234,35 @@ public class MainFrame extends javax.swing.JFrame {
         jPanel1.add(fpsLabel);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
+
+        heightSlider.setOrientation(javax.swing.JSlider.VERTICAL);
+        getContentPane().add(heightSlider, java.awt.BorderLayout.LINE_END);
+
+        zoomInButton.setText("I");
+        zoomInButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+
+        zoomOutButton.setText("O");
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(zoomInButton)
+                    .add(zoomOutButton))
+                .add(75, 75, 75))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(zoomInButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(zoomOutButton)
+                .addContainerGap(366, Short.MAX_VALUE))
+        );
+
+        getContentPane().add(jPanel2, java.awt.BorderLayout.LINE_START);
 
         jMenu3.setText(bundle.getString("File")); // NOI18N
 
@@ -463,6 +499,7 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenuItem exitMI;
     private javax.swing.JLabel fpsLabel;
+    private javax.swing.JSlider heightSlider;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
@@ -470,6 +507,8 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JSlider jSlider1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton logAudioProblemButton;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
@@ -485,6 +524,8 @@ public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
     private javax.swing.JMenuItem transferCallMenuItem;
     private javax.swing.JButton virtualPhoneButton;
     private javax.swing.JMenuItem virtualPhoneMenuItem;
+    private javax.swing.JButton zoomInButton;
+    private javax.swing.JButton zoomOutButton;
     // End of variables declaration//GEN-END:variables
 
 }

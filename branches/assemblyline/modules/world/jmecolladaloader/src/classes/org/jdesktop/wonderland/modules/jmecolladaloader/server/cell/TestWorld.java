@@ -79,9 +79,9 @@ public class TestWorld implements ServerPlugin {
 //                            null,
 //                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
             
-            Task t = new TestTask(c3, c2);
-
-            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
+//            Task t = new TestTask(c3, c2);
+//
+//            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
 
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);

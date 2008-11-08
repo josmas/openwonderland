@@ -51,6 +51,9 @@ public class SimpleShapeCellMO extends CellMO {
     public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
         this.shape = shape;
+        this.addComponent(new SelectableComponentMO(this));
+        this.addComponent(new ChannelComponentMO(this));
+        this.addComponent(new MovableComponentMO(this));
     }
     
     @Override

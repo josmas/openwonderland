@@ -17,20 +17,15 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import imi.loaders.repository.Repository;
-import imi.scene.processors.JSceneAWTEventProcessor;
-import imi.scene.processors.JSceneEventProcessor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.selection.SelectionManager;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
@@ -167,6 +162,8 @@ public class JmeClientMain {
 		    }
 		}
     	    });
+            
+            SelectionManager.getSelectionManager();
     }
 
     /**
