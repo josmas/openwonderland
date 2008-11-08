@@ -35,9 +35,12 @@ import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -59,6 +62,8 @@ public abstract class BasicRenderer implements CellRendererJME {
     private Quaternion tmpQuat = new Quaternion();
     
     private static ZBufferState zbuf = null;
+
+    private boolean isRendering = false;
     
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -69,7 +74,64 @@ public abstract class BasicRenderer implements CellRendererJME {
     public BasicRenderer(Cell cell) {
         this.cell = cell;
     }
-    
+
+    public void setStatus(CellStatus status) {
+        switch(status) {
+            case ACTIVE :
+                CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+                if (cell!=null && rend!=null && !isRendering) {
+                    if (rend instanceof CellRendererJME) {
+                        Entity parentEntity= findParentEntity(cell.getParent());
+                        Entity thisEntity = ((CellRendererJME)rend).getEntity();
+
+                        thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(cell));
+
+                        if (parentEntity!=null)
+                            parentEntity.addEntity(thisEntity);
+                        else {
+                            ClientContextJME.getWorldManager().addEntity(thisEntity);
+                        }
+
+                        // Figure out the correct parent entity for this cells entity.
+                        if (parentEntity!=null && thisEntity!=null) {
+                            RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+                            RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
+                            if (parentRendComp!=null && parentRendComp.getSceneRoot()!=null && thisRendComp!=null) {
+                                thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
+                            }
+                        }
+                        isRendering = true;
+
+                    } else
+                        logger.warning("Unexpected renderer class "+rend.getClass().getName());
+                } else {
+                    logger.info("No Entity for Cell "+cell.getClass().getName());
+                }
+            break;
+        }
+
+    }
+
+    /**
+     * Traverse up the cell hierarchy and return the first Entity
+     * @param cell
+     * @return
+     */
+    private Entity findParentEntity(Cell cell) {
+        if (cell==null)
+            return null;
+
+        CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        if (cell!=null && rend!=null) {
+            if (rend instanceof CellRendererJME) {
+//                    System.out.println("FOUND PARENT ENTITY on CELL "+cell.getName());
+                return ((CellRendererJME)rend).getEntity();
+            }
+        }
+
+        return findParentEntity(cell.getParent());
+    }
+
     protected Entity createEntity() {
         Entity ret = new Entity(this.getClass().getName()+"_"+cell.getCellID());
         
