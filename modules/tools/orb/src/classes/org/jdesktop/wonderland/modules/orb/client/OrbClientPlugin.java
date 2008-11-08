@@ -24,28 +24,18 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientPlugin;
 
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
  * Plugin to support the Orb
  * @author jprovino
  */
-public class OrbClientPlugin implements ClientPlugin,
-	SessionStatusListener {
+public class OrbClientPlugin implements ClientPlugin {
 
     private static final Logger logger =
             Logger.getLogger(OrbClientPlugin.class.getName());
     
-    public void initialize(WonderlandSession session) {
-	session.addSessionStatusListener(this);
-
-	logger.fine("Orb initialized, session " + session);
+    public void initialize(LoginManager manager) {
+        logger.fine("Orb initialized");
     }
-    
-    public void sessionStatusChanged(WonderlandSession session, 
-	    WonderlandSession.Status status) {
-
-	logger.fine("session status changed " + session + " status " + status);
-    }
-
 }

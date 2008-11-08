@@ -6,6 +6,7 @@
 package org.jdesktop.wonderland.client.modules;
 
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,8 +16,9 @@ import java.util.logging.Logger;
  * @author jordanslott
  */
 public class ModuleUtils {
-    /* The base URL of the web server */
-    private static final String BASE_URL = "http://localhost:8080/";
+    /* Prefixes for the module and asset web services */
+    private static final String MODULE_PREFIX = "wonderland-web-modules/modules/";
+    private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
     
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(ModuleUtils.class.getName());
@@ -26,35 +28,35 @@ public class ModuleUtils {
      * returns null if the module does not exist or upon some general I/O
      * error.
      * 
-     * @param uniqueName The unique name of a module
+     * @param serverURL The base web server URL
+     * @param moduleName The unique name of a module
      * @return The identity information for a module (e.g. version)
      */
-    public static ModuleIdentity fetchModuleIdentity(String uniqueName) {
-        try {
-            /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-modules/modules/";
-            URL url = new URL(base + uniqueName + "/info");
-            return ModuleIdentity.decode(new InputStreamReader(url.openStream()));
-        } catch (java.lang.Exception excp) {
-            /* Log an error and return null */
-            logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
-            return null;
-        }
-    }
+//    public static ModuleIdentity fetchModuleIdentity(String serverURL, String moduleName) {
+//        try {
+//            /* Open an HTTP connection to the Jersey RESTful service */
+//            URL url = new URL(new URL(serverURL), MODULE_PREFIX + moduleName + "/info");
+//            return ModuleIdentity.decode(new InputStreamReader(url.openStream()));
+//        } catch (java.lang.Exception excp) {
+//            /* Log an error and return null */
+//            logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
+//            return null;
+//        }
+//    }
     
     /**
      * Asks the web server for the module's repository information given the
      * unique name of the module, returns null if the module does not exist or
      * upon some general I/O error.
      *
-     * @param uniqueName The unique name of a module
+     * @param serverURL The base web server URL
+     * @param moduleName The unique name of a module
      * @return The repository information for a module
      */
-    public static RepositoryList fetchModuleRepositoryList(String uniqueName) {
+    public static RepositoryList fetchModuleRepositoryList(String serverURL, String moduleName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-asset/asset/";
-            URL url = new URL(base + uniqueName + "/repository");
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/repository");
             logger.info("[MODULE] Fetching Repository list from " + url.toString());
             return RepositoryList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
@@ -69,14 +71,14 @@ public class ModuleUtils {
      * unique name of the module, returns null if the module does not exist or
      * upon some general I/O error.
      * 
-     * @param uniqueName The unique name of a module
+     * @param serverURL The base web server URL
+     * @param moduleName The unique name of a module
      * @return The checksum information for a module
      */
-    public static ChecksumList fetchModuleChecksums(String uniqueName) {
+    public static ChecksumList fetchModuleChecksums(String serverURL, String moduleName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-asset/asset/";
-            URL url = new URL(base + uniqueName + "/checksums/get");
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/checksums/get");
             logger.info("[MODULES] Fetch modules from " + url.toString());
             return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
@@ -93,11 +95,12 @@ public class ModuleUtils {
      * 
      * @return The list of client and common plugin jars in all modules.
      */
-    public static ModulePluginList fetchPluginJars() {
+    public static ModulePluginList fetchPluginJars(String serverURL) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(BASE_URL + "wonderland-web-asset/asset/jars/get");
-            return ModulePluginList.decode(new InputStreamReader(url.openStream()));
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + "jars/get");
+            Reader r = new InputStreamReader(url.openStream());
+            return ModulePluginList.decode(r, serverURL);
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH JARS Failed", excp);

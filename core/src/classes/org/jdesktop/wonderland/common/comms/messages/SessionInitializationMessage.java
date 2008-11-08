@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.common.comms.messages;
 
 import java.math.BigInteger;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -29,13 +30,19 @@ import org.jdesktop.wonderland.common.messages.Message;
 public class SessionInitializationMessage extends Message {
     /** the ID of this session */
     private BigInteger sessionID;
-    
+
+    /** the id of the user on this server */
+    private WonderlandIdentity userID;
+
     /** 
      * Create a new SessionInitializationMessage
      * @param sessionID the unique id of this session
      */
-    public SessionInitializationMessage(BigInteger sessionID) {
+    public SessionInitializationMessage(BigInteger sessionID,
+                                        WonderlandIdentity userID)
+    {
         this.sessionID = sessionID;
+        this.userID = userID;
     }
     
     /**
@@ -44,5 +51,13 @@ public class SessionInitializationMessage extends Message {
      */
     public BigInteger getSessionID() {
         return sessionID;
+    }
+
+    /**
+     * Get the user ID
+     * @return the user ID
+     */
+    public WonderlandIdentity getUserID() {
+        return userID;
     }
 }

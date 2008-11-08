@@ -29,9 +29,7 @@ import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
-import org.jdesktop.wonderland.client.comms.SessionLifecycleListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 

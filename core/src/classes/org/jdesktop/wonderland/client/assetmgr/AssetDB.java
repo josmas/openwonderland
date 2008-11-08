@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import org.jdesktop.wonderland.common.AssetType;
-import org.jdesktop.wonderland.common.ResourceURI;
+import org.jdesktop.wonderland.common.AssetURI;
 
 /**
  * The AssetDB class represents the client-side cache of assets. The database
@@ -518,7 +518,7 @@ public class AssetDB {
                     long size = result.getLong("SIZE");
                     
                     /*
-                     * Create an ResourceURI class, log and error and return null
+                     * Create an AssetURI class, log and error and return null
                      * if its syntax is invalid.
                      */
                     asset = AssetManager.getAssetManager().assetFactory(assetType, assetID);
@@ -633,7 +633,7 @@ public class AssetDB {
         logger.fine("AssetDB: Database URL:      " + db.getDatabaseUrl());
         logger.fine("AssetDB: Is Connected?      " + db.isConnected());
 
-//        AssetID assetID = new AssetID(new ResourceURI("wla://mpk20/sphere2.dae"), "4d92377dbd58f3ba2908354d2b9618f06303d5e9");
+//        AssetID assetID = new AssetID(new AssetURI("wla://mpk20/sphere2.dae"), "4d92377dbd58f3ba2908354d2b9618f06303d5e9");
 //        Asset asset = db.getAsset(assetID);
 //        asset = new AssetFile(assetID);
 //        db.addAsset(asset);

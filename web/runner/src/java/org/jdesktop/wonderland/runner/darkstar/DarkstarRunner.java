@@ -18,21 +18,29 @@
 
 package org.jdesktop.wonderland.runner.darkstar;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.runner.BaseRunner;
+import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.RunnerConfigurationException;
 import org.jdesktop.wonderland.runner.RunnerException;
 import org.jdesktop.wonderland.utils.RunUtil;
@@ -44,11 +52,20 @@ import org.jdesktop.wonderland.utils.RunUtil;
 public class DarkstarRunner extends BaseRunner {
     /** the default name if none is specified */
     private static final String DEFAULT_NAME = "Darkstar Server";
-    
+
+    /** the default port to run on */
+    private static final int DEFAULT_PORT = 1139;
+
     /** the logger */
     private static final Logger logger =
             Logger.getLogger(DarkstarRunner.class.getName());
-    
+
+    /** the webserver URL to link back to */
+    private String webserverURL;
+
+    /** the sgs port.  Only valid when starting up or running */
+    private int currentPort;
+
     /**
      * Configure this runner.  This method sets values to the default for the
      * Darkstar server.
@@ -67,6 +84,9 @@ public class DarkstarRunner extends BaseRunner {
         if (!props.containsKey("runner.name")) {
             setName(DEFAULT_NAME);
         }
+
+        // record the webserver URL
+        webserverURL = props.getProperty("wonderland.web.server.url");
     }
  
     /**
@@ -86,11 +106,10 @@ public class DarkstarRunner extends BaseRunner {
     @Override
     public Properties getDefaultProperties() {
         Properties props = new Properties();
-        props.setProperty("sgs.port", "1139");
+        props.setProperty("sgs.port", String.valueOf(DEFAULT_PORT));
+        props.setProperty("wonderland.web.server.url", webserverURL);
         return props;
     }
-    
-    
     
     /**
      * Start the Darkstar server with the given properties.  This method first
@@ -115,12 +134,18 @@ public class DarkstarRunner extends BaseRunner {
         if (moduleDir.exists()) {
             RunUtil.deleteDir(moduleDir);
         }
-        
+
+        // go through each module part in turn and deploy the files in that
+        // part.  Keep track of any Darkstar managers and services which
+        // are created as well
         Map<Module, List<ModulePart>> deploy = DarkstarModuleDeployer.getModules();
+        List<String> managers = new ArrayList<String>();
+        List<String> services = new ArrayList<String>();
         for (Entry<Module, List<ModulePart>> e : deploy.entrySet()) {
             for (ModulePart mp : e.getValue()) {
                 try {
-                    writeModulePart(moduleDir, e.getKey(), mp);
+                    writeModulePart(moduleDir, e.getKey(), mp,
+                                    managers, services);
                 } catch (IOException ioe) {
                     // skip this module and keep going
                     logger.log(Level.WARNING, "Error writing module " + 
@@ -129,10 +154,76 @@ public class DarkstarRunner extends BaseRunner {
                 }
             }
         }
+
+        // turn the captured manager and service names into properties
+        if (managers.size() > 0) {
+            StringBuffer sb = new StringBuffer();
+            for (String manager : managers) {
+               sb.append(":" + manager);
+            }
+            props.put("sgs.managers", sb.toString());
+        }
+        if (services.size() > 0) {
+            StringBuffer sb = new StringBuffer();
+            for (String service : services) {
+               sb.append(":" + service);
+            }
+            props.put("sgs.services", sb.toString());
+        }
+
+        // set the current port to the one we are now running with.  This
+        // will stay valid until the runner is stopped.
+        currentPort = getPort(props);
        
         super.start(props);
     }
-    
+
+    /**
+     * Get the Darkstar server name for clients to connect to.
+     * @return the external hostname of the Darkstar server
+     */
+    public String getHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException uhe) {
+            logger.log(Level.WARNING, "Unable to determine hostname", uhe);
+            return "localhost";
+        }
+    }
+
+    /**
+     * Get the Darkstar server port for clients to connect to.  This method
+     * returns the port of the currently running server.  If the server
+     * is not running, it returns what the port will be the next time the
+     * server starts up.
+     * @return the port
+     */
+    public synchronized int getPort() {
+        // if the server is running, us the current port variable
+        if (getStatus() == Status.RUNNING ||
+                getStatus() == Status.STARTING_UP)
+        {
+            return currentPort;
+        } else {
+            return getPort(RunManager.getInstance().getStartProperties(this));
+        }
+    }
+
+    /**
+     * Get the port to run on from a set of properties
+     * @param properties the properties to look at
+     * @return the port to run on
+     */
+    private int getPort(Properties props) {
+        // determine the current port
+        String portProp = props.getProperty("sgs.port");
+        if (portProp != null) {
+            return Integer.parseInt(portProp);
+        } else {
+            return DEFAULT_PORT;
+        }
+    }
+
     /**
      * Get the Darkstar server module directory
      * @return the server module directory
@@ -146,10 +237,12 @@ public class DarkstarRunner extends BaseRunner {
      * @param moduleDir the directory to write to
      * @param module the module to write a part for
      * @param modulePart the part to write
-     
+     * @param managers the list of Darkstar managers to add to
+     * @param services the list of Darkstar services to add to
      */
     protected void writeModulePart(File moduleDir, Module module, 
-                                   ModulePart part)
+                                   ModulePart part, List<String> managers,
+                                   List<String> services)
         throws IOException
     {
         File moduleSpecificDir = new File(moduleDir, module.getName());
@@ -157,16 +250,20 @@ public class DarkstarRunner extends BaseRunner {
         partDir.mkdirs();
         
         // write each file from the part
-        copyFiles(part.getFile(), partDir);
+        copyFiles(part.getFile(), partDir, managers, services);
     }
-    
+
     /**
      * Recursively copy all files from a given source directory to a target 
-     * directory
+     * directory.  If any jar files are encountered, check them for
+     * Darkstar managers and services
      * @param src the source directory
      * @param target the target directory
+     * @param managers the list of Darkstar managers to add to
+     * @param services the list of Darkstar services to add to
      */
-    private void copyFiles(File src, File dest) 
+    private void copyFiles(File src, File dest, List<String> managers,
+                           List<String> services)
         throws IOException
     {
         File[] files = src.listFiles();
@@ -180,15 +277,59 @@ public class DarkstarRunner extends BaseRunner {
             if (f.isDirectory()) {
                 // recursively copy a directory
                 newDest.mkdir();
-                copyFiles(f, newDest);
+                copyFiles(f, newDest, managers, services);
             } else {
                 // copy a single file
                 FileInputStream fis = new FileInputStream(f);
                 RunUtil.writeToFile(fis, newDest);
+
+                if (f.getName().endsWith(".jar")) {
+                    checkForServices(f, managers, services);
+                }
             }
         }
     }
-    
+
+    /**
+     * Check a .jar file for any Darkstar managers and services.
+     * @param f the file to check
+     * @param managers the list of Darkstar managers to add to
+     * @param services the list of Darkstar services to add to
+     */
+    private void checkForServices(File f, List<String> managers,
+                                  List<String> services)
+        throws IOException
+    {
+        JarFile jf = new JarFile(f);
+
+        // look for services
+        ZipEntry ze = jf.getEntry("META-INF/services/com.sun.sgs.service.Service");
+        if (ze != null) {
+            addAll(jf.getInputStream(ze), services);
+        }
+
+        // loog for managers
+        ze = jf.getEntry("META-INF/services/com.sun.sgs.service.Manager");
+        if (ze != null) {
+            addAll(jf.getInputStream(ze), managers);
+        }
+    }
+
+    /**
+     * Add all services in a file to a list
+     * @param is the InputStream containing the list of files to add
+     * @param list the list to add entries to
+     */
+    private void addAll(InputStream is, List<String> list) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        String line;
+        while ((line = in.readLine()) != null) {
+            if (line.trim().length() > 0) {
+                list.add(line.trim());
+            }
+        }
+    }
+
     /**
      * Override the setStatus() method to ignore the RUNNING status.  Instead,
      * we notify other processes that Darkstar is RUNNING when the output
@@ -227,7 +368,7 @@ public class DarkstarRunner extends BaseRunner {
      */
     protected class DarkstarOutputReader extends BaseRunner.ProcessOutputReader {
         private static final String DARKSTAR_STARTUP =
-                "Wonderland: application is ready";
+                "Wonderland server started successfully";
                 
         public DarkstarOutputReader(InputStream in, Logger out) {
             super (in, out);

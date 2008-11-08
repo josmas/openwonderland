@@ -34,8 +34,8 @@ import java.util.logging.Logger;
  */
 public class ModuleCache {
 
-    /* The unique name of the server associated with this cache */
-    private String serverName = null;
+    /* The base URL of the web server */
+    private String serverURL = null;
     
     /* Maps of the unique module names and info (identity, checksum, etc). */
     private HashMap<String, ModuleIdentity> identities = new HashMap();
@@ -48,9 +48,9 @@ public class ModuleCache {
     /* The error logger */
     private static Logger logger = Logger.getLogger(ModuleCache.class.getName());
     
-    /** Constructor, takes the unique name of the server */
-    public ModuleCache(String serverName) {
-        this.serverName = serverName;
+    /** Constructor, takes the unique URL of the web server */
+    public ModuleCache(String serverURL) {
+        this.serverURL = serverURL;
         
         /*
          * This needs to be synchronized since we do not protected it below,
@@ -68,41 +68,41 @@ public class ModuleCache {
      * @param uniqueName The unique name of the module
      * @return The module identity
      */
-    public ModuleIdentity getModuleIdentity(String uniqueName) {
-        /*
-         * First check to see whether the information already exists, and if
-         * so, return it.
-         */
-        synchronized (this.identities) {
-            ModuleIdentity identity = this.identities.get(uniqueName);
-            if (identity == null) {
-                /*
-                 * If the module does not exist, see if we have already checked
-                 * (so that we don't repeatedly ping the server), and only try
-                 * to load the module's information if we haven't checked 
-                 * previously.
-                 */
-//                if (this.modulesNotFound.contains(uniqueName) == true) {
+//    public ModuleIdentity getModuleIdentity(String uniqueName) {
+//        /*
+//         * First check to see whether the information already exists, and if
+//         * so, return it.
+//         */
+//        synchronized (this.identities) {
+//            ModuleIdentity identity = this.identities.get(uniqueName);
+//            if (identity == null) {
+//                /*
+//                 * If the module does not exist, see if we have already checked
+//                 * (so that we don't repeatedly ping the server), and only try
+//                 * to load the module's information if we haven't checked 
+//                 * previously.
+//                 */
+////                if (this.modulesNotFound.contains(uniqueName) == true) {
+////                    return null;
+////                }
+//            
+//                /*
+//                 * Otherwise, load in the module identity from the server. If
+//                 * we cannot, then add the module name to the list of names
+//                 * not found and return null.
+//                 */
+//                identity = ModuleUtils.fetchModuleIdentity(serverURL, uniqueName);
+//                if (identity == null) {
+//                    this.modulesNotFound.add(uniqueName);
 //                    return null;
 //                }
-            
-                /*
-                 * Otherwise, load in the module identity from the server. If
-                 * we cannot, then add the module name to the list of names
-                 * not found and return null.
-                 */
-                identity = ModuleUtils.fetchModuleIdentity(uniqueName);
-                if (identity == null) {
-                    this.modulesNotFound.add(uniqueName);
-                    return null;
-                }
-                
-                /* If the module identity does exist, add it and return */
-                this.identities.put(uniqueName, identity);
-            }
-            return identity;
-        }
-    }
+//                
+//                /* If the module identity does exist, add it and return */
+//                this.identities.put(uniqueName, identity);
+//            }
+//            return identity;
+//        }
+//    }
     
     /**
      * Given the unique name of the module, returns the object representing the
@@ -137,7 +137,7 @@ public class ModuleCache {
                  * we cannot, then add the module name to the list of names
                  * not found and return null.
                  */
-                checksums = ModuleUtils.fetchModuleChecksums(uniqueName);
+                checksums = ModuleUtils.fetchModuleChecksums(serverURL, uniqueName);
                 if (checksums == null) {
                     this.modulesNotFound.add(uniqueName);
                     return null;
@@ -184,7 +184,7 @@ public class ModuleCache {
                  * we cannot, then add the module name to the list of names
                  * not found and return null.
                  */
-                repositoryList = ModuleUtils.fetchModuleRepositoryList(uniqueName);
+                repositoryList = ModuleUtils.fetchModuleRepositoryList(serverURL, uniqueName);
                 if (repositoryList == null) {
                     this.modulesNotFound.add(uniqueName);
                     return null;

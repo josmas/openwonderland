@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.runner.resources;
 
-import java.util.Properties;
+import org.jdesktop.wonderland.runner.StatusWaiter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
@@ -29,9 +29,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import org.jdesktop.wonderland.runner.DeploymentEntry;
-import org.jdesktop.wonderland.runner.DeploymentManager;
-import org.jdesktop.wonderland.runner.DeploymentPlan;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.RunnerException;
@@ -44,7 +41,7 @@ import org.jdesktop.wonderland.runner.RunnerException;
  * @author jkaplan
  */
 @Path(value="/{runner}/{action}")
-public class RunnerActionResource extends BaseActionResource {
+public class RunnerActionResource {
     private static final Logger logger =
             Logger.getLogger(RunnerActionResource.class.getName());
     
@@ -58,8 +55,10 @@ public class RunnerActionResource extends BaseActionResource {
                         @PathParam(value="action") String action,
                         @QueryParam(value="wait")  String waitParam) 
     {
+        RunManager rm = RunManager.getInstance();
+
         try {
-            Runner r = RunManager.getInstance().get(runner);
+            Runner r = rm.get(runner);
             if (r == null) {
                 throw new RunnerException("Request for unknown runner: " + 
                                           runner);
@@ -72,18 +71,18 @@ public class RunnerActionResource extends BaseActionResource {
             StatusWaiter waiter = null;
             
             if (action.equalsIgnoreCase("start")) {
-                waiter = startRunner(r, wait);
+                waiter = rm.start(r, wait);
             } else if (action.equalsIgnoreCase("stop")) {
-                waiter = stopRunner(r, wait);
+                waiter = rm.stop(r, wait);
             } else if (action.equalsIgnoreCase("restart")) {
                 // stop the runner and wait for it to stop
-                waiter = stopRunner(r, true);
+                waiter = rm.stop(r, true);
                 if (waiter != null) {
                     waiter.waitFor();
                 }
                 
                 // restart the runner
-                waiter = startRunner(r, wait);
+                waiter = rm.start(r, wait);
             } else {
                 throw new RunnerException("Unkown action " + action);      
             } 

@@ -49,7 +49,6 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.RootCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
@@ -57,6 +56,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.InputEvent3D;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
@@ -80,9 +80,8 @@ public class CellViewerFrame extends javax.swing.JFrame {
     
     /** Creates new form CellViewerFrame */
     public CellViewerFrame() {
-
-        WonderlandSessionManager mgr = ClientContext.getWonderlandSessionManager();
-        WonderlandSession session = mgr.getSession(mgr.getPrimaryServer());
+        LoginManager lm = LoginManager.getPrimary();
+        WonderlandSession session = lm.getPrimarySession();
 
 //        if (sessions.length>1) {
 //            // TODO Implement multi session support in CellViewFrame

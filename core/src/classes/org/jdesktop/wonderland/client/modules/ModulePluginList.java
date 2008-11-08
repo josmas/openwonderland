@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.client.modules;
 
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
@@ -30,12 +29,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.AssetURIAdapter;
 
 
 /**
  * A list of module plugins, given by URIs. These URIs are of the format:
  * <p>
- * wlj://<module name>/<jar path>
+ * wla://<module name>/<jar path>
  * <p>
  * where <module name> is the name of the module, and <jar path> is the path
  * of the jar within the module, e.g. "server/myplugin-server.jar".
@@ -51,19 +52,15 @@ public class ModulePluginList implements Serializable {
     @XmlElements({
         @XmlElement(name="jar-uri")
     })
-    private String[] jarURIs = null;
+    private AssetURI[] jarURIs = null;
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB context that generates marshallers and unmarshallers */
+    private static JAXBContext jaxbContext = null;
     
     /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ModulePluginList.class);
-            ModulePluginList.unmarshaller = jc.createUnmarshaller();
-            ModulePluginList.marshaller = jc.createMarshaller();
-            ModulePluginList.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ModulePluginList.class, AssetURI.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -73,8 +70,8 @@ public class ModulePluginList implements Serializable {
     public ModulePluginList() {}
     
     /* Setters and getters */
-    @XmlTransient public String[] getJarURIs() { return this.jarURIs; }
-    public void setJarURIs(String[] jarURIs) { this.jarURIs = jarURIs; }
+    @XmlTransient public AssetURI[] getJarURIs() { return this.jarURIs; }
+    public void setJarURIs(AssetURI[] jarURIs) { this.jarURIs = jarURIs; }
     
     /**
      * Returns the list of repositories encoded as a string
@@ -86,15 +83,18 @@ public class ModulePluginList implements Serializable {
      
     /**
      * Takes the input reader of the XML file and instantiates an instance of
-     * the ModuleRepository class
+     * the ModulePluginList class
      * <p>
-     * @param r The input stream of the version XML file
-     * @throw ClassCastException If the input file does not map to ModuleRepository
-     * @throw JAXBException Upon error reading the XML file
+     * @param r The input stream of the XML data
+     * @param serverURL The base URL of the server
+     * @throw ClassCastException If the input data does not map to ModulePluginList
+     * @throw JAXBException Upon error reading the XML data
      */
-    public static ModulePluginList decode(Reader r) throws JAXBException {
-        ModulePluginList list = (ModulePluginList)ModulePluginList.unmarshaller.unmarshal(r);
-        return list;
+    public static ModulePluginList decode(Reader r, String serverURL) throws JAXBException {
+        Unmarshaller u = jaxbContext.createUnmarshaller();
+        AssetURIAdapter adapter = new AssetURIAdapter(serverURL);
+        u.setAdapter(adapter);
+        return (ModulePluginList)u.unmarshal(r);
     }
     
     /**
@@ -104,16 +104,8 @@ public class ModulePluginList implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        ModulePluginList.marshaller.marshal(this, w);
-    }
-
-    /**
-     * Writes the ModuleRepository class to an output stream.
-     * <p>
-     * @param os The output stream to write to
-     * @throw JAXBException Upon error writing the XML file
-     */
-    public void encode(OutputStream os) throws JAXBException {
-        ModulePluginList.marshaller.marshal(this, os);
+        Marshaller m = jaxbContext.createMarshaller();
+        m.setProperty("jaxb.formatted.output", true);
+        m.marshal(this, w);
     }
 }

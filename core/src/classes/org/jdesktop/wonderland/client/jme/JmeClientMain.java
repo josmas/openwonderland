@@ -17,11 +17,14 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
 import imi.loaders.repository.Repository;
 import imi.scene.processors.JSceneAWTEventProcessor;
 import imi.scene.processors.JSceneEventProcessor;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,35 +35,36 @@ import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
  *
  */
 public class JmeClientMain {
-    
+    private static final Logger logger =
+            Logger.getLogger(JmeClientMain.class.getName());
+
+    public static final String SERVER_URL_PROP = "sgs.server";
+
     /** The frame of the Wonderland client window. */
     private static MainFrame frame;
 
-    // properties
-    private Properties props;
-    
     // standard properties
-    private static final String SERVER_NAME_PROP = "sgs.server";
-    private static final String SERVER_PORT_PROP = "sgs.port";
-    private static final String USER_NAME_PROP   = "cellboundsviewer.username";
-    
+    private static final String PROPS_URL_PROP = "run.properties.file";
+    private static final String CONFIG_DIR_PROP = "wonderland.client.config.dir";
     // default values
-    private static final String SERVER_NAME_DEFAULT = "localhost";
-    private static final String SERVER_PORT_DEFAULT = "1139";
-    private static final String USER_NAME_DEFAULT   = "jmetest";
-   
+    private static final String SERVER_URL_DEFAULT = "http://localhost:8080";
+
     /**
      * The desired frame rate
      */
@@ -72,36 +76,122 @@ public class JmeClientMain {
     private int width = 800;
     private int height = 600;
     
+    // the current Wonderland login and session
+    private JmeLoginUI login;
+    private JmeClientSession curSession;
+
     public JmeClientMain(String[] args) {
-        props = loadProperties("run-client.properties");
-   
-        String serverName = props.getProperty(SERVER_NAME_PROP,
-                                              SERVER_NAME_DEFAULT);
-        String serverPort = props.getProperty(SERVER_PORT_PROP,
-                                              SERVER_PORT_DEFAULT);
-        String userName   = props.getProperty(USER_NAME_PROP,
-                                              USER_NAME_DEFAULT);
-        
-        
+        // process command line arguments
         processArgs(args);
 
-        WorldManager worldManager = ClientContextJME.getWorldManager();
+        // load properties in a properties file
+        URL propsURL = getPropsURL();
+        loadProperties(propsURL);
 
+        // make sure the server URL is set
+        String serverURL = System.getProperty(SERVER_URL_PROP);
+        if (serverURL == null) {
+            serverURL = SERVER_URL_DEFAULT;
+            System.setProperty(SERVER_URL_PROP, serverURL);
+        }
+
+        WorldManager worldManager = ClientContextJME.getWorldManager();
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
-        
         createUI(worldManager);
 
-        // Dont start the client manager until JME has been initialized, many JME components
-        // expect the renderer to be ready during init.
-        ClientManager clientManager = new ClientManager(serverName, Integer.parseInt(serverPort), userName);
-        ClientContext.getWonderlandSessionManager().setPrimaryServer(
-                    new WonderlandServerInfo(serverName,
-                                             Integer.parseInt(serverPort)));    
+        // Register our loginUI for login requests
+        login = new JmeLoginUI(frame);
+        LoginManager.setLoginUI(login);
+
+        // add a listener that will be notified when the user selects a new
+        // server
+        frame.addServerURLListener(new ServerURLListener() {
+            public void serverURLChanged(final String serverURL) {
+                // run in a new thread so we don't block the AWT thread
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            loadServer(serverURL);
+                        } catch (IOException ioe) {
+                            logger.log(Level.WARNING, "Error connecting to " +
+                                       serverURL, ioe);
+                        }
+                    }
+                }).start();
+            }
+        });
+
+        // connect to the default server
+        try {
+            loadServer(serverURL);
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error connecting to default server " +
+                       serverURL, ioe);
+        }
+        
         // Low level Federation testing
 //        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
         
     }
-    
+
+    protected void loadServer(String serverURL) throws IOException {
+        // disconnect from the current session
+        if (curSession != null) {
+            curSession.getCellCache().detachRootEntities();
+            curSession.logout();
+        }
+
+        // get the login manager for the given server
+        LoginManager lm = LoginManager.getInstance(serverURL);
+
+        // create a new session
+        try {
+            curSession = lm.createSession(login);
+        } catch (LoginFailureException lfe) {
+            IOException ioe = new IOException("Error connecting to " +
+                                              serverURL);
+            ioe.initCause(lfe);
+            throw ioe;
+        }
+
+        // make sure we logged in successfully
+        if (curSession == null) {
+            logger.log(Level.WARNING, "Unable to connect to session");
+            return;
+        }
+
+        // set the primary login manager and session
+        LoginManager.setPrimary(lm);
+        lm.setPrimarySession(curSession);
+        frame.setServerURL(serverURL);
+    }
+
+    protected URL getPropsURL() {
+        String propURLStr = System.getProperty(PROPS_URL_PROP);
+        try {
+            URL propsURL;
+            
+            if (propURLStr == null) {
+                String configDir = System.getProperty(CONFIG_DIR_PROP);
+                if (configDir == null) {
+                    File userDir = new File(System.getProperty("user.dir"));
+                    configDir = userDir.toURI().toURL().toString();
+                }
+
+                // use the default
+                URL configDirURL = new URL(configDir);
+                propsURL = new URL(configDirURL, "run-client.properties");
+            } else {
+                propsURL = new URL(propURLStr);
+            }
+            
+            return propsURL;
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Unable to load properties", ioe);
+            return null;
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -122,6 +212,11 @@ public class JmeClientMain {
             if (args[i].equals("-fps")) {
                 desiredFrameRate = Integer.parseInt(args[i+1]);
                 System.out.println("DesiredFrameRate: " + desiredFrameRate);
+                i++;
+            }
+
+            if (args[i].equals("-p")) {
+                System.setProperty(PROPS_URL_PROP, "file:" + args[i+1]);
                 i++;
             }
         }
@@ -186,21 +281,15 @@ public class JmeClientMain {
         return frame;
     }
 
-    private static Properties loadProperties(String fileName) {
-        // start with the system properties
-        Properties props = new Properties(System.getProperties());
-    
+    protected void loadProperties(URL propsURL) {
         // load the given file
-        if (fileName != null) {
+        if (propsURL != null) {
             try {
-                props.load(new FileInputStream(fileName));
+                System.getProperties().load(propsURL.openStream());
             } catch (IOException ioe) {
-                Logger.getLogger(JmeClientMain.class.getName()).log(Level.WARNING, "Error reading properties from " +
-                           fileName, ioe);
+                logger.log(Level.WARNING, "Error reading properties from " +
+                           propsURL, ioe);
             }
         }
-        
-        return props;
-    }
-    
+    }    
 }

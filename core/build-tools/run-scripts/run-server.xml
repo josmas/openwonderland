@@ -23,15 +23,19 @@
         <delete dir="${sgs.data.dir}" failonerror="false"/>
         <mkdir dir="${sgs.data.dir}"/>
         <mkdir dir="${sgs.data.dir}/dsdb"/>
-        
+
+        <!-- default empty values for services and managers -->
+        <property name="sgs.services" value=""/>
+        <property name="sgs.managers" value=""/>
+
         <!-- copy the config file to the right place -->
         <copy file="${current.dir}/WonderlandMain.cfg" 
               tofile="${sgs.data.dir}/WonderlandMain.cfg" overwrite="true">
             <filterset>
                 <filter token="SGS_ROOT_DIR" value="${sgs.data.dir}"/>
                 <filter token="SGS_PORT" value="${sgs.port}"/>
-                <filter token="SGS_SERVICES" value="com.sun.mpk20.voicelib.impl.service.voice.VoiceServiceImpl:org.jdesktop.wonderland.server.spatial.UniverseService"/>
-                <filter token="SGS_MANAGERS" value="com.sun.mpk20.voicelib.impl.app.VoiceManagerImpl:org.jdesktop.wonderland.server.spatial.UniverseServiceManagerImpl"/>
+                <filter token="SGS_SERVICES" value="${sgs.services}"/>
+                <filter token="SGS_MANAGERS" value="${sgs.managers}"/>
                 
                 <!--<filter token="SGS_SERVICES" value="org.jdesktop.wonderland.server.spatial.UniverseService"/>
                 <filter token="SGS_MANAGERS" value="org.jdesktop.wonderland.server.spatial.UniverseServiceManagerImpl"/>-->
@@ -41,6 +45,23 @@
         <!-- copy logging properties also -->
         <copy file="${core.sgs.server.dir}/sgs-logging.properties"
               tofile="${sgs.data.dir}/sgs-logging.properties"/>
+
+        <!-- Generate a set containing all properties passed on the
+             commandline.  The way we do this is a little strange, since
+             we want to ignore ant internal properties.  So we take
+             the inverese of what we want, add in the ant properties,
+             and then take the inverse of the whole thing.
+        -->
+        <propertyset id="noncommandline.properties" negate="true">
+            <propertyref builtin="commandline"/>
+        </propertyset>
+        <propertyset id="ant.internal.properties">
+            <propertyref prefix="ant"/>
+        </propertyset>
+        <propertyset id="commandline.properties" negate="true">
+            <propertyset refid="ant.internal.properties"/>
+            <propertyset refid="noncommandline.properties"/>
+        </propertyset>
     </target>
         
     <target name="-core-server-setup-bdb-platform">    
@@ -152,7 +173,8 @@
             <assertions refid="sgs.assertions"/>
             
             <env key="${env.path.name}" path="${env.path.defvalue}"/>
-	    
+
+            <syspropertyset refid="commandline.properties"/>
             <syspropertyset refid="master.props"/>
             <syspropertyset refid="appnode.props"/>
             

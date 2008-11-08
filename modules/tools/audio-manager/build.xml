@@ -39,7 +39,11 @@
             <server dir="${current.dir}/lib">
                 <serverjar name="audiomanager-server" basedir="${build.classes.dir}">
                     <serverplugin provider="org.jdesktop.wonderland.modules.audiomanager.server.AudioManagerServerPlugin"/>
-                    
+                    <service type="com.sun.sgs.service.Service"
+                             provider="com.sun.mpk20.voicelib.impl.service.voice.VoiceServiceImpl"/>
+                    <service type="com.sun.sgs.service.Manager"
+                             provider="com.sun.mpk20.voicelib.impl.app.VoiceManagerImpl"/>
+                             
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </serverjar>    

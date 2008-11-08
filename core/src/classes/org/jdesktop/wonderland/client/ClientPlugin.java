@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.client;
 
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
@@ -31,14 +31,20 @@ import org.jdesktop.wonderland.common.InternalAPI;
  */
 @InternalAPI
 public interface ClientPlugin {
-   /** 
+    /**
      * Intialize this plugin.  The plugin can use static object in the
      * client such as the ClientContext to register itself with the
      * Wonderland environment.  In addition, a plugin is given the 
-     * WonderlandSession it is associated with.  Note that this plugin may
-     * not yet be connected at the time the login happens.
+     * LoginManager for the WonderlandServer it is associated with.
+     * <p>
+     * Plugins are loaded after the client logs in to the given server,
+     * but before any WonderlandSessions have been created.  Plugins that
+     * need to use a WonderlandSession can either create their own or
+     * (more typically) install a SessionLifecyclyListener to wait for
+     * session creation.
      *  
-     * @param session the WonderlandSession this plugin is associated with
+     * @param loginManager the loginManager representing the server this
+     * plugin is connected to.
      */
-    public void initialize(WonderlandSession session);
+    public void initialize(LoginManager loginManager);
 }

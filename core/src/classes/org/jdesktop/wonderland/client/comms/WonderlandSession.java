@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Properties;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
@@ -93,6 +94,16 @@ public interface WonderlandSession {
      * notified of the state change.
      */
     public BigInteger getID();
+
+    /**
+     * Get the user ID associated with this session.  This ID is maintained
+     * byt the server based on the user's login credentials.
+     * <p>
+     * The ID is generated on the server and communicated as part of the
+     * login process.  It is available at the time that the client is
+     * notified of the state change.
+     */
+    public WonderlandIdentity getUserID();
     
     /**
      * Connect a new client to this session, with no properties. This is
