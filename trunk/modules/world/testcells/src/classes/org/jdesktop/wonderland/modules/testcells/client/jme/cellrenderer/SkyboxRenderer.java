@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -49,7 +50,7 @@ public class SkyboxRenderer implements CellRendererJME {
 
     private Entity entity = null;
     private Cell cell = null;
-    
+
     public SkyboxRenderer(Cell cell) {
         this.cell = cell;
     }
@@ -69,8 +70,8 @@ public class SkyboxRenderer implements CellRendererJME {
             String serverURL = manager.getServerURL();
             
             AssetURI northURI = new AssetURI("wla://testcells/art/skybox1/1.jpg", serverURL);
-            AssetURI southURI = new AssetURI("wla://testcells/art/skybox1/2.jpg", serverURL);
-            AssetURI eastURI = new AssetURI("wla://testcells/art/skybox1/3.jpg", serverURL);
+            AssetURI southURI = new AssetURI("wla://testcells/art/skybox1/3.jpg", serverURL);
+            AssetURI eastURI = new AssetURI("wla://testcells/art/skybox1/2.jpg", serverURL);
             AssetURI westURI = new AssetURI("wla://testcells/art/skybox1/4.jpg", serverURL);
             AssetURI downURI = new AssetURI("wla://testcells/art/skybox1/5.jpg", serverURL);
             AssetURI upURI = new AssetURI("wla://testcells/art/skybox1/6.jpg", serverURL);
@@ -121,4 +122,13 @@ public class SkyboxRenderer implements CellRendererJME {
     public void cellTransformUpdate(CellTransform cellLocal2World) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    public void setStatus(CellStatus status) {
+        System.out.println("----------------------> SKYBOX INIT "+status+"  "+cell.getCellID());
+        switch (status) {
+            case ACTIVE :
+                ClientContextJME.getWorldManager().addEntity(getEntity());
+                break;
+        }
+    }
+
 }
