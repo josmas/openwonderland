@@ -521,6 +521,10 @@ public class Cell {
         
         for(CellComponent component : components.values())
             component.setStatus(status);
+
+//        for(CellRenderer renderer : cellRenderers.values()) {
+//            renderer.setStatus(status);
+//        }
         
         switch(status) {
             case DISK :
@@ -583,7 +587,7 @@ public class Cell {
      * @return the renderer for the specified type if available, or null
      */
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        Logger.getAnonymousLogger().warning(this.getClass().getName()+" createEntity returning null");
+        Logger.getAnonymousLogger().warning(this.getClass().getName()+" createCellRenderer returning null");
         return null;
     }
     
