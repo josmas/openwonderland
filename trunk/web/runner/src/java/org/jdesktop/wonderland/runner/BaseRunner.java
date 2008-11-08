@@ -50,6 +50,9 @@ public abstract class BaseRunner implements Runner {
     private static final Logger logger =
             Logger.getLogger(BaseRunner.class.getName());
     
+    /** property to set to print out verbose logs from ant */
+    private static final String VERBOSE_PROP = "wonderland.runner.verbose";
+
     /** the name of this runner */
     private String name = "unknown";
     
@@ -210,6 +213,10 @@ public abstract class BaseRunner implements Runner {
             for (Object propName : props.keySet()) {
                 cmd.add("-D" + propName + "=" + 
                         props.getProperty((String) propName));
+            }
+
+            if (Boolean.parseBoolean(props.getProperty(VERBOSE_PROP))) {
+                cmd.add("-v");
             }
 
             cmd.add("-f");
