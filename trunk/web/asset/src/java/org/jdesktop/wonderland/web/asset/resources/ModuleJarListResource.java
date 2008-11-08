@@ -32,7 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.JarURI;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;
 
@@ -50,7 +50,7 @@ public class ModuleJarListResource {
     @GET
     public Response getJarList() {
         Logger logger = Logger.getLogger(ModuleJarListResource.class.getName());
-        Collection<AssetURI> jarURIs = new LinkedList<AssetURI>();
+        Collection<JarURI> jarURIs = new LinkedList<JarURI>();
 
         /*
          * Get a map of all of the File objects for each art asset. We use the
@@ -80,7 +80,7 @@ public class ModuleJarListResource {
         
         /* Otherwise, return a response with the input stream */
         ModulePluginList mpl = new ModulePluginList();
-        mpl.setJarURIs(jarURIs.toArray(new AssetURI[] {}));
+        mpl.setJarURIs(jarURIs.toArray(new JarURI[] {}));
 
         /* Write the XML encoding to a writer and return it2 */
         StringWriter sw = new StringWriter();
@@ -100,7 +100,7 @@ public class ModuleJarListResource {
      * Takes a module name, jar name, and jar type (client or common) and
      * returns the URL to represent it.
      */
-    private AssetURI getPluginJarURI(String moduleName, String jarName, String type) throws URISyntaxException {
-        return new AssetURI("wla://" + moduleName + "/" + type + "/" + jarName);
+    private JarURI getPluginJarURI(String moduleName, String jarName, String type) throws URISyntaxException {
+        return new JarURI("wlj://" + moduleName + "/" + type + "/" + jarName);
     }
 }

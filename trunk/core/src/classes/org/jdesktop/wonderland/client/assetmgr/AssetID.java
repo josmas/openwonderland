@@ -18,8 +18,7 @@
 
 package org.jdesktop.wonderland.client.assetmgr;
 
-import org.jdesktop.wonderland.client.modules.Checksum;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.ResourceURI;
 
 /**
  * An AssetID class represents a unique identification for an asset: assets
@@ -31,13 +30,13 @@ import org.jdesktop.wonderland.common.AssetURI;
  */
 public class AssetID {
     /* The URI of the asset */
-    private AssetURI assetURI = null;
+    private ResourceURI assetURI = null;
     
     /* The optional checksum of the asset */
     private String checksum = null;
     
     /** Constructor, takes both URI and checksum */
-    public AssetID(AssetURI assetURI, String checksum) {
+    public AssetID(ResourceURI assetURI, String checksum) {
         this.assetURI = assetURI;
         this.checksum = checksum;
     }
@@ -45,9 +44,9 @@ public class AssetID {
     /**
      * Returns the asset URI.
      * 
-     * @return The AssetURI
+     * @return The ResourceURI
      */
-    public AssetURI getAssetURI() {
+    public ResourceURI getResourceURI() {
         return this.assetURI;
     }
     
@@ -89,7 +88,7 @@ public class AssetID {
         }
         
         /* Check to make sure the URIs are equals, return false if not */
-        if (this.assetURI.getURI().equals(this.getAssetURI().getURI()) == false) {
+        if (this.assetURI.getURI().equals(this.getResourceURI().getURI()) == false) {
             return false;
         }
         

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.login;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.client.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.JarURI;
 import sun.misc.Service;
 
 /**
@@ -226,6 +227,24 @@ public class LoginManager {
         return serverURL;
     }
 
+    /**
+     * Get the server URL as a string: <server name>:<port>
+     * @return <server name>:<port>
+     */
+    public String getServerNameAndPort() {
+        try {
+            URL tmpURL = new URL(serverURL);
+            String server = tmpURL.getHost();
+            if (tmpURL.getPort() != -1) {
+                server = server + ":" + tmpURL.getPort();
+            }
+            return server;
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(LoginManager.class.getName()).log(Level.WARNING, null, ex);
+            return null;
+        }
+    }
+    
     /**
      * Get the details for this server
      * @return the details for this server
@@ -443,7 +462,7 @@ public class LoginManager {
             return getClass().getClassLoader();
         }
 
-        for (AssetURI uri : list.getJarURIs()) {
+        for (JarURI uri : list.getJarURIs()) {
             try {
                 logger.warning("[JARS] " + uri.getURI().toString());
                 urls.add(uri.getURI().toURL());

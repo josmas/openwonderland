@@ -29,8 +29,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.AssetURI;
-import org.jdesktop.wonderland.common.AssetURIAdapter;
+import org.jdesktop.wonderland.common.JarURI;
+import org.jdesktop.wonderland.common.JarURIAdapter;
 
 
 /**
@@ -52,7 +52,7 @@ public class ModulePluginList implements Serializable {
     @XmlElements({
         @XmlElement(name="jar-uri")
     })
-    private AssetURI[] jarURIs = null;
+    private JarURI[] jarURIs = null;
     
     /* The JAXB context that generates marshallers and unmarshallers */
     private static JAXBContext jaxbContext = null;
@@ -60,7 +60,7 @@ public class ModulePluginList implements Serializable {
     /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
     static {
         try {
-            jaxbContext = JAXBContext.newInstance(ModulePluginList.class, AssetURI.class);
+            jaxbContext = JAXBContext.newInstance(ModulePluginList.class, JarURI.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -70,8 +70,8 @@ public class ModulePluginList implements Serializable {
     public ModulePluginList() {}
     
     /* Setters and getters */
-    @XmlTransient public AssetURI[] getJarURIs() { return this.jarURIs; }
-    public void setJarURIs(AssetURI[] jarURIs) { this.jarURIs = jarURIs; }
+    @XmlTransient public JarURI[] getJarURIs() { return this.jarURIs; }
+    public void setJarURIs(JarURI[] jarURIs) { this.jarURIs = jarURIs; }
     
     /**
      * Returns the list of repositories encoded as a string
@@ -86,13 +86,13 @@ public class ModulePluginList implements Serializable {
      * the ModulePluginList class
      * <p>
      * @param r The input stream of the XML data
-     * @param serverURL The base URL of the server
+     * @param server The server name and port as <server name>:<port>
      * @throw ClassCastException If the input data does not map to ModulePluginList
      * @throw JAXBException Upon error reading the XML data
      */
-    public static ModulePluginList decode(Reader r, String serverURL) throws JAXBException {
+    public static ModulePluginList decode(Reader r, String server) throws JAXBException {
         Unmarshaller u = jaxbContext.createUnmarshaller();
-        AssetURIAdapter adapter = new AssetURIAdapter(serverURL);
+        JarURIAdapter adapter = new JarURIAdapter(server);
         u.setAdapter(adapter);
         return (ModulePluginList)u.unmarshal(r);
     }

@@ -67,14 +67,14 @@ public class SkyboxRenderer implements CellRendererJME {
             /* Form the asset URIs */
             WonderlandSession session = cell.getCellCache().getSession();
             LoginManager manager = LoginManager.find(session);
-            String serverURL = manager.getServerURL();
+            String server = manager.getServerNameAndPort();
             
-            AssetURI northURI = new AssetURI("wla://testcells/art/skybox1/1.jpg", serverURL);
-            AssetURI southURI = new AssetURI("wla://testcells/art/skybox1/3.jpg", serverURL);
-            AssetURI eastURI = new AssetURI("wla://testcells/art/skybox1/2.jpg", serverURL);
-            AssetURI westURI = new AssetURI("wla://testcells/art/skybox1/4.jpg", serverURL);
-            AssetURI downURI = new AssetURI("wla://testcells/art/skybox1/5.jpg", serverURL);
-            AssetURI upURI = new AssetURI("wla://testcells/art/skybox1/6.jpg", serverURL);
+            AssetURI northURI = new AssetURI("wla://testcells/skybox1/1.jpg").getAnnotatedURI(server);
+            AssetURI southURI = new AssetURI("wla://testcells/skybox1/3.jpg").getAnnotatedURI(server);
+            AssetURI eastURI = new AssetURI("wla://testcells/skybox1/2.jpg").getAnnotatedURI(server);
+            AssetURI westURI = new AssetURI("wla://testcells/skybox1/4.jpg").getAnnotatedURI(server);
+            AssetURI downURI = new AssetURI("wla://testcells/skybox1/5.jpg").getAnnotatedURI(server);
+            AssetURI upURI = new AssetURI("wla://testcells/skybox1/6.jpg").getAnnotatedURI(server);
 
             WorldManager wm = ClientContextJME.getWorldManager();
             Skybox skybox = new Skybox("skybox", 1000, 1000, 1000);
