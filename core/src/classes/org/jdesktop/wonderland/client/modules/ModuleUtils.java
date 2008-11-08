@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.client.modules;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -100,11 +101,33 @@ public class ModuleUtils {
             /* Open an HTTP connection to the Jersey RESTful service */
             URL url = new URL(new URL(serverURL), ASSET_PREFIX + "jars/get");
             Reader r = new InputStreamReader(url.openStream());
-            return ModulePluginList.decode(r, serverURL);
+            return ModulePluginList.decode(r, getServerFromURL(serverURL));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH JARS Failed", excp);
             return null;
         }
+    }
+    
+    /**
+     * Given a base URL of the server (e.g. http://localhost:8080) returns
+     * the server name and port as a string (e.g. localhost:8080). Returns null
+     * if the host name is not present.
+     * 
+     * @return <server name>:<port>
+     * @throw MalformedURLException If the given string URL is invalid
+     */
+    public static String getServerFromURL(String serverURL) throws MalformedURLException {
+        URL url = new URL(serverURL);
+        String host = url.getHost();
+        int port = url.getPort();
+        
+        if (host == null) {
+            return null;
+        }
+        else if (port == -1) {
+            return host;
+        }
+        return host + ":" + port;
     }
 }

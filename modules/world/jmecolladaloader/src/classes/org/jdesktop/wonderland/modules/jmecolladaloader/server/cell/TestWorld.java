@@ -75,19 +75,19 @@ public class TestWorld implements ServerPlugin {
 
             WonderlandContext.getCellManager().insertCellInWorld(
                     new JmeColladaCellMO(new Vector3f(0,0,0), 15,
-                            "wla://jmecolladaloader/art/RoomLow10x15/models/RoomLow10x15.dae",
+                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
             
             WonderlandContext.getCellManager().insertCellInWorld(
                     new JmeColladaCellMO(new Vector3f(15,0,0), 15,
-                            "wla://jmecolladaloader/art/RoomLow10x15/models/RoomLow10x15.dae",
+                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 
             WonderlandContext.getCellManager().insertCellInWorld(
                     new JmeColladaCellMO(new Vector3f(0,0,10), 15,
-                            "wla://jmecolladaloader/art/OutsideFloor10x10/models/OutsideFloor10x10.dae",
+                            "wla://jmecolladaloader/OutsideFloor10x10/models/OutsideFloor10x10.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 

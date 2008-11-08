@@ -20,12 +20,8 @@
 package org.jdesktop.wonderland.common;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -46,12 +42,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @ExperimentalAPI
 @XmlJavaTypeAdapter(AssetURIAdapter.class)
-public class AssetURI {
-    /* The URI which is wrapped by this class */
-    private URI uri = null;
+public class AssetURI extends ResourceURI {
     
     /** Default constructor */
     public AssetURI() {
+        super();
     }
     
     /**
@@ -61,58 +56,14 @@ public class AssetURI {
      * @throw URISyntaxException If the URI is not well-formed
      */
     public AssetURI(String uri) throws URISyntaxException {
-        this.uri = new URI(uri);
-    }
-
-    /**
-     * Constructor which takes the module name, relative path and server name
-     */
-    public AssetURI(String moduleName, String path, String serverURL) throws URISyntaxException {
-        this.uri = new URI("wla://" + moduleName + "/" + path + "?server=" + serverURL);
+        super(uri);
     }
     
     /**
-     * Constructor which takes the module uri and server name
+     * Constructor which takes the module name, relative path and server name/port
      */
-    public AssetURI(String uri, String serverURL) throws URISyntaxException {
-        this.uri = new URI(uri + "?server=" + serverURL);
-    }
-    
-    /**
-     * Returns the URI object
-     * 
-     * @return The actual URI object
-     */
-    public URI getURI() {
-        return this.uri;
-    }
-    
-    /**
-     * Returns a URL from the URI.
-     * 
-     * @return A URL
-     */
-    public URL toURL() throws MalformedURLException {
-        return this.uri.toURL();
-    }
-    
-    /**
-     * Returns the module name off this URI.
-     * 
-     * @return The module name
-     */
-    public String getModuleName() {
-        return this.uri.getHost();
-    }
-
-    /**
-     * Returns the name of the server associated with this URI. This is encoded
-     * as a query string. Returns null if the server is not found.
-     * 
-     * @return The name of the server session
-     */
-    public String getServer() {
-        return this.getQueryMap().get("server");
+    public AssetURI(String moduleName, String path, String server) throws URISyntaxException {
+        super("wla://" + moduleName + "@" + server + "/" + path);
     }
     
     /**
@@ -122,11 +73,7 @@ public class AssetURI {
      * @return The relative path within the URI
      */
     public String getRelativePath() {
-       String path = this.getURI().getPath();
-       if (path.startsWith("/") == true) {
-           path = path.substring(1);
-       }
-       return path;
+       return "art" + this.getURI().getPath();
     }
     
     /**
@@ -140,30 +87,14 @@ public class AssetURI {
     }
     
     /**
-     * Returns the string representation of the URI
+     * Annotates this URI with a <server name>:<port>. Returns a new instance
+     * of AssetURI with this annotation
      * 
-     * @return The string representation of the URI
+     * @param server The <server name>:<port>
+     * @return A new AssetURI with annotated with the <server name>:<port>
+     * @throw URISyntaxException If the URI is not properly formed
      */
-    @Override
-    public String toString() {
-        return this.uri.toString();
-    }
-
-    /**
-     * Returns a map of the query parameters in key-value pair.
-     */
-    private Map<String, String> getQueryMap() {
-        Map<String, String> map = new HashMap<String, String>();
-        String query = this.getURI().getQuery();
-        if (query == null) {
-            return map;
-        }
-        
-        String[] params = query.split("&");
-        for (String param : params) {
-            String[] pArray = param.split("=");
-            map.put(pArray[0], pArray[1]);
-        }
-        return map;
+    public AssetURI getAnnotatedURI(String server) throws URISyntaxException {
+        return new AssetURI(this.getModuleName(), this.getRawPath(), server);
     }
 }

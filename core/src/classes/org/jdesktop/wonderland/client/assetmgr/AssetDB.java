@@ -29,12 +29,10 @@ import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Properties;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import org.jdesktop.wonderland.common.AssetType;
-import org.jdesktop.wonderland.common.AssetURI;
 
 /**
  * The AssetDB class represents the client-side cache of assets. The database
@@ -309,11 +307,11 @@ public class AssetDB {
         synchronized(stmtSaveNewRecord) {
             try {
                 String checksum = (asset.getChecksum() == null) ? "" : asset.getChecksum();
-                logger.fine("[ASSET DB] ADD " + asset.getAssetURI().toString() + " [" + checksum + "]");
+                logger.fine("[ASSET DB] ADD " + asset.getResourceURI().toString() + " [" + checksum + "]");
                 logger.fine("[ASSET DB] ADD url: " + asset.getURL());
                 logger.fine("[ASSET DB] ADD type: " + asset.getType().toString());
                 stmtSaveNewRecord.clearParameters();
-                stmtSaveNewRecord.setString(1, asset.getAssetURI().toString());
+                stmtSaveNewRecord.setString(1, asset.getResourceURI().toString());
                 stmtSaveNewRecord.setString(2, checksum);
                 stmtSaveNewRecord.setString(3, "" /*asset.getURL()*/);
                 stmtSaveNewRecord.setString(4, asset.getType().toString());
@@ -323,7 +321,7 @@ public class AssetDB {
                 logger.fine("AssetDB: Saving asset, row=" + row);
                 isSaved = true;            
             } catch (java.sql.SQLException sqle) {
-                logger.log(Level.SEVERE, "AssetDB: SQL Error saving record for " + asset.getAssetURI().toString());
+                logger.log(Level.SEVERE, "AssetDB: SQL Error saving record for " + asset.getResourceURI().toString());
                 sqle.printStackTrace();
             }
         }
@@ -443,23 +441,23 @@ public class AssetDB {
         synchronized(stmtUpdateExistingRecord) {
             try {
                 String checksum = (asset.getChecksum() == null) ? "" : asset.getChecksum();
-                logger.fine("[ASSET DB] UPDATE " + asset.getAssetURI().toString() + " [" + checksum + "]");
+                logger.fine("[ASSET DB] UPDATE " + asset.getResourceURI().toString() + " [" + checksum + "]");
 
                 stmtUpdateExistingRecord.clearParameters();
 
-                stmtUpdateExistingRecord.setString(1, asset.getAssetURI().toString());
+                stmtUpdateExistingRecord.setString(1, asset.getResourceURI().toString());
                 stmtUpdateExistingRecord.setString(2, checksum);
                 stmtUpdateExistingRecord.setString(3, asset.getURL());
                 stmtUpdateExistingRecord.setString(4, asset.getType().toString());
                 stmtUpdateExistingRecord.setLong(5, System.currentTimeMillis());
                 stmtUpdateExistingRecord.setLong(6, 0 /* XXX */);
-                stmtUpdateExistingRecord.setString(7, asset.getAssetURI().toString());
+                stmtUpdateExistingRecord.setString(7, asset.getResourceURI().toString());
                 stmtUpdateExistingRecord.setString(8, checksum);
 
                 stmtUpdateExistingRecord.executeUpdate();
                 bEdited = true;
             } catch(SQLException sqle) {
-                logger.log(Level.SEVERE, "AssetDB: SQL Error updating record for " + asset.getAssetURI().toString());
+                logger.log(Level.SEVERE, "AssetDB: SQL Error updating record for " + asset.getResourceURI().toString());
                 sqle.printStackTrace();
             }
         }
@@ -479,7 +477,7 @@ public class AssetDB {
             try {
                 String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
                 stmtDeleteAsset.clearParameters();
-                stmtDeleteAsset.setString(1, assetID.getAssetURI().toString());
+                stmtDeleteAsset.setString(1, assetID.getResourceURI().toString());
                 stmtDeleteAsset.setString(2, checksum);
                 stmtDeleteAsset.executeUpdate();
                 bDeleted = true;
@@ -503,9 +501,9 @@ public class AssetDB {
         synchronized(stmtGetAsset) {
             try {
                 String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
-                logger.fine("[ASSET DB] GET " + assetID.getAssetURI().toString() + " [" + checksum + "]");
+                logger.fine("[ASSET DB] GET " + assetID.getResourceURI().toString() + " [" + checksum + "]");
                 stmtGetAsset.clearParameters();
-                stmtGetAsset.setString(1, assetID.getAssetURI().toString());
+                stmtGetAsset.setString(1, assetID.getResourceURI().toString());
                 stmtGetAsset.setString(2, checksum);
                 ResultSet result = stmtGetAsset.executeQuery();
                 if (result.next() == true) {
@@ -518,7 +516,7 @@ public class AssetDB {
                     long size = result.getLong("SIZE");
                     
                     /*
-                     * Create an AssetURI class, log and error and return null
+                     * Create an ResourceURI class, log and error and return null
                      * if its syntax is invalid.
                      */
                     asset = AssetManager.getAssetManager().assetFactory(assetType, assetID);
@@ -555,15 +553,15 @@ public class AssetDB {
         synchronized(stmtUpdateLastAccessed) {
             try {
                 String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
-                logger.fine("[ASSET DB] UPDATE LAST " + assetID.getAssetURI().toString() + " [" + checksum + "]");
+                logger.fine("[ASSET DB] UPDATE LAST " + assetID.getResourceURI().toString() + " [" + checksum + "]");
                 
                 stmtUpdateLastAccessed.clearParameters();
                 stmtUpdateLastAccessed.setLong(1, System.currentTimeMillis());
-                stmtUpdateLastAccessed.setString(2, assetID.getAssetURI().toString());
+                stmtUpdateLastAccessed.setString(2, assetID.getResourceURI().toString());
                 stmtUpdateLastAccessed.setString(3, checksum);
                 stmtUpdateLastAccessed.executeUpdate();
             } catch(SQLException sqle) {
-                logger.log(Level.SEVERE, "AssetDB: SQL Error updating last accessed for " + assetID.getAssetURI());
+                logger.log(Level.SEVERE, "AssetDB: SQL Error updating last accessed for " + assetID.getResourceURI());
                 sqle.printStackTrace();
             }
         }
@@ -633,7 +631,7 @@ public class AssetDB {
         logger.fine("AssetDB: Database URL:      " + db.getDatabaseUrl());
         logger.fine("AssetDB: Is Connected?      " + db.isConnected());
 
-//        AssetID assetID = new AssetID(new AssetURI("wla://mpk20/sphere2.dae"), "4d92377dbd58f3ba2908354d2b9618f06303d5e9");
+//        AssetID assetID = new AssetID(new ResourceURI("wla://mpk20/sphere2.dae"), "4d92377dbd58f3ba2908354d2b9618f06303d5e9");
 //        Asset asset = db.getAsset(assetID);
 //        asset = new AssetFile(assetID);
 //        db.addAsset(asset);

@@ -28,36 +28,36 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class AssetURIAdapter extends XmlAdapter<String, AssetURI> {
+public class JarURIAdapter extends XmlAdapter<String, JarURI> {
     /* The server name to insert into the URI */
     private String serverName = null;
     
     /** Default constructor */
-    public AssetURIAdapter() {
+    public JarURIAdapter() {
     }
     
     /** Constructor takes the name of the server session */
-    public AssetURIAdapter(String serverName) {
+    public JarURIAdapter(String serverName) {
         this.serverName = serverName;
     }
     
     @Override
-    public AssetURI unmarshal(String uri) throws Exception {
+    public JarURI unmarshal(String uri) throws Exception {
         /*
          * Take the string URI, put is into a JarURI to parse it out, then
          * add in the server
          */
-        AssetURI assetURI = new AssetURI(uri);
+        JarURI jarURI = new JarURI(uri);
         if (uri != null) {
-            String moduleName = assetURI.getModuleName();
-            String rawPath = assetURI.getRawPath();
-            assetURI = new AssetURI(moduleName, serverName, rawPath);
+            String moduleName = jarURI.getModuleName();
+            String rawPath = jarURI.getRawPath();
+            jarURI = new JarURI(moduleName, rawPath, serverName);
         }
-        return assetURI;
+        return jarURI;
     }
 
     @Override
-    public String marshal(AssetURI assetURI) throws Exception {
-        return assetURI.toString();
+    public String marshal(JarURI jarURI) throws Exception {
+        return jarURI.toString();
     }
 }

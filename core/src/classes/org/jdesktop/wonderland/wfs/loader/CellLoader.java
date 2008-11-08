@@ -228,13 +228,7 @@ public class CellLoader {
              * Download and parse the cell configuration information. Create a
              * new cell based upon the information.
              */
-            URL url = null;
-            try {
-                url = new URL("http://localhost:8080/");
-            } catch (MalformedURLException excp) {
-                logger.log(Level.WARNING, "[WFS] Invalid server url", excp);
-            }
-            BasicCellSetup setup = CellLoaderUtils.getWFSCell(url, root, relativePath, child.name);
+            BasicCellSetup setup = CellLoaderUtils.getWFSCell(root, relativePath, child.name);
             if (setup == null) {
                 logger.info("WFSLoader: unable to read cell setup info " + relativePath + "/" + child.name);
                 continue;

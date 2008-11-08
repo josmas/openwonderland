@@ -42,7 +42,7 @@ public class TestWorld implements ServerPlugin {
             //WonderlandContext.getCellManager().insertCellInWorld(new SimpleShapeCellMO(new Vector3f(7, 0, 5), 1));
             WonderlandContext.getCellManager().insertCellInWorld(new SkyboxHackMO(new Vector3f(0, 0, 0), 80));
 
-            WonderlandContext.getCellManager().insertCellInWorld(new MouseSpinCellMO(new Vector3f(-8, 0, 2), 1));
+           // WonderlandContext.getCellManager().insertCellInWorld(new MouseSpinCellMO(new Vector3f(-8, 0, 2), 1));
             
 //            WonderlandContext.getCellManager().insertCellInWorld(new SimpleShapeCellMO(new Vector3f(0, 2, -5), 1, SimpleShapeConfig.Shape.SPHERE));
 //
