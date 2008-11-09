@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.common;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * The JarURI class uniquely identifies a plugin jar resource within the sytem.
@@ -28,7 +29,12 @@ import java.net.URISyntaxException;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
+@XmlJavaTypeAdapter(JarURIAdapter.class)
 public class JarURI extends ResourceURI {
+    
+    /** Default constructor */
+    public JarURI() {
+    }
     
     /**
      * Constructor which takes the string represents of the URI.
@@ -40,6 +46,13 @@ public class JarURI extends ResourceURI {
         super(uri);
     }
 
+    /**
+     * Constructor which takes the module name, relative path and server name/port
+     */
+    public JarURI(String moduleName, String path, String server) throws URISyntaxException {
+        super("wlj://" + moduleName + "@" + server + "/" + path);
+    }
+    
     /**
      * Returns the relative path of the resource specified by the URI. The
      * relative path does not being with any forward "/".

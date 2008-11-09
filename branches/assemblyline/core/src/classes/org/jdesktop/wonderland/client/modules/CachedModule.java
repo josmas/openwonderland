@@ -63,9 +63,9 @@ public class CachedModule {
      * 
      * @return A list of module art
      */
-    public synchronized ModuleArtList getArt() {
+    public synchronized ModuleArtList getArt(String serverURL) {
         if (this.moduleArt == null) {
-            this.moduleArt = ModuleUtils.fetchModuleArtList(moduleInfo.getName());
+            this.moduleArt = ModuleUtils.fetchModuleArtList(serverURL, moduleInfo.getName());
         }
         return this.moduleArt;
     }
@@ -75,9 +75,9 @@ public class CachedModule {
      * 
      * @return A list of module wfs
      */
-    public synchronized ModuleWFSList getWFS() {
+    public synchronized ModuleWFSList getWFS(String serverURL) {
         if (this.moduleWFS == null) {
-            this.moduleWFS = ModuleUtils.fetchModuleWFSList(moduleInfo.getName());
+            this.moduleWFS = ModuleUtils.fetchModuleWFSList(serverURL, moduleInfo.getName());
         }
         return this.moduleWFS;
     }

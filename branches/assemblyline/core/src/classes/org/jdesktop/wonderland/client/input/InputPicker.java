@@ -458,7 +458,12 @@ public abstract class InputPicker {
 	// If a grab is active, the event destination pick info will be the grabbed pick info
 	PickInfo pickInfo;
 	if (grabIsActive) {
-	    pickInfo = grabPickInfo;
+	    // TODO: HACK: is this the right way to fix this?
+	    if (eventID == MouseEvent.MOUSE_DRAGGED) {
+		pickInfo = hitPickInfo;
+	    } else {
+		pickInfo = grabPickInfo;
+	    }
 	} else {
 	    pickInfo = hitPickInfo;
 	}
@@ -617,7 +622,7 @@ public abstract class InputPicker {
      */
     private void generateEnterExitEvents (MouseEvent awtEvent, PickInfo pickInfo) {
 
-	MouseEnterExitEvent3D enterEventProto = 
+        MouseEnterExitEvent3D enterEventProto = 
 	    createEnterExitEventFromAwtEvent(awtEvent, MouseEvent.MOUSE_ENTERED);
 	MouseEnterExitEvent3D exitEventProto = 
 	    createEnterExitEventFromAwtEvent(awtEvent, MouseEvent.MOUSE_EXITED);

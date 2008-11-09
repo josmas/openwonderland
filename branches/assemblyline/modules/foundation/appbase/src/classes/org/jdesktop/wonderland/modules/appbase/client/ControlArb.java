@@ -50,7 +50,8 @@ public abstract class ControlArb {
     protected App app;
 
     /** Has the user enabled app control? */
-    protected boolean appControl;
+    // TODO: HACK for debug    protected boolean appControl;
+    protected boolean appControl = true;
 
     /** 
      * The interface that components interested in being notified of a state change in the control arb must implement.
@@ -179,7 +180,7 @@ public abstract class ControlArb {
      * @param window The window to which to send the event.
      * @param event The event to send.
      */
-    abstract void deliverEvent (Window2D window, KeyEvent event);
+    public abstract void deliverEvent (Window2D window, KeyEvent event);
 
     /**
      * Send a non-wheel mouse event to an app window, if the user has control.
@@ -187,7 +188,7 @@ public abstract class ControlArb {
      * @param window The window to which to send the event.
      * @param event The event to send.
      */
-    abstract void deliverEvent (Window2D window, MouseEvent event);
+    public abstract void deliverEvent (Window2D window, MouseEvent event);
 
 
     /**

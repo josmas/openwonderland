@@ -18,14 +18,19 @@
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.light.PointLight;
+import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.shape.Quad;
+import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.system.DisplaySystem;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.WindowView;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -47,35 +52,9 @@ public class FrameRect extends FrameComponent {
     /** The height of the side in local coordinates. */
     protected float height;
 
-    /** The quad. */
+    /** The quad geometry for the rect. */
     protected Quad quad;
     
-    /** 
-     * Create a new instance of <code>FrameRect</code> with a default name. The size must later be specified 
-     * with <code>resize</code>. 
-     *
-     * @param view The view the frame encloses.
-     * @param gui The event handler.
-     * @param width The width of rectangle in local coordinates.
-     * @param height The height of rectangle in local coordinates.
-     */
-    public FrameRect (WindowView view, /*TODO: Gui2D*/ Object gui) {
-        this("FrameRect", view, gui);
-    }
-
-    /** 
-     * Create a new instance of <code>FrameRect</code>. The size must later be specified with <code>resize</code>. 
-     *
-     * @param name The name of the node.
-     * @param view The view the frame encloses.
-     * @param gui The event handler.
-     * @param width The width of rectangle in local coordinates.
-     * @param height The height of rectangle in local coordinates.
-     */
-    public FrameRect (String name, WindowView view, /*TODO: Gui2D*/ Object gui) {
-        super(name, view, gui);
-    }
-
     /** 
      * Create a new instance of <code>FrameRect</code> a default name and with the specified size.
      *
@@ -84,8 +63,16 @@ public class FrameRect extends FrameComponent {
      * @param width The width of rectangle in local coordinates.
      * @param height The height of rectangle in local coordinates.
      */
-    public FrameRect (WindowView view, /*TODO: Gui2D*/ Object gui, float width, float height) {
+    public FrameRect (WindowView view, Gui2D gui, float width, float height) {
         this("FrameRect", view, gui, width, height);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void cleanup () {
+	super.cleanup();
+	quad = null;
     }
 
     /** 
@@ -97,25 +84,18 @@ public class FrameRect extends FrameComponent {
      * @param width The width of rectangle in local coordinates.
      * @param height The height of rectangle in local coordinates.
      */
-    public FrameRect (String name, WindowView view, /*TODO: Gui2D*/ Object gui, float width, float height) {
+    public FrameRect (String name, WindowView view, Gui2D gui, float width, float height) {
         super(name, view, gui);
 	try {
 	    resize(width, height);
         } catch (InstantiationException ex) {
             logger.warning("Cannot update FrameRect component");
         }
+
+	// TODO: eventually remove when world lights are working
+	initLightState();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void cleanup () {
-        super.cleanup();
-	if (quad != null) {
-	    detachChild(quad);
-	    quad = null;
-	}
-    }
 
     /**
      * {@inheritDoc}
@@ -124,19 +104,13 @@ public class FrameRect extends FrameComponent {
 	updateLayout();
 
 	if (quad == null) {
-	    // Init GUI only once
-	    if (gui != null) {
-		// TODO: gui.initEventHandling(this);
-	    }
+	    quad = new Quad("FrameRect-Quad", width, height);
+	    quad.setModelBound(new BoundingBox());
 	} else {
-	    detachChild(quad);
+	    quad.resize(width, height);
 	}
-
-	// Create state
-	quad = new Quad("FrameRect-Quad", width, height);
-	quad.setModelBound(new BoundingBox());
 	quad.updateModelBound();
-	attachChild(quad);
+	localToCellNode.attachChild(quad);
 
 	super.update();
     }
@@ -153,6 +127,29 @@ public class FrameRect extends FrameComponent {
      */
     public float getHeight () {
 	return height;
+    }
+
+    // TODO: temp: until sync up with global light change
+    /**
+     * Initialize the light state.
+     */
+    protected void initLightState () {
+	PointLight light = new PointLight();
+	light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
+	light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
+	light.setLocation(new Vector3f(100, 100, 100));
+	light.setEnabled(true);
+	LightState lightState = (LightState) 
+	    ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
+	lightState.setEnabled(true);
+	lightState.attach(light);
+	quad.setRenderState(lightState);
+	/*
+	System.err.println(">>>>>>>>>>>>>> Initializing light state for component" + name);
+	System.err.println("--------------------------------------------");
+	GraphicsUtils.printCommonRenderStates(quad);
+	System.err.println("--------------------------------------------");
+	*/
     }
 
     /**
@@ -205,18 +202,11 @@ public class FrameRect extends FrameComponent {
     }
 
     /**
-     * For debug: Print the contents of this component's render state.
+     * {@inheritDoc}
      */
-    public void printRenderState () {
-	MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
-	GraphicsUtils.printRenderState(ms);
-    }    
-
-    /**
-     * For debug: Print the contents of this component's geometry
-     */
-    public void printGeometry () {
-	GraphicsUtils.printGeometry(quad);
-    }    
+    @Override
+    protected Spatial[] getSpatials () {
+	return new Node[] { localToCellNode };
+    }
 }
 

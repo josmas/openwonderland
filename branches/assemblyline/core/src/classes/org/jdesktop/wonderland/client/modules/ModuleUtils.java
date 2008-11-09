@@ -19,11 +19,12 @@
 package org.jdesktop.wonderland.client.modules;
 
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.modules.ModuleArtList;
-import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.common.modules.ModuleWFSList;
 
@@ -32,8 +33,9 @@ import org.jdesktop.wonderland.common.modules.ModuleWFSList;
  * @author jordanslott
  */
 public class ModuleUtils {
-    /* The base URL of the web server */
-    private static final String BASE_URL = "http://localhost:8080/";
+    /* Prefixes for the module and asset web services */
+    private static final String MODULE_PREFIX = "wonderland-web-modules/modules/";
+    private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
     
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(ModuleUtils.class.getName());
@@ -45,11 +47,10 @@ public class ModuleUtils {
      * 
      * @return A list of modules
      */
-    public static ModuleList fetchModuleList() {
+    public static ModuleList fetchModuleList(String serverURL) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-modules/modules/list/get/installed";
-            URL url = new URL(base);
+            URL url = new URL(new URL(serverURL), MODULE_PREFIX + "list/get/installed");
             return ModuleList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -65,11 +66,10 @@ public class ModuleUtils {
      * @param moduleName The name of the module
      * @return A list of module art
      */
-    public static ModuleArtList fetchModuleArtList(String moduleName) {
+    public static ModuleArtList fetchModuleArtList(String serverURL, String moduleName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-asset/asset/" + moduleName + "/art/get";
-            URL url = new URL(base);
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/art/get");
             return ModuleArtList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -85,11 +85,10 @@ public class ModuleUtils {
      * @param moduleName The name of the module
      * @return A list of module art
      */
-    public static ModuleWFSList fetchModuleWFSList(String moduleName) {
+    public static ModuleWFSList fetchModuleWFSList(String serverURL, String moduleName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-modules/modules/" + moduleName + "/wfs/get";
-            URL url = new URL(base);
+            URL url = new URL(new URL(serverURL), MODULE_PREFIX + moduleName + "/wfs/get");
             return ModuleWFSList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -99,39 +98,18 @@ public class ModuleUtils {
     }
     
     /**
-     * Asks the web server for the module's basic information given its name,
-     * returns null if the module does not exist or upon some general I/O
-     * error.
-     * 
-     * @param uniqueName The unique name of a module
-     * @return The identity information for a module (e.g. version)
-     */
-    public static ModuleInfo fetchModuleIdentity(String uniqueName) {
-        try {
-            /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-modules/modules/";
-            URL url = new URL(base + uniqueName + "/info");
-            return ModuleInfo.decode(new InputStreamReader(url.openStream()));
-        } catch (java.lang.Exception excp) {
-            /* Log an error and return null */
-            logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
-            return null;
-        }
-    }
-    
-    /**
      * Asks the web server for the module's repository information given the
      * unique name of the module, returns null if the module does not exist or
      * upon some general I/O error.
      *
-     * @param uniqueName The unique name of a module
+     * @param serverURL The base web server URL
+     * @param moduleName The unique name of a module
      * @return The repository information for a module
      */
-    public static RepositoryList fetchModuleRepositoryList(String uniqueName) {
+    public static RepositoryList fetchModuleRepositoryList(String serverURL, String moduleName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-asset/asset/";
-            URL url = new URL(base + uniqueName + "/repository");
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/repository");
             logger.info("[MODULE] Fetching Repository list from " + url.toString());
             return RepositoryList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
@@ -146,14 +124,14 @@ public class ModuleUtils {
      * unique name of the module, returns null if the module does not exist or
      * upon some general I/O error.
      * 
-     * @param uniqueName The unique name of a module
+     * @param serverURL The base web server URL
+     * @param moduleName The unique name of a module
      * @return The checksum information for a module
      */
-    public static ChecksumList fetchModuleChecksums(String uniqueName) {
+    public static ChecksumList fetchModuleChecksums(String serverURL, String moduleName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            String base = BASE_URL + "wonderland-web-asset/asset/";
-            URL url = new URL(base + uniqueName + "/checksums/get");
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/checksums/get");
             logger.info("[MODULES] Fetch modules from " + url.toString());
             return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
@@ -170,15 +148,38 @@ public class ModuleUtils {
      * 
      * @return The list of client and common plugin jars in all modules.
      */
-    public static ModulePluginList fetchPluginJars() {
+    public static ModulePluginList fetchPluginJars(String serverURL) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(BASE_URL + "wonderland-web-asset/asset/jars/get");
-            return ModulePluginList.decode(new InputStreamReader(url.openStream()));
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + "jars/get");
+            Reader r = new InputStreamReader(url.openStream());
+            return ModulePluginList.decode(r, getServerFromURL(serverURL));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH JARS Failed", excp);
             return null;
         }
+    }
+    
+    /**
+     * Given a base URL of the server (e.g. http://localhost:8080) returns
+     * the server name and port as a string (e.g. localhost:8080). Returns null
+     * if the host name is not present.
+     * 
+     * @return <server name>:<port>
+     * @throw MalformedURLException If the given string URL is invalid
+     */
+    public static String getServerFromURL(String serverURL) throws MalformedURLException {
+        URL url = new URL(serverURL);
+        String host = url.getHost();
+        int port = url.getPort();
+        
+        if (host == null) {
+            return null;
+        }
+        else if (port == -1) {
+            return host;
+        }
+        return host + ":" + port;
     }
 }

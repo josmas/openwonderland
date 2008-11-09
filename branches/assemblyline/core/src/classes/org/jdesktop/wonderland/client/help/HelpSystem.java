@@ -56,6 +56,7 @@ public class HelpSystem {
         HelpInfo helpInfo = HelpUtils.fetchHelpInfo();
         if (helpInfo == null) {
             this.helpMenu = new JMenu("Help");
+            return;
         }
         
         /* Generate the help menu structure */

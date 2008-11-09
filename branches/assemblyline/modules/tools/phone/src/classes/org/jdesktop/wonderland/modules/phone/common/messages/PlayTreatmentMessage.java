@@ -21,6 +21,8 @@ package org.jdesktop.wonderland.modules.phone.common.messages;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -32,8 +34,10 @@ public class PlayTreatmentMessage extends PhoneControlMessage {
     private String treatment;
     private boolean echo;
 
-    public PlayTreatmentMessage(CallListing listing, String treatment, boolean echo) {
-	super(null, null, listing);
+    public PlayTreatmentMessage(CellID phoneCellID, CallListing listing, 
+	    String treatment, boolean echo) {
+
+	super(phoneCellID, listing);
 
 	this.treatment = treatment;
 	this.echo = echo;

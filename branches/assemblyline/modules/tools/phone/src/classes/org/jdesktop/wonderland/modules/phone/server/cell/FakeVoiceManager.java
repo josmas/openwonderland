@@ -68,7 +68,7 @@ public class FakeVoiceManager /*implements VoiceManager*/ {
             try {
                 dm.setBinding(DS_FAKE_CALL_STATUS_LISTENERS, new FakeCallStatusListeners());
             }  catch (RuntimeException re) {
-                logger.warning("failed to bind pending map " + re.getMessage());
+                logger.fine("failed to bind pending map " + re.getMessage());
                 throw re;
             }
         }
@@ -119,7 +119,6 @@ public class FakeVoiceManager /*implements VoiceManager*/ {
 	String callID) {
                 
         if (listener != null) {
-            
             DataManager dm = AppContext.getDataManager();
             
             FakeCallStatusListeners callList = (FakeCallStatusListeners)
@@ -130,7 +129,7 @@ public class FakeVoiceManager /*implements VoiceManager*/ {
             synchronized(callList) {
                 callList.put(ref, callID);                
             }
-            logger.info("Added CallStatusListener " + listener + " to callID: " + callID);
+            logger.fine("Added CallStatusListener " + listener + " to callID: " + callID);
         }
     }
 	
@@ -146,7 +145,7 @@ public class FakeVoiceManager /*implements VoiceManager*/ {
             callList.remove(toRemove);
         }
         
-        logger.info("Removed CallStatusListener: " + toRemove);
+        logger.fine("Removed CallStatusListener: " + toRemove);
     }
 
 }

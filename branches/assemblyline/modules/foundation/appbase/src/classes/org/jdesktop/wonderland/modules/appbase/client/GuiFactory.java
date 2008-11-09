@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * A GuiFactory is created by an AppType and is returned by the getGuiFactory method of the AppType. 
  * <br><br>
  * Note on 2D apps: Unless overridden, the AppType2D.getGuiFactory method returns an instance of 
- * org.jdesktop.wonderland.modules.appbase.client.gui.guidefault.Gui2DFactoryDefault. This class provides
+ * org.jdesktop.wonderland.modules.appbase.client.gui.guidefault.Gui2DFactory. This class provides
  * the default GUI for 2D apps in Wonderland. World views are displayed using a JME 3D geometry object with 
  * the window contents in a JME texture mapped to this geometry object. World frames are also implemented using JME
  * 3D objects.

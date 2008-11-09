@@ -25,8 +25,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandSessionManager;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 
@@ -43,7 +43,6 @@ public class ClientContext {
 
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
     private static InputManager inputManager=null;
-    private static WonderlandSessionManager sessionManager = new WonderlandSessionManager();
     private static File userDir;
     
     /**
@@ -99,8 +98,10 @@ public class ClientContext {
         return inputManager;
     }
 
-    public static WonderlandSessionManager getWonderlandSessionManager() {
-        return sessionManager;
+    public static LoginManager getLoginManager(String serverURL)
+        throws IOException
+    {
+        return LoginManager.getInstance(serverURL);
     }
 
     /**
@@ -132,5 +133,19 @@ public class ClientContext {
         
         userDir = out;
         return out;
+    }
+
+    /**
+     * Return a subdirectory of the wonderland user directory for this user
+     * @param dirName the name of the subdirectory
+     * @return the user directory subdirectory, created if it doesn't exist
+     */
+    public synchronized static File getUserDirectory(String dirName) {
+        File dir = new File(getUserDirectory(), dirName);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+
+        return dir;
     }
 }

@@ -36,7 +36,8 @@ public class ViewCellCacheRevalidateTask implements Task, Serializable {
     }
     
     public void run() throws Exception {
-        cellCacheRef.get().revalidate();
+        throw new RuntimeException("Not Implemented (deprecated)");
+//        cellCacheRef.get().revalidate();
     }
 
 }

@@ -36,14 +36,14 @@ public class ControlArbMulti extends ControlArb {
     /**
      * {@inheritDoc}
      */
-    void deliverEvent (Window2D window, KeyEvent event) {
+    public void deliverEvent (Window2D window, KeyEvent event) {
 	window.deliverEvent(event);
     }
 
     /**
      * {@inheritDoc}
      */
-    void deliverEvent (Window2D window, MouseEvent event) {
+    public void deliverEvent (Window2D window, MouseEvent event) {
 	window.deliverEvent(event);
     }
 }

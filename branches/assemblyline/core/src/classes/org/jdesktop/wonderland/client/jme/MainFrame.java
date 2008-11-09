@@ -17,23 +17,21 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.Dimension;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.assembly.ModulePaletteFrame;
 import org.jdesktop.wonderland.client.help.HelpSystem;
-import org.jdesktop.wonderland.client.jme.artimport.CellViewerFrame;
-import org.jdesktop.wonderland.client.jme.artimport.ImportSessionFrame;
 import org.jdesktop.wonderland.common.LogControl;
-
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 /**
  * The Main JFrame for the wonderland jme client
@@ -43,18 +41,14 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 public class MainFrame extends javax.swing.JFrame {
     private static final ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle", Locale.getDefault());
 
-    JPanel mainPanel = new JPanel();
-    Canvas canvas = null;
-    private JPanel contentPane;
-    
-    private ImportSessionFrame importSessionFrame = null;
-    private CellViewerFrame cellViewerFrame = null;
-    private ModulePaletteFrame modulePaletteFrame = null;
-    
     static {
         new LogControl(MainFrame.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
     }
-    
+
+    // variables for the location field
+    private String serverURL;
+    private ServerURLListener serverListener;
+
     /** Creates new form MainFrame */
     public MainFrame(WorldManager wm, int width, int height) {
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
@@ -65,22 +59,43 @@ public class MainFrame extends javax.swing.JFrame {
         // Add the help menu to the main menu bar
         HelpSystem helpSystem = new HelpSystem();
         JMenu helpMenu = helpSystem.getHelpJMenu();
-        jMenuBar2.add(helpMenu);
+        mainMenuBar.add(helpMenu);
         
-        // make the canvas:
-        canvas = wm.getRenderManager().createCanvas(width, height);
-        canvas.setVisible(true);
         wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
             public void currentFramerate(float framerate) {
                 fpsLabel.setText("FPS: "+framerate);
-            }                
+            }
         }, 100);
-        wm.getRenderManager().setCurrentCanvas(canvas);
 
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
+        centerPanel.setMinimumSize(new Dimension(width, height));
+        centerPanel.setPreferredSize(new Dimension(width, height));
 
-        canvas.setBounds(0, 0, width, height);
-        centerPanel.add(canvas, BorderLayout.CENTER);
+        serverField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                checkButtons();
+            }
+
+            public void checkButtons() {
+                String cur = serverField.getText();
+                if (cur != null && cur.length() > 0 &&
+                        !cur.equals(serverURL))
+                {
+                    goButton.setEnabled(true);
+                } else {
+                    goButton.setEnabled(false);
+                }
+            }
+        });
+
 
         pack();
     }
@@ -89,14 +104,43 @@ public class MainFrame extends javax.swing.JFrame {
      * Returns the canvas of the frame.
      */
     public Canvas getCanvas () {
-	return canvas;
+        return ViewManager.getViewManager().getCanvas();
     }
 
     /**
      * Returns the panel of the frame in which the 3D canvas resides.
      */
     public JPanel getCanvas3DPanel () {
-	return centerPanel;
+        return centerPanel;
+    }
+
+    /**
+     * Add the specified menu item to the tool menu.
+     * 
+     * TODO - design a better way to manage the menus and toolsbars
+     * 
+     * @param menuItem
+     */
+    public void addToToolMenu(JMenuItem menuItem) {
+        toolsMenu.add(menuItem);
+    }
+
+    /**
+     * Set the server URL in the location field
+     * @param serverURL the server URL to set
+     */
+    public void setServerURL(String serverURL) {
+        this.serverURL = serverURL;
+        serverField.setText(serverURL);
+    }
+
+    public void addServerURLListener(ServerURLListener listener) {
+        serverListener = listener;
+    }
+
+    public interface ServerURLListener {
+        public void serverURLChanged(String serverURL);
+        public void logout();
     }
 
     /** This method is called from within the constructor to
@@ -109,125 +153,47 @@ public class MainFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jSlider1 = new javax.swing.JSlider();
-        jToolBar1 = new javax.swing.JToolBar();
-        cellViewerTTB = new javax.swing.JButton();
-        softphoneButton = new javax.swing.JButton();
-        testAudioButton = new javax.swing.JButton();
-        reconnectSoftphoneButton = new javax.swing.JButton();
-        transferCallButton = new javax.swing.JButton();
-        logAudioProblemButton = new javax.swing.JButton();
-        virtualPhoneButton = new javax.swing.JButton();
+        serverPanel = new javax.swing.JPanel();
+        serverLabel = new javax.swing.JLabel();
+        serverField = new javax.swing.JTextField();
+        goButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         fpsLabel = new javax.swing.JLabel();
-        heightSlider = new javax.swing.JSlider();
-        jPanel2 = new javax.swing.JPanel();
-        zoomInButton = new javax.swing.JButton();
-        zoomOutButton = new javax.swing.JButton();
-        jMenuBar2 = new javax.swing.JMenuBar();
-        jMenu3 = new javax.swing.JMenu();
+        mainMenuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
+        logoutMI = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JSeparator();
         exitMI = new javax.swing.JMenuItem();
-        jMenu4 = new javax.swing.JMenu();
+        editMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
-        modelImportMI = new javax.swing.JMenuItem();
-        cellViewerMI = new javax.swing.JMenuItem();
-        AudioMenu = new javax.swing.JMenu();
-        softphoneMenuItem = new javax.swing.JCheckBoxMenuItem();
-        testAudioMenuItem = new javax.swing.JMenuItem();
-        reconnectSoftphoneMenuItem = new javax.swing.JMenuItem();
-        transferCallMenuItem = new javax.swing.JMenuItem();
-        logAudioProblemMenuItem = new javax.swing.JMenuItem();
-        virtualPhoneMenuItem = new javax.swing.JMenuItem();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
 
         jLabel1.setText("jLabel1");
 
-        jSlider1.setOrientation(javax.swing.JSlider.VERTICAL);
-
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jToolBar1.setRollover(true);
+        serverPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        serverPanel.setLayout(new java.awt.BorderLayout());
 
-        cellViewerTTB.setText("Editor");
-        cellViewerTTB.setFocusable(false);
-        cellViewerTTB.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        cellViewerTTB.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        cellViewerTTB.addActionListener(new java.awt.event.ActionListener() {
+        serverLabel.setText("Location:");
+        serverPanel.add(serverLabel, java.awt.BorderLayout.WEST);
+
+        serverField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cellViewerMIActionPerformed(evt);
+                serverFieldActionPerformed(evt);
             }
         });
-        jToolBar1.add(cellViewerTTB);
+        serverPanel.add(serverField, java.awt.BorderLayout.CENTER);
 
-        softphoneButton.setText("Softphone");
-        softphoneButton.setFocusable(false);
-        softphoneButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        softphoneButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        softphoneButton.addActionListener(new java.awt.event.ActionListener() {
+        goButton.setText("Go!");
+        goButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                softphoneButtonActionPerformed(evt);
+                goButtonActionPerformed(evt);
             }
         });
-        jToolBar1.add(softphoneButton);
+        serverPanel.add(goButton, java.awt.BorderLayout.EAST);
 
-        testAudioButton.setText("TestAudio");
-        testAudioButton.setFocusable(false);
-        testAudioButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        testAudioButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        testAudioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testAudioButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(testAudioButton);
-
-        reconnectSoftphoneButton.setText("ReconnectSoftphone");
-        reconnectSoftphoneButton.setFocusable(false);
-        reconnectSoftphoneButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        reconnectSoftphoneButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        reconnectSoftphoneButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reconnectSoftphoneButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(reconnectSoftphoneButton);
-
-        transferCallButton.setText("TransferCall");
-        transferCallButton.setFocusable(false);
-        transferCallButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        transferCallButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        transferCallButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                transferCallButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(transferCallButton);
-
-        logAudioProblemButton.setText("LogAudioProblem");
-        logAudioProblemButton.setFocusable(false);
-        logAudioProblemButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        logAudioProblemButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        logAudioProblemButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                logAudioProblemButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(logAudioProblemButton);
-
-        virtualPhoneButton.setText("VirtualPhone");
-        virtualPhoneButton.setFocusable(false);
-        virtualPhoneButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        virtualPhoneButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        virtualPhoneButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                virtualPhoneButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(virtualPhoneButton);
-
-        getContentPane().add(jToolBar1, java.awt.BorderLayout.PAGE_START);
+        getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
         fpsLabel.setText("FPS :");
@@ -235,36 +201,16 @@ public class MainFrame extends javax.swing.JFrame {
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
-        heightSlider.setOrientation(javax.swing.JSlider.VERTICAL);
-        getContentPane().add(heightSlider, java.awt.BorderLayout.LINE_END);
+        fileMenu.setText(bundle.getString("File")); // NOI18N
 
-        zoomInButton.setText("I");
-        zoomInButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-
-        zoomOutButton.setText("O");
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(zoomInButton)
-                    .add(zoomOutButton))
-                .add(75, 75, 75))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(zoomInButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(zoomOutButton)
-                .addContainerGap(366, Short.MAX_VALUE))
-        );
-
-        getContentPane().add(jPanel2, java.awt.BorderLayout.LINE_START);
-
-        jMenu3.setText(bundle.getString("File")); // NOI18N
+        logoutMI.setText("Log out");
+        logoutMI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logoutMIActionPerformed(evt);
+            }
+        });
+        fileMenu.add(logoutMI);
+        fileMenu.add(jSeparator1);
 
         exitMI.setText(bundle.getString("Exit")); // NOI18N
         exitMI.addActionListener(new java.awt.event.ActionListener() {
@@ -272,104 +218,17 @@ public class MainFrame extends javax.swing.JFrame {
                 exitMIActionPerformed(evt);
             }
         });
-        jMenu3.add(exitMI);
+        fileMenu.add(exitMI);
 
-        jMenuBar2.add(jMenu3);
+        mainMenuBar.add(fileMenu);
 
-        jMenu4.setText(bundle.getString("Edit")); // NOI18N
-        jMenuBar2.add(jMenu4);
+        editMenu.setText(bundle.getString("Edit")); // NOI18N
+        mainMenuBar.add(editMenu);
 
         toolsMenu.setText(bundle.getString("Tools")); // NOI18N
+        mainMenuBar.add(toolsMenu);
 
-        modelImportMI.setText(bundle.getString("Model_Importer...")); // NOI18N
-        modelImportMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                modelImportMIActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(modelImportMI);
-
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
-        cellViewerMI.setText(bundle.getString("Cell_Viewer...")); // NOI18N
-        cellViewerMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cellViewerMIActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(cellViewerMI);
-
-        AudioMenu.setText("Audio");
-        AudioMenu.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AudioMenuActionPerformed(evt);
-            }
-        });
-
-        softphoneMenuItem.setText("Softphone");
-        softphoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                softphoneMenuItemActionPerformed(evt);
-            }
-        });
-        AudioMenu.add(softphoneMenuItem);
-
-        testAudioMenuItem.setText("Test Audio");
-        testAudioMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testAudioMenuItemActionPerformed(evt);
-            }
-        });
-        AudioMenu.add(testAudioMenuItem);
-
-        reconnectSoftphoneMenuItem.setText("Reconnect Softphone");
-        reconnectSoftphoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reconnectSoftphoneMenuItemActionPerformed(evt);
-            }
-        });
-        AudioMenu.add(reconnectSoftphoneMenuItem);
-
-        transferCallMenuItem.setText("Transfer Call");
-        transferCallMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                transferCallMenuItemActionPerformed(evt);
-            }
-        });
-        AudioMenu.add(transferCallMenuItem);
-
-        logAudioProblemMenuItem.setText("Log Audio Problem");
-        logAudioProblemMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                logAudioProblemMenuItemActionPerformed(evt);
-            }
-        });
-        AudioMenu.add(logAudioProblemMenuItem);
-
-        virtualPhoneMenuItem.setText("Virtual Phone");
-        virtualPhoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                virtualPhoneMenuItemActionPerformed(evt);
-            }
-        });
-        AudioMenu.add(virtualPhoneMenuItem);
-
-        toolsMenu.add(AudioMenu);
-
-        jMenuBar2.add(toolsMenu);
-
-        jMenu1.setText("Assembly");
-
-        jMenuItem1.setText("Module Palette");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                modulePaletteMIActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItem1);
-
-        jMenuBar2.add(jMenu1);
-
-        setJMenuBar(jMenuBar2);
+        setJMenuBar(mainMenuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -379,153 +238,38 @@ private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     System.exit(0);
 }//GEN-LAST:event_exitMIActionPerformed
 
-private void modelImportMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelImportMIActionPerformed
-if (importSessionFrame==null) 
-        importSessionFrame = new ImportSessionFrame();
-    importSessionFrame.setVisible(true);
-}//GEN-LAST:event_modelImportMIActionPerformed
+private void serverFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverFieldActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_serverFieldActionPerformed
 
-private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cellViewerMIActionPerformed
-    if (cellViewerFrame==null) {
-        cellViewerFrame = new CellViewerFrame();
+private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
+    if (serverListener != null) {
+        serverListener.serverURLChanged(serverField.getText());
     }
-    cellViewerFrame.setVisible(true);
-}//GEN-LAST:event_cellViewerMIActionPerformed
+}//GEN-LAST:event_goButtonActionPerformed
 
-private void AudioMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AudioMenuActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_AudioMenuActionPerformed
-
-private void logAudioProblemMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logAudioProblemMenuItemActionPerformed
-if (audioMenuListener != null) {
-	audioMenuListener.logAudioProblem();
+private void logoutMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutMIActionPerformed
+    if (serverListener != null) {
+        serverListener.logout();
     }
-}//GEN-LAST:event_logAudioProblemMenuItemActionPerformed
-
-private void transferCallMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transferCallMenuItemActionPerformed
-if (audioMenuListener != null) {
-	audioMenuListener.transferCall();
-    }
-}//GEN-LAST:event_transferCallMenuItemActionPerformed
-
-private void reconnectSoftphoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reconnectSoftphoneMenuItemActionPerformed
-if (audioMenuListener != null) {
-	audioMenuListener.reconnectSoftphone();
-    }
-}//GEN-LAST:event_reconnectSoftphoneMenuItemActionPerformed
-
-private void testAudioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testAudioMenuItemActionPerformed
-if (audioMenuListener != null) {
-	audioMenuListener.testAudio();
-    }
-}//GEN-LAST:event_testAudioMenuItemActionPerformed
-
-private void softphoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_softphoneMenuItemActionPerformed
-if (audioMenuListener != null) {
-	audioMenuListener.showSoftphone(softphoneMenuItem.isSelected());
-    }
-}//GEN-LAST:event_softphoneMenuItemActionPerformed
-
-private VirtualPhoneListener virtualPhoneListener;
-
-public void addVirtualPhoneListener(VirtualPhoneListener virtualPhoneListener) {
-    this.virtualPhoneListener = virtualPhoneListener;
-}
-
-private void virtualPhoneMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualPhoneMenuItemActionPerformed
-if (virtualPhoneListener != null) {
-    virtualPhoneListener.virtualPhoneMenuItemSelected();
-}
-}//GEN-LAST:event_virtualPhoneMenuItemActionPerformed
-
-private void softphoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_softphoneButtonActionPerformed
-if (audioMenuListener != null) {
-    boolean isVisible = SoftphoneControlImpl.getInstance().isVisible();
-    audioMenuListener.showSoftphone(!isVisible);
-}
-}//GEN-LAST:event_softphoneButtonActionPerformed
-
-private void testAudioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testAudioButtonActionPerformed
-if (audioMenuListener != null) {
-    audioMenuListener.testAudio();
-}
-}//GEN-LAST:event_testAudioButtonActionPerformed
-
-private void reconnectSoftphoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reconnectSoftphoneButtonActionPerformed
-if (audioMenuListener != null) {
-    audioMenuListener.reconnectSoftphone();
-}
-}//GEN-LAST:event_reconnectSoftphoneButtonActionPerformed
-
-private void transferCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transferCallButtonActionPerformed
-if (audioMenuListener != null) {
-    audioMenuListener.transferCall();
-}
-}//GEN-LAST:event_transferCallButtonActionPerformed
-
-private void logAudioProblemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logAudioProblemButtonActionPerformed
-if (audioMenuListener != null) {
-    audioMenuListener.logAudioProblem();
-}
-}//GEN-LAST:event_logAudioProblemButtonActionPerformed
-
-private void virtualPhoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualPhoneButtonActionPerformed
-if (virtualPhoneListener != null) {
-    virtualPhoneListener.virtualPhoneMenuItemSelected();
-}
-}//GEN-LAST:event_virtualPhoneButtonActionPerformed
-
-private void modulePaletteMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modulePaletteMIActionPerformed
-    if (modulePaletteFrame == null) {
-        modulePaletteFrame = new ModulePaletteFrame();
-    }
-    modulePaletteFrame.setVisible(true);
-}//GEN-LAST:event_modulePaletteMIActionPerformed
-
-public void updateSoftphoneCheckBoxMenuItem(boolean isSelected) {
-    softphoneMenuItem.setSelected(isSelected);
-}
-
-private AudioMenuListener audioMenuListener;
-
-public void addAudioMenuListener(AudioMenuListener audioMenuListener) {
-    this.audioMenuListener = audioMenuListener;
-}
+}//GEN-LAST:event_logoutMIActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu AudioMenu;
-    private javax.swing.JMenuItem cellViewerMI;
-    private javax.swing.JButton cellViewerTTB;
     private javax.swing.JPanel centerPanel;
+    private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMI;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel fpsLabel;
-    private javax.swing.JSlider heightSlider;
+    private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
-    private javax.swing.JMenuBar jMenuBar2;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JSlider jSlider1;
-    private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JButton logAudioProblemButton;
-    private javax.swing.JMenuItem logAudioProblemMenuItem;
-    private javax.swing.JMenuItem modelImportMI;
-    private javax.swing.JButton reconnectSoftphoneButton;
-    private javax.swing.JMenuItem reconnectSoftphoneMenuItem;
-    private javax.swing.JButton softphoneButton;
-    private javax.swing.JCheckBoxMenuItem softphoneMenuItem;
-    private javax.swing.JButton testAudioButton;
-    private javax.swing.JMenuItem testAudioMenuItem;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JMenuItem logoutMI;
+    private javax.swing.JMenuBar mainMenuBar;
+    private javax.swing.JTextField serverField;
+    private javax.swing.JLabel serverLabel;
+    private javax.swing.JPanel serverPanel;
     private javax.swing.JMenu toolsMenu;
-    private javax.swing.JButton transferCallButton;
-    private javax.swing.JMenuItem transferCallMenuItem;
-    private javax.swing.JButton virtualPhoneButton;
-    private javax.swing.JMenuItem virtualPhoneMenuItem;
-    private javax.swing.JButton zoomInButton;
-    private javax.swing.JButton zoomOutButton;
     // End of variables declaration//GEN-END:variables
 
 }

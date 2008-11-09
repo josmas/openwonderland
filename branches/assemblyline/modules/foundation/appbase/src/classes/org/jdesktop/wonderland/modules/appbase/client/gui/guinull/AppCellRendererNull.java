@@ -64,4 +64,10 @@ public class AppCellRendererNull extends AppCellRenderer {
     public void detachView (WindowView view) {
 	// Do nothing
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void logSceneGraph () {
+    }
 }

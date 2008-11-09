@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
+import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;

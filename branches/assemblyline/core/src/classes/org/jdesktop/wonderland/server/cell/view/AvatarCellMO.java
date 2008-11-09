@@ -50,7 +50,7 @@ public class AvatarCellMO extends ViewCellMO {
         this.userRef = AppContext.getDataManager().createReference(user);
         
         Vector3f location = new Vector3f(0,0,0);
-        Vector3f lookDirection = new Vector3f(0,0,-1);
+        Vector3f lookDirection = new Vector3f(0,0,1);
 
         Quaternion rotation = new Quaternion();
         rotation.lookAt(lookDirection, new Vector3f(0f,1f,0f));

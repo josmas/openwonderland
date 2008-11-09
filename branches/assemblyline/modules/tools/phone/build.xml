@@ -13,6 +13,7 @@
         <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
 	<path location="${current.dir}/../audio-manager/lib/voip.jar"/>
 	<path location="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
+	<path location="${current.dir}/../orb/build/lib/server/orb-server.jar"/>
     </pathconvert>
 
     <!-- import common build file -->
@@ -30,16 +31,20 @@
                 builddir="${build.lib.dir}">
             <client>
                 <clientjar name="phone-client" basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.phone.client.PhoneClientPlugin"/>
+		    <clientplugin provider="org.jdesktop.wonderland.modules.phone.client.PhoneClientPlugin"/>
 
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>
             </client>
                 
-            <server>
+            <server dir="${current.dir}/../audio-manager/lib">
+		<include name="voicelib.jar"/>
+		<include name="bridge_connector.jar"/>
+		<include name="voip.jar"/> 
+
                 <serverjar name="phone-server" basedir="${build.classes.dir}">
-                    <serverplugin provider="org.jdesktop.wonderland.modules.phone.server.PhoneServerPlugin"/>
+		    <serverplugin provider="org.jdesktop.wonderland.modules.phone.server.PhoneServerPlugin"/>
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup"/>
                     </cellsetup>

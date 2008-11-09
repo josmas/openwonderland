@@ -30,10 +30,8 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class PlaceCallMessage extends PhoneControlMessage {   
     
-    public PlaceCallMessage(CellID clientCellID, CellID externalCallCellID, 
-	    CallListing listing) {
-
-	super(clientCellID, externalCallCellID, listing);
+    public PlaceCallMessage(CellID phoneCellID, CallListing listing) {
+	super(phoneCellID, listing);
     }
 
 }

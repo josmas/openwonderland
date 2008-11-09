@@ -19,22 +19,12 @@
 package org.jdesktop.wonderland.runner.resources;
 
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import org.jdesktop.wonderland.runner.DeploymentEntry;
 import org.jdesktop.wonderland.runner.DeploymentManager;
 import org.jdesktop.wonderland.runner.DeploymentPlan;
-import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.RunnerException;
+import org.jdesktop.wonderland.runner.StatusWaiter;
 
 /**
  * Utility methods used by ActionResource and RunnerActionResource

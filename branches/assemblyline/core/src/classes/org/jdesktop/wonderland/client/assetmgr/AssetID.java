@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.client.assetmgr;
 
-import org.jdesktop.wonderland.client.modules.Checksum;
 import org.jdesktop.wonderland.common.ResourceURI;
 
 /**
@@ -47,7 +46,7 @@ public class AssetID {
      * 
      * @return The ResourceURI
      */
-    public ResourceURI getAssetURI() {
+    public ResourceURI getResourceURI() {
         return this.assetURI;
     }
     
@@ -89,7 +88,7 @@ public class AssetID {
         }
         
         /* Check to make sure the URIs are equals, return false if not */
-        if (this.assetURI.getURI().equals(this.getAssetURI().getURI()) == false) {
+        if (this.assetURI.getURI().equals(this.getResourceURI().getURI()) == false) {
             return false;
         }
         

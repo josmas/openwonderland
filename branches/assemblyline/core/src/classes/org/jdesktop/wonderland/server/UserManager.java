@@ -193,14 +193,14 @@ public class UserManager implements ManagedObject, Serializable {
     }
     
     /**
-     * Log user out of specified session
+     * Log user out of s÷pecified session
      * @param session
      */
     public void logout(ClientSession session) {
         DataManager dm = AppContext.getDataManager();
         
         // make sure there is a user
-        UserMO user = getUserMO(session.getName());
+        UserMO user = getUser(session);
         assert(user!=null);
         if (user != null) {
             user.logout(session);

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.servermanager.client;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,13 @@ import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.LoginManager.NoAuthLoginControl;
+import org.jdesktop.wonderland.client.login.LoginManager.UserPasswordLoginControl;
+import org.jdesktop.wonderland.client.login.LoginManager.WebURLLoginControl;
+import org.jdesktop.wonderland.client.login.LoginUI;
+import org.jdesktop.wonderland.client.login.SessionCreator;
+import org.jdesktop.wonderland.front.admin.ServerInfo;
 import org.jdesktop.wonderland.runner.darkstar.DarkstarRunner;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
@@ -62,6 +70,9 @@ public class PingDataCollector
                 new HashMap<DarkstarRunner, ServerManagerSession>());
     
     public PingDataCollector() {
+        LoginManager.setLoginUI(new ServerManagerLoginUI());
+        LoginManager.setLoadPlugins(false);
+        
         Collection<DarkstarRunner> runners = 
                 RunManager.getInstance().getAll(DarkstarRunner.class);
         for (DarkstarRunner dr : runners) {
@@ -217,42 +228,47 @@ public class PingDataCollector
     
     // connect to a server
     protected void connectTo(DarkstarRunner dr) {
-        // TODO get from runner
-        String serverHost = "localhost";
-        int serverPort = 1139;
-        
-        logger.warning("Connect to " + serverHost + " " + serverPort);
-        
+        // TODO: connect to a particular Darkstar server
         try {
-            // log in to the server
-            WonderlandServerInfo serverInfo = 
-                    new WonderlandServerInfo(serverHost, serverPort);
-            ServerManagerSession session = 
-                    new ServerManagerSession(serverInfo, 
-                                             getClass().getClassLoader());
+            LoginManager lm = LoginManager.getInstance(ServerInfo.getServerURL());
+            ServerManagerSession session = lm.createSession(
+                    new SessionCreator<ServerManagerSession>()
+            {
+                public ServerManagerSession createSession(
+                        WonderlandServerInfo serverInfo, ClassLoader loader)
+                {
+                    // use our classloader
+                    return new ServerManagerSession(serverInfo,
+                                                   getClass().getClassLoader());
+                }
+            });
+
             session.addSessionStatusListener(this);
-            session.login(new LoginParameters("serverManager", 
-                                              "password".toCharArray()));
-        
+
             // remember the session
             sessions.put(dr, session);
-            
+
             // make a note of the new connection
+            WonderlandServerInfo info = session.getServerInfo();
             PingData note = new PingData();
             note.setPingNoteTitle("Connected to server");
-            note.setPingNoteText("Connected to server " + serverHost + 
-                             ":" + serverPort);
+            note.setPingNoteText("Connected to server " + info.getHostname() +
+                                 ":" + info.getSgsPort());
             data.add(note);
         } catch (LoginFailureException le) {
-            logger.log(Level.WARNING, "Unable to log in to server");
-        }  
+            logger.log(Level.WARNING, "Unable to log in to server " +
+                       ServerInfo.getServerURL(), le);
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error logging in to server " +
+                       ServerInfo.getServerURL(), ioe);
+        }
     }
     
     // disconnect from the server
     protected void disconnectFrom(DarkstarRunner dr) {
         // TODO get from runner
-        String serverHost = "localhost";
-        int serverPort = 1139;
+        String serverHost = dr.getHostname();
+        int serverPort = dr.getPort();
         
         logger.warning("Disconnect from " + serverHost + " " + serverPort);
         
@@ -296,6 +312,24 @@ public class PingDataCollector
                                                 "manager connection", cfe);
             }
             
+        }
+    }
+
+    class ServerManagerLoginUI implements LoginUI {
+        public void requestLogin(NoAuthLoginControl control) {
+            try {
+                control.authenticate("servermanager", "Server Manager");
+            } catch (LoginFailureException lfe) {
+                logger.log(Level.WARNING, "Error connecting to " +
+                           control.getServerURL(), lfe);
+                control.cancel();
+            }
+        }
+
+        public void requestLogin(UserPasswordLoginControl control) {
+        }
+
+        public void requestLogin(WebURLLoginControl control) {
         }
     }
 }

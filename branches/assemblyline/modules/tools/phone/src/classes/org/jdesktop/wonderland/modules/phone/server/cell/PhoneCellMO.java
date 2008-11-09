@@ -19,8 +19,6 @@
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
-import com.sun.sgs.app.ManagedReference;
-
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
 
@@ -39,6 +37,7 @@ import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedReference;
 
 import com.sun.voip.CallParticipant;
 import com.sun.voip.client.connector.CallStatus;
@@ -57,8 +56,6 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
-import org.jdesktop.wonderland.common.messages.Message;
-
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -72,6 +69,7 @@ import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellConfig;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -106,12 +104,27 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
 
     private int callNumber = 0;
 
+    private boolean initialized = false;
+
     public PhoneCellMO() {
+	if (initialized == false) {
+	    addComponent(new ChannelComponentMO(this));
+
+	    new PhoneMessageHandler(this);
+	    initialized = true;
+	}
     }
     
     public PhoneCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), 
 	    new CellTransform(null, center));
+
+	if (initialized == false) {
+	    addComponent(new ChannelComponentMO(this));
+
+	    new PhoneMessageHandler(this);
+	    initialized = true;
+	}
     }
 
     @Override
@@ -134,6 +147,12 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
 	config.setPhoneLocation(phoneLocation);
 	config.setZeroVolumeRadius(zeroVolumeRadius);
 	config.setFullVolumeRadius(fullVolumeRadius);
+
+        //CellConfig ret = super.getCellConfig(clientSession, capabilities);
+
+	config.addClientComponentClasses(new String[] {
+              "org.jdesktop.wonderland.client.cell.ChannelComponent"
+        });
 
 	return config;
     }
@@ -169,7 +188,7 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
         PhoneCellSetup setup = new PhoneCellSetup();
 
         /* Set the bounds of the cell */
-        BoundingVolume bounds = this.getLocalBounds();
+        BoundingVolume bounds = getLocalBounds();
 
         if (bounds != null) {
             setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
@@ -182,36 +201,6 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
             setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
             setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
         }
-
-        String pw = null;
-
-        if (password != null && password.length() > 0) {
-            pw = "";
-        }
-
-        //BasicCellSetup<PhoneCellSetup> setup =
-        //        (BasicCellSetup<PhoneCellSetup>) setupData;
-
-        //PhoneCellSetup cellSetup = setup.getCellSetup();
-
-        //phoneNumber = cellSetup.getPhoneNumber();
-
-        //password = cellSetup.getPassword();
-
-        //if (password != null && password.length() > 0) {
-            locked = true;
-        //}
-
-        //simulateCalls = cellSetup.getSimulateCalls();
-
-        //phoneLocation = cellSetup.getPhoneLocation();
-
-        //zeroVolumeRadius = cellSetup.getZeroVolumeRadius();
-
-        //fullVolumeRadius = cellSetup.getFullVolumeRadius();
-
-        //HARRISTODO: Rework Demo Mode to be phone specific (instead of a global static)
-        //Currently you can't mix and match modes for multiple phones.
 
 	return setup;
     }

@@ -23,25 +23,25 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
-import com.jme.light.PointLight;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
-import com.jme.scene.state.ZBufferState;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCell;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -50,7 +50,9 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author paulby
  */
 public class JmeColladaRenderer extends BasicRenderer {
-    
+    /** <server name>:<port> of the web server */
+    private String serverHostAndPort;
+
     public JmeColladaRenderer(Cell cell) {
         super(cell);
     }
@@ -111,7 +113,8 @@ public class JmeColladaRenderer extends BasicRenderer {
         Quaternion rotation = transform.getRotation(null);
         
         try {
-            URL url = new URL(((JmeColladaCell)cell).getModelURI());
+            URL url = getAssetURL(((JmeColladaCell)cell).getModelURI());
+//            logger.warning("URL: " + url);
             InputStream input = url.openStream();
 //            System.out.println("Resource stream "+input);
 
@@ -145,6 +148,30 @@ public class JmeColladaRenderer extends BasicRenderer {
         return node;
     }
 
+    protected URL getAssetURL(String orig) throws MalformedURLException {
+        // TODO: fix me?
+        if (!orig.startsWith("wla")) {
+            return new URL(orig);
+        }
+
+        // annotate wla URIs with the server name and port
+        if (serverHostAndPort == null) {
+            WonderlandSession session = cell.getCellCache().getSession();
+            LoginManager manager = LoginManager.find(session);
+            serverHostAndPort = manager.getServerNameAndPort();
+        }
+      
+        try {
+            AssetURI uri = new AssetURI(orig).getAnnotatedURI(serverHostAndPort);
+            return uri.toURL();
+        } catch (URISyntaxException use) {
+            MalformedURLException mue =
+                    new MalformedURLException("Error creating asset URI");
+            mue.initCause(use);
+            throw mue;
+        }
+    }
+
     class AssetResourceLocator implements ResourceLocator {
 
         private String modulename;
@@ -155,7 +182,14 @@ public class JmeColladaRenderer extends BasicRenderer {
          * @param url
          */
         public AssetResourceLocator(URL url) {
-            modulename = url.getHost();
+            // The modulename can either be in the "user info" field or the
+            // "host" field. If "user info" is null, then use the host name.
+            if (url.getUserInfo() == null) {
+                modulename = url.getHost();
+            }
+            else {
+                modulename = url.getUserInfo();
+            }
             path = url.getPath();
             path = path.substring(0, path.lastIndexOf('/')+1);
         }
@@ -165,14 +199,14 @@ public class JmeColladaRenderer extends BasicRenderer {
             System.err.println("Module "+modulename+"  path "+path);
             try {
                 if (resource.startsWith("/")) {
-                    URL url = new URL("wla://"+modulename+resource);
-                    System.err.println("Using alternate "+url.toExternalForm());
+                    URL url = getAssetURL("wla://"+modulename+resource);
+//                    System.err.println("Using alternate "+url.toExternalForm());
                     return url;
                 } else {
                     String urlStr = trimUrlStr("wla://"+modulename+path + resource);
 
-                    URL url = new URL(urlStr);
-                    System.err.println(url.toExternalForm());
+                    URL url = getAssetURL(urlStr);
+//                    System.err.println(url.toExternalForm());
                     return url;
                 }
             } catch (MalformedURLException ex) {

@@ -1,81 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- You may freely edit this file. See commented blocks below for -->
-<!-- some examples of how to customize the build. -->
-<!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="wonderland-web-runner" default="default" basedir=".">
-    <description>Builds, tests, and runs the project wonderland-web-runner.</description>
-    
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.wonderland-web-runner}"/>
-    
-    <!-- import the netbeans build settings -->
-    <import file="nbproject/build-impl.xml"/>
-    <!--
+    <dirname property="current.dir" file="${ant.file.wonderland-web-asset}"/>
 
-    There exist several targets which are by default empty and which can be 
-    used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
+    <!-- override default source directory -->
+    <property name="javasrc.dir" location="${current.dir}/src/java"/>
 
-      -pre-init:                 called before initialization of project properties 
-      -post-init:                called after initialization of project properties 
-      -pre-compile:              called before javac compilation 
-      -post-compile:             called after javac compilation 
-      -pre-compile-single:       called before javac compilation of single file
-      -post-compile-single:      called after javac compilation of single file
-      -pre-compile-test:         called before javac compilation of JUnit tests
-      -post-compile-test:        called after javac compilation of JUnit tests
-      -pre-compile-test-single:  called before javac compilation of single JUnit test
-      -post-compile-test-single: called after javac compilation of single JUunit test
-      -pre-dist:                 called before archive building 
-      -post-dist:                called after archive building 
-      -post-clean:               called after cleaning build products 
-      -pre-run-deploy:           called before deploying
-      -post-run-deploy:          called after deploying
+    <!-- import web build file -->
+    <import file="${current.dir}/../build-tools/build-scripts/web-build.xml"/>
 
-    Example of pluging an obfuscator after the compilation could look like 
+    <target name="build" depends="-set-extra-classpath, -web-compile"/>
 
-        <target name="-post-compile">
-            <obfuscate>
-                <fileset dir="${build.classes.dir}"/>
-            </obfuscate>
-        </target>
-
-    For list of available properties check the imported 
-    nbproject/build-impl.xml file. 
-
-
-    Other way how to customize the build is by overriding existing main targets.
-    The target of interest are: 
-
-      init-macrodef-javac:    defines macro for javac compilation
-      init-macrodef-junit:   defines macro for junit execution
-      init-macrodef-debug:    defines macro for class debugging
-      do-dist:                archive building
-      run:                    execution of project 
-      javadoc-build:          javadoc generation 
-
-    Example of overriding the target for project execution could look like 
-
-        <target name="run" depends="<PROJNAME>-impl.jar">
-            <exec dir="bin" executable="launcher.exe">
-                <arg file="${dist.jar}"/>
-            </exec>
-        </target>
-
-    Notice that overridden target depends on jar target and not only on 
-    compile target as regular run target does. Again, for list of available 
-    properties which you can use check the target you are overriding in 
-    nbproject/build-impl.xml file. 
-
-    -->
-    <target name="-pre-dist">
-        <mkdir dir="${build.dir}/deploy/META-INF"/>
-        <copy todir="${build.dir}/deploy/META-INF">
-            <fileset dir="${current.dir}/src/java/META-INF"/>
-        </copy>
+    <target name="-set-extra-classpath">
+        <pathconvert property="web-extra.classpath">
+            <path path="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+            <path path="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
+        </pathconvert>
     </target>
-    
-    <target name="-post-dist"> 
+
+    <target name="dist" depends="build" description="Build and assemble web war">
+        <mkdir dir="${dist.dir}"/>
+
+        <jar jarfile="${dist.dir}/wonderland-web-runner.war">
+            <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
+                <include name="org/jdesktop/wonderland/runner/servlet/**"/>
+                <include name="org/jdesktop/wonderland/runner/resources/**"/>
+            </zipfileset>
+
+            <fileset dir="${current.dir}/web"/>
+        </jar>
+
         <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
             <fileset dir="${build.classes.dir}">
                 <include name="org/jdesktop/wonderland/runner/*.class"/>
@@ -84,22 +38,27 @@
             </fileset>
         </jar>
     </target>
-    
-    <target name="package" depends="init">
+
+    <target name="clean" depends="-web-clean"/>
+
+    <target name="package">
         <jar jarfile="${dist.dir}/wonderland-runner-core.jar">
             <fileset dir="${build.classes.dir}">
                 <exclude name="org/jdesktop/wonderland/runner/servlet/**"/>
+                <exclude name="org/jdesktop/wonderland/runner/resources/**"/>
             </fileset>
+
+            <!-- package config files -->
+            <zipfileset dir="${javasrc.dir}">
+                <include name="META-INF/**"/>
+            </zipfileset>
             
             <!-- package core distribution files -->
-            <zipfileset dir="../../core/dist" prefix="META-INF/deploy"/>
+            <zipfileset dir="${core.dir}/dist" prefix="META-INF/deploy"/>
             
             <!-- package module distribution files -->
             <zipfileset dir="../../modules/dist/runner/deploy" prefix="META-INF/deploy"/>
             <zipfileset dir="../../modules/dist/runner/classes"/>
-            
-            <!-- include config files we generated -->
-            <!--fileset dir="${build.dir}/deploy"/-->
         </jar>
     </target>
 </project>

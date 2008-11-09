@@ -268,7 +268,7 @@ public class Cell {
         // Don't process the same transform twice
         if (this.localTransform!=null && this.localTransform.equals(localTransform))
             return;
-        
+
         logger.warning("[CELL " + this.getCellID() + "] local transform scale " + localTransform.getScaling(null).toString());
         if (localTransform==null) {
             this.localTransform=null;
@@ -292,7 +292,7 @@ public class Cell {
                 worldTransform.transform(cachedVWBounds);                
 
                 local2VW = null;
-            } else if (this instanceof RootCell) {
+            } else if (parent==null) { // ROOT
                 worldTransform = (CellTransform)localTransform.clone(null);
                 local2VW = null;
                 
@@ -525,6 +525,10 @@ public class Cell {
         
         for(CellComponent component : components.values())
             component.setStatus(status);
+
+//        for(CellRenderer renderer : cellRenderers.values()) {
+//            renderer.setStatus(status);
+//        }
         
         switch(status) {
             case DISK :
@@ -558,7 +562,7 @@ public class Cell {
             try {
                 Class compClazz = Class.forName(compClassname);
                 if (!components.containsKey(compClazz)) {
-                    logger.info("Installing component "+compClassname);
+                    logger.fine("Installing component "+compClassname);
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
                     addComponent(constructor.newInstance(this));
                 }
@@ -587,7 +591,7 @@ public class Cell {
      * @return the renderer for the specified type if available, or null
      */
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        Logger.getAnonymousLogger().warning(this.getClass().getName()+" createEntity returning null");
+        Logger.getAnonymousLogger().warning(this.getClass().getName()+" createCellRenderer returning null");
         return null;
     }
     

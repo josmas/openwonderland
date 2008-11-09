@@ -33,5 +33,5 @@ public interface TransformChangeListenerSrv extends Serializable {
      * 
      * @param cell
      */
-    public void transformChanged(ManagedReference<CellMO> cellRef, final CellTransform localTransform, final CellTransform localToWorldTransform);
+    public void transformChanged(ManagedReference<CellMO> cellRef, final CellTransform localTransform, final CellTransform worldTransform);
 }

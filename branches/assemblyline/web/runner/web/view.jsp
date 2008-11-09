@@ -68,6 +68,11 @@
                 service.link = [ new Element('a', { 'href': 'javascript:void(0);',
                                                   'onclick': 'setStatus(\'' + service.name + '\', \'start\')' }).update("start") ];
                 break;
+             case 'STARTING_UP':
+                service.status_text = 'Starting Up';
+                service.link = [ new Element('a', { 'href': 'javascript:void(0);',
+                                                     'onclick': 'setStatus(\'' + service.name + '\', \'stop\')' }).update("stop") ];
+                break;
              case 'RUNNING':
                 service.status_text = 'Running';
                 service.link = [ new Element('a', { 'href': 'javascript:void(0);',
@@ -79,6 +84,7 @@
                 
              default:
                 service.status_text = service.status;
+                service.link = [];
         }
         
         service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name=' + service.name,

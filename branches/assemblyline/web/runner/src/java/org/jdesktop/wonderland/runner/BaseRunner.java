@@ -211,7 +211,7 @@ public abstract class BaseRunner implements Runner {
                 cmd.add("-D" + propName + "=" + 
                         props.getProperty((String) propName));
             }
-            
+
             cmd.add("-f");
             cmd.add(runHome + fileSep + "run.xml");
                
@@ -255,7 +255,9 @@ public abstract class BaseRunner implements Runner {
 
     public synchronized void stop() {
         // make sure we are in the correct state
-        if (getStatus() != Status.RUNNING) {
+        if (getStatus() != Status.RUNNING &&
+                getStatus() != Status.STARTING_UP)
+        {
             throw new IllegalStateException("Can't stop runner in " + 
                                             getStatus() + " state");
         }

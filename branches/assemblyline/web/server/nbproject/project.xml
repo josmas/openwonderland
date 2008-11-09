@@ -2,10 +2,6 @@
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/web-project/3">
-            <web-module-libraries/>
-            <web-module-additional-libraries/>
-        </data>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <name>wonderland-webserver</name>
         </general-data>
@@ -28,43 +24,17 @@
             </folders>
             <ide-actions>
                 <action name="build">
-                    <target>jar</target>
-                </action>
-                <action name="run.single">
-                    <script>nbproject/ide-file-targets.xml</script>
-                    <target>run-selected-file-in-classes</target>
-                    <context>
-                        <property>run.class</property>
-                        <folder>src/classes</folder>
-                        <pattern>\.java$</pattern>
-                        <format>java-name</format>
-                        <arity>
-                            <one-file-only/>
-                        </arity>
-                    </context>
-                </action>
-                <action name="compile.single">
-                    <script>nbproject/ide-file-targets.xml</script>
-                    <target>compile-selected-files-in-classes</target>
-                    <context>
-                        <property>files</property>
-                        <folder>src/classes</folder>
-                        <pattern>\.java$</pattern>
-                        <format>relative-path</format>
-                        <arity>
-                            <separated-files>,</separated-files>
-                        </arity>
-                    </context>
+                    <target>build</target>
                 </action>
                 <action name="clean">
                     <target>clean</target>
                 </action>
-                <action name="rebuild">
-                    <target>clean</target>
-                    <target>jar</target>
-                </action>
                 <action name="run">
                     <target>run</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>build</target>
                 </action>
             </ide-actions>
             <view>

@@ -31,24 +31,16 @@ import org.jdesktop.wonderland.common.cell.CellID;
 @ExperimentalAPI
 public class TransferCallMessage extends Message {
 
-    private CellID cellID;
+    private String softphoneCallID;
     private String phoneNumber;
 
-    public TransferCallMessage(CellID cellID, String phoneNumber) {
-	this.cellID = cellID;
+    public TransferCallMessage(String softphoneCallID, String phoneNumber) {
+	this.softphoneCallID = softphoneCallID;
 	this.phoneNumber = phoneNumber;
     }
 
-    public void setCellID(CellID cellID) {
-        this.cellID = cellID;
-    }
-
-    public CellID getCellID() {
-        return cellID;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-	this.phoneNumber = phoneNumber;
+    public String getSoftphoneCallID() {
+        return softphoneCallID;
     }
 
     public String getPhoneNumber() {

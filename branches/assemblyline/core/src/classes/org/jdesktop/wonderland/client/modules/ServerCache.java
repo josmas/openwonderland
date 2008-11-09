@@ -73,7 +73,7 @@ public class ServerCache {
     private synchronized void reload() {
         /* Clear out the existing cache, load from the server */
         this.cachedModules.clear();
-        ModuleList list = ModuleUtils.fetchModuleList();
+        ModuleList list = ModuleUtils.fetchModuleList(this.serverName);
         if (list == null) {
             logger.info("[MODULES] No module information found");
             return;

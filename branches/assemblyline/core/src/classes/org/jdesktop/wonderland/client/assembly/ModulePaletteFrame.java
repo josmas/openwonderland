@@ -11,8 +11,8 @@ import java.util.Iterator;
 import javax.swing.AbstractListModel;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
-import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.modules.CachedModule;
 import org.jdesktop.wonderland.client.modules.ServerCache;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
@@ -34,7 +34,7 @@ public class ModulePaletteFrame extends javax.swing.JFrame {
         /*
          * Load the list of modules from the web server
          */
-        this.serverCache = new ServerCache("server");
+        this.serverCache = new ServerCache("http://localhost:8080");
         Collection<String> moduleNames = serverCache.getModuleNames();
         Iterator<String> it = moduleNames.iterator();
         System.out.println("MODULE LIST " + moduleNames.size());
@@ -44,7 +44,7 @@ public class ModulePaletteFrame extends javax.swing.JFrame {
              * it to the list
              */
             String moduleName = it.next();
-            ModuleArtList artList = this.serverCache.getModule(moduleName).getArt();
+            ModuleArtList artList = this.serverCache.getModule(moduleName).getArt("http://localhost:8080");
             if (artList.getModuleArt().length > 0) {
                 moduleListComboBox.addItem(moduleName);
             }
@@ -115,7 +115,7 @@ private void moduleListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     /* Fetch the list of assets (loading if necessary) and populate the list */
     String moduleName = (String)moduleListComboBox.getSelectedItem();
     CachedModule cachedModule = this.serverCache.getModule(moduleName);
-    final ModuleArtList artList = cachedModule.getArt();
+    final ModuleArtList artList = cachedModule.getArt("http://localhost:8080");
 
     /* Create a new model based upon the stuff in the list of art */
     moduleAssetList.setModel(new AbstractListModel() {
@@ -137,8 +137,7 @@ private void importActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     
     System.out.println("SELECTED " + moduleName + " " + artPath);
     
-    WonderlandServerInfo server = ClientContext.getWonderlandSessionManager().getPrimaryServer();
-    WonderlandSession session = ClientContext.getWonderlandSessionManager().getSession(server);
+    WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
     CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
     CellCreateMessage msg = new CellCreateMessage(null);
     msg.setAssetURI("wla://" + moduleName + "/" + artPath);

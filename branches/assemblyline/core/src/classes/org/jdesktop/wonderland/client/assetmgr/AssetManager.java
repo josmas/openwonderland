@@ -178,34 +178,39 @@ public class AssetManager {
      * AssetReadyListener on the Asset object to receive notification when
      * the asset is ready to be used.
      * 
-     * @param assetURI The unique URI of the asset to load
+     * @param ResourceURI The unique URI of the asset to load
      * @param assetType The type of the asset being loaded
      */
-    public Asset getAsset(ResourceURI assetURI, AssetType assetType) {
-        String uri = assetURI.toString();
+    public Asset getAsset(ResourceURI resourceURI, AssetType assetType) {
+        /* Fetch some basic information from the asset uri */
+        String uri = resourceURI.toString();
+        String moduleName = resourceURI.getModuleName();
+        String path = resourceURI.getRelativePath();
+        String serverURL = resourceURI.getServerURL();
         
         /* Log a bunch of informative messages */
         logger.fine("[ASSET] GET asset " + uri + " [" + assetType + "]");
-        logger.fine("[ASSET] GET module name " + assetURI.getModuleName());
-        logger.fine("[ASSET] GET module relative path " + assetURI.getRelativePath());
+        logger.fine("[ASSET] GET module name " + moduleName);
+        logger.fine("[ASSET] GET module relative path " + path);
+        logger.fine("[ASSET] GET server " + serverURL);
         
         /*
          * First construct an Asset object that represents the asset we want.
          * This consists of both the Asset URI and the desired checksum.
          */
         String checksum = null;
-        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache("server");
+        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache(serverURL);
         if (cache != null) {
-            ChecksumList checksums = cache.getModuleChecksums(assetURI.getModuleName());
-            logger.fine("[ASSET] GET checksums for asset " + assetURI.getRelativePath() + " in " + checksums);
+            ChecksumList checksums = cache.getModuleChecksums(moduleName);
+            logger.fine("[ASSET] GET checksums for asset " + path + " in " + checksums);
             if (checksums != null) {
-                Checksum c = checksums.getChecksums().get(assetURI.getRelativePath());
+                Checksum c = checksums.getChecksums().get(path);
                 if (c != null) {
                     checksum = c.getChecksum();
                 }
             }
         }
-        AssetID assetID = new AssetID(assetURI, checksum);
+        AssetID assetID = new AssetID(resourceURI, checksum);
         
         /* Log a bunch of informative messages */
         logger.fine("[ASSET] GET module cache: " + cache);
@@ -284,7 +289,7 @@ public class AssetManager {
             AssetLoader loader;
 
             synchronized (loadingAssets) {
-                AssetID assetID = new AssetID(asset.getAssetURI(), asset.getChecksum());
+                AssetID assetID = new AssetID(asset.getResourceURI(), asset.getChecksum());
                 loader = loadingAssets.get(assetID);
             }
 
@@ -347,7 +352,7 @@ public class AssetManager {
      */
     public void unloadAsset(Asset asset) {
         synchronized(loadedAssets) {
-            AssetID assetID = new AssetID(asset.getAssetURI(), asset.getChecksum());
+            AssetID assetID = new AssetID(asset.getResourceURI(), asset.getChecksum());
             loadedAssets.remove(assetID);
             asset.unloaded();
         }
@@ -359,7 +364,7 @@ public class AssetManager {
      */
     public void deleteAsset(Asset asset) {
         synchronized(loadedAssets) {
-            AssetID assetID = new AssetID(asset.getAssetURI(), asset.getChecksum());
+            AssetID assetID = new AssetID(asset.getResourceURI(), asset.getChecksum());
             loadedAssets.remove(assetID);
             asset.unloaded();
             assetDB.deleteAsset(assetID);
@@ -425,7 +430,7 @@ public class AssetManager {
      */
     private String getAssetCacheFileName(AssetID assetID) {
         String basePath = cacheDir.getAbsolutePath();
-        String relativePath = assetID.getAssetURI().getRelativeCachePath();
+        String relativePath = assetID.getResourceURI().getRelativeCachePath();
         String checksum = assetID.getChecksum();
         return basePath + File.separator + relativePath + "/" + checksum;
     }
@@ -437,14 +442,16 @@ public class AssetManager {
      * to download the asset from each server.
      */
     private boolean getAssetFromRepository(Asset asset) {
-        logger.fine("[ASSET] FETCH asset: " + asset.getAssetURI() + " [" + asset.checksum + "]");
+        
+        logger.fine("[ASSET] FETCH asset: " + asset.getResourceURI() + " [" + asset.checksum + "]");
         
         /*
          * Fetch an (ordered) array of urls to look for the asset. We fetch
          * this information from the module in which the asset is contained.
          */
-        String moduleName = asset.getAssetURI().getModuleName();
-        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache("server");
+        String moduleName = asset.getResourceURI().getModuleName();
+        String serverURL = asset.getResourceURI().getServerURL();
+        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache(serverURL);
         RepositoryList list = cache.getModuleRepositoryList(moduleName);
         if (list == null) {
             logger.warning("[ASSET] FETCH unable to locate repository list, cache: " + cache);
@@ -473,14 +480,15 @@ public class AssetManager {
                 if (mc == null) {
                     continue;
                 }
-                Checksum c = mc.getChecksums().get(asset.getAssetURI().getRelativePath());
+                Checksum c = mc.getChecksums().get(asset.getResourceURI().getRelativePath());
                 if (c == null || c.equals(asset.getChecksum()) == false) {
                     continue;
                 }
             }
             
             /* Form the URL of where to find the asset */
-            String url = RepositoryUtils.getAssetURL(repository, asset.getAssetURI());
+            String url = RepositoryUtils.getAssetURL(repository, asset.getResourceURI());
+            logger.warning("[ASSET] FETCH Loading from url " + url);
             
             /*
              * Try to synchronously download the asset. Upon failure log
@@ -528,7 +536,7 @@ public class AssetManager {
             }
             
             /* Open the cache file, create directories if necessary */
-            AssetID assetID = new AssetID(asset.getAssetURI(), asset.getChecksum());
+            AssetID assetID = new AssetID(asset.getResourceURI(), asset.getChecksum());
             String cacheFile = this.getAssetCacheFileName(assetID);
             File file = new File(cacheFile);
             if (!file.canWrite())
@@ -604,7 +612,7 @@ public class AssetManager {
             /* Otherwise update the list of loading and loaded assets */
             synchronized (loadingAssets) {
                 synchronized (loadedAssets) {
-                    AssetID assetID = new AssetID(asset.getAssetURI(), asset.getChecksum());
+                    AssetID assetID = new AssetID(asset.getResourceURI(), asset.getChecksum());
                     loadingAssets.remove(assetID);
                     loadedAssets.put(assetID, asset);
                 }
@@ -613,7 +621,7 @@ public class AssetManager {
         } catch (java.lang.Exception excp) {
             /* Catch any exception and return false */
             logger.warning("Unable to fetch asset from local cache, uri=" +
-                    asset.getAssetURI().toString());
+                    asset.getResourceURI().toString());
             logger.warning(excp.toString());
             return false;
         }
@@ -722,7 +730,7 @@ public class AssetManager {
          */
         public Object call() throws Exception {
             try {
-                String uri = this.asset.getAssetURI().toString();
+                String uri = this.asset.getResourceURI().toString();
 
                 /* Log a message when this asynchronous task kicks off */
                 logger.fine("[ASSET] CALL fetch asset: " + uri + " [" + this.server + "]");
@@ -735,7 +743,7 @@ public class AssetManager {
                 if (this.server == false) {
                     /* If we can load the asset, then all is well and return */
                     if (getAssetFromCache(this.asset) == true) {
-                        logger.warning("[ASSET] CALL Loaded asset from local cache, uri=" + uri);
+                        logger.config("[ASSET] CALL Loaded asset from local cache, uri=" + uri);
                         this.asset.setFailureInfo(null);
                         this.asset.notifyAssetReadyListeners();
                         return this.asset;

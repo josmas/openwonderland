@@ -22,7 +22,6 @@ package org.jdesktop.wonderland.client.assetmgr;
 import java.io.File;
 import java.util.ArrayList;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetReadyListener;
-import org.jdesktop.wonderland.client.modules.Checksum;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.ResourceURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -59,7 +58,7 @@ public abstract class Asset<T> {
      * @param assetURI The unique identifying asset URI.
      */
     public Asset(AssetID assetID) {
-        this.assetURI = assetID.getAssetURI();
+        this.assetURI = assetID.getResourceURI();
         this.checksum = assetID.getChecksum();
     }
 
@@ -77,7 +76,7 @@ public abstract class Asset<T> {
      * 
      * @return The unique URI describing the asset
      */
-    public ResourceURI getAssetURI() {
+    public ResourceURI getResourceURI() {
         return this.assetURI;
     }
     
@@ -125,7 +124,7 @@ public abstract class Asset<T> {
     }
     
     public String toString() {
-        return "(" + this.getAssetURI().toString() + " @ " + this.checksum + ")";
+        return "(" + this.getResourceURI().toString() + " @ " + this.checksum + ")";
     }
     
     /**

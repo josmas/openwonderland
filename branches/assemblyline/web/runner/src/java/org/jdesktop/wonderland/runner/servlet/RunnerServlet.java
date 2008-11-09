@@ -1,8 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
-
 package org.jdesktop.wonderland.runner.servlet;
 
 import java.io.BufferedReader;
@@ -10,82 +22,30 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URLEncoder;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.jdesktop.wonderland.runner.darkstar.DarkstarRunner;
 import org.jdesktop.wonderland.runner.DeploymentEntry;
 import org.jdesktop.wonderland.runner.DeploymentManager;
 import org.jdesktop.wonderland.runner.DeploymentPlan;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
-import org.jdesktop.wonderland.runner.RunnerException;
-import org.jdesktop.wonderland.runner.RunnerFactory;
-import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  *
  * @author jkaplan
  */
-public class RunnerServlet extends HttpServlet implements ServletContextListener {
+public class RunnerServlet extends HttpServlet {
     /** a logger */
     private static final Logger logger =
             Logger.getLogger(RunnerServlet.class.getName());
     
-    /** the properties for starting and stopping */
-    private static final String START_PROP = "wonderland.runner.autostart";
-    private static final String STOP_PROP  = "wonderland.runner.autostop";
-    
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        if (Boolean.parseBoolean(SystemPropertyUtil.getProperty(STOP_PROP))) {
-            // Add a listener that will stop all active processes when the
-            // container shuts down
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    stopAll();
-                }
-            });
-        }
-        
-        // Add all runners in the current deployment plan
-        try {
-            boolean start = 
-                    Boolean.parseBoolean(SystemPropertyUtil.getProperty(START_PROP));
-            
-            DeploymentPlan dp = DeploymentManager.getInstance().getPlan();
-            for (DeploymentEntry de : dp.getEntries()) {
-                // copy System properties to pass into this runner
-                Properties props = new Properties(System.getProperties());
-                props.setProperty("runner.name", de.getRunnerName());
-                
-                Runner r = RunnerFactory.create(de.getRunnerClass(), props);
-                r = RunManager.getInstance().add(r);
-                if (start) {
-                    Properties runProps = de.getRunProps();
-                    if (runProps == null || runProps.isEmpty()) {
-                        runProps = r.getDefaultProperties();
-                    }
-                    
-                    r.start(runProps);
-                }
-            }
-        } catch (Exception ex) {
-            throw new ServletException(ex);
-        }
-    }
-   
     /** 
     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
     * @param request servlet request
@@ -314,23 +274,4 @@ public class RunnerServlet extends HttpServlet implements ServletContextListener
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
-    public void contextInitialized(ServletContextEvent sce) {
-        // do nothing
-    }
-
-    public void contextDestroyed(ServletContextEvent sce) {
-        stopAll();
-    }
-    
-    private static void stopAll() {
-        logger.info("[RUNNERSERVLET] Stopping all apps");
-        // stop all active applications
-        Collection<Runner> runners = RunManager.getInstance().getAll();
-        for (Runner runner : runners) {
-            if (runner.getStatus() == Runner.Status.RUNNING) {
-                runner.stop();
-            }
-        }
-    }
 }

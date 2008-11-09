@@ -114,7 +114,7 @@ public class ChecksumList {
     public static ChecksumList decode(Reader r) throws JAXBException {
         ChecksumList rc = (ChecksumList)ChecksumList.unmarshaller.unmarshal(r); 
         
-        System.out.println("Checksumlist: rc=" + rc);
+//        System.out.println("Checksumlist: rc=" + rc);
         /* Convert metadata to internal representation */
         if (rc.checksums != null) {
             Iterator<Checksum> iterator = rc.checksums.iterator();
@@ -122,7 +122,7 @@ public class ChecksumList {
             while (iterator.hasNext() == true) {
                 Checksum c = iterator.next();
                 rc.internalChecksums.put(c.getPathName(), c);
-                System.out.println("checksum: " + c.getPathName());
+//                System.out.println("checksum: " + c.getPathName());
             }
         }
         else {
