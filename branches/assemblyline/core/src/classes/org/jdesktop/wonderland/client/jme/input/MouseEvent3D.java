@@ -20,8 +20,8 @@ package org.jdesktop.wonderland.client.jme.input;
 import com.jme.math.Matrix4f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.PickDetails;
@@ -149,6 +149,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
 	    CollisionComponent cc = pickDetails.getCollisionComponent();
 	    Node node = cc.getNode();
 	    node.getLocalToWorldMatrix(world2Local);
+            Logger.getLogger(MouseEvent3D.class.getName()).warning("EVENT " + world2Local);
 	    world2Local.invert();
 	    return world2Local.mult(pickDetails.getPosition(), new Vector3f());
 	}

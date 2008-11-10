@@ -269,7 +269,6 @@ public class Cell {
         if (this.localTransform!=null && this.localTransform.equals(localTransform))
             return;
 
-        logger.warning("[CELL " + this.getCellID() + "] local transform scale " + localTransform.getScaling(null).toString());
         if (localTransform==null) {
             this.localTransform=null;
             // Get parent worldTransform
@@ -284,7 +283,6 @@ public class Cell {
             }
         } else {
             this.localTransform = (CellTransform) localTransform.clone(null);
-            logger.warning("[CELL] cloned " + this.localTransform.getScaling(null).toString());
             if (parent!=null) {
                 worldTransform = (CellTransform) localTransform.clone(null);
                 worldTransform = worldTransform.mul(parent.getWorldTransform());
@@ -314,8 +312,6 @@ public class Cell {
         // Notify Renderers that the cell has moved
         for(CellRenderer rend : cellRenderers.values())
             rend.cellTransformUpdate(worldTransform);
-        
-        logger.warning("[CELL " + this.getCellID() + "] exit " + this.localTransform.getScaling(null).toString());
 
     }
         

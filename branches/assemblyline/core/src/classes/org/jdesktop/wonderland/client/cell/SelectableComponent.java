@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -72,31 +73,53 @@ public class SelectableComponent extends CellComponent {
         }
     }
     
+    private Vector3f startLocation = null;
+    
     class MouseEventListener extends EventClassListener {
         @Override
         public Class[] eventClassesToConsume() {
-            return new Class[]{MouseButtonEvent3D.class};
+            return new Class[] { MouseButtonEvent3D.class, MouseDraggedEvent3D.class };
         }
 
         // Note: we don't override computeEvent because we don't do any computation in this listener.
 
         @Override
         public void commitEvent(Event event) {
-            MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-            if (mbe.isClicked() == false) {
-                return;
-            }
             Logger logger = Logger.getLogger(SelectableComponent.class.getName());
             SelectionManager manager = SelectionManager.getSelectionManager();
-            manager.setSelectedCell(cell, event.getEntity());
-            logger.warning("MOUSE CLICKED");
+
+            logger.warning("SELECT EVENT");
+            if (event instanceof MouseButtonEvent3D) {
+                MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
+                if (mbe.isPressed() == true) {
+                    startLocation = mbe.getIntersectionPointWorld();
+                    //logger.warning("SELECTED LOCAL " + mbe.getIntersectionPointLocal());
+                    logger.warning("SELECTED GLOBAL " + mbe.getIntersectionPointWorld());
+                    manager.setSelectedCell(cell, event.getEntity(), startLocation);
+                    logger.warning("MOUSE PRESSED " + startLocation);
+                }
+            }
+            else if (event instanceof MouseDraggedEvent3D) {
+                MouseDraggedEvent3D mde = (MouseDraggedEvent3D)event;
+                Vector3f newLocation = mde.getIntersectionPointWorld();
+                Vector3f delta = newLocation.subtract(startLocation);
+                CellTransform transform = cell.getLocalTransform();
+                Vector3f trans = transform.getTranslation(null);
+                trans = trans.add(delta);
+                transform.setTranslation(trans);
+                MovableComponent mc = cell.getComponent(MovableComponent.class);
+                startLocation = newLocation;
+                mc.localMoveRequest(transform);
+                manager.setSelectedCell(cell, event.getEntity(), startLocation);
+                logger.warning("MOUSE DRAGGED");
+            }
         }
     }
 
     class KeyEventListener extends EventClassFocusListener {
         @Override
         public Class[] eventClassesToConsume() {
-            return new Class[]{KeyEvent3D.class};
+            return new Class[] { KeyEvent3D.class };
         }
 
         @Override
