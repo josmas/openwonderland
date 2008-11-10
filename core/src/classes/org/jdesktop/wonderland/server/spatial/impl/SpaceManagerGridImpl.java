@@ -47,8 +47,6 @@ class SpaceManagerGridImpl implements SpaceManager {
      * @return
      */
     public Iterable<Space> getEnclosingSpace(BoundingVolume volume) {
-        // TODO Fully implement, this currently only returns the
-        // space that encloses the center of the volume
         ArrayList retList = new ArrayList();
 
         Vector3f point = volume.getCenter();
@@ -64,12 +62,15 @@ class SpaceManagerGridImpl implements SpaceManager {
         // Get the space that encloses the center of the volume
         Space sp = getEnclosingSpaceImpl(x,y,z);
         
-        if (sp==null)
+        if (sp==null) {
             sp = createSpace(point, x, y, z);
+//            System.err.println("Created space "+sp.getName());
+        }
 
         // Debug test
         if (!sp.getWorldBounds().contains(point))
             throw new RuntimeException("BAD ENCLOSING SPACE "+sp.getWorldBounds()+"  does not contain "+point+"   name "+getSpaceBindingName(x, y, z));
+        
         retList.add(sp);
 
         // Now get all the other spaces within the volume
@@ -83,11 +84,12 @@ class SpaceManagerGridImpl implements SpaceManager {
 
         int step = (int) (radius / (SPACE_SIZE * 2));
 //        System.out.println("RADIUS "+radius+"  step "+step);
-        
+
+//        System.err.println("In space "+getSpaceBindingName(x, y, z)+"   step="+step);
         // TODO this is brute force, is there a better way ?
-        for(int xs=0; xs<x+step; xs++) {
-            for(int ys=0; ys<y+step; ys++) {
-                for(int zs=0; zs<z+step; zs++) {
+        for(int xs=0; xs<step; xs++) {
+            for(int ys=0; ys<step; ys++) {
+                for(int zs=0; zs<step; zs++) {
                     sp = getEnclosingSpaceImpl(x+xs, y+ys, z+zs);
                     if (sp!=null && sp.getWorldBounds().intersects(volume)) {
                         retList.add(sp);
@@ -100,15 +102,9 @@ class SpaceManagerGridImpl implements SpaceManager {
             }
         }
 
-//        System.out.println("Space count "+retList.size());
-
         return retList;
     }
-    
-//    private SpaceID nextSpaceID() {
-//        return new SpaceID(nextID++);
-//    }
-    
+
     private Space createSpace(Vector3f point, int x, int y, int z) {
         
         Vector3f center = new Vector3f((x * SPACE_SIZE*2)+SPACE_SIZE, 

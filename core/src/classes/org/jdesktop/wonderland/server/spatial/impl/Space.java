@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 /**
  *
@@ -33,6 +34,8 @@ class Space {
     private final HashSet<SpatialCellImpl> rootCells = new HashSet();
     private final HashSet<ViewCache> viewCaches = new HashSet();
     private String name;
+
+    private static final Logger logger = Logger.getLogger(Space.class.getName());
 
     public Space(BoundingVolume worldBounds, String name) {
         this.worldBounds = worldBounds;
@@ -48,6 +51,7 @@ class Space {
     }
 
     public void addRootSpatialCell(SpatialCellImpl cell) {
+        logger.fine("Adding cell "+cell.getCellID()+" to space "+getName());
         synchronized(rootCells) {
             rootCells.add(cell);
         }
@@ -61,6 +65,7 @@ class Space {
     }
 
     public void removeRootSpatialCell(SpatialCellImpl cell) {
+        logger.fine("Removing cell "+cell.getCellID()+" from space "+getName());
         synchronized(rootCells) {
             rootCells.remove(cell);
         }

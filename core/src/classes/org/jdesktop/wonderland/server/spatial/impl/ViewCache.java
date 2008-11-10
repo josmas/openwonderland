@@ -48,6 +48,7 @@ import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
  */
 class ViewCache {
 
+    private static final Logger logger = Logger.getLogger(ViewCache.class.getName());
     private SpaceManager spaceManager;
     private SpatialCellImpl viewCell;
     private HashMap<SpatialCellImpl, Integer> rootCells = new HashMap(); // The rootCells visible in this cache
@@ -104,10 +105,19 @@ class ViewCache {
                 sp.removeViewCache(this);
             spaces.clear();
         }
+        rootCells.clear();
+        synchronized(pendingCacheUpdates) {
+            pendingCacheUpdates.clear();
+        }
         
 //        System.err.println("-----------------> LOGOUT");
     }
 
+    /**
+     * Notification that a cell has moved, call by SpatialCellImpl
+     * @param cell
+     * @param worldTransform
+     */
     void cellMoved(SpatialCellImpl cell, CellTransform worldTransform) {
         if (cell==viewCell) {
             // Process view movement immediately
@@ -158,7 +168,7 @@ class ViewCache {
         proximityBounds.setCenter(viewCell.getWorldTransform().getTranslation(null));
 
         Iterable<Space> newSpaces = spaceManager.getEnclosingSpace(proximityBounds);
-//        System.err.println("ViewCell Bounds "+viewCell.getWorldBounds());
+//        System.err.println("ViewCell Bounds "+proximityBounds);
 //        StringBuffer buf = new StringBuffer("View in spaces ");
         for(Space sp : newSpaces) {
 //            buf.append(sp.getName()+", ");
@@ -167,15 +177,17 @@ class ViewCache {
                 synchronized(pendingCacheUpdates) {
                     pendingCacheUpdates.add(new CacheUpdate(sp, true));
                 }
+                sp.addViewCache(this);
             }
             oldSpaces.remove(sp);
-            sp.addViewCache(this);
         }
 
 //        System.err.println(buf.toString());
 
-//        System.out.println("Old spaces "+oldSpaces.size());
+//        System.out.println("Old spaces cunt "+oldSpaces.size());
+//        buf = new StringBuffer("View leavoing spaces ");
         for(Space sp : oldSpaces) {
+//            buf.append(sp.getName()+", ");
             sp.removeViewCache(this);
             spaces.remove(sp);
             // We don't remove the space cells immediately in case the user
@@ -183,12 +195,15 @@ class ViewCache {
 
             // TODO this is flawed, we need to track pending removes and make changes
             // if the user moves so that the cell is visible again.
+            
 //            spaceLeftProcessor.schedule(new CacheUpdate(sp, false), 30, TimeUnit.SECONDS);
+
             // In the meantime update the cache immediately
             synchronized(pendingCacheUpdates) {
                 pendingCacheUpdates.add(new CacheUpdate(sp,false));
             }
         }
+//        System.err.println(buf.toString());
 
 //        System.out.print("ViewCell moved, current spaces ");
 //        for(Space sp : spaces) {
@@ -301,7 +316,9 @@ class ViewCache {
                         }
                     }
 
-                    UniverseImpl.getUniverse().scheduleTransaction(new ViewCacheUpdateTask((Collection<CellDescription>) oldCells.clone(), false), identity);
+                    if (oldCells.size()>0)
+                        UniverseImpl.getUniverse().scheduleTransaction(
+                                new ViewCacheUpdateTask(oldCells, false), identity);
                     break;
                 case ENTER_SPACE:
                     ArrayList<CellDescription> newCells = new ArrayList();
@@ -315,7 +332,9 @@ class ViewCache {
                         }
                     }
 
-                    UniverseImpl.getUniverse().scheduleTransaction(new ViewCacheUpdateTask((Collection<CellDescription>) newCells, true), identity);
+                    if (newCells.size()>0)
+                        UniverseImpl.getUniverse().scheduleTransaction(
+                                new ViewCacheUpdateTask(newCells, true), identity);
                     break;
                 case ROOT_ADDED:
                     addRootCell(cell);
@@ -338,7 +357,9 @@ class ViewCache {
             }
 
 //            System.out.println("RootCell Added "+rootCell.getCellID()+"  "+newCells.size());
-            UniverseImpl.getUniverse().scheduleTransaction(new ViewCacheUpdateTask((Collection<CellDescription>) newCells, true), identity);
+            if (newCells.size()>0)
+                UniverseImpl.getUniverse().scheduleTransaction(
+                            new ViewCacheUpdateTask(newCells, true), identity);
         }
 
         /**
@@ -352,7 +373,9 @@ class ViewCache {
                 removeRootCellImpl(rootCell, newCells);
             }
 
-            UniverseImpl.getUniverse().scheduleTransaction(new ViewCacheUpdateTask((Collection<CellDescription>) newCells, false), identity);
+            if (newCells.size()>0)
+                UniverseImpl.getUniverse().scheduleTransaction(
+                            new ViewCacheUpdateTask(newCells, false), identity);
         }
 
         /**
@@ -372,7 +395,8 @@ class ViewCache {
                 refCount=1;
             } else
                 refCount++;
-            rootCells.put(cell, refCount);
+
+            rootCells.put(root, refCount);
         }
 
         /**
@@ -381,7 +405,7 @@ class ViewCache {
          * @param newCells
          */
         private void removeRootCellImpl(SpatialCellImpl root, ArrayList<CellDescription> oldCells) {
-            Integer refCount = rootCells.get(cell);
+            Integer refCount = rootCells.get(root);
 
             if (refCount==null)
                 return;
@@ -393,10 +417,10 @@ class ViewCache {
                 addChildCells(oldCells, root);
 
                 root.releaseRootReadLock();
-                rootCells.remove(cell);
+                rootCells.remove(root);
             } else {
                 refCount--;
-                rootCells.put(cell, refCount);
+                rootCells.put(root, refCount);
             }
         }
 
@@ -433,10 +457,11 @@ class ViewCache {
             else
                 cacheMO.generateUnloadMessagesService(cells);
             
-//            System.err.println("--------> DS UpdateTask "+viewCell.getCellID()+"  loading "+loadCells);
-//            for(CellDescription c : cells)
-//                System.err.print(c.getCellID()+", ");
-//            System.err.println();
+            StringBuffer buf = new StringBuffer();
+            for(CellDescription c : cells)
+                buf.append(c.getCellID()+", ");
+//            logger.info("--------> DS UpdateTask "+viewCell.getCellID()+"  loading "+loadCells+"  "+cells.size()+"  "+buf.toString());
+            
         }
 
     }
