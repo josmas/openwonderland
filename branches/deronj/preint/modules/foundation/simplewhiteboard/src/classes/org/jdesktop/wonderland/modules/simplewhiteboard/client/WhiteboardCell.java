@@ -83,12 +83,6 @@ public class WhiteboardCell extends App2DCell {
      */
     public void configure (CellConfig configData) {
 
-	/* TODO: For debug 
-	while (i++ < 1000000) {
-	    try { Thread.sleep(1000); } catch (Exception ex) {}
-	}
-	*/
-	
         config = (WhiteboardCellConfig)configData;
         setApp(new WhiteboardApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
 				 config.getPixelScale(), commComponent));
