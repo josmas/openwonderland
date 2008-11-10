@@ -31,8 +31,8 @@ public class ViewCellImpl extends SpatialCellImpl {
 
     private ViewCache viewCache = null;
 
-    public ViewCellImpl(CellID id, SpaceManager spaceManager, Identity identity, BigInteger cellCacheId) {
-        super(id);
+    public ViewCellImpl(CellID id, SpaceManager spaceManager, BigInteger dsID) {
+        super(id, dsID);
     }
 
     public ViewCache getViewCache() {

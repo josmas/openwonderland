@@ -50,7 +50,7 @@ public interface Universe {
      * @param identity
      * @return
      */
-    public SpatialCell createSpatialCell(CellID id, BigInteger cellCacheId, Identity identity);
+    public SpatialCell createSpatialCell(CellID id, BigInteger dsID, Class cellClass);
 
     public void removeCell(CellID id);
 

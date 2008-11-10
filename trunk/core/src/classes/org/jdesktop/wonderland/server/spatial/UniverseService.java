@@ -142,12 +142,13 @@ public class UniverseService implements UniverseServiceManager, Service {
     }
 
     public void createCell(CellMO cellMO) {
-        final BigInteger cellCacheId = (cellMO instanceof ViewCellMO) ? AppContext.getDataManager().createReference( ((ViewCellMO)cellMO).getCellCache()).getId() : null;
+        final Class cellClazz = cellMO.getClass();
         final Identity identity = proxy.getCurrentOwner();
+        final BigInteger dsID = AppContext.getDataManager().createReference(cellMO).getId();
 
         scheduleChange(new Change(cellMO.getCellID(), cellMO.getLocalBounds(), cellMO.getLocalTransform(null)) {
             public void run() {
-                SpatialCell sc = universe.createSpatialCell(cellID, cellCacheId, identity);
+                SpatialCell sc = universe.createSpatialCell(cellID, dsID, cellClazz);
                 sc.setLocalBounds(localBounds);
                 sc.setLocalTransform(localTransform, identity);
             }

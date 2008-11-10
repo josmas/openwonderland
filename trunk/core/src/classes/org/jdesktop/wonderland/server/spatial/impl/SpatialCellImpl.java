@@ -25,6 +25,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.kernel.KernelRunnable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ public class SpatialCellImpl implements SpatialCell {
     private SpatialCellImpl rootNode = null;
     private SpatialCellImpl parent = null;
     private CellID cellID;
+    private BigInteger dsID;        // FOR DEBUG, the DS ID of the cell
 
     private ArrayList<SpatialCellImpl> children = null;
 
@@ -63,9 +65,12 @@ public class SpatialCellImpl implements SpatialCell {
 
     private ArrayList<TransformChangeListenerSrv> transformChangeListeners = null;
 
-    public SpatialCellImpl(CellID id) {
+    private boolean isRoot = false;
+
+    public SpatialCellImpl(CellID id, BigInteger dsID) {
 //        System.out.println("Creating SpatialCell "+id);
         this.cellID = id;
+        this.dsID = dsID;
     }
 
     /**
@@ -209,12 +214,20 @@ public class SpatialCellImpl implements SpatialCell {
      * Compute the world bounds for this node from the local bounds and world transform
      */
     private void computeWorldBounds() {
-        // TODO support scale
         worldBounds = localBounds.clone(worldBounds);
-//        worldBounds.transform(worldTransform.toRotationQuat(),
-//                              worldTransform.toTranslationVector(),
-//                              new Vector3f(1f,1f,1f), worldBounds);
         worldTransform.transform(worldBounds);
+
+        if (isRoot) {
+            // Root cell
+            // Check which spaces the bounds intersect with
+            Iterable<Space> it = UniverseImpl.getUniverse().getSpaceManager().getEnclosingSpace(worldBounds);
+            for(Space s : it) {
+                if (!spaces.contains(s)) {
+                    s.addRootSpatialCell(this);
+                    spaces.add(s);
+                }
+            }
+        }
     }
 
     Iterable<SpatialCellImpl> getChildren() {
@@ -248,9 +261,15 @@ public class SpatialCellImpl implements SpatialCell {
      * @param root
      */
     void setRoot(SpatialCell root, Identity identity) {
+        // Now set the rootNode in all children
+        this.rootNode = (SpatialCellImpl) root;
+
         if (root==this) {
             readWriteLock = new ReentrantReadWriteLock(true);
             viewCache = new HashMap();
+            isRoot = true;
+            spaces = new HashSet();
+            acquireRootWriteLock();
 
             // This node is the root of a graph, so set the world transform
             worldTransform = localTransform.clone(null);
@@ -262,14 +281,24 @@ public class SpatialCellImpl implements SpatialCell {
             }
         }
 
-        // Now set the rootNode in all children
-        this.rootNode = (SpatialCellImpl) root;
-        acquireRootWriteLock();
+        if (isRoot) {
+            if (root==null) {
+                // Root is being removed
+                for(Space s : spaces) {
+                    s.removeRootSpatialCell(this);
+                }
+                spaces.clear();
+            }
+        }
+
         if (children!=null) {
             for(SpatialCellImpl s : children)
                 s.setRoot(root, identity);
         }
-        releaseRootWriteLock();
+
+        if (root==this) {
+            releaseRootWriteLock();
+        }
     }
 
     void setParent(SpatialCellImpl parent) {
@@ -355,6 +384,13 @@ public class SpatialCellImpl implements SpatialCell {
         Iterable<ViewCache> caches = root.viewCache.keySet();
         for(ViewCache cache : caches) {
             cache.cellDestroyed(this);
+        }
+
+        if (isRoot) {
+            // This is a root node
+            for(Space space : spaces) {
+                space.removeRootSpatialCell(this);
+            }
         }
 
         releaseRootWriteLock();
