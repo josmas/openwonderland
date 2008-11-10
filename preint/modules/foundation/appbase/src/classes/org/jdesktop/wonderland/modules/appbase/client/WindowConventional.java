@@ -71,7 +71,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
 	throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale, 
-	      new DrawingSurface(width + 2 * borderWidth, height + 2 * borderWidth));
+	      new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
 	this.borderWidth = borderWidth;
 	appConventional = (AppConventional) app;
     }
