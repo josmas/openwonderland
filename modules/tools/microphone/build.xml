@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="dist" name="microphone">
+     <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.microphone}"/>
+    <property name="modules.dir" location="${current.dir}/../.."/>
+        
+    <property name="module.src" value="org/jdesktop/wonderland/modules/microphone"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.microphone"/>
+    <property name="module.jarname" value="microphone"/>
+    <property name="module.plugins" value="MicrophoneServerPlugin MicrophoneClientPlugin"/>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
+	<path location="${current.dir}/../audio-manager/lib/voip.jar"/>
+	<path location="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
+	<path location="${current.dir}/../orb/build/lib/server/orb-server.jar"/>
+    </pathconvert>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+   
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="microphone" version="1" minorversion="1"
+                jarfile="${module.dist.dir}/${module.jarname}.jar"
+                builddir="${build.lib.dir}">
+            <client>
+                <clientjar name="microphone-client" basedir="${build.classes.dir}">
+		    <clientplugin provider="org.jdesktop.wonderland.modules.microphone.client.MicrophoneClientPlugin"/>
+
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>                   
+                </clientjar>
+            </client>
+                
+            <server dir="${current.dir}/../audio-manager/lib">
+		<include name="voicelib.jar"/>
+		<include name="bridge_connector.jar"/>
+		<include name="voip.jar"/> 
+
+                <serverjar name="microphone-server" basedir="${build.classes.dir}">
+		    <serverplugin provider="org.jdesktop.wonderland.modules.microphone.server.MicrophoneServerPlugin"/>
+                    <cellsetup>
+                        <provider classname="org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup"/>
+                    </cellsetup>
+                    
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>                   
+                </serverjar>    
+            </server>
+        </module>
+    </target>                                  
+                                           
+    <target name="clean" depends="-module-clean"/>
+</project>
