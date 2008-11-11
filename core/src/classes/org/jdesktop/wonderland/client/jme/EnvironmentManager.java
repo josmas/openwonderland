@@ -19,6 +19,8 @@
 package org.jdesktop.wonderland.client.jme;
 
 import java.util.HashMap;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
  *
@@ -44,7 +46,7 @@ public class EnvironmentManager {
      * @param name
      * @param environment
      */
-    public void addEnvironment(String name, Environment environment) {
+    public void addEnvironment(LoginManager session, String name, Environment environment) {
         environments.put(name, environment);
     }
 
@@ -52,7 +54,7 @@ public class EnvironmentManager {
      * Set the current Environment used by default
      * @param name
      */
-    public void setCurrentEnvironment(String name) {
+    public void setCurrentEnvironment(LoginManager session, String name) {
         Environment env = environments.get(name);
         env.setGlobalLights();
         env.setSkybox();
