@@ -93,6 +93,7 @@ public class LoginManager {
 
     /** the primary session */
     private WonderlandSession primarySession;
+    private final Object primarySessionLock = new Object();
 
     /** session lifecycle listeners */
     private Set<SessionLifecycleListener> lifecycleListeners =
@@ -350,8 +351,13 @@ public class LoginManager {
      * Get the primary session
      * @return the primary session
      */
-    public synchronized WonderlandSession getPrimarySession() {
-        return primarySession;
+    public WonderlandSession getPrimarySession() {
+        // use a separate lock for the primary session because other threads
+        // may need access to the primary session during login, for example
+        // during a call to initialize a client plugin
+        synchronized (primarySessionLock) {
+            return primarySession;
+        }
     }
 
     /**
@@ -359,7 +365,7 @@ public class LoginManager {
      * @param primary the primary session
      */
     public void setPrimarySession(WonderlandSession primarySession) {
-        synchronized (this) {
+        synchronized (primarySessionLock) {
             this.primarySession = primarySession;
         }
 
