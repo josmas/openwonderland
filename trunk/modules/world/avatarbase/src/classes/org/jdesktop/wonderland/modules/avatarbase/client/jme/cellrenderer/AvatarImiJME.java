@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -29,6 +32,7 @@ import imi.scene.JScene;
 import imi.scene.PMatrix;
 import imi.scene.processors.JSceneEventProcessor;
 import imi.utils.input.NinjaControlScheme;
+import java.util.ArrayList;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
@@ -37,6 +41,10 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import imi.character.ninja.NinjaAvatar;
+import imi.character.Character;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
  * Renderer for Avatar, looks strangely like a teapot at the moment...
@@ -48,6 +56,7 @@ public class AvatarImiJME extends BasicRenderer {
 
     public AvatarImiJME(Cell cell) {
         super(cell);
+        assert(cell!=null);
     }
     
     @Override
@@ -75,7 +84,8 @@ public class AvatarImiJME extends BasicRenderer {
         origin.setRotation(transform.getRotation(null));
         
 //        Ninja avatar = new Ninja("Shadow Blade", origin, /*"assets/configurations/ninjaDude.xml",*/ 0.22f, wm);
-        NinjaAvatar avatar = new AvatarCharacter("Avatar", wm);
+        NinjaAvatar avatar;
+        avatar = new AvatarCharacter("Avatar", wm);
         NinjaControlScheme control = (NinjaControlScheme)((JSceneEventProcessor)wm.getUserData(JSceneEventProcessor.class)).setDefault(new NinjaControlScheme(avatar));
         avatar.selectForInput();
         control.getNinjaTeam().add(avatar);
@@ -87,7 +97,7 @@ public class AvatarImiJME extends BasicRenderer {
 //        jscene.toggleRenderPRendererMesh();   // turn off mesh
 //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
-        // Listen for avatar movement and update the camera
+        // Listen for avatar movement and update the cell
         avatar.getController().addCharacterMotionListener(new CharacterMotionListener() {
 
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
@@ -113,6 +123,53 @@ public class AvatarImiJME extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         // Nothing to do here
         return null;
+    }
+
+    class AvatarCharacter extends NinjaAvatar {
+
+        public class MaleAvatarAttributes extends Character.Attributes
+        {
+            public MaleAvatarAttributes(String name) {
+                super(name);
+                setModelFile("assets/models/collada/Avatars/Male2/Male_Bind.dae");
+                ArrayList<String> anims = new ArrayList<String>();
+                anims.add("assets/models/collada/Avatars/MaleZip/Male_Idle.dae");
+                anims.add("assets/models/collada/Avatars/MaleZip/Male_StandToSit.dae");
+                anims.add("assets/models/collada/Avatars/MaleZip/Male_Wave.dae");
+                anims.add("assets/models/collada/Avatars/MaleZip/Male_Walk.dae");
+                anims.add("assets/models/collada/Avatars/MaleZip/Male_Sitting.dae");
+                if (false)
+                {
+                    anims.add("assets/models/collada/Avatars/MaleZip/Male_Run.dae");
+                    anims.add("assets/models/collada/Avatars/Male/Male_Bow.dae");
+                    anims.add("assets/models/collada/Avatars/Male/Male_Cheer.dae");
+                    anims.add("assets/models/collada/Avatars/Male/Male_Clap.dae");
+                    anims.add("assets/models/collada/Avatars/Male/Male_Follow.dae");
+                    anims.add("assets/models/collada/Avatars/Male/Male_Jump.dae");
+                    anims.add("assets/models/collada/Avatars/Male/Male_Laugh.dae");
+                }
+                setAnimations(anims.toArray(new String[anims.size()]));
+
+                WonderlandSession session = cell.getCellCache().getSession();
+                LoginManager manager = LoginManager.find(session);
+                String serverHostAndPort = manager.getServerNameAndPort();
+
+                setBaseURL("wla://avatarbase@"+serverHostAndPort+"/");
+
+//                setUseSimpleSphereModel(true);
+            }
+
+        }
+
+        public AvatarCharacter(String name, WorldManager wm) {
+            super(name,wm);
+        }
+
+        @Override
+        protected Attributes createAttributes(String name)
+        {
+            return new MaleAvatarAttributes(name);
+        }
     }
 
 }
