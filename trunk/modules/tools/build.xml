@@ -10,8 +10,8 @@
         <include name="voicebridge/build.xml"/>
         <include name="phone/build.xml"/>
         <include name="artimport/build.xml"/>
-        <include name="orb/build.xml"/>
-<!--        <include name="phone/build.xml"/> -->
+        <include name="microphone/build.xml"/>
+        <include name="coneofsilence/build.xml"/>
     </fileset>
     
     <!-- build and package all subprojects -->
