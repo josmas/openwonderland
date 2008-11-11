@@ -1,0 +1,172 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
+ */
+package org.jdesktop.wonderland.modules.defaultenvironment.client.jme;
+
+import com.jme.image.Texture;
+import com.jme.light.LightNode;
+import com.jme.light.PointLight;
+import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Skybox;
+import com.jme.scene.Spatial;
+import com.jme.scene.Spatial.TextureCombineMode;
+import com.jme.scene.state.CullState;
+import com.jme.scene.state.FogState;
+import com.jme.scene.state.RenderState;
+import com.jme.scene.state.ZBufferState;
+import com.jme.util.TextureManager;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.SkyboxComponent;
+import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.Environment;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.AssetURI;
+
+/**
+ *
+ * @author paulby
+ */
+public class DefaultEnvironment implements Environment {
+
+    private Skybox skybox = null;
+
+    private LoginManager loginManager;
+
+    public DefaultEnvironment(LoginManager loginManager) {
+        this.loginManager = loginManager;
+    }
+
+    /**
+     * @{@inheritDoc}
+     */
+    public void setGlobalLights() {
+        LightNode globalLight1 = new LightNode();
+        PointLight light = new PointLight();
+        light.setDiffuse(new ColorRGBA(0.95f, 0.95f, 0.95f, 1.0f));
+        light.setAmbient(new ColorRGBA(0.85f, 0.85f, 0.85f, 1.0f));
+        light.setEnabled(true);
+        globalLight1.setLight(light);
+        globalLight1.setLocalTranslation(0.0f, 50.0f, 50.0f);
+
+        LightNode globalLight2 = new LightNode();
+        light = new PointLight();
+        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 1.0f));
+        light.setAmbient(new ColorRGBA(0.25f, 0.25f, 0.25f, 1.0f));
+        light.setEnabled(true);
+        globalLight2.setLight(light);
+        globalLight2.setLocalTranslation(0.0f, -50.0f, -50.0f);
+             
+        ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight1);
+        ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight2);
+    }
+
+    /**
+     * @{@inheritDoc}
+     */
+    public void setSkybox() {
+
+        if (skybox==null) {
+            Entity skyboxEnt = createSkyboxEntity();
+            ClientContextJME.getWorldManager().addEntity(skyboxEnt);
+        }
+
+        ViewManager.getViewManager().addViewManagerListener(new ViewManagerListener() {
+
+            public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+            //Keep the skybox centered on the view
+            newViewCell.addTransformChangeListener(new TransformChangeListener() {
+                private Vector3f translation = new Vector3f();
+
+                public void transformChanged(Cell cell, ChangeSource source) {
+                    skybox.setLocalTranslation(cell.getWorldTransform().getTranslation(translation));
+                }
+
+            });
+            }
+        });
+
+    }
+
+    private Entity createSkyboxEntity() {
+        try {
+            /* Form the asset URIs */
+            String server = loginManager.getServerNameAndPort();
+
+            AssetURI northURI = new AssetURI("wla://defaultenvironment/skybox1/1.jpg").getAnnotatedURI(server);
+            AssetURI southURI = new AssetURI("wla://defaultenvironment/skybox1/3.jpg").getAnnotatedURI(server);
+            AssetURI eastURI = new AssetURI("wla://defaultenvironment/skybox1/2.jpg").getAnnotatedURI(server);
+            AssetURI westURI = new AssetURI("wla://defaultenvironment/skybox1/4.jpg").getAnnotatedURI(server);
+            AssetURI downURI = new AssetURI("wla://defaultenvironment/skybox1/5.jpg").getAnnotatedURI(server);
+            AssetURI upURI = new AssetURI("wla://defaultenvironment/skybox1/6.jpg").getAnnotatedURI(server);
+
+            WorldManager wm = ClientContextJME.getWorldManager();
+            skybox = new Skybox("skybox", 1000, 1000, 1000);
+            Texture north = TextureManager.loadTexture(northURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture south = TextureManager.loadTexture(southURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture east = TextureManager.loadTexture(eastURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture west = TextureManager.loadTexture(westURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture up = TextureManager.loadTexture(upURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            Texture down = TextureManager.loadTexture(downURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
+            skybox.setTexture(Skybox.Face.North, north);
+            skybox.setTexture(Skybox.Face.West, west);
+            skybox.setTexture(Skybox.Face.South, south);
+            skybox.setTexture(Skybox.Face.East, east);
+            skybox.setTexture(Skybox.Face.Up, up);
+            skybox.setTexture(Skybox.Face.Down, down);
+            //skybox.preloadTextures();
+            CullState cullState = (CullState) wm.getRenderManager().createRendererState(RenderState.RS_CULL);
+            cullState.setEnabled(true);
+            skybox.setRenderState(cullState);
+            ZBufferState zState = (ZBufferState) wm.getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+            //zState.setEnabled(false);
+            skybox.setRenderState(zState);
+            FogState fs = (FogState) wm.getRenderManager().createRendererState(RenderState.RS_FOG);
+            fs.setEnabled(false);
+            skybox.setRenderState(fs);
+            skybox.setLightCombineMode(Spatial.LightCombineMode.Off);
+            skybox.setCullHint(Spatial.CullHint.Never);
+            skybox.setTextureCombineMode(TextureCombineMode.Replace);
+            skybox.updateRenderState();
+            skybox.lockBounds();
+            //skybox.lockMeshes();
+            Entity e = new Entity("Skybox");
+            SkyboxComponent sbc = wm.getRenderManager().createSkyboxComponent(skybox, true);
+            e.addComponent(SkyboxComponent.class, sbc);
+
+            return e;
+
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(DefaultEnvironment.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(DefaultEnvironment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+}
