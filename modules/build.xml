@@ -4,10 +4,12 @@
          to make sure module dependencies are met. --> 
     <target name="dist">
         <!-- go through and compile the individual modules -->
+<!--
         <ant antfile="foundation/build.xml" target="dist" inheritall="false"/>
         <ant antfile="samples/build.xml" target="dist" inheritall="false"/>
         <ant antfile="tools/build.xml" target="dist" inheritall="false"/>
         <ant antfile="world/build.xml" target="dist" inheritall="false"/>
+-->
         
         <!-- copy the modules into a common dist directory -->
         <mkdir dir="dist"/>
@@ -21,11 +23,13 @@
         
         <!-- copy runners into dist/runner -->
         <mkdir dir="dist/runner"/>
+        <mkdir dir="dist/runner/deploy"/>
+        <mkdir dir="dist/runner/classes"/>
         <copy todir="dist/runner">
             <fileset dir=".">
                 <include name="**/dist/runner/**"/>
             </fileset>
-            <mapper type="regexp" from="^.*?/dist/runner/(.*)"
+            <mapper type="regexp" from="^.*?[\\/]disti[\\/]runner[\\/](.*)"
                                   to="\1"/>
         </copy>
     </target>
