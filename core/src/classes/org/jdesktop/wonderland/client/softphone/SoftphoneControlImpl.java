@@ -469,6 +469,10 @@ public class SoftphoneControlImpl {
         sendCommandToSoftphone("linetest");
     }
 
+    public void logAudioProblem() {
+        sendCommandToSoftphone("stack");
+    }
+
     private ArrayList<SoftphoneListener> listeners = 
 	new ArrayList<SoftphoneListener>();
 

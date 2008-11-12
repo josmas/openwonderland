@@ -58,6 +58,8 @@ public interface SoftphoneControl {
     
     public void runLineTest() throws IOException;
     
+    public void logAudioProblem() throws IOException;
+
     public void addListener(SoftphoneListener listener);
 
     public void removeListener(SoftphoneListener listener);
