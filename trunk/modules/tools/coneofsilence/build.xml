@@ -7,7 +7,6 @@
     <property name="module.src" value="org/jdesktop/wonderland/modules/coneofsilence"/>
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.coneofsilence"/>
     <property name="module.jarname" value="coneofsilence"/>
-    <property name="module.plugins" value="ConeOfSilenceServerPlugin ConeOfSilenceClientPlugin"/>
 
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
@@ -31,8 +30,6 @@
                 builddir="${build.lib.dir}">
             <client>
                 <clientjar name="coneofsilence-client" basedir="${build.classes.dir}">
-		    <clientplugin provider="org.jdesktop.wonderland.modules.coneofsilence.client.ConeOfSilenceClientPlugin"/>
-
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>
@@ -44,7 +41,6 @@
 		<include name="voip.jar"/> 
 
                 <serverjar name="coneofsilence-server" basedir="${build.classes.dir}">
-		    <serverplugin provider="org.jdesktop.wonderland.modules.coneofsilence.server.ConeOfSilenceServerPlugin"/>
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellSetup"/>
                     </cellsetup>

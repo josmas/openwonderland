@@ -7,7 +7,6 @@
     <property name="module.src" value="org/jdesktop/wonderland/modules/microphone"/>
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.microphone"/>
     <property name="module.jarname" value="microphone"/>
-    <property name="module.plugins" value="MicrophoneServerPlugin MicrophoneClientPlugin"/>
 
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
@@ -31,8 +30,6 @@
                 builddir="${build.lib.dir}">
             <client>
                 <clientjar name="microphone-client" basedir="${build.classes.dir}">
-		    <clientplugin provider="org.jdesktop.wonderland.modules.microphone.client.MicrophoneClientPlugin"/>
-
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>
@@ -44,7 +41,6 @@
 		<include name="voip.jar"/> 
 
                 <serverjar name="microphone-server" basedir="${build.classes.dir}">
-		    <serverplugin provider="org.jdesktop.wonderland.modules.microphone.server.MicrophoneServerPlugin"/>
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup"/>
                     </cellsetup>

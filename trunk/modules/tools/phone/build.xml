@@ -7,7 +7,6 @@
     <property name="module.src" value="org/jdesktop/wonderland/modules/phone"/>
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.phone"/>
     <property name="module.jarname" value="phone"/>
-    <property name="module.plugins" value="PhoneServerPlugin PhoneClientPlugin"/>
 
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
@@ -31,8 +30,6 @@
                 builddir="${build.lib.dir}">
             <client>
                 <clientjar name="phone-client" basedir="${build.classes.dir}">
-		    <clientplugin provider="org.jdesktop.wonderland.modules.phone.client.PhoneClientPlugin"/>
-
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>
@@ -44,7 +41,6 @@
 		<include name="voip.jar"/> 
 
                 <serverjar name="phone-server" basedir="${build.classes.dir}">
-		    <serverplugin provider="org.jdesktop.wonderland.modules.phone.server.PhoneServerPlugin"/>
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup"/>
                     </cellsetup>
