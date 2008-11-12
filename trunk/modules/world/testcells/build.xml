@@ -22,7 +22,6 @@
                     
            <client>
                 <clientjar name="testcells-client" basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.testcells.client.jme.ClientInit"/>
 <!--
                     <service type="org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI">
                         <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.setup.JMEColladaCellSetup"/>

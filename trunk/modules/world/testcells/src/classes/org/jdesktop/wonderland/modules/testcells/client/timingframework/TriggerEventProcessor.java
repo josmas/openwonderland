@@ -40,7 +40,7 @@ public class TriggerEventProcessor extends EventClassListener {
     private Class[] triggerEventsArray = null;
 
     /**
-     * Consume only mouse button events.
+     * {@inheritDoc}
      */
     @Override
     public Class[] eventClassesToConsume () {
