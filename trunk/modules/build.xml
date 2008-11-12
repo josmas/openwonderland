@@ -4,12 +4,10 @@
          to make sure module dependencies are met. --> 
     <target name="dist">
         <!-- go through and compile the individual modules -->
-<!--
         <ant antfile="foundation/build.xml" target="dist" inheritall="false"/>
         <ant antfile="samples/build.xml" target="dist" inheritall="false"/>
         <ant antfile="tools/build.xml" target="dist" inheritall="false"/>
         <ant antfile="world/build.xml" target="dist" inheritall="false"/>
--->
         
         <!-- copy the modules into a common dist directory -->
         <mkdir dir="dist"/>
