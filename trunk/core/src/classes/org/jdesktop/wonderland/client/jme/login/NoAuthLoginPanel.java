@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.client.jme.login;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -104,7 +105,7 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         }
 
         try {
-            FileReader inReader = new FileReader(propsFile);
+            FileInputStream inReader = new FileInputStream(propsFile);
 
             Properties props = new Properties();
             props.load(inReader);
