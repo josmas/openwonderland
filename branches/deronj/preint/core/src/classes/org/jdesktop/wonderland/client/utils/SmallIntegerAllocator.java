@@ -57,7 +57,7 @@ public class SmallIntegerAllocator {
      *
      * @return The integer.
      */
-    public int allocate () {
+    public synchronized int allocate () {
 	int i = findInList();
 	if (i >= 0) {
 	    numAllocated++;
@@ -79,7 +79,7 @@ public class SmallIntegerAllocator {
      *
      * @param i The value to release.
      */
-    public void free (int i) {
+    public synchronized void free (int i) {
 	if (!allocated[i]) {
 	    throw new RuntimeException("Value is not allocated.");
 	}
