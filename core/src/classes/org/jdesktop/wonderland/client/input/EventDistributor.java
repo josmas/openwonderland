@@ -26,6 +26,7 @@ import java.util.Iterator;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.input.InputManager.FocusChange;
 
 /**
@@ -48,14 +49,14 @@ public abstract class EventDistributor implements Runnable {
 
     /** The base input queue entry. */
     private static class Entry {
-	/** The Wonderland event. */
-	Event event;
-	/** The pick info for the event */
-	PickInfo pickInfo;
-        Entry (Event event, PickInfo pickInfo) {
-	    this.event = event;
-	    this.pickInfo = pickInfo;
-	}
+        /** The Wonderland event. */
+        Event event;
+        /** The pick info for the event */
+        PickInfo pickInfo;
+            Entry (Event event, PickInfo pickInfo) {
+            this.event = event;
+            this.pickInfo = pickInfo;
+        }
     }
 
     /** The state of the propagation state during the traversal. */
@@ -71,7 +72,7 @@ public abstract class EventDistributor implements Runnable {
     private EventListenerCollection globalEventListeners = new EventListenerCollection();
 
     protected void start () {
-	thread = new Thread(this, "EventDistributor");
+	thread = new Thread(ThreadManager.getThreadGroup(), this, "EventDistributor");
 	thread.start();
     }
 
@@ -80,7 +81,7 @@ public abstract class EventDistributor implements Runnable {
      * @param event The event to enqueue.
      */
     void enqueueEvent (Event event) {
-	inputQueue.add(new Entry(event, null));
+        inputQueue.add(new Entry(event, null));
     }
 
     /**
@@ -89,23 +90,23 @@ public abstract class EventDistributor implements Runnable {
      * @param pickInfo The pick info for the event.
      */
     void enqueueEvent (Event event, PickInfo pickInfo) {
-	inputQueue.add(new Entry(event, pickInfo));
+        inputQueue.add(new Entry(event, pickInfo));
     }
 
     /**
      * The run loop of the thread.
      */
     public void run () {
-	while (true) {
-	    try {
-		Entry entry = null;
-                entry = inputQueue.take();
-		processEvent(entry.event, entry.pickInfo);
-            } catch (Exception ex) {
-		ex.printStackTrace();
-		logger.warning("Exception caught in EventDistributor thread. Event is ignored.");
-	    }
-	}
+        while (true) {
+            try {
+            Entry entry = null;
+                    entry = inputQueue.take();
+            processEvent(entry.event, entry.pickInfo);
+                } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.warning("Exception caught in EventDistributor thread. Event is ignored.");
+            }
+        }
     }
     
     /** 
@@ -121,21 +122,21 @@ public abstract class EventDistributor implements Runnable {
      * for global listeners are ignored.
      */
     protected void tryGlobalListeners (Event event) {
-	logger.fine("tryGlobalListeners event = " + event);
-	synchronized (globalEventListeners) {
-            Iterator<EventListener> it = globalEventListeners.iterator();
-	    while (it.hasNext()) {
-                EventListener listener = it.next();
-		if (listener.isEnabled()) {
-		    logger.fine("Calling consume for listener " + listener);
-		    Event distribEvent = createEventForGlobalListener(event);
-		    if (listener.consumesEvent(distribEvent)) {
-			logger.fine("CONSUMED.");
-			listener.postEvent(distribEvent);
-		    }
-		}
-	    }
-	}
+        logger.fine("tryGlobalListeners event = " + event);
+        synchronized (globalEventListeners) {
+                Iterator<EventListener> it = globalEventListeners.iterator();
+            while (it.hasNext()) {
+                    EventListener listener = it.next();
+            if (listener.isEnabled()) {
+                logger.fine("Calling consume for listener " + listener);
+                Event distribEvent = createEventForGlobalListener(event);
+                if (listener.consumesEvent(distribEvent)) {
+                logger.fine("CONSUMED.");
+                listener.postEvent(distribEvent);
+                }
+            }
+            }
+        }
     }
 	
     /** 
@@ -144,32 +145,32 @@ public abstract class EventDistributor implements Runnable {
      * and the OR of propagatesToUnder for all enabled listeners in propState.
      */
     protected void tryListenersForEntity (Entity entity, Event event, PropagationState propState) {
-	logger.fine("tryListenersForEntity, entity = " + entity + ", event = " + event);
-	EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
-	if (listeners == null || listeners.size() <= 0) { 
-	    logger.fine("Entity has no listeners");
-	    // propagatesToParent is true, so OR makes no change to its accumulator
-	    // propagatesToUnder is false, so OR makes its accumulator is false
-	    propState.toUnder = false;
-	} else {
-	    Iterator<EventListener> it = listeners.iterator();
-	    while (it.hasNext()) {
-		EventListener listener = it.next();
-		if (listener.isEnabled()) {
-		    logger.fine("Calling consume for listener " + listener);
-		    Event distribEvent = createEventForEntity(event, entity);
-		    if (listener.consumesEvent(distribEvent)) {
-			logger.fine("CONSUMED by entity " + entity);
-			listener.postEvent(distribEvent);
-		    }
-		    propState.toParent |= listener.propagatesToParent(distribEvent);
-		    propState.toUnder |= listener.propagatesToUnder(distribEvent);
-		    logger.finer("Listener prop state, toParent = " + propState.toParent + 
-				", toUnder = " + propState.toUnder);
-		}
-	    }
-	}
-	logger.fine("Cumulative prop state, toParent = " + propState.toParent + ", toUnder = " + propState.toUnder);
+        logger.fine("tryListenersForEntity, entity = " + entity + ", event = " + event);
+        EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
+        if (listeners == null || listeners.size() <= 0) {
+            logger.fine("Entity has no listeners");
+            // propagatesToParent is true, so OR makes no change to its accumulator
+            // propagatesToUnder is false, so OR makes its accumulator is false
+            propState.toUnder = false;
+        } else {
+            Iterator<EventListener> it = listeners.iterator();
+            while (it.hasNext()) {
+            EventListener listener = it.next();
+            if (listener.isEnabled()) {
+                logger.fine("Calling consume for listener " + listener);
+                Event distribEvent = createEventForEntity(event, entity);
+                if (listener.consumesEvent(distribEvent)) {
+                logger.fine("CONSUMED by entity " + entity);
+                listener.postEvent(distribEvent);
+                }
+                propState.toParent |= listener.propagatesToParent(distribEvent);
+                propState.toUnder |= listener.propagatesToUnder(distribEvent);
+                logger.finer("Listener prop state, toParent = " + propState.toParent +
+                    ", toUnder = " + propState.toUnder);
+            }
+            }
+        }
+        logger.fine("Cumulative prop state, toParent = " + propState.toParent + ", toUnder = " + propState.toUnder);
     }
 
     /** 
@@ -179,24 +180,24 @@ public abstract class EventDistributor implements Runnable {
      * and the OR of propagatesToUnder for all enabled listeners in propState.
      */
     protected void tryListenersForEntityParents (Entity entity, Event event, PropagationState propState) {
-	while (entity != null) {
-	    tryListenersForEntity(entity, event, propState);
-	    if (!propState.toParent) {
-		// No more propagation to parents. We're done with this loop.
-		break;
-	    }
-	    logger.fine("Propagate to next parent");
-	    entity = entity.getParent();
-	}
+        while (entity != null) {
+            tryListenersForEntity(entity, event, propState);
+            if (!propState.toParent) {
+            // No more propagation to parents. We're done with this loop.
+            break;
+            }
+            logger.fine("Propagate to next parent");
+            entity = entity.getParent();
+        }
     }
 	
     /**
      * Create an event for distribution to a global event listener, based on the given base event.
      */
     static Event createEventForGlobalListener (Event baseEvent) {
-	Event event = baseEvent.clone(null);
-	event.setFocussed(entityHasFocus(baseEvent, InputManager.inputManager().getGlobalFocusEntity()));
-        return event;
+        Event event = baseEvent.clone(null);
+        event.setFocussed(entityHasFocus(baseEvent, InputManager.inputManager().getGlobalFocusEntity()));
+            return event;
     }
 
 
@@ -204,10 +205,10 @@ public abstract class EventDistributor implements Runnable {
      * Create an event for distribution to the given entity, based on the given base event.
      */
     static Event createEventForEntity (Event baseEvent, Entity entity) {
-	Event event = baseEvent.clone(null);
-	event.setEntity(entity);
-	event.setFocussed(entityHasFocus(baseEvent, entity));
-        return event;
+        Event event = baseEvent.clone(null);
+        event.setEntity(entity);
+        event.setFocussed(entityHasFocus(baseEvent, entity));
+            return event;
     }
 
     /**
@@ -220,14 +221,14 @@ public abstract class EventDistributor implements Runnable {
      * @param listener The global event listener to be added.
      */
     public void addGlobalEventListener (EventListener listener) {
-	synchronized (globalEventListeners) {
-	    if (globalEventListeners.contains(listener)) {
-		return;
-	    } else {
-		globalEventListeners.add(listener);
-		listener.addToEntity(InputManager.inputManager().getGlobalFocusEntity());
-	    }
-	}
+        synchronized (globalEventListeners) {
+            if (globalEventListeners.contains(listener)) {
+            return;
+            } else {
+            globalEventListeners.add(listener);
+            listener.addToEntity(InputManager.inputManager().getGlobalFocusEntity());
+            }
+        }
     }
 
     /**
@@ -239,10 +240,10 @@ public abstract class EventDistributor implements Runnable {
      * @param listener The global event listener to be removed.
      */
     public void removeGlobalEventListener (EventListener listener) {
-	synchronized (globalEventListeners) {
-	    globalEventListeners.remove(listener);
-	    listener.removeFromEntity(InputManager.inputManager().getGlobalFocusEntity());
-	}
+        synchronized (globalEventListeners) {
+            globalEventListeners.remove(listener);
+            listener.removeFromEntity(InputManager.inputManager().getGlobalFocusEntity());
+        }
     }
 
     /**
@@ -251,70 +252,70 @@ public abstract class EventDistributor implements Runnable {
      * @param changes An array of the changes to apply to the focus sets.
      */
     protected void processFocusChangeEvent (FocusChange[] changes) {
-	for (FocusChange change : changes) {
-	    Class[] classes = change.eventClasses;
-	    Entity[] entities = change.entities;
+        for (FocusChange change : changes) {
+            Class[] classes = change.eventClasses;
+            Entity[] entities = change.entities;
 
-	    HashSet<Entity> focusSet;
+            HashSet<Entity> focusSet;
 
-	    switch (change.action) {
+            switch (change.action) {
 
-    	    // Add the entities to each event class focus set
-	    case ADD:
-		for (Class clazz : classes) {
-		    focusSet = focusSets.get(clazz);
-		    if (focusSet == null) {
-			// First time for this class
-			focusSet = new HashSet<Entity>();
-			focusSets.put(clazz, focusSet);
-		    }
-		    for (Entity entity : entities) {
-			focusSet.add(entity);
-			setEntityFocus(clazz, entity, true);
-		    }
-		}
-		break;
+                // Add the entities to each event class focus set
+            case ADD:
+            for (Class clazz : classes) {
+                focusSet = focusSets.get(clazz);
+                if (focusSet == null) {
+                // First time for this class
+                focusSet = new HashSet<Entity>();
+                focusSets.put(clazz, focusSet);
+                }
+                for (Entity entity : entities) {
+                focusSet.add(entity);
+                setEntityFocus(clazz, entity, true);
+                }
+            }
+            break;
 
-    	    // Remove the entities from each event class focus set
-	    case REMOVE:
-		for (Class clazz : classes) {
-		    focusSet = focusSets.get(clazz);
-		    if (focusSet == null) continue;
-		    for (Entity entity : entities) {
-			focusSet.remove(entity);
-			setEntityFocus(clazz, entity, false);
-		    }
-		    if (focusSet.size() <= 0) {
-			focusSets.remove(clazz);
-		    }
-		}
-		break;
+                // Remove the entities from each event class focus set
+            case REMOVE:
+            for (Class clazz : classes) {
+                focusSet = focusSets.get(clazz);
+                if (focusSet == null) continue;
+                for (Entity entity : entities) {
+                focusSet.remove(entity);
+                setEntityFocus(clazz, entity, false);
+                }
+                if (focusSet.size() <= 0) {
+                focusSets.remove(clazz);
+                }
+            }
+            break;
 
-    	    // Replace the existing entities from each event class focus set with the new entities
-	    case REPLACE:
-		for (Class clazz : classes) {
+                // Replace the existing entities from each event class focus set with the new entities
+            case REPLACE:
+            for (Class clazz : classes) {
 
-		    // First, unfocus previous entities
-		    focusSet = focusSets.get(clazz);
-		    for (Entity entity : focusSet) {
-			setEntityFocus(clazz, entity, false);
-		    }
+                // First, unfocus previous entities
+                focusSet = focusSets.get(clazz);
+                for (Entity entity : focusSet) {
+                setEntityFocus(clazz, entity, false);
+                }
 
-		    // Now focus the new entiti
-		    if (entities == null || entities.length <= 0) {
-			focusSets.remove(clazz);
-		    } else {
-			focusSet = new HashSet<Entity>();
-			for (Entity entity : entities) {
-			    focusSet.add(entity);
-			    setEntityFocus(clazz, entity, true);
-			}
-			focusSets.put(clazz, focusSet);
-		    }
-		}
-		break;
-	    }
-	}
+                // Now focus the new entiti
+                if (entities == null || entities.length <= 0) {
+                focusSets.remove(clazz);
+                } else {
+                focusSet = new HashSet<Entity>();
+                for (Entity entity : entities) {
+                    focusSet.add(entity);
+                    setEntityFocus(clazz, entity, true);
+                }
+                focusSets.put(clazz, focusSet);
+                }
+            }
+            break;
+            }
+        }
 
 	// Debug
 	//logger.warning("Updated focus sets");
@@ -325,17 +326,17 @@ public abstract class EventDistributor implements Runnable {
 
     /** For debug */
     private void logFocusSets () {
-	for (Class clazz : focusSets.keySet()) {
-	    HashSet<Entity> focusSet = focusSets.get(clazz);	    
-	    StringBuffer sb = new StringBuffer();
-	    sb.append("Class = " + clazz + ": ");
-	    Iterator<Entity> it = focusSet.iterator();
-	    while (it.hasNext()) {
-		Entity entity = it.next();
-		sb.append(entity.toString() + ", ");
-	    }
-	    logger.warning(sb.toString());
-	}
+        for (Class clazz : focusSets.keySet()) {
+            HashSet<Entity> focusSet = focusSets.get(clazz);
+            StringBuffer sb = new StringBuffer();
+            sb.append("Class = " + clazz + ": ");
+            Iterator<Entity> it = focusSet.iterator();
+            while (it.hasNext()) {
+            Entity entity = it.next();
+            sb.append(entity.toString() + ", ");
+            }
+            logger.warning(sb.toString());
+        }
     }
 
     /** A marker component used to mark entities which have focus. */
@@ -347,7 +348,7 @@ public abstract class EventDistributor implements Runnable {
 	/** Add the given event class to the focus set. */
 	private void add (Class clazz) {
 	    if (focussedClasses == null) {
-		focussedClasses = new HashSet<Class>();
+            focussedClasses = new HashSet<Class>();
 	    }
 	    focussedClasses.add(clazz);
 	}
@@ -355,9 +356,9 @@ public abstract class EventDistributor implements Runnable {
 	/** Remove the given event class from the focus set. */
 	private void remove (Class clazz) {
 	    if (focussedClasses == null) return;
-	    focussedClasses.remove(clazz);
+            focussedClasses.remove(clazz);
 	    if (focussedClasses.size() <= 0) {
-		focussedClasses = null;
+            focussedClasses = null;
 	    }
 	}
 
@@ -366,10 +367,10 @@ public abstract class EventDistributor implements Runnable {
 	    if (focussedClasses == null) return false;
 	    Iterator<Class> it = focussedClasses.iterator();
 	    while (it.hasNext()) {
-		Class cl = it.next();
-		if (cl.isAssignableFrom(clazz)) {
-		    return true;
-		}
+            Class cl = it.next();
+            if (cl.isAssignableFrom(clazz)) {
+                return true;
+            }
 	    }
 	    return false;
 	}
@@ -386,20 +387,20 @@ public abstract class EventDistributor implements Runnable {
      * the entities has been focussed or not.
      */
     private static void setEntityFocus (Class clazz, Entity entity, boolean hasFocus) {
-	EventFocusComponent focusComp = (EventFocusComponent) entity.getComponent(EventFocusComponent.class);
-	if (hasFocus) {
-	    if (focusComp == null) {
-		focusComp = new EventFocusComponent();
-		entity.addComponent(EventFocusComponent.class, focusComp);
-	    }
-	    focusComp.add(clazz);
-	} else {
-	    if (focusComp == null) return;
-	    focusComp.remove(clazz);
-	    if (focusComp.size() <= 0) {
-		entity.removeComponent(EventFocusComponent.class);
-	    }
-	}
+        EventFocusComponent focusComp = (EventFocusComponent) entity.getComponent(EventFocusComponent.class);
+        if (hasFocus) {
+            if (focusComp == null) {
+            focusComp = new EventFocusComponent();
+            entity.addComponent(EventFocusComponent.class, focusComp);
+            }
+            focusComp.add(clazz);
+        } else {
+            if (focusComp == null) return;
+            focusComp.remove(clazz);
+            if (focusComp.size() <= 0) {
+            entity.removeComponent(EventFocusComponent.class);
+            }
+        }
     }
 
     /**
@@ -410,8 +411,8 @@ public abstract class EventDistributor implements Runnable {
      * @param entity The entity to check if it is in the focus set.
      */
     private static boolean entityHasFocus (Event event, Entity entity) {
-	EventFocusComponent focusComp = (EventFocusComponent) entity.getComponent(EventFocusComponent.class);
-	if (focusComp == null) return false;
-	return focusComp.containsClassOrSuperclass(event.getClass());
+        EventFocusComponent focusComp = (EventFocusComponent) entity.getComponent(EventFocusComponent.class);
+        if (focusComp == null) return false;
+        return focusComp.containsClassOrSuperclass(event.getClass());
     }
 }

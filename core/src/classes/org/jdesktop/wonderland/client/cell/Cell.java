@@ -196,7 +196,9 @@ public class Cell {
         CellComponent previous = components.put(component.getClass(),component);
         if (previous!=null)
             throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
-        component.setStatus(currentStatus);
+        synchronized(currentStatus) {
+            component.setStatus(currentStatus);
+        }
     }
     
     /**
@@ -506,41 +508,42 @@ public class Cell {
      * @return true if the status was changed, false if the new and previous status are the same
      */
     public boolean setStatus(CellStatus status) {
-        if (currentStatus==status)
-            return false;
-        
-        int ord = status.ordinal();
-        int currentOrd = currentStatus.ordinal();
-        if (ord>currentOrd+1 || ord<currentOrd-1) {
-            int t = currentOrd;
-            int dir = (ord>currentOrd ? 1 : -1);
-            setStatus(CellStatus.values()[t+dir]);
-        }
-        
-        currentStatus = status;
-        
-        for(CellComponent component : components.values())
-            component.setStatus(status);
+        synchronized(currentStatus) {
+            if (currentStatus==status)
+                return false;
 
-//        for(CellRenderer renderer : cellRenderers.values()) {
-//            renderer.setStatus(status);
-//        }
-        
-        switch(status) {
-            case DISK :
-                if (transformChangeListeners!=null) {
-                    transformChangeListeners.clear();
-                    transformChangeListeners = null;
-                }
-                
-                if (components!=null) {
-                    components.clear();
-                }
-                break;
+            int ord = status.ordinal();
+            int currentOrd = currentStatus.ordinal();
+            if (ord>currentOrd+1 || ord<currentOrd-1) {
+                int t = currentOrd;
+                int dir = (ord>currentOrd ? 1 : -1);
+                setStatus(CellStatus.values()[t+dir]);
+            }
+
+            currentStatus = status;
+
+            for(CellComponent component : components.values())
+                component.setStatus(status);
+
+            for(CellRenderer renderer : cellRenderers.values()) {
+                renderer.setStatus(status);
+            }
+
+            switch(status) {
+                case DISK :
+                    if (transformChangeListeners!=null) {
+                        transformChangeListeners.clear();
+                        transformChangeListeners = null;
+                    }
+
+                    if (components!=null) {
+                        components.clear();
+                    }
+                    break;
+            }
+
+            CellManager.getCellManager().notifyCellStatusChange(this, status);
         }
-        
-        CellManager.getCellManager().notifyCellStatusChange(this, status);
-        
         return true;
     }
     
@@ -601,7 +604,10 @@ public class Cell {
         CellRenderer ret = cellRenderers.get(rendererType);
         if (ret==null) {
             ret = createCellRenderer(rendererType);
-            cellRenderers.put(rendererType, ret);
+            if (ret!=null) {
+                cellRenderers.put(rendererType, ret);
+                ret.setStatus(currentStatus);
+            }
         }
         
         return ret;

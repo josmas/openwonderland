@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -319,7 +320,7 @@ public class UniverseService implements UniverseServiceManager, Service {
         private LinkedBlockingQueue<Change> changeList = new LinkedBlockingQueue();
 
         public ChangeApplication() {
-            super("ChangeApplication");
+            super(ThreadManager.getThreadGroup(), "ChangeApplication");
             start();
         }
 

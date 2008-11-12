@@ -29,6 +29,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.mtgame.FrameRateListener;
+import org.jdesktop.mtgame.JBulletPhysicsSystem;
+import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
@@ -123,6 +125,17 @@ public class MainFrame extends javax.swing.JFrame {
      */
     public void addToToolMenu(JMenuItem menuItem) {
         toolsMenu.add(menuItem);
+    }
+
+    /**
+     * Add the specified menu item to the edit menu.
+     *
+     * TODO - design a better way to manage the menus and toolsbars
+     *
+     * @param menuItem
+     */
+    public void addToEditMenu(JMenuItem menuItem) {
+        editMenu.add(menuItem);
     }
 
     /**

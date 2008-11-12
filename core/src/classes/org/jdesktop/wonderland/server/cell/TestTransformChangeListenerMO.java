@@ -26,8 +26,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 public class TestTransformChangeListenerMO implements TransformChangeListenerSrv {
 
-    public void transformChanged(ManagedReference<CellMO> cellRef, CellTransform localTransform, CellTransform localToWorldTransform) {
-        System.out.println("TestTransformChangeListenerMO.transformChanged "+localTransform.getTranslation(null));
+    public void transformChanged(ManagedReference<CellMO> cellRef, CellTransform localTransform, CellTransform worldTransform) {
+        System.out.println("TestTransformChangeListenerMO.transformChanged "+localTransform.getTranslation(null)+"  "+worldTransform.getTranslation(null));
     }
 
 }

@@ -80,6 +80,7 @@ public class ChannelComponentMO extends CellComponentMO {
         dm.removeObject(channel);
         
         cellSender=null;
+        cellChannelRef = null;
     }  
     
     @Override

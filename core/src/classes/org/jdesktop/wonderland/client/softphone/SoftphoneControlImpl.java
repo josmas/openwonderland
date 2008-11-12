@@ -32,6 +32,7 @@ import java.io.OutputStream;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ThreadManager;
 
 public class SoftphoneControlImpl {
     private static final Logger logger =
@@ -638,7 +639,7 @@ public class SoftphoneControlImpl {
         }
         
         public void start() {
-            anim = new Thread(this);
+            anim = new Thread(ThreadManager.getThreadGroup(), this);
             anim.start();
         }
         
