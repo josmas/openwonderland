@@ -27,7 +27,7 @@
             <fileset dir=".">
                 <include name="**/dist/runner/**"/>
             </fileset>
-            <mapper type="regexp" from="^.*?[\\/]disti[\\/]runner[\\/](.*)"
+            <mapper type="regexp" from="^.*?[\\/]dist[\\/]runner[\\/](.*)"
                                   to="\1"/>
         </copy>
     </target>
