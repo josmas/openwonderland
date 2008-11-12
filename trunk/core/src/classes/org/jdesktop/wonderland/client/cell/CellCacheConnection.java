@@ -193,9 +193,6 @@ public class CellCacheConnection extends BaseConnection {
          */
         public void deleteCell(CellID cellID);
         
-        public void moveCell(CellID cellID,
-                             CellTransform cellTransform);
-        
     }
     
 }

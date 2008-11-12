@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.cell;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -39,4 +40,10 @@ public interface CellRenderer {
      * @param worldTransfrm the cell world transform
      */
     public void cellTransformUpdate(CellTransform worldTransform);
+
+    /**
+     * Notify the renderer of a cell status change
+     * @param status
+     */
+    public void setStatus(CellStatus status);
 }

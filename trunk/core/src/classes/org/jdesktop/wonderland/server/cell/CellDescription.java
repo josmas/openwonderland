@@ -17,18 +17,16 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.jme.bounding.BoundingVolume;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A light weight container for perfomance sensiteive cell data. Used to provide in memory access to
  * some portion of cell data without requiring a Darkstar database access.
- * 
+ *
  * @author paulby
  */
-@ExperimentalAPI
+@InternalAPI
 public interface CellDescription {
     
     /**
@@ -41,39 +39,39 @@ public interface CellDescription {
      * Returns the time stamp for when the contents was last modified
      * @return
      */
-    public long getContentsTimestamp();
+//    public long getContentsTimestamp();
     
     /**
      * Returns the time stamp for when the transform was last modified
      * @return
      */
-    public long getTransformTimestamp();
+//    public long getTransformTimestamp();
     
      /**
      * Returns a copy of the cell's local bounds
      * @return the cells bounds.
      */
-    public BoundingVolume getLocalBounds();
+//    public BoundingVolume getLocalBounds();
     
     /**
      * Returns a copy of the cell's world bounds
      * @return
      */
-    public BoundingVolume getWorldBounds();
+//    public BoundingVolume getWorldBounds();
     
     /**
      * Set the world bounds
      * @param worldBounds
      */
-    public void setWorldBounds(BoundingVolume worldBounds);
+//    public void setWorldBounds(BoundingVolume worldBounds);
     
     /**
      * Returns a copy of the cell's current transform
      * @return the cells transform.
      */
-    public CellTransform getLocalTransform();
-    
-    void setLocalTransform(CellTransform localTransform, long timestamp);
+//    public CellTransform getLocalTransform();
+//
+//    void setLocalTransform(CellTransform localTransform, long timestamp);
 
     /**
      * Mark the given objectClass as dirty storing the updated Object and
@@ -92,17 +90,17 @@ public interface CellDescription {
      * Return the cells priority
      * @return
      */
-    public short getPriority();
+//    public short getPriority();
     
     /**
      * Return the class of the cell represented by this mirror
      * @return
      */
-    public Class getCellClass();
+//    public Class getCellClass();
     
     /**
      * Return true if this is a movable cell, false if its static
      * @return
      */
-    public boolean isMovable();
+//    public boolean isMovable();
 }

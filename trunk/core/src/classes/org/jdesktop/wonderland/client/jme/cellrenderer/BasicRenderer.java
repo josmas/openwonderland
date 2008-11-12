@@ -17,28 +17,36 @@
  */
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
-import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import com.jme.util.resource.ResourceLocator;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
+import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.JMECollisionSystem;
+import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
-import org.jdesktop.mtgame.PostEventCondition;
+import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -51,6 +59,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 @ExperimentalAPI
 public abstract class BasicRenderer implements CellRendererJME {
+    /** <server name>:<port> of the web server */
+    private String serverHostAndPort;
     
     protected static Logger logger = Logger.getLogger(BasicRenderer.class.getName());
     protected Cell cell;
@@ -86,9 +96,11 @@ public abstract class BasicRenderer implements CellRendererJME {
 
                         thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(cell));
 
-                        if (parentEntity!=null)
+                        if (parentEntity!=null) {
+//                            System.err.println("ADDING to parent "+parentEntity+"  "+thisEntity);
                             parentEntity.addEntity(thisEntity);
-                        else {
+                        } else {
+//                            System.err.println("ADDING ROOT "+thisEntity);
                             ClientContextJME.getWorldManager().addEntity(thisEntity);
                         }
 
@@ -167,11 +179,25 @@ public abstract class BasicRenderer implements CellRendererJME {
             RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
             entity.addComponent(RenderComponent.class, rc);
 
-            JMECollisionSystem collisionSystem = (JMECollisionSystem)
-                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
+//            JMECollisionSystem collisionSystem = (JMECollisionSystem)
+//                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
+//            JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
+//                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
+//            JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)
+//                    ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
 
-            CollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
-            entity.addComponent(CollisionComponent.class, cc);
+            WonderlandSession session = cell.getCellCache().getSession();
+            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(LoginManager.find(session), "Default");
+
+            if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
+                CollisionComponent cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
+                entity.addComponent(CollisionComponent.class, cc);
+            } else {
+                logger.warning("Unsuppoerted CollisionSystem "+collisionSystem);
+            }
+
+            // TODO Physics setup
+//            PhysicsSystem physicsSystem = ClientContextJME.getPhysicSystem(session, "Default");
         }
 
     }
@@ -195,7 +221,7 @@ public abstract class BasicRenderer implements CellRendererJME {
     
     public Entity getEntity() {
         synchronized(this) {
-            System.out.println("Get Entity "+this.getClass().getName());
+            logger.fine("Get Entity "+this.getClass().getName());
             if (entity==null)
                 entity = createEntity();
         }
@@ -207,7 +233,105 @@ public abstract class BasicRenderer implements CellRendererJME {
             moveProcessor.cellMoved(worldTransform);
         }
     }
-    
+
+    /**
+     * Given a url, determine and return the full asset URL.
+     * 
+     * @param origURL
+     * @return
+     * @throws java.net.MalformedURLException
+     */
+    protected URL getAssetURL(String origURL) throws MalformedURLException {
+        // TODO: fix me?
+        if (!origURL.startsWith("wla")) {
+            return new URL(origURL);
+        }
+
+        // annotate wla URIs with the server name and port
+        if (serverHostAndPort == null) {
+            WonderlandSession session = cell.getCellCache().getSession();
+            LoginManager manager = LoginManager.find(session);
+            serverHostAndPort = manager.getServerNameAndPort();
+        }
+
+        try {
+            AssetURI uri = new AssetURI(origURL).getAnnotatedURI(serverHostAndPort);
+            return uri.toURL();
+        } catch (URISyntaxException use) {
+            MalformedURLException mue =
+                    new MalformedURLException("Error creating asset URI");
+            mue.initCause(use);
+            throw mue;
+        }
+    }
+
+    /**
+     * JME Asset locator using WL Asset manager
+     */
+    public class AssetResourceLocator implements ResourceLocator {
+
+        private String modulename;
+        private String path;
+
+        /**
+         * Locate resources for the given file
+         * @param url
+         */
+        public AssetResourceLocator(URL url) {
+            // The modulename can either be in the "user info" field or the
+            // "host" field. If "user info" is null, then use the host name.
+
+            if (url.getUserInfo() == null) {
+                modulename = url.getHost();
+            }
+            else {
+                modulename = url.getUserInfo();
+            }
+            path = url.getPath();
+            path = path.substring(0, path.lastIndexOf('/')+1);
+        }
+
+        public URL locateResource(String resource) {
+//            System.err.println("Looking for resource "+resource);
+//            System.err.println("Module "+modulename+"  path "+path);
+            try {
+                if (resource.startsWith("/")) {
+                    URL url = getAssetURL("wla://"+modulename+resource);
+//                    System.err.println("Using alternate "+url.toExternalForm());
+                    return url;
+                } else {
+                    String urlStr = trimUrlStr("wla://"+modulename+path + resource);
+
+                    URL url = getAssetURL(urlStr);
+//                    System.err.println(url.toExternalForm());
+                    return url;
+                }
+            } catch (MalformedURLException ex) {
+                logger.log(Level.SEVERE, "Unable to locateResource "+resource, ex);
+                return null;
+            }
+        }
+
+        /**
+         * Trim ../ from url
+         * @param urlStr
+         */
+        private String trimUrlStr(String urlStr) {
+            int pos = urlStr.indexOf("/../");
+            if (pos==-1)
+                return urlStr;
+
+            StringBuilder buf = new StringBuilder(urlStr);
+            int start = pos;
+            while(buf.charAt(--start)!='/') {}
+            buf.replace(start, pos+4, "/");
+//            System.out.println("Trimmed "+buf.toString());
+
+           return buf.toString();
+        }
+
+    }
+
     /**
      * An mtgame ProcessorCompoenent to process cell moves.
      */

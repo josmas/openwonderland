@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import java.awt.event.ActionEvent;
+import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
 import imi.loaders.repository.Repository;
 import imi.scene.processors.JSceneAWTEventProcessor;
 import imi.scene.processors.JSceneEventProcessor;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,14 +31,21 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.FrameRateListener;
+import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
+import org.jdesktop.mtgame.JBulletPhysicsSystem;
+import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
@@ -46,6 +56,7 @@ import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 
 /**
  *
@@ -96,7 +107,9 @@ public class JmeClientMain {
         }
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
+        worldManager.addUserData(Repository.class, new Repository(worldManager));
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
+
         createUI(worldManager);
 
         // Register our loginUI for login requests
@@ -108,7 +121,7 @@ public class JmeClientMain {
         frame.addServerURLListener(new ServerURLListener() {
             public void serverURLChanged(final String serverURL) {
                 // run in a new thread so we don't block the AWT thread
-                new Thread(new Runnable() {
+                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
                     public void run() {
                         try {
                             loadServer(serverURL);
@@ -121,13 +134,27 @@ public class JmeClientMain {
             }
 
             public void logout() {
-                new Thread(new Runnable() {
+                new Thread(ThreadManager.getThreadGroup(), new Runnable() {
                     public void run() {
                         JmeClientMain.this.logout();
                     }
                 }).start();
             }
         });
+
+        JMenuItem physicsMI = new JCheckBoxMenuItem("Physics Enabled");
+        physicsMI.setSelected(false);
+        physicsMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                PhysicsSystem phySystem = ClientContextJME.getPhysicsSystem(LoginManager.find(curSession), "Default");
+                if (phySystem instanceof JBulletPhysicsSystem) {
+                    ((JBulletPhysicsSystem)phySystem).setStarted(((JCheckBoxMenuItem)e.getSource()).isSelected());
+                } else {
+                    logger.severe("Unsupported physics system "+phySystem);
+                }
+            }
+        });
+        frame.addToEditMenu(physicsMI);
 
         // connect to the default server
         try {
@@ -137,9 +164,6 @@ public class JmeClientMain {
                        serverURL, ioe);
         }
         
-        // Low level Federation testing
-//        ClientManager clientManager2 = new ClientManager(serverName, Integer.parseInt(serverPort), userName+"2");
-        
     }
 
     protected void loadServer(String serverURL) throws IOException {
@@ -147,6 +171,14 @@ public class JmeClientMain {
 
         // get the login manager for the given server
         LoginManager lm = LoginManager.getInstance(serverURL);
+
+        // Register default collision and physics systems for this session
+        JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
+                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
+        JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)
+                ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
+        ClientContextJME.addCollisionSystem(lm, "Default", collisionSystem);
+        ClientContextJME.addPhysicsSystem(lm, "Default", physicsSystem);
 
         // create a new session
         try {
@@ -164,10 +196,21 @@ public class JmeClientMain {
             return;
         }
 
+        // Listen for session disconnected and remove session physics and collision systems
+        curSession.addSessionStatusListener(new SessionStatusListener() {
+            public void sessionStatusChanged(WonderlandSession session, Status status) {
+                if (status==Status.DISCONNECTED) {
+                    ClientContextJME.removeAllPhysicsSystems(LoginManager.find(session));
+                    ClientContextJME.removeAllCollisionSystems(LoginManager.find(session));
+                }
+            }
+        });
+
         // set the primary login manager and session
         LoginManager.setPrimary(lm);
         lm.setPrimarySession(curSession);
         frame.setServerURL(serverURL);
+
     }
 
     protected void logout() {

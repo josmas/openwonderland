@@ -36,6 +36,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -216,6 +217,10 @@ class ViewCache {
 
     class CacheProcessor extends Thread {
         boolean quit = false;
+
+        public CacheProcessor() {
+            super(ThreadManager.getThreadGroup(),"CacheProcessor");
+        }
 
         public void run() {
             Collection<CacheUpdate> updateList;
