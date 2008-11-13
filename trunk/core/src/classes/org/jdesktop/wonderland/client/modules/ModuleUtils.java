@@ -12,7 +12,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.modules.ModuleArtList;
 import org.jdesktop.wonderland.common.modules.ModuleChecksums;
+import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
 
 /**
@@ -26,6 +28,44 @@ public class ModuleUtils {
     
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(ModuleUtils.class.getName());
+
+    /**
+     * Asks the web server for a list of all modules. Returned is a ModuleList
+     * object with the basic module information (ModuleInfo) objects for all
+     * modules.
+     * 
+     * @return A list of modules
+     */
+    public static ModuleList fetchModuleList(String serverURL) {
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            URL url = new URL(new URL(serverURL), MODULE_PREFIX + "list/get/installed");
+            return ModuleList.decode(new InputStreamReader(url.openStream()));
+        } catch (java.lang.Exception excp) {
+            /* Log an error and return null */
+            logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
+            return new ModuleList();
+        }
+    }
+    
+    /**
+     * Asks the web server for a list of all artwork assets in a given module.
+     * Returned is a ModuleArtList object identifying each object.
+     * 
+     * @param moduleName The name of the module
+     * @return A list of module art
+     */
+    public static ModuleArtList fetchModuleArtList(String serverURL, String moduleName) {
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/art/get");
+            return ModuleArtList.decode(new InputStreamReader(url.openStream()));
+        } catch (java.lang.Exception excp) {
+            /* Log an error and return null */
+            logger.log(Level.WARNING, "[MODULES] FETCH MODULE ART Failed", excp);
+            return new ModuleArtList();
+        }
+    }
     
     /**
      * Asks the web server for the module's repository information given the
@@ -36,7 +76,7 @@ public class ModuleUtils {
      * @param moduleName The unique name of a module
      * @return The repository information for a module
      */
-    public static ModuleRepository fetchModuleModuleRepository(String serverURL, String moduleName) {
+    public static ModuleRepository fetchModuleRepositories(String serverURL, String moduleName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/repository");
@@ -99,7 +139,7 @@ public class ModuleUtils {
      * @return <server name>:<port>
      * @throw MalformedURLException If the given string URL is invalid
      */
-    public static String getServerFromURL(String serverURL) throws MalformedURLException {
+    private static String getServerFromURL(String serverURL) throws MalformedURLException {
         URL url = new URL(serverURL);
         String host = url.getHost();
         int port = url.getPort();

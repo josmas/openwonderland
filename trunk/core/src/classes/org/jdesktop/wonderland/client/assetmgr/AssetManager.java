@@ -43,10 +43,10 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.assetmgr.TrackingInputStream.ProgressListener;
+import org.jdesktop.wonderland.client.modules.CachedModule;
 import org.jdesktop.wonderland.common.modules.Checksum;
-import org.jdesktop.wonderland.client.modules.ModuleCache;
-import org.jdesktop.wonderland.client.modules.ModuleCacheList;
 import org.jdesktop.wonderland.client.modules.RepositoryUtils;
+import org.jdesktop.wonderland.client.modules.ServerCache;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.ResourceURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -198,9 +198,9 @@ public class AssetManager {
          * This consists of both the Asset URI and the desired checksum.
          */
         String checksum = null;
-        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache(serverURL);
+        CachedModule cache = ServerCache.getServerCache(serverURL).getModule(moduleName);
         if (cache != null) {
-            ModuleChecksums checksums = cache.getModuleChecksums(moduleName);
+            ModuleChecksums checksums = cache.getModuleChecksums();
             logger.fine("[ASSET] GET checksums for asset " + path + " in " + checksums);
             if (checksums != null) {
                 Checksum c = checksums.getChecksums().get(path);
@@ -450,8 +450,8 @@ public class AssetManager {
          */
         String moduleName = asset.getResourceURI().getModuleName();
         String serverURL = asset.getResourceURI().getServerURL();
-        ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache(serverURL);
-        ModuleRepository list = cache.getModuleRepository(moduleName);
+        CachedModule cache = ServerCache.getServerCache(serverURL).getModule(moduleName);
+        ModuleRepository list = cache.getModuleRepositories();
         if (list == null) {
             logger.warning("[ASSET] FETCH unable to locate repository list, cache: " + cache);
             return false;
