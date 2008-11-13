@@ -18,16 +18,20 @@
 
 package org.jdesktop.wonderland.client.cell;
 
+import com.jme.intersection.CollisionResults;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.Geometry;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.selection.SelectionManager;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -88,7 +92,6 @@ public class SelectableComponent extends CellComponent {
             Logger logger = Logger.getLogger(SelectableComponent.class.getName());
             SelectionManager manager = SelectionManager.getSelectionManager();
 
-            logger.warning("SELECT EVENT");
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
                 if (mbe.isPressed() == true) {

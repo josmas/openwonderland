@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
-import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
@@ -28,9 +27,12 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.JMECollisionSystem;
+import org.jdesktop.mtgame.JBulletCollisionComponent;
+import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
+import org.jdesktop.mtgame.JBulletPhysicsComponent;
+import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
-import org.jdesktop.mtgame.PostEventCondition;
+import org.jdesktop.mtgame.PhysicsComponent;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
@@ -167,11 +169,19 @@ public abstract class BasicRenderer implements CellRendererJME {
             RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
             entity.addComponent(RenderComponent.class, rc);
 
-            JMECollisionSystem collisionSystem = (JMECollisionSystem)
-                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
-
-            CollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
+//            JMECollisionSystem collisionSystem = (JMECollisionSystem)
+//                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
+            JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
+                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
+            JBulletCollisionComponent cc = collisionSystem.createCollisionComponent(rootNode);
             entity.addComponent(CollisionComponent.class, cc);
+//                JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)
+// ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
+//                JBulletPhysicsComponent pc = physicsSystem.createPhysicsComponent(cc);
+//                if (pc != null) {
+//                    pc.setMass(0.01f);
+//                    entity.addComponent(PhysicsComponent.class, pc);
+//                }
         }
 
     }

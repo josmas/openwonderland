@@ -140,7 +140,6 @@ public class MovableComponent extends CellComponent {
      */
     public void localMoveRequest(CellTransform transform) {
         localMoveRequest(transform, null);
-        logger.warning("[MOVEABLE] local move request " + transform.getTranslation(null).toString());
         cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.LOCAL);
     }
     
@@ -150,7 +149,6 @@ public class MovableComponent extends CellComponent {
      * @param transform
      */
     protected void serverMoveRequest(CellTransform transform) {
-        logger.warning("[MOVEABLE] Server move request " + transform.getTranslation(null).toString());
         cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.REMOTE);
 //        if (cell.getTransform()!=null)
 //            System.out.println("serverMoveRequest "+cell.getTransform().getTranslation(null)+"  "+cell);
