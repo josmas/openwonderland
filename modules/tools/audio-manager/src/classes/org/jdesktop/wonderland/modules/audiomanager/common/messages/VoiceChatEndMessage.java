@@ -23,22 +23,10 @@ import org.jdesktop.wonderland.common.messages.Message;
  *
  * @author jprovino
  */
-public class VoiceChatMessage extends Message {
-
-    private String group;
-
-    public enum ChatType {
-	SECRET,
-	PRIVATE,
-	PUBLIC
-    }
-
-    public VoiceChatMessage(String group) {
-	this.group = group;
-    }
-
-    public String getGroup() {
-	return group;
+public class VoiceChatEndMessage extends VoiceChatMessage {
+    
+    public VoiceChatEndMessage(String group) {
+	super(group);
     }
 
 }

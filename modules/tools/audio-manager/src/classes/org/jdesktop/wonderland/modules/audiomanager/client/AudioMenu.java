@@ -35,8 +35,9 @@ public class AudioMenu extends javax.swing.JPanel {
     }
 
     public static JMenuItem getAudioMenu(AudioMenuListener listener) {
-        if (audioM==null)
+        if (audioM==null) {
             audioM = new AudioMenu(listener);
+	}
 
         return audioM.audioMenu;
     }
@@ -60,6 +61,7 @@ public class AudioMenu extends javax.swing.JPanel {
         reconnectSoftphoneMenuItem = new javax.swing.JMenuItem();
         transferCallMenuItem = new javax.swing.JMenuItem();
         logAudioProblemMenuItem = new javax.swing.JMenuItem();
+        voiceChatMenuItem = new javax.swing.JMenuItem();
 
         audioMenu.setText("Audio");
         audioMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -108,6 +110,15 @@ public class AudioMenu extends javax.swing.JPanel {
         });
         audioMenu.add(logAudioProblemMenuItem);
 
+        voiceChatMenuItem.setText("Voice Chat");
+        voiceChatMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                voiceChatMenuItemActionPerformed(evt);
+            }
+        });
+
+        audioMenu.add(voiceChatMenuItem);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -150,6 +161,12 @@ public class AudioMenu extends javax.swing.JPanel {
         }
 }//GEN-LAST:event_logAudioProblemMenuItemActionPerformed
 
+    private void voiceChatMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_voiceChatMenuItemActionPerformed
+        if (audioMenuListener != null) {
+            audioMenuListener.voiceChat();
+        }
+}//GEN-LAST:event_voiceChatMenuItemActionPerformed
+
     private void audioMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_audioMenuActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_audioMenuActionPerformed
@@ -162,6 +179,7 @@ public class AudioMenu extends javax.swing.JPanel {
     private javax.swing.JCheckBoxMenuItem softphoneMenuItem;
     private javax.swing.JMenuItem testAudioMenuItem;
     private javax.swing.JMenuItem transferCallMenuItem;
+    private javax.swing.JMenuItem voiceChatMenuItem;
     // End of variables declaration//GEN-END:variables
 
 }

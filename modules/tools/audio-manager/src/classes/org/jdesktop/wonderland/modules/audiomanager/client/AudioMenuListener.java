@@ -34,4 +34,6 @@ public interface AudioMenuListener {
 
     public void logAudioProblem();
 
+    public void voiceChat();
+
 }

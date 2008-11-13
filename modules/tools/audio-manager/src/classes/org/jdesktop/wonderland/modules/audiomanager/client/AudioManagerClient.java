@@ -46,6 +46,9 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellID
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
 
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
@@ -96,7 +99,7 @@ public class AudioManagerClient extends BaseConnection implements
 
         JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
         
-	logger.fine("Starting AudioManagerCLient");
+	logger.warning("Starting AudioManagerCLient");
     }
 
     @Override
@@ -146,7 +149,11 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void logAudioProblem() {
-        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+        SoftphoneControlImpl.getInstance().logAudioProblem();
+    }
+
+    public void voiceChat() {
+	new VoiceChatDialog(this, session, cellID);
     }
 
     public void softphoneVisible(boolean isVisible) {
@@ -214,6 +221,37 @@ public class AudioManagerClient extends BaseConnection implements
 	    } catch (IOException e) {
 		logger.warning(e.getMessage());
 	    }
+	} else if (message instanceof VoiceChatJoinRequestMessage) {
+	   VoiceChatJoinRequestMessage msg = (VoiceChatJoinRequestMessage) message;
+
+	   VoiceChatDialog voiceChatDialog =
+                VoiceChatDialog.getVoiceChatDialog(msg.getGroup());
+
+            if (voiceChatDialog == null) {
+	        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+                voiceChatDialog = new VoiceChatDialog(this, session, cellID);
+            }
+
+            voiceChatDialog.requestToJoin(msg.getGroup(), msg.getCaller(), 
+		msg.getCalleeList(), msg.getChatType());
+	} else if (message instanceof VoiceChatBusyMessage) {
+	    VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
+
+	    new VoiceChatBusyDialog(msg.getGroup(), msg.getCaller());
+	} else if (message instanceof VoiceChatInfoResponseMessage) {
+	    VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
+
+            VoiceChatDialog voiceChatDialog =
+                VoiceChatDialog.getVoiceChatDialog(msg.getGroup());
+
+            logger.fine("response " + msg.getChatInfo());
+
+            if (voiceChatDialog == null) {
+                logger.warning(
+                    "No voiceChatDialog for " + msg.getGroup());
+            } else {
+                voiceChatDialog.setChatters(msg.getChatInfo());
+            }
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}

@@ -35,7 +35,15 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellID
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatEndMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
 
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -94,84 +102,75 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     public void processVoiceChatMessage(WonderlandClientSender sender, 
 	    VoiceChatMessage message) {
 
-        VoiceChatMessage.ActionType action = message.getActionType();
- 
-	if (action == VoiceChatMessage.ActionType.GET_CHAT_INFO_REQUEST) {
-	    sendVoiceChatInfo(sender, message);
-	    return;
-	}
-
-	if (action == VoiceChatMessage.ActionType.BUSY) {
-	    sendVoiceChatBusyMessage(sender, message);
-	    return;
-	}
-
 	String group = message.getGroup();
-	String caller = message.getCaller();
-	String calleeList = message.getCalleeList();
-	VoiceChatMessage.ChatType chatType = message.getChatType();
 
-	logger.fine(action + " group " + group + " caller " + caller 
-	    + " calleeList " + calleeList + " " + chatType);
+	if (message instanceof VoiceChatInfoRequestMessage) {
+	    sendVoiceChatInfo(sender, group);
+	    return;
+	}
+
+	if (message instanceof VoiceChatBusyMessage) {
+	    sendVoiceChatBusyMessage(sender, (VoiceChatBusyMessage) message);
+	    return;
+	}
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	AudioGroup audioGroup = vm.getAudioGroup(group);
 
-	if (audioGroup == null) {
-	    if (action == VoiceChatMessage.ActionType.LEAVE ||
-		    action == VoiceChatMessage.ActionType.END) {
-
-		logger.warning("Audio group is null");
+	if (message instanceof VoiceChatLeaveMessage) {
+	    if (audioGroup == null) {
+		logger.info("audioGroup is null");
 		return;
 	    }
 
-	    if (calleeList == null || calleeList.length() == 0) {
+	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
+
+	    Player player = vm.getPlayer(msg.getCaller());
+
+	    if (player == null) {
+		logger.warning("No player for " + msg.getCaller());
 		return;
 	    }
-
-	    AudioGroupSetup setup = new AudioGroupSetup();
-	    setup.spatializer = new FullVolumeSpatializer();
-	    setup.spatializer.setAttenuator(
-		DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
-	    audioGroup = vm.createAudioGroup(group, setup);
-	} else {
-	    if (action == VoiceChatMessage.ActionType.LEAVE) {
-	        Player player = vm.getPlayer(caller);
-
-	        if (player == null) {
-		    logger.warning("No player for " + caller);
-		    return;
-		}
 	    
-		removePlayerFromAudioGroup(audioGroup, player);
+	    removePlayerFromAudioGroup(audioGroup, player);
 
-		if (audioGroup.getPlayers().size() == 0) {
-		    endVoiceChat(vm, audioGroup);
-		}
-
-		vm.dump("all");
-		return;
-	    } else if (action == VoiceChatMessage.ActionType.END) {
+	    if (audioGroup.getPlayers().size() == 0) {
 		endVoiceChat(vm, audioGroup);
-		vm.dump("all");
-		return;
 	    }
 
-	    if (calleeList.length() == 0) {
-		vm.removeAudioGroup(group);
-		return;
-	    }
-	}
-
-	if (action != VoiceChatMessage.ActionType.JOIN) {
-	    logger.warning("Invalid action type " + action);
+	    vm.dump("all");
 	    return;
 	}
 
-	String players[] = calleeList.split(" ");
+	if (message instanceof VoiceChatEndMessage) {
+	    if (audioGroup == null) {
+		logger.info("audioGroup is null");
+		return;
+	    }
 
-	boolean added = addPlayerToChatGroup(vm, audioGroup, caller, chatType);
+	    endVoiceChat(vm, audioGroup);
+	    vm.dump("all");
+	    return;
+	}
+
+	if (message instanceof VoiceChatJoinMessage == false) {
+	    logger.warning("Invalid message type " + message);
+	    return;
+	}
+
+	VoiceChatJoinMessage msg = (VoiceChatJoinMessage) message;
+
+	if (audioGroup == null) {
+	    AudioGroupSetup setup = new AudioGroupSetup();
+	    setup.spatializer = new FullVolumeSpatializer();
+	    setup.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+	    audioGroup = vm.createAudioGroup(group, setup);
+	}
+
+	String players[] = msg.getCalleeList().split(" ");
+
+	boolean added = addPlayerToChatGroup(vm, audioGroup, msg.getCaller(), msg.getChatType());
 
 	if (added == false && players.length == 0) {
 	    endVoiceChat(vm, audioGroup);
@@ -199,8 +198,11 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		    }
 		}
 
-	        requestPlayerJoinAudioGroup(sender, group, null,
-		    players[i], calleeList, chatType);
+		logger.fine("Asking " + players[i] + " to join audio group " + group + " chatType " 
+	    	    + msg.getChatType());
+
+	        requestPlayerJoinAudioGroup(sender, group, msg.getCaller(),
+		    msg.getCalleeList(), msg.getChatType());
 	    }
 	}
 
@@ -260,26 +262,21 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     }
 
     private void requestPlayerJoinAudioGroup(WonderlandClientSender sender,
-	    String group, String caller, String callee, String calleeList, 
+	    String group, String caller, String calleeList, 
 	    VoiceChatMessage.ChatType chatType) {
 
-	logger.fine("Asking " + callee + " to join audio group " + group + " chatType " 
-	    + chatType);
-
-	VoiceChatMessage message = new VoiceChatMessage(
-	     VoiceChatMessage.ActionType.REQUEST_TO_JOIN, null, group, 
-		caller, calleeList, chatType);
+	VoiceChatMessage message = new VoiceChatJoinRequestMessage(group, 
+	    caller, calleeList, chatType);
 
         sender.send(message);
     }
 
     private void sendVoiceChatBusyMessage(WonderlandClientSender sender,
-	    VoiceChatMessage message) {
+	    VoiceChatBusyMessage message) {
 
 	logger.fine("Sending busy message to " + message.getCaller());
 
-	VoiceChatMessage msg = new VoiceChatMessage(
-	     VoiceChatMessage.ActionType.BUSY, null,
+	VoiceChatMessage msg = new VoiceChatBusyMessage(
 	     message.getGroup(), message.getCaller(), message.getCalleeList(),
 	     message.getChatType());
 
@@ -287,13 +284,13 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     }
 
     private void sendVoiceChatInfo(WonderlandClientSender sender,
-	    VoiceChatMessage message) {
+	    String group) {
 
 	String chatInfo = "";
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	AudioGroup audioGroup = vm.getAudioGroup(message.getGroup());
+	AudioGroup audioGroup = vm.getAudioGroup(group);
 
 	if (audioGroup != null) {
 	    ConcurrentHashMap<Player, AudioGroupPlayerInfo> players =
@@ -308,11 +305,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    }
 	}
 
-        VoiceChatMessage msg = new VoiceChatMessage(
-             VoiceChatMessage.ActionType.GET_CHAT_INFO_RESPONSE, null,
-	     message.getGroup());
-	    
-	msg.setChatInfo(chatInfo);
+        VoiceChatMessage msg = new VoiceChatInfoResponseMessage(group, chatInfo);
 
         sender.send(msg);
     }
