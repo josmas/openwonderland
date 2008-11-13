@@ -65,13 +65,6 @@ import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
 @ExperimentalAPI
 public class AssetManager {
     
-    /*
-     * The version of the asset manager, controls the location of the cache file:
-     * Wonderland v0.3-v0.4: No version
-     * Wonderland v0.4: Version 2
-     */
-    private static final int AM_VERSION = 2;
-    
     /* The error logger for this class */
     private Logger logger = Logger.getLogger(AssetManager.class.getName());
     
@@ -150,24 +143,12 @@ public class AssetManager {
     }
     
     /**
-     * Returns the version of the asset manager.
-     * 
-     * @return The asset manager version
-     */
-    public int getVersion() {
-        return AssetManager.AM_VERSION;
-    }
-    
-    /**
      * Returns the name of the directory in which the assets are cache.
      * 
      * @return The asset manager cache directory
      */
     public String getCacheDirectory() {
-        String defaultName = WonderlandConfigUtil.getWonderlandDir() +
-                File.separatorChar + "v" + this.getVersion() + File.separatorChar +
-                "cache";
-        return defaultName;
+        return WonderlandConfigUtil.getWonderlandDir() + File.separatorChar + "cache";
     }
     
     /**
