@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.ant;
 
+import org.jdesktop.wonderland.common.modules.ModuleUploader;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
