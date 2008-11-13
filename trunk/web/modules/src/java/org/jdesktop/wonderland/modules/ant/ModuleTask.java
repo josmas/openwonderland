@@ -573,6 +573,10 @@ public class ModuleTask extends Jar {
         public void addConfiguredCellSetup(CellSetup cellSetup) {
             addConfiguredService(cellSetup);
         }
+        
+        public void addConfiguredCellExtensionType(CellExtensionType cellExtensionType) {
+            addConfiguredService(cellExtensionType);
+        }
     }
     
     public static class ServerPlugin extends Service {
@@ -586,7 +590,13 @@ public class ModuleTask extends Jar {
             setType("org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI");
         }
     }
-    
+ 
+    public static class CellExtensionType extends Service {
+        public CellExtensionType() {
+            setType("org.jdesktop.wonderland.common.cell.setup.spi.CellExtensionTypeSPI");
+        }
+    }
+        
     public static class ClientJar extends ModuleJar {
         public void addConfiguredClientPlugin(ClientPlugin clientPlugin) {
             addConfiguredService(clientPlugin);
