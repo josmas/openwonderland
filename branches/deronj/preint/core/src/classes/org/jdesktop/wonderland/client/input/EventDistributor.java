@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.input.InputManager.FocusChange;
+import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 
 /**
  * The abstract base class for an Event Distributor singleton. The Entity Distributor is part of the input 
@@ -57,6 +58,19 @@ public abstract class EventDistributor implements Runnable {
             this.event = event;
             this.pickInfo = pickInfo;
         }
+    }
+
+    /** 
+     * Used for SwingEnterExit3D events.
+     * Note: this type of event has no pickInfo but has an entity./
+     */
+    private static class EntrySwingEnterExit extends Entry {
+	/** The entity. */
+	Entity entity;
+        EntrySwingEnterExit (Event event, Entity entity) {
+	    super(event, null);
+	    this.entity = entity;
+	}
     }
 
     /** The state of the propagation state during the traversal. */
@@ -94,19 +108,33 @@ public abstract class EventDistributor implements Runnable {
     }
 
     /**
+     * Add a Wonderland SwingEnterExit3D event to the event distribution queue.
+     * @param event The event to enqueue.
+     * @param entity The event's entity.
+     */
+    void enqueueEvent (SwingEnterExitEvent3D event, Entity entity) {
+	inputQueue.add(new EntrySwingEnterExit(event, entity));
+    }
+
+    /**
      * The run loop of the thread.
      */
     public void run () {
-        while (true) {
-            try {
-            Entry entry = null;
-                    entry = inputQueue.take();
-            processEvent(entry.event, entry.pickInfo);
-                } catch (Exception ex) {
-            ex.printStackTrace();
-            logger.warning("Exception caught in EventDistributor thread. Event is ignored.");
-            }
-        }
+	while (true) {
+	    try {
+		Entry entry = null;
+                entry = inputQueue.take();
+		if (entry instanceof EntrySwingEnterExit) {
+		    EntrySwingEnterExit esee = (EntrySwingEnterExit) entry;
+		    processSwingEnterExitEvent(esee.event, esee.entity);
+		} else {
+		    processEvent(entry.event, entry.pickInfo);
+		}
+            } catch (Exception ex) {
+		ex.printStackTrace();
+		logger.warning("Exception caught in EventDistributor thread. Event is ignored.");
+	    }
+	}
     }
     
     /** 
@@ -115,6 +143,14 @@ public abstract class EventDistributor implements Runnable {
      * @param pickInfo The pick info associated with the event.
      */
     protected abstract void processEvent (Event event, PickInfo pickInfo);
+
+    /** 
+     * The responsibility for determining how to process individual swing enter/exit event types 
+     * is delegated to the subclass.
+     * @param event The event to try to deliver to event listeners.
+     * @param entity The entity associated with the event.
+     */
+    protected abstract void processSwingEnterExitEvent (Event event, Entity entity);
 
     /** 
      * Traverse the list of global listeners to see whether the event should be delivered to any of them. 

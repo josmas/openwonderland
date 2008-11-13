@@ -58,9 +58,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
     }
 
     protected void processEvent (Event event, PickInfo pickInfo) {
-	if (event instanceof MouseEnterExitEvent3D) {
-	    processEnterExitEvent(event, pickInfo);
-	} else if (event instanceof MouseEvent3D) {
+	if (event instanceof MouseEvent3D) {
 	    processMouseKeyboardEvent(event, pickInfo);
 	} else if (event instanceof KeyEvent3D) {
 	    processMouseKeyboardEvent(event, mousePickInfoPrev);
@@ -139,8 +137,20 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	}
     }
 
-    private void processEnterExitEvent (Event event, PickInfo pickInfo) {
-	// TODO
-    }
+    protected void processSwingEnterExitEvent (Event event, Entity entity) {
+	logger.fine("Distributor: received event = " + event + ", entity = " + entity);
 
+	tryGlobalListeners(event);
+
+	// See whether the specified entity wants the event.
+	propState.toParent = false; 
+	tryListenersForEntity(entity, event, propState);
+
+	// See whether any of the picked entity's parents want the event
+	if (propState.toParent) {
+	    logger.fine("Propogating to parents");
+	    tryListenersForEntityParents(entity.getParent(), event, propState);
+	}
+    }
 }
+
