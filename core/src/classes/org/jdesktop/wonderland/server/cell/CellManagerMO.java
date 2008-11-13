@@ -71,7 +71,10 @@ public class CellManagerMO implements ManagedObject, Serializable {
         cm.registerClientHandler(new CellChannelConnectionHandler());
         
         // Register the cell cache message handler
-        cm.registerClientHandler(new CellCacheConnectionHandler());        
+        cm.registerClientHandler(new CellCacheConnectionHandler());
+        
+        // Register the cell hierarchy edit message handler
+        cm.registerClientHandler(new CellEditConnectionHandler());
     }
     
     /**

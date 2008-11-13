@@ -470,7 +470,6 @@ public class LoginManager {
 
         for (JarURI uri : list.getJarURIs()) {
             try {
-                logger.warning("[JARS] " + uri.getURI().toString());
                 urls.add(uri.getURI().toURL());
             } catch (Exception excp) {
                 excp.printStackTrace();

@@ -61,7 +61,7 @@ public class ModuleAssetResource {
     @GET
     public Response getModuleAsset(@PathParam("modulename") String moduleName, @PathParam("path") String path) {
         Logger logger = Logger.getLogger(ModuleAssetResource.class.getName());
-        logger.warning("[ART] In module " + moduleName + " getting " + path);
+        logger.fine("[ART] In module " + moduleName + " getting " + path);
         
         /*
          * If the path has a leading slash, then remove it (this is typically
@@ -95,7 +95,7 @@ public class ModuleAssetResource {
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
-        logger.warning("[ART] Found asset " + path + " in " + root.getAbsolutePath());
+        logger.fine("[ART] Found asset " + path + " in " + root.getAbsolutePath());
         
         /*
          * Strip off the asset type from the path before we look it up
