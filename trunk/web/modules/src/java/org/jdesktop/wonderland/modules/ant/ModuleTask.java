@@ -37,8 +37,8 @@ import org.apache.tools.ant.types.spi.Service;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.zip.ZipOutputStream;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModuleInfo;
-import org.jdesktop.wonderland.modules.ModuleRequires;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleRequires;
 
 /**
  * @author jon

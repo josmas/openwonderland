@@ -31,7 +31,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.client.modules.ModulePluginList;
+import org.jdesktop.wonderland.common.modules.ModulePluginList;
 import org.jdesktop.wonderland.common.JarURI;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;

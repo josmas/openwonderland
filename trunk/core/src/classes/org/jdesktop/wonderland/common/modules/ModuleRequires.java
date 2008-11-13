@@ -16,10 +16,8 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules;
+package org.jdesktop.wonderland.common.modules;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -125,7 +123,7 @@ public class ModuleRequires {
         return (ModuleRequires)ModuleRequires.unmarshaller.unmarshal(is);        
     }
 
-        /**
+    /**
      * Takes the input reader of the XML file and instantiates an instance of
      * the ModuleRequires class
      * <p>
@@ -145,20 +143,5 @@ public class ModuleRequires {
      */
     public void encode(OutputStream os) throws JAXBException {
         ModuleRequires.marshaller.marshal(this, os);
-    }
-    
-    /**
-     * Main method which writes a sample ModuleRequires class to disk
-     */
-    public static void main(String args[]) {
-        try {
-            ModuleRequires requires = new ModuleRequires();
-            ModuleInfo info1 = new ModuleInfo("MPK20 Demo", 1, ModuleInfo.VERSION_UNSET);
-            ModuleInfo info2 = new ModuleInfo("Basic Textures", ModuleInfo.VERSION_UNSET, ModuleInfo.VERSION_UNSET);
-            requires.setRequires(new ModuleInfo[] { info1, info2 });
-            requires.encode(new FileOutputStream(new File("/Users/jordanslott/module-wlm/requires.xml")));
-        } catch (java.lang.Exception excp) {
-            System.out.println(excp.toString());
-        }
     }
 }

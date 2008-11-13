@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules;
+package org.jdesktop.wonderland.common.modules;
 
 import java.io.File;
 import java.io.FileReader;

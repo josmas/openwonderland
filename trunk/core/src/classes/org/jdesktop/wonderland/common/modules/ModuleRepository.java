@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.modules;
+package org.jdesktop.wonderland.common.modules;
 
 import java.io.OutputStream;
 import java.io.Reader;
@@ -50,7 +50,12 @@ import javax.xml.bind.annotation.XmlValue;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="module-repository")
-public class RepositoryList implements Serializable {
+public class ModuleRepository implements Serializable {
+    /*
+     * The special string that denotes the Wonderland server from which the
+     * module was installed should be used.
+     */
+    public static final String WL_SERVER = "%WLSERVER%";
     
     /* An array of module resources, as relative paths within the module */
     @XmlElements({
@@ -77,10 +82,10 @@ public class RepositoryList implements Serializable {
     /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(RepositoryList.class);
-            RepositoryList.unmarshaller = jc.createUnmarshaller();
-            RepositoryList.marshaller = jc.createMarshaller();
-            RepositoryList.marshaller.setProperty("jaxb.formatted.output", true);
+            JAXBContext jc = JAXBContext.newInstance(ModuleRepository.class);
+            ModuleRepository.unmarshaller = jc.createUnmarshaller();
+            ModuleRepository.marshaller = jc.createMarshaller();
+            ModuleRepository.marshaller.setProperty("jaxb.formatted.output", true);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -111,10 +116,10 @@ public class RepositoryList implements Serializable {
     }
     
     /** Default constructor */
-    public RepositoryList() {}
+    public ModuleRepository() {}
     
     /** Constructor that takes an existing ModuleRepository and makes a copy */
-    public RepositoryList(RepositoryList repository) {
+    public ModuleRepository(ModuleRepository repository) {
         /* Set the name of the master repository and add to the list (if not null */
         this.master = (repository.getMaster() != null) ? new Repository(repository.getMaster()) : null;
         
@@ -209,8 +214,8 @@ public class RepositoryList implements Serializable {
      * @throw ClassCastException If the input file does not map to ModuleRepository
      * @throw JAXBException Upon error reading the XML file
      */
-    public static RepositoryList decode(Reader r) throws JAXBException {
-        RepositoryList list = (RepositoryList)RepositoryList.unmarshaller.unmarshal(r);
+    public static ModuleRepository decode(Reader r) throws JAXBException {
+        ModuleRepository list = (ModuleRepository)ModuleRepository.unmarshaller.unmarshal(r);
         list.updateRepositoryList();
         return list;
     }
@@ -222,7 +227,7 @@ public class RepositoryList implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        RepositoryList.marshaller.marshal(this, w);
+        ModuleRepository.marshaller.marshal(this, w);
     }
 
     /**
@@ -232,7 +237,7 @@ public class RepositoryList implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
-        RepositoryList.marshaller.marshal(this, os);
+        ModuleRepository.marshaller.marshal(this, os);
     }
     
     /**

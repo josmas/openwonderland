@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 
 /**
  * The Uninstall class manages all modules that are waiting to be uninstalled.

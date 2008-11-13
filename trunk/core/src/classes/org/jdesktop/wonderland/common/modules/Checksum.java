@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.modules;
+package org.jdesktop.wonderland.common.modules;
 
 import java.io.Reader;
 import java.io.Writer;

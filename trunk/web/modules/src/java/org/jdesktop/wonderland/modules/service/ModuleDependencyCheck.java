@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 
 /**
  * The ModuleDependencyCheck class checks whether the dependencies for a module

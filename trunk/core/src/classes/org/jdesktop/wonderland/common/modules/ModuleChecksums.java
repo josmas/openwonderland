@@ -16,13 +16,11 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules;
+package org.jdesktop.wonderland.common.modules;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -89,39 +87,6 @@ public class ModuleChecksums {
             System.out.println(excp.toString());
         }
     }
-  
-    public static class Checksum {
-        /* The hex-encoded checksum string */
-        @XmlElement(name = "checksum-hex-encoded")
-        public String checksum = null;
-
-        /* The time the resource was last modified on disk, millisecs since epoch */
-        @XmlElement(name = "last-modified")
-        public long lastModified = 0;
-
-        /* The relative name of the resource in the repository */
-        @XmlElement(name = "resource-path")
-        public String pathName = null;
-        
-        /** Default constructor */
-        public Checksum() {
-        }
-        
-        /**
-         * Converts the checksum given as an array of bytes into a hex-encoded
-         * string.
-         * 
-         * @param bytes The checksum as an array of bytes
-         * @return The checksum as a hex-encoded string
-         */
-        public static String toHexString(byte bytes[]) {
-            StringBuffer ret = new StringBuffer();
-            for (int i = 0; i < bytes.length; ++i) {
-                ret.append(Integer.toHexString(0x0100 + (bytes[i] & 0x00FF)).substring(1));
-            }
-            return ret.toString();
-        }
-    }
     
     /** Default constructor */
     public ModuleChecksums() {
@@ -173,7 +138,7 @@ public class ModuleChecksums {
             rc.internalChecksums = new HashMap<String, Checksum>();
             while (iterator.hasNext() == true) {
                 Checksum c = iterator.next();
-                rc.internalChecksums.put(c.pathName, c);
+                rc.internalChecksums.put(c.getPathName(), c);
             }
         }
         else {
@@ -315,9 +280,9 @@ public class ModuleChecksums {
 
                         /* Create a new checksum object and add to the list */
                         Checksum c = new Checksum();
-                        c.lastModified = file.lastModified();
-                        c.pathName = name;
-                        c.checksum = Checksum.toHexString(byteChecksum);
+                        c.setLastModified(file.lastModified());
+                        c.setPathName(name);
+                        c.setChecksum(Checksum.toHexString(byteChecksum));
                         list.put(name, c);
                     } catch (java.io.IOException excp) {
                         // ignore for now
@@ -370,31 +335,5 @@ public class ModuleChecksums {
             }
         }
         return true;
-    }
-    
-    /**
-     * Generates the checksum file for a given directory (given as the first
-     * argument) and writes it out to a file (given as the second argument)
-     */
-    public static void main(String args[]) throws NoSuchAlgorithmException, JAXBException, IOException {
-//        /* Sanity check on the arguments given */
-//        if (args.length < 2) {
-//            System.out.println("usage: java ModuleChecksums <dir> <checksum file>");
-//            System.exit(0);
-//        }
-//     
-//        /* Fetch the arguments */
-//        File root = new File(args[0]);
-//        File file = new File(args[1]);
-
-        File root = new File("/Users/jordanslott/wonderland/trunk/web/examples/modules/installed/mpk20/");
-        File file = new File("checksums.xml");
-        
-        /* Generate the checksums */
-        String includes[] = new String[0];
-        String excludes[] = new String[0];
-        
-        ModuleChecksums checksums = ModuleChecksums.generate(root, root, SHA1_CHECKSUM_ALGORITHM, includes, excludes);
-        checksums.encode(new FileWriter(file));
     }
 }

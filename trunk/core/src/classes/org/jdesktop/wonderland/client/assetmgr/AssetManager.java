@@ -43,17 +43,17 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.assetmgr.TrackingInputStream.ProgressListener;
-import org.jdesktop.wonderland.client.modules.Checksum;
+import org.jdesktop.wonderland.common.modules.Checksum;
 import org.jdesktop.wonderland.client.modules.ModuleCache;
 import org.jdesktop.wonderland.client.modules.ModuleCacheList;
-import org.jdesktop.wonderland.client.modules.ChecksumList;
-import org.jdesktop.wonderland.client.modules.RepositoryList;
-import org.jdesktop.wonderland.client.modules.RepositoryList.Repository;
 import org.jdesktop.wonderland.client.modules.RepositoryUtils;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.ResourceURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
+import org.jdesktop.wonderland.common.modules.ModuleChecksums;
+import org.jdesktop.wonderland.common.modules.ModuleRepository;
+import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
 
 /**
  * AssetManager provides services for downloading and maintaining the latest
@@ -88,7 +88,7 @@ public class AssetManager {
      * MAX_REPOSITORY_CHECKSUMS. This list is synchronized so that multiple
      * threads may interact with it safely
      */
-    private Map<Repository, ChecksumList> checksums = null;
+    private Map<Repository, ModuleChecksums> checksums = null;
     private static final int MAX_REPOSITORY_CHECKSUMS = 100;
     
     /*
@@ -122,7 +122,7 @@ public class AssetManager {
         assetDB = new AssetDB();
         
         /* Create a synchronized list of cached checksums information */
-        this.checksums = Collections.synchronizedMap(new LinkedHashMap<Repository, ChecksumList>());
+        this.checksums = Collections.synchronizedMap(new LinkedHashMap<Repository, ModuleChecksums>());
         
         /* Open the cache directory */
         cacheDir = new File(this.getCacheDirectory());
@@ -200,7 +200,7 @@ public class AssetManager {
         String checksum = null;
         ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache(serverURL);
         if (cache != null) {
-            ChecksumList checksums = cache.getModuleChecksums(moduleName);
+            ModuleChecksums checksums = cache.getModuleChecksums(moduleName);
             logger.fine("[ASSET] GET checksums for asset " + path + " in " + checksums);
             if (checksums != null) {
                 Checksum c = checksums.getChecksums().get(path);
@@ -451,7 +451,7 @@ public class AssetManager {
         String moduleName = asset.getResourceURI().getModuleName();
         String serverURL = asset.getResourceURI().getServerURL();
         ModuleCache cache = ModuleCacheList.getModuleCacheList().getModuleCache(serverURL);
-        RepositoryList list = cache.getModuleRepositoryList(moduleName);
+        ModuleRepository list = cache.getModuleRepository(moduleName);
         if (list == null) {
             logger.warning("[ASSET] FETCH unable to locate repository list, cache: " + cache);
             return false;
@@ -475,7 +475,7 @@ public class AssetManager {
              * the same server that hosts the module
              */
             if (repository.isServer == false) {
-                ChecksumList mc = this.getChecksums(repository);
+                ModuleChecksums mc = this.getChecksums(repository);
                 if (mc == null) {
                     continue;
                 }
@@ -633,7 +633,7 @@ public class AssetManager {
      * @param repository The repository to look for checksums
      * @return The collection of checksums for the repository
      */
-    private ChecksumList getChecksums(Repository repository) {
+    private ModuleChecksums getChecksums(Repository repository) {
         /*
          * First check whether the checksum information is cached for the
          * repository. Note that we do not make this entire method atomic. If
@@ -653,7 +653,7 @@ public class AssetManager {
          */
         try {
             URL url = new URL(RepositoryUtils.getChecksumURL(repository));
-            ChecksumList c = ChecksumList.decode(new InputStreamReader(url.openStream()));
+            ModuleChecksums c = ModuleChecksums.decode(new InputStreamReader(url.openStream()));
             if (c != null) {
                 this.checksums.put(repository, c);
             }

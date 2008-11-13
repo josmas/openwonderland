@@ -18,14 +18,16 @@
 
 package org.jdesktop.wonderland.modules;
 
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleRequires;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.common.modules.ModuleRepository;
 
 /**
  * The Module class represents a single module within Wonderland. A module

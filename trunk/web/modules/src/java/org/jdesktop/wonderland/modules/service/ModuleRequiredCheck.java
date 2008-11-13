@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.service;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 
 /**
  * The ModuleRequiredCheck helps track whether or not a module is still

@@ -21,8 +21,8 @@ package org.jdesktop.wonderland.modules.service;
 import java.util.Iterator;
 import java.util.Map;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModuleInfo;
-import org.jdesktop.wonderland.modules.ModuleRequires;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleRequires;
 
 /**
  * The ModuleOverwriteUtils contains utility routines to determine whether a

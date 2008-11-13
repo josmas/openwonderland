@@ -43,7 +43,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
-import org.jdesktop.wonderland.client.modules.ModulePluginList;
+import org.jdesktop.wonderland.common.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.JarURI;
 import sun.misc.Service;

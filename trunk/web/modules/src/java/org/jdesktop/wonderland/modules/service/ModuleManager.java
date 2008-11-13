@@ -28,9 +28,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
-import org.jdesktop.wonderland.modules.ModuleRequires;
+import org.jdesktop.wonderland.common.modules.ModuleRequires;
 
 
 /**
