@@ -264,14 +264,6 @@ public abstract class InputManager
      */
     @InternalAPI
     public void mouseEntered(MouseEvent e) {
-	/* TODO: notyet
-	System.err.println("********* MOUSE ENTERED CANVAS");
-	if (canvas.requestFocusInWindow()) {
-	    System.err.println("Acquired focus");
-	} else {
-	    System.err.println("Focus request rejected");
-	}
-	*/
 	inputPicker.pickMouseEvent3D(e);
     }
 
