@@ -92,13 +92,6 @@ import org.jdesktop.wonderland.common.AssetType;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class AssetDB {
-    
-    /*
-     * Version history for the asset database:
-     * Version 1: Wonderland v0.3 - v0.4
-     * Version 2: Wonderland v0.5
-     */
-    private static final int DB_VERSION = 2;
 
     /* The default name of the asset database */
     private static final String DB_NAME = "AssetDB";
@@ -192,15 +185,6 @@ public class AssetDB {
                 System.exit(1);
             }
         }
-    }
-    
-    /**
-     * Returns the version of the database currently in use.
-     * 
-     * @return The current database version
-     */
-    public int getVersion() {
-        return AssetDB.DB_VERSION;
     }
         
     /**
@@ -345,13 +329,8 @@ public class AssetDB {
      */
     private boolean setDBSystemDir() {
         try {
-            /*
-             * Fetch the database home configuration property. The database home
-             * is the value of the configuration directory plus an encoding for
-             * the version number.
-             */
-            String systemDir = WonderlandConfigUtil.getWonderlandDir() +
-                    File.separator + "v" + this.getVersion();
+            /* The Derby home directory is simply the user cache directory */
+            String systemDir = WonderlandConfigUtil.getWonderlandDir();
             System.setProperty("derby.system.home", systemDir);
 
             /* Log a message with this directory */
