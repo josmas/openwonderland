@@ -23,22 +23,18 @@ import org.jdesktop.wonderland.common.messages.Message;
  *
  * @author jprovino
  */
-public class VoiceChatMessage extends Message {
+public class VoiceChatInfoResponseMessage extends VoiceChatMessage {
+    
+    private String chatInfo;
 
-    private String group;
+    public VoiceChatInfoResponseMessage(String group, String chatInfo) {
+	super(group);
 
-    public enum ChatType {
-	SECRET,
-	PRIVATE,
-	PUBLIC
+	this.chatInfo = chatInfo;
     }
-
-    public VoiceChatMessage(String group) {
-	this.group = group;
-    }
-
-    public String getGroup() {
-	return group;
+    
+    public String getChatInfo() {
+	return chatInfo;
     }
 
 }

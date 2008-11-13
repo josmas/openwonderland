@@ -254,8 +254,7 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof VoiceChatMessage) {
-	    voiceChatHandler.processVoiceChatMessage(sender, 
-		(VoiceChatMessage) message);
+	    voiceChatHandler.processVoiceChatMessage(sender, (VoiceChatMessage) message);
 	    return;
 	}
 
