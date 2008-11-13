@@ -90,23 +90,8 @@ public class WindowGraphics2D extends Window2D {
 	return surface;
     }
 
-    /**
-     * Called to paint contents of the window. Subclasses should override to paint
-     * their own custom contents.
-     *
-     * @param g The Graphics2D to use for drawing.
-     */
     protected void paint(Graphics2D g) {}
 
-    protected void repaint() {
-	// Don't need to do anything. The copying of the 
-    }
+    protected void repaint() {  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setVisible (boolean visible) {
-	super.setVisible(visible);
-	repaint();
-    }
 }
