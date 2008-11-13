@@ -52,6 +52,6 @@ public class AppGraphics2D extends App2D {
 	throws InstantiationException
     {
 	return new WindowGraphics2D(this, width, height, topLevel, pixelScale,
-				    new DrawingSurface(width, height));
+				    new DrawingSurfaceBufferedImage(width, height));
     }
 }
