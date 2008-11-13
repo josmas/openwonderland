@@ -29,17 +29,22 @@ import com.sun.embeddedswing.EmbeddedPeer;
 import java.awt.Point;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import java.awt.Canvas;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingMarker;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -75,9 +80,11 @@ public class WindowSwing extends WindowGraphics2D {
 
     /** The event listener for this window. */
     protected class MyEventListener extends EventListenerBaseImpl {
-	// TODO: should this really be propagatesToParent, or should it be consumesEvent?
-	public boolean propagatesToParent (Event event) {
+	public boolean consumesEvent (Event event) {
 	    return inputEnabled;
+	}
+	public boolean propagatesToParent (Event event) {
+	    return false;
 	}
     }
 
@@ -126,15 +133,70 @@ public class WindowSwing extends WindowGraphics2D {
             //FocusHandler.addNotify(this);
         }
 
-	// TODO: NOTYET: component.addMouseListener(new MyEnterListener());
+	// TODO: Uncomment this to demonstrate the embedded component enter/exit bug
+	//component.addMouseListener(new MyAwtEnterListener());
+
+       	addWorldEventListener(new MySwingEnterExitListener());
 
 	setSize(size);
         embeddedPeer.repaint();
     }
 
-    private class MyEnterListener extends MouseAdapter {
+    // TODO: I'm leaving this hear to illustrate a bug
+    private class MyAwtEnterListener extends MouseAdapter {
 	public void mouseEntered(MouseEvent e) {
-	    component.requestFocus();
+	    if (e.getID() == MouseEvent.MOUSE_ENTERED) {
+		System.err.println("********* MOUSE Entered Window Swing embedded component");
+	    } else {
+		System.err.println("********* MOUSE Entered Window Swing embedded component");
+	    }
+	}
+    }
+
+    private static class MySwingEnterExitListener extends EventClassListener {
+	public Class[] eventClassesToConsume () {
+	    return new Class[] { SwingEnterExitEvent3D.class };
+	}
+
+	public void commitEvent (Event event) {
+	    SwingEnterExitEvent3D seeEvent = (SwingEnterExitEvent3D) event;
+	    
+	    /* For debug
+	    StringBuffer sb = new StringBuffer();
+	    String typeStr = "SWING " + (seeEvent.isEntered() ? "ENTER" : "EXIT");
+	    sb.append(typeStr + ", entity = " + seeEvent.getEntity());
+	    System.err.println(sb.toString());
+	    */
+
+	    if (seeEvent.isEntered()) {
+		Entity entity = seeEvent.getEntity();
+		EntityComponent comp = entity.getComponent(WindowSwing.WindowSwingReference.class);
+		assert comp != null;
+		WindowSwing windowSwing = ((WindowSwing.WindowSwingReference)comp).getWindowSwing();
+		assert windowSwing != null;
+		windowSwing.requestFocusInWindow();
+	    } else {
+		requestFocusInWindowForCanvas();
+	    }
+	}
+    }
+
+    /** 
+     * Request focus in the Wonderland client's canvas, provided that the top-level frame has focus.
+     */
+    private static void requestFocusInWindowForCanvas () {
+	Canvas canvas = JmeClientMain.getFrame().getCanvas();
+	if (!canvas.requestFocusInWindow()) {
+	    logger.warning("Focus request for main canvas rejected.");
+	}
+    }
+
+    /** 
+     * Request focus in this window's embedded component, provided that the top-level frame has focus.
+     */
+    private void requestFocusInWindow () {
+	if (!component.requestFocusInWindow()) {
+	    logger.warning("Focus request for embedded component rejected.");
 	}
     }
 
