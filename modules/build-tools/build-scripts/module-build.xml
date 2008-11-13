@@ -31,6 +31,7 @@
                   classname="org.jdesktop.wonderland.modules.ant.ModuleTask">
             <classpath>
                 <pathelement location="${top.dir}/web/modules/dist/wonderland-modules-api.jar"/>
+                <pathelement location="${core.dir}/build/lib/wonderland-common.jar"/>
                 <pathelement path="${jaxb.classpath}"/>
             </classpath>
         </taskdef>
@@ -38,6 +39,7 @@
                   classname="org.jdesktop.wonderland.modules.ant.DeployTask">
             <classpath>
                 <pathelement location="${top.dir}/web/modules/dist/wonderland-modules-api.jar"/>
+                <pathelement location="${core.dir}/build/lib/wonderland-common.jar"/>
                 <pathelement path="${jaxb.classpath}"/>
             </classpath>
         </taskdef>
@@ -45,6 +47,7 @@
                  classname="org.jdesktop.wonderland.runner.ant.RunnerTask">
             <classpath>
                 <pathelement location="${top.dir}/web/runner/dist/wonderland-runner-api.jar"/>
+                <pathelement location="${core.dir}/build/lib/wonderland-common.jar"/>
                 <pathelement path="${jaxb.classpath}"/>
             </classpath>
         </taskdef>

@@ -17,8 +17,8 @@
  */
 package org.jdesktop.wonderland.client.modules;
 
-import org.jdesktop.wonderland.client.modules.RepositoryList.Repository;
 import org.jdesktop.wonderland.common.ResourceURI;
+import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
 
 /**
  * Utiility routines to aid dealing with repositories.

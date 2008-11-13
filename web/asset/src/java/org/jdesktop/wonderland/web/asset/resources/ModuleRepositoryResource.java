@@ -29,9 +29,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import org.jdesktop.wonderland.common.modules.ModuleRepository;
+import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModuleRepository;
-import org.jdesktop.wonderland.modules.ModuleRepository.Repository;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 
 /**

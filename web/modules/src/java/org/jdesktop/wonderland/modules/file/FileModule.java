@@ -25,10 +25,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.ModulePart;
-import org.jdesktop.wonderland.modules.ModuleRepository;
-import org.jdesktop.wonderland.modules.ModuleRequires;
+import org.jdesktop.wonderland.common.modules.ModuleRepository;
+import org.jdesktop.wonderland.common.modules.ModuleRequires;
 
 /**
  * The FileModule class extends the Module abstract base class and represents

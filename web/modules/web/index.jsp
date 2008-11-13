@@ -16,7 +16,7 @@
     <%@ page import="java.util.Map" %>
     <%@ page import="java.util.Iterator" %>
     <%@ page import="org.jdesktop.wonderland.modules.Module" %>
-    <%@ page import="org.jdesktop.wonderland.modules.ModuleInfo" %>
+    <%@ page import="org.jdesktop.wonderland.common.modules.ModuleInfo" %>
     <%@ page import="org.jdesktop.wonderland.modules.service.ModuleManager" %>
     <h3>Installed Modules</h3>
     <form action="removeAll.jsp">
