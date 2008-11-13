@@ -138,12 +138,12 @@ public class TestPanel extends javax.swing.JPanel {
 
     private void jTextField1FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jTextField1FocusGained
 // TODO add your handling code here:
-        System.out.println("TF Focus gained");
+        //System.out.println("TF Focus gained");
     }//GEN-LAST:event_jTextField1FocusGained
 
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
 // TODO add your handling code here:
-        System.out.println("Panel focus Gained");
+        //System.out.println("Panel focus Gained");
     }//GEN-LAST:event_formFocusGained
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
