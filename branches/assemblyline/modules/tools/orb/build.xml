@@ -7,7 +7,6 @@
     <property name="module.src" value="org/jdesktop/wonderland/modules/orb"/>
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.orb"/>
     <property name="module.jarname" value="orb"/>
-    <property name="module.plugins" value="OrbServerPlugin OrbClientPlugin"/>
 
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
@@ -30,8 +29,6 @@
                 builddir="${build.lib.dir}">
             <client>
                 <clientjar name="orb-client" basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.orb.client.OrbClientPlugin"/>
-
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>
@@ -43,7 +40,6 @@
 		<include name="voip.jar"/>
 
                 <serverjar name="orb-server" basedir="${build.classes.dir}">
-		    <serverplugin provider="org.jdesktop.wonderland.modules.phone.server.PhoneServerPlugin"/>
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.orb.common.OrbCellSetup"/>
                     </cellsetup>

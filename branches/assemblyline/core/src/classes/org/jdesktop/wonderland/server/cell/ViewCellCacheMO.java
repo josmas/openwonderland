@@ -100,7 +100,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         DataManager dm = AppContext.getDataManager();
         viewRef = dm.createReference(view);
         dm.setBinding(username + "_CELL_CACHE", this);
-        
+
     }
     
     /**
@@ -302,7 +302,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             }
 //            cellRef.setCellSessionProperties(prop);
                     
-            logger.warning("Sending NEW CELL to Client: " + cell.getCellID().toString()+"  "+cell.getClass().getName());
+            logger.fine("Sending NEW CELL to Client: " + cell.getCellID().toString()+"  "+cell.getClass().getName());
             sendMessage(newCreateCellMessage(cell, capabilities));
         }
     }

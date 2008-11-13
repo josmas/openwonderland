@@ -15,9 +15,13 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer;
+package org.jdesktop.wonderland.modules.defaultenvironment.client.jme;
 
 import com.jme.image.Texture;
+import com.jme.light.LightNode;
+import com.jme.light.PointLight;
+import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Skybox;
 import com.jme.scene.Spatial;
 import com.jme.scene.Spatial.TextureCombineMode;
@@ -34,51 +38,95 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.SkyboxComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.client.jme.Environment;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.AssetURI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
  * @author paulby
  */
-public class SkyboxRenderer implements CellRendererJME {
+public class DefaultEnvironment implements Environment {
 
-    private Entity entity = null;
-    private Cell cell = null;
+    private Skybox skybox = null;
 
-    public SkyboxRenderer(Cell cell) {
-        this.cell = cell;
+    private LoginManager loginManager;
+
+    public DefaultEnvironment(LoginManager loginManager) {
+        this.loginManager = loginManager;
     }
 
-    public Entity getEntity() {
-        if (entity==null)
-            entity = createEntity();
-        
-        return entity;
+    /**
+     * @{@inheritDoc}
+     */
+    public void setGlobalLights() {
+        LightNode globalLight1 = new LightNode();
+        PointLight light = new PointLight();
+        light.setDiffuse(new ColorRGBA(0.95f, 0.95f, 0.95f, 1.0f));
+        light.setAmbient(new ColorRGBA(0.85f, 0.85f, 0.85f, 1.0f));
+        light.setEnabled(true);
+        globalLight1.setLight(light);
+        globalLight1.setLocalTranslation(0.0f, 50.0f, 50.0f);
+
+        LightNode globalLight2 = new LightNode();
+        light = new PointLight();
+        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 1.0f));
+        light.setAmbient(new ColorRGBA(0.25f, 0.25f, 0.25f, 1.0f));
+        light.setEnabled(true);
+        globalLight2.setLight(light);
+        globalLight2.setLocalTranslation(0.0f, -50.0f, -50.0f);
+             
+        ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight1);
+        ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight2);
     }
-    
-    private Entity createEntity() {
+
+    /**
+     * @{@inheritDoc}
+     */
+    public void setSkybox() {
+
+        if (skybox==null) {
+            Entity skyboxEnt = createSkyboxEntity();
+            ClientContextJME.getWorldManager().addEntity(skyboxEnt);
+        }
+
+        ViewManager.getViewManager().addViewManagerListener(new ViewManagerListener() {
+
+            public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+            //Keep the skybox centered on the view
+            newViewCell.addTransformChangeListener(new TransformChangeListener() {
+                private Vector3f translation = new Vector3f();
+
+                public void transformChanged(Cell cell, ChangeSource source) {
+                    skybox.setLocalTranslation(cell.getWorldTransform().getTranslation(translation));
+                }
+
+            });
+            }
+        });
+
+    }
+
+    private Entity createSkyboxEntity() {
         try {
             /* Form the asset URIs */
-            WonderlandSession session = cell.getCellCache().getSession();
-            LoginManager manager = LoginManager.find(session);
-            String server = manager.getServerNameAndPort();
-            
-            AssetURI northURI = new AssetURI("wla://testcells/skybox1/1.jpg").getAnnotatedURI(server);
-            AssetURI southURI = new AssetURI("wla://testcells/skybox1/3.jpg").getAnnotatedURI(server);
-            AssetURI eastURI = new AssetURI("wla://testcells/skybox1/2.jpg").getAnnotatedURI(server);
-            AssetURI westURI = new AssetURI("wla://testcells/skybox1/4.jpg").getAnnotatedURI(server);
-            AssetURI downURI = new AssetURI("wla://testcells/skybox1/5.jpg").getAnnotatedURI(server);
-            AssetURI upURI = new AssetURI("wla://testcells/skybox1/6.jpg").getAnnotatedURI(server);
+            String server = loginManager.getServerNameAndPort();
+
+            AssetURI northURI = new AssetURI("wla://defaultenvironment/skybox1/1.jpg").getAnnotatedURI(server);
+            AssetURI southURI = new AssetURI("wla://defaultenvironment/skybox1/3.jpg").getAnnotatedURI(server);
+            AssetURI eastURI = new AssetURI("wla://defaultenvironment/skybox1/2.jpg").getAnnotatedURI(server);
+            AssetURI westURI = new AssetURI("wla://defaultenvironment/skybox1/4.jpg").getAnnotatedURI(server);
+            AssetURI downURI = new AssetURI("wla://defaultenvironment/skybox1/5.jpg").getAnnotatedURI(server);
+            AssetURI upURI = new AssetURI("wla://defaultenvironment/skybox1/6.jpg").getAnnotatedURI(server);
 
             WorldManager wm = ClientContextJME.getWorldManager();
-            Skybox skybox = new Skybox("skybox", 1000, 1000, 1000);
-            String dir = "jmetest/data/skybox1/";
+            skybox = new Skybox("skybox", 1000, 1000, 1000);
             Texture north = TextureManager.loadTexture(northURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
             Texture south = TextureManager.loadTexture(southURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
             Texture east = TextureManager.loadTexture(eastURI.toURL(), Texture.MinificationFilter.BilinearNearestMipMap, Texture.MagnificationFilter.Bilinear);
@@ -110,25 +158,15 @@ public class SkyboxRenderer implements CellRendererJME {
             Entity e = new Entity("Skybox");
             SkyboxComponent sbc = wm.getRenderManager().createSkyboxComponent(skybox, true);
             e.addComponent(SkyboxComponent.class, sbc);
+
             return e;
+
         } catch (MalformedURLException ex) {
-            Logger.getLogger(SkyboxRenderer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DefaultEnvironment.class.getName()).log(Level.SEVERE, null, ex);
         } catch (URISyntaxException ex) {
-            Logger.getLogger(SkyboxRenderer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DefaultEnvironment.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
-    }
-
-    public void cellTransformUpdate(CellTransform cellLocal2World) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    public void setStatus(CellStatus status) {
-        System.out.println("----------------------> SKYBOX INIT "+status+"  "+cell.getCellID());
-        switch (status) {
-            case ACTIVE :
-                ClientContextJME.getWorldManager().addEntity(getEntity());
-                break;
-        }
     }
 
 }

@@ -63,6 +63,7 @@ public class NoAuth implements IdentityAuthenticator {
         
         // make sure the name is specified
         if (npc.getName() == null) {
+            logger.warning("No name specified");
             throw new CredentialException("Invalid username");
         }
 
@@ -78,6 +79,7 @@ public class NoAuth implements IdentityAuthenticator {
 
         // make sure at least a username was specified
         if (username == null || username.trim().length() == 0) {
+            logger.warning("Unable to find username");
             throw new CredentialException("No username specified");
         }
 
@@ -96,7 +98,9 @@ public class NoAuth implements IdentityAuthenticator {
 
         for (String pair : packed.split(";")) {
             String[] vals = pair.split("=");
-            out.put(vals[0], vals[1]);
+            if (vals.length == 2) {
+                out.put(vals[0], vals[1]);
+            }
         }
 
         return out;

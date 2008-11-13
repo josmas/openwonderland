@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 /**
  *
@@ -59,6 +60,10 @@ public class UniverseImpl implements Universe {
         return universe;
     }
 
+    SpaceManager getSpaceManager() {
+        return spaceManager;
+    }
+
     public TransactionProxy getTransactionProxy() {
         return transactionProxy;
     }
@@ -77,17 +82,12 @@ public class UniverseImpl implements Universe {
 
     public void addRootSpatialCell(CellID cellID, Identity identity) {
         SpatialCellImpl cellImpl = (SpatialCellImpl)getSpatialCell(cellID);
-        
-        cellImpl.setRoot(cellImpl, identity);
-        
-        cellImpl.acquireRootReadLock();
-        System.out.println("Getting spaces for "+cellImpl.getWorldBounds());
-        Iterable<Space> it = spaceManager.getEnclosingSpace(cellImpl.getWorldBounds());
-        for(Space s : it) {
-            System.out.println("Adding cell to space "+s.getName());
-            s.addRootSpatialCell(cellImpl);
-        }
-        cellImpl.releaseRootReadLock();
+
+        // Set the root, which causes the WorldBounds to be evaluated and
+        // the graph added to spaces & view caches.
+        // No need to lock for this call because until it returns there
+        // is no root to lock
+        cellImpl.setRoot(cellImpl, identity);        
     }
 
     public void removeRootSpatialCell(CellID cellID, Identity identity) {
@@ -99,25 +99,19 @@ public class UniverseImpl implements Universe {
             return;
         }
 
+        // Set the root node to null. Internally this method will lock correctly
+        // and ensure the graph is removed from spaces etc
         cellImpl.setRoot(null, identity);
-
-        cellImpl.acquireRootReadLock();
-//        System.out.println("Getting spaces for "+cell.getWorldBounds());
-        Iterable<Space> it = spaceManager.getEnclosingSpace(cellImpl.getWorldBounds());
-        for(Space s : it) {
-            s.removeRootSpatialCell(cellImpl);
-        }
-        cellImpl.releaseRootReadLock();
 
     }
 
-    public SpatialCell createSpatialCell(CellID id, BigInteger cellCacheId, Identity identity) {
-        logger.fine("createSpatialCell "+id);
+    public SpatialCell createSpatialCell(CellID id, BigInteger dsID, Class cellClass) {
+        logger.fine("createSpatialCell "+id+"   dsID "+dsID);
         SpatialCellImpl ret;
-        if (cellCacheId!=null) {
-            ret = new ViewCellImpl(id, spaceManager, identity, cellCacheId);
+        if (ViewCellMO.class.isAssignableFrom(cellClass)) {
+            ret = new ViewCellImpl(id, spaceManager, dsID);
         } else
-            ret = new SpatialCellImpl(id);
+            ret = new SpatialCellImpl(id, dsID);
         synchronized(cells) {
             cells.put(id, ret);
         }
@@ -143,24 +137,24 @@ public class UniverseImpl implements Universe {
         }
     }
 
-    public void viewLogin(CellID viewCellId, BigInteger cellCacheId, Identity identity) {
+    public void viewLogin(CellID viewCellID, BigInteger cellCacheId, Identity identity) {
         ViewCellImpl viewCell;
         synchronized(cells) {
-            viewCell = (ViewCellImpl) cells.get(viewCellId);
+            viewCell = (ViewCellImpl) cells.get(viewCellID);
         }
 
-        System.err.println("ViewCell "+viewCell+" "+viewCellId);
+        logger.fine("ViewLogin ViewCell="+viewCell+"  ds ID="+viewCellID);
         
         ViewCache viewCache = new ViewCache(viewCell, spaceManager, identity, cellCacheId);
         viewCell.setViewCache(viewCache);
         viewCache.login();
     }
 
-    public void viewLogout(CellID viewCellId) {
-//        System.err.println("UniverseImpl.viewLogout <-----------------");
+    public void viewLogout(CellID viewCellID) {
+        logger.fine("ViewLogout viewCell="+viewCellID);
         ViewCellImpl viewCell;
         synchronized(cells) {
-            viewCell = (ViewCellImpl) cells.get(viewCellId);
+            viewCell = (ViewCellImpl) cells.get(viewCellID);
         }
         viewCell.getViewCache().logout();
     }

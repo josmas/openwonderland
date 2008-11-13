@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -142,12 +143,13 @@ public class UniverseService implements UniverseServiceManager, Service {
     }
 
     public void createCell(CellMO cellMO) {
-        final BigInteger cellCacheId = (cellMO instanceof ViewCellMO) ? AppContext.getDataManager().createReference( ((ViewCellMO)cellMO).getCellCache()).getId() : null;
+        final Class cellClazz = cellMO.getClass();
         final Identity identity = proxy.getCurrentOwner();
+        final BigInteger dsID = AppContext.getDataManager().createReference(cellMO).getId();
 
         scheduleChange(new Change(cellMO.getCellID(), cellMO.getLocalBounds(), cellMO.getLocalTransform(null)) {
             public void run() {
-                SpatialCell sc = universe.createSpatialCell(cellID, cellCacheId, identity);
+                SpatialCell sc = universe.createSpatialCell(cellID, dsID, cellClazz);
                 sc.setLocalBounds(localBounds);
                 sc.setLocalTransform(localTransform, identity);
             }
@@ -318,7 +320,7 @@ public class UniverseService implements UniverseServiceManager, Service {
         private LinkedBlockingQueue<Change> changeList = new LinkedBlockingQueue();
 
         public ChangeApplication() {
-            super("ChangeApplication");
+            super(ThreadManager.getThreadGroup(), "ChangeApplication");
             start();
         }
 

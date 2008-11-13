@@ -25,7 +25,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
+import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardActionType;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardActionType.ActionType;
@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTool.To
  */
 
 @ExperimentalAPI
-public class WhiteboardDrawingSurface extends DrawingSurface {
+public class WhiteboardDrawingSurface extends DrawingSurfaceBufferedImage {
 
     private static final Logger logger = Logger.getLogger(WhiteboardDrawingSurface.class.getName());
     
@@ -102,13 +102,13 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
     
     public void penDrag(Point loc) {
         Graphics2D g = getGraphics();
-        setClip(g, true);
+        setClipToDrawingRegion(g, true);
         g.setColor(selectedColor);
         g.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g.drawLine(penX, penY, loc.x, loc.y);
         penX = loc.x;
         penY = loc.y;
-        setClip(g, false);
+        setClipToDrawingRegion(g, false);
     }
     
     public void penSelect(Point loc) {
@@ -169,8 +169,12 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
         return selectedColor;
     }
     
-    @Override
-    protected void setClip(Graphics2D g, boolean clipEnabled) {
+    /**
+     * If clipEnabled is true drawing will only occur in the drawing subregion
+     * and will not occur over the buttons. If clipEnabled is false then drawing
+     * can occur over the buttons.
+     */
+    protected void setClipToDrawingRegion(Graphics2D g, boolean clipEnabled) {
         if (clipEnabled)
             g.setClip(buttonArea.width,0,getWidth()-buttonArea.width, getHeight());
         else
@@ -187,17 +191,10 @@ public class WhiteboardDrawingSurface extends DrawingSurface {
     
     public void erase() {
         Graphics2D g = getGraphics();
-        setClip(g, true);
-	/* TODO: bug: this should fill the image with white, but it doesn't
+        setClipToDrawingRegion(g, true);
         g.setBackground(Color.WHITE);
         g.clearRect(0, 0, getWidth(), getHeight());
-	*/
-	/* Bug workaround */
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, getWidth(), getHeight());
-	/**/
-
-        setClip(g, false);
+        setClipToDrawingRegion(g, false);
     }
     
     public void penDrag(float x, float y) {

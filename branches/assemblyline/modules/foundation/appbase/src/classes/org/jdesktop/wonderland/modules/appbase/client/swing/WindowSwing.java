@@ -22,7 +22,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
+import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwingEmbeddedToolkit.WindowSwingEmbeddedPeer;
 import com.sun.embeddedswing.EmbeddedPeer;
@@ -101,15 +101,8 @@ public class WindowSwing extends WindowGraphics2D {
     public WindowSwing (App app, int width, int height, boolean topLevel, Vector2f pixelScale) 
 	throws InstantiationException 
     {
-        super(app, width, height, topLevel, pixelScale, new DrawingSurface(width, height));
+	super(app, width, height, topLevel, pixelScale, new DrawingSurfaceBufferedImage(width, height));
 	initializeSurface();
-
-	/* TODO: For debug  
-	int i = 0;
-	while (i++ < 1000000) {
-	    try { Thread.sleep(1000); } catch (Exception ex) {}
-	}
-	*/
 
 	addWorldEntityComponent(InputManager.WindowSwingMarker.class, new WindowSwingMarker());
 	addWorldEntityComponent(WindowSwingReference.class, new WindowSwingReference());
