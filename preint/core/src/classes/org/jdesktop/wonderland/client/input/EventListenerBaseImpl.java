@@ -260,6 +260,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 	    for (Event event : computedEvents) {
 		commitEvent(event);
 	    }
+	    computedEvents.clear();
 	}
     }
 
