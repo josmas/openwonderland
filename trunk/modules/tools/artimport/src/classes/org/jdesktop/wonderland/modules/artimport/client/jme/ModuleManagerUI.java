@@ -171,11 +171,9 @@ public class ModuleManagerUI extends javax.swing.JFrame {
 
         serverPackageCB.setSelected(true);
         serverPackageCB.setText("Server Package");
-        serverPackageCB.setEnabled(false);
 
         clientPackageCB.setSelected(true);
         clientPackageCB.setText("Client Package");
-        clientPackageCB.setEnabled(false);
 
         artCB.setText("Include Art");
         artCB.setToolTipText("Include art resources in the module");
@@ -292,7 +290,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
     private void createModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createModuleBActionPerformed
         ModuleSourceManager mgr = new ModuleSourceManager();
 
-        mgr.createModule(moduleNameTF.getText(), moduleDescriptionTF.getText(), parentDir, artCB.isSelected());
+        mgr.createModule(moduleNameTF.getText(), moduleDescriptionTF.getText(), parentDir, artCB.isSelected(), clientPackageCB.isSelected(), serverPackageCB.isSelected());
 
         JOptionPane.showMessageDialog(this, "Module created in Directory "+parentDir);
     }//GEN-LAST:event_createModuleBActionPerformed

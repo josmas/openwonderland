@@ -19,14 +19,16 @@
         
         <module name="@MODULE_NAME@" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/@MODULE_NAME@.jar"
                 moduleDescription="@MODULE_DESC@" builddir="${build.dir}">
-                    
+            @CLIENT_START@
             <client>
                 <clientjar name="@MODULE_NAME@-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar> 
             </client>
-                
+            @CLIENT_END@
+
+            @SERVER_START@
             <server>
                 <serverjar name="@MODULE_NAME@-server" basedir="${build.classes.dir}">
                     <cellsetup>
@@ -36,6 +38,7 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
+            @SERVER_END@
             @ART@
         </module>
     </target>                                  
