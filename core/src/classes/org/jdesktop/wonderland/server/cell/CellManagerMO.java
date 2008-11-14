@@ -23,6 +23,8 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
+import com.sun.sgs.app.util.ScalableHashMap;
+import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,14 +50,17 @@ public class CellManagerMO implements ManagedObject, Serializable {
     
     private static final String BINDING_NAME=CellManagerMO.class.getName();
     private static final Logger logger = Logger.getLogger(CellManagerMO.class.getName());
-    
-    static boolean useCellService = true;
-    
+
+    private ManagedReference<ScalableHashSet<CellID>> rootCellsRef = null;
+
     /**
      * Creates a new instance of CellManagerMO
      */
     CellManagerMO() {
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
+
+        ScalableHashSet<CellID> rootCells = new ScalableHashSet();
+        rootCellsRef = AppContext.getDataManager().createReference(rootCells);
     }
     
     /**
@@ -107,11 +112,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
         cell.setLive(true);
         UniverseManager.getUniverseManager().addRootToUniverse(cell);
+        rootCellsRef.getForUpdate().add(cell.cellID);
     }
 
     public void removeCellFromWorld(CellMO cell) {
         UniverseManager.getUniverseManager().removeRootFromUniverse(cell);
         cell.setLive(false);
+        rootCellsRef.getForUpdate().remove(cell.getCellID());
     }
     
     /**
