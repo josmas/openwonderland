@@ -43,7 +43,7 @@ public class AudioManagerClientPlugin
     private AudioManagerClient client;
     
     public void initialize(LoginManager loginManager) {
-        logger.warning("Audio manager initialized");
+        logger.info("Audio manager initialized");
 
         loginManager.addLifecycleListener(this);
     }
