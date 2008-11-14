@@ -42,7 +42,6 @@ public class JmeClientSession extends CellClientSession {
     // so the cellCache will be set before we proceed
     @Override
     protected JmeCellCache createCellCache() {
-        System.out.println("CREATING CELL CACHE");
         jmeCellCache = new JmeCellCache(this, getClassLoader());
         getCellCacheConnection().addListener(jmeCellCache);
         return jmeCellCache;
