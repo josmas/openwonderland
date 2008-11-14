@@ -34,10 +34,11 @@ import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.LoginManager.NoAuthLoginControl;
-import org.jdesktop.wonderland.client.login.LoginManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.LoginManager.WebURLLoginControl;
 import org.jdesktop.wonderland.client.login.LoginUI;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
@@ -230,7 +231,7 @@ public class PingDataCollector
     protected void connectTo(DarkstarRunner dr) {
         // TODO: connect to a particular Darkstar server
         try {
-            LoginManager lm = LoginManager.getInstance(ServerInfo.getServerURL());
+            ServerSessionManager lm = LoginManager.getInstance(ServerInfo.getServerURL());
             ServerManagerSession session = lm.createSession(
                     new SessionCreator<ServerManagerSession>()
             {

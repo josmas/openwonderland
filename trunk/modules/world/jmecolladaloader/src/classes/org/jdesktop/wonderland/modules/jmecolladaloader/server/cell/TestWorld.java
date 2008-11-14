@@ -20,7 +20,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
-import org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.RoomTestCellMO;
 import org.jdesktop.wonderland.server.ServerPlugin;
 
 /**
@@ -67,18 +66,12 @@ public class TestWorld implements ServerPlugin {
             WonderlandContext.getCellManager().insertCellInWorld(c2);
             WonderlandContext.getCellManager().insertCellInWorld(c3);
 
-//            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(5, 0, 5), 16));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(5, 1, 5), 4));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(4, 1, 5), 4));
-//            WonderlandContext.getCellManager().insertCellInWorld(new TestColladaCellMO(new Vector3f(3, 1, 5), 4));
-//            WonderlandContext.getCellManager().insertCellInWorld(new RoomTestCellMO(new Vector3f(45, 0, 5), 8));
-
             WonderlandContext.getCellManager().insertCellInWorld(
                     new JmeColladaCellMO(new Vector3f(0,0,0), 15,
                             "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
-            
+
             WonderlandContext.getCellManager().insertCellInWorld(
                     new JmeColladaCellMO(new Vector3f(15,0,0), 15,
                             "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",

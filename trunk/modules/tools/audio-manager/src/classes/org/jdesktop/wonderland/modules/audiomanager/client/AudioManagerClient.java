@@ -167,7 +167,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void softphoneExited() {
-        logger.warning("Softphone exited, reconnect");
+        logger.fine("Softphone exited, reconnect");
 
         AudioMenu.updateSoftphoneCheckBoxMenuItem(false);
 
@@ -219,7 +219,7 @@ public class AudioManagerClient extends BaseConnection implements
 	        session.send(this, new PlaceCallMessage(
 		    cellID.toString(), sipURL, 0., 0., 0., 0., false));
 	    } catch (IOException e) {
-		logger.warning(e.getMessage());
+            logger.warning(e.getMessage());
 	    }
 	} else if (message instanceof VoiceChatJoinRequestMessage) {
 	   VoiceChatJoinRequestMessage msg = (VoiceChatJoinRequestMessage) message;

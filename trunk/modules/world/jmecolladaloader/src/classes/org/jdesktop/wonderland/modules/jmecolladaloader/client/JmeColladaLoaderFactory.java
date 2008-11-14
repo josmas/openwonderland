@@ -21,7 +21,7 @@ import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  * LoaderFactory for the JmeColladaLoader.
@@ -32,7 +32,7 @@ public class JmeColladaLoaderFactory extends ModelLoaderFactory
     implements ClientPlugin
 {
 
-    public void initialize(LoginManager manager) {
+    public void initialize(ServerSessionManager manager) {
         LoaderManager.getLoaderManager().registerLoader(this);
     }
     

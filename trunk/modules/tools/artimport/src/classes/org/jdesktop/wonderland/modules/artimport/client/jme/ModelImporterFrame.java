@@ -200,6 +200,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         ((SpinnerNumberModel)scaleTF.getModel()).addChangeListener(scaleChangeListener);
         
+        // Disable move with avatar
+        avatarMoveCB.setSelected(false);
 
     }
     
@@ -226,7 +228,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 int returnVal = chooser.showOpenDialog(ModelImporterFrame.this);
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
                     try {
-                        importModel(chooser.getSelectedFile(), true);
+                        importModel(chooser.getSelectedFile(), false);
                     } catch (FileNotFoundException ex) {
                         Logger.getLogger(ModelImporterFrame.class.getName()).log(Level.SEVERE, null, ex);
                     } catch(IOException ioe) {

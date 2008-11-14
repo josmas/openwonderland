@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.artimport.client.jme;
 
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  *
@@ -38,7 +38,7 @@ public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
         initComponents();
     }
 
-    public void initialize(LoginManager lm) {
+    public void initialize(ServerSessionManager lm) {
         JmeClientMain.getFrame().addToToolMenu(mainCellViewerMI);
         JmeClientMain.getFrame().addToToolMenu(mainModelmportersMI);
         JmeClientMain.getFrame().addToToolMenu(createSrcModuleMI);

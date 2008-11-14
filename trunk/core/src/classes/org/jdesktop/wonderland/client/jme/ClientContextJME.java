@@ -17,17 +17,13 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
@@ -38,8 +34,8 @@ import org.jdesktop.wonderland.client.login.LoginManager;
 public class ClientContextJME extends ClientContext {
 
     private static WorldManager worldManager;
-    private static HashMap<LoginManager, HashMap<String, PhysicsSystem>> physicsSystems = new HashMap();
-    private static HashMap<LoginManager, HashMap<String, CollisionSystem>> collisionSystems = new HashMap();
+    private static HashMap<ServerSessionManager, HashMap<String, PhysicsSystem>> physicsSystems = new HashMap();
+    private static HashMap<ServerSessionManager, HashMap<String, CollisionSystem>> collisionSystems = new HashMap();
     
     static {
         worldManager = new WorldManager("Wonderland");
@@ -70,7 +66,7 @@ public class ClientContextJME extends ClientContext {
         return AvatarRenderManager.getAvatarRenderManager();
     }
 
-    public static void addPhysicsSystem(LoginManager session, String name, PhysicsSystem physicsSystem) {
+    public static void addPhysicsSystem(ServerSessionManager session, String name, PhysicsSystem physicsSystem) {
 //        System.err.println("SESSION addPhysics "+session);
         synchronized(physicsSystems) {
             HashMap<String, PhysicsSystem> sessionPhy = physicsSystems.get(session);
@@ -89,7 +85,7 @@ public class ClientContextJME extends ClientContext {
      * @param name
      * @return
      */
-    public static PhysicsSystem getPhysicsSystem(LoginManager session, String name) {
+    public static PhysicsSystem getPhysicsSystem(ServerSessionManager session, String name) {
         synchronized(physicsSystems) {
 //        System.err.println("SESSION getPhysics "+((Object)session).toString()+"  "+physicsSystems.get(session));
             HashMap<String, PhysicsSystem> sessionPhy = physicsSystems.get(session);
@@ -100,7 +96,7 @@ public class ClientContextJME extends ClientContext {
         }
     }
 
-    public static void addCollisionSystem(LoginManager session, String name, CollisionSystem collisionSystem) {
+    public static void addCollisionSystem(ServerSessionManager session, String name, CollisionSystem collisionSystem) {
 //        System.err.println("SESSION addColl"+session);
         synchronized(collisionSystems) {
             HashMap<String, CollisionSystem> sessionCollision = collisionSystems.get(session);
@@ -119,7 +115,7 @@ public class ClientContextJME extends ClientContext {
      * @param name
      * @return
      */
-    public static CollisionSystem getCollisionSystem(LoginManager session, String name) {
+    public static CollisionSystem getCollisionSystem(ServerSessionManager session, String name) {
 //        System.err.println("SESSION getColl "+session);
         synchronized(collisionSystems) {
             HashMap<String, CollisionSystem> sessionCollisions = collisionSystems.get(session);
@@ -134,7 +130,7 @@ public class ClientContextJME extends ClientContext {
      * Remove all the physics systems for this session
      * @param session
      */
-    static void removeAllPhysicsSystems(LoginManager session) {
+    static void removeAllPhysicsSystems(ServerSessionManager session) {
         synchronized(physicsSystems) {
             physicsSystems.remove(session);
         }
@@ -144,7 +140,7 @@ public class ClientContextJME extends ClientContext {
      * Remove all the collision systems for this session
      * @param session
      */
-    static void removeAllCollisionSystems(LoginManager session) {
+    static void removeAllCollisionSystems(ServerSessionManager session) {
         synchronized(collisionSystems) {
             collisionSystems.remove(session);
         }

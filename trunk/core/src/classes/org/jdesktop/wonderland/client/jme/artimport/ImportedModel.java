@@ -31,6 +31,7 @@ public class ImportedModel implements Serializable {
     private transient Node modelBG;
     private transient Node rootBG;
     private transient Entity entity;
+    private transient ModelLoader modelLoader;
 
     public ImportedModel(String origModel,
                  String wonderlandName,
@@ -110,6 +111,20 @@ public class ImportedModel implements Serializable {
 
     public void setEntity(Entity entity) {
         this.entity = entity;
+    }
+
+    /**
+     * @return the modelLoader
+     */
+    public ModelLoader getModelLoader() {
+        return modelLoader;
+    }
+
+    /**
+     * @param modelLoader the modelLoader to set
+     */
+    public void setModelLoader(ModelLoader modelLoader) {
+        this.modelLoader = modelLoader;
     }
 
 }

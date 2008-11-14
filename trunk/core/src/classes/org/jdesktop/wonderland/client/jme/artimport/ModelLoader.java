@@ -42,7 +42,7 @@ public interface ModelLoader {
      * Deploy the art content to the module.
      * @param rootDir the art root directory of the module (usually <module>/art)
      */
-    public void deployToModule(File moduleRootDir) throws IOException;
+    public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException;
     
     /**
      * Runtime load of the model from a module
@@ -50,4 +50,21 @@ public interface ModelLoader {
 //    public Node loadModel(URL url);
     
 
+    public class ModelDeploymentInfo {
+        private String assetURL;
+
+        /**
+         * @return the assetURL
+         */
+        public String getAssetURL() {
+            return assetURL;
+        }
+
+        /**
+         * @param assetURL the assetURL to set
+         */
+        public void setAssetURL(String assetURL) {
+            this.assetURL = assetURL;
+        }
+    }
 }

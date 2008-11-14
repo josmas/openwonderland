@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -72,11 +71,17 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import org.jdesktop.wonderland.common.modules.ModuleUploader;
 
@@ -84,7 +89,11 @@ import org.jdesktop.wonderland.common.modules.ModuleUploader;
  * Frame that provides the controls for the user to position and orient
  * a model instance in the world. Also allows configuration of other instance
  * data such as world name and texture directory.
- * 
+ *
+ * NOTE the strings in the targetModuleSelector are used directly to construct
+ * the filename and URI, so they must be valid for both use cases. In particular
+ * you must avoid characters that break URI parsing such as : _ /
+ *
  * @author  paulby
  */
 public class ImportSessionFrame extends javax.swing.JFrame
@@ -177,8 +186,8 @@ public class ImportSessionFrame extends javax.swing.JFrame
             Logger.getLogger(ModelImporterFrame.class.getName()).log(Level.INFO, null, ex);
         }
         
-        Collection<LoginManager> servers = LoginManager.getAll();
-        for(LoginManager server : servers) {
+        Collection<ServerSessionManager> servers = LoginManager.getAll();
+        for(ServerSessionManager server : servers) {
             targetServerSelector.addItem(server);
         }
 
@@ -434,7 +443,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
             }
         });
 
-        targetModuleSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "User_Art_1", "User_Art_2", "User_Art_3", " " }));
+        targetModuleSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "UserArt1", "UserArt2", "UserArt3", " " }));
         targetModuleSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 targetModuleSelectorActionPerformed(evt);
@@ -566,9 +575,13 @@ public class ImportSessionFrame extends javax.swing.JFrame
     private void serverBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverBActionPerformed
         // upload to server
 
+        WorldManager wm = ClientContextJME.getWorldManager();
+        ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo = new ArrayList();
+
         for(ImportedModel model : imports) {
             try {
-                model.getModelLoader().deployToModule(new File(targetModuleDir));
+                deploymentInfo.add(model.getModelLoader().deployToModule(new File(targetModuleDir)));
+                wm.removeEntity(model.getEntity());
             } catch (IOException ex) {
                 Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
             }
@@ -578,16 +591,16 @@ public class ImportSessionFrame extends javax.swing.JFrame
         NoExitAnt ant = new NoExitAnt();
         ant.startAnt(new String[] {"-v", "-f", targetModuleDir+File.separator+"build.xml", "dist"}, null, this.getClass().getClassLoader());
 
-        String name = targetModuleDir.substring(targetModuleDir.lastIndexOf(File.separatorChar)+1);
-        File distJar = new File(targetModuleDir+File.separator+"dist"+File.separator+name+".jar");
-        System.err.println("DEPLOYING "+distJar.getAbsolutePath());
+        String modulename = targetModuleDir.substring(targetModuleDir.lastIndexOf(File.separatorChar)+1);
+        File distJar = new File(targetModuleDir+File.separator+"dist"+File.separator+modulename+".jar");
+//        System.err.println("DEPLOYING "+distJar.getAbsolutePath());
         if (!distJar.exists()) {
             JOptionPane.showMessageDialog(this, "Module failed to compile\nSee console for error messages", "Deployment Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
         // Now deploy to server
         // TODO
-        LoginManager targetServer = (LoginManager) targetServerSelector.getSelectedItem();
+        ServerSessionManager targetServer = (ServerSessionManager) targetServerSelector.getSelectedItem();
         try {
             ModuleUploader uploader = new ModuleUploader(new URL(targetServer.getServerURL()));
             uploader.upload(distJar);
@@ -599,10 +612,20 @@ public class ImportSessionFrame extends javax.swing.JFrame
             return;
         }
 
-
         // Cleanup
         imports.clear();
         tableModel.setRowCount(0);
+
+
+        // Now create the cells for the new content
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
+        for(ModelLoader.ModelDeploymentInfo info : deploymentInfo) {
+            CellID parentCellID = null;
+            CellCreateMessage msg = new CellCreateMessage(parentCellID, info.getAssetURL());
+            connection.send(msg);
+        }
+
 }//GEN-LAST:event_serverBActionPerformed
 
     private void saveImportGroupMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveImportGroupMIActionPerformed
@@ -1010,8 +1033,8 @@ private void targetModuleSelectorActionPerformed(java.awt.event.ActionEvent evt)
                                  int index,
                                  boolean isSelected,
                                  boolean cellHasFocus) {
-            if (value instanceof LoginManager)
-                setText(((LoginManager)value).getServerNameAndPort());
+            if (value instanceof ServerSessionManager)
+                setText(((ServerSessionManager)value).getServerNameAndPort());
 //             setBackground(isSelected ? Color.red : Color.white);
 //             setForeground(isSelected ? Color.white : Color.black);
              return this;

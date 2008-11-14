@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.client.jme.login;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -31,7 +30,7 @@ import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
-import org.jdesktop.wonderland.client.login.LoginManager.NoAuthLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 
 /**
  *
