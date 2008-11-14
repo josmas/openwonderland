@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  *
@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.client.login.LoginManager;
  */
 public class AvatarPlugin implements ClientPlugin {
 
-    public void initialize(LoginManager loginManager) {
+    public void initialize(ServerSessionManager loginManager) {
         ClientContextJME.getAvatarRenderManager().registerRenderer(AvatarImiJME.class);
     }
 

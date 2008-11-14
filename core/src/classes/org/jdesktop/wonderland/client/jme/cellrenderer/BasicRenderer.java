@@ -33,8 +33,11 @@ import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.JBulletCollisionComponent;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
+import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
+import org.jdesktop.mtgame.PhysicsComponent;
 import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -45,6 +48,7 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -179,25 +183,25 @@ public abstract class BasicRenderer implements CellRendererJME {
             RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
             entity.addComponent(RenderComponent.class, rc);
 
-//            JMECollisionSystem collisionSystem = (JMECollisionSystem)
-//                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
-//            JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
-//                    ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
-//            JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)
-//                    ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
-
             WonderlandSession session = cell.getCellCache().getSession();
             CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(LoginManager.find(session), "Default");
 
+            CollisionComponent cc=null;
             if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
-                CollisionComponent cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
+                cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
                 entity.addComponent(CollisionComponent.class, cc);
             } else {
                 logger.warning("Unsuppoerted CollisionSystem "+collisionSystem);
             }
 
             // TODO Physics setup
-//            PhysicsSystem physicsSystem = ClientContextJME.getPhysicSystem(session, "Default");
+            PhysicsSystem physicsSystem = ClientContextJME.getPhysicsSystem(LoginManager.find(session), "Default");
+            if (cc!=null && physicsSystem instanceof JBulletPhysicsSystem) {
+                PhysicsComponent pc = ((JBulletPhysicsSystem)physicsSystem).createPhysicsComponent((JBulletCollisionComponent)cc);
+                entity.addComponent(PhysicsComponent.class, pc);
+            } else {
+                logger.warning("Unsuppoerted PhysicsSystem "+physicsSystem);
+            }
         }
 
     }
@@ -250,12 +254,18 @@ public abstract class BasicRenderer implements CellRendererJME {
         // annotate wla URIs with the server name and port
         if (serverHostAndPort == null) {
             WonderlandSession session = cell.getCellCache().getSession();
-            LoginManager manager = LoginManager.find(session);
+            ServerSessionManager manager = LoginManager.find(session);
+            if (manager==null) {
+                logger.severe("Unable to find manager for session "+session);
+                return null;
+            }
             serverHostAndPort = manager.getServerNameAndPort();
         }
 
         try {
+            System.err.println("OrigURL "+origURL);
             AssetURI uri = new AssetURI(origURL).getAnnotatedURI(serverHostAndPort);
+            System.err.println("Asset "+uri);
             return uri.toURL();
         } catch (URISyntaxException use) {
             MalformedURLException mue =

@@ -55,6 +55,8 @@ public class JmeColladaCell extends Cell {
         this.modelURI = colladaConfig.getModelURI();
         this.geometryRotation = colladaConfig.getGeometryRotation();
         this.geometryTranslation = colladaConfig.getGeometryTranslation();
+
+        System.err.println("************* CONFIG "+modelURI);
     }
     
     @Override

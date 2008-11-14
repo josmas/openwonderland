@@ -40,11 +40,11 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.Environment;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.AssetURI;
 
@@ -56,9 +56,9 @@ public class DefaultEnvironment implements Environment {
 
     private Skybox skybox = null;
 
-    private LoginManager loginManager;
+    private ServerSessionManager loginManager;
 
-    public DefaultEnvironment(LoginManager loginManager) {
+    public DefaultEnvironment(ServerSessionManager loginManager) {
         this.loginManager = loginManager;
     }
 
@@ -156,6 +156,7 @@ public class DefaultEnvironment implements Environment {
             skybox.lockBounds();
             //skybox.lockMeshes();
             Entity e = new Entity("Skybox");
+//            e.addComponent(ProcessorComponent.class, new TextureAnimationProcessor(up));
             SkyboxComponent sbc = wm.getRenderManager().createSkyboxComponent(skybox, true);
             e.addComponent(SkyboxComponent.class, sbc);
 
@@ -168,5 +169,35 @@ public class DefaultEnvironment implements Environment {
         }
         return null;
     }
+
+//    class TextureAnimationProcessor extends ProcessorComponent {
+//
+//        private Texture top;
+//
+//        public TextureAnimationProcessor(Texture top) {
+//            this.top = top;
+//            top.setTranslation(new Vector3f());
+//        }
+//
+//        @Override
+//        public void compute(ProcessorArmingCollection arg0) {
+//            // Do nothing
+//        }
+//
+//        @Override
+//        public void commit(ProcessorArmingCollection arg0) {
+//            Vector3f v3f = top.getTranslation();
+//            v3f.y += 0.1f;
+//            if (v3f.y>1)
+//                v3f.y = 0;
+//            top.setTranslation(v3f);
+//        }
+//
+//        @Override
+//        public void initialize() {
+//            setArmingCondition(new NewFrameCondition(this));
+//        }
+//
+//    }
 
 }

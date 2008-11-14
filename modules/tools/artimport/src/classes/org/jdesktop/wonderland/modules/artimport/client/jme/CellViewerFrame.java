@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -41,13 +40,11 @@ import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
-import org.jdesktop.wonderland.client.cell.RootCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
@@ -56,6 +53,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.InputEvent3D;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
@@ -80,7 +78,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
     
     /** Creates new form CellViewerFrame */
     public CellViewerFrame() {
-        LoginManager lm = LoginManager.getPrimary();
+        ServerSessionManager lm = LoginManager.getPrimary();
         WonderlandSession session = lm.getPrimarySession();
 
 //        if (sessions.length>1) {

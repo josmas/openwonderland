@@ -17,18 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import imi.character.CharacterMotionListener;
-import imi.character.ninja.Ninja;
-import imi.character.ninja.NinjaAvatar;
 import imi.character.statemachine.GameContextListener;
-import imi.scene.JScene;
 import imi.scene.PMatrix;
 import imi.scene.processors.JSceneEventProcessor;
 import imi.utils.input.NinjaControlScheme;
@@ -44,6 +38,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import imi.character.ninja.NinjaAvatar;
 import imi.character.Character;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
@@ -151,12 +146,21 @@ public class AvatarImiJME extends BasicRenderer {
                 setAnimations(anims.toArray(new String[anims.size()]));
 
                 WonderlandSession session = cell.getCellCache().getSession();
-                LoginManager manager = LoginManager.find(session);
+                ServerSessionManager manager = LoginManager.find(session);
                 String serverHostAndPort = manager.getServerNameAndPort();
 
                 setBaseURL("wla://avatarbase@"+serverHostAndPort+"/");
 
-//                setUseSimpleSphereModel(true);
+//                try {
+//                    URL simpleURL = new URL("wla://avatarbase@"+serverHostAndPort+"/CylinderMan.dae");
+//                    SharedAsset colladaAsset = new SharedAsset(null,
+//                        new AssetDescriptor(SharedAssetType.COLLADA_Mesh, simpleURL));
+//
+//                    ColladaEnvironment loader = new ColladaEnvironment(ClientContextJME.getWorldManager(), colladaAsset, "SimpleAvatar");
+//                    setUseSimpleSphereModel(true, loader.getPScene());
+//                } catch(MalformedURLException e) {
+//                    logger.warning("Failed to load simple avatar");
+//                }
             }
 
         }

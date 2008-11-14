@@ -55,6 +55,7 @@ import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 
@@ -170,7 +171,7 @@ public class JmeClientMain {
         logout();
 
         // get the login manager for the given server
-        LoginManager lm = LoginManager.getInstance(serverURL);
+        ServerSessionManager lm = LoginManager.getInstance(serverURL);
 
         // Register default collision and physics systems for this session
         JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
@@ -179,6 +180,7 @@ public class JmeClientMain {
                 ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
         ClientContextJME.addCollisionSystem(lm, "Default", collisionSystem);
         ClientContextJME.addPhysicsSystem(lm, "Default", physicsSystem);
+        System.err.println("-----------------> loadServer");
 
         // create a new session
         try {

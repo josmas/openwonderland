@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.client;
 
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
@@ -46,5 +46,5 @@ public interface ClientPlugin {
      * @param loginManager the loginManager representing the server this
      * plugin is connected to.
      */
-    public void initialize(LoginManager loginManager);
+    public void initialize(ServerSessionManager loginInfo);
 }

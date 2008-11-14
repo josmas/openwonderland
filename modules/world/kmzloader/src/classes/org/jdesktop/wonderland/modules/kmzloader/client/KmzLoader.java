@@ -183,7 +183,7 @@ class KmzLoader implements ModelLoader {
         }
     }
     
-    public void deployToModule(File moduleRootDir) throws IOException {
+    public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException {
         try {
             String modelName = origFile.getName();
             ZipFile zipFile = new ZipFile(origFile);
@@ -201,27 +201,29 @@ class KmzLoader implements ModelLoader {
             if (modelFiles.size() > 1) {
                 logger.warning("Multiple models not supported during deploy");
             }
-            JMEColladaCellSetup setup = new JMEColladaCellSetup();
-            setup.setModel("wlm://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
-            
-            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
-            Writer w = new FileWriter(wfsFile);
-            try {
-                setup.encode(w, getClass().getClassLoader());
-            } catch (JAXBException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            }
-            w.close();
-            
+
+//            JMEColladaCellSetup setup = new JMEColladaCellSetup();
+//            setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
+//
+//            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
+//            Writer w = new FileWriter(wfsFile);
+//            try {
+//                setup.encode(w, getClass().getClassLoader());
+//            } catch (JAXBException ex) {
+//                logger.log(Level.SEVERE, null, ex);
+//            }
+//            w.close();
+
+            ModelDeploymentInfo deploymentInfo= new ModelDeploymentInfo();
+            deploymentInfo.setAssetURL("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
+            return deploymentInfo;
         } catch (ZipException ex) {
             logger.log(Level.SEVERE, null, ex);
             throw new IOException("Zip error");
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             throw ex;
-        }
-        
-        
+        }        
     }
     
     /**

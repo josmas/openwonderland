@@ -25,7 +25,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
@@ -50,16 +49,12 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author paulby
  */
 public class JmeColladaRenderer extends BasicRenderer {
-    /** <server name>:<port> of the web server */
-    private String serverHostAndPort;
 
     public JmeColladaRenderer(Cell cell) {
         super(cell);
     }
     
     protected Node createSceneGraph(Entity entity) {
-        ColorRGBA color = new ColorRGBA();
-
         return loadColladaAsset(cell.getCellID().toString());        
     }
 
@@ -114,7 +109,7 @@ public class JmeColladaRenderer extends BasicRenderer {
         
         try {
             URL url = getAssetURL(((JmeColladaCell)cell).getModelURI());
-//            logger.warning("URL: " + url);
+            logger.warning("URL: " + url);
             InputStream input = url.openStream();
 //            System.out.println("Resource stream "+input);
 
@@ -148,90 +143,5 @@ public class JmeColladaRenderer extends BasicRenderer {
         return node;
     }
 
-    protected URL getAssetURL(String orig) throws MalformedURLException {
-        // TODO: fix me?
-        if (!orig.startsWith("wla")) {
-            return new URL(orig);
-        }
 
-        // annotate wla URIs with the server name and port
-        if (serverHostAndPort == null) {
-            WonderlandSession session = cell.getCellCache().getSession();
-            LoginManager manager = LoginManager.find(session);
-            serverHostAndPort = manager.getServerNameAndPort();
-        }
-      
-        try {
-            AssetURI uri = new AssetURI(orig).getAnnotatedURI(serverHostAndPort);
-            return uri.toURL();
-        } catch (URISyntaxException use) {
-            MalformedURLException mue =
-                    new MalformedURLException("Error creating asset URI");
-            mue.initCause(use);
-            throw mue;
-        }
-    }
-
-    class AssetResourceLocator implements ResourceLocator {
-
-        private String modulename;
-        private String path;
-
-        /**
-         * Locate resources for the given file
-         * @param url
-         */
-        public AssetResourceLocator(URL url) {
-            // The modulename can either be in the "user info" field or the
-            // "host" field. If "user info" is null, then use the host name.
-            if (url.getUserInfo() == null) {
-                modulename = url.getHost();
-            }
-            else {
-                modulename = url.getUserInfo();
-            }
-            path = url.getPath();
-            path = path.substring(0, path.lastIndexOf('/')+1);
-        }
-
-        public URL locateResource(String resource) {
-            System.err.println("Looking for resource "+resource);
-            System.err.println("Module "+modulename+"  path "+path);
-            try {
-                if (resource.startsWith("/")) {
-                    URL url = getAssetURL("wla://"+modulename+resource);
-//                    System.err.println("Using alternate "+url.toExternalForm());
-                    return url;
-                } else {
-                    String urlStr = trimUrlStr("wla://"+modulename+path + resource);
-
-                    URL url = getAssetURL(urlStr);
-//                    System.err.println(url.toExternalForm());
-                    return url;
-                }
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
-            }
-        }
-
-        /**
-         * Trim ../ from url
-         * @param urlStr
-         */
-        private String trimUrlStr(String urlStr) {
-            int pos = urlStr.indexOf("/../");
-            if (pos==-1)
-                return urlStr;
-
-            StringBuffer buf = new StringBuffer(urlStr);
-            int start = pos;
-            while(buf.charAt(--start)!='/') {}
-            buf.replace(start, pos+4, "/");
-            System.out.println("Trimmed "+buf.toString());
-            
-           return buf.toString();
-        }
-
-    }
 }

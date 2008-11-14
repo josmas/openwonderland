@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 
 /**
@@ -42,7 +42,7 @@ public class AudioManagerClientPlugin
     
     private AudioManagerClient client;
     
-    public void initialize(LoginManager loginManager) {
+    public void initialize(ServerSessionManager loginManager) {
         logger.info("Audio manager initialized");
 
         loginManager.addLifecycleListener(this);

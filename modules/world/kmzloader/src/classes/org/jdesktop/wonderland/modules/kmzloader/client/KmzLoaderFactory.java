@@ -21,7 +21,7 @@ import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  *
@@ -31,7 +31,7 @@ public class KmzLoaderFactory extends ModelLoaderFactory
     implements ClientPlugin
 {
 
-    public void initialize(LoginManager loginManager) {
+    public void initialize(ServerSessionManager loginManager) {
         LoaderManager.getLoaderManager().registerLoader(this);
     }
     

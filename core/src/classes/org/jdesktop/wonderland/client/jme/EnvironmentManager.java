@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.jme;
 
 import java.util.HashMap;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  *
@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.client.login.LoginManager;
 public class EnvironmentManager {
     
     private static EnvironmentManager environmentManager=null;
-    private HashMap<LoginManager,HashMap<String, Environment>> environments = new HashMap();
+    private HashMap<ServerSessionManager,HashMap<String, Environment>> environments = new HashMap();
 
     private EnvironmentManager() {
         
@@ -46,7 +46,7 @@ public class EnvironmentManager {
      * @param name
      * @param environment
      */
-    public void addEnvironment(LoginManager loginMgr, String name, Environment environment) {
+    public void addEnvironment(ServerSessionManager loginMgr, String name, Environment environment) {
         HashMap<String, Environment> env = environments.get(loginMgr);
         if (env==null) {
             env = new HashMap();
@@ -60,7 +60,7 @@ public class EnvironmentManager {
      * @param loginMgr
      * @param name
      */
-    public void removeEnvironment(LoginManager loginMgr, String name) {
+    public void removeEnvironment(ServerSessionManager loginMgr, String name) {
         Logger.getAnonymousLogger().warning("TODO - implement EnvironmentManager.removeEnvironment");
     }
 
@@ -68,7 +68,7 @@ public class EnvironmentManager {
      * Set the current Environment used by default
      * @param name
      */
-    public void setCurrentEnvironment(LoginManager loginMgr, String name) {
+    public void setCurrentEnvironment(ServerSessionManager loginMgr, String name) {
         HashMap<String, Environment> env = environments.get(loginMgr);
         if (env==null)
             throw new RuntimeException("No such Environment for session");

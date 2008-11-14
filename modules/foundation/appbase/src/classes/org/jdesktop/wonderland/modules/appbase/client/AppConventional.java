@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.LoginInfo;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -84,7 +85,7 @@ public abstract class AppConventional extends App2D {
 
         // JK: updated to use new interfaces.
         // XXX This may break in the multiple-server case XXX
-        LoginManager primary = LoginManager.getPrimary();
+        LoginInfo primary = LoginManager.getPrimary();
         session = primary.getPrimarySession();
 
         //WonderlandServerInfo serverInfo = ClientContext.getWonderlandSessionManager().getPrimaryServer();

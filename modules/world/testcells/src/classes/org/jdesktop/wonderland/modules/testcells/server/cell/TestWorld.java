@@ -49,9 +49,9 @@ public class TestWorld implements ServerPlugin {
 //
 //            WonderlandContext.getCellManager().insertCellInWorld(new SimpleShapeCellMO(new Vector3f(5, 2, 0), 1, SimpleShapeConfig.Shape.CYLINDER));
             
-//            WonderlandContext.getCellManager().insertCellInWorld(new MirrorCellMO(new Vector3f(0, 0, 0), 20));
-//
-//            WonderlandContext.getCellManager().insertCellInWorld(new PhysicsTestCellMO(new Vector3f(0, 0, 0), 20));
+            WonderlandContext.getCellManager().insertCellInWorld(new MirrorCellMO(new Vector3f(0, 0, 0), 20));
+
+            WonderlandContext.getCellManager().insertCellInWorld(new PhysicsTestCellMO(new Vector3f(0, 0, 0), 20));
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
         }

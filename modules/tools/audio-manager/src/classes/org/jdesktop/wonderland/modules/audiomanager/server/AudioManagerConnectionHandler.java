@@ -249,7 +249,7 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof DisconnectCallMessage) {
-	    logger.warning("got DisconnectCallMessage");
+	    logger.fine("got DisconnectCallMessage");
 	    return;
 	}
 
@@ -262,7 +262,8 @@ public class AudioManagerConnectionHandler
     }
 
     public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
+        logger.warning("AudioManagerConnectionHandler.clientDisconnected(..) Not Impplemented");
     }
 
     public void callStatusChanged(CallStatus status) {

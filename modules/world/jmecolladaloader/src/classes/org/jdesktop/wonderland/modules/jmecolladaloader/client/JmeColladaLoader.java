@@ -91,7 +91,7 @@ class JmeColladaLoader implements ModelLoader {
     
 
     
-    public void deployToModule(File moduleRootDir) throws IOException {
+    public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException {
 //        try {
 //            String modelName = origFile.getName();
 //            ZipFile zipFile = new ZipFile(origFile);
@@ -129,7 +129,8 @@ class JmeColladaLoader implements ModelLoader {
 //            throw ex;
 //        }
 //        
-//        
+//
+        return null;
     }
     
     /**

@@ -17,17 +17,15 @@
  */
 package org.jdesktop.wonderland.client.jme.login;
 
-import java.io.IOException;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.jme.JmeClientSession;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.LoginManager.NoAuthLoginControl;
-import org.jdesktop.wonderland.client.login.LoginManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.LoginManager.WebURLLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
 import org.jdesktop.wonderland.client.login.LoginUI;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 

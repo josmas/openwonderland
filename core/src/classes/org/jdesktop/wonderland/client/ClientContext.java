@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -98,7 +99,7 @@ public class ClientContext {
         return inputManager;
     }
 
-    public static LoginManager getLoginManager(String serverURL)
+    public static ServerSessionManager getLoginManager(String serverURL)
         throws IOException
     {
         return LoginManager.getInstance(serverURL);
