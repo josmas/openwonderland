@@ -24,18 +24,15 @@ import com.jme.bounding.BoundingVolume;
 import javax.swing.JOptionPane;
 import com.jme.math.Vector2f;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalMessage;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.LoginInfo;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -85,7 +82,7 @@ public abstract class AppConventional extends App2D {
 
         // JK: updated to use new interfaces.
         // XXX This may break in the multiple-server case XXX
-        LoginInfo primary = LoginManager.getPrimary();
+        ServerSessionManager primary = LoginManager.getPrimary();
         session = primary.getPrimarySession();
 
         //WonderlandServerInfo serverInfo = ClientContext.getWonderlandSessionManager().getPrimaryServer();
