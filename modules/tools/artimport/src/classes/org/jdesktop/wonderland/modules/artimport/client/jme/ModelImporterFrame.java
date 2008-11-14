@@ -222,7 +222,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 JFileChooser chooser = new JFileChooser();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter(LoaderManager.getLoaderManager().getLoaderExtensions());
                 chooser.setFileFilter(filter);
-                chooser.setCurrentDirectory(lastModelDir);
+//                chooser.setCurrentDirectory(lastModelDir);
                 int returnVal = chooser.showOpenDialog(ModelImporterFrame.this);
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
                     try {
@@ -271,7 +271,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
      * 
      * @param origFile
      */
-    void importModel(File origFile, boolean attachToAvatar) throws IOException {
+    void importModel(final File origFile, boolean attachToAvatar) throws IOException {
         avatarMoveCB.setSelected(attachToAvatar);
         
         modelX3dTF.setText(origFile.getAbsolutePath());
@@ -282,28 +282,32 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                                                 new Vector3f(),
                                                 null, 
                                                 null);
-        entity = sessionFrame.loadModel(importedModel);
-        
-        transformProcessor = (TransformProcessorComponent) entity.getComponent(ProcessorComponent.class);
-        
-        calcModelBounds(importedModel.getModelBG());
+        sessionFrame.asyncLoadModel(importedModel, new ImportSessionFrame.LoadCompleteListener() {
 
-        String dir = origFile.getAbsolutePath();
-        dir = dir.substring(0,dir.lastIndexOf(File.separatorChar));
-        dir = dir.substring(dir.lastIndexOf(File.separatorChar)+1);
-        texturePrefixTF.setText(dir);
+            public void loadComplete(Entity entity) {
+                transformProcessor = (TransformProcessorComponent) entity.getComponent(ProcessorComponent.class);
 
-        populateTextureList(importedModel.getModelBG());
+                calcModelBounds(importedModel.getModelBG());
+
+                String dir = origFile.getAbsolutePath();
+                dir = dir.substring(0,dir.lastIndexOf(File.separatorChar));
+                dir = dir.substring(dir.lastIndexOf(File.separatorChar)+1);
+                texturePrefixTF.setText(dir);
+
+                populateTextureList(importedModel.getModelBG());
+
+                String filename = origFile.getAbsolutePath();
+                filename = filename.substring(filename.lastIndexOf(File.separatorChar)+1);
+                filename = filename.substring(0, filename.lastIndexOf('.'));
+                modelNameTF.setText(filename);
+
+                if (avatarMoveCB.isSelected()) {
+        //            AvatarControlBehavior.getAvatarControlBehavior().addUserMoveListener(userMotionListener);
+                    System.err.println("AvatarControlBehavior listeners not implemented");
+                }
+                    }
+            });
         
-        String filename = origFile.getAbsolutePath();
-        filename = filename.substring(filename.lastIndexOf(File.separatorChar)+1);
-        filename = filename.substring(0, filename.lastIndexOf('.'));
-        modelNameTF.setText(filename);
-                
-        if (avatarMoveCB.isSelected()) {            
-//            AvatarControlBehavior.getAvatarControlBehavior().addUserMoveListener(userMotionListener);
-            System.err.println("AvatarControlBehavior listeners not implemented");
-        }
     }
         
     private void populateTextureList(Node bg) {
@@ -389,8 +393,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             }
         });
 
-        avatarMoveCB.setSelected(true);
         avatarMoveCB.setText("Move with Avatar");
+        avatarMoveCB.setEnabled(false);
         avatarMoveCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 avatarMoveCBActionPerformed(evt);

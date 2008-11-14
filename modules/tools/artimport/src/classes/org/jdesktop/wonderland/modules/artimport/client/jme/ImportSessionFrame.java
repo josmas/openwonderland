@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
-import org.jdesktop.wonderland.client.jme.artimport.ModelUploader;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.bounding.BoundingBox;
@@ -34,6 +33,8 @@ import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.resource.ResourceLocator;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -49,9 +50,15 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -66,12 +73,12 @@ import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.artimport.ModelCompiler;
-import org.jdesktop.wonderland.client.jme.artimport.ModelCompiler.CompilerMessageDisplay;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
+import org.jdesktop.wonderland.common.modules.ModuleUploader;
 
 /**
  * Frame that provides the controls for the user to position and orient
@@ -81,7 +88,6 @@ import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
  * @author  paulby
  */
 public class ImportSessionFrame extends javax.swing.JFrame
-        implements CompilerMessageDisplay 
 {    
     private static final Logger logger =
             Logger.getLogger(ImportSessionFrame.class.getName());
@@ -96,10 +102,13 @@ public class ImportSessionFrame extends javax.swing.JFrame
     private int editingRow = -1;
     
     private SceneGraphViewFrame sgViewFrame;
+
+    private String targetModuleDir = null;
    
     /** Creates new form ImportSessionFrame */
     public ImportSessionFrame() {
         initComponents();
+        targetModuleSelector.setSelectedIndex(0);
         
         sgViewFrame = new SceneGraphViewFrame();
         sgViewFrame.setVisible(true);
@@ -124,9 +133,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         importTable.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent tme) {
                 boolean models = importTable.getModel().getRowCount() > 0;
-                localB.setEnabled(models);
-//                serverB.setEnabled(models && 
-//                        ModelUploader.uploadAvailable(targetModuleTF.getText()));
+                serverB.setEnabled(models);
             }
         });
         
@@ -170,22 +177,24 @@ public class ImportSessionFrame extends javax.swing.JFrame
             Logger.getLogger(ModelImporterFrame.class.getName()).log(Level.INFO, null, ex);
         }
         
-        if (compiledDir==null) {
-            try {
-                File artDirCheck = new File("../lg3d-wonderland-art");
-                if (artDirCheck.exists()) {
-                    compiledModelsTF.setText(artDirCheck.getCanonicalPath());
-                    compiledDir = artDirCheck;
-                } 
-            } catch(IOException ex) {
-
-            }
+        Collection<LoginManager> servers = LoginManager.getAll();
+        for(LoginManager server : servers) {
+            targetServerSelector.addItem(server);
         }
-        
-        targetModuleTF.setText("../modules/samples/arttest");
-        
+
         importFrame = new ModelImporterFrame(this, lastModelDir);
  
+    }
+
+    private String createArtModule(File parentDir, String modulename) {
+        File file = new File(parentDir.getAbsolutePath()+File.separator+modulename);
+
+        if (!file.exists()) {
+            ModuleSourceManager moduleMgr = new ModuleSourceManager();
+            moduleMgr.createModule(modulename, "Art Module", parentDir, true);
+        }
+
+        return file.getAbsolutePath();
     }
     
     /**
@@ -227,6 +236,8 @@ public class ImportSessionFrame extends javax.swing.JFrame
         localSaveCancelB = new javax.swing.JButton();
         localSaveOKB = new javax.swing.JButton();
         invalidDirLabel = new javax.swing.JLabel();
+        loadingDialogPanel = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         importTable = new javax.swing.JTable();
         importModelB = new javax.swing.JButton();
@@ -234,11 +245,12 @@ public class ImportSessionFrame extends javax.swing.JFrame
         editB = new javax.swing.JButton();
         removeB = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        targetModuleTF = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        localB = new javax.swing.JButton();
-        doneButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
         moduleChooseB = new javax.swing.JButton();
+        targetModuleSelector = new javax.swing.JComboBox();
+        jLabel5 = new javax.swing.JLabel();
+        targetServerSelector = new javax.swing.JComboBox();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         loadImportGroupMI = new javax.swing.JMenuItem();
@@ -330,6 +342,13 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 .addContainerGap())
         );
 
+        loadingDialogPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        loadingDialogPanel.setMinimumSize(new java.awt.Dimension(215, 100));
+        loadingDialogPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel4.setText("Loading.... Please wait");
+        loadingDialogPanel.add(jLabel4, new java.awt.GridBagConstraints());
+
         setTitle("Import Manager");
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
@@ -370,7 +389,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         });
 
         serverB.setText("Deploy to server");
-        serverB.setToolTipText("Upload models to server");
+        serverB.setToolTipText("Deploy target module to server");
         serverB.setEnabled(false);
         serverB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -397,35 +416,34 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         jLabel1.setText("Model List");
 
-        targetModuleTF.setText("jTextField1");
-        targetModuleTF.setToolTipText("The module into which this model will be added");
-
         jLabel3.setText("Target Module :");
 
-        localB.setText("Save to local system...");
-        localB.setToolTipText("Save the loaded models to your local system");
-        localB.setEnabled(false);
-        localB.addActionListener(new java.awt.event.ActionListener() {
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                localBActionPerformed(evt);
+                cancelButtonActionPerformed(evt);
             }
         });
 
-        doneButton.setText("Done");
-        doneButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                doneButtonActionPerformed(evt);
-            }
-        });
-
-        moduleChooseB.setText("Choose");
-        moduleChooseB.setToolTipText("Choose the target module");
+        moduleChooseB.setText("New Module");
+        moduleChooseB.setToolTipText("A a new target module");
         moduleChooseB.setEnabled(false);
         moduleChooseB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moduleChooseBActionPerformed(evt);
             }
         });
+
+        targetModuleSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "User_Art_1", "User_Art_2", "User_Art_3", " " }));
+        targetModuleSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                targetModuleSelectorActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Target Server :");
+
+        targetServerSelector.setRenderer(new LoginManagerRenderer());
 
         jMenu1.setText("File");
 
@@ -456,29 +474,33 @@ public class ImportSessionFrame extends javax.swing.JFrame
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(localB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(serverB))
-                    .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
                             .add(layout.createSequentialGroup()
-                                .add(jLabel3)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(jLabel5)
+                                    .add(jLabel3))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(targetModuleTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(serverB)
+                                        .add(18, 18, 18)
+                                        .add(cancelButton))
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, targetServerSelector, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, targetModuleSelector, 0, 224, Short.MAX_VALUE)))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 168, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)))
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(doneButton)
                     .add(editB)
                     .add(importModelB)
                     .add(removeB)
                     .add(moduleChooseB))
-                .add(17, 17, 17))
+                .add(26, 26, 26))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -493,17 +515,20 @@ public class ImportSessionFrame extends javax.swing.JFrame
                         .add(editB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeB))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
-                    .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(moduleChooseB))
-                .add(76, 76, 76)
+                    .add(moduleChooseB)
+                    .add(targetModuleSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(61, 61, 61)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverB)
-                    .add(localB)
-                    .add(doneButton))
+                    .add(cancelButton))
                 .addContainerGap())
         );
 
@@ -540,27 +565,44 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
     private void serverBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverBActionPerformed
         // upload to server
-        String baseURL = targetModuleTF.getText();
-        ModelUploader uploader = new ModelUploader(this);
-        
-        try {
-            URL uploadURL = uploader.getUploadURL(baseURL);
-            
-            for(ImportedModel config : imports) {
-                uploader.uploadModel(config, uploadURL, baseURL);
+
+        for(ImportedModel model : imports) {
+            try {
+                model.getModelLoader().deployToModule(new File(targetModuleDir));
+            } catch (IOException ex) {
+                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
             }
-            
-            // reload the world
-//            ServerManagerMessage msg = ServerManagerMessage.createWFSReloadMessage();
-//            ChannelController.getController().sendMessage(msg);
-            System.err.println("Server reload not implemented");
-            
-            // empty the list of models
-            imports.clear();
-            tableModel.setRowCount(0);
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error uploading models", ioe);
         }
+
+        // Compile the target module
+        NoExitAnt ant = new NoExitAnt();
+        ant.startAnt(new String[] {"-v", "-f", targetModuleDir+File.separator+"build.xml", "dist"}, null, this.getClass().getClassLoader());
+
+        String name = targetModuleDir.substring(targetModuleDir.lastIndexOf(File.separatorChar)+1);
+        File distJar = new File(targetModuleDir+File.separator+"dist"+File.separator+name+".jar");
+        System.err.println("DEPLOYING "+distJar.getAbsolutePath());
+        if (!distJar.exists()) {
+            JOptionPane.showMessageDialog(this, "Module failed to compile\nSee console for error messages", "Deployment Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        // Now deploy to server
+        // TODO
+        LoginManager targetServer = (LoginManager) targetServerSelector.getSelectedItem();
+        try {
+            ModuleUploader uploader = new ModuleUploader(new URL(targetServer.getServerURL()));
+            uploader.upload(distJar);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        } catch(IOException e) {
+            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, e);
+            return;
+        }
+
+
+        // Cleanup
+        imports.clear();
+        tableModel.setRowCount(0);
 }//GEN-LAST:event_serverBActionPerformed
 
     private void saveImportGroupMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveImportGroupMIActionPerformed
@@ -589,27 +631,12 @@ public class ImportSessionFrame extends javax.swing.JFrame
         }
 }//GEN-LAST:event_loadImportGroupMIActionPerformed
 
-private void localBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localBActionPerformed
-        localSaveDialog.pack();
-        localSaveDialog.setVisible(true);
-        checkLocalSaveButtons();
-}//GEN-LAST:event_localBActionPerformed
-
 private void localSaveCancelBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localSaveCancelBActionPerformed
         localSaveDialog.setVisible(false);
 }//GEN-LAST:event_localSaveCancelBActionPerformed
 
 private void localSaveOKBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localSaveOKBActionPerformed
-        String compiledDirName = compiledModelsTF.getText();
-        String baseURL = targetModuleTF.getText();
 
-        ModelCompiler compiler = new ModelCompiler(this);
-        
-        for(ImportedModel config : imports) {
-            compiler.compileModel(config, baseURL, compiledDirName);
-        }
-        
-        localSaveDialog.setVisible(false);
 }//GEN-LAST:event_localSaveOKBActionPerformed
 
 private void compiledModelsTFFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_compiledModelsTFFocusLost
@@ -620,13 +647,20 @@ private void compiledModelsTFFocusGained(java.awt.event.FocusEvent evt) {//GEN-F
         checkLocalSaveButtons();
 }//GEN-LAST:event_compiledModelsTFFocusGained
 
-private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
+private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         setVisible(false);
-}//GEN-LAST:event_doneButtonActionPerformed
+        logger.warning("Cancel does not clean up imported files in target module");
+}//GEN-LAST:event_cancelButtonActionPerformed
 
 private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleChooseBActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_moduleChooseBActionPerformed
+
+private void targetModuleSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetModuleSelectorActionPerformed
+        File defaultDir = new File("../modules/samples");
+        String defaultModule = targetModuleSelector.getSelectedItem().toString();
+        targetModuleDir = createArtModule(defaultDir, defaultModule);
+}//GEN-LAST:event_targetModuleSelectorActionPerformed
     
     private void checkLocalSaveButtons() {
         boolean okEnabled = false;
@@ -639,6 +673,32 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         
         localSaveOKB.setEnabled(okEnabled);
         invalidDirLabel.setVisible(!okEnabled);
+    }
+
+    synchronized void asyncLoadModel(final ImportedModel model, final LoadCompleteListener listener) {
+        final JDialog loadingDialog = new JDialog(importFrame);
+        loadingDialog.setLayout(new BorderLayout());
+        loadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
+        loadingDialog.pack();
+        loadingDialog.setSize(200,100);
+        loadingDialog.setVisible(true);
+        loadingDialog.setAlwaysOnTop(true);
+
+        Thread t = new Thread(new Runnable() {
+
+            public void run() {
+                try {
+                    Entity entity = loadModel(model);
+                    listener.loadComplete(entity);
+                } catch (IOException ex) {
+                    Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    loadingDialog.setVisible(false);
+                    loadingDialog.dispose();
+                }
+            }
+        });
+        t.start();
     }
 
     /**
@@ -658,28 +718,7 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         lastModelDir = dir;
         
         Node modelBG=null;
-        
-        
-//        if (model.getOrigModel().endsWith("dae")) {
-//            InputStream in = new FileInputStream(model.getOrigModel());
-//            ColladaImporter.load(in, model.getOrigModel());
-//            modelBG = ColladaImporter.getModel();
-//
-//            ColladaImporter.cleanUp();
-//            in.close();
-//        } else if (model.getOrigModel().endsWith("kmz")) {
-//            modelBG = load(new File(model.getOrigModel()));
-//        } else if (model.getOrigModel().endsWith("wlm")) {
-//            InputStream in = new FileInputStream(model.getOrigModel());
-//            Savable s = BinaryImporter.getInstance().load(in);
-//            System.out.println("LOADED "+s);
-//            modelBG = (Node) s;
-//            in.close();
-//        } else {
-//            logger.severe("Unrecognised file extension "+model.getOrigModel());
-//            return null;
-//        }
-        
+                
         File modelFile = new File(model.getOrigModel());
         ModelLoader modelLoader = LoaderManager.getLoaderManager().getLoader(modelFile);
         
@@ -688,7 +727,8 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             JOptionPane.showMessageDialog(null, "No Loader for "+org.jdesktop.wonderland.common.FileUtils.getFileExtension(modelFile.getName()));
             return null;
         }
-        
+
+        model.setModelLoader(modelLoader);
         modelBG = modelLoader.importModel(modelFile);
         
         rootBG.attachChild(modelBG);
@@ -735,11 +775,6 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         
         findTextures(modelBG);
         
-        File targetArtDir = new File(targetModuleTF.getText());
-        targetArtDir.mkdir();
-        
-        modelLoader.deployToModule(targetArtDir);
-
         return entity;
     }
       
@@ -877,9 +912,9 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JButton chooseLocalDirB;
     private javax.swing.JTextField compiledModelsTF;
-    private javax.swing.JButton doneButton;
     private javax.swing.JButton editB;
     private javax.swing.JMenuItem editPMI;
     private javax.swing.JButton importModelB;
@@ -888,13 +923,15 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JList jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuItem loadImportGroupMI;
-    private javax.swing.JButton localB;
+    private javax.swing.JPanel loadingDialogPanel;
     private javax.swing.JButton localSaveCancelB;
     private javax.swing.JDialog localSaveDialog;
     private javax.swing.JButton localSaveOKB;
@@ -904,7 +941,8 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JMenuItem saveImportGroupMI;
     private javax.swing.JButton serverB;
     private javax.swing.JPopupMenu tablePopupMenu;
-    private javax.swing.JTextField targetModuleTF;
+    private javax.swing.JComboBox targetModuleSelector;
+    private javax.swing.JComboBox targetServerSelector;
     // End of variables declaration//GEN-END:variables
    
     /**
@@ -960,5 +998,39 @@ private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                 return filename;
             return filename.substring(i+1);
         }
+    }
+
+    class LoginManagerRenderer extends JLabel implements ListCellRenderer {
+        public LoginManagerRenderer() {
+            setOpaque(true);
+        }
+        public Component getListCellRendererComponent(
+                                 JList list,
+                                 Object value,
+                                 int index,
+                                 boolean isSelected,
+                                 boolean cellHasFocus) {
+            if (value instanceof LoginManager)
+                setText(((LoginManager)value).getServerNameAndPort());
+//             setBackground(isSelected ? Color.red : Color.white);
+//             setForeground(isSelected ? Color.white : Color.black);
+             return this;
+        }
+    }
+
+    class NoExitAnt extends org.apache.tools.ant.Main {
+        @Override
+        public void exit(int exitCode) {
+            System.err.println("Ignoring "+exitCode);
+        }
+    }
+
+    interface LoadCompleteListener {
+        /**
+         * Notificaton that the load is complete. Provides the entity
+         * that was loaded
+         * @param entity
+         */
+        public void loadComplete(Entity entity);
     }
 }

@@ -174,17 +174,19 @@ public class CellViewerFrame extends javax.swing.JFrame {
     }
     
     private void populateJTree() {
-        for(Cell rootCell : rootCells) {            
-            treeRoot.add(createJTreeNode(rootCell));
+        for(Cell rootCell : rootCells) {
+            DefaultMutableTreeNode root = createJTreeNode(rootCell);
+            if (root!=null)
+                treeRoot.add(root);
         }
     }
     
     private DefaultMutableTreeNode createJTreeNode(Cell cell) {
         DefaultMutableTreeNode parentNode = cellNodes.get(cell.getParent());
-        if (parentNode==null && !(cell instanceof RootCell)) {
-            logger.severe("******* Null parent "+cell.getParent());
-            return null;
-        } 
+//        if (parentNode==null && !(cell instanceof RootCell)) {
+//            logger.severe("******* Null parent "+cell.getParent());
+//            return null;
+//        }
         
         
         DefaultMutableTreeNode ret = new DefaultMutableTreeNode(cell);
@@ -201,7 +203,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
         }
                 
         cellNodes.put(cell, ret);
-        if (cell instanceof RootCell)
+        if (parentNode==null)
             parentNode = treeRoot;
         ((DefaultTreeModel)cellTree.getModel()).insertNodeInto(ret, parentNode, parentNode.getChildCount());
 
