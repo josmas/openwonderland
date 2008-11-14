@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="artimport" default="package" basedir=".">
-    <property file="my.module.properties"/>
-
+<project name="artimport" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.artimport}"/>
     <property name="modules.dir" location="${current.dir}/../.."/>
@@ -12,6 +10,11 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
+    <pathconvert property="module-client.classpath">
+        <path location="${current.dir}/lib/ant.jar"/>
+        <path location="${current.dir}/lib/ant-launcher.jar"/>
+    </pathconvert>
+
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client"/>
@@ -27,12 +30,15 @@
         <module name="artimport" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/artimport.jar"
                 moduleDescription="Art Import tools" builddir="${build.dir}">
                     
-            <client>
+            <client dir="${current.dir}/lib">
                 <clientjar name="artimport-client" basedir="${build.classes.dir}">
                     <clientplugin provider="org.jdesktop.wonderland.modules.artimport.client.jme.ArtToolsPlugin"/>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
-                </clientjar> 
+                </clientjar>
+
+                <include name="ant.jar"/>
+                <include name="ant-launcher.jar"/>
             </client>
 
              <!--

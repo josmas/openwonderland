@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.artimport.client.jme;
 import java.io.File;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -67,7 +68,6 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         moduleDescriptionTF = new javax.swing.JTextField();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Module Manager");
 
         createModulePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Create New Module"));
@@ -104,6 +104,8 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                 chooseDirBActionPerformed(evt);
             }
         });
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Module Parent Directory"));
 
         parentDirGroup.add(toolsDirCB);
         toolsDirCB.setText("Tools");
@@ -148,7 +150,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                     .add(foundationDirCB)
                     .add(toolsDirCB)
                     .add(samplesDirCB))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(162, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -176,6 +178,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         clientPackageCB.setEnabled(false);
 
         artCB.setText("Include Art");
+        artCB.setToolTipText("Include art resources in the module");
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -226,9 +229,10 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                         .add(18, 18, 18)
                         .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(createModulePanelLayout.createSequentialGroup()
-                                .add(parentDirTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 277, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, parentDirTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(chooseDirB))))
                     .add(createModulePanelLayout.createSequentialGroup()
@@ -289,6 +293,8 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         ModuleSourceManager mgr = new ModuleSourceManager();
 
         mgr.createModule(moduleNameTF.getText(), moduleDescriptionTF.getText(), parentDir, artCB.isSelected());
+
+        JOptionPane.showMessageDialog(this, "Module created in Directory "+parentDir);
     }//GEN-LAST:event_createModuleBActionPerformed
 
     private void chooseDirBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDirBActionPerformed

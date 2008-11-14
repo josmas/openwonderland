@@ -66,7 +66,12 @@ public class ModuleSourceManager {
         File serverSrc = new File(moduleDir.getAbsolutePath()+File.separatorChar+srcPkgDir+File.separatorChar+"server");
         serverSrc.mkdirs();
 
-        // Copy build.xml and my.build.properties
+        if (includeArt) {
+            File artDir = new File(moduleDir.getAbsolutePath()+File.separatorChar+srcPkgDir+File.separatorChar+"art");
+            artDir.mkdir();
+        }
+
+        // Copy build.xml
         File myBuildProp = new File(moduleDir.getAbsolutePath()+File.separatorChar+"my.module.properties");
         File buildXML = new File(moduleDir.getAbsolutePath()+File.separatorChar+"build.xml");
 
@@ -74,18 +79,12 @@ public class ModuleSourceManager {
             copyFile(ModuleSourceManager.class.getClassLoader().getResourceAsStream("org/jdesktop/wonderland/modules/artimport/client/jme/resources/module_build_template.xml"),
                     new FileOutputStream(buildXML),
                     new LineConditioner[] { new LineSubstituteConditioner("@ART@",
-                                                includeArt ? "<art dir=\"${current.dir}/art\"/>" : "<!--<art dir=\"${current.dir}/art\"/>-->"),
+                                                includeArt ? "<art dir=\"\\${current.dir}/art\"/>" : "<!--<art dir=\"\\${current.dir}/art\"/>-->"),
                                             new LineSubstituteConditioner("@MODULE_NAME@", moduleName),
                                             new LineSubstituteConditioner("@MODULE_DESC@", moduleDescription),
                                             new LineSubstituteConditioner("@MODULE_PKG@", srcPkg.replaceAll("\\.", File.separator))}
             );
 
-//            copyFile(ModuleSourceManager.class.getClassLoader().getResourceAsStream("org/jdesktop/wonderland/modules/artimport/client/jme/resources/module_properties_template.xml"),
-//                    new FileOutputStream(myBuildProp),
-//                    new LineConditioner[] { new LineSubstituteConditioner("@MODULE_NAME@", moduleName),
-//                                            new LineSubstituteConditioner("@MODULE_PKG@", srcPkg)}
-//                    );
-            
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ModuleSourceManager.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -106,6 +105,7 @@ public class ModuleSourceManager {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ModuleSourceManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
     private static void copyFile(InputStream inFile, OutputStream outFile, LineConditioner[] conditioners) {
@@ -154,6 +154,7 @@ public class ModuleSourceManager {
         }
 
         public String conditionLine(String line) {
+//            System.err.println(line+"  srcEx "+srcRegEx+"   with "+replaceWith);
             return line.replaceAll(srcRegEx, replaceWith);
         }
     }
