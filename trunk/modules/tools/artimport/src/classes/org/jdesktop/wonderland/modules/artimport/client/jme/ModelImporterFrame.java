@@ -202,6 +202,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         
         // Disable move with avatar
         avatarMoveCB.setSelected(false);
+        enableSpinners(true);
 
     }
     
@@ -395,6 +396,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             }
         });
 
+        avatarMoveCB.setSelected(true);
         avatarMoveCB.setText("Move with Avatar");
         avatarMoveCB.setEnabled(false);
         avatarMoveCB.addActionListener(new java.awt.event.ActionListener() {
