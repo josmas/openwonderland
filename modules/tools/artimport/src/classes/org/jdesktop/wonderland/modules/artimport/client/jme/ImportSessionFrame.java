@@ -200,7 +200,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         if (!file.exists()) {
             ModuleSourceManager moduleMgr = new ModuleSourceManager();
-            moduleMgr.createModule(modulename, "Art Module", parentDir, true);
+            moduleMgr.createModule(modulename, "Art Module", parentDir, true, false, false);
         }
 
         return file.getAbsolutePath();

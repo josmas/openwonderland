@@ -46,7 +46,7 @@ public class ModuleSourceManager {
      * @param moduleName
      * @param parentDirectory
      */
-    public void createModule(String moduleName, String moduleDescription, File parentDirectory, boolean includeArt) {
+    public void createModule(String moduleName, String moduleDescription, File parentDirectory, boolean includeArt, boolean includeClient, boolean includeServer) {
         File moduleDir = new File(parentDirectory.getAbsolutePath()+File.separatorChar+moduleName);
         if (moduleDir.exists())
             throw new RuntimeException("Module Directory already exists "+moduleDir.getAbsolutePath());
@@ -82,6 +82,10 @@ public class ModuleSourceManager {
                                                 includeArt ? "<art dir=\"\\${current.dir}/art\"/>" : "<!--<art dir=\"\\${current.dir}/art\"/>-->"),
                                             new LineSubstituteConditioner("@MODULE_NAME@", moduleName),
                                             new LineSubstituteConditioner("@MODULE_DESC@", moduleDescription),
+                                            new LineSubstituteConditioner("@CLIENT_START@", includeClient ? "" : "<!--"),
+                                            new LineSubstituteConditioner("@CLIENT_END@", includeClient ? "" : "-->"),
+                                            new LineSubstituteConditioner("@SERVER_START@", includeServer ? "" : "<!--"),
+                                            new LineSubstituteConditioner("@SERVER_END@", includeServer ? "" : "-->"),
                                             new LineSubstituteConditioner("@MODULE_PKG@", srcPkg.replaceAll("\\.", File.separator))}
             );
 
