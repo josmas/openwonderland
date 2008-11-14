@@ -77,7 +77,6 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
     public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
         this.modelURI = ((JMEColladaCellSetup)setup).getModel();
-        System.err.println("----------> setupCell "+modelURI);
     }
 
     @Override
