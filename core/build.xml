@@ -50,6 +50,9 @@
     <target name="run" depends="jar" description="Run the Wonderland client">
         <mkdir dir="log"/>
 
+        <!-- softphone jar location, set by the SoftphoneInstaller during webstart startup -->
+        <property name="softphone.jar.location" location="${current.dir}/ext/softphone/softphone.jar"/>
+
         <java classname="org.jdesktop.wonderland.client.jme.JmeClientMain" fork="true">
             
             <!-- arguments here must be replicated in some form in the
@@ -57,14 +60,14 @@
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
             <jvmarg value="-Xmx512m"/>
-	    <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${current.dir}/ext/softphone/softphone.jar"/>
+	        <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${softphone.jar.location}"/>
             <jvmarg value="-Dwonderland.version=${wonderland.version}"/>
             
             <!--start debug-->
-	    <!--
+	    <!-- 
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
-            -->
+            --> 
 	    <!--end debug-->
             
             <classpath>

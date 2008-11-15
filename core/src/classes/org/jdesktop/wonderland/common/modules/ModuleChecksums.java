@@ -278,6 +278,11 @@ public class ModuleChecksums {
                          */
                         String name = file.getAbsolutePath().substring((int) (root.getAbsolutePath().length() + 1));
 
+                        /* Make sure the /'s are correct */
+                        if (File.separatorChar != '/') {
+                            name = name.replace(File.separatorChar, '/');
+                        }
+
                         /* Create a new checksum object and add to the list */
                         Checksum c = new Checksum();
                         c.setLastModified(file.lastModified());
