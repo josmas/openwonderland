@@ -47,6 +47,7 @@ import java.awt.BorderLayout;
 import java.awt.Canvas;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.RenderBuffer;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * 
@@ -256,7 +257,7 @@ public class ViewManager {
             BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
             if (moveProc!=null) {
                 avatarControls.removeFromChain(moveProc);
-                moveProc.removeFromChain(cameraProcessor);
+                avatarControls.removeFromChain(cameraProcessor);
             }
         }
         
@@ -271,7 +272,21 @@ public class ViewManager {
      * First and Third person.
      */
     public void setCameraProcessor(CameraProcessor cameraProcessor) {
-        throw new RuntimeException("Not Implemented yet");
+        if (this.cameraProcessor!=null)
+            avatarControls.removeFromChain(this.cameraProcessor);
+
+        this.cameraProcessor = cameraProcessor;
+        cameraProcessor.initialize(cameraNode);
+        avatarControls.addToChain(cameraProcessor);
+        cameraProcessor.viewMoved(primaryViewCell.getWorldTransform());
+    }
+
+    /**
+     * Return the current camera processor
+     * @return
+     */
+    public CameraProcessor getCameraProcessor() {
+        return cameraProcessor;
     }
 
     /**
@@ -305,12 +320,21 @@ public class ViewManager {
         cameraComponent.setCameraNode(cameraNode);
         camera.addComponent(CameraComponent.class, cameraComponent);
         
-        cameraProcessor = new ThirdPersonCameraProcessor(cameraNode);
+        cameraProcessor = new ThirdPersonCameraProcessor();
+        cameraProcessor.initialize(cameraNode);
 //        camera.addComponent(CameraProcessor.class, cameraProcessor);
 
         rb.setCameraComponent(cameraComponent);
         
         wm.addEntity(camera);         
+    }
+
+    /**
+     * Returns the world transform of the camera
+     * @return
+     */
+    public CellTransform getCameraWorldTransform() {
+        return new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation());
     }
     
     /**
@@ -327,7 +351,7 @@ public class ViewManager {
         Node cameraSG = new Node("MyCamera SG");        
         cameraNode = new CameraNode("MyCamera", null);
         cameraSG.attachChild(cameraNode);
-        
+
         return (cameraSG);
     }
 
