@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.webserver.launcher;
 
+import java.net.URLConnection;
 import org.jdesktop.wonderland.utils.RunUtil;
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,8 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -125,15 +128,38 @@ public class WebServerLauncher {
             while ((line = in.readLine()) != null) {
                 File f = RunUtil.extract(WebServerLauncher.class, line, webDir);
                 if (f != null) {
-                    System.out.println("Adding URL " + f.toURL());
-                    urls.add(f.toURL());
+                    URL u = f.toURI().toURL();
+                    System.out.println("Adding URL " + u);
+                    
+                    urls.add(u);
                 }
             }
             
             // create a classloader with those files and use it
             // to reflectively instantiate an instance of the 
             // RunAppServer class, and call its run method
-            ClassLoader cl = new URLClassLoader(urls.toArray(new URL[0]));
+            ClassLoader cl = new URLClassLoader(urls.toArray(new URL[0])) {
+
+                @Override
+                public URL[] getURLs() {
+                    NoProtocolURLStreamHandler npush =
+                            new NoProtocolURLStreamHandler();
+
+                    URL[] out = super.getURLs();
+                    for (int i = 0; i < out.length; i++) {
+                        if (out[i].getProtocol().equals("file")) {
+                            try {
+                                out[i] = new URL(out[i], "", npush);
+                            } catch (MalformedURLException ex) {
+                                // ignore, leave URL as is
+                            }
+                        }
+                    }
+
+                    return out;
+                }
+
+            };
             Thread.currentThread().setContextClassLoader(cl);
             
             Class c = cl.loadClass("org.jdesktop.wonderland.webserver.RunAppServer");
@@ -234,6 +260,59 @@ public class WebServerLauncher {
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error determining host name", ioe);
             return "localhost";
+        }
+    }
+
+    /**
+     * Workaround for windows issue in Glassfish.  On Windows, Glassfish
+     * creates the sytem classpath by appending URLs together separated
+     * by the system path separator.  On Windows, that looks like:
+     * <code>file:URL1;file:URL2</code>
+     * On other platforms, you get:
+     * <code>file:URL1:file:URL2</code>
+     * This is done in <code>ASClassLoaderUtils.addLibrariesFromLibs()</code>.
+     * <p>
+     * Later, Jasper (the JSP compiler) tries to figure out the classpath
+     * by tokenizing the URL strings on the system path separator, and
+     * treating the result as a file.  On Windows, this doesn't work,
+     * because the list ends up being:
+     * <code>file:URL1, file:URL2</code>
+     * Whereas on other platforms it is:
+     * <code>file, URL1, file, URL2</code>
+     * This is done in <code>org.apache.jasper.Compiler.generateClass()</code>
+     * <p>
+     * The  short term soltution is to return URLs that don't include the
+     * protocol in their toString() method.  This obviously only works for
+     * file: URLs, but Glassfish wouldn't support http: URLs anyway.
+     */
+    static class NoProtocolURLStreamHandler extends URLStreamHandler {
+        @Override
+        protected URLConnection openConnection(URL u) throws IOException {
+            return new FileURLConnection(u);
+        }
+
+        @Override
+        protected String toExternalForm(URL u) {
+            return u.getPath();
+        }
+    }
+
+    static class FileURLConnection extends URLConnection {
+        public FileURLConnection(URL url) {
+            super (toFileURL(url));
+        }
+
+        @Override
+        public void connect() throws IOException {
+            // do nothing
+        }
+
+        public static URL toFileURL(URL u) {
+            try {
+                return new URL("file:" + u.toExternalForm());
+            } catch (MalformedURLException mue) {
+                return u;
+            }
         }
     }
 }

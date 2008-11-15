@@ -98,9 +98,12 @@ public class RunManager {
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {
+                    System.out.println("Shutdown hook running");
                     shutdown();
                 }
             });
+
+            System.out.println("Shutdown hook registered");
         }
 
         boolean start =
@@ -129,7 +132,7 @@ public class RunManager {
      * Stop all existing applications.
      */
     public void shutdown() {
-        logger.info("[RunManager] Stopping all apps");
+        System.out.println("[RunManager] Stopping all apps");
 
         // stop all active applications
         for (Runner runner : getAll()) {
