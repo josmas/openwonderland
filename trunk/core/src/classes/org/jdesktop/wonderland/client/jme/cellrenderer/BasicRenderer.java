@@ -187,23 +187,40 @@ public abstract class BasicRenderer implements CellRendererJME {
             CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(LoginManager.find(session), "Default");
 
             CollisionComponent cc=null;
-            if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
-                cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
+            cc = setupCollision(collisionSystem);
+            if (cc!=null)
                 entity.addComponent(CollisionComponent.class, cc);
-            } else {
-                logger.warning("Unsuppoerted CollisionSystem "+collisionSystem);
-            }
 
             // TODO Physics setup
             PhysicsSystem physicsSystem = ClientContextJME.getPhysicsSystem(LoginManager.find(session), "Default");
-            if (cc!=null && physicsSystem instanceof JBulletPhysicsSystem) {
-                PhysicsComponent pc = ((JBulletPhysicsSystem)physicsSystem).createPhysicsComponent((JBulletCollisionComponent)cc);
+            if (cc!=null) {
+                PhysicsComponent pc = setupPhysics(cc, physicsSystem);
                 entity.addComponent(PhysicsComponent.class, pc);
-            } else {
-                logger.warning("Unsuppoerted PhysicsSystem "+physicsSystem);
             }
         }
 
+    }
+
+    protected CollisionComponent setupCollision(CollisionSystem collisionSystem) {
+        CollisionComponent cc=null;
+        if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
+            cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
+        } else {
+            logger.warning("Unsuppoerted CollisionSystem "+collisionSystem);
+        }
+
+        return cc;
+    }
+
+    protected PhysicsComponent setupPhysics(CollisionComponent cc, PhysicsSystem physicsSystem) {
+        if (cc!=null && physicsSystem instanceof JBulletPhysicsSystem) {
+            PhysicsComponent pc = ((JBulletPhysicsSystem)physicsSystem).createPhysicsComponent((JBulletCollisionComponent)cc);
+            return pc;
+        } else {
+            logger.warning("Unsuppoerted PhysicsSystem "+physicsSystem);
+        }
+
+        return null;
     }
 
     /**
@@ -263,9 +280,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         }
 
         try {
-            System.err.println("OrigURL "+origURL);
             AssetURI uri = new AssetURI(origURL).getAnnotatedURI(serverHostAndPort);
-            System.err.println("Asset "+uri);
             return uri.toURL();
         } catch (URISyntaxException use) {
             MalformedURLException mue =
