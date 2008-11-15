@@ -25,15 +25,15 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- * A very simplistic third person camera model
+ * A very simplistic first person camera model
  * 
  * @author paulby
  */
-public class ThirdPersonCameraProcessor extends CameraProcessor {
+public class FirstPersonCameraProcessor extends CameraProcessor {
 
     private Quaternion rotation = new Quaternion();
     private Vector3f translation = new Vector3f();
-    private Vector3f offset = new Vector3f(0,2.2f,-6);
+    private Vector3f offset = new Vector3f(0,2.2f,-1);
     private boolean commitRequired = false;
 
     private Vector3f cameraLook = new Vector3f(0,0,1);
@@ -43,10 +43,10 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
 
     private WorldManager wm;
     
-    public ThirdPersonCameraProcessor() {
+    public FirstPersonCameraProcessor() {
         wm = ClientContextJME.getWorldManager();
     }
-    
+
     @Override
     public void compute(ProcessorArmingCollection arg0) {
     }

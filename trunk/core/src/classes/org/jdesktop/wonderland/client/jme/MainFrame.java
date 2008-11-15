@@ -180,6 +180,7 @@ public class MainFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        cameraButtonGroup = new javax.swing.ButtonGroup();
         serverPanel = new javax.swing.JPanel();
         serverLabel = new javax.swing.JLabel();
         serverField = new javax.swing.JTextField();
@@ -192,6 +193,9 @@ public class MainFrame extends javax.swing.JFrame {
         logoutMI = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
         exitMI = new javax.swing.JMenuItem();
+        viewMenu = new javax.swing.JMenu();
+        firstPersonRB = new javax.swing.JRadioButtonMenuItem();
+        thirdPersonRB = new javax.swing.JRadioButtonMenuItem();
         editMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
 
@@ -202,7 +206,8 @@ public class MainFrame extends javax.swing.JFrame {
         serverPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         serverPanel.setLayout(new java.awt.BorderLayout());
 
-        serverLabel.setText("Location:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
+        serverLabel.setText(bundle.getString("Location:")); // NOI18N
         serverPanel.add(serverLabel, java.awt.BorderLayout.WEST);
 
         serverField.addActionListener(new java.awt.event.ActionListener() {
@@ -212,7 +217,7 @@ public class MainFrame extends javax.swing.JFrame {
         });
         serverPanel.add(serverField, java.awt.BorderLayout.CENTER);
 
-        goButton.setText("Go!");
+        goButton.setText(bundle.getString("Go!")); // NOI18N
         goButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 goButtonActionPerformed(evt);
@@ -223,14 +228,14 @@ public class MainFrame extends javax.swing.JFrame {
         getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
-        fpsLabel.setText("FPS :");
+        fpsLabel.setText(bundle.getString("FPS_:")); // NOI18N
         jPanel1.add(fpsLabel);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
         fileMenu.setText(bundle.getString("File")); // NOI18N
 
-        logoutMI.setText("Log out");
+        logoutMI.setText(bundle.getString("Log_out")); // NOI18N
         logoutMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 logoutMIActionPerformed(evt);
@@ -248,6 +253,29 @@ public class MainFrame extends javax.swing.JFrame {
         fileMenu.add(exitMI);
 
         mainMenuBar.add(fileMenu);
+
+        viewMenu.setText(bundle.getString("View")); // NOI18N
+
+        cameraButtonGroup.add(firstPersonRB);
+        firstPersonRB.setText(bundle.getString("First_Person_Camera")); // NOI18N
+        firstPersonRB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraChangedActionPerformed(evt);
+            }
+        });
+        viewMenu.add(firstPersonRB);
+
+        cameraButtonGroup.add(thirdPersonRB);
+        thirdPersonRB.setSelected(true);
+        thirdPersonRB.setText(bundle.getString("Third_Person_Camera")); // NOI18N
+        thirdPersonRB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraChangedActionPerformed(evt);
+            }
+        });
+        viewMenu.add(thirdPersonRB);
+
+        mainMenuBar.add(viewMenu);
 
         editMenu.setText(bundle.getString("Edit")); // NOI18N
         mainMenuBar.add(editMenu);
@@ -281,11 +309,23 @@ private void logoutMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     }
 }//GEN-LAST:event_logoutMIActionPerformed
 
+private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cameraChangedActionPerformed
+    if (evt.getSource()==firstPersonRB) {
+        ClientContextJME.getViewManager().setCameraProcessor(new FirstPersonCameraProcessor());
+    } else if (evt.getSource()==thirdPersonRB) {
+        ClientContextJME.getViewManager().setCameraProcessor(new ThirdPersonCameraProcessor());
+
+    }
+
+}//GEN-LAST:event_cameraChangedActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup cameraButtonGroup;
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMI;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JRadioButtonMenuItem firstPersonRB;
     private javax.swing.JLabel fpsLabel;
     private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
@@ -296,7 +336,9 @@ private void logoutMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JTextField serverField;
     private javax.swing.JLabel serverLabel;
     private javax.swing.JPanel serverPanel;
+    private javax.swing.JRadioButtonMenuItem thirdPersonRB;
     private javax.swing.JMenu toolsMenu;
+    private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 
 }

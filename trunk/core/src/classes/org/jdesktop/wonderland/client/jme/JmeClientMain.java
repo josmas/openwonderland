@@ -180,7 +180,6 @@ public class JmeClientMain {
                 ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
         ClientContextJME.addCollisionSystem(lm, "Default", collisionSystem);
         ClientContextJME.addPhysicsSystem(lm, "Default", physicsSystem);
-        System.err.println("-----------------> loadServer");
 
         // create a new session
         try {

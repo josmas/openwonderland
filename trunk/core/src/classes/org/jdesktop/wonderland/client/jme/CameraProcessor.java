@@ -36,7 +36,10 @@ public abstract class CameraProcessor extends ProcessorComponent {
      *
      * @param cameraNode the cameraNode this processor will manipulate
      */
-    public CameraProcessor(CameraNode cameraNode) {
+    public CameraProcessor() {
+    }
+
+    protected void initialize(CameraNode cameraNode) {
         this.cameraNode = cameraNode;
     }
     
@@ -45,4 +48,6 @@ public abstract class CameraProcessor extends ProcessorComponent {
      * @param worldTransform the worldTransform of the view cell
      */
     public abstract void viewMoved(CellTransform worldTransform);
+
+
 }
