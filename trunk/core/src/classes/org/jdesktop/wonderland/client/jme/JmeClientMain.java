@@ -39,6 +39,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
+import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
@@ -174,12 +175,14 @@ public class JmeClientMain {
         ServerSessionManager lm = LoginManager.getInstance(serverURL);
 
         // Register default collision and physics systems for this session
-        JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
-                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
-        JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)
-                ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
+//        JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
+//                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
+//        JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)
+//                ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
+        JMECollisionSystem collisionSystem = (JMECollisionSystem)
+                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
         ClientContextJME.addCollisionSystem(lm, "Default", collisionSystem);
-        ClientContextJME.addPhysicsSystem(lm, "Default", physicsSystem);
+//        ClientContextJME.addPhysicsSystem(lm, "Default", physicsSystem);
 
         // create a new session
         try {
