@@ -35,7 +35,9 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JBulletCollisionComponent;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
+import org.jdesktop.mtgame.JBulletPhysicsComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
+import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.PhysicsComponent;
 import org.jdesktop.mtgame.PhysicsSystem;
@@ -186,25 +188,43 @@ public abstract class BasicRenderer implements CellRendererJME {
             WonderlandSession session = cell.getCellCache().getSession();
             CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(LoginManager.find(session), "Default");
 
-            CollisionComponent cc=null;
-            cc = setupCollision(collisionSystem);
-            if (cc!=null)
-                entity.addComponent(CollisionComponent.class, cc);
+            rootNode.updateWorldBound();
 
-            // TODO Physics setup
-            PhysicsSystem physicsSystem = ClientContextJME.getPhysicsSystem(LoginManager.find(session), "Default");
-            if (cc!=null) {
-                PhysicsComponent pc = setupPhysics(cc, physicsSystem);
-                entity.addComponent(PhysicsComponent.class, pc);
+            CollisionComponent cc=null;
+            if (rootNode.getWorldBound()==null) {
+                logger.warning("No BOUNDS FOR "+this.getClass().getName());
+            } else {
+                cc = setupCollision(collisionSystem, rootNode);
+                if (cc!=null)
+                    entity.addComponent(CollisionComponent.class, cc);
+
+                // TODO Physics setup, not ready of dev1
+//                PhysicsSystem physicsSystem = ClientContextJME.getPhysicsSystem(LoginManager.find(session), "Default");
+//                if (cc!=null) {
+//                    PhysicsComponent pc = setupPhysics(cc, physicsSystem, rootNode);
+//                    entity.addComponent(PhysicsComponent.class, pc);
+//                }
             }
         }
 
     }
 
-    protected CollisionComponent setupCollision(CollisionSystem collisionSystem) {
+    // JBullet collision not fully implemented yet
+//    protected CollisionComponent setupCollision(CollisionSystem collisionSystem, Node rootNode) {
+//        CollisionComponent cc=null;
+//        if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
+//            cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
+//        } else {
+//            logger.warning("Unsuppoerted CollisionSystem "+collisionSystem);
+//        }
+//
+//        return cc;
+//    }
+
+    protected CollisionComponent setupCollision(CollisionSystem collisionSystem, Node rootNode) {
         CollisionComponent cc=null;
-        if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
-            cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
+        if (collisionSystem instanceof JMECollisionSystem) {
+            cc = ((JMECollisionSystem)collisionSystem).createCollisionComponent(rootNode);
         } else {
             logger.warning("Unsuppoerted CollisionSystem "+collisionSystem);
         }
@@ -212,15 +232,20 @@ public abstract class BasicRenderer implements CellRendererJME {
         return cc;
     }
 
-    protected PhysicsComponent setupPhysics(CollisionComponent cc, PhysicsSystem physicsSystem) {
+    protected PhysicsComponent setupPhysics(CollisionComponent cc, PhysicsSystem physicsSystem, Node rootNode) {
         if (cc!=null && physicsSystem instanceof JBulletPhysicsSystem) {
-            PhysicsComponent pc = ((JBulletPhysicsSystem)physicsSystem).createPhysicsComponent((JBulletCollisionComponent)cc);
+            JBulletPhysicsComponent pc = ((JBulletPhysicsSystem)physicsSystem).createPhysicsComponent((JBulletCollisionComponent)cc);
+            pc.setMass(getMass());
             return pc;
         } else {
             logger.warning("Unsuppoerted PhysicsSystem "+physicsSystem);
         }
 
         return null;
+    }
+
+    protected float getMass() {
+        return 0f;
     }
 
     /**
