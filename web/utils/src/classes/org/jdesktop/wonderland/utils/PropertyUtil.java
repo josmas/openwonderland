@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.utils;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
  */
 public class PropertyUtil {
     /** pattern for substitution */
-    private static final Pattern subst = Pattern.compile("\\$\\{.+?\\}");
+    private static final Pattern subst = Pattern.compile("\\$(?:PATH)?\\{.+?\\}");
             
     /**
      * Read a property with null as the default value.  
@@ -139,7 +140,14 @@ public class PropertyUtil {
      * "${value:default}".  When a default is specified, if value is not
      * found the default value will be returned instead of the original
      * pattern.
-     * 
+     * <p>
+     * In Wonderland, all paths should be specified using Unix-style
+     * "/"'s.  Since some existing variables (like user.home) use the
+     * system's default separator, these separators must be converted.
+     * Defining a pattern in the form "$PATH{value:default}" will cause
+     * the system to automatically replace any system "\"'s with
+     * Wonderland "/"'s after substitution.
+     * <p>
      * @param str the string to subsitute in
      * @param resolvers the property resolvers to use
      * <code>getProperty</code>
@@ -151,8 +159,18 @@ public class PropertyUtil {
         Matcher m = subst.matcher(str);
         StringBuffer buf = new StringBuffer();
         
-        while (m.find()) {            
-            String expr = str.substring(m.start() + 2, m.end() - 1);             
+        while (m.find()) {
+            // get the matched text
+            String match = str.substring(m.start(), m.end());
+            int exprStart = "${".length();
+
+            // figure out of this is a PATH
+            boolean isPath = match.startsWith("$PATH");
+            if (isPath) {
+                exprStart = "$PATH{".length();
+            }
+
+            String expr = match.substring(m.start() + exprStart, m.end() - 1);
             
             // see if there is a default value
             String defVal = null;
@@ -167,8 +185,7 @@ public class PropertyUtil {
                 defVal = vals[1];
             }
             
-            // resolve the result as a system property -- don't do recursive
-            // substitution
+            // resolve the result as a system property
             String res = getProperty(expr, resolvers, defVal, true);
             if (res == null && defVal != null) {
                 // use the default
@@ -177,7 +194,12 @@ public class PropertyUtil {
                 // add back the original text
                 res = "${" + expr + "}";
             }
-            
+
+            // fix paths
+            if (isPath && File.separatorChar != '/') {
+                res = res.replace(File.separatorChar, '/');
+            }
+
             // replace '\' with '\\' and '$' with '\$' to fix substitution 
             // problems
             res = res.replace("\\", "\\\\");
