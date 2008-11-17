@@ -612,7 +612,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     public void transformChanged(ManagedReference<CellMO> cellMORef, 
 	    final CellTransform localTransform, final CellTransform localToWorldTransform) {
 
-	String clientId = cellMORef.getId().toString();
+	String clientId = cellMORef.get().getID().toString();
 
 	logger.fine("localTransform " + localTransform + " world " 
 	    + localToWorldTransform);
@@ -620,7 +620,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
 
 	if (player == null) {
-	    logger.warning("got AvatarMovedMessage but can't find player");
+	    logger.warning("got AvatarMovedMessage but can't find player for " + clientId);
 	} else {
 	    Vector3f heading = new Vector3f(0, 0, -1);
 
