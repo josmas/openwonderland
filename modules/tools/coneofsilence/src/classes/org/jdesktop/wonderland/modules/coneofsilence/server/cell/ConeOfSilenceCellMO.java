@@ -89,21 +89,17 @@ public class ConeOfSilenceCellMO extends CellMO implements BeanSetupMO {
      
     private String modelFileName;    
     
-    private boolean initialized = false;
+    private boolean haveMessageHandler = false;
 
     public ConeOfSilenceCellMO() {
-	if (initialized == false) {
-	    addComponent(new ChannelComponentMO(this));
-	}
+	addComponent(new ChannelComponentMO(this));
     }
     
     public ConeOfSilenceCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), 
 	    new CellTransform(null, center));
 
-	if (initialized == false) {
-	    addComponent(new ChannelComponentMO(this));
-	}
+	addComponent(new ChannelComponentMO(this));
     }
 
     @Override
@@ -132,9 +128,9 @@ public class ConeOfSilenceCellMO extends CellMO implements BeanSetupMO {
 
 	ConeOfSilenceCellSetup css = (ConeOfSilenceCellSetup) setup;
 
-	if (initialized == false) {
+	if (haveMessageHandler == false) {
+	    haveMessageHandler = true;
 	    new ConeOfSilenceMessageHandler(this, css.getName());
-	    initialized = true;
 	}
     }
 
