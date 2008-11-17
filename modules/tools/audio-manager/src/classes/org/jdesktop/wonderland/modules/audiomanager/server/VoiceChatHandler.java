@@ -612,7 +612,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     public void transformChanged(ManagedReference<CellMO> cellMORef, 
 	    final CellTransform localTransform, final CellTransform localToWorldTransform) {
 
-	String clientId = cellMORef.get().getID().toString();
+	String clientId = cellMORef.get().getCellID().toString();
 
 	logger.fine("localTransform " + localTransform + " world " 
 	    + localToWorldTransform);
