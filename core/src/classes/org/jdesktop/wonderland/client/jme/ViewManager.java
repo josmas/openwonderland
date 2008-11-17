@@ -17,8 +17,10 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.scene.Spatial;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
+import com.jme.scene.GeometricUpdateListener;
 import com.jme.scene.Node;
 import imi.loaders.repository.Repository;
 import imi.scene.processors.JSceneEventProcessor;
@@ -45,6 +47,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import imi.scene.processors.JSceneEventProcessor;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.util.HashSet;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -104,11 +107,17 @@ public class ViewManager {
     public boolean useAvatars = false;
 
     private RenderBuffer rb;
+
+    private HashSet<CameraListener> cameraListeners = null;
     
     ViewManager(int width, int height) {
         this.width = width;
         this.height = height;
         this.aspect = width/height;
+
+        String avatarDetail = System.getProperty("avatar.detail", "low");
+        if (avatarDetail.equalsIgnoreCase("high"))
+            useAvatars=true;
     }
 
     public static void initialize(int width, int height) {
@@ -322,21 +331,44 @@ public class ViewManager {
         
         cameraProcessor = new ThirdPersonCameraProcessor();
         cameraProcessor.initialize(cameraNode);
-//        camera.addComponent(CameraProcessor.class, cameraProcessor);
 
         rb.setCameraComponent(cameraComponent);
         
         wm.addEntity(camera);         
     }
 
+    
     /**
-     * Returns the world transform of the camera
-     * @return
+     * Add a camera listener.
+     * The listener will be called immediately with the current camera position
+     * and then every time the camera moves.
+     * @param cameraListener
      */
-    public CellTransform getCameraWorldTransform() {
-        return new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation());
+    public void addCameraListener(CameraListener cameraListener) {
+        synchronized(cameraNode) {
+            if (cameraListeners==null)
+                cameraListeners = new HashSet();
+            
+            cameraListeners.add(cameraListener);
+
+            cameraListener.cameraMoved(new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation()));
+        }
     }
     
+    /**
+     * Remove the specified camera listener
+     * @param cameraListener
+     */
+    public void removeCameraLisener(CameraListener cameraListener) {
+        synchronized(cameraNode) {
+            if (cameraListeners==null)
+                return;
+            
+            cameraListeners.add(cameraListener);
+        }
+        
+    }
+
     /**
      * Return the CameraComponent. This is an internal api.
      * 
@@ -352,7 +384,22 @@ public class ViewManager {
         cameraNode = new CameraNode("MyCamera", null);
         cameraSG.attachChild(cameraNode);
 
+        cameraNode.addGeometricUpdateListener(new GeometricUpdateListener() {
+            public void geometricDataChanged(Spatial arg0) {
+                notifyCameraMoved(new CellTransform(arg0.getWorldRotation(), arg0.getWorldTranslation()));
+            }
+        });
+
         return (cameraSG);
+    }
+
+    private void notifyCameraMoved(CellTransform worldTranform) {
+        synchronized(cameraNode) {
+            if (cameraListeners!=null) {
+                for(CameraListener cameraL : cameraListeners)
+                    cameraL.cameraMoved(worldTranform);
+            }
+        }
     }
 
     /**
@@ -381,5 +428,16 @@ public class ViewManager {
          * @param newViewCell the new view cell, may be null
          */
         public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell);
+    }
+
+    /**
+     * An interface for listening for camera changes
+     */
+    public interface CameraListener {
+        /**
+         * Called when the camera moves
+         * @param cameraWorldTransform the world transform of the camera
+         */
+        public void cameraMoved(CellTransform cameraWorldTransform);
     }
 }
