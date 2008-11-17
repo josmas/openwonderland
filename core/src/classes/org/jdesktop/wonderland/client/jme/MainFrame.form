@@ -76,6 +76,18 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cameraChangedActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JRadioButtonMenuItem" name="frontPersonRB">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="cameraButtonGroup"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Front Camera"/>
+                <Property name="toolTipText" type="java.lang.String" value="A Camera looking at the front of the avatar (for testing only)"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cameraChangedActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="editMenu">

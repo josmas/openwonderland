@@ -196,6 +196,7 @@ public class MainFrame extends javax.swing.JFrame {
         viewMenu = new javax.swing.JMenu();
         firstPersonRB = new javax.swing.JRadioButtonMenuItem();
         thirdPersonRB = new javax.swing.JRadioButtonMenuItem();
+        frontPersonRB = new javax.swing.JRadioButtonMenuItem();
         editMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
 
@@ -275,6 +276,16 @@ public class MainFrame extends javax.swing.JFrame {
         });
         viewMenu.add(thirdPersonRB);
 
+        cameraButtonGroup.add(frontPersonRB);
+        frontPersonRB.setText("Front Camera");
+        frontPersonRB.setToolTipText("A Camera looking at the front of the avatar (for testing only)");
+        frontPersonRB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraChangedActionPerformed(evt);
+            }
+        });
+        viewMenu.add(frontPersonRB);
+
         mainMenuBar.add(viewMenu);
 
         editMenu.setText(bundle.getString("Edit")); // NOI18N
@@ -314,7 +325,8 @@ private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         ClientContextJME.getViewManager().setCameraProcessor(new FirstPersonCameraProcessor());
     } else if (evt.getSource()==thirdPersonRB) {
         ClientContextJME.getViewManager().setCameraProcessor(new ThirdPersonCameraProcessor());
-
+    } else if (evt.getSource()==frontPersonRB) {
+        ClientContextJME.getViewManager().setCameraProcessor(new FrontHackPersonCameraProcessor());
     }
 
 }//GEN-LAST:event_cameraChangedActionPerformed
@@ -327,6 +339,7 @@ private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JMenu fileMenu;
     private javax.swing.JRadioButtonMenuItem firstPersonRB;
     private javax.swing.JLabel fpsLabel;
+    private javax.swing.JRadioButtonMenuItem frontPersonRB;
     private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;

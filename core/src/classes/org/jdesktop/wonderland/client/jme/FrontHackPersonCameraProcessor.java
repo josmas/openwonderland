@@ -20,15 +20,17 @@ package org.jdesktop.wonderland.client.jme;
 import com.jme.math.Vector3f;
 
 /**
- * A very simplistic first person camera model
+ * A very simplistic third person camera model
  * 
  * @author paulby
  */
-public class FirstPersonCameraProcessor extends ThirdPersonCameraProcessor {
+public class FrontHackPersonCameraProcessor extends ThirdPersonCameraProcessor {
 
-    public FirstPersonCameraProcessor() {
+    public FrontHackPersonCameraProcessor() {
         super();
-        offset = new Vector3f(0,2.2f,-0.2f);
+        offset = new Vector3f(0,2.2f,4);
+        cameraLook = new Vector3f(0,0,-1);
+        cameraZoom = -0.2f;
     }
-
+    
 }
