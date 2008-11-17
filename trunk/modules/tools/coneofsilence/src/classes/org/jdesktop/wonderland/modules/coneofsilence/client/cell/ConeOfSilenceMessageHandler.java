@@ -120,7 +120,7 @@ public class ConeOfSilenceMessageHandler implements ProximityListener {
 	logger.warning("cell " + cell + " entered = " + entered);
 
 	ConeOfSilenceEnterCellMessage message = new ConeOfSilenceEnterCellMessage(
-	    cell.getCellID(), entered);
+	    coneOfSilenceCell.getCellID(), cell.getCellID(), entered);
 
 	channelComp.send(message);
    }

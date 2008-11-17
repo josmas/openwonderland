@@ -119,9 +119,9 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
             throw new IllegalStateException("Cell does not have a ChannelComponent");
 	}
 
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
-
         channelComponent.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, this);
+
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
@@ -146,7 +146,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 	 * For each avatar already in the cell, set a private spatializer
 	 * for this avatar.
 	 */
-	String callId = msg.getCellID().toString();
+	String callId = msg.getAvatarCellID().toString();
 
 	ConeOfSilenceCellSetup setup = (ConeOfSilenceCellSetup) 
 	    coneOfSilenceCellMORef.get().getCellMOSetup();
@@ -157,7 +157,18 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 	
 	Player player = vm.getPlayer(callId);
 
+	if (player == null) {
+	    logger.warning("Can't find player for " + callId);
+	    return;
+	}
+
 	AudioGroup audioGroup = vm.getAudioGroup(name);
+
+	if (audioGroup == null) {
+	    AudioGroupSetup ags = new AudioGroupSetup();
+
+	    audioGroup = vm.createAudioGroup(name, ags);
+	}
 
 	audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true, 
 	     AudioGroupPlayerInfo.ChatType.SECRET));
@@ -166,7 +177,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
     }
 
     public void cellExited(ConeOfSilenceEnterCellMessage msg) {
-	String callId = msg.getCellID().toString();
+	String callId = msg.getAvatarCellID().toString();
 
 	logger.warning(callId + " exited cone " + name);
 
@@ -181,7 +192,16 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 
 	Player player = vm.getPlayer(callId);
 
+	if (player == null) {
+	    logger.warning("Can't find player for " + callId);
+	    return;
+	}
+
 	audioGroup.removePlayer(player);
+
+	if (audioGroup.getPlayers().size() == 0) {
+	    vm.removeAudioGroup(name);
+	}
 
 	player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
 	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);

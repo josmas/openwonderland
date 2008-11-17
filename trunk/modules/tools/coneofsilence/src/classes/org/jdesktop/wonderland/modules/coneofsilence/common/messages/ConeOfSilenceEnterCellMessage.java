@@ -28,14 +28,20 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 public class ConeOfSilenceEnterCellMessage extends CellMessage {
 
+    private CellID avatarCellID;
     private boolean entered;
 
-    public ConeOfSilenceEnterCellMessage(CellID cellID, boolean entered) {
-	super(cellID);
+    public ConeOfSilenceEnterCellMessage(CellID coneCellID, CellID avatarCellID, boolean entered) {
+	super(coneCellID);
 
+	this.avatarCellID = avatarCellID;
 	this.entered = entered;
     }
     
+    public CellID getAvatarCellID() {
+	return avatarCellID;
+    }
+
     public boolean getEntered() {
 	return entered;
     }

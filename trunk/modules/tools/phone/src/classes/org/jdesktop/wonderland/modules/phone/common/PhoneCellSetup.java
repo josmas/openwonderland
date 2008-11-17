@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
  * The PhoneCellSetup class is the cell that renders a phone cell in
  * world.
  * 
- * @author jkaplan
+ * @author jprovino
  */
 @XmlRootElement(name="phone-cell")
 public class PhoneCellSetup extends BasicCellSetup 

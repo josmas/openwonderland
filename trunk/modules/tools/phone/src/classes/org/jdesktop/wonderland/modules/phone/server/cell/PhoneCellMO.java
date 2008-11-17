@@ -104,27 +104,19 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
 
     private int callNumber = 0;
 
-    private boolean initialized = false;
-
     public PhoneCellMO() {
-	if (initialized == false) {
-	    addComponent(new ChannelComponentMO(this));
+	addComponent(new ChannelComponentMO(this));
 
-	    new PhoneMessageHandler(this);
-	    initialized = true;
-	}
+	new PhoneMessageHandler(this);
     }
     
     public PhoneCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), 
 	    new CellTransform(null, center));
 
-	if (initialized == false) {
-	    addComponent(new ChannelComponentMO(this));
+	addComponent(new ChannelComponentMO(this));
 
-	    new PhoneMessageHandler(this);
-	    initialized = true;
-	}
+	new PhoneMessageHandler(this);
     }
 
     @Override
