@@ -167,6 +167,11 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 	if (audioGroup == null) {
 	    AudioGroupSetup ags = new AudioGroupSetup();
 
+	    ags.spatializer = new FullVolumeSpatializer();
+
+	    ags.spatializer.setAttenuator(
+		DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+
 	    audioGroup = vm.createAudioGroup(name, ags);
 	}
 
