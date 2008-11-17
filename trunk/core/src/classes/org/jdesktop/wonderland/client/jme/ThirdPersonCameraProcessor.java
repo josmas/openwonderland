@@ -19,9 +19,13 @@ package org.jdesktop.wonderland.client.jme;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.scene.CameraNode;
+import java.awt.event.KeyEvent;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -33,10 +37,13 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
 
     private Quaternion rotation = new Quaternion();
     private Vector3f translation = new Vector3f();
-    private Vector3f offset = new Vector3f(0,2.2f,-6);
+    protected float cameraZoom = 0.2f;
+    protected Vector3f offset = new Vector3f(0,2.2f,-6);
     private boolean commitRequired = false;
+    private Quaternion viewRot = new Quaternion();
+    private Vector3f viewTranslation = new Vector3f();
 
-    private Vector3f cameraLook = new Vector3f(0,0,1);
+    protected Vector3f cameraLook = new Vector3f(0,0,1);
     private Vector3f yUp = new Vector3f(0,1,0);
 
     private Vector3f tmp=new Vector3f();
@@ -45,6 +52,28 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
     
     public ThirdPersonCameraProcessor() {
         wm = ClientContextJME.getWorldManager();
+
+        // TODO this should be done in setEnabled
+        ClientContextJME.getInputManager().addGlobalEventListener(new EventClassFocusListener() {
+            @Override
+            public Class[] eventClassesToConsume () {
+                return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+            }
+
+            @Override
+            public void commitEvent (Event event) {
+                if (event instanceof KeyEvent3D) {
+                    KeyEvent key = (KeyEvent) ((KeyEvent3D)event).getAwtEvent();
+                    if (key.getKeyCode()==KeyEvent.VK_EQUALS) {
+                        offset.z += cameraZoom;
+                        viewMoved(new CellTransform(viewRot, viewTranslation));
+                    } else if (key.getKeyCode()==KeyEvent.VK_MINUS) {
+                        offset.z -= cameraZoom;
+                        viewMoved(new CellTransform(viewRot, viewTranslation));
+                    }
+                }
+            }
+        });
     }
     
     @Override
@@ -75,6 +104,8 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
             translation = worldTransform.getTranslation(translation);
             tmp = translation.clone();
             rotation = worldTransform.getRotation(rotation);
+            viewRot.set(rotation);
+            viewTranslation.set(translation);
 
 
             Vector3f cameraTrans = rotation.mult(offset);

@@ -22,6 +22,7 @@ import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -64,6 +65,10 @@ public class ClientContextJME extends ClientContext {
 
     public static AvatarRenderManager getAvatarRenderManager() {
         return AvatarRenderManager.getAvatarRenderManager();
+    }
+
+    public static InputManager getInputManager() {
+        return InputManager.inputManager();
     }
 
     public static void addPhysicsSystem(ServerSessionManager session, String name, PhysicsSystem physicsSystem) {
