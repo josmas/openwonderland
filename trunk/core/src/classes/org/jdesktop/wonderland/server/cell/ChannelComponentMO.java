@@ -152,7 +152,7 @@ public class ChannelComponentMO extends CellComponentMO {
         
         ManagedReference<ComponentMessageReceiver> recvRef = messageReceivers.get(message.getClass());
         if (recvRef==null) {
-            Logger.getAnonymousLogger().warning("Not listener for message "+message.getClass());
+            Logger.getAnonymousLogger().warning("No listener for message "+message.getClass());
             return;
         }
         
