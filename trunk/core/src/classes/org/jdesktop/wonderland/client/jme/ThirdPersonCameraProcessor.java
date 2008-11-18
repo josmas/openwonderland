@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.client.jme;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.input.Event;
@@ -69,6 +71,13 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
                         viewMoved(new CellTransform(viewRot, viewTranslation));
                     } else if (key.getKeyCode()==KeyEvent.VK_MINUS) {
                         offset.z -= cameraZoom;
+                        viewMoved(new CellTransform(viewRot, viewTranslation));
+                    }
+                } else if (event instanceof MouseEvent3D) {
+                    MouseEvent mouse = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
+                    if (mouse instanceof MouseWheelEvent) {
+                        int clicks = ((MouseWheelEvent)mouse).getWheelRotation();
+                        offset.z -= cameraZoom*clicks;
                         viewMoved(new CellTransform(viewRot, viewTranslation));
                     }
                 }
