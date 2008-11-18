@@ -16,7 +16,7 @@ void main(void)
 
     vec4 color = clamp(texColor * dot(Normal.xyz, ToLight.xyz), 0.0, 1.0);
 
-    color = color * 0.80 + texColor * 0.15; // mix in 15% start color
+    color = color * 0.75 + texColor * 0.25; // mix in 15% start color
     color.a = 1.0;
     gl_FragColor = color;
 }
