@@ -224,6 +224,8 @@ public class WebServerLauncher {
                 if (!i.hasNext()) return false;
                 
                 directory = i.next();
+            } else if (s.trim().length() == 0) {
+                continue;
             } else {
                 if (i.hasNext()) return false;
                 
