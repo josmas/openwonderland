@@ -589,7 +589,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         // Compile the target module
         NoExitAnt ant = new NoExitAnt();
-        ant.startAnt(new String[] {"-v", "-f", targetModuleDir+File.separator+"build.xml", "dist"}, null, this.getClass().getClassLoader());
+        ant.startAnt(new String[] {"-f", targetModuleDir+File.separator+"build.xml", "dist"}, null, this.getClass().getClassLoader());
 
         String modulename = targetModuleDir.substring(targetModuleDir.lastIndexOf(File.separatorChar)+1);
         File distJar = new File(targetModuleDir+File.separator+"dist"+File.separator+modulename+".jar");
@@ -767,20 +767,10 @@ private void targetModuleSelectorActionPerformed(java.awt.event.ActionEvent evt)
         buf.setEnabled(true);
         buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
-        PointLight light = new PointLight();
-        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
-        light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
-        light.setLocation(new Vector3f(100, 100, 100));
-        light.setEnabled(true);
-        LightState lightState = (LightState) wm.getRenderManager().createRendererState(RenderState.RS_LIGHT);
-        lightState.setEnabled(true);
-        lightState.attach(light);
-
         MaterialState matState = (MaterialState) wm.getRenderManager().createRendererState(RenderState.RS_MATERIAL);
 //        matState.setDiffuse(color);
         rootBG.setRenderState(matState);
         rootBG.setRenderState(buf);
-        rootBG.setRenderState(lightState);
         rootBG.setLocalTranslation(0f,0f,0f);
 
                         
@@ -791,7 +781,7 @@ private void targetModuleSelectorActionPerformed(java.awt.event.ActionEvent evt)
         
         model.setEntity(entity);
         
-        entity.addComponent(ProcessorComponent.class, new TransformProcessorComponent(wm, rootBG));
+        entity.addComponent(TransformProcessorComponent.class, new TransformProcessorComponent(wm, modelBG));
         
         wm.addEntity(entity);
         sgViewFrame.addEntity(entity);

@@ -205,6 +205,26 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         enableSpinners(true);
 
     }
+
+    /**
+     * Set the spinners to the rotation, translation and scale local coords of this node
+     * @param node
+     */
+    private void setSpinners(Node node) {
+        Vector3f translation = node.getLocalTranslation();
+        Quaternion quat = node.getLocalRotation();
+        float[] angles = quat.toAngles(new float[3]);
+        Vector3f scale = node.getLocalScale();
+
+
+        translationXTF.setValue(translation.x);
+        translationYTF.setValue(translation.y);
+        translationZTF.setValue(translation.z);
+
+        rotationXTF.setValue((float)Math.toDegrees(angles[0]));
+        rotationYTF.setValue((float)Math.toDegrees(angles[1]));
+        rotationZTF.setValue((float)Math.toDegrees(angles[2]));
+    }
     
     private void calcCurrentRotationMatrix() {
         currentRotation = sessionFrame.calcRotationMatrix(
@@ -288,7 +308,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         sessionFrame.asyncLoadModel(importedModel, new ImportSessionFrame.LoadCompleteListener() {
 
             public void loadComplete(Entity entity) {
-                transformProcessor = (TransformProcessorComponent) entity.getComponent(ProcessorComponent.class);
+                transformProcessor = (TransformProcessorComponent) entity.getComponent(TransformProcessorComponent.class);
 
                 calcModelBounds(importedModel.getModelBG());
 
@@ -298,6 +318,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 texturePrefixTF.setText(dir);
 
                 populateTextureList(importedModel.getModelBG());
+                setSpinners(importedModel.getModelBG());
 
                 String filename = origFile.getAbsolutePath();
                 filename = filename.substring(filename.lastIndexOf(File.separatorChar)+1);

@@ -48,6 +48,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Origin;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Rotation;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Scaling;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
@@ -72,6 +75,8 @@ class KmzLoader implements ModelLoader {
     private File origFile;
     
     private ArrayList<String> modelFiles = new ArrayList();
+
+    private Node rootNode = null;
     
     /**
      * Load a SketchUP KMZ file and return the graph root
@@ -79,7 +84,7 @@ class KmzLoader implements ModelLoader {
      * @return
      */
     public Node importModel(File file) throws IOException {
-        Node ret = null;
+        rootNode = null;
         origFile = file;
         
         try {
@@ -104,11 +109,11 @@ class KmzLoader implements ModelLoader {
             }
             
             if (models.size()==1) {
-                ret = load(zipFile, models.get(0));
+                rootNode = load(zipFile, models.get(0));
             } else {
-                ret = new Node();
+                rootNode = new Node();
                 for(ModelType model : models) {
-                    ret.attachChild(load(zipFile, model));
+                    rootNode.attachChild(load(zipFile, model));
                 }
             }
             
@@ -123,7 +128,7 @@ class KmzLoader implements ModelLoader {
             throw new IOException("JAXB Error");
         }
         
-        return ret;
+        return rootNode;
     }
     
     private Node load(ZipFile zipFile, ModelType model) throws IOException {
@@ -141,9 +146,8 @@ class KmzLoader implements ModelLoader {
         ZipEntry modelEntry = zipFile.getEntry(filename);
         BufferedInputStream in = new BufferedInputStream(zipFile.getInputStream(modelEntry));
         
-        Node ret;
         ColladaImporter.load(in, filename);
-        ret = ColladaImporter.getModel();
+        rootNode = ColladaImporter.getModel();
 
         ColladaImporter.cleanUp();
         
@@ -151,9 +155,9 @@ class KmzLoader implements ModelLoader {
         WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
 
         // Correctly orient model
-        ret.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
+        rootNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
 
-        return ret;
+        return rootNode;
     }
     
     /**
@@ -205,19 +209,12 @@ class KmzLoader implements ModelLoader {
             // from here.
             JMEColladaCellSetup setup = new JMEColladaCellSetup();
             setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
-//
-//            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
-//            Writer w = new FileWriter(wfsFile);
-//            try {
-//                setup.encode(w, getClass().getClassLoader());
-//            } catch (JAXBException ex) {
-//                logger.log(Level.SEVERE, null, ex);
-//            }
-//            w.close();
+            setup.setOrigin(new Origin(rootNode.getLocalTranslation()));
+            setup.setRotation(new Rotation(rootNode.getLocalRotation()));
+            setup.setScaling(new Scaling(rootNode.getLocalScale()));
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
             deploymentInfo.setCellSetup(setup);
-//            deploymentInfo.setAssetURL("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
             return deploymentInfo;
         } catch (ZipException ex) {
             logger.log(Level.SEVERE, null, ex);
