@@ -37,6 +37,10 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import imi.character.ninja.NinjaAvatar;
 import imi.character.Character;
+import imi.character.ninja.NinjaContext;
+import imi.character.ninja.NinjaContext.TriggerNames;
+import imi.character.ninja.PunchState;
+import java.awt.event.KeyEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -48,6 +52,8 @@ import org.jdesktop.wonderland.client.login.LoginManager;
  */
 @ExperimentalAPI
 public class AvatarImiJME extends BasicRenderer {
+
+    private AvatarCharacter avatarCharacter=null;
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -79,11 +85,10 @@ public class AvatarImiJME extends BasicRenderer {
         origin.setRotation(transform.getRotation(null));
         
 //        Ninja avatar = new Ninja("Shadow Blade", origin, /*"assets/configurations/ninjaDude.xml",*/ 0.22f, wm);
-        NinjaAvatar avatar;
-        avatar = new AvatarCharacter("Avatar", wm);
-        NinjaControlScheme control = (NinjaControlScheme)((JSceneEventProcessor)wm.getUserData(JSceneEventProcessor.class)).setDefault(new NinjaControlScheme(avatar));
-        avatar.selectForInput();
-        control.getNinjaTeam().add(avatar);
+        avatarCharacter = new AvatarCharacter("Avatar", wm);
+        NinjaControlScheme control = (NinjaControlScheme)((JSceneEventProcessor)wm.getUserData(JSceneEventProcessor.class)).setDefault(new NinjaControlScheme(avatarCharacter));
+        avatarCharacter.selectForInput();
+        control.getNinjaTeam().add(avatarCharacter);
 
 //        JScene jscene = avatar.getJScene();
 //        jscene.renderToggle();      // both renderers
@@ -93,7 +98,7 @@ public class AvatarImiJME extends BasicRenderer {
 //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
         // Listen for avatar movement and update the cell
-        avatar.getController().addCharacterMotionListener(new CharacterMotionListener() {
+        avatarCharacter.getController().addCharacterMotionListener(new CharacterMotionListener() {
 
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
                 cell.getComponent(MovableComponent.class).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
@@ -101,17 +106,34 @@ public class AvatarImiJME extends BasicRenderer {
         });
 
         // Listen for game context changes
-        avatar.getContext().addGameContextListener(new GameContextListener() {
+        // TODO this info will be sent to the other clients to animate the avatar
+//        avatarCharacter.getContext().addGameContextListener(new GameContextListener() {
+//
+//            public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation) {
+//                System.err.println(pressed+" "+trigger+" "+translation);
+//            }
+//
+//        });
 
-            public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation) {
-                System.err.println(pressed+" "+trigger+" "+translation);
-            }
-
-        });
-
-        wm.removeEntity(avatar);
+        wm.removeEntity(avatarCharacter);
         
-        return avatar;
+        return avatarCharacter;
+    }
+
+    public void triggerActionStart() {
+        avatarCharacter.triggerActionStart(NinjaContext.TriggerNames.Punch);
+    }
+
+    public void triggerActionStop() {
+        avatarCharacter.triggerActionStop(NinjaContext.TriggerNames.Punch);
+    }
+
+    public String[] getAnimations() {
+        return avatarCharacter.getAnimations();
+    }
+
+    public void setAnimation(String str) {
+        avatarCharacter.setAnimation(str);
     }
 
     @Override
@@ -122,28 +144,29 @@ public class AvatarImiJME extends BasicRenderer {
 
     class AvatarCharacter extends NinjaAvatar {
 
-        public class MaleAvatarAttributes extends Character.Attributes
+        public class MaleAvatarAttributes extends NinjaAvatar.NinjaAvatarAttributes
         {
             public MaleAvatarAttributes(String name) {
-                super(name);
-                setModelFile("assets/models/collada/Avatars/Male2/Male_Bind.dae");
-                ArrayList<String> anims = new ArrayList<String>();
-                anims.add("assets/models/collada/Avatars/MaleZip/Male_Idle.dae");
-                anims.add("assets/models/collada/Avatars/MaleZip/Male_StandToSit.dae");
-                anims.add("assets/models/collada/Avatars/MaleZip/Male_Wave.dae");
-                anims.add("assets/models/collada/Avatars/MaleZip/Male_Walk.dae");
-                anims.add("assets/models/collada/Avatars/MaleZip/Male_Sitting.dae");
-                if (false)
-                {
-                    anims.add("assets/models/collada/Avatars/MaleZip/Male_Run.dae");
-                    anims.add("assets/models/collada/Avatars/Male/Male_Bow.dae");
-                    anims.add("assets/models/collada/Avatars/Male/Male_Cheer.dae");
-                    anims.add("assets/models/collada/Avatars/Male/Male_Clap.dae");
-                    anims.add("assets/models/collada/Avatars/Male/Male_Follow.dae");
-                    anims.add("assets/models/collada/Avatars/Male/Male_Jump.dae");
-                    anims.add("assets/models/collada/Avatars/Male/Male_Laugh.dae");
-                }
-                setAnimations(anims.toArray(new String[anims.size()]));
+                super(name, true);
+                // Animations are setup in the super class
+//                setModelFile("assets/models/collada/Avatars/Male2/Male_Bind.dae");
+//                ArrayList<String> anims = new ArrayList<String>();
+//                anims.add("assets/models/collada/Avatars/MaleZip/Male_Idle.dae");
+//                anims.add("assets/models/collada/Avatars/MaleZip/Male_StandToSit.dae");
+//                anims.add("assets/models/collada/Avatars/MaleZip/Male_Wave.dae");
+//                anims.add("assets/models/collada/Avatars/MaleZip/Male_Walk.dae");
+//                anims.add("assets/models/collada/Avatars/MaleZip/Male_Sitting.dae");
+//                if (false)
+//                {
+//                    anims.add("assets/models/collada/Avatars/MaleZip/Male_Run.dae");
+//                    anims.add("assets/models/collada/Avatars/Male/Male_Bow.dae");
+//                    anims.add("assets/models/collada/Avatars/Male/Male_Cheer.dae");
+//                    anims.add("assets/models/collada/Avatars/Male/Male_Clap.dae");
+//                    anims.add("assets/models/collada/Avatars/Male/Male_Follow.dae");
+//                    anims.add("assets/models/collada/Avatars/Male/Male_Jump.dae");
+//                    anims.add("assets/models/collada/Avatars/Male/Male_Laugh.dae");
+//                }
+//                setAnimations(anims.toArray(new String[anims.size()]));
 
                 WonderlandSession session = cell.getCellCache().getSession();
                 ServerSessionManager manager = LoginManager.find(session);
@@ -163,6 +186,60 @@ public class AvatarImiJME extends BasicRenderer {
 //                }
             }
 
+        }
+
+        @Override
+        protected void initKeyBindings()
+        {
+            m_keyBindings.put(KeyEvent.VK_SHIFT,        TriggerNames.Movement_Modifier.ordinal());
+            m_keyBindings.put(KeyEvent.VK_LEFT,         TriggerNames.Move_Left.ordinal());
+            m_keyBindings.put(KeyEvent.VK_RIGHT,        TriggerNames.Move_Right.ordinal());
+            m_keyBindings.put(KeyEvent.VK_UP,           TriggerNames.Move_Forward.ordinal());
+            m_keyBindings.put(KeyEvent.VK_DOWN,         TriggerNames.Move_Back.ordinal());
+    //        m_keyBindings.put(KeyEvent.VK_W,        TriggerNames.Move_Forward.ordinal());
+    //        m_keyBindings.put(KeyEvent.VK_S,        TriggerNames.Move_Back.ordinal());
+            m_keyBindings.put(KeyEvent.VK_CONTROL,      TriggerNames.Punch.ordinal());
+            m_keyBindings.put(KeyEvent.VK_ENTER,        TriggerNames.ToggleSteering.ordinal());
+//            m_keyBindings.put(KeyEvent.VK_BACK_SPACE,   TriggerNames.PositionGoalPoint.ordinal());
+//            m_keyBindings.put(KeyEvent.VK_HOME,         TriggerNames.SelectNearestGoalPoint.ordinal());
+            m_keyBindings.put(KeyEvent.VK_ADD,          TriggerNames.Move_Down.ordinal());
+            m_keyBindings.put(KeyEvent.VK_SUBTRACT,     TriggerNames.Move_Up.ordinal());
+            m_keyBindings.put(KeyEvent.VK_COMMA,        TriggerNames.Reverse.ordinal());
+            m_keyBindings.put(KeyEvent.VK_PERIOD,       TriggerNames.NextAction.ordinal());
+            m_keyBindings.put(KeyEvent.VK_1,            TriggerNames.GoTo1.ordinal());
+            m_keyBindings.put(KeyEvent.VK_2,            TriggerNames.GoTo2.ordinal());
+            m_keyBindings.put(KeyEvent.VK_3,            TriggerNames.GoTo3.ordinal());
+        }
+
+        public void triggerActionStart(TriggerNames trigger) {
+            m_context.triggerPressed(trigger.ordinal());
+        }
+
+        public void triggerActionStop(TriggerNames trigger) {
+            m_context.triggerReleased(trigger.ordinal());
+        }
+
+        public String[] getAnimations() {
+            return new String[] {"Male_Wave",
+                         //        "Male_Run",
+                          //       "Male_Bow",
+                          //       "Male_Cheer",
+                          //       "Male_Follow",
+                          //       "Male_Jump",
+                          //       "Male_Laugh",
+                          //       "Male_Clap",
+                              //   "Male_Idle",
+                              //   "Male_Walk",
+                              //   "Male_StandToSit",
+                              //   "Male_Sitting",
+                                };
+        }
+
+        public void setAnimation(String str) {
+            PunchState punch = (PunchState) getContext().getStates().get(PunchState.class);
+            punch.setAnimationSetBoolean(false);
+
+            punch.setAnimationName(str);
         }
 
         public AvatarCharacter(String name, WorldManager wm) {
