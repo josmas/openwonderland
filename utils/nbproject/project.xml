@@ -20,6 +20,11 @@
                     <type>java</type>
                     <location>wonderland-doclet/src/classes</location>
                 </source-folder>
+                <source-folder>
+                    <label>ant\src\classes</label>
+                    <type>java</type>
+                    <location>ant/src/classes</location>
+                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
@@ -48,6 +53,10 @@
                         <label>wonderland-doclet/src/classes</label>
                         <location>wonderland-doclet/src/classes</location>
                     </source-folder>
+                    <source-folder style="packages">
+                        <label>ant\src\classes</label>
+                        <location>ant/src/classes</location>
+                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -66,6 +75,10 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>wonderland-doclet/src/classes</package-root>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>ant/src/classes</package-root>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandler;
@@ -53,6 +55,10 @@ public class WebServerLauncher {
     public static final String WEBSERVER_PORT_PROP = "wonderland.webserver.port";
     public static final String WEBSERVER_HOST_PROP = "wonderland.webserver.host";
     public static final String WEBSERVER_URL_PROP  = "wonderland.web.server.url";
+
+    // port to listen for killswitch connections
+    private static final String WEBSERVER_KILLSWITCH_PROPERTY =
+            "wonderland.webserver.killswitch";
 
     private static final Logger logger = 
             Logger.getLogger(WebServerLauncher.class.getName());
@@ -113,7 +119,14 @@ public class WebServerLauncher {
             usage();
             System.exit(-1);
         }
-         
+
+        // start the killswitch
+        String killSwitchStr = System.getProperty(WEBSERVER_KILLSWITCH_PROPERTY);
+        if (killSwitchStr != null) {
+            KillSwitch ks = new KillSwitch(Integer.parseInt(killSwitchStr));
+            new Thread(ks).start();
+        }
+
         try {
             // read the list of web server jar files
             InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/webserver.jars");
@@ -314,6 +327,35 @@ public class WebServerLauncher {
                 return new URL("file:" + u.toExternalForm());
             } catch (MalformedURLException mue) {
                 return u;
+            }
+        }
+    }
+
+    // listen on a particular socket, and exit the server if that
+    // socket disconnects
+    static class KillSwitch implements Runnable {
+        private int port;
+
+        public KillSwitch(int port) {
+            this.port = port;
+        }
+
+        public void run() {
+            try {
+                logger.info("[Killswitch]: Initializing killswitch on port " + port);
+                ServerSocket server = new ServerSocket(port);
+                Socket s = server.accept();
+                logger.info("[Killswitch]: accepted connection");
+                while (s.getInputStream().read() != -1) {
+                    // do nothing, just wait for the stream to close
+                }
+            } catch (IOException ioe) {
+                // an error occured, just ignore it
+                logger.log(Level.WARNING, "Error in killswitch", ioe);
+            } finally {
+                logger.warning("[Killswitch]: disconnected, server shutting " +
+                               "down!");
+                System.exit(0);
             }
         }
     }
