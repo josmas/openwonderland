@@ -26,11 +26,10 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -202,8 +201,10 @@ class KmzLoader implements ModelLoader {
                 logger.warning("Multiple models not supported during deploy");
             }
 
-//            JMEColladaCellSetup setup = new JMEColladaCellSetup();
-//            setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
+            // XXX There should not be a direct reference to another module
+            // from here.
+            JMEColladaCellSetup setup = new JMEColladaCellSetup();
+            setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
 //
 //            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
 //            Writer w = new FileWriter(wfsFile);
@@ -214,8 +215,9 @@ class KmzLoader implements ModelLoader {
 //            }
 //            w.close();
 
-            ModelDeploymentInfo deploymentInfo= new ModelDeploymentInfo();
-            deploymentInfo.setAssetURL("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
+            ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
+            deploymentInfo.setCellSetup(setup);
+//            deploymentInfo.setAssetURL("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
             return deploymentInfo;
         } catch (ZipException ex) {
             logger.log(Level.SEVERE, null, ex);

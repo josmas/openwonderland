@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.modules.ModuleArtList;
 import org.jdesktop.wonderland.common.modules.ModuleChecksums;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
 
@@ -29,6 +30,21 @@ public class ModuleUtils {
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(ModuleUtils.class.getName());
 
+    /**
+     * Fetches the info for a particular module
+     */
+    public static ModuleInfo fetchModuleInfo(String serverURL, String moduleName) {
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            URL url = new URL(new URL(serverURL), MODULE_PREFIX + moduleName + "/info");
+            return ModuleInfo.decode(new InputStreamReader(url.openStream()));
+        } catch (java.lang.Exception excp) {
+            /* Log an error and return null */
+            logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
+            return new ModuleInfo();
+        }
+    }
+    
     /**
      * Asks the web server for a list of all modules. Returned is a ModuleList
      * object with the basic module information (ModuleInfo) objects for all

@@ -340,8 +340,10 @@ public abstract class BasicCellSetup implements Serializable {
          * the name of the server context.
          */
         Unmarshaller u = CellSetupFactory.getUnmarshaller(cl);
-        AssetURIAdapter adapter = new AssetURIAdapter(server);
-        u.setAdapter(adapter);
+        if (server != null) {
+            AssetURIAdapter adapter = new AssetURIAdapter(server);
+            u.setAdapter(adapter);
+        }
         BasicCellSetup setup = (BasicCellSetup)u.unmarshal(r);
         
         /* Convert metadata to internal representation */
@@ -408,6 +410,6 @@ public abstract class BasicCellSetup implements Serializable {
                 "," + this.origin.z + ") rotation=(" + this.rotation.x + "," +
                 this.rotation.y + "," + this.rotation.z + ") @ " + this.rotation.angle +
                 " scaling=(" + this.scaling.x + "," + this.scaling.y + "," +
-                this.scaling.z + ")";
+                this.scaling.z + ") bounds=" + this.bounds.type + "@" + this.bounds.radius;
     }
 }
