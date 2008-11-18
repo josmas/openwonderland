@@ -102,7 +102,8 @@ public class RunUtil {
                     Runtime.getRuntime().addShutdownHook(new Thread() {
                         @Override
                         public void run() {
-                            logger.info("Cleaning up Wonderland run directory.");
+                            logger.info("Cleaning up Wonderland run directory " +
+                                        baseDir + ".");
                             deleteDir(baseDir);
                         }
                     });
