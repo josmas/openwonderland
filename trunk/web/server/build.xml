@@ -86,7 +86,8 @@
             <zipfileset file="${web.dir}/help/dist/wonderland-help-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
             <zipfileset file="${web.dir}/front/dist/wonderland-webadmin-core.jar" prefix="webserver"/>
-
+            <zipfileset file="${web.dir}/runner/lib/winp-1.5.jar" prefix="webserver"/>
+            
             <!-- include wonderland client from core, since many web apps will
                  act as clients of the Wonderland system -->
             <zipfileset file="${top.dir}/core/build/lib/wonderland-client.jar" prefix="webserver"/>

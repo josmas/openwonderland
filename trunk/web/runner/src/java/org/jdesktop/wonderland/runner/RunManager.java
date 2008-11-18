@@ -98,7 +98,6 @@ public class RunManager {
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {
-                    System.out.println("Shutdown hook running");
                     shutdown();
                 }
             });

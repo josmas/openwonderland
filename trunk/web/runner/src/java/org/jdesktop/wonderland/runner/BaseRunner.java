@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipInputStream;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
+import org.jvnet.winp.WinProcess;
 
 /**
  * A base implementation of <code>Runner</code>.  This implements all the 
@@ -270,7 +271,16 @@ public abstract class BaseRunner implements Runner {
         }
         
         setStatus(Status.SHUTTING_DOWN);
-        proc.destroy();
+
+        // workaround for Windows issue when stopping a process. Use
+        // an external library that does a better job stopping
+        // processes than Process.destroy()
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            WinProcess wp = new WinProcess(proc);
+            wp.killRecursively();
+        } else {
+            proc.destroy();
+        }
     }
 
     public synchronized Status getStatus() {

@@ -128,6 +128,8 @@ public class WebServerLauncher {
             while ((line = in.readLine()) != null) {
                 File f = RunUtil.extract(WebServerLauncher.class, line, webDir);
                 if (f != null) {
+                    f.deleteOnExit();
+                    
                     URL u = f.toURI().toURL();
                     System.out.println("Adding URL " + u);
                     
