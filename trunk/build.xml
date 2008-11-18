@@ -68,7 +68,11 @@
   <copy todir="${daily.build.today.dir}" file="${dist.dir}/Wonderland.jar"/>
 </target>
 
-<target name="run-server" depends="package, -run-setup, -run-with-properties, -run-without-properties" 
+<target name="run-server" depends="package, -run-setup,
+                                   -run-args-with-properties,
+                                   -run-args-without-properties,
+                                   -run-with-wrapper,
+                                   -run-without-wrapper"
         description="Run the Wonderland Server"/>
         
 <target name="-run-setup">
@@ -80,16 +84,44 @@
     <condition property="run.properties.exists"> 
         <available file="${run.properties.file}"/>
     </condition>
+
+    <condition property="run.with.wrapper">
+        <equals arg1="${system.type}" arg2="windows-x86"
+                casesensitive="false"/>
+    </condition>
 </target>
 
-<target name="-run-with-properties" if="run.properties.exists">
+<target name="-run-args-with-properties" if="run.properties.exists">
+    <path id="run.properties.path">
+        <pathelement location="${run.properties.file}"/>
+    </path>
+</target>
+
+<target name="-run-args-without-properties" unless="run.properties.exists">
+    <path id="run.properties.path"/>
+</target>
+
+<target name="-run-without-wrapper" unless="run.with.wrapper">
     <java dir="dist" jar="dist/Wonderland.jar" fork="true">
-        <arg value="${run.properties.file}"/>
+        <arg pathref="run.properties.path"/>
     </java>
 </target>
 
-<target name="-run-without-properties" unless="run.properties.exists">
-    <java dir="dist" jar="dist/Wonderland.jar" fork="true"/>
+<!-- workaround for issues with shutdown on Windows.  Use a wrapper
+     so that the webserver shuts down cleanly -->
+<target name="-run-with-wrapper" if="run.with.wrapper">
+    <property name="wonderland.jar.location"
+              location="${current.dir}/dist/Wonderland.jar"/>
+
+    <java dir="dist" classname="org.jdesktop.wonderland.utils.ant.RunWrapper"
+          fork="true">
+        <classpath>
+            <pathelement path="${current.dir}/utils/ant/build/lib/wonderland-ant-utils.jar"/>
+        </classpath>
+
+        <arg value="${wonderland.jar.location}"/>
+        <arg pathref="run.properties.path"/>
+    </java>
 </target>
 
 </project>
