@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.common.cell.setup;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
@@ -102,6 +104,12 @@ public abstract class BasicCellSetup implements Serializable {
         /** Default constructor */
         public Origin() {
         }
+
+        public Origin(Vector3f origin) {
+            this.x = origin.x;
+            this.y = origin.y;
+            this.z = origin.z;
+        }
     }
     
     /**
@@ -134,6 +142,12 @@ public abstract class BasicCellSetup implements Serializable {
         /** Default constructor */
         public Scaling() {
         }
+
+        public Scaling(Vector3f scaling) {
+            x = scaling.x;
+            y = scaling.y;
+            z = scaling.z;
+        }
     }
     
     /**
@@ -151,6 +165,23 @@ public abstract class BasicCellSetup implements Serializable {
         
         /** Default constructor */
         public Rotation() {
+        }
+
+        public Rotation(Vector3f axis, double angleRadians) {
+            x = axis.x;
+            y = axis.y;
+            z = axis.z;
+            angle = angleRadians;
+        }
+
+        public Rotation(Quaternion quat) {
+            Vector3f axis = new Vector3f();
+            float angleRadians = quat.toAngleAxis(axis);
+            x = axis.x;
+            y = axis.y;
+            z = axis.z;
+            angle = angleRadians;
+
         }
     }
     
