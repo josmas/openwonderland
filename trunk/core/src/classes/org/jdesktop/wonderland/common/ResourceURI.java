@@ -84,15 +84,14 @@ public abstract class ResourceURI {
     public String getModuleName() {
         /*
          * If the URI contains a hostname (modulename@host:port), then the
-         * user info contains the module name and host is non-null. Otherwise,
-         * if user info is null, then only the module name exists in the host
-         * field.
+         * user info contains the module name. Otherwise, if user info is null,
+         * then only the module name exists in the authority field.
          */
-        String host = this.uri.getHost();
         String userInfo = this.uri.getUserInfo();
+        String authority = this.uri.getAuthority();
         
         if (userInfo == null) {
-            return host;
+            return authority;
         }
         return userInfo;
     }

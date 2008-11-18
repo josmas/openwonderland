@@ -622,7 +622,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
         for(ModelLoader.ModelDeploymentInfo info : deploymentInfo) {
             CellID parentCellID = null;
-            CellCreateMessage msg = new CellCreateMessage(parentCellID, info.getAssetURL());
+            CellCreateMessage msg = new CellCreateMessage(parentCellID, info.getCellSetup());
             connection.send(msg);
         }
 

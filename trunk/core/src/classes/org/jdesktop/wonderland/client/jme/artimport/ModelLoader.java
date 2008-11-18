@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.jme.artimport;
 import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 /**
  * Interface for Model loader code. Provides support for inital import of the 
@@ -51,20 +52,30 @@ public interface ModelLoader {
     
 
     public class ModelDeploymentInfo {
-        private String assetURL;
-
-        /**
-         * @return the assetURL
-         */
-        public String getAssetURL() {
-            return assetURL;
+//        private String assetURL;
+//
+//        /**
+//         * @return the assetURL
+//         */
+//        public String getAssetURL() {
+//            return assetURL;
+//        }
+//
+//        /**
+//         * @param assetURL the assetURL to set
+//         */
+//        public void setAssetURL(String assetURL) {
+//            this.assetURL = assetURL;
+//        }
+        
+        private BasicCellSetup setup;
+        
+        public BasicCellSetup getCellSetup() {
+            return setup;
         }
-
-        /**
-         * @param assetURL the assetURL to set
-         */
-        public void setAssetURL(String assetURL) {
-            this.assetURL = assetURL;
+        
+        public void setCellSetup(BasicCellSetup setup) {
+            this.setup = setup;
         }
     }
 }

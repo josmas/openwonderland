@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.common.cell.messages;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 /**
  * Message sent to add a cell hierarchy. This (for now) specifically assumes a
@@ -31,8 +32,8 @@ public class CellCreateMessage extends CellEditMessage {
     /** The ID of the cell of the parent */
     private CellID parentCellID;
    
-    /** The uri of the asset for the new cell */
-    private String assetURI;
+    /** A class of the setup information */
+    private BasicCellSetup setup;
     
     /**
      * Create a new cell message to the given cellID of the parent and uri of
@@ -40,10 +41,10 @@ public class CellCreateMessage extends CellEditMessage {
      * 
      * @param parentID the id of the parent cell
      */
-    public CellCreateMessage(CellID parentCellID, String assetURI) {
+    public CellCreateMessage(CellID parentCellID, BasicCellSetup setup) {
         super(EditType.CREATE_CELL);
         this.parentCellID = parentCellID;
-        this.assetURI = assetURI;
+        this.setup = setup;
     }
     
     /**
@@ -55,11 +56,11 @@ public class CellCreateMessage extends CellEditMessage {
         return this.parentCellID;
     }
     
-    public String getAssetURI() {
-        return assetURI;
+    public BasicCellSetup getCellSetup() {
+        return setup;
     }
 
-    public void setAssetURI(String assetURI) {
-        this.assetURI = assetURI;
+    public void setCellSetup(BasicCellSetup setup) {
+        this.setup = setup;
     }
 }

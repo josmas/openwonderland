@@ -75,9 +75,9 @@ public class ServerCache {
      * 
      * @return A collection of cached module names
      */
-    public Collection<String> getModuleNames() {
-        return this.cachedModules.keySet();
-    }
+//    public Collection<String> getModuleNames() {
+//        return this.cachedModules.keySet();
+//    }
     
     /**
      * Returns a module given its unique name, or null if none exists.
@@ -86,7 +86,19 @@ public class ServerCache {
      * @return The Module or null if none with the name exists
      */
     public CachedModule getModule(String moduleName) {
-        return this.cachedModules.get(moduleName);
+        // Look for the cached module. If we can't find it, see if it exists
+        // on the server nevertheless.
+        CachedModule cm = this.cachedModules.get(moduleName);
+        if (cm == null) {
+            ModuleInfo info = ModuleUtils.fetchModuleInfo(this.serverURL, moduleName);
+            if (info == null) {
+                logger.info("[MODULES] No module information found for " + moduleName);
+                return null;
+            }
+            cm = new CachedModule(serverURL, info);
+            this.cachedModules.put(moduleName, cm);
+        }
+        return cm;
     }
     
     /**
