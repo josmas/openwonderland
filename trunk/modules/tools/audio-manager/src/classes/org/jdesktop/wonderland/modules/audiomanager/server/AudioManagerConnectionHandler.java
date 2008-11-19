@@ -44,6 +44,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
@@ -81,6 +83,9 @@ public class AudioManagerConnectionHandler
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
     
     private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
+
+    private ConcurrentHashMap<WonderlandClientSender, String> senderMap = 
+	new ConcurrentHashMap();
 
     public AudioManagerConnectionHandler() {
         super();
@@ -178,16 +183,20 @@ public class AudioManagerConnectionHandler
 		return;
             }
 
+	    ManagedReference<ClientSession> sessionRef = 
+		AppContext.getDataManager().createReference(session);
+
 	    callID = call.getId();
 
             vm.addCallStatusListener(this, callID);
+
+	    senderMap.put(sender, callID);
 
             PlayerSetup ps = new PlayerSetup();
             ps.x = (double) msg.getX();
             ps.y = (double) msg.getY();
             ps.z = (double) msg.getZ();
-            ps.orientation =  getAngle(msg.getX(), msg.getY(), msg.getZ(),
-                msg.getDirection());
+            ps.orientation = msg.getDirection();
             ps.isLivePlayer = true;
 
             Player player = vm.createPlayer(callID, ps);
@@ -263,73 +272,34 @@ public class AudioManagerConnectionHandler
 
     public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
 //        throw new UnsupportedOperationException("Not supported yet.");
-        logger.warning("AudioManagerConnectionHandler.clientDisconnected(..) Not Impplemented");
+
+	String callID = senderMap.get(sender);
+
+	if (callID == null) {
+	    logger.warning("Unable to find callID for sender " + sender);
+	    return;
+	}
+
+	senderMap.remove(sender);
+
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	Call call = vm.getCall(callID);
+
+	if (call == null) {
+	    logger.warning("Can't find call for " + callID);
+	    return;
+	}
+
+	try {
+	    AppContext.getManager(VoiceManager.class).endCall(call, true);
+	} catch (IOException e) {
+	    logger.warning("Unable to end call " + call + " " + e.getMessage());
+	}
     }
 
     public void callStatusChanged(CallStatus status) {
 	logger.fine("got status " + status);
-    }
-
-    /*
-     * XXX This probably doesn't belong here!
-     *
-     * Calculate the angle based on the direction vector
-     * We ignore the y value which is the up/down direction.
-     *
-     * The direction (-1, 0) is east or 0 degrees
-     *		     (0, 1) is north or 90 degrees
-     *	             (1, 0) is west or 180 degrees
-     *		     (0, -1 is south) or 270 degrees
-     */
-    public static double getAngle(double x, double y, double z, double direction) {
-	/*
-	 * x is given to us pointing in the wrong direction.
-	 */
-        x = -x;
-        
-        double angle;
-        
-        if (x == 0) {
-	    /*
-	     * x is 0, so we can't divide by x.
-	     * if z is non-negative, then the angle is 90.
-	     * Otherwise, it's 270.
-	     */
-            if (z < 0) {
-                angle = 90;
-            } else {
-                angle = 270;
-            }
-        } else {
-            angle = Math.toDegrees(Math.atan(z / x));
-            
-            if (x < 0) {
-          /*
-           * atan only produces a result between 0 and 180
-           * so we have to adjust it based on the z value
-           */
-                if (z > 0) {
-                    angle -= 180;
-                } else {
-                    angle += 180;
-                }
-            }
-        }
-        
-	/*
-	 * For wonderland, a clockwise rotation results in a bigger
-	 * angle, i. e., rotation is in the opposite direction of
-	 * what the voice manager expects.  Correct for that here.
-	 */
-        angle = 360 - angle;
-        
-        if (angle < 0) {
-            angle += 360;
-        }
-        
-        angle %= 360;
-        
-        return angle;
     }
 
 }
