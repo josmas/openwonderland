@@ -650,7 +650,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	     * for that here.
 	     */
 	    // XXX angle isn't right just yet!
-	    angle = 0;
+	    angle = 90;
 
 	    player.moved(-location.getX(), location.getY(), location.getZ(), angle);
 	}
