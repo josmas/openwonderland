@@ -39,9 +39,9 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
@@ -494,8 +494,23 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param setup the properties to setup with
      */
     public void setupCell(BasicCellSetup setup) {
+        // Set up the transform (origin, rotation, scaling) and cell bounds
         setLocalTransform(BasicCellSetupHelper.getCellTransform(setup));
         setLocalBounds(BasicCellSetupHelper.getCellBounds(setup));
+        
+        // For all components in the setup class, create the component classes
+        // and setup them up and add to the cell.
+        for (CellComponentSetup compSetup : setup.getCellComponentSetups()) {
+            String className = compSetup.getServerComponentClassName();
+            try {
+                Class clazz = Class.forName(className);
+                CellComponentMO comp = (CellComponentMO)clazz.newInstance();
+                comp.setupCellComponent(compSetup);
+                this.addComponent(comp);
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
     /**

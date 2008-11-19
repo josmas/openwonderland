@@ -21,6 +21,7 @@ import java.io.Serializable;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
+import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
 /**
  *
@@ -35,5 +36,14 @@ public class CellComponentMO implements ManagedObject, Serializable {
     
     protected void setLive(boolean live) {
         // Do nothing by default 
+    }
+    
+    /**
+     * Set up the cell component from the given properties
+     * 
+     * @param setup the properties to setup with
+     */
+    public void setupCellComponent(CellComponentSetup setup) {
+        // Do nothing by default
     }
 }

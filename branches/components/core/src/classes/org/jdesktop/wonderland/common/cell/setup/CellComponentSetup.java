@@ -39,5 +39,13 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="component")
-public class CellComponentSetup {
+public abstract class CellComponentSetup {
+    
+    /**
+     * Returns the fully-qualified class name of the server-side component
+     * class.
+     * 
+     * @return The server-side cell component class name
+     */
+    public abstract String getServerComponentClassName();
 }
