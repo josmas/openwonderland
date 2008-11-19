@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<wl-help-layout>
+    <item>
+        <name>About Wonderland</name>
+        <help-page-uri>http://wonderland.dev.java.net</help-page-uri>
+    </item>
+    <folder name="Navigation">
+        <category name="core-navigation"/>
+    </folder>
+    <folder name="Audio">
+        <category name="core-audio"/>
+    </folder>
+    <folder name="Shared Applications">
+        <category name="core-shared-apps"/>
+    </folder>
+    <separator/>
+</wl-help-layout>
