@@ -17,9 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.client.cell.MovableComponent;
-import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
-
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 
