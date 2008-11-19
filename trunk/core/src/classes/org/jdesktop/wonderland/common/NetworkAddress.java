@@ -74,7 +74,7 @@ public class NetworkAddress {
 		    while (eia.hasMoreElements()) {
 			InetAddress ia = eia.nextElement();
 
-			if (!ia.isLinkLocalAddress()) {
+			if (!ia.isLinkLocalAddress() && !ia.isLoopbackAddress()) {
 			    networkAddressList.add(
 				new NetworkAddress(ni.getName(), ia.getHostAddress()));
 			    break;
