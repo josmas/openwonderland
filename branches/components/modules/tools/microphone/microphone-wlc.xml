@@ -15,4 +15,10 @@
     <activeRadius>2</activeRadius>
 
     <activeRadiusType>BOX</activeRadiusType>
+
+    <audio-treatment-component>
+  	<treatment></treatment>
+	<groupId>foo</groupId>
+    </audio-treatment-component>
+
 </microphone-cell>
