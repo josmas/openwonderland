@@ -17,8 +17,14 @@
     <activeRadiusType>BOX</activeRadiusType>
 
     <audio-treatment-component>
-  	<treatment></treatment>
+  	<treatment>fubur</treatment>
 	<groupId>foo</groupId>
+ 	<lowerLeftX> </lowerLeftX>
+        <lowerLeftY> </lowerLeftY>
+        <lowerLeftZ> </lowerLeftZ>
+        <upperRightX> </upperRightX>
+	<upperRightY> </upperRightY>
+	<upperRightZ> </upperRightZ>
     </audio-treatment-component>
 
 </microphone-cell>

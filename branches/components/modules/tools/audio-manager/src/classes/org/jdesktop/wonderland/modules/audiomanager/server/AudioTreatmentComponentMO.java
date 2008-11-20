@@ -75,6 +75,11 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
     
     private String treatment;
     private String groupId;
+    private double lowerLeftY;
+    private double lowerLeftZ;
+    private double upperRightX;
+    private double upperRightY;
+    private double upperRightZ;
 
     /**
      * Create a AudioTreatmentComponent for the given cell. The cell must already
