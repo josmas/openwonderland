@@ -40,6 +40,24 @@ public class AudioTreatmentComponentSetup extends CellComponentSetup implements 
     @XmlElement(name="groupId")
     public String groupId = null;
 
+    @XmlElement(name="lowerLeftX")
+    public double lowerLeftX;
+
+    @XmlElement(name="lowerLeftY")
+    public double lowerLeftY;
+
+    @XmlElement(name="lowerLeftZ")
+    public double lowerLeftZ;
+
+    @XmlElement(name="upperRightX")
+    public double upperRightX;
+
+    @XmlElement(name="upperRightY")
+    public double upperRightY;
+
+    @XmlElement(name="upperRightZ")
+    public double upperRightZ;
+
     public AudioTreatmentComponentSetup() {
 	System.out.println("AudioTreatmentComponentSetup");
     }
@@ -61,6 +79,60 @@ public class AudioTreatmentComponentSetup extends CellComponentSetup implements 
     @XmlTransient
     public String getGroupId() {
 	return groupId;
+    }
+
+    public void setLowerLeftX(double lowerLeftX) {
+	this.lowerLeftX = lowerLeftX;
+    }
+
+    @XmlTransient
+    public double getLowerLeftX() {
+	return lowerLeftX;
+    }
+
+    public void setLowerLeftY(double lowerLeftY) {
+	this.lowerLeftY = lowerLeftY;
+    }
+
+    @XmlTransient
+    public double getLowerLeftY() {
+	return lowerLeftY;
+    }
+
+    public void setLowerLeftZ(double lowerLeftZ) {
+	this.lowerLeftZ = lowerLeftZ;
+    }
+
+    @XmlTransient
+    public double getLowerLeftZ() {
+	return lowerLeftZ;
+    }
+
+    public void setUpperRightX(double upperRightX) {
+	this.upperRightX = upperRightX;
+    }
+
+    @XmlTransient
+    public double getUpperRightX() {
+	return upperRightX;
+    }
+
+    public void setUpperRightY(double upperRightY) {
+	this.upperRightY = upperRightY;
+    }
+
+    @XmlTransient
+    public double getUpperRightY() {
+	return upperRightY;
+    }
+
+    public void setUpperRightZ(double upperRightZ) {
+	this.upperRightZ = upperRightZ;
+    }
+
+    @XmlTransient
+    public double getUpperRightZ() {
+	return upperRightZ;
     }
 
     public String getServerComponentClassName() {

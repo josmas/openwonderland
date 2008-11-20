@@ -52,6 +52,8 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageRe
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentSetup;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
 
 import com.sun.voip.client.connector.CallStatus;
@@ -60,6 +62,9 @@ import com.sun.voip.client.connector.CallStatusListener;
 import com.sun.voip.CallParticipant;
 
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
+import com.sun.mpk20.voicelib.app.Treatment;
+import com.sun.mpk20.voicelib.app.TreatmentGroup;
+import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
 /**
@@ -73,13 +78,9 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
     
-    private String treatment;
+    private TreatmentSetup treatmentSetup = new TreatmentSetup();
+
     private String groupId;
-    private double lowerLeftY;
-    private double lowerLeftZ;
-    private double upperRightX;
-    private double upperRightY;
-    private double upperRightZ;
 
     /**
      * Create a AudioTreatmentComponent for the given cell. The cell must already
@@ -103,28 +104,43 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
     
     @Override
     public void setupCellComponent(CellComponentSetup setup) {
-	AudioComponentCellSetup accs = (AudioComponentCellSetup) setup;
+	AudioTreatmentComponentSetup accs = (AudioTreatmentComponentSetup) setup;
 
-	treatment = sccs.getTreatment();
-	groupId = sccs.getGroupId();
+	groupId = accs.getGroupId();
 
-	logger.warning("setup:  treatment=" + treatment + " groupId " + groupId);
+	treatmentSetup.treatment = accs.getTreatment();
+
+	treatmentSetup.lowerLeftX = accs.getLowerLeftX();
+	treatmentSetup.lowerLeftY = accs.getLowerLeftY();
+	treatmentSetup.lowerLeftZ = accs.getLowerLeftZ();
+
+	treatmentSetup.upperRightX = accs.getUpperRightX();
+	treatmentSetup.upperRightY = accs.getUpperRightY();
+	treatmentSetup.upperRightZ = accs.getUpperRightZ();
+
+	logger.warning("setup:  treatment=" + treatmentSetup.treatment + " groupId " + groupId);
     }
 
     @Override
     public void setLive(boolean live) {
-	/*
-	 * Get the treatment group and list of treatments.
-	 */
-/*
-	String groupId = 
+	logger.warning("Starting treatment " + treatmentSetup.treatment);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	Treatment treatment;
+
+	try {
+	    treatment = vm.createTreatment(treatmentSetup.treatment, treatmentSetup);
+	} catch (IOException e) {
+	    logger.warning("Unable to create treatment " + treatmentSetup.treatment
+		+ e.getMessage());
+	    return;
+	}
+
 	TreatmentGroup group = vm.createTreatmentGroup(groupId);
 
-	String[] treatments =
-
+	group.addTreatment(treatment);
+/*
 	for (int i = 0; i < treatments.size; i++) {
 	    TreatmentSetup setup = new TreatmentSetup();
 
