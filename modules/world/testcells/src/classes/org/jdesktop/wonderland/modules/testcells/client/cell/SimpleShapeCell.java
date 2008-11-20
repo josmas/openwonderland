@@ -33,7 +33,14 @@ public class SimpleShapeCell extends Cell {
 
     private SimpleShapeConfig.Shape shape;
     private ColorRGBA color;
+    private float mass;
 
+    /**
+     * Mass of zero will result in a static rigid body, non zero will be dynamic
+     * @param cellID
+     * @param cellCache
+     * @param mass
+     */
     public SimpleShapeCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
@@ -43,6 +50,7 @@ public class SimpleShapeCell extends Cell {
         super.configure(configData);
         SimpleShapeConfig c = (SimpleShapeConfig) configData;
         this.shape = c.getShape();
+        this.mass = c.getMass();
     }
 
     
@@ -65,6 +73,10 @@ public class SimpleShapeCell extends Cell {
         return shape;
     }
 
+    public float getMass() {
+        return mass;
+    }
+    
     /**
      * Return the color of this shape
      * @return

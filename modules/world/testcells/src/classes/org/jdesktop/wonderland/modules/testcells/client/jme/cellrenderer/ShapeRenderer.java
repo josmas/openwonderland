@@ -27,6 +27,7 @@ import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Cone;
 import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Sphere;
+import com.jme.scene.shape.Teapot;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import org.jdesktop.mtgame.Entity;
@@ -63,20 +64,25 @@ public class ShapeRenderer extends BasicRenderer {
                 break;
             case CYLINDER :
                 ret.attachChild(geom = new Cylinder("Cylinder", 10, 10, xExtent, yExtent));
+                // Make yUp
+                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
                 break;
             case CONE :
                 ret.attachChild(geom = new Cone("Cone", 10, 10, xExtent, yExtent));
+                // Make yUp
+                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
                 break;
             case SPHERE :
                 ret.attachChild(geom = new Sphere("Sphere", 10, 10, xExtent));
                 break;
+            case TEAPOT :
+                ret.attachChild(geom = new Teapot());
+                ((Teapot)geom).resetData();
+                ret.setLocalScale(0.2f);
+                break;
         }
 
         if (geom!=null) {
-            geom.setDefaultColor(new ColorRGBA(1f, 0f, 0f, 1f));
-
-            // Make yUp
-            geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
 
             geom.setModelBound(new BoundingSphere());
             geom.updateModelBound();
@@ -87,6 +93,10 @@ public class ShapeRenderer extends BasicRenderer {
         applyTransform(ret, cell.getLocalTransform());
         
         return ret;
+    }
+
+    protected float getMass() {
+        return ((SimpleShapeCell)cell).getMass();
     }
 
 }
