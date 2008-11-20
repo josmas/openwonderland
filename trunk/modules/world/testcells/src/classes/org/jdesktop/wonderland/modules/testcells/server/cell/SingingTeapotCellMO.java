@@ -30,43 +30,26 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeC
 
 
 /**
- * Cell that renders a basic shape
+ * Test Cell for use until WFS is integrated, this will be removed.
  * 
+ * @deprecated
  * @author paulby
  */
 @ExperimentalAPI
-public class SimpleShapeCellMO extends CellMO {
-    
-    private SimpleShapeConfig.Shape shape;
-    private float mass;
+public class SingingTeapotCellMO extends SimpleShapeCellMO{
     
     /** Default constructor, used when cell is created via WFS */
-    public SimpleShapeCellMO() {
-        this(new Vector3f(), 1);
+    public SingingTeapotCellMO() {
+        this(new Vector3f(), 50);
     }
 
-    public SimpleShapeCellMO(Vector3f center, float size) {
-        this(center, size, SimpleShapeConfig.Shape.BOX);
-    }
+    public SingingTeapotCellMO(Vector3f center, float size) {
+        super(center, size, SimpleShapeConfig.Shape.BOX.TEAPOT);
 
-    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape) {
-        this(center, size, shape, 0f);
     }
     
-    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape, float mass) {
-        super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
-        this.shape = shape;
-        this.mass = mass;
-    }
-    
-    @Override
-    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell";
-    }
-
-    @Override
-    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new SimpleShapeConfig(shape, mass);
+    @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+        return "org.jdesktop.wonderland.modules.testcells.client.cell.SingingTeapotCell";
     }
 
     @Override
@@ -79,4 +62,5 @@ public class SimpleShapeCellMO extends CellMO {
         super.reconfigureCell(setup);
         setupCell(setup);
     }
+
 }
