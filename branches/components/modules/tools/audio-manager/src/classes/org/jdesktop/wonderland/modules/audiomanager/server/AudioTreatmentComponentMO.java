@@ -73,6 +73,9 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
     
+    private String treatment;
+    private String groupId;
+
     /**
      * Create a AudioTreatmentComponent for the given cell. The cell must already
      * have a ChannelComponent otherwise this method will throw an IllegalStateException
@@ -95,7 +98,12 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
     
     @Override
     public void setupCellComponent(CellComponentSetup setup) {
-	logger.warning("setup");
+	AudioComponentCellSetup accs = (AudioComponentCellSetup) setup;
+
+	treatment = sccs.getTreatment();
+	groupId = sccs.getGroupId();
+
+	logger.warning("setup:  treatment=" + treatment + " groupId " + groupId);
     }
 
     @Override
