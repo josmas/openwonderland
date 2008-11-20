@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -136,6 +137,14 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
         super.setupCell(setup);
 
 	MicrophoneCellSetup pcs = (MicrophoneCellSetup) setup;
+
+	CellComponentSetup[] components = setup.getCellComponentSetups();
+
+	System.out.println("Components length is " + components.length);
+
+	for (int i = 0; i < components.length; i++) {
+	    System.out.println("Component setup:  " + components[i].getClass());
+	}
     }
 
     @Override

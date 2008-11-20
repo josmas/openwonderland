@@ -614,9 +614,6 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	String clientId = cellMORef.get().getCellID().toString();
 
-	logger.fine("localTransform " + localTransform + " world " 
-	    + localToWorldTransform);
-
 	Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
 
 	if (player == null) {
@@ -626,11 +623,23 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    Vector3f angleV = heading.clone();
 
-	    localToWorldTransform.getRotation(null).multLocal(angleV);
+	    //localToWorldTransform.getRotation(null).multLocal(angleV);
+	    float[] angles = new float[3];
+
+	    localToWorldTransform.getRotation(null).toAngles(angles);
+
+	    String s = "";
+
+	    for (int i = 0; i < angles.length; i++) {
+		s += Math.toDegrees(angles[i]) + " ";
+	    }
+
+	    logger.warning("localTransform " + localTransform + " world " 
+	        + localToWorldTransform + " angles:  " + s);
 
 	    double h = heading.angleBetween(angleV);
 
-	    double angle = Math.toDegrees(h) % 360;
+	    //double angle = Math.toDegrees(h) % 360;
 
 	    /*
 	     * For wonderland, a clockwise rotation results in a bigger
@@ -641,16 +650,16 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    Vector3f location = localToWorldTransform.getTranslation(null);
 	
-	    logger.fine(player + " x " + -location.getX()
-		+ " y " + location.getY() + " z " + location.getZ()
-		+ " angle " + angle + " radians " + h);
+	    //logger.fine(player + " x " + -location.getX()
+	    //	+ " y " + location.getY() + " z " + location.getZ()
+	    //	+ " angle " + angle + " radians " + h);
 
 	    /*
 	     * The x coordinate increases to the left so we correct
 	     * for that here.
 	     */
 	    // XXX angle isn't right just yet!
-	    angle = 0;
+	    double angle = 0;
 
 	    player.moved(-location.getX(), location.getY(), location.getZ(), angle);
 	}
