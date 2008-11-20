@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 public class CellComponentMO implements ManagedObject, Serializable {
     protected ManagedReference<CellMO> cellRef;
     
-    public CellComponentMO(CellMO cell) {
+    public CellComponentMO(CellMO cell) {        
         this.cellRef = AppContext.getDataManager().createReference(cell);
     }
     

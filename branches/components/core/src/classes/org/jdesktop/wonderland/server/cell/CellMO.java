@@ -27,6 +27,7 @@ import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -504,7 +505,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
             String className = compSetup.getServerComponentClassName();
             try {
                 Class clazz = Class.forName(className);
-                CellComponentMO comp = (CellComponentMO)clazz.newInstance();
+                Constructor<CellComponentMO> constructor = clazz.getConstructor(CellMO.class);
+                CellComponentMO comp = constructor.newInstance(this);
                 comp.setupCellComponent(compSetup);
                 this.addComponent(comp);
             } catch (Exception ex) {
