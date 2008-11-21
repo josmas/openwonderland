@@ -50,13 +50,19 @@ public abstract class EventDistributor implements Runnable {
 
     /** The base input queue entry. */
     private static class Entry {
-        /** The Wonderland event. */
-        Event event;
-        /** The pick info for the event */
-        PickInfo pickInfo;
-            Entry (Event event, PickInfo pickInfo) {
-            this.event = event;
-            this.pickInfo = pickInfo;
+	/** The Wonderland event. */
+	Event event;
+	/** The destination pick info for the event */
+	PickInfo destPickInfo;
+	/** The actual hit pick info for the event (drag events only)*/
+	PickInfo hitPickInfo;
+        Entry (Event event, PickInfo destPickInfo) {
+	    this(event, destPickInfo, null);
+	}
+        Entry (Event event, PickInfo destPickInfo, PickInfo hitPickInfo) {
+	    this.event = event;
+	    this.destPickInfo = destPickInfo;
+	    this.hitPickInfo = hitPickInfo;
         }
     }
 
@@ -108,6 +114,17 @@ public abstract class EventDistributor implements Runnable {
     }
 
     /**
+     * Add a Wonderland drag event to the event distribution queue, with both the 
+     * destination pick info and the actual hit pick info.
+     * @param event The event to enqueue.
+     * @param destPickInfo The destination pick info for the event.
+     * @param hitPickInfo The hit pick info for the event.
+     */
+    void enqueueDragEvent (Event event, PickInfo destPickInfo, PickInfo hitPickInfo) {
+	inputQueue.add(new Entry(event, destPickInfo, hitPickInfo));
+    }
+
+    /**
      * Add a Wonderland SwingEnterExit3D event to the event distribution queue.
      * @param event The event to enqueue.
      * @param entity The event's entity.
@@ -128,7 +145,7 @@ public abstract class EventDistributor implements Runnable {
 		    EntrySwingEnterExit esee = (EntrySwingEnterExit) entry;
 		    processSwingEnterExitEvent(esee.event, esee.entity);
 		} else {
-		    processEvent(entry.event, entry.pickInfo);
+		    processEvent(entry.event, entry.destPickInfo, entry.hitPickInfo);
 		}
             } catch (Exception ex) {
 		ex.printStackTrace();
@@ -140,9 +157,10 @@ public abstract class EventDistributor implements Runnable {
     /** 
      * The responsibility for determining how to process individual event types is delegated to the subclass.
      * @param event The event to try to deliver to event listeners.
-     * @param pickInfo The pick info associated with the event.
+     * @param destPickInfo The destination pick info associated with the event.
+     * @param hitPickInfo The hit pick info associated with the event.
      */
-    protected abstract void processEvent (Event event, PickInfo pickInfo);
+    protected abstract void processEvent (Event event, PickInfo destPickInfo, PickInfo hitPickInfo);
 
     /** 
      * The responsibility for determining how to process individual swing enter/exit event types 
@@ -196,8 +214,9 @@ public abstract class EventDistributor implements Runnable {
                 logger.fine("Calling consume for listener " + listener);
                 Event distribEvent = createEventForEntity(event, entity);
                 if (listener.consumesEvent(distribEvent)) {
-                logger.fine("CONSUMED by entity " + entity);
-                listener.postEvent(distribEvent);
+		    logger.fine("CONSUMED by entity " + entity);
+		    logger.fine("Consuming listener " + listener);
+		    listener.postEvent(distribEvent);
                 }
                 propState.toParent |= listener.propagatesToParent(distribEvent);
                 propState.toUnder |= listener.propagatesToUnder(distribEvent);

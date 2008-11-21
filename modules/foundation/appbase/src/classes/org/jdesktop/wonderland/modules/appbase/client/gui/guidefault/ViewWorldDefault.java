@@ -49,6 +49,7 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseWheelEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -480,6 +481,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	public abstract void updateTexture ();
 
 	public Point calcPositionInPixelCoordinates (Vector3f point) {
+	    if (point == null) return null;
 	    logger.fine("point = " + point);
 
 	    // First calculate the actual coordinates of the corners of the view in world coords.
@@ -751,8 +753,17 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	// Can't convert if there is no geometry
 	if (geometryObj == null) return;
 
-	// Convert mouse event intersection point to 2D
-	Point point = geometryObj.calcPositionInPixelCoordinates(me3d.getIntersectionPointWorld());
+	// Convert mouse event intersection point to 2D. For most events this is the intersection
+	// point based on the destination pick details calculated by the input system, but for drag
+	// events this needs to be derived from the actual hit pick details (because for drag events
+	// the destination pick details might be overridden by a grab).
+	Point point;
+	if (me3d.getID() == MouseEvent.MOUSE_DRAGGED) {
+	    MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) me3d;
+	    point = geometryObj.calcPositionInPixelCoordinates(de3d.getHitIntersectionPointWorld());
+	} else {
+	    point = geometryObj.calcPositionInPixelCoordinates(me3d.getIntersectionPointWorld());
+	}
 	if (point == null) {
             // Event was outside our panel so do nothing
             // This can happen for drag events

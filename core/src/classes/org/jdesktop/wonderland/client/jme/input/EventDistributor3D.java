@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventDistributor;
 import org.jdesktop.mtgame.PickInfo;
@@ -57,11 +58,11 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	return eventDistributor;
     }
 
-    protected void processEvent (Event event, PickInfo pickInfo) {
+    protected void processEvent (Event event, PickInfo destPickInfo, PickInfo hitPickInfo) {
 	if (event instanceof MouseEvent3D) {
-	    processMouseKeyboardEvent(event, pickInfo);
+	    processMouseKeyboardEvent(event, destPickInfo, hitPickInfo);
 	} else if (event instanceof KeyEvent3D) {
-	    processMouseKeyboardEvent(event, mousePickInfoPrev);
+	    processMouseKeyboardEvent(event, mousePickInfoPrev, null);
 	} else if (event instanceof FocusChangeEvent) {
 	    processFocusChangeEvent(((FocusChangeEvent)event).getChanges());
 	} else {
@@ -69,12 +70,22 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	}
     }
 
-    protected void processMouseKeyboardEvent (Event event, PickInfo pickInfo) {
-	logger.fine("Distributor: received event = " + event + ", pickInfo = " + pickInfo);
+    protected void processMouseKeyboardEvent (Event event, PickInfo destPickInfo, PickInfo hitPickInfo) {
+	logger.fine("Distributor: received event = " + event);
+	logger.fine("Distributor: destPickInfo = " + destPickInfo);
+	/*
+	if (destPickInfo != null && destPickInfo.size() > 0 && destPickInfo.get(0) != null) {
+	    logger.fine("entity = " + InputPicker.pickDetailsToEntity(destPickInfo.get(0)));
+	}
+	logger.fine("Distributor: hitPickInfo = " + hitPickInfo);
+	if (hitPickInfo != null && hitPickInfo.size() > 0 && hitPickInfo.get(0) != null) {
+	    logger.fine("entity = " + InputPicker.pickDetailsToEntity(hitPickInfo.get(0)));
+	}
+	*/
 
 	// Track the last mouse pick info for focus-follows-mouse keyboard focus policy
 	if (event instanceof MouseEvent3D) {
-	    mousePickInfoPrev = pickInfo;
+	    mousePickInfoPrev = destPickInfo;
 	    MouseEvent3D mouseEvent = (MouseEvent3D) event;
 	    if (mouseEvent.getAwtEvent() instanceof InputManager.NondeliverableMouseEvent) {
 		return;
@@ -87,7 +98,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	}
         
         if (event instanceof InputEvent3D) {
-            ((InputEvent3D)event).setPickInfo(pickInfo);
+            ((InputEvent3D)event).setPickInfo(destPickInfo);
         }
 
 	tryGlobalListeners(event);
@@ -97,8 +108,8 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 
 	// Walk through successive depth levels, as long as propagateToUnder is true,
 	// searching up the parent chain in each level
-        if (pickInfo == null) return;
-	PickDetails pickDetails = pickInfo.get(0);
+        if (destPickInfo == null) return;
+	PickDetails pickDetails = destPickInfo.get(0);
 	logger.fine("pickDetails = " + pickDetails);
 	int idx = 0;
 	while (true) {
@@ -109,6 +120,12 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    // See whether the picked entity wants the event.
 	    if (event instanceof MouseEvent3D) {
 		((MouseEvent3D)event).setPickDetails(pickDetails);
+		if (((MouseEvent3D)event).getID() == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null) {
+		    MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) event;
+		    if (idx < hitPickInfo.size()) {
+			de3d.setHitPickDetails(hitPickInfo.get(idx));
+		    }
+		}
 	    }
 	    Entity entity = InputPicker.pickDetailsToEntity(pickDetails);
 	    tryListenersForEntity(entity, event, propState);
@@ -127,12 +144,12 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    logger.fine("Propagate to next under");
 
 	    idx++;
-	    if (idx >= pickInfo.size()) {
+	    if (idx >= destPickInfo.size()) {
 		// No more picked objects underneath. We're done.
 		break;
 	    }
 	    
-	    pickDetails = pickInfo.get(idx);
+	    pickDetails = destPickInfo.get(idx);
 	    logger.fine("pickDetails = " + pickDetails);
 	}
     }
