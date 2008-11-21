@@ -37,9 +37,6 @@ public class MouseButtonEvent3D extends MouseEvent3D {
 	EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
-    static int xLastPress;
-    static int yLastPress;
-
     /** Default constructor (for cloning) */
     protected MouseButtonEvent3D () {}
 
@@ -58,9 +55,6 @@ public class MouseButtonEvent3D extends MouseEvent3D {
      */
     MouseButtonEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent, pickDetails);
-
-	xLastPress = awtEvent.getX();
-	yLastPress = awtEvent.getY();
     }
     
     /**
