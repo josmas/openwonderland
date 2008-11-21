@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.Point;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
@@ -143,7 +144,7 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
      * @param ret An Vector3f in which to store the drag vector. If null a new vector is created.
      * @return The argument ret is returned. If it was null a new vector is returned.
      */
-    public Vector3f getDragVectorWorld (Vector3f dragStartWorld, Vector3f ret) {
+    public Vector3f getDragVectorWorld (Vector3f dragStartWorld, Point dragStartScreen, Vector3f ret) {
         if (ret == null) {
             ret = new Vector3f();
         }
@@ -156,12 +157,11 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
 
 	// The float movement vector in screen space
 	Vector2f scrPos = new Vector2f(
-				     (float)(((MouseEvent)awtEvent).getX() - MouseButtonEvent3D.xLastPress),
-                                     (float)(((MouseEvent)awtEvent).getY() - MouseButtonEvent3D.yLastPress));
+				     (float)(((MouseEvent)awtEvent).getX() - dragStartScreen.x),
+                                     (float)(((MouseEvent)awtEvent).getY() - dragStartScreen.y));
 	logger.fine("scrPos = " + scrPos);
 
-	Vector2f pressXY = new Vector2f((float)MouseButtonEvent3D.xLastPress, 
-					(float)MouseButtonEvent3D.yLastPress);
+	Vector2f pressXY = new Vector2f((float)dragStartScreen.x, (float)dragStartScreen.y);
 	Vector3f pressWorld = ((InputManager3D)InputManager3D.getInputManager()).
 	    getCamera().getWorldCoordinates(pressXY, 0f);
 

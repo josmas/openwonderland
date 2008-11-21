@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.testcells.client.cell;
 
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.Entity;
@@ -74,7 +76,11 @@ public class DragTest extends SimpleShapeCell {
 	// TODO: workaround for bug 27
 	boolean dragging;
 
+	// The intersection point on the entity over which the button was pressed, in world coordinates.
 	Vector3f dragStartWorld;
+
+	// The screen coordinates of the button press event.
+	Point dragStartScreen;
 
 	Vector3f translationOnPress = null;
 
@@ -89,6 +95,8 @@ public class DragTest extends SimpleShapeCell {
 	    if (event instanceof MouseButtonEvent3D) {
 		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
 		if (buttonEvent.isPressed()) {
+		    MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
+		    dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
 		    dragStartWorld = buttonEvent.getIntersectionPointWorld();
 		    translationOnPress = transform.getTranslation(null);
 		    dragging = true;
@@ -103,7 +111,8 @@ public class DragTest extends SimpleShapeCell {
 	    }
 
 	    MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) event;
-	    Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, new Vector3f());
+	    Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen, 
+							       new Vector3f());
 
 	    // Now add the drag vector the node translation and move the cell.
 	    Vector3f newTranslation = translationOnPress.add(dragVector);
