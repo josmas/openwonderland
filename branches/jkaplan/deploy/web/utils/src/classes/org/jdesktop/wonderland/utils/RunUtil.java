@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -44,7 +46,10 @@ public class RunUtil {
     
     /** the base directory */
     private static File baseDir;
-    
+
+    /** a thread to cleanup temp directories */
+    private static CleanupThread cleanupThread;
+
     /**
      * Create a temporary directory in the run directory.  An attempt will
      * be made to clean up all temporary directories on exit.
@@ -63,6 +68,7 @@ public class RunUtil {
         
         out.mkdir();
         out.deleteOnExit();
+        scheduleForCleanup(out);
         return out;
     }
     
@@ -98,15 +104,7 @@ public class RunUtil {
                 baseDir.mkdirs();
                 
                 if (Boolean.parseBoolean(System.getProperty(RUN_DIR_CLEANUP_PROP))) {
-                    // remove dirctory on exit.
-                    Runtime.getRuntime().addShutdownHook(new Thread() {
-                        @Override
-                        public void run() {
-                            logger.info("Cleaning up Wonderland run directory " +
-                                        baseDir + ".");
-                            deleteDir(baseDir);
-                        }
-                    });
+                    scheduleForCleanup(baseDir);
                 }
             } catch (IOException ioe) {
                 logger.warning("Unable to create run directory: " + baseDir);
@@ -268,5 +266,48 @@ public class RunUtil {
         }
         
         base.delete();
+    }
+    
+    /**
+     * Schedule a file to be cleaned up when the system exits.  If the file
+     * does not exist at exit time, it will be ignored.  Directories will
+     * be deleted using the deleteDir() method.
+     * @param file the file to clean up
+     */
+    public synchronized static void scheduleForCleanup(File file) {
+        if (cleanupThread == null) {
+            cleanupThread = new CleanupThread();
+            Runtime.getRuntime().addShutdownHook(cleanupThread);
+        }
+
+        cleanupThread.add(file);
+    }
+
+    static class CleanupThread extends Thread {
+        private final List<File> cleanupList =
+                new ArrayList<File>();
+
+        public synchronized void add(File file) {
+            cleanupList.add(file);
+        }
+
+        public synchronized void remove(File file) {
+            cleanupList.remove(file);
+        }
+
+        @Override
+        public void run() {
+            synchronized (this) {
+                for (File f : cleanupList) {
+                    if (f.exists()) {
+                        if (f.isDirectory()) {
+                            deleteDir(f);
+                        } else {
+                            f.delete();
+                        }
+                    }
+                }
+            }
+        }
     }
 }
