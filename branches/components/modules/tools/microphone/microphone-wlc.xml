@@ -18,6 +18,7 @@
 
     <audio-treatment-component>
   	<treatment>fubur</treatment>
+  	<treatment>fubur1</treatment>
 	<groupId>foo</groupId>
  	<lowerLeftX> </lowerLeftX>
         <lowerLeftY> </lowerLeftY>

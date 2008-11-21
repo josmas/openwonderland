@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.audiomanager.common;
 import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -34,8 +35,10 @@ import java.io.Serializable;
 @XmlRootElement(name="audio-treatment-component")
 public class AudioTreatmentComponentSetup extends CellComponentSetup implements Serializable, CellSetupSPI {
 
-    @XmlElement(name="treatment")
-    public String treatment = null;
+    @XmlElements({
+	@XmlElement(name="treatment")
+    })
+    public String[] treatments = null;
 
     @XmlElement(name="groupId")
     public String groupId = null;
@@ -62,14 +65,14 @@ public class AudioTreatmentComponentSetup extends CellComponentSetup implements 
 	System.out.println("AudioTreatmentComponentSetup");
     }
 
-    public void setTreatment(String treatment) {
-	this.treatment = treatment;
+    public void setTreatments(String treatment) {
+	//this.treatment = treatment;
 	System.out.println("Treatment:  " + treatment);
     }
 
     @XmlTransient
-    public String getTreatment() {
-	return treatment;
+    public String[] getTreatments() {
+	return treatments;
     }
 
     public void setGroupId(String groupId) {

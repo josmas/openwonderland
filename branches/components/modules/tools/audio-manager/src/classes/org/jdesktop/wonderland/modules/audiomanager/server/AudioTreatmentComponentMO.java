@@ -81,6 +81,15 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
     private TreatmentSetup treatmentSetup = new TreatmentSetup();
 
     private String groupId;
+    private String[] treatments;
+
+    private double lowerLeftX;
+    private double lowerLeftY;
+    private double lowerLeftZ;
+
+    private double upperRightX;
+    private double upperRightY;
+    private double upperRightZ;
 
     /**
      * Create a AudioTreatmentComponent for the given cell. The cell must already
@@ -108,15 +117,15 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
 	groupId = accs.getGroupId();
 
-	treatmentSetup.treatment = accs.getTreatment();
+	treatments = accs.getTreatments();
 
-	treatmentSetup.lowerLeftX = accs.getLowerLeftX();
-	treatmentSetup.lowerLeftY = accs.getLowerLeftY();
-	treatmentSetup.lowerLeftZ = accs.getLowerLeftZ();
+	lowerLeftX = accs.getLowerLeftX();
+	lowerLeftY = accs.getLowerLeftY();
+	lowerLeftZ = accs.getLowerLeftZ();
 
-	treatmentSetup.upperRightX = accs.getUpperRightX();
-	treatmentSetup.upperRightY = accs.getUpperRightY();
-	treatmentSetup.upperRightZ = accs.getUpperRightZ();
+	upperRightX = accs.getUpperRightX();
+	upperRightY = accs.getUpperRightY();
+	upperRightZ = accs.getUpperRightZ();
 
 	logger.warning("setup:  treatment=" + treatmentSetup.treatment + " groupId " + groupId);
     }
@@ -127,32 +136,29 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	Treatment treatment;
-
-	try {
-	    treatment = vm.createTreatment(treatmentSetup.treatment, treatmentSetup);
-	} catch (IOException e) {
-	    logger.warning("Unable to create treatment " + treatmentSetup.treatment
-		+ e.getMessage());
-	    return;
-	}
-
 	TreatmentGroup group = vm.createTreatmentGroup(groupId);
 
-	group.addTreatment(treatment);
-/*
-	for (int i = 0; i < treatments.size; i++) {
+	for (int i = 0; i < treatments.length; i++) {
 	    TreatmentSetup setup = new TreatmentSetup();
 
 	    setup.treatment = treatments[i];
 	    
-	    set the rest of the parameters
+	    setup.lowerLeftX = lowerLeftX;
+	    setup.lowerLeftY = lowerLeftY;
+	    setup.lowerLeftZ = lowerLeftZ;
 
-	    Treatment treatment = vm.createTreatment(treatments[i], setup);
+	    setup.upperRightX = upperRightX;
+	    setup.upperRightY = upperRightY;
+	    setup.upperRightZ = upperRightZ;
 
-	    group.addTreatment(treatment);
+	    try {
+	        group.addTreatment(vm.createTreatment(treatmentSetup.treatment, treatmentSetup));
+	    } catch (IOException e) {
+	        logger.warning("Unable to create treatment " + treatmentSetup.treatment
+		    + e.getMessage());
+    	        return;
+	    }
 	}
-*/
     }
     
     private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
