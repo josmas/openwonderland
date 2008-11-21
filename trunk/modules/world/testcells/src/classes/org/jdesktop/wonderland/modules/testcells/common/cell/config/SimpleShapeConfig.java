@@ -26,15 +26,26 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
  */
 public class SimpleShapeConfig extends CellConfig {
 
-    public enum Shape { BOX, CONE, CYLINDER, SPHERE };
+    public enum Shape { BOX, CONE, CYLINDER, SPHERE, TEAPOT };
 
     private Shape shape;
+
+    private float mass;
 
     public SimpleShapeConfig(Shape shape) {
         this.shape = shape;
     }
 
+    public SimpleShapeConfig(Shape shape, float mass) {
+        this.shape = shape;
+	this.mass = mass;
+    }
+
     public Shape getShape() {
         return shape;
+    }
+
+    public float getMass() {
+        return mass;
     }
 }

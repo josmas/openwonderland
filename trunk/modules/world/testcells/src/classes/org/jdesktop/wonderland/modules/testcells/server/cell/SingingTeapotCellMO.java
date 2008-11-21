@@ -44,7 +44,7 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO{
     }
 
     public SingingTeapotCellMO(Vector3f center, float size) {
-        super(center, size, SimpleShapeConfig.Shape.BOX.TEAPOT);
+        super(center, size, SimpleShapeConfig.Shape.TEAPOT);
 
     }
     
