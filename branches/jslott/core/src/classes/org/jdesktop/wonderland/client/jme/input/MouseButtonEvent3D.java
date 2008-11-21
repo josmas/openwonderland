@@ -21,6 +21,7 @@ import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import com.jme.math.Vector2f;
 
 /**
  * An event which indicates that a mouse button action occurred. 
@@ -35,6 +36,9 @@ public class MouseButtonEvent3D extends MouseEvent3D {
 	/** Allocate this event type's class ID. */
 	EVENT_CLASS_ID = Event.allocateEventClassID();
     }
+
+    static int xLastPress;
+    static int yLastPress;
 
     /** Default constructor (for cloning) */
     protected MouseButtonEvent3D () {}
@@ -55,11 +59,8 @@ public class MouseButtonEvent3D extends MouseEvent3D {
     MouseButtonEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent, pickDetails);
 
-        /* TODO
-	if (isPressed()) {
-	    MouseDraggedEvent3D.setPressPointScreen(((MouseEvent)awtEvent).getX(), ((MouseEvent)awtEvent).getY());
-	}
-        */
+	xLastPress = awtEvent.getX();
+	yLastPress = awtEvent.getY();
     }
     
     /**

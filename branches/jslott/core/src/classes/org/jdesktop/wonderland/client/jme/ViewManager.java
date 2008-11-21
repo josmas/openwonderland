@@ -113,7 +113,7 @@ public class ViewManager {
     ViewManager(int width, int height) {
         this.width = width;
         this.height = height;
-        this.aspect = width/height;
+        this.aspect = (float)width/(float)height;
 
         String avatarDetail = System.getProperty("avatar.detail", "low");
         if (avatarDetail.equalsIgnoreCase("high"))
@@ -359,7 +359,7 @@ public class ViewManager {
      * Remove the specified camera listener
      * @param cameraListener
      */
-    public void removeCameraLisener(CameraListener cameraListener) {
+    public void removeCameraListener(CameraListener cameraListener) {
         synchronized(cameraNode) {
             if (cameraListeners==null)
                 return;

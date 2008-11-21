@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.testcells.client.timingframework;
 import org.jdesktop.mtgame.*;
 import com.jme.scene.Node;
 import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.scenario.animation.TimingTarget;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
@@ -42,6 +43,8 @@ public class RotationAnimationProcessor extends AnimationProcessorComponent {
     private float startRadians;
     private float endRadians;
 
+    private Vector3f axis;
+
     /**
      * The rotation matrix to apply to the target
      */
@@ -55,12 +58,16 @@ public class RotationAnimationProcessor extends AnimationProcessorComponent {
     /**
      * The constructor
      */
-    public RotationAnimationProcessor(Entity entity, Node target, float startRadians, float endRadians) {
+    public RotationAnimationProcessor(Entity entity, Node target, float startDegrees, float endDegrees) {
+        this(entity, target, startDegrees, endDegrees, new Vector3f(0f,1f,0f));
+    }
+    public RotationAnimationProcessor(Entity entity, Node target, float startDegrees, float endDegrees, Vector3f axis) {
         super(entity);
         this.worldManager = ClientContextJME.getWorldManager();
         this.target = target;
-        this.startRadians = startRadians;
-        this.endRadians = endRadians;
+        this.startRadians = (float) Math.toRadians(startDegrees);
+        this.endRadians = (float) Math.toRadians(endDegrees);
+        this.axis = axis;
     }
 
     /**
@@ -79,14 +86,15 @@ public class RotationAnimationProcessor extends AnimationProcessorComponent {
      * The commit method
      */
     public void commit(ProcessorArmingCollection collection) {
-        quaternion.fromAngles(0.0f, radians, 0.0f);
+//        quaternion.fromAngles(0.0f, radians, 0.0f);
+        quaternion.fromAngleAxis(radians, axis);
         target.setLocalRotation(quaternion);
         worldManager.addToUpdateList(target);
     }
     
 
     public void timingEvent(float fraction, long totalElapsed) {
-        radians = (endRadians-startRadians)*fraction;
+        radians = startRadians+(endRadians-startRadians)*fraction;
     }
 
     public void begin() {

@@ -21,6 +21,7 @@ import com.jme.renderer.ColorRGBA;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.ShapeRenderer;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
@@ -32,8 +33,15 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeC
 public class SimpleShapeCell extends Cell {
 
     private SimpleShapeConfig.Shape shape;
-    private ColorRGBA color;
+    private MaterialJME materialJME;
+    private float mass;
 
+    /**
+     * Mass of zero will result in a static rigid body, non zero will be dynamic
+     * @param cellID
+     * @param cellCache
+     * @param mass
+     */
     public SimpleShapeCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
@@ -43,6 +51,8 @@ public class SimpleShapeCell extends Cell {
         super.configure(configData);
         SimpleShapeConfig c = (SimpleShapeConfig) configData;
         this.shape = c.getShape();
+        this.mass = c.getMass();
+        this.materialJME = c.getMaterialJME();
     }
 
     
@@ -65,12 +75,11 @@ public class SimpleShapeCell extends Cell {
         return shape;
     }
 
-    /**
-     * Return the color of this shape
-     * @return
-     */
-//    public ColorRGBA getColor() {
-//        return color;
-//    }
+    public float getMass() {
+        return mass;
+    }
 
+    public MaterialJME getMaterialJME() {
+        return materialJME;
+    }
 }
