@@ -24,7 +24,7 @@
 	 be integrated into the master Scenario.jar
 	 <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-scenegraph, unpack-javolution">
     -->
-    <target name="unpack-core-libs" depends="init, unpack-jbullet, unpack-javolution">
+    <target name="unpack-core-libs" depends="init">
         <!-- darkstar -->
    	<unpack-lib-zip pkgname="sgs-server"
 			srcdir="${core.lib.zip.dir}" destdir="${core.sgs.dir}"/>
@@ -36,6 +36,7 @@
                         srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
     </target>
 
+    <!--
     <target name="unpack-jbullet">
         <if>
             <not>
@@ -54,7 +55,8 @@
             </then>
         </if>
     </target>
-
+    -->
+    <!--
     <target name="unpack-javolution">
         <if>
             <not>
@@ -73,6 +75,7 @@
             </then>
         </if>
     </target>
+    -->
 
     <!-- From OpenJFX compiler bootstrap.xml -->
     <property name="bootstrap.dir" value="${downloads.dir}"/>
