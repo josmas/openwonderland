@@ -71,6 +71,7 @@ public class DragTest extends SimpleShapeCell {
 
     private class MyDragListener extends EventClassListener {
 
+	// TODO: workaround for bug 27
 	boolean dragging;
 
 	Vector3f dragStartWorld;
