@@ -37,6 +37,7 @@
             <server>
                 <serverjar name="testcells-server" basedir="${build.classes.dir}">
                     <serverplugin provider="org.jdesktop.wonderland.modules.testcells.server.cell.TestWorld"/>
+                    <!--<serverplugin provider="org.jdesktop.wonderland.modules.testcells.server.cell.PhysicsWorld"/>-->
                     <!--<cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.testcells.client.LoaderFactory"/>
                     </cellsetup>-->

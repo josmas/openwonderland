@@ -17,15 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.testcells.server.cell;
 
-import org.jdesktop.wonderland.server.cell.*;
-import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
 
@@ -39,12 +36,12 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeC
 public class SingingTeapotCellMO extends SimpleShapeCellMO{
     
     /** Default constructor, used when cell is created via WFS */
-    public SingingTeapotCellMO() {
-        this(new Vector3f(), 50);
-    }
+//    public SingingTeapotCellMO() {
+//        this(new Vector3f(), 50, null);
+//    }
 
-    public SingingTeapotCellMO(Vector3f center, float size) {
-        super(center, size, SimpleShapeConfig.Shape.TEAPOT);
+    public SingingTeapotCellMO(Vector3f center, float size, MaterialJME materialJME) {
+        super(center, size, SimpleShapeConfig.Shape.BOX.TEAPOT, 1f, materialJME);
 
     }
     

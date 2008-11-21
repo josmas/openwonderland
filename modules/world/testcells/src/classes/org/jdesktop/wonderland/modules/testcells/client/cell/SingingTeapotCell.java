@@ -21,6 +21,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Interpolators;
+import com.sun.scenario.animation.Timeline;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.RenderComponent;
@@ -58,17 +59,24 @@ public class SingingTeapotCell extends SimpleShapeCell {
         Vector3f dest = new Vector3f(currentLoc);
         dest.y+=0.3;
 
-        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, node, 0f, (float)Math.PI);
-        Clip clip2 = Clip.create(1000, 4,  spinner);
-        clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
 
-        Mouse3DTrigger.addTrigger(entity, clip2, Mouse3DTriggerEvent.PRESS);
 
-        TranslationAnimationProcessor trans = new TranslationAnimationProcessor(entity, node, currentLoc, dest);
-        Clip clip = Clip.create(500, Clip.INDEFINITE, trans);
-        clip.setAutoReverse(true);
-        clip.start();
-//        Mouse3DTrigger.addTrigger(entity, clip, Mouse3DTriggerEvent.ENTER);
+        // There is a bug in scenario so endClips do not function correctly
+//        RotationAnimationProcessor rocking = new RotationAnimationProcessor(entity, node, 0, 0, new Vector3f(1f,0f,0f));
+//        Clip rockClip = Clip.create(2000, 1, rocking);
+//        rockClip.setEndBehavior(Clip.EndBehavior.RESET);
+
+        RotationAnimationProcessor handleSpout = new RotationAnimationProcessor(entity, node, -10, 10, new Vector3f(0f,0f,1f));
+        Clip spoutClip = Clip.create(300, 20,  handleSpout);
+//        spoutClip.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
+        spoutClip.setEndBehavior(Clip.EndBehavior.RESET);
+
+//        Clip endClip = Clip.create(500, 4, rocking);
+
+//        rockClip.addEndAnimation(spoutClip);
+//        spoutClip.addEndAnimation(endClip);
+
+        Mouse3DTrigger.addTrigger(entity, spoutClip, Mouse3DTriggerEvent.PRESS);
 
         return ret;
     }
