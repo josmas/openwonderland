@@ -62,12 +62,6 @@ public class AudioTreatmentComponentSetup extends CellComponentSetup implements 
     public double upperRightZ;
 
     public AudioTreatmentComponentSetup() {
-	System.out.println("AudioTreatmentComponentSetup");
-    }
-
-    public void setTreatments(String treatment) {
-	//this.treatment = treatment;
-	System.out.println("Treatment:  " + treatment);
     }
 
     @XmlTransient
@@ -84,17 +78,9 @@ public class AudioTreatmentComponentSetup extends CellComponentSetup implements 
 	return groupId;
     }
 
-    public void setLowerLeftX(double lowerLeftX) {
-	this.lowerLeftX = lowerLeftX;
-    }
-
     @XmlTransient
     public double getLowerLeftX() {
 	return lowerLeftX;
-    }
-
-    public void setLowerLeftY(double lowerLeftY) {
-	this.lowerLeftY = lowerLeftY;
     }
 
     @XmlTransient
@@ -102,17 +88,9 @@ public class AudioTreatmentComponentSetup extends CellComponentSetup implements 
 	return lowerLeftY;
     }
 
-    public void setLowerLeftZ(double lowerLeftZ) {
-	this.lowerLeftZ = lowerLeftZ;
-    }
-
     @XmlTransient
     public double getLowerLeftZ() {
 	return lowerLeftZ;
-    }
-
-    public void setUpperRightX(double upperRightX) {
-	this.upperRightX = upperRightX;
     }
 
     @XmlTransient
@@ -120,17 +98,9 @@ public class AudioTreatmentComponentSetup extends CellComponentSetup implements 
 	return upperRightX;
     }
 
-    public void setUpperRightY(double upperRightY) {
-	this.upperRightY = upperRightY;
-    }
-
     @XmlTransient
     public double getUpperRightY() {
 	return upperRightY;
-    }
-
-    public void setUpperRightZ(double upperRightZ) {
-	this.upperRightZ = upperRightZ;
     }
 
     @XmlTransient

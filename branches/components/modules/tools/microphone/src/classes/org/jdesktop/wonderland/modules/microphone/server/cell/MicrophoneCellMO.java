@@ -135,16 +135,6 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
     @Override
     public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
-
-	MicrophoneCellSetup pcs = (MicrophoneCellSetup) setup;
-
-	CellComponentSetup[] components = setup.getCellComponentSetups();
-
-	System.out.println("Components length is " + components.length);
-
-	for (int i = 0; i < components.length; i++) {
-	    System.out.println("Component setup:  " + components[i].getClass());
-	}
     }
 
     @Override

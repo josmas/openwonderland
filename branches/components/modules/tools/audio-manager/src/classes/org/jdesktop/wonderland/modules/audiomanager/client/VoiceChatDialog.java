@@ -33,11 +33,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
+import java.util.logging.Logger;
+
 /**
  *
  * @author  jprovino
  */
 public class VoiceChatDialog extends javax.swing.JFrame {
+
+    private static final Logger logger =
+	Logger.getLogger(VoiceChatDialog.class.getName());
 
     private static ConcurrentHashMap<String, VoiceChatDialog> dialogs = 
 	new ConcurrentHashMap();
@@ -94,7 +99,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	leaveButton.setEnabled(false);
 	busyButton.setEnabled(false);
 
-	System.out.println("VOICE DIALOG IS VISIBLE!");
+	logger.fine("VOICE DIALOG IS VISIBLE!");
 	setVisible(true);
     }
 
@@ -315,7 +320,7 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         chatGroup = cellID.toString();
     }
 
-    System.out.println("JOIN chatGroup " + chatGroup + " chatters "
+    logger.warning("JOIN chatGroup " + chatGroup + " chatters "
         + chatters + " chatType " + chatType);
 
     statusLabel.setText(chatType + " Chat");

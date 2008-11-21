@@ -299,8 +299,7 @@ public class AudioManagerConnectionHandler
     }
 
     public void callStatusChanged(CallStatus status) {
-	logger.warning("got status " + status);
-	System.out.println("GOT STATUS " + status);
+	logger.fine("GOT STATUS " + status);
 
 	int code = status.getCode();
 

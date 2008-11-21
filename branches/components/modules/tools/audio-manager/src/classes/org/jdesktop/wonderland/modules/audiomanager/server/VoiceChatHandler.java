@@ -634,7 +634,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		s += Math.toDegrees(angles[i]) + " ";
 	    }
 
-	    logger.warning("localTransform " + localTransform + " world " 
+	    logger.fine("localTransform " + localTransform + " world " 
 	        + localToWorldTransform + " angles:  " + s);
 
 	    double h = heading.angleBetween(angleV);

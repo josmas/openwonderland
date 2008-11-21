@@ -96,7 +96,7 @@ public class AudioManagerClient extends BaseConnection implements
 
         JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
         
-	logger.warning("Starting AudioManagerCLient");
+	logger.fine("Starting AudioManagerCLient");
     }
 
     @Override
@@ -216,7 +216,7 @@ public class AudioManagerClient extends BaseConnection implements
 	        session.send(this, new PlaceCallMessage(
 		    cellID.toString(), sipURL, 0., 0., 0., 0., false));
 	    } catch (IOException e) {
-            logger.warning(e.getMessage());
+                logger.warning(e.getMessage());
 	    }
 	} else if (message instanceof VoiceChatJoinRequestMessage) {
 	   VoiceChatJoinRequestMessage msg = (VoiceChatJoinRequestMessage) message;
