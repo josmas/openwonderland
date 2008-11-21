@@ -78,8 +78,6 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
     
-    private TreatmentSetup treatmentSetup = new TreatmentSetup();
-
     private String groupId;
     private String[] treatments;
 
@@ -115,9 +113,12 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
     public void setupCellComponent(CellComponentSetup setup) {
 	AudioTreatmentComponentSetup accs = (AudioTreatmentComponentSetup) setup;
 
-	groupId = accs.getGroupId();
-
 	treatments = accs.getTreatments();
+
+	if (treatments == null) {
+	}
+
+	groupId = accs.getGroupId();
 
 	lowerLeftX = accs.getLowerLeftX();
 	lowerLeftY = accs.getLowerLeftY();
@@ -127,13 +128,11 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 	upperRightY = accs.getUpperRightY();
 	upperRightZ = accs.getUpperRightZ();
 
-	logger.warning("setup:  treatment=" + treatmentSetup.treatment + " groupId " + groupId);
+	System.out.println("setup:  treatments length=" + treatments.length + " groupId " + groupId);
     }
 
     @Override
     public void setLive(boolean live) {
-	logger.warning("Starting treatment " + treatmentSetup.treatment);
-
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	TreatmentGroup group = vm.createTreatmentGroup(groupId);
@@ -143,6 +142,8 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
 	    setup.treatment = treatments[i];
 	    
+	    System.out.println("Starting treatment " + setup.treatment);
+
 	    setup.lowerLeftX = lowerLeftX;
 	    setup.lowerLeftY = lowerLeftY;
 	    setup.lowerLeftZ = lowerLeftZ;
@@ -152,9 +153,9 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 	    setup.upperRightZ = upperRightZ;
 
 	    try {
-	        group.addTreatment(vm.createTreatment(treatmentSetup.treatment, treatmentSetup));
+	        group.addTreatment(vm.createTreatment(setup.treatment, setup));
 	    } catch (IOException e) {
-	        logger.warning("Unable to create treatment " + treatmentSetup.treatment
+	        logger.warning("Unable to create treatment " + setup.treatment
 		    + e.getMessage());
     	        return;
 	    }
