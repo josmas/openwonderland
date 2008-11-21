@@ -1,0 +1,60 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<!-- JTRunner is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2, or (at your option)
+    any later version.
+    
+    This is a sample empty JTR configuration file. Please, follow the 
+    Users' Guide you can find starting from http://jtrunner.sourceforge.net
+    if you need help, or refer to the jtr.xsd file.
+-->
+<!--GPL Disclaimer
+    For the avoidance of doubt, except that if any license choice other 
+    than GPL or LGPL is available it will apply instead, Sun elects to 
+    use only the General Public License version 2 (GPLv2) at this time 
+    for any software where a choice of GPL license versions is made 
+    available with the language indicating that GPLv2 or any later 
+    version may be used, or where a choice of which version of the GPL 
+    is applied is otherwise unspecified.
+-->
+
+<test xmlns="http://jtrunner.sourceforge.net"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jtrunner.sourceforge.net file:./config/jtr.xsd" 
+    runs="0">
+
+    <!-- JTR components factories -->
+    <factories>
+        <factory key="IAssignmentPolicyFactory" fqn="jtr.assigner.impl.DefaultAssignmentPolicyFactory" />
+        <factory key="IOutcomeFactory" fqn="jtr.test.impl.DefaultOutcomeFactory" />
+        <factory key="IWsHelperFactory" fqn="org.jdesktop.wonderland.testharness.slave.jtr.dummy.JTRNullWsHelperFactory" />
+        <factory key="ITestCompletionListener" fqn="org.jdesktop.wonderland.testharness.slave.jtr.dummy.JTRNullTestCompletionListener" />
+        <factory key="ITestResultDisplayer" fqn="org.jdesktop.wonderland.testharness.slave.jtr.dummy.JTRNullResultsDisplayer" />
+        <factory key="ITestResultsExporter" fqn="org.jdesktop.wonderland.testharness.slave.jtr.dummy.JTRNullResultsExporter" />
+    </factories>
+
+    <!-- Nodes for JTR EDiT test sessions -->
+    <nodes>
+        <node host="localhost" port="2000"/>
+    </nodes>
+    
+    <!-- Runners Definitions -->
+    <runner runs="1">
+        <runner-fqn>org.jdesktop.wonderland.testharness.slave.jtr.JTRSlaveRunner</runner-fqn>
+        <instance-count>4</instance-count>
+        <parameters-assignment-policy>cyclic</parameters-assignment-policy>
+        <parameters>
+            <param name="sleepTime" value="100"/>
+            <param name="hostname" value="localhost"/>
+            <param name="port" value="43210"/>
+        </parameters>
+    </runner>
+    
+    <!-- Enterprise Configurations -->
+    
+    <!-- JMS Configurations -->
+    
+    <!-- WebServices Bindings -->
+    
+</test>
