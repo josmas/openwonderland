@@ -122,7 +122,8 @@ public abstract class BaseRunner implements Runner {
      */
     protected synchronized File getRunDir() {
         if (runDir == null) {
-            runDir = RunUtil.createTempDir("server", "run");
+            runDir = new File(RunUtil.getRunDir(), getLogName());
+            runDir.mkdir();
         }
         
         return runDir;
