@@ -42,11 +42,11 @@ public abstract class MouseEvent3D extends InputEvent3D {
     /** The supported button codes. */
     public enum ButtonId {NOBUTTON, BUTTON1, BUTTON2, BUTTON3};
     
-    /** The pick details for the event */
+    /** The destination pick details for the event (accounts for grabs) */
     private PickDetails pickDetails;
 
     /** A temporary used for getIntersectionPointLocal */
-    private Matrix4f world2Local;
+    protected Matrix4f world2Local;
 
     /** Default constructor (for cloning) */
     protected MouseEvent3D () {}
@@ -71,7 +71,8 @@ public abstract class MouseEvent3D extends InputEvent3D {
     /**
      * INTERNAL ONLY
      * <br>
-     * Sets the original pick details of the event.
+     * Sets the original desination pick details of the event, as calculated by the input system,
+     * accounting for grabs.
      */
     @InternalAPI
     public void setPickDetails (PickDetails pickDetails) {
@@ -79,8 +80,9 @@ public abstract class MouseEvent3D extends InputEvent3D {
     }
 
     /**
-     * Returns the entity hit by the event. This will be the pick hit entity unless previously overridden
-     * by the input system.
+     * Returns the entity hit by the event, based on the destination pick details which were calculated
+     * by the input system. Normally, this will be the pick hit entity unless previously overridden by 
+     * the input system grab calculations.
      */
     public Entity getEntity () {
 	if (entity == null) {
@@ -115,8 +117,9 @@ public abstract class MouseEvent3D extends InputEvent3D {
     }
 
     /**
-     * Returns the distance from the eye to the intersection point. (This distance is in world coordinates).
-     * If event has no pick details, 0 is returned.
+     * Returns the distance from the eye to the intersection point, based on the destination pick details 
+     * which were calculated by the input system. (This distance is in world coordinates). If the event has 
+     * no pick details, 0 is returned. 
      */
     public float getDistance () {
 	if (pickDetails == null) {
@@ -127,7 +130,8 @@ public abstract class MouseEvent3D extends InputEvent3D {
     }
 
     /**
-     * Returns the intersection point in world coordinates.
+     * Returns the intersection point in world coordinates, based on the destination pick details 
+     * which were calculated by the input system.
      */
     public Vector3f getIntersectionPointWorld () {
 	if (pickDetails == null) {
@@ -138,7 +142,8 @@ public abstract class MouseEvent3D extends InputEvent3D {
     }
 
     /**
-     * Returns the intersection point in object (node) local coordinates.
+     * Returns the intersection point in object (node) local coordinates, based on the destination 
+     * pick details which were calculated by the input system.
      */
     public Vector3f getIntersectionPointLocal () {
 	if (pickDetails == null) {

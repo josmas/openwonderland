@@ -43,8 +43,11 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * The abstract base class for an InputPicker singleton. The InputPicker is the part of the 
@@ -131,12 +134,19 @@ public abstract class InputPicker {
     /** Another temporary used during picking */
     private Ray pickRay = new Ray();
 
-    // TODO: can eventually get rid of this and just put the pickinfo into the Swing pickInfo queue
+    /**
+     * The format of information we pass from the Swing picker to the 3D picker in the case
+     * that the event missed a swing window.
+     *
+     * NOTE: it is tempting to also pass the destination pick info (accounting for grabs) in 
+     * this queue. But it significantly complicates the reader side of the queue. We can easily
+     * recalculate the destination pick info on the reader side.
+     */
     private static class PickInfoQueueEntry {
-	private PickInfo pickInfo;
+	private PickInfo hitPickInfo;
 	private MouseEvent mouseEvent;
-	private PickInfoQueueEntry (PickInfo pickInfo, MouseEvent mouseEvent) {
-	    this.pickInfo = pickInfo;
+	private PickInfoQueueEntry (PickInfo hitPickInfo, MouseEvent mouseEvent) {
+	    this.hitPickInfo = hitPickInfo;
 	    // TODO: For verification only. Evetually remove.
 	    this.mouseEvent = mouseEvent;
 	}
@@ -152,7 +162,7 @@ public abstract class InputPicker {
 
 
     /**
-     * As we example the entities along the pick ray we need to keep
+     * As we examine the entities along the pick ray we need to keep
      * track of the entities which are visible (that is not obscured
      * by an entity whose listeners doesn't propagate to under). We also
      * need to keep track the pick details which will be ultimately sent
@@ -184,6 +194,12 @@ public abstract class InputPicker {
 
     /** Whether the previous pointer position was inside the given window swing entity. */
     private Entity insideSwingEntityPrev;
+
+    /** The camera movement listener (used by drag events). */
+    private MyCameraListener cameraListener = new MyCameraListener();
+
+    /** The current camera position (in world coordinates). */
+    private Vector3f cameraPositionWorld = new Vector3f();
 
     /**
      * Create a new instance of InputPicker.
@@ -218,7 +234,17 @@ public abstract class InputPicker {
 	logger.fine("Picker Swing: received awt event = " + awtMouseEvent);
 
 	// Determine the destination pick info by performing a pick, considering grabs. etc.
-        destPickInfo = determineDestPickInfo(awtMouseEvent);
+	PickInfo hitPickInfo;
+	DetermineDestPickInfoReturn ret = determineDestPickInfo(awtMouseEvent);
+	if (ret == null) {
+	    destPickInfo = null;
+	    hitPickInfo = null;
+	} else {
+	    destPickInfo = ret.destPickInfo;
+	    hitPickInfo = ret.hitPickInfo;
+	}
+	logger.fine("destPickInfo = " + destPickInfo);
+ 	logger.fine("hitPickInfo = " + hitPickInfo);
 
 	// Generate enter/exit events associated with this mouse event
 	int eventID = awtMouseEvent.getID();
@@ -239,7 +265,10 @@ public abstract class InputPicker {
 	    generateSwingEnterExitEvents(null);
 	    return null;
 	}
-	logger.fine("Picker: pick hit: destPickInfo = " + destPickInfo);
+
+	// Create the Wonderland event which corresponds to this AWT event
+	// (and, for drag events, attach the raw hit pick info).
+	MouseEvent3D event = (MouseEvent3D) createWonderlandEvent(awtMouseEvent);
 
 	// Search through the entity space to find the first input sensitive 
 	// Window Swing entity for the pickInfo that will consume the event.
@@ -247,7 +276,6 @@ public abstract class InputPicker {
 	boolean propagatesToUnder = true;
 	PickDetails pickDetails = destPickInfo.get(0);
 	logger.fine("Picker: pickDetails = " + pickDetails);
-	MouseEvent3D event = (MouseEvent3D) createWonderlandEvent(awtMouseEvent);
 	int idx = 0;
 	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
 	    Entity entity = pickDetailsToEntity(pickDetails);
@@ -261,6 +289,12 @@ public abstract class InputPicker {
 		propagatesToUnder = false;
 	    } else {
 		event.setPickDetails(pickDetails);
+		if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null) {
+		    MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) event;
+		    if (idx < hitPickInfo.size()) {
+			de3d.setHitPickDetails(hitPickInfo.get(idx));
+		    }
+		}
                 Iterator<EventListener> it = listeners.iterator();
 		while (it.hasNext()) {
                     EventListener listener = it.next();
@@ -302,8 +336,9 @@ public abstract class InputPicker {
 
 	logger.finest("Enqueue pick info for 3D event");
 	logger.finest("awtMouseEvent = " + awtMouseEvent);
+	logger.finest("hitPickInfo = " + hitPickInfo);
 	logger.finest("destPickInfo = " + destPickInfo);
-	swingPickInfos.add(new PickInfoQueueEntry(destPickInfo, awtMouseEvent));
+	swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
 
 	generateSwingEnterExitEvents(null);
 	return null;
@@ -352,7 +387,16 @@ public abstract class InputPicker {
 
 	// Determine the destination pick info by reading from the pickInfo Queue, performing a pick, 
 	// considering grabs. etc.
-        destPickInfo = determineDestPickInfo(awtEvent);
+	DetermineDestPickInfoReturn ret = determineDestPickInfo(awtEvent);
+	if (ret == null) {
+	    destPickInfo = null;
+	} else {
+	    destPickInfo = ret.destPickInfo;
+	}
+	logger.fine("destPickInfo = " + destPickInfo);
+	if (ret != null) {
+	    logger.fine("hitPickInfo = " + ret.hitPickInfo);
+	}
 
 	// Generate enter/exit events associated with this mouse event
 	int eventID = awtEvent.getID();
@@ -373,9 +417,16 @@ public abstract class InputPicker {
 	}
 	logger.fine("Picker: pick hit: destPickInfo = " + destPickInfo);
 
-	// Do the rest of the work in the EventDistributor
+	// Create the Wonderland event which corresponds to this AWT event
+	// (and, for drag events, attach the raw hit pick info).
 	event = (MouseEvent3D) createWonderlandEvent(awtEvent);
-	eventDistributor.enqueueEvent(event, destPickInfo);
+
+	// Do the rest of the work in the EventDistributor
+	if (eventID == MouseEvent.MOUSE_DRAGGED && ret != null) {
+	    eventDistributor.enqueueDragEvent(event, destPickInfo, ret.hitPickInfo);
+	} else {
+	    eventDistributor.enqueueEvent(event, destPickInfo);
+	}
     }
 
     /**
@@ -388,6 +439,18 @@ public abstract class InputPicker {
 	eventDistributor.enqueueEvent(keyEvent);
     }
 
+    /** The type of return value returned by determineDestPickInfo. */
+    private class DetermineDestPickInfoReturn {
+	// The destination pick info, accounting for grabs.
+	private PickInfo destPickInfo;
+	// The actual, raw pick info from the pick hit, ignoring grabs.
+	private PickInfo hitPickInfo;
+	private DetermineDestPickInfoReturn (PickInfo destPickInfo, PickInfo hitPickInfo) {
+	    this.destPickInfo = destPickInfo;
+	    this.hitPickInfo = hitPickInfo;
+	}
+    }
+
     /**
      * Performs a pick on the scene graph and determine the actual destination pick info 
      * taking into account button click threshold and mouse button grabbing.
@@ -396,14 +459,20 @@ public abstract class InputPicker {
      * @param e The mouse event.
      * @return The destination pick info.
      */
-    protected PickInfo determineDestPickInfo (MouseEvent e) {
+    protected DetermineDestPickInfoReturn determineDestPickInfo (MouseEvent e) {
         boolean deactivateGrab = false;
+
+	/* For debug: uncomment this to breakpoint on only drag events 
+	if (e.getID() == MouseEvent.MOUSE_DRAGGED || e.getID() == MouseEvent.MOUSE_PRESSED) {
+	    logger.severe("Event is drag or press");
+	}
+	*/
 
 	// See if the WindowSwing has already determined a pickInfo for this event.
 	// TODO: right now, button release events are never sent to createCoordinateHandler so they
 	// never have pre-calculated pickInfos. I don't yet know if this is an Embedded Swing bug or
 	// whether it is a feature.
-	PickInfo swingPickInfo = null;
+	PickInfo swingHitPickInfo = null;
 	if (swingPickInfos.peek() != null) {
 	    try {
 		PickInfoQueueEntry entry = swingPickInfos.take();
@@ -414,7 +483,7 @@ public abstract class InputPicker {
 		if (e.getID() == entry.mouseEvent.getID() &&
 		    e.getX() == entry.mouseEvent.getX() &&
 		    e.getY() == entry.mouseEvent.getY()) {
-		    swingPickInfo = entry.pickInfo;
+		    swingHitPickInfo = entry.hitPickInfo;
 		} else {
 		    logger.warning("Swing pickInfo event doesn't match 3D event. Repicking.");
 		    logger.warning("3D event = " + e);
@@ -439,19 +508,18 @@ public abstract class InputPicker {
 	// force the clicked event to go to the same destination as the
 	// pressed event
 	if (e.getID() == MouseEvent.MOUSE_CLICKED) {
-	    return lastButtonReleasedPickInfo;
+	    return new DetermineDestPickInfoReturn(lastButtonReleasedPickInfo, lastButtonReleasedPickInfo);
 	}
 
 	// First perform the pick (the pick details in the info are ordered
 	// from least to greatest eye distance.
-        PickInfo hitPickInfo ;
-	if (swingPickInfo == null) {
+        PickInfo hitPickInfo;
+	if (swingHitPickInfo == null) {
 	    hitPickInfo = pickEventScreenPos(e.getX(), e.getY());
+	    logger.finest("Result of pickEventScreenPos = " + hitPickInfo);
+	    logger.finest("hitPickInfo.size() = " + hitPickInfo.size());
 	} else {
-	    hitPickInfo = swingPickInfo;
-	}
-	if (hitPickInfo == null || hitPickInfo.size() <= 0) {
-	    return null;
+	    hitPickInfo = swingHitPickInfo;
 	}
 
 	/* For Debug
@@ -487,16 +555,11 @@ public abstract class InputPicker {
 	}
 
 	// If a grab is active, the event destination pick info will be the grabbed pick info
-	PickInfo pickInfo;
+	PickInfo destPickInfo;
 	if (grabIsActive) {
-	    // TODO: HACK: is this the right way to fix this?
-	    if (eventID == MouseEvent.MOUSE_DRAGGED) {
-		pickInfo = hitPickInfo;
-	    } else {
-		pickInfo = grabPickInfo;
-	    }
+	    destPickInfo = grabPickInfo;
 	} else {
-	    pickInfo = hitPickInfo;
+	    destPickInfo = hitPickInfo;
 	}
 
 	// It is now safe to disable the grab
@@ -506,10 +569,35 @@ public abstract class InputPicker {
 	}
 
 	if (e.getID() == MouseEvent.MOUSE_RELEASED) {
-	    lastButtonReleasedPickInfo = pickInfo;
+	    lastButtonReleasedPickInfo = destPickInfo;
 	}
 
-	return pickInfo;
+	logger.fine("Picked awt event = " + e);
+	logPickInfo("destPickInfo = ", destPickInfo);
+	logPickInfo("hitPickInfo = ", hitPickInfo);
+
+	return new DetermineDestPickInfoReturn(destPickInfo, hitPickInfo);
+    }
+
+    public static void logPickInfo (String str, PickInfo pickInfo) {
+	logger.fine(str + pickInfo);
+	if (pickInfo == null) return;
+	logger.fine("pickInfo size = " + pickInfo.size());
+	for (int idx = 0; idx < pickInfo.size(); idx++) {
+	    PickDetails pickDetails = pickInfo.get(idx);
+	    if (pickDetails == null) continue;
+	    logger.fine("pickDetails " + idx + ": ");
+	    logPickDetails(pickDetails);
+	}
+    }
+
+    private static void logPickDetails (PickDetails pickDetails) {
+	logPickDetailsEntity(pickDetails);
+    }
+
+    private static void logPickDetailsEntity (PickDetails pickDetails) {
+	Entity entity = pickDetailsToEntity(pickDetails);
+	logger.fine("pickDetails Entity = " + entity);
     }
 
     /** 
@@ -534,14 +622,50 @@ public abstract class InputPicker {
      * @param cameraComp The mtgame camera component to use for picking operations.
      */
     void setCameraComponent (CameraComponent cameraComp) {
+
+        // One time addition of camera movement listener
+        if (this.cameraComp == null) {
+	    ViewManager.getViewManager().addCameraListener(cameraListener);     
+	}		
+
 	this.cameraComp = cameraComp;
     }
 
     /** 
      * Returns the camera component that is used for picking.
+     * <br>
+     * INTERNAL ONLY.
      */
-    CameraComponent getCameraComponent () {
+    @InternalAPI
+    public CameraComponent getCameraComponent () {
 	return cameraComp;
+    }
+
+    /**
+     * The camera movement listener.
+     */
+    private class MyCameraListener implements ViewManager.CameraListener {
+        public void cameraMoved(CellTransform cameraWorldTransform) {
+	    synchronized (cameraPositionWorld) {
+		cameraWorldTransform.getTranslation(cameraPositionWorld);
+	    }
+	}
+    }
+
+    /**
+     * Returns the current camera position (in world coordinates)./
+     * <br>
+     * INTERNAL ONLY.
+     */
+    @InternalAPI
+    public Vector3f getCameraPosition (Vector3f ret) {
+	synchronized (cameraPositionWorld) {
+	    if (ret == null) {
+		return new Vector3f(cameraPositionWorld);
+	    }
+	    ret.set(cameraPositionWorld);
+	    return ret;
+	}
     }
 
     /** 
@@ -573,7 +697,7 @@ public abstract class InputPicker {
     private PickInfo pickEventScreenPos (int x, int y) {
 	if (cameraComp == null) return null;
 
-	logger.fine(" at " + x + ", " + y);
+	logger.fine("pick at " + x + ", " + y);
 	Ray pickRayWorld = calcPickRayWorld(x, y);
 
 	// Note: pickAll is needed to in order to pick through transparent objects
@@ -720,7 +844,8 @@ public abstract class InputPicker {
 	
 	// Calculate the current set of entities the pointer is inside.
 	insideEntities.clear();
-	if (awtEvent.getID() == MouseEvent.MOUSE_EXITED || pickInfo == null) {
+	if (awtEvent.getID() == MouseEvent.MOUSE_EXITED || pickInfo == null ||
+	    pickInfo.size() <= 0) {
 	    // Note: Canvas exit event is treated just like a pick miss (pickInfo is null)
 	    return;
 	}

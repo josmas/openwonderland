@@ -31,7 +31,6 @@ public class InputPicker3D extends InputPicker {
     /** The input picker singleton */
     private static InputPicker inputPicker;
 
-
     /**
      * Returns the entity resolver singleton.
      */

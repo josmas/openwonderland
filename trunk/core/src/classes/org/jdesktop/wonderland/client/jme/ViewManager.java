@@ -359,7 +359,7 @@ public class ViewManager {
      * Remove the specified camera listener
      * @param cameraListener
      */
-    public void removeCameraLisener(CameraListener cameraListener) {
+    public void removeCameraListener(CameraListener cameraListener) {
         synchronized(cameraNode) {
             if (cameraListeners==null)
                 return;
