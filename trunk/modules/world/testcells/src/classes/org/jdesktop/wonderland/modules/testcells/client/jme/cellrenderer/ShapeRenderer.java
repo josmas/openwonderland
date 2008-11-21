@@ -28,12 +28,14 @@ import com.jme.scene.shape.Cone;
 import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.shape.Teapot;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
@@ -86,7 +88,12 @@ public class ShapeRenderer extends BasicRenderer {
 
             geom.setModelBound(new BoundingSphere());
             geom.updateModelBound();
-            
+
+            MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+            MaterialJME matJME = ((SimpleShapeCell)cell).getMaterialJME();
+            if (matJME!=null)
+                matJME.apply(matState);
+            geom.setRenderState(matState);
         }
 
         // Set the transform
