@@ -1,0 +1,281 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
+ */
+
+package org.jdesktop.wonderland.modules.phone.server.cell;
+
+import com.sun.sgs.app.ManagedReference;
+
+import org.jdesktop.wonderland.modules.phone.common.CallListing;
+
+import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.CallEstablishedResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.EndCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.EndCallResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
+import org.jdesktop.wonderland.modules.phone.common.messages.PhoneControlMessage;
+
+import com.sun.mpk20.voicelib.app.AudioGroup;
+import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
+import com.sun.mpk20.voicelib.app.AudioGroupSetup;
+import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.CallSetup;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
+import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.PlayerSetup;
+import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
+
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedObject;
+
+import com.sun.voip.CallParticipant;
+import com.sun.voip.client.connector.CallStatus;
+
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
+import org.jdesktop.wonderland.server.WonderlandContext;
+
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
+
+import java.io.IOException;
+import java.io.Serializable;
+
+import java.lang.String;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Logger;
+
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.jdesktop.wonderland.common.messages.Message;
+
+import org.jdesktop.wonderland.common.cell.MultipleParentException;
+
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+
+import org.jdesktop.wonderland.server.UserManager;
+
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellMOFactory;
+
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
+
+import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
+
+import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
+
+import com.jme.math.Vector3f;
+
+/**
+ * A server cell that provides conference phone functionality
+ * @author jprovino
+ */
+public class PhoneStatusListener implements ManagedCallStatusListener, 
+	Serializable {
+
+    private static final Logger logger =
+        Logger.getLogger(PhoneStatusListener.class.getName());
+     
+    ManagedReference<PhoneCellMO> phoneCellMORef;
+
+    private ConcurrentHashMap<String, WonderlandClientSender> senderMap =
+        new ConcurrentHashMap();
+
+    private ConcurrentHashMap<String, CallListing> callListingMap = 
+	new ConcurrentHashMap(); 
+
+    public PhoneStatusListener(ManagedReference<PhoneCellMO> phoneCellMORef) {
+	this.phoneCellMORef = phoneCellMORef;
+
+	phoneCellMORef = AppContext.getDataManager().createReference(
+	        (PhoneCellMO) CellManagerMO.getCell(phoneCellMORef.get().getCellID()));
+    }
+
+    public void mapCall(String externalCallID, WonderlandClientSender sender,
+	    CallListing listing) {
+
+	senderMap.put(externalCallID, sender);
+	callListingMap.put(externalCallID, listing);
+    }
+	
+    public void callStatusChanged(CallStatus status) {    
+	logger.fine("FOO:  got status " + status);
+
+        String externalCallID = status.getCallId();
+
+	if (externalCallID == null || externalCallID.length() == 0) {
+	    logger.warning("Missing call id in status:  " + status);
+	    return;
+	}
+
+	WonderlandClientSender sender = senderMap.get(externalCallID);
+
+	if (sender == null) {
+	    logger.warning("Can't find sender for status:  " + status);
+	    return;
+	}
+
+	CallListing listing;
+
+	listing = callListingMap.get(externalCallID);
+
+	if (listing == null) {
+	    logger.warning("No callListing for " + externalCallID);
+	    return;
+	}
+
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	Call externalCall = vm.getCall(externalCallID);
+	Call softphoneCall = vm.getCall(listing.getSoftphoneCallID());
+
+	logger.fine("external call:  " + externalCall);
+	logger.fine("softphone call:  " + softphoneCall);
+
+        switch(status.getCode()) {
+        case CallStatus.INVITED:
+            //The call has been placed, the phone should be ringing
+            /** HARRISDEBUG: It should be tested whether or not we'll catch
+             * callStatus changes for calls which we've just set up.
+             * If not, this code will have to be moved back to the
+             * "messageReceived->PlaceCall" function.
+             **/
+            if (listing.isPrivate()) {
+                //Start playing the phone ringing sound                    
+		try {
+                    softphoneCall.playTreatment("ring_tone.au");
+	        } catch (IOException e) {
+		    logger.warning("Unable to play treatment " + softphoneCall + ":  "
+		        + e.getMessage());
+	        }
+            }
+            
+            CallInvitedResponseMessage invitedResponse = 
+		new CallInvitedResponseMessage(phoneCellMORef.get().getCellID(), listing, true);
+
+            sender.send(invitedResponse);
+                
+            break;
+
+        //Something's picked up, the call has been connected
+        case CallStatus.ESTABLISHED:
+            if (listing.isPrivate()) {
+                //Stop playing the phone ringing sound
+		try {
+                    softphoneCall.stopTreatment("ring_tone.au");
+	        } catch (IOException e) {
+		    logger.warning("Unable to stop treatment " + softphoneCall + ":  "
+		        + e.getMessage());
+	        }
+            }
+
+            CallEstablishedResponseMessage EstablishedResponse = 
+		new CallEstablishedResponseMessage(phoneCellMORef.get().getCellID(), listing, true);
+
+	    logger.fine("Sending ESTABLISHED RESPONSE");
+            sender.send(EstablishedResponse);
+            break;
+
+        case CallStatus.STARTEDSPEAKING:
+            break;
+
+        case CallStatus.STOPPEDSPEAKING:
+            break;
+
+        case CallStatus.ENDED: 
+            //Stop the ringing
+	    if (softphoneCall != null) {
+	        try {
+                    softphoneCall.stopTreatment("ring_tone.au");
+	        } catch (IOException e) {
+		    logger.warning(
+			"Unable to stop treatment " + softphoneCall + ":  "
+		    	+ e.getMessage());
+	        }
+	    }
+                
+            String softphoneCallID = listing.getSoftphoneCallID();
+                
+            //This may appear redundant, but it's necessary for the VoiceManager
+	    // to remove its internal data structures.
+
+            if (listing.simulateCalls() == false) {
+		if (externalCall != null) {
+		    try {
+                        vm.endCall(externalCall, true);
+	            } catch (IOException e) {
+		        logger.warning(
+			    "Unable to end call " + externalCall + ":  "
+		            + e.getMessage());
+	            }
+		}
+
+		String audioGroupId = softphoneCallID + "_" 
+		    + listing.getPrivateClientName();
+
+		AudioGroup audioGroup = vm.getAudioGroup(audioGroupId);
+
+		if (audioGroup != null) {
+		    if (softphoneCall.getPlayer() != null) {
+	        	softphoneCall.getPlayer().attenuateOtherGroups(audioGroup, 
+			    AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
+		    	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+		    }
+
+	            vm.removeAudioGroup(audioGroupId);
+		}
+            } else {
+                //   FakeVoiceHandler.getInstance().endCall(externalCallID);
+            }    
+                
+	    senderMap.remove(externalCallID);
+	    callListingMap.remove(externalCallID);
+
+            CallEndedResponseMessage endedResponse = new CallEndedResponseMessage(phoneCellMORef.get().getCellID(),
+		listing, true, status.getOption("Reason"));
+
+            sender.send(endedResponse);
+            break;
+        }
+    }
+
+}
