@@ -619,11 +619,6 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	if (player == null) {
 	    logger.warning("got AvatarMovedMessage but can't find player for " + clientId);
 	} else {
-	    Vector3f heading = new Vector3f(0, 0, -1);
-
-	    Vector3f angleV = heading.clone();
-
-	    //localToWorldTransform.getRotation(null).multLocal(angleV);
 	    float[] angles = new float[3];
 
 	    localToWorldTransform.getRotation(null).toAngles(angles);
@@ -634,19 +629,16 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		s += Math.toDegrees(angles[i]) + " ";
 	    }
 
-	    logger.fine("localTransform " + localTransform + " world " 
+	    System.out.println("localTransform " + localTransform + " world " 
 	        + localToWorldTransform + " angles:  " + s);
 
-	    double h = heading.angleBetween(angleV);
-
-	    //double angle = Math.toDegrees(h) % 360;
-
 	    /*
-	     * For wonderland, a clockwise rotation results in a bigger
-             * angle, i. e., rotation is in the opposite direction of
-             * what the voice manager expects.  Correct for that here.
+	     * The angle we're interested in the one about the y-axis.
+	     * This angle increases when rotating in a counter clockwise direction.
+	     * Zero degrees is straight ahead so we have to adjust that to our
+	     * coordinate system by adding 90 degrees.
 	     */
-	    //angle = 360 - angle;
+	    double angle = Math.toDegrees(angles[1]) + 90;
 
 	    Vector3f location = localToWorldTransform.getTranslation(null);
 	
@@ -658,9 +650,6 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	     * The x coordinate increases to the left so we correct
 	     * for that here.
 	     */
-	    // XXX angle isn't right just yet!
-	    double angle = 0;
-
 	    player.moved(-location.getX(), location.getY(), location.getZ(), angle);
 	}
     }

@@ -115,9 +115,6 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
 	treatments = accs.getTreatments();
 
-	if (treatments == null) {
-	}
-
 	groupId = accs.getGroupId();
 
 	lowerLeftX = accs.getLowerLeftX();
@@ -140,7 +137,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
 	    setup.treatment = treatments[i];
 	    
-	    logger.info("Starting treatment " + setup.treatment);
+	    System.out.println("Starting treatment " + setup.treatment);
 
 	    setup.lowerLeftX = lowerLeftX;
 	    setup.lowerLeftY = lowerLeftY;
