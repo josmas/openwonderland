@@ -44,7 +44,7 @@ public class TestWorld implements ServerPlugin {
 
             WonderlandContext.getCellManager().insertCellInWorld(new SingingTeapotCellMO(new Vector3f(-8, 0, 7), 1, new MaterialJME(ColorRGBA.green, null, null, null, 0.5f)));
             
-            WonderlandContext.getCellManager().insertCellInWorld(new DragTestMO(new Vector3f(0, 0, -15), 1));
+            WonderlandContext.getCellManager().insertCellInWorld(new DragTestMO(new Vector3f(0, 0, 10), 1));
 
 //            WonderlandContext.getCellManager().insertCellInWorld(new SimpleShapeCellMO(new Vector3f(0, 2, -5), 1, SimpleShapeConfig.Shape.SPHERE));
 //
