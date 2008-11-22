@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.jme.input;
 import java.awt.Point;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import com.jme.math.Matrix4f;
 import com.jme.scene.Node;
 import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.input.Event;
@@ -175,11 +176,36 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
 	    getCamera().getWorldCoordinates(scrPos, 0f);
 	logger.fine("thisWorld = " + thisWorld);
 
+	// The calculations need to take place in eye space. Get the necessary matrices.
+	Matrix4f camMatrix = InputPicker3D.getInputPicker().getCameraModelViewMatrix(null);
+	Matrix4f camInverse = InputPicker3D.getInputPicker().getCameraModelViewMatrixInverse(null);
+	logger.finest("camInverse = " + camInverse);
+
+	// Transform vectors from world space into eye space
+	Vector3f dragEye = new Vector3f();
+	Vector3f dragStartEye = new Vector3f();
+	Vector3f pressEye = new Vector3f();
+	Vector3f eyeEye = new Vector3f();
+	Vector3f thisEye = new Vector3f();
+	camInverse.mult(dragWorld, dragEye);
+	camInverse.mult(dragStartWorld, dragStartEye);
+	camInverse.mult(pressWorld, pressEye);
+	// TODO: perf: only really need to recalc eyeEye on camera change
+	camInverse.mult(eyeWorld, eyeEye);
+	camInverse.mult(thisWorld, thisEye);
+
 	// The displacement vector of this event from the center of the drag plane
-	ret.x = (dragWorld.x - pressWorld.x) * (dragStartWorld.z - eyeWorld.z) / (thisWorld.z - eyeWorld.z);
-	ret.y = (pressWorld.y - dragWorld.y) * (dragStartWorld.z - eyeWorld.z) / (thisWorld.z - eyeWorld.z);
-	ret.z = 0f;
-	logger.info("dragVector = " + ret);
+	Vector3f dragVectorEye = new Vector3f(
+            (dragEye.x - pressEye.x) * (dragStartEye.z - eyeEye.z) / (thisEye.z - eyeEye.z),
+	    (pressEye.y - dragEye.y) * (dragStartEye.z - eyeEye.z) / (thisEye.z - eyeEye.z),
+	    0f);
+	logger.fine("dragVectorEye = " + dragVectorEye);
+
+	logger.finest("camInverse = " + camInverse);
+
+	// Convert drag vector from eye space to world space
+	camMatrix.mult(dragVectorEye, ret);
+	logger.fine("dragVectorWorld = " + ret);
 
 	return ret;
     }
