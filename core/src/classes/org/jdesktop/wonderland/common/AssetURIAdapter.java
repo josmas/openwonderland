@@ -51,7 +51,7 @@ public class AssetURIAdapter extends XmlAdapter<String, AssetURI> {
         if (uri != null) {
             String moduleName = assetURI.getModuleName();
             String rawPath = assetURI.getRawPath();
-            assetURI = new AssetURI(moduleName, serverName, rawPath);
+            assetURI = new AssetURI(moduleName, rawPath, serverName);
         }
         return assetURI;
     }
