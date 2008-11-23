@@ -19,10 +19,12 @@
  */
 package org.jdesktop.wonderland.common;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Logger;
 
 /**
  * The ResourceURI class uniquely identifies a resource within the sytem that is
@@ -40,7 +42,7 @@ import java.net.URL;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public abstract class ResourceURI {
+public abstract class ResourceURI implements Serializable {
     /* The URI which is wrapped by this class */
     private URI uri = null;
     
