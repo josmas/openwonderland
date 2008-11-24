@@ -6,9 +6,6 @@
     
     <!--Runtime Class Path for JTRunner -->
     <property name="harness.lib.dir" value="${current.dir}/ext"/>
-    <pathconvert property="jtr.runtime.classpath">
-        <fileset dir="${harness.lib.dir}/common/jtr" includes="*.jar"/>
-    </pathconvert>
 
     <!-- import common build file -->
     <import file="${test.dir}/build-tools/build-scripts/test-build.xml"/>
@@ -19,7 +16,7 @@
     -->
     <property file="${current.dir}/build.properties"/>
 
-    <target name="build" depends="compile-master, jar-slave, jar-jtr-slave">
+    <target name="build" depends="compile-master, jar-slave">
     </target>
     
     <target name="compile-common" depends="-test-init">
@@ -88,7 +85,6 @@
             </compile-classes>
             
             <compile-classpath>
-                <pathelement path="${jtr.runtime.classpath}"/>
 		<pathelement path="${core-client.classpath}"/>
             </compile-classpath>
         </wl-compile>
@@ -120,29 +116,6 @@
             
             <arg value="${harness.master.hostname}"/>
             <arg value="${harness.master.port}"/>
-        </java>
-    </target>
-
-    <target name="run-jtr" depends="jar-slave">
-        <echo>JTR Classpath: ${jtr.runtime.classpath}</echo>
-        <java classname="jtr.test.Test" dir="./" fork="true">
-            <classpath>
-                <path location="${build.lib.dir}/testharness-slave.jar"/>
-                <path location="${build.lib.dir}/testharness-common.jar"/>
-                <pathelement path="${jtr.runtime.classpath}"/>
-		<pathelement path="${core-client.classpath}"/>             
-            </classpath>
-            
-            <!-- JTR standard properties -->
-            <jvmarg value="-Djtr.test.Test.config=config/jtr.xml"/>
-            <jvmarg value="-Dlog4j.configuration=config/log4j.xml"/>
-        
-            <!-- Required JVM properties for distributed testing -->
-            <jvmarg value="-Djtr.remote.test.host=localhost"/>
-            <jvmarg value="-Djava.security.policy=config/java.policy"/>
-        
-            <!-- Optional JVM useful property -->
-            <jvmarg value="-Dcom.sun.management.jmxremote"/>
         </java>
     </target>
 
@@ -195,15 +168,6 @@
                 <include name="org/jdesktop/wonderland/testharness/master/resources/**"/>
             </fileset>
          </jar>
-    </target>
-
-    <!-- Packages up files that we need to drop onto the JTR save machines -->
-    <target name="jar-jtr-slave" depends="jar-common, compile-slave" description="Build JTR Slave jar">
-        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/jtr-slave-dummy.jar">
-            <fileset dir="${build.classes.dir}/">
-                <include name="org/jdesktop/wonderland/testharness/slave/jtr/dummy/**"/>
-            </fileset>
-        </jar>
     </target>
 
     <target name="clean" depends="-test-clean"/>
