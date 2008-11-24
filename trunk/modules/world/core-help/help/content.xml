@@ -1,9 +1,2 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<wl-help-content>
-    <content category="core-navigation">
-	<item>
-		<name>Moving around</name>
-		<help-page-uri>wlh://core-help/test.html</help-page-uri>
-	</item>
-    </content>
-</wl-help-content>
+<wl-help-content/>
