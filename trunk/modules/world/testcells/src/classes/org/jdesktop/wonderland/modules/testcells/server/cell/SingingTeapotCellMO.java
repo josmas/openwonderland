@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.testcells.server.cell;
 
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -38,7 +39,7 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO implements BeanSetupM
     
     /** Default constructor, used when cell is created via WFS */
     public SingingTeapotCellMO() {
-        this(new Vector3f(), 50, null);
+        this(new Vector3f(), 50, new MaterialJME(ColorRGBA.green, null, null, null, 0.5f));
     }
 
     public SingingTeapotCellMO(Vector3f center, float size, MaterialJME materialJME) {
