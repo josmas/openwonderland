@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
 import org.jdesktop.wonderland.server.TimeManager;
@@ -71,7 +72,7 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
  *
  * @author jprovino
  */
-public class AudioTreatmentComponentMO extends CellComponentMO implements CallStatusListener {
+public class AudioTreatmentComponentMO extends CellComponentMO implements ManagedCallStatusListener {
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentComponentMO.class.getName());
@@ -80,14 +81,9 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
     
     private String groupId;
     private String[] treatments;
-
-    private double lowerLeftX;
-    private double lowerLeftY;
-    private double lowerLeftZ;
-
-    private double upperRightX;
-    private double upperRightY;
-    private double upperRightZ;
+    private double x;
+    private double y;
+    private double z;
 
     /**
      * Create a AudioTreatmentComponent for the given cell. The cell must already
@@ -100,8 +96,9 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
         ChannelComponentMO channelComponent = (ChannelComponentMO) 
 	    cell.getComponent(ChannelComponentMO.class);
 
-        if (channelComponent==null) {
-            throw new IllegalStateException("Cell does not have a ChannelComponent");
+        if (channelComponent == null) {
+            logger.warning("Cell does not have a ChannelComponent");
+	    return;
 	}
 
         channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
@@ -116,14 +113,6 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 	treatments = accs.getTreatments();
 
 	groupId = accs.getGroupId();
-
-	lowerLeftX = accs.getLowerLeftX();
-	lowerLeftY = accs.getLowerLeftY();
-	lowerLeftZ = accs.getLowerLeftZ();
-
-	upperRightX = accs.getUpperRightX();
-	upperRightY = accs.getUpperRightY();
-	upperRightZ = accs.getUpperRightZ();
     }
 
     @Override
@@ -137,15 +126,19 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements CallSt
 
 	    setup.treatment = treatments[i];
 	    
-	    System.out.println("Starting treatment " + setup.treatment);
+	    if (setup.treatment == null || setup.treatment.length() == 0) {
+		logger.warning("Invalid treatment '" + setup.treatment + "'");
+		continue;
+	    }
 
-	    setup.lowerLeftX = lowerLeftX;
-	    setup.lowerLeftY = lowerLeftY;
-	    setup.lowerLeftZ = lowerLeftZ;
+	    Vector3f location = cellRef.get().getLocalTransform(null).getTranslation(null);
 
-	    setup.upperRightX = upperRightX;
-	    setup.upperRightY = upperRightY;
-	    setup.upperRightZ = upperRightZ;
+	    setup.x = -location.getX();
+	    setup.y = location.getY();
+	    setup.z = location.getZ();
+
+	    logger.info("Starting treatment " + setup.treatment 
+		+ " at (" + setup.x + ":" + setup.y + ":" + setup.z + ")");
 
 	    try {
 	        group.addTreatment(vm.createTreatment(setup.treatment, setup));
