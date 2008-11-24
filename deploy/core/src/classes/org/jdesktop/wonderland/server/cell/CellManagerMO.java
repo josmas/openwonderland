@@ -17,13 +17,10 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.jme.bounding.BoundingSphere;
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
-import com.sun.sgs.app.util.ScalableHashMap;
 import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.Serializable;
 import java.util.logging.Level;
@@ -31,7 +28,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -58,9 +54,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     CellManagerMO() {
         AppContext.getDataManager().setBinding(BINDING_NAME, this);
-
-        ScalableHashSet<CellID> rootCells = new ScalableHashSet();
-        rootCellsRef = AppContext.getDataManager().createReference(rootCells);
     }
     
     /**
@@ -69,8 +62,14 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     @InternalAPI
     public static void initialize() {
-        new CellManagerMO();
-        
+        logger.info("Initializing");
+
+        CellManagerMO manager = new CellManagerMO();
+
+        // load all existing root cells.  Be sure to only do this in the
+        // initial (untimed) transaction
+        manager.reloadCells();
+
         // register the cell channel message listener
         CommsManager cm = WonderlandContext.getCommsManager();
         cm.registerClientHandler(new CellChannelConnectionHandler());
@@ -90,8 +89,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
         return (CellManagerMO) AppContext.getDataManager().getBinding(BINDING_NAME);                
     }
     
-
-    
     /**
      * Return the cell with the given ID, or null if the id is invalid
      * 
@@ -110,9 +107,18 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * Insert the cell into the world. 
      */
     public void insertCellInWorld(CellMO cell) throws MultipleParentException {
+        doInsert(cell);
+        rootCellsRef.getForUpdate().add(cell.cellID);
+    }
+
+    /**
+     * Internal insert that doesn't update the root cells map
+     * @param cell the cell to insert
+     * @throws MultipleParentException if there is an error inserting
+     */
+    protected void doInsert(CellMO cell) throws MultipleParentException {
         cell.setLive(true);
         UniverseManager.getUniverseManager().addRootToUniverse(cell);
-        rootCellsRef.getForUpdate().add(cell.cellID);
     }
 
     public void removeCellFromWorld(CellMO cell) {
@@ -120,12 +126,56 @@ public class CellManagerMO implements ManagedObject, Serializable {
         cell.setLive(false);
         rootCellsRef.getForUpdate().remove(cell.getCellID());
     }
-    
+
+    /**
+     * Reload all root cells into the universe, based on the set of root
+     * cells we can find. Be sure to only do this once, during the initial
+     * (untimed) Darkstar transaction
+     */
+    protected void reloadCells() {
+        ScalableHashSet<CellID> rootCells;
+
+        // create the root cells set if it doesn't exist
+        if (rootCellsRef == null) {
+            rootCells = new ScalableHashSet();
+            rootCellsRef = AppContext.getDataManager().createReference(rootCells);
+        } else {
+            rootCells = rootCellsRef.get();
+        }
+
+        int addedCount = 0;
+        int errorCount = 0;
+
+        for (CellID rootCellID : rootCells) {
+            CellMO cell = getCell(rootCellID);
+            if (cell == null) {
+                logger.warning("Removing non-existant cell " + rootCellID);
+                AppContext.getDataManager().markForUpdate(rootCells);
+                rootCells.remove(cell);
+                errorCount++;
+                continue;
+            }
+
+            try {
+                doInsert(cell);
+                addedCount++;
+            } catch (MultipleParentException mpe) {
+                logger.log(Level.WARNING, "Error re-inserting cell " +
+                           rootCellID, mpe);
+                errorCount++;
+            }
+        }
+
+        logger.info("Added " + addedCount + " cells. " +
+                    errorCount + " errors.");
+    }
+
+
     /**
      * For testing.....
      */
     public void loadWorld() {
-        buildWFSWorld();
+//        buildWFSWorld();
 //
 //        test();
     }

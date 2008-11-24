@@ -71,7 +71,14 @@ public interface Runner {
      * @param in an inputstream containing the data from the file to deploy
      */
     public void deploy(String filename, InputStream in) throws IOException;
-    
+
+    /**
+     * Remove all deployed files. After this is called, new version
+     * of the deploy files for this runner will be sent using the
+     * <code>deploy()</code> method.
+     */
+    public void clear();
+
     /**
      * Get the default runtime properties for this runner.  Return an empty
      * property list if there are no default properties.

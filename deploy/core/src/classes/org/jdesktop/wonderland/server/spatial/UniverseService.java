@@ -188,10 +188,24 @@ public class UniverseService implements UniverseServiceManager, Service {
 
     public void setLocalTransform(CellMO cellMO, CellTransform localTransform) {
         final Identity identity = proxy.getCurrentOwner();
+
+        /*
+        try {
+            throw new Exception("Trace");
+        } catch (Exception ex) {
+            logger.log(Level.INFO, "set local transform for cell " + 
+                       cellMO.getCellID(), ex);
+        }
+         */
+
         scheduleChange(new Change(cellMO.getCellID(), null, localTransform) {
             public void run() {
                 SpatialCell sc = universe.getSpatialCell(cellID);
-                sc.setLocalTransform(localTransform, identity);
+                if (sc == null) {
+                    logger.warning("Cell " + cellID + " not found!");
+                } else {
+                    sc.setLocalTransform(localTransform, identity);
+                }
             }
         });
     }

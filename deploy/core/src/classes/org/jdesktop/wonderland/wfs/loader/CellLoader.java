@@ -19,13 +19,18 @@
 package org.jdesktop.wonderland.wfs.loader;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.AppListener;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
@@ -43,7 +48,7 @@ import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class CellLoader {
+public class CellLoader implements AppListener, Serializable {
     /* The logger for the wfs loader */
     private static final Logger logger = Logger.getLogger(CellLoader.class.getName());
     
@@ -74,6 +79,32 @@ public class CellLoader {
         return CellLoader.logger;
     }
     
+    /**
+     * Called when this application starts up
+     * @param props the properties to boot with
+     */
+    public void initialize(Properties props) {
+        try {
+            // load cells into the Darkstar database
+            load();
+        } catch (Exception ex) {
+            // ignore any exception
+            logger.log(Level.WARNING, "Error reading data", ex);
+        } finally {
+            // now exit
+            System.exit(0);
+        }
+    }
+
+    /**
+     * Disable login
+     * @param session the sessesion attempting to login
+     * @return no listener, since login isn't allowed
+     */
+    public ClientSessionListener loggedIn(ClientSession session) {
+        throw new IllegalStateException("Login not allowed");
+    }
+
     /**
      * Returns the parent cell MO class, using the canonical name of its parent
      * cell given during its creation.
