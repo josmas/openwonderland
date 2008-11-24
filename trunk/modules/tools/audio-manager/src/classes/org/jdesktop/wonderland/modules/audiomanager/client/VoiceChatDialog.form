@@ -8,16 +8,17 @@
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
     <Property name="title" type="java.lang.String" value="Call Dialog"/>
+    <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
-    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -108,8 +109,14 @@
   </Layout>
   <SubComponents>
     <Component class="javax.swing.JLabel" name="statusLabel">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="statusLabel" noResource="true"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="chatterText">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="chatterText" noResource="true"/>
+      </Properties>
       <Events>
         <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="chatterTextKeyTyped"/>
       </Events>
@@ -117,6 +124,7 @@
     <Component class="javax.swing.JButton" name="joinButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Join"/>
+        <Property name="name" type="java.lang.String" value="joinButton" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="joinButtonActionPerformed"/>
@@ -125,9 +133,13 @@
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="text" type="java.lang.String" value="Chatters:"/>
+        <Property name="name" type="java.lang.String" value="jLabel1" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="chatGroupText">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="chatGroupText" noResource="true"/>
+      </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chatGroupTextActionPerformed"/>
       </Events>
@@ -135,14 +147,19 @@
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
         <Property name="text" type="java.lang.String" value="Chat Group:"/>
+        <Property name="name" type="java.lang.String" value="jLabel2" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
         <Property name="text" type="java.lang.String" value="Caller:"/>
+        <Property name="name" type="java.lang.String" value="jLabel3" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="callerText">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="callerText" noResource="true"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="secretRadioButton">
       <Properties>
@@ -150,6 +167,7 @@
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Secret"/>
+        <Property name="name" type="java.lang.String" value="secretRadioButton" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="secretRadioButtonActionPerformed"/>
@@ -161,6 +179,7 @@
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Private"/>
+        <Property name="name" type="java.lang.String" value="privateRadioButton" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="privateRadioButtonActionPerformed"/>
@@ -172,6 +191,7 @@
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Public"/>
+        <Property name="name" type="java.lang.String" value="publicRadioButton" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="publicRadioButtonActionPerformed"/>
@@ -180,6 +200,7 @@
     <Component class="javax.swing.JButton" name="leaveButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Leave"/>
+        <Property name="name" type="java.lang.String" value="leaveButton" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="leaveButtonActionPerformed"/>
@@ -188,6 +209,7 @@
     <Component class="javax.swing.JButton" name="busyButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Busy"/>
+        <Property name="name" type="java.lang.String" value="busyButton" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="busyButtonActionPerformed"/>
