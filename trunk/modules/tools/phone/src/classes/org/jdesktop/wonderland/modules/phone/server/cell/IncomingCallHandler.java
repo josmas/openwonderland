@@ -129,7 +129,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
     public static void initialize() {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	vm.addCallStatusListener(incomingCallHandler, null);
+	vm.addCallStatusListener(incomingCallHandler);
 
 	vm.addCallBeginEndListener(incomingCallHandler);
     }
@@ -338,11 +338,13 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	}
 
 	public void addCallStatusListener(ManagedCallStatusListener listener) {
-	    AppContext.getManager(VoiceManager.class).addCallStatusListener(listener, null);
+	    AppContext.getManager(VoiceManager.class).addCallStatusListener(listener,
+		call.getId());
 	}
 
 	public void removeCallStatusListener(ManagedCallStatusListener listener) {
-	    AppContext.getManager(VoiceManager.class).removeCallStatusListener(listener);
+	    AppContext.getManager(VoiceManager.class).removeCallStatusListener(listener,
+		call.getId());
 	}
 
 	private void playWaitingForPhoneNumber() {

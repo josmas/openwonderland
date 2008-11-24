@@ -271,14 +271,13 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
                 FakeVoiceManager.getInstance().setupCall(
 		    externalCallID, listing.getContactNumber());
             } else {                               
-		CallSetup callSetup = new CallSetup();
+		CallSetup setup = new CallSetup();
 	
 		CallParticipant cp = new CallParticipant();
 
-		callSetup.cp = cp;
-
+		setup.cp = cp;
 		try {
-		    callSetup.bridgeInfo = vm.getVoiceBridge();
+		    setup.bridgeInfo = vm.getVoiceBridge();
 	 	} catch (IOException e) {
 		    logger.warning("Unable to get voice bridge for call " + cp + ":  "
 			+ e.getMessage());
@@ -297,11 +296,11 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
             	    FakeVoiceManager.getInstance().addCallStatusListener(
 			phoneStatusListenerRef.get(), externalCallID);
 		} else {
-		    vm.addCallStatusListener(phoneStatusListenerRef.get(), null);
+		    setup.listener = phoneStatusListenerRef.get();
 		}
 
 		try {
-                    externalCall = vm.createCall(externalCallID, callSetup);
+                    externalCall = vm.createCall(externalCallID, setup);
 	 	} catch (IOException e) {
 		    logger.warning("Unable to create call " + cp + ":  "
 			+ e.getMessage());
@@ -339,7 +338,6 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
             
 	    if (externalCall != null) {
 	        externalCallID = externalCall.getId();
-	        vm.addCallStatusListener(phoneStatusListenerRef.get(), externalCallID);
 	    }
 
 	    logger.fine("Setting actual call id to " + externalCallID);
