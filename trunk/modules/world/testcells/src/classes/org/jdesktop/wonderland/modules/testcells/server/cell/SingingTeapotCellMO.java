@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 
 /**
@@ -33,12 +34,12 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeC
  * @author paulby
  */
 @ExperimentalAPI
-public class SingingTeapotCellMO extends SimpleShapeCellMO{
+public class SingingTeapotCellMO extends SimpleShapeCellMO implements BeanSetupMO {
     
     /** Default constructor, used when cell is created via WFS */
-//    public SingingTeapotCellMO() {
-//        this(new Vector3f(), 50, null);
-//    }
+    public SingingTeapotCellMO() {
+        this(new Vector3f(), 50, null);
+    }
 
     public SingingTeapotCellMO(Vector3f center, float size, MaterialJME materialJME) {
         super(center, size, SimpleShapeConfig.Shape.BOX.TEAPOT, 1f, materialJME);
