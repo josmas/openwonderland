@@ -299,7 +299,7 @@ public class AudioManagerConnectionHandler
     }
 
     public void callStatusChanged(CallStatus status) {
-	logger.fine("GOT STATUS " + status);
+	logger.finer("GOT STATUS " + status);
 
 	int code = status.getCode();
 
@@ -310,19 +310,36 @@ public class AudioManagerConnectionHandler
 	    return;
 	}
 
-if (true) {
-    return;
-}
-
 	WonderlandClientSender sender = callIDSenderMap.get(callId);
 
 	switch (code) {
+	case CallStatus.ESTABLISHED:
+	    Call call = AppContext.getManager(VoiceManager.class).getCall(callId);
+
+	    if (call == null) {
+		System.out.println("Couldn't find call for " + callId);
+		return;
+	    }
+
+	    Player player = call.getPlayer();
+
+	    if (player == null) {
+		System.out.println("Couldn't find player for " + call);
+		return;
+	    }
+
+	    /*
+	     * XXX Fix me.  This is just to force the private mixes to be recalulated.
+	     */
+	    player.setCall(call);
+	    break;
+
         case CallStatus.STARTEDSPEAKING:
-	    sender.send(new SpeakingMessage(true));
+	    //sender.send(new SpeakingMessage(true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    sender.send(new SpeakingMessage(false));
+	    //sender.send(new SpeakingMessage(false));
             break;
 
 	case CallStatus.BRIDGE_OFFLINE:

@@ -214,7 +214,7 @@ public class AudioManagerClient extends BaseConnection implements
 
 	        // XXX need location and direction
 	        session.send(this, new PlaceCallMessage(
-		    cellID.toString(), sipURL, 0., 0., 0., 0., false));
+		    cellID.toString(), sipURL, 0., 0., 0., 90., false));
 	    } catch (IOException e) {
                 logger.warning(e.getMessage());
 	    }
