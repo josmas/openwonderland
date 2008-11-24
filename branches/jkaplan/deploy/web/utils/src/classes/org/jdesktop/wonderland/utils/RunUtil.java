@@ -34,12 +34,6 @@ import java.util.zip.ZipInputStream;
  * @author jkaplan
  */
 public class RunUtil {
-    /** the directory to run from */
-    public static final String RUN_DIR_PROP = "wonderland.run.dir";
-    
-    /** whether or not to cleanup the run directory */
-    public static final String RUN_DIR_CLEANUP_PROP = "wonderland.run.dir.cleanup";
-    
     /** a logger */
     private static final Logger logger = 
             Logger.getLogger(RunUtil.class.getName());
@@ -84,7 +78,7 @@ public class RunUtil {
     public synchronized static File getRunDir() {
         if (baseDir == null) {
             // first try a property
-            String baseDirProp = SystemPropertyUtil.getProperty(RUN_DIR_PROP);
+            String baseDirProp = SystemPropertyUtil.getProperty(Constants.RUN_DIR_PROP);
             
             try {
                
@@ -95,15 +89,15 @@ public class RunUtil {
                     baseDir = File.createTempFile("wonderlandweb", ".tmp");
                     
                     // clean up unless we are explicitly told not to
-                    if (System.getProperty(RUN_DIR_CLEANUP_PROP) == null) {
-                        System.setProperty(RUN_DIR_CLEANUP_PROP, "true");
+                    if (System.getProperty(Constants.RUN_DIR_CLEANUP_PROP) == null) {
+                        System.setProperty(Constants.RUN_DIR_CLEANUP_PROP, "true");
                     }
                 }
                     
                 baseDir.delete();
                 baseDir.mkdirs();
                 
-                if (Boolean.parseBoolean(System.getProperty(RUN_DIR_CLEANUP_PROP))) {
+                if (Boolean.parseBoolean(System.getProperty(Constants.RUN_DIR_CLEANUP_PROP))) {
                     scheduleForCleanup(baseDir);
                 }
             } catch (IOException ioe) {

@@ -2,7 +2,14 @@
     <!-- set the build-scripts directory to the current directory -->
     <dirname property="core.run-scripts.dir" file="${ant.file.core.run-server}"/>
     <property name="core.build-scripts.dir" location="${core.run-scripts.dir}/../build-scripts"/>
+
+    <!-- set the current directory to the core directory -->
+    <property name="current.dir" location="${core.run-scripts.dir}/../.."/>
     
+    <!-- override properties for execution -->
+    <property name="core.build.lib.dir" location="${current.dir}/lib"/>
+    <property name="core.lib.dir" location="${current.dir}/lib"/>
+
     <!-- import common setup -->
     <import file="${core.build-scripts.dir}/core-setup.xml"/>
    
@@ -19,8 +26,7 @@
                                                -core-server-setup-multinode,
                                                -core-server-setup-classpath">
         
-        <!-- remove and re-create the data directory -->
-        <delete dir="${sgs.data.dir}" failonerror="false"/>
+        <!-- create the data directory if necessary -->
         <mkdir dir="${sgs.data.dir}"/>
         <mkdir dir="${sgs.data.dir}/dsdb"/>
 
@@ -28,9 +34,13 @@
         <property name="sgs.services" value=":com.sun.mpk20.voicelib.impl.service.voice.VoiceServiceImpl"/>
         <property name="sgs.managers" value=":com.sun.mpk20.voicelib.impl.app.VoiceManagerImpl"/>
 
+        <!-- set the default sgs configuration file.  This may be overridden
+             by the wfs reader or writer -->
+        <property name="sgs.config.file" value="WonderlandMain.cfg"/>
+
         <!-- copy the config file to the right place -->
-        <copy file="${current.dir}/WonderlandMain.cfg" 
-              tofile="${sgs.data.dir}/WonderlandMain.cfg" overwrite="true">
+        <copy file="${current.dir}/${sgs.config.file}"
+              tofile="${sgs.data.dir}/${sgs.config.file}" overwrite="true">
             <filterset>
                 <filter token="SGS_ROOT_DIR" value="${sgs.data.dir}"/>
                 <filter token="SGS_PORT" value="${sgs.port}"/>
@@ -178,10 +188,22 @@
             <syspropertyset refid="master.props"/>
             <syspropertyset refid="appnode.props"/>
             
-            <arg value="${sgs.data.dir}/WonderlandMain.cfg"/>
+            <arg value="${sgs.data.dir}/${sgs.config.file}"/>
         </java>
     </target>
-    
+
+    <target name="core-run-wfs-reader" depends="-core-setup-wfs-reader, core-run-server"
+            description="Run WFS reader for Project Wonderland"/>
+
+    <target name="-core-setup-wfs-reader">
+        <!-- reset the data directory -->
+        <delete dir="${sgs.data.dir}" failonerror="false"/>
+
+        <!-- override the default cofnig file -->
+        <property name="sgs.config.file" value="WFSReader.cfg"/>
+    </target>
+
+
     <!-- run as a master in a multinode setup -->
     <target name="core-run-server-master" depends="-core-server-setup-multinode-master, core-run-server"/>
     

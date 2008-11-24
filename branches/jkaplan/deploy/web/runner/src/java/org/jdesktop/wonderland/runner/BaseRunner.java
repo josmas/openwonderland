@@ -154,6 +154,13 @@ public abstract class BaseRunner implements Runner {
     }
 
     /**
+     * Clear the run directory
+     */
+    public void clear() {
+        RunUtil.deleteDir(getRunDir());
+    }
+
+    /**
      * Get the default properties for this runner
      * @return an empty properties list
      */

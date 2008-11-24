@@ -17,21 +17,17 @@
  */
 package org.jdesktop.wonderland.utils.ant;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.tools.ant.BuildException;
@@ -39,9 +35,9 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.ant.types.resources.FileResource;
-import org.apache.tools.ant.types.selectors.FileSelector;
 import org.apache.tools.ant.types.selectors.FilenameSelector;
 import org.apache.tools.ant.util.FileUtils;
+import org.jdesktop.wonderland.utils.FileListUtil;
 
 /**
  * Package the main Wonderland.jar
@@ -80,8 +76,8 @@ public class WonderlandPackageTask extends Jar {
                 checksumDir.mkdirs();
             }
 
-            Map<String, List<String>> fileLists =
-                    new HashMap<String, List<String>>();
+            Map<String, Map<String, String>> fileLists =
+                    new HashMap<String, Map<String, String>>();
 
             // go through each fileset and generate checksums if necessary
             for (ZipFileSet files : checksums) {
@@ -90,10 +86,10 @@ public class WonderlandPackageTask extends Jar {
                 fileSetDir.mkdir();
 
                 // keep track of file names
-                List<String> fileNames = fileLists.get(prefix);
-                if (fileNames == null) {
-                    fileNames = new ArrayList<String>();
-                    fileLists.put(prefix, fileNames);
+                Map<String, String> fileChecksums = fileLists.get(prefix);
+                if (fileChecksums == null) {
+                    fileChecksums = new LinkedHashMap<String, String>();
+                    fileLists.put(prefix, fileChecksums);
                 }
 
                 Iterator<FileResource> i = (Iterator<FileResource>) files.iterator();
@@ -111,16 +107,13 @@ public class WonderlandPackageTask extends Jar {
 
                     String checksum = readChecksum(checksumFile);
 
-                    fileNames.add(fr.getName() + " " + checksum);
+                    fileChecksums.put(fr.getName(), checksum);
                 }
             }
 
             // write file lists
-            for (Map.Entry<String, List<String>> e : fileLists.entrySet()) {
-                File fileSetDir = new File(checksumDir, e.getKey());
-
-                 // create a file with a list of file names
-                writeFileList(fileSetDir, e.getValue());
+            for (Map.Entry<String, Map<String, String>> e : fileLists.entrySet()) {
+                writeFileList(e.getKey(), e.getValue());
             }
 
             // add the checksums directory to the jar
@@ -147,33 +140,8 @@ public class WonderlandPackageTask extends Jar {
     {
         log("Generating checksum for " + fr.getName(), Project.MSG_INFO);
 
-        MessageDigest digest;
-
-        try {
-            digest = MessageDigest.getInstance(checksumAlgorithm);
-        } catch (NoSuchAlgorithmException nsae) {
-            IOException ioe = new IOException("No such algorithm " +
-                                              checksumAlgorithm);
-            ioe.initCause(nsae);
-            throw ioe;
-        }
-
-        byte[] buf = new byte[1024 * 1024];
-        int bytesRead = 0;
-        BufferedInputStream bis = new BufferedInputStream(fr.getInputStream());
-        InputStream in = new DigestInputStream(bis, digest);
-
-        /* Read in the entire file */
-        do {
-            bytesRead = in.read(buf);
-        } while (bytesRead != -1);
-        in.close();
-
-        /* Compute the checksum with the digest */
-        byte[] byteChecksum = digest.digest();
-        digest.reset();
-
-        String csStr = toHexString(byteChecksum);
+        String csStr = FileListUtil.generateChecksum(fr.getInputStream(),
+                                                     checksumAlgorithm);
         PrintWriter pr = new PrintWriter(new FileWriter(checksumFile));
         pr.println(csStr);
         pr.close();
@@ -184,53 +152,20 @@ public class WonderlandPackageTask extends Jar {
         return br.readLine();
     }
 
-    protected void writeFileList(File dir, List<String> fileNames)
+    protected void writeFileList(String dirname,
+                                 Map<String, String> fileList)
         throws IOException
     {
-        File listFile = new File(dir, "files.list");
-        if (listFile.exists()) {
-            List<String> existing = readFileList(listFile);
-            if (existing.equals(fileNames)) {
-                return;
-            }
-        }
+        File fileSetDir = new File(checksumDir, dirname);
 
-        PrintWriter pr = new PrintWriter(new FileWriter(listFile));
-        for (String fileName : fileNames) {
-            pr.println(fileName);
+        // compare the new list to the old list
+        File fileListFile = new File(fileSetDir, "files.list");
+        Map<String, String> existingFileList =
+                FileListUtil.readChecksums(fileListFile);
+        
+        if (!existingFileList.equals(fileList)) {
+            // create a file with a list of file names
+            FileListUtil.writeChecksums(fileList, fileListFile);
         }
-        pr.close();
-    }
-
-    protected List<String> readFileList(File listFile) {
-        List<String> out = new ArrayList<String>();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(listFile));
-            String line;
-            while ((line = br.readLine()) != null) {
-                out.add(line);
-            }
-            br.close();
-        } catch (IOException ioe) {
-            // ignore, just pretend the list was empty
-            out = Collections.emptyList();
-        }
-
-        return out;
-    }
-
-    /**
-     * Converts the checksum given as an array of bytes into a hex-encoded
-     * string.
-     *
-     * @param bytes The checksum as an array of bytes
-     * @return The checksum as a hex-encoded string
-     */
-    private static String toHexString(byte bytes[]) {
-        StringBuffer ret = new StringBuffer();
-        for (int i = 0; i < bytes.length; ++i) {
-            ret.append(Integer.toHexString(0x0100 + (bytes[i] & 0x00FF)).substring(1));
-        }
-        return ret.toString();
     }
 }

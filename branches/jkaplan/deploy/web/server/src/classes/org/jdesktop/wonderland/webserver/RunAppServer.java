@@ -22,13 +22,11 @@ import com.sun.enterprise.web.WebDeployer;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
 import com.sun.hk2.component.InhabitantsParser;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -55,8 +53,9 @@ import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleAttributes;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
-import org.jdesktop.wonderland.webserver.launcher.FileListUtil;
+import org.jdesktop.wonderland.utils.FileListUtil;
 import org.jvnet.hk2.component.Habitat;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -75,7 +74,7 @@ public class RunAppServer {
     private static int port;
 
     static {
-        String portStr = SystemPropertyUtil.getProperty(WebServerLauncher.WEBSERVER_PORT_PROP,
+        String portStr = SystemPropertyUtil.getProperty(Constants.WEBSERVER_PORT_PROP,
                                                         "8080");
         port = Integer.parseInt(portStr);
     }
@@ -83,7 +82,7 @@ public class RunAppServer {
     public RunAppServer() throws IOException {
         // check if we need to make any changes
         if (Boolean.parseBoolean(
-                System.getProperty(WebServerLauncher.WEBSERVER_NEWVERSION_PROP)))
+                System.getProperty(Constants.WEBSERVER_NEWVERSION_PROP)))
         {
             // remove old modules
             uninstallModules();

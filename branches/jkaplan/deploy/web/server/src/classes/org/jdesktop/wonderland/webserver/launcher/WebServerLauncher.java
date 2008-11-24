@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.webserver.launcher;
 
+import org.jdesktop.wonderland.utils.FileListUtil;
 import java.net.URLConnection;
 import org.jdesktop.wonderland.utils.RunUtil;
 import java.io.BufferedReader;
@@ -27,7 +28,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -44,6 +44,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
@@ -54,12 +55,7 @@ import org.jdesktop.wonderland.utils.SystemPropertyUtil;
  * @author jkaplan
  */
 public class WebServerLauncher {
-    // properties
-    public static final String WEBSERVER_PORT_PROP = "wonderland.webserver.port";
-    public static final String WEBSERVER_HOST_PROP = "wonderland.webserver.host";
-    public static final String WEBSERVER_URL_PROP  = "wonderland.web.server.url";
-    public static final String WEBSERVER_NEWVERSION_PROP = "wonderland.webserver.newversion";
-    
+
     // port to listen for killswitch connections
     private static final String WEBSERVER_KILLSWITCH_PROPERTY =
             "wonderland.webserver.killswitch";
@@ -138,7 +134,7 @@ public class WebServerLauncher {
 
             // see if we are a new version
             if (!compareVersions(RunUtil.getRunDir())) {
-                System.setProperty(WEBSERVER_NEWVERSION_PROP, "true");
+                System.setProperty(Constants.WEBSERVER_NEWVERSION_PROP, "true");
 
                 // if the versions are different, then extract the webserver
                 // jars into the webserver directory
@@ -197,7 +193,7 @@ public class WebServerLauncher {
             // TODO: get the host too
             System.out.println("Web server running on " +
                                SystemPropertyUtil.getProperty(
-                                    WebServerLauncher.WEBSERVER_URL_PROP));
+                                    Constants.WEBSERVER_URL_PROP));
             System.out.println("-----------------------------------------------------------");
         
         } catch (Exception ex) {
@@ -253,25 +249,25 @@ public class WebServerLauncher {
         
         // override the port and directory if specified
         if (port != null) {
-            System.setProperty(WEBSERVER_PORT_PROP, port);
+            System.setProperty(Constants.WEBSERVER_PORT_PROP, port);
         } else {
-            System.setProperty(WEBSERVER_PORT_PROP, "8080");
+            System.setProperty(Constants.WEBSERVER_PORT_PROP, "8080");
         }
 
         if (directory != null) {
-            System.setProperty(RunUtil.RUN_DIR_PROP, directory);
+            System.setProperty(Constants.RUN_DIR_PROP, directory);
         }
 
         // set guess the hostname for this server
-        if (System.getProperty(WEBSERVER_HOST_PROP) == null) {
-            System.setProperty(WEBSERVER_HOST_PROP, getHostname());
+        if (System.getProperty(Constants.WEBSERVER_HOST_PROP) == null) {
+            System.setProperty(Constants.WEBSERVER_HOST_PROP, getHostname());
         }
 
         // set the web server URL based on the hostname and port
-        if (System.getProperty(WEBSERVER_URL_PROP) == null) {
-            System.setProperty(WEBSERVER_URL_PROP,
-                "http://" + System.getProperty(WEBSERVER_HOST_PROP) +
-                ":" + System.getProperty(WEBSERVER_PORT_PROP) + "/");
+        if (System.getProperty(Constants.WEBSERVER_URL_PROP) == null) {
+            System.setProperty(Constants.WEBSERVER_URL_PROP,
+                "http://" + System.getProperty(Constants.WEBSERVER_HOST_PROP) +
+                ":" + System.getProperty(Constants.WEBSERVER_PORT_PROP) + "/");
         }
 
         return true;
