@@ -26,54 +26,31 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
 
 /**
- * Cell that renders a basic shape
- * 
+ * Simple test for cell dragging.
+ *
  * @author paulby
  */
 @ExperimentalAPI
-public class SimpleShapeCellMO extends CellMO {
-    
-    private SimpleShapeConfig.Shape shape;
-    private float mass;
-    private MaterialJME materialJME = null;
+public class DragTestMO extends SimpleShapeCellMO {
     
     /** Default constructor, used when cell is created via WFS */
-    public SimpleShapeCellMO() {
-        this(new Vector3f(), 1);
+    public DragTestMO () {
+        this(new Vector3f(), 50);
     }
 
-    public SimpleShapeCellMO(Vector3f center, float size) {
-        this(center, size, SimpleShapeConfig.Shape.BOX);
-    }
-
-    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape) {
-        this(center, size, shape, 0f);
+    public DragTestMO (Vector3f center, float size) {
+        super(center, size);
+        addComponent(new ChannelComponentMO(this));
+        addComponent(new MovableComponentMO(this));
     }
     
-    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape, float mass) {
-        this(center, size, shape, mass, null);
-    }
-
-    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape, float mass, MaterialJME materialJME) {
-        super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
-        this.shape = shape;
-        this.mass = mass;
-        this.materialJME = materialJME;
-    }
-    
-    @Override
+    @Override 
     protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell";
-    }
-
-    @Override
-    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new SimpleShapeConfig(shape, mass, materialJME);
+        return "org.jdesktop.wonderland.modules.testcells.client.cell.DragTest";
     }
 
     @Override

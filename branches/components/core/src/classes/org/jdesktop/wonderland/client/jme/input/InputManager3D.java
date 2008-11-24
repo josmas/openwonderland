@@ -17,8 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
-import java.awt.Canvas;
-import org.jdesktop.mtgame.CameraComponent;
+import com.jme.renderer.Camera;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -50,5 +49,13 @@ public class InputManager3D extends InputManager {
 	inputPicker = InputPicker3D.getInputPicker();
         eventDistributor = EventDistributor3D.getEventDistributor();
         inputPicker.setEventDistributor(eventDistributor);
+    }
+
+
+    /** 
+     * Returns the current camera.
+     */
+    Camera getCamera () {
+	return inputPicker.getCameraComponent().getCamera();
     }
 }

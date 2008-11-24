@@ -17,10 +17,21 @@
  */
 package org.jdesktop.wonderland.client.jme.input;
 
+import java.awt.Point;
+import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
+import com.jme.math.Matrix4f;
+import com.jme.scene.Node;
 import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import java.util.logging.Logger;
+import org.jdesktop.mtgame.CollisionComponent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.input.InputPicker;
+import org.jdesktop.wonderland.client.jme.ThirdPersonCameraProcessor;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * An event which indicates that a mouse drag action occurred. 
@@ -31,45 +42,15 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public class MouseDraggedEvent3D extends MouseMovedEvent3D {
     
+    private static final Logger logger = Logger.getLogger(MouseDraggedEvent3D.class.getName());
+
     static {
 	/** Allocate this event type's class ID. */
 	EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
-    /** The canvas of the Wonderland main window */
-    // TODO:  private static Canvas3D canvas;
-    
-    /*
-    ** Begin temporaries used by getDragPoint.
-    */
-
-    /** The previous cursor position in image plate coords */
-    // TODO:     private static Point3d cursorPrevIP = new Point3d();
-
-    /** The current cursor position in image plate coords */
-    // TODO:     private Point3d cursorIP = new Point3d();
-
-    /** The transformation from image plate coords to virtual world coords*/
-    // TODO:     private Transform3D ip2vw = new Transform3D();
-
-    /** The transformation from virtual world coords image plate coords */
-    // TODO:     private Transform3D vw2ip = new Transform3D();
-
-    /** The drag start point in image plate coords */
-    // TODO:     private Point3d dragStartIP = new Point3d();
-
-    /** The eye point in image plate coords */
-    // TODO:     private Point3d eyeIP = new Point3d();
-
-    /** The drag vector in image plate coords */
-    // TODO:     private Vector3d dragVecIP = new Vector3d();
-
-    /** A temporary used to save the image plate cursor position */
-    // TODO:     private Point3d cursorSaveIP = new Point3d();
-
-    /*
-    ** End temporaries used by getDragPoint.
-    */
+    /** The raw pick details of the actual pick hit. */
+    protected PickDetails hitPickDetails;
 
     /** Default constructor (for cloning) */
     protected MouseDraggedEvent3D () {}
@@ -92,95 +73,142 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
     }
 
     /**
-     * Used by MouseButtonEvent to specify the screen coordinates of the last mouse
-     * button press.
+     * Used by InputPicker to specify the raw hit pick details of this drag event.
+     * <br>
+     * INTERNAL ONLY
      */
-    /* TODO
-    public static void setPressPointScreen (int x, int y) {
-	if (canvas == null) {
-	    FoundationWinSys fws = FoundationWinSys.getFoundationWinSys();
-	    canvas = fws.getCanvas(0);
-	}
-
-	// Compute the cursor position of the press in image plate coords
-	//System.err.println("pressPointScreen = " + x + " " + y);
-	canvas.getPixelLocationInImagePlate(x, y, cursorPrevIP);
-	//System.err.println("cursorPrevIP = " + cursorPrevIP);
+    @InternalAPI
+    public void setHitPickDetails (PickDetails hitPickDetails) {
+	this.hitPickDetails = hitPickDetails;
     }
-    */
 
     /**
-     * Returns the drag vector in virtual world coordinates relative to the point at which
-     * the drag started. While dragging, the returned value is the cursor movement vector
-     * projected into the plane of the drag start point.
-     *
-     * @param dragStart The intersection point in virtual world coordinates of the 
-     * mouse button press event which initiated the drag.
-     * @param ret An Point3f object in which to store the drag point
-     * @return The argument ret is returned.
+     * Returns the raw hit pick details of this drag event.
      */
-    /* TODO
-    public Vector3f getDragVectorWorld (Point3f dragStart, Vector3f ret) {
+    public PickDetails getHitPickDetails () {
+	return hitPickDetails;
+    }
+
+    /**
+     * Returns the actually entity hit by the event.
+     */
+    public Entity getHitEntity () {
+	return InputPicker.pickDetailsToEntity(hitPickDetails);
+    }
+
+    /**
+     * Returns the distance from the eye to the intersection point, based on the actual hit pick details.
+     * which were calculated by the input system. (This distance is in world coordinates). If the event has 
+     * no hit pick details, 0 is returned. 
+     */
+   public float getHitDistance () {
+	if (hitPickDetails == null) {
+	    return 0f;
+	} else {
+	    return hitPickDetails.getDistance();
+	}
+    }
+
+    /**
+     * Returns the intersection point in world coordinates, based on the actual hit pick details.
+     */
+    public Vector3f getHitIntersectionPointWorld () {
+	if (hitPickDetails == null) {
+	    return null;
+	} else {
+	    return hitPickDetails.getPosition();
+	}
+    }
+
+    /**
+     * Returns the intersection point in object (node) local coordinates, based on the actual hit 
+     * pick details.
+     */
+    public Vector3f getHitIntersectionPointLocal () {
+	if (hitPickDetails == null) {
+	    return null;
+	} else {
+	    Vector3f posWorld = hitPickDetails.getPosition();
+	    if (posWorld == null) return null;
+	    CollisionComponent cc = hitPickDetails.getCollisionComponent();
+	    Node node = cc.getNode();
+	    node.getLocalToWorldMatrix(world2Local);
+	    world2Local.invert();
+	    return world2Local.mult(hitPickDetails.getPosition(), new Vector3f());
+	}
+    }
+
+    /**
+     * Returns the drag vector in world coordinates relative to the last mouse button press point.
+     * While dragging, the returned value is the pointer movement vector projected into the plane 
+     * of the drag start (mouse button press) point.
+     * @param ret An Vector3f in which to store the drag vector. If null a new vector is created.
+     * @return The argument ret is returned. If it was null a new vector is returned.
+     */
+    public Vector3f getDragVectorWorld (Vector3f dragStartWorld, Point dragStartScreen, Vector3f ret) {
         if (ret == null) {
             ret = new Vector3f();
         }
+	
+	logger.fine("dragStartWorld rel = " + dragStartWorld);
 
-	// DJ Note: See Wonderland Graph Book #1 p.27 for a diagram
-        synchronized (cursorIP) {
+	// The current world position of the eye
+	Vector3f eyeWorld = InputPicker3D.getInputPicker().getCameraPosition(null);
+	logger.fine("eyeWorld = " + eyeWorld);
 
-	    // Get the transformation from image plate coords to virtual world coords
-	    canvas.getImagePlateToVworld(ip2vw);
+	// The float movement vector in screen space
+	Vector2f scrPos = new Vector2f(
+				     (float)(((MouseEvent)awtEvent).getX() - dragStartScreen.x),
+                                     (float)(((MouseEvent)awtEvent).getY() - dragStartScreen.y));
+	logger.fine("scrPos = " + scrPos);
 
-	    // Get the transformation from virtual world coords to image plate coords
-	    vw2ip.set(ip2vw);
-	    vw2ip.invert();
-        
-	    // Get the cursor position in Image Plate coordinates
-	    //System.err.println("drag event xy = " + ((MouseEvent)awtEvent).getX() + " " + ((MouseEvent)awtEvent).getY());
-	    canvas.getPixelLocationInImagePlate(((MouseEvent)awtEvent).getX(), ((MouseEvent)awtEvent).getY(), cursorIP);
-	    //System.err.println("cursorIP = " + cursorIP);
+	Vector2f pressXY = new Vector2f((float)dragStartScreen.x, (float)dragStartScreen.y);
+	Vector3f pressWorld = ((InputManager3D)InputManager3D.getInputManager()).
+	    getCamera().getWorldCoordinates(pressXY, 0f);
 
-	    // Compute the cursor movement delta in image plate coords
-	    // (Note: this is a vector but it is stored in a point).
-	    cursorSaveIP.set(cursorIP);
-	    cursorIP.sub(cursorPrevIP);
-	    //System.err.println("cursorIP vector = " + cursorIP);
-        
-	    // Compute the drag start point in image plate coords
-	    dragStartIP.set(dragStart);
-	    vw2ip.transform(dragStartIP);
-	    //System.err.println("dragStartIP = " + dragStartIP);
-        
-	    // Get the eye position in image plate coords
-	    canvas.getCenterEyeInImagePlate(eyeIP);
-	    //System.err.println("eyeIP = " + eyeIP);
+	Vector2f dragXY = new Vector2f((float)((MouseEvent)awtEvent).getX(),
+				       (float)((MouseEvent)awtEvent).getY());
+	Vector3f dragWorld = ((InputManager3D)InputManager3D.getInputManager()).
+	    getCamera().getWorldCoordinates(dragXY, 0f);
 
-	    // Use proportional triangles to project the cursor movement vector
-	    // (which is in the plane of the image plate) onto the plane of the 
-	    // drag start point. Note that the result is still in image plate coordinates
-	    double zEyeToDragStart = dragStartIP.z - eyeIP.z;
-	    double zEyeToImagePlate = eyeIP.z;
-	    //System.err.println("zEyeToDragStart = " + zEyeToDragStart);
-	    //System.err.println("zEyeToImagePlate = " + zEyeToImagePlate);
-	    dragVecIP.x = (cursorIP.x * zEyeToDragStart) / zEyeToImagePlate;
-	    dragVecIP.y = (cursorIP.y * zEyeToDragStart) / zEyeToImagePlate;
-	    dragVecIP.z = 0;
-	    //System.err.println("dragVecIP = " + dragVecIP);
+	// The world position of this event (in the view plane)
+	Vector3f thisWorld = ((InputManager3D)InputManager3D.getInputManager()).
+	    getCamera().getWorldCoordinates(scrPos, 0f);
+	logger.fine("thisWorld = " + thisWorld);
 
-	    // Compute the drag vector in virtual world coords
-	    ip2vw.transform(dragVecIP);
+	// The calculations need to take place in eye space. Get the necessary matrices.
+	Matrix4f camMatrix = InputPicker3D.getInputPicker().getCameraModelViewMatrix(null);
+	Matrix4f camInverse = InputPicker3D.getInputPicker().getCameraModelViewMatrixInverse(null);
+	logger.finest("camInverse = " + camInverse);
 
-            ret.x = (float) -dragVecIP.x;
-	    ret.y = (float) -dragVecIP.y;
-	    ret.z = (float) -dragVecIP.z;
+	// Transform vectors from world space into eye space
+	Vector3f dragEye = new Vector3f();
+	Vector3f dragStartEye = new Vector3f();
+	Vector3f pressEye = new Vector3f();
+	Vector3f eyeEye = new Vector3f();
+	Vector3f thisEye = new Vector3f();
+	camInverse.mult(dragWorld, dragEye);
+	camInverse.mult(dragStartWorld, dragStartEye);
+	camInverse.mult(pressWorld, pressEye);
+	// TODO: perf: only really need to recalc eyeEye on camera change
+	camInverse.mult(eyeWorld, eyeEye);
+	camInverse.mult(thisWorld, thisEye);
 
-	    cursorPrevIP = cursorSaveIP;
-	    //System.err.println("cursorPrevIP = " + cursorPrevIP);
-        }
+	// The displacement vector of this event from the center of the drag plane
+	Vector3f dragVectorEye = new Vector3f(
+            (dragEye.x - pressEye.x) * (dragStartEye.z - eyeEye.z) / (thisEye.z - eyeEye.z),
+	    (pressEye.y - dragEye.y) * (dragStartEye.z - eyeEye.z) / (thisEye.z - eyeEye.z),
+	    0f);
+	logger.fine("dragVectorEye = " + dragVectorEye);
 
-        return ret;
+	logger.finest("camInverse = " + camInverse);
+
+	// Convert drag vector from eye space to world space
+	camMatrix.mult(dragVectorEye, ret);
+	logger.fine("dragVectorWorld = " + ret);
+
+	return ret;
     }
-    */
 
     /** {@inheritDoc} */
     @Override
@@ -201,6 +229,7 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
     public Event clone (Event event) {
 	if (event == null) {
 	    event = new MouseDraggedEvent3D();
+	    ((MouseDraggedEvent3D)event).hitPickDetails = hitPickDetails;
 	}
 	return super.clone(event);
     }

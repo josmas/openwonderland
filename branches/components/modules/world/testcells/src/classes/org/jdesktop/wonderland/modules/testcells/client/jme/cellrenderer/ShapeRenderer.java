@@ -27,12 +27,15 @@ import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Cone;
 import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Sphere;
+import com.jme.scene.shape.Teapot;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
@@ -63,30 +66,44 @@ public class ShapeRenderer extends BasicRenderer {
                 break;
             case CYLINDER :
                 ret.attachChild(geom = new Cylinder("Cylinder", 10, 10, xExtent, yExtent));
+                // Make yUp
+                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
                 break;
             case CONE :
                 ret.attachChild(geom = new Cone("Cone", 10, 10, xExtent, yExtent));
+                // Make yUp
+                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
                 break;
             case SPHERE :
                 ret.attachChild(geom = new Sphere("Sphere", 10, 10, xExtent));
                 break;
+            case TEAPOT :
+                ret.attachChild(geom = new Teapot());
+                ((Teapot)geom).resetData();
+                ret.setLocalScale(0.2f);
+                break;
         }
 
         if (geom!=null) {
-            geom.setDefaultColor(new ColorRGBA(1f, 0f, 0f, 1f));
-
-            // Make yUp
-            geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
 
             geom.setModelBound(new BoundingSphere());
             geom.updateModelBound();
-            
+
+            MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+            MaterialJME matJME = ((SimpleShapeCell)cell).getMaterialJME();
+            if (matJME!=null)
+                matJME.apply(matState);
+            geom.setRenderState(matState);
         }
 
         // Set the transform
         applyTransform(ret, cell.getLocalTransform());
         
         return ret;
+    }
+
+    protected float getMass() {
+        return ((SimpleShapeCell)cell).getMass();
     }
 
 }

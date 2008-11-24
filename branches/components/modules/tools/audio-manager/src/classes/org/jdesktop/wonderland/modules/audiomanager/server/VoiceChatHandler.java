@@ -614,42 +614,44 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	String clientId = cellMORef.get().getCellID().toString();
 
+	logger.fine("localTransform " + localTransform + " world " 
+	    + localToWorldTransform);
+
 	Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
 
 	if (player == null) {
 	    logger.warning("got AvatarMovedMessage but can't find player for " + clientId);
 	} else {
-	    float[] angles = new float[3];
+	    Vector3f heading = new Vector3f(0, 0, -1);
 
-	    localToWorldTransform.getRotation(null).toAngles(angles);
+	    Vector3f angleV = heading.clone();
 
-	    String s = "";
+	    localToWorldTransform.getRotation(null).multLocal(angleV);
 
-	    for (int i = 0; i < angles.length; i++) {
-		s += Math.toDegrees(angles[i]) + " ";
-	    }
+	    double h = heading.angleBetween(angleV);
 
-	    System.out.println("localTransform " + localTransform + " world " 
-	        + localToWorldTransform + " angles:  " + s);
+	    double angle = Math.toDegrees(h) % 360;
 
 	    /*
-	     * The angle we're interested in the one about the y-axis.
-	     * This angle increases when rotating in a counter clockwise direction.
-	     * Zero degrees is straight ahead so we have to adjust that to our
-	     * coordinate system by adding 90 degrees.
+	     * For wonderland, a clockwise rotation results in a bigger
+             * angle, i. e., rotation is in the opposite direction of
+             * what the voice manager expects.  Correct for that here.
 	     */
-	    double angle = Math.toDegrees(angles[1]) + 90;
+	    //angle = 360 - angle;
 
 	    Vector3f location = localToWorldTransform.getTranslation(null);
 	
-	    //logger.fine(player + " x " + -location.getX()
-	    //	+ " y " + location.getY() + " z " + location.getZ()
-	    //	+ " angle " + angle + " radians " + h);
+	    logger.fine(player + " x " + -location.getX()
+		+ " y " + location.getY() + " z " + location.getZ()
+		+ " angle " + angle + " radians " + h);
 
 	    /*
 	     * The x coordinate increases to the left so we correct
 	     * for that here.
 	     */
+	    // XXX angle isn't right just yet!
+	    angle = 90;
+
 	    player.moved(-location.getX(), location.getY(), location.getZ(), angle);
 	}
     }
