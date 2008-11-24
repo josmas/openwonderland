@@ -41,7 +41,6 @@
 		<pathelement path="${wonderland-client-compile.classpath}"/>
                 <pathelement path="${core.lib.dir}/wonderland-client.jar"/>
                 <pathelement path="${core.lib.dir}/wonderland-common.jar"/>
-                <pathelement path="${build-import.dir}/junit-4.4.jar"/>
 	    </compile-classpath>
         </wl-compile>
     </target>
@@ -58,7 +57,7 @@
                 <pathelement path="${core.lib.dir}/wonderland-client.jar"/>
                 <pathelement location="../build-tools/import/junit-4.4.jar"/>
 	    </classpath>
-        </junit> -->
+        </junit>
         
         <java fork="yes" classname="org.junit.runner.JUnitCore">
             
@@ -70,7 +69,7 @@
                 <pathelement location="../../build-tools/import/junit-4.4.jar"/>
                 <pathelement path="${build.classes.dir}"/>
 	    </classpath>
-        </java>
+        </java> -->
         
     </target>
     

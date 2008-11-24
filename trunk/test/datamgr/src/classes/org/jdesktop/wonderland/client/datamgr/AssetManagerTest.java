@@ -23,10 +23,6 @@ import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Tests for the asset manager
@@ -51,17 +47,14 @@ public class AssetManagerTest {
     public AssetManagerTest() {
     }
     
-    @Before
     public void setUp() {
         //System.setProperty("wonderland.dir",".wonderland-junit");
         assetManager = AssetManager.getAssetManager();
     }
 
-    @After
     public void tearDown() {
     }
 
-    //@Test
     public void testCachePath() {
         try {
             AssetURI assetURI1 = new AssetURI("http://www.foo.net/models/mymodel.gz");
@@ -76,7 +69,6 @@ public class AssetManagerTest {
         }
     }
     
-    //@Test
 //    public void checksumConversionTest(){
 //        byte[] t1 = new byte[]{0, 1, 10, 13, 14, 15};
 //
@@ -91,7 +83,6 @@ public class AssetManagerTest {
 //        assertFalse(fail);        
 //    }
     
-    //@Test
     /*
     public void downloadBadURL() {
         try {
@@ -104,7 +95,6 @@ public class AssetManagerTest {
         }
     }*/
     
-    @Test
     public void downloadFile() throws java.net.URISyntaxException {
         final Thread threads[] = new Thread[urls.length];
         for (int i = 0; i < urls.length; i++) {
