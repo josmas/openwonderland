@@ -572,7 +572,7 @@ public class AssetDB {
         try {
             Statement queryStatement = dbConnection.createStatement();
             ResultSet result = queryStatement.executeQuery(strGetListEntries);
-            logger.fine("[ASSET DB] LIST");
+            logger.warning("[ASSET DB] LIST");
             while(result.next()) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(result.getString("ASSET_URI") + "\t");
@@ -581,9 +581,9 @@ public class AssetDB {
                 sb.append(result.getString("TYPE") + "\t");
                 sb.append(result.getLong("LAST_ACCESSED") + "\t");
                 sb.append(result.getLong("SIZE") + "\n");
-                logger.fine(sb.toString());
+                logger.warning(sb.toString());
             }
-            logger.fine("[ASSET DB] DONE LIST");
+            logger.warning("[ASSET DB] DONE LIST");
         } catch(SQLException sqle) {
             sqle.printStackTrace();
         }
@@ -601,9 +601,9 @@ public class AssetDB {
         AssetDB db = new AssetDB();
         
         /* Print out the essential information */
-        logger.fine("AssetDB: Database Location: " + db.getDatabaseLocation());
-        logger.fine("AssetDB: Database URL:      " + db.getDatabaseUrl());
-        logger.fine("AssetDB: Is Connected?      " + db.isConnected());
+        logger.warning("AssetDB: Database Location: " + db.getDatabaseLocation());
+        logger.warning("AssetDB: Database URL:      " + db.getDatabaseUrl());
+        logger.warning("AssetDB: Is Connected?      " + db.isConnected());
 
 //        AssetID assetID = new AssetID(new ResourceURI("wla://mpk20/sphere2.dae"), "4d92377dbd58f3ba2908354d2b9618f06303d5e9");
 //        Asset asset = db.getAsset(assetID);

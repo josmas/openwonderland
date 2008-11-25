@@ -28,17 +28,20 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@ExperimentalAPI
 public class AssetURIAdapter extends XmlAdapter<String, AssetURI> {
-    /* The server name to insert into the URI */
-    private String serverName = null;
+    /* The host name and port number as <host name>:<port> */
+    private String hostNameAndPort = null;
     
     /** Default constructor */
     public AssetURIAdapter() {
     }
     
-    /** Constructor takes the name of the server session */
-    public AssetURIAdapter(String serverName) {
-        this.serverName = serverName;
+    /**
+     * Constructor takes the host name and port as: <host name>:<port>
+     */
+    public AssetURIAdapter(String hostNameAndPort) {
+        this.hostNameAndPort = hostNameAndPort;
     }
     
     @Override
@@ -50,8 +53,8 @@ public class AssetURIAdapter extends XmlAdapter<String, AssetURI> {
         AssetURI assetURI = new AssetURI(uri);
         if (uri != null) {
             String moduleName = assetURI.getModuleName();
-            String rawPath = assetURI.getRawPath();
-            assetURI = new AssetURI(moduleName, rawPath, serverName);
+            String assetPath = assetURI.getAssetPath();
+            assetURI = new AssetURI(moduleName, hostNameAndPort, assetPath);
         }
         return assetURI;
     }
