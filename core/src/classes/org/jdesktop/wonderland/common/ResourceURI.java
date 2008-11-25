@@ -21,10 +21,8 @@ package org.jdesktop.wonderland.common;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Logger;
 
 /**
  * The ResourceURI class uniquely identifies a resource within the sytem that is
@@ -43,8 +41,11 @@ import java.util.logging.Logger;
  */
 @ExperimentalAPI
 public abstract class ResourceURI implements Serializable {
-    /* The URI which is wrapped by this class */
-    private URI uri = null;
+    private String protocol = null;
+    private String moduleName = null;
+    private String hostName = null;
+    private int hostPort = -1;
+    private String assetPath = null;
     
     /** Default constructor */
     public ResourceURI() {
@@ -57,25 +58,40 @@ public abstract class ResourceURI implements Serializable {
      * @throw URISyntaxException If the URI is not well-formed
      */
     public ResourceURI(String uri) throws URISyntaxException {
-        this.uri = new URI(uri);
+        parseURI(uri);
+    }
+ 
+    /**
+     * Constructor, takes the components of the URI: protocol, module name,
+     * server name, port, and asset path
+     */
+    public ResourceURI(String protocol, String moduleName, String hostName, int hostPort, String assetPath) {
+        this.protocol = protocol;
+        this.moduleName = moduleName;
+        this.hostName = hostName;
+        this.hostPort = hostPort;
+        this.assetPath = assetPath;
     }
     
     /**
-     * Returns the URI object
-     * 
-     * @return The actual URI object
+     * Construct, takes the components of the URI: protocol, module name, host
+     * name and port, and asset path. The host name and port is given as:
+     * <host name>:<port>
      */
-    public URI getURI() {
-        return this.uri;
+    public ResourceURI(String protocol, String moduleName, String hostNameAndPort, String assetPath) {
+        this.protocol = protocol;
+        this.moduleName = moduleName;
+        this.assetPath = assetPath;
+        parseHostNameAndPort(hostNameAndPort);
     }
- 
+    
     /**
      * Returns a URL from the URI.
      * 
      * @return A URL
      */
     public URL toURL() throws MalformedURLException {
-        return this.uri.toURL();
+        return new URL(this.toString());
     }
     
     /**
@@ -84,30 +100,40 @@ public abstract class ResourceURI implements Serializable {
      * @return The module name
      */
     public String getModuleName() {
-        /*
-         * If the URI contains a hostname (modulename@host:port), then the
-         * user info contains the module name. Otherwise, if user info is null,
-         * then only the module name exists in the authority field.
-         */
-        String userInfo = this.uri.getUserInfo();
-        String authority = this.uri.getAuthority();
-        
-        if (userInfo == null) {
-            return authority;
-        }
-        return userInfo;
+        return moduleName;
     }
     
     /**
      * Returns the raw relative path of the asset, without prepending any
-     * assumed directory like "art/".
+     * assumed directory like "art/". It has no leading "/".
      */
-    public String getRawPath() {
-        String path = this.uri.getPath();
-        if (path.startsWith("/") == true) {
-            return path.substring(1);
-        }
-        return path;
+    public String getAssetPath() {
+        return assetPath;
+    }
+    
+    /**
+     * Returns the protocol of the URI
+     */
+    public String getProtocol() {
+        return protocol;
+    }
+    
+    /**
+     * Returns the host port, -1 if none is set.
+     * 
+     * @return The host port
+     */
+    public int getHostPort() {
+        return hostPort;
+    }
+    
+    /**
+     * Returns the host name, null if none is set.
+     * 
+     * @return The host name
+     */
+    public String getHostName() {
+        return hostName;
     }
     
     /**
@@ -116,22 +142,18 @@ public abstract class ResourceURI implements Serializable {
      * @return The base server URL
      */
     public String getServerURL() {
-        String userInfo = this.uri.getUserInfo();
-        String host = this.uri.getHost();
-        int port = this.uri.getPort();
-        
         /*
          * If a host:port is present, then host is non-null. Otherwise, if
          * user info is null, the only the module name is present and there is
          * no host name
          */
-        if (userInfo == null) {
+        if (hostName == null) {
             return null;
         }
         
-        String url = "http://" + host;
-        if (port != -1) {
-            url = url + ":" + port;
+        String url = "http://" + hostName;
+        if (hostPort != -1) {
+            url = url + ":" + hostPort;
         }
         return url;
     }
@@ -159,6 +181,139 @@ public abstract class ResourceURI implements Serializable {
      */
     @Override
     public String toString() {
-        return this.uri.toString();
+        StringBuilder sb = new StringBuilder(protocol + "://" + moduleName);
+        if (hostName != null) {
+            sb.append("@" + hostName);
+            if (hostPort != -1) {
+                sb.append(":" + hostPort);
+            }
+        }
+        sb.append("/" + assetPath);
+        return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ResourceURI other = (ResourceURI) obj;
+        if (this.protocol != other.protocol && (this.protocol == null || !this.protocol.equals(other.protocol))) {
+            return false;
+        }
+        if (this.moduleName != other.moduleName && (this.moduleName == null || !this.moduleName.equals(other.moduleName))) {
+            return false;
+        }
+        if (this.hostName != other.hostName && (this.hostName == null || !this.hostName.equals(other.hostName))) {
+            return false;
+        }
+        if (this.hostPort != other.hostPort) {
+            return false;
+        }
+        if (this.assetPath != other.assetPath && (this.assetPath == null || !this.assetPath.equals(other.assetPath))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (this.protocol != null ? this.protocol.hashCode() : 0);
+        hash = 47 * hash + (this.moduleName != null ? this.moduleName.hashCode() : 0);
+        hash = 47 * hash + (this.hostName != null ? this.hostName.hashCode() : 0);
+        hash = 47 * hash + this.hostPort;
+        hash = 47 * hash + (this.assetPath != null ? this.assetPath.hashCode() : 0);
+        return hash;
+    }
+
+    /**
+     * Parses the string representation of the URI into its component parts.
+     */
+    private void parseURI(String uri) throws URISyntaxException {
+        /* If the uri is null, throw an Exception */
+        if (uri == null) {
+            throw new URISyntaxException(uri, "URI is NULL");
+        }
+        
+        /* First check whether the uri contains a <protocol>:// */
+        int protocolIndex = uri.indexOf("://");
+        if (protocolIndex == -1 || protocolIndex == 0) {
+            throw new URISyntaxException(uri, "URI does not contain a protocol");
+        }
+        protocol = uri.substring(0, protocolIndex);
+        
+        /* Advance the index to after the "://" */
+        protocolIndex += 3;
+        
+        /*
+         * Next parse out the module name. If we find a "@" first, then there
+         * is also a hostname. If we find a "/" next, then there is no host name
+         */
+        int atIndex = uri.indexOf("@", protocolIndex);
+        int slashIndex = uri.indexOf("/", protocolIndex);
+        if (atIndex != -1 && atIndex < slashIndex) {
+            moduleName = uri.substring(protocolIndex, atIndex);
+        }
+        else if (slashIndex != -1) {
+            moduleName = uri.substring(protocolIndex, slashIndex);
+        }
+        else {
+            throw new URISyntaxException(uri, "Cannot find module name in URI");
+        }
+        
+        /*
+         * Next parse out the host name and port if there is one.
+         */
+        if (atIndex != -1 && atIndex < slashIndex) {
+            int colonIndex = uri.indexOf(":", atIndex + 1);
+            if (colonIndex != -1 && colonIndex < slashIndex) {
+                hostName = uri.substring(atIndex + 1, colonIndex);
+                try {
+                    hostPort = new Integer(uri.substring(colonIndex + 1, slashIndex));
+                } catch (NumberFormatException excp) {
+                    hostPort = -1;
+                    throw new URISyntaxException(uri, "Invalid Host port given in URI");
+                }
+            }
+            else {
+                hostName = uri.substring(atIndex + 1, slashIndex);
+                hostPort = -1;
+            }
+            
+        }
+        
+        /* Finally, take everything past the slash as the asset path */
+        assetPath = uri.substring(slashIndex + 1, uri.length());
+    }
+    
+    /**
+     * Parse the a server name and port as <host name>:<port> into its parts
+     */
+    private void parseHostNameAndPort(String hostNameAndPort) {
+        /* Sanity check: see if the argument is null */
+        if (hostNameAndPort == null) {
+            this.hostName = null;
+            this.hostPort = -1;
+            return;
+        }
+        
+        /* Check if there is a colon (:), if so, parse both host and port */
+        int colonIndex = hostNameAndPort.indexOf(":");
+        if (colonIndex != -1) {
+            this.hostName = hostNameAndPort.substring(0, colonIndex);
+            try {
+                this.hostPort = new Integer(hostNameAndPort.substring(colonIndex + 1, hostNameAndPort.length()));
+            } catch (NumberFormatException excp) {
+                this.hostPort = -1;
+            }
+        }
+        else {
+            this.hostName = hostNameAndPort;
+            this.hostPort = -1;
+        }
     }
 }

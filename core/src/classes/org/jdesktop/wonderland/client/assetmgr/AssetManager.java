@@ -412,7 +412,7 @@ public class AssetManager {
         String basePath = cacheDir.getAbsolutePath();
         String relativePath = assetID.getResourceURI().getRelativeCachePath();
         String checksum = assetID.getChecksum();
-        return basePath + File.separator + relativePath + "/" + checksum;
+        return basePath + File.separator + relativePath + File.separator + checksum;
     }
     
     /**
@@ -505,6 +505,9 @@ public class AssetManager {
         try {
             logger.fine("[ASSET] DOWNLOAD " + url.toString());
             
+            /* Encode the url, make sure spaces are converted to %20 */
+            url = encodeSpaces(url);
+            
             /* Open up all of the connections to the remote server */
             URLConnection connection = new URL(url).openConnection();
             TrackingInputStream track = new TrackingInputStream(connection.getInputStream());
@@ -551,7 +554,7 @@ public class AssetManager {
             return true;
         } catch(java.lang.Exception ex) {
             /* Log an error and return false */
-            logger.log(Level.SEVERE, "Unable to load asset url=" + url);
+            logger.log(Level.SEVERE, "Unable to load asset url=" + url, ex);
             return false;
         }
     }
@@ -643,6 +646,22 @@ public class AssetManager {
             // XXX log error
             return null;
         }
+    }
+    
+    /**
+     * Replaces all of the spaces (' ') in a URI string with '%20'
+     */
+    private String encodeSpaces(String uri) {
+        StringBuilder sb = new StringBuilder(uri);
+        int index = 0;
+        while ((index = sb.indexOf(" ", index )) != -1) {
+            // If we find a space at position 'index', then replace the space
+            // and update the value of 'index'. The value of 'index' should be
+            // the next character after the replaced '%20', which is index + 3
+            sb.replace(index, index + 1, "%20");
+            index += 3;
+        }
+        return sb.toString();
     }
     
     /**

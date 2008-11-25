@@ -28,17 +28,20 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@ExperimentalAPI
 public class JarURIAdapter extends XmlAdapter<String, JarURI> {
-    /* The server name to insert into the URI */
-    private String serverName = null;
+    /* The host name and port number as <host name>:<port> */
+    private String hostNameAndPort = null;
     
     /** Default constructor */
     public JarURIAdapter() {
     }
     
-    /** Constructor takes the name of the server session */
-    public JarURIAdapter(String serverName) {
-        this.serverName = serverName;
+    /**
+     * Constructor takes the host name and port as: <host name>:<port>
+     */
+    public JarURIAdapter(String hostNameAndPort) {
+        this.hostNameAndPort = hostNameAndPort;
     }
     
     @Override
@@ -50,8 +53,8 @@ public class JarURIAdapter extends XmlAdapter<String, JarURI> {
         JarURI jarURI = new JarURI(uri);
         if (uri != null) {
             String moduleName = jarURI.getModuleName();
-            String rawPath = jarURI.getRawPath();
-            jarURI = new JarURI(moduleName, rawPath, serverName);
+            String assetPath = jarURI.getAssetPath();
+            jarURI = new JarURI(moduleName, hostNameAndPort, assetPath);
         }
         return jarURI;
     }

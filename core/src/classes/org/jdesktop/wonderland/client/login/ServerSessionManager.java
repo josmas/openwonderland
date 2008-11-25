@@ -359,7 +359,7 @@ public class ServerSessionManager {
 
         for (JarURI uri : list.getJarURIs()) {
             try {
-                urls.add(uri.getURI().toURL());
+                urls.add(uri.toURL());
             } catch (Exception excp) {
                 excp.printStackTrace();
            }
