@@ -263,8 +263,8 @@ public class WebServerLauncher {
         // set the web server URL based on the hostname and port
         if (System.getProperty(WEBSERVER_URL_PROP) == null) {
             System.setProperty(WEBSERVER_URL_PROP,
-                "http://" + System.getProperty(WEBSERVER_HOST_PROP) +
-                ":" + System.getProperty(WEBSERVER_PORT_PROP) + "/");
+                "http://" + System.getProperty(WEBSERVER_HOST_PROP).trim() +
+                ":" + System.getProperty(WEBSERVER_PORT_PROP).trim() + "/");
         }
 
         return true;

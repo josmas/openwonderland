@@ -26,6 +26,7 @@ import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -94,12 +95,18 @@ public class ChannelComponentMO extends CellComponentMO {
     
     /**
      * Send message to all clients on this channel
+     * @param senderID the id of the sender session, or null if this
+     * message being sent by the server
      * @param message
+     *
      */
-    public void sendAll(Message message) {
+    public void sendAll(BigInteger senderID, CellMessage message) {
         if (cellChannelRef==null) {
             return;
         }
+
+        message.setSenderID(senderID);
+        
 //        System.out.println("Sending data "+cellSender.getSessions().size());
         cellSender.send(cellChannelRef.get(), message);
     }

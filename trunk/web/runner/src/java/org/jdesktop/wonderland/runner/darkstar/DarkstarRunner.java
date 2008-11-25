@@ -184,7 +184,21 @@ public class DarkstarRunner extends BaseRunner {
      */
     public String getHostname() {
         try {
-            return InetAddress.getLocalHost().getHostAddress();
+            // first try the web server host property.  This is a temporary
+            // workaround, since it assumes the Darkstar host and the
+            // web server host are the same.  We should use some shared
+            // code (i.e. NetworkAddress) to do this properly in the future.
+            // TODO: replace me with generic code
+            String hostname = System.getProperty("wonderland.webserver.host");
+            if (hostname == null) {
+                // if no property is set, use Java's version of the
+                // local host address.  On Linux with DHCP, this can be wrong!
+                hostname = InetAddress.getLocalHost().getHostAddress();
+            } else {
+                hostname = hostname.trim();
+            }
+
+            return hostname;
         } catch (UnknownHostException uhe) {
             logger.log(Level.WARNING, "Unable to determine hostname", uhe);
             return "localhost";
