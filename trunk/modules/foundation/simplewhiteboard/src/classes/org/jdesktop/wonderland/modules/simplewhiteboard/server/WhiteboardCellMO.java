@@ -21,6 +21,7 @@ import com.jme.math.Vector2f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -200,7 +201,8 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
             lastMessage = cmsg;
 
 	    // Broadcast message to all clients (including the original sender of the message).
-            commComponent.sendAllClients(msg);
+            BigInteger sessionId = AppContext.getDataManager().createReference(clientSession).getId();
+            commComponent.sendAllClients(sessionId, msg);
         }
     }
 }
