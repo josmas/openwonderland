@@ -41,6 +41,10 @@
     <nativelib href="macosx/wonderland_native.jar"/>
   </resources>
 
+  <resources os="SunOS" arch="x86">
+    <nativelib href="solaris/wonderland_native.jar"/>
+  </resources>
+
   <application-desc main-class="org.jdesktop.wonderland.client.jme.JmeClientMain">
   </application-desc>
 </jnlp>
