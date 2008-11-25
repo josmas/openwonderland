@@ -131,15 +131,11 @@
     <!-- End From OpenJFX compiler bootstrap.xml -->
 
     
-    <target name="-core-scrub-libs" depends="clean-jbullet, clean-core-libs"/>
+    <target name="-core-scrub-libs" depends="clean-core-libs"/>
 
-    <target name="clean-jbullet">
-       <delete file="${core.lib.dir}/common/jbullet.jar" quiet="true"/>
-    </target>
-   
-    <target name="clean-core-libs" description="Clean external libraries" depends="clean-jbullet">
+    <target name="clean-core-libs" description="Clean external libraries">
         <delete dir="${core.sgs.dir}"/>
-        <delete dir="${core.lib.os.dir}"/>
+        <delete dir="${core.lib.os.dir}/.."/>
         <delete dir="${downloads.dir}"/>
     </target>    
 </project>
