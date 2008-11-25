@@ -81,6 +81,7 @@ public class WFSManager {
      * @return The corresponding WFS
      */
     public WFS getWFS(String wfsName) {
+        this.loadWFSs();
         return this.wfsRoots.get(wfsName);
     }
     
@@ -90,6 +91,7 @@ public class WFSManager {
      * @return An array of WFS root names, or null if there are none
      */
     public String[] getWFSRoots() {
+        this.loadWFSs();
         return this.wfsRoots.keySet().toArray(new String[] {});
     }
             
@@ -109,6 +111,9 @@ public class WFSManager {
      * to the internal list.
      */
     private void loadWFSs() {
+        /* Clear out the existing list */
+        this.wfsRoots.clear();
+        
         /* Find the directory in which the roots exist */
         String baseDir = SystemPropertyUtil.getProperty("wonderland.webserver.wfs.root");
         if (baseDir == null) {
