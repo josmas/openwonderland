@@ -17,6 +17,7 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.util.FileUtils;
 
@@ -52,8 +53,9 @@ public class ListFilesTask extends Task {
         File tmpFile = FILE_UTILS.createTempFile("listfiles", ".out", 
                                                  jar.getParentFile());
         // open the jar file and output file
+        JarInputStream in = null;
         try {
-            JarInputStream in = new JarInputStream(new FileInputStream(jar));
+            in = new JarInputStream(new FileInputStream(jar));
             PrintWriter out = new PrintWriter(new FileWriter(tmpFile));
             
             // open the existing file to see about changes
@@ -91,6 +93,14 @@ public class ListFilesTask extends Task {
             }
         } catch (IOException ioe) {
             throw new BuildException(ioe);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ioe) {
+                    log("Error closing file " + jar, ioe, Project.MSG_WARN);
+                }
+            }
         }
         
     }
