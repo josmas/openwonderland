@@ -26,6 +26,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.TaskManager;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -71,9 +72,11 @@ public class MovableComponentMO extends CellComponentMO {
     
     /**
      * Set the transform for the cell and notify all client cells of the move.
+     * @param sessionID the id of the session that originated the move, or null
+     * if the server originated it
      * @param transform
      */
-    public void moveRequest(CellTransform transform) {
+    public void moveRequest(BigInteger sourceID, CellTransform transform) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent;
         cell.setLocalTransform(transform);
@@ -81,7 +84,7 @@ public class MovableComponentMO extends CellComponentMO {
         channelComponent = channelComponentRef.getForUpdate();
 
         if (cell.isLive()) {
-            channelComponent.sendAll(MovableMessage.newMovedMessage(cell.getCellID(), transform));
+            channelComponent.sendAll(sourceID, MovableMessage.newMovedMessage(cell.getCellID(), transform));
         }
     }
     
@@ -102,12 +105,14 @@ public class MovableComponentMO extends CellComponentMO {
 
         public void messageReceived(WonderlandClientSender sender, ClientSession session, CellMessage message) {
             MovableMessage ent = (MovableMessage) message;
+            BigInteger sessionID = AppContext.getDataManager().createReference(session).getId();
+
 //            System.out.println("MovableComponentMO.messageReceived "+ent.getActionType());
             switch (ent.getActionType()) {
                 case MOVE_REQUEST:
                     // TODO check permisions
                     
-                    compRef.getForUpdate().moveRequest(new CellTransform(ent.getRotation(), ent.getTranslation()));
+                    compRef.getForUpdate().moveRequest(sessionID, new CellTransform(ent.getRotation(), ent.getTranslation()));
 
                     // Only need to send a response if the move can not be completed as requested
                     //sender.send(session, MovableMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));

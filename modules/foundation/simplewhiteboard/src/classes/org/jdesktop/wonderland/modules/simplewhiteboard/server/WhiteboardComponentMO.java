@@ -21,6 +21,7 @@ import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
+import java.math.BigInteger;
 import java.util.Collection;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -63,12 +64,14 @@ public class WhiteboardComponentMO extends CellComponentMO {
     
     /**
      * Broadcast the given message to all clients.
+     * @param sourceID the originator of this message, or null if it originated
+     * with the server
      * @param message The message to broadcast.
      */
-    public void sendAllClients (WhiteboardCompoundCellMessage message) {
+    public void sendAllClients (BigInteger sourceID, WhiteboardCompoundCellMessage message) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent = channelComponentRef.getForUpdate();
-	channelComponent.sendAll(message);
+	channelComponent.sendAll(sourceID, message);
     }
     
     /**

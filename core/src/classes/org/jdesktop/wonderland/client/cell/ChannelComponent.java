@@ -98,10 +98,16 @@ public class ChannelComponent extends CellComponent {
     }
     
     public void send(CellMessage message, ResponseListener listener) {
+        if (message.getCellID() == null) {
+            message.setCellID(cell.getCellID());
+        }
         connection.send(message, listener);
     }
     
     public void send(CellMessage message) {
+        if (message.getCellID() == null) {
+            message.setCellID(cell.getCellID());
+        }
         connection.send(message);
     }
     
