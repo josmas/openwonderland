@@ -284,9 +284,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      * Returns the frame of view. 
      */
     FrameWorldDefault getFrame () {
-	if (topLevel && frame == null) {
-	    update(CHANGED_TOP_LEVEL);
-	}
+	update(CHANGED_TOP_LEVEL);
 	return frame;
     }
 
@@ -295,7 +293,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      */
     @Override
     public void update (int changeMask) {
-
 	
 	// It's necessary to do these in the following order
 
@@ -308,6 +305,20 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 		changeMask |= CHANGED_SIZE;
 	    }
 	}
+
+	if ((changeMask & CHANGED_TOP_LEVEL) != 0) {
+	    if (topLevel) {
+		if (frame == null) {
+		    frame = (FrameWorldDefault) window.getApp().getAppType().getGuiFactory().createFrame(this);
+		}
+	    } else {
+		if (frame != null) {
+		    frame.cleanup();
+		    frame = null;
+		}
+	    }
+	}
+
 	if ((changeMask & CHANGED_SIZE) != 0) {
 	    try {
                 updateGeometrySize();
@@ -325,19 +336,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    updateTransform();
 	}
 
-	if ((changeMask & CHANGED_TOP_LEVEL) != 0) {
-	    if (topLevel) {
-		if (frame == null) {
-		    frame = (FrameWorldDefault) window.getApp().getAppType().getGuiFactory().createFrame(this);
-		}
-	    } else {
-		if (frame != null) {
-		    frame.cleanup();
-		    frame = null;
-		}
-	    }
-	}
-
 	if ((changeMask & CHANGED_TITLE) != 0) {
 	    if (frame != null) {
 		frame.setTitle(((Window2D)window).getTitle());
@@ -347,7 +345,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
     /** Update the view's geometry (for a size change) */
     protected void updateGeometrySize () throws InstantiationException {
-	if (!visible) return;
 
         Window2D window2D = (Window2D) window;
         Vector2f pixelScale = window2D.getPixelScale();
