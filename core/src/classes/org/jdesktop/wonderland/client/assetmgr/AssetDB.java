@@ -31,7 +31,7 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.common.AssetType;
 
 /**
@@ -330,7 +330,7 @@ public class AssetDB {
     private boolean setDBSystemDir() {
         try {
             /* The Derby home directory is simply the user cache directory */
-            String systemDir = WonderlandConfigUtil.getWonderlandDir();
+            String systemDir = ClientContext.getUserDirectory().getPath();
             System.setProperty("derby.system.home", systemDir);
 
             /* Log a message with this directory */

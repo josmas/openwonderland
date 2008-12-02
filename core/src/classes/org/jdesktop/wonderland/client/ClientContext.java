@@ -149,4 +149,16 @@ public class ClientContext {
 
         return dir;
     }
+
+    /**
+     * @InternalAPI
+     * Set the default user directory.  This is useful in cases where
+     * multiple clients are running in the same VM, so changing the
+     * System property is not viable.  In other cases, the system
+     * property should be used.
+     * @param userDirectory the user directory to use
+     */
+    public static void setUserDirectory(File userDir) {
+        ClientContext.userDir = userDir;
+    }
 }

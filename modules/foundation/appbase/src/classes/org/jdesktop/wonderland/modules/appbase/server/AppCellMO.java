@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
 
@@ -64,7 +65,7 @@ public abstract class AppCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
         return new AppCellConfig();
     }
 

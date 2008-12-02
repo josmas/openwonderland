@@ -359,7 +359,12 @@ public class ServerSessionManager {
 
         for (JarURI uri : list.getJarURIs()) {
             try {
-                urls.add(uri.toURL());
+                URL url = uri.toURL();
+                
+                // check the filter to see if we should add this URL
+                if (LoginManager.getPluginFilter().shouldDownload(this, url)) {
+                    urls.add(url);
+                }
             } catch (Exception excp) {
                 excp.printStackTrace();
            }
@@ -379,14 +384,18 @@ public class ServerSessionManager {
                                                       loader);
         while (it.hasNext()) {
             ClientPlugin plugin = it.next();
-            try {
-                plugin.initialize(this);
-            } catch(Exception e) {
-                logger.log(Level.WARNING, "Error initializing plugin " +
-                           plugin.getClass().getName(), e);
-            } catch(Error e) {
-                logger.log(Level.WARNING, "Error initializing plugin " +
-                           plugin.getClass().getName(), e);
+
+            // check with the filter to see if we should load this plugin
+            if (LoginManager.getPluginFilter().shouldInitialize(this, plugin)) {
+                try {
+                    plugin.initialize(this);
+                } catch(Exception e) {
+                    logger.log(Level.WARNING, "Error initializing plugin " +
+                               plugin.getClass().getName(), e);
+                } catch(Error e) {
+                    logger.log(Level.WARNING, "Error initializing plugin " +
+                               plugin.getClass().getName(), e);
+                }
             }
         }
     }
@@ -478,13 +487,13 @@ public class ServerSessionManager {
         protected synchronized void loginComplete(LoginParameters params) {
             this.params = params;
             if (params != null) {
-                if (LoginManager.getLoadPlugins()) {
-                    // setup the classloader
-                    this.classLoader = setupClassLoader(getServerURL());
+                // setup the classloader
+                this.classLoader = setupClassLoader(getServerURL());
 
-                    // initialize plugins
-                    initPlugins(classLoader);
-                }
+                // initialize plugins
+                initPlugins(classLoader);
+
+                // if we get here, the login has succeeded
                 this.success = true;
             }
 

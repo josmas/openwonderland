@@ -71,6 +71,7 @@ import com.sun.voip.client.connector.CallStatusListener;
 import java.io.IOException;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Audio Manager
@@ -104,14 +105,14 @@ public class AudioManagerConnectionHandler
     }
 
     public void clientConnected(WonderlandClientSender sender, 
-	    ClientSession session, Properties properties) {
+	    WonderlandClientID clientID, Properties properties) {
 
         //throw new UnsupportedOperationException("Not supported yet.");
 	logger.fine("client connected...");
     }
 
     public void messageReceived(WonderlandClientSender sender, 
-	    ClientSession session, Message message) {
+	    WonderlandClientID clientID, Message message) {
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -125,7 +126,7 @@ public class AudioManagerConnectionHandler
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
 	    String username = 
-		UserManager.getUserManager().getUser(session).getUsername();
+		UserManager.getUserManager().getUser(clientID).getUsername();
 
 	    logger.fine("Got voice bridge request message from " + username);
 
@@ -167,7 +168,7 @@ public class AudioManagerConnectionHandler
 	    }
 
 	    cp.setCallId(callID);
-	    cp.setName(UserManager.getUserManager().getUser(session).getUsername());
+	    cp.setName(UserManager.getUserManager().getUser(clientID).getUsername());
             cp.setPhoneNumber(msg.getSipURL());
             cp.setConferenceId(vm.getConferenceId());
             cp.setVoiceDetection(true);
@@ -269,7 +270,7 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
+    public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
 //        throw new UnsupportedOperationException("Not supported yet.");
 
 	String callID = senderCallIDMap.get(sender);

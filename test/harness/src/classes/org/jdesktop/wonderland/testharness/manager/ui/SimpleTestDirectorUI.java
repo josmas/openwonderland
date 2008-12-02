@@ -71,19 +71,11 @@ public class SimpleTestDirectorUI extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        applyB = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         actualUsersTF = new javax.swing.JTextField();
         jSpinner1 = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-
-        applyB.setText("Apply");
-        applyB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyBActionPerformed(evt);
-            }
-        });
+        applyButton = new javax.swing.JButton();
 
         jLabel1.setText("Desired Users :");
         jLabel1.setFocusable(false);
@@ -96,10 +88,10 @@ public class SimpleTestDirectorUI extends javax.swing.JPanel {
         jLabel2.setText("Actual Users :");
         jLabel2.setFocusable(false);
 
-        jButton1.setText("Test");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        applyButton.setText("Apply");
+        applyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                applyButtonActionPerformed(evt);
             }
         });
 
@@ -107,30 +99,26 @@ public class SimpleTestDirectorUI extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(318, Short.MAX_VALUE)
+                .add(applyButton)
+                .addContainerGap())
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jLabel1)
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel2)
+                        .add(6, 6, 6)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(149, 149, 149)
-                        .add(applyB))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jLabel1)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel2)
-                                .add(6, 6, 6)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jSpinner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(actualUsersTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jButton1)))
-                .addContainerGap(175, Short.MAX_VALUE))
+                    .add(jSpinner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(actualUsersTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(239, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
@@ -139,32 +127,27 @@ public class SimpleTestDirectorUI extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(actualUsersTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(46, 46, 46)
-                .add(jButton1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 95, Short.MAX_VALUE)
-                .add(applyB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 170, Short.MAX_VALUE)
+                .add(applyButton)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void applyBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyBActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_applyBActionPerformed
+    private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
+        int userCount = ((Integer) jSpinner1.getModel().getValue()).intValue();
+        System.out.println("State changed: " + userCount);
 
-private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-    
-    try {
-        commsHandler.send(SimpleTestDirectorMessage.newAddUserMessage());
-    } catch(IOException e) {
-        e.printStackTrace();
-    }
-}//GEN-LAST:event_jButton1ActionPerformed
+        try {
+            commsHandler.send(SimpleTestDirectorMessage.newUserCountMessage(userCount));
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_applyButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField actualUsersTF;
-    private javax.swing.JButton applyB;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton applyButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JSpinner jSpinner1;

@@ -25,6 +25,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
 import java.net.Socket;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -44,6 +46,8 @@ public class SlaveConnection extends Thread {
     private int slaveID;
     
     private static final Logger logger = Logger.getLogger(SlaveConnection.class.getName());
+
+    List<SlaveConnectionListener> listeners = new CopyOnWriteArrayList();
 
     SlaveConnection(Socket socket, int slaveID) {
         this.slaveID = slaveID;
@@ -70,23 +74,28 @@ public class SlaveConnection extends Thread {
 
     @Override
     public void run() {
-        while(!done) {
-            try {
-                Object msg = in.readObject();
-                if (msg instanceof LogRecord) {
-                    LogRecord logR = (LogRecord)msg;
-                    logR.setLoggerName("slave"+slaveID+":"+logR.getLoggerName());
-                    logger.log(logR);
+        try {
+            while(!done) {
+                try {
+                    Object msg = in.readObject();
+                    if (msg instanceof LogRecord) {
+                        LogRecord logR = (LogRecord)msg;
+                        logR.setLoggerName("slave"+slaveID+":"+logR.getLoggerName());
+                        logger.log(logR);
+                    }
+                } catch(OptionalDataException e) {
+                    Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, "Exception length "+((OptionalDataException)e).length, e);
+                } catch(EOFException eof) {
+                    done=true;
+                } catch (IOException ex) {
+                    Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            } catch(OptionalDataException e) {
-                Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, "Exception length "+((OptionalDataException)e).length, e);
-            } catch(EOFException eof) {
-                done=true;
-                MasterMain.getMaster().slaveLeft(this);
-            } catch (IOException ex) {
-                Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(SlaveConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } finally {
+            for (SlaveConnectionListener listener : listeners) {
+                listener.disconnected(this);
             }
         }
     }
@@ -99,5 +108,17 @@ public class SlaveConnection extends Thread {
         } catch (IOException ex) {
             Logger.getLogger(MasterMain.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void addListener(SlaveConnectionListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(SlaveConnectionListener listener) {
+        listeners.remove(listener);
+    }
+
+    public interface SlaveConnectionListener {
+        public void disconnected(SlaveConnection connection);
     }
 }

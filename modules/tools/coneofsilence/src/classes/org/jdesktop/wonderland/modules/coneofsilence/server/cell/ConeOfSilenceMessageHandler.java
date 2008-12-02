@@ -90,6 +90,7 @@ import org.jdesktop.wonderland.modules.coneofsilence.common.messages.ConeOfSilen
 import org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides conference coneofsilence functionality
@@ -125,7 +126,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
-	    final ClientSession session, final CellMessage message) {
+	    final WonderlandClientID clientID, final CellMessage message) {
 
 	ConeOfSilenceEnterCellMessage msg = (ConeOfSilenceEnterCellMessage) message;
 

@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * The server side of the communication component that provides communication between the whiteboard client and server.
@@ -68,10 +69,10 @@ public class WhiteboardComponentMO extends CellComponentMO {
      * with the server
      * @param message The message to broadcast.
      */
-    public void sendAllClients (BigInteger sourceID, WhiteboardCompoundCellMessage message) {
+    public void sendAllClients (WonderlandClientID clientID, WhiteboardCompoundCellMessage message) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent = channelComponentRef.getForUpdate();
-	channelComponent.sendAll(sourceID, message);
+	channelComponent.sendAll(clientID, message);
     }
     
     /**
@@ -88,10 +89,10 @@ public class WhiteboardComponentMO extends CellComponentMO {
 	    this.cellRef = cellRef;
         }
 
-        public void messageReceived (WonderlandClientSender sender, ClientSession session, CellMessage message) {
+        public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
 	    WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
 	    CellMO cell = cellRef.get();
-	    ((WhiteboardCellMO)cell).receivedMessage(sender, session, cmsg);
+	    ((WhiteboardCellMO)cell).receivedMessage(sender, clientID, cmsg);
         }
     }
 }
