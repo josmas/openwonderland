@@ -151,7 +151,8 @@ public class ProtocolSessionListener
             
             // TODO: is this the right thing to do, or should we only
             // do this automatically for the Wonderland protocol?
-            WonderlandContext.getUserManager().login(session);
+            WonderlandClientID clientID = new WonderlandClientID(session);
+            WonderlandContext.getUserManager().login(clientID);
             
             // record the client connection
             this.protocol = cp;
@@ -174,7 +175,8 @@ public class ProtocolSessionListener
             
             // TODO: is this the right thing to do, or should we only
             // do this automatically from the Wonderland protocol?
-            WonderlandContext.getUserManager().logout(getSession());
+            WonderlandClientID clientID = new WonderlandClientID(getSession());
+            WonderlandContext.getUserManager().logout(clientID);
         }
         
         // record client disconnect

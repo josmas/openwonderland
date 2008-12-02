@@ -152,7 +152,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             cell.configure(setup);
 
         // Force the cell to create the JME renderer entity
-        cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        createCellRenderer(cell);
 
         if (viewCell!=null) {
             // No point in makeing cells active if we don't have a view
@@ -162,6 +162,14 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
         return cell;
+    }
+
+    /**
+     * Create a the cell renderer for this cache.
+     * @param cell the cell to create a renderer for
+     */
+    protected CellRenderer createCellRenderer(Cell cell) {
+        return cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
     }
 
     /**

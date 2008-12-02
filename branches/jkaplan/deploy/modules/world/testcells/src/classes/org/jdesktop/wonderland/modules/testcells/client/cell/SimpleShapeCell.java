@@ -21,6 +21,7 @@ import com.jme.renderer.ColorRGBA;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.ShapeRenderer;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
@@ -32,7 +33,7 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeC
 public class SimpleShapeCell extends Cell {
 
     private SimpleShapeConfig.Shape shape;
-    private ColorRGBA color;
+    private MaterialJME materialJME;
     private float mass;
 
     /**
@@ -51,6 +52,7 @@ public class SimpleShapeCell extends Cell {
         SimpleShapeConfig c = (SimpleShapeConfig) configData;
         this.shape = c.getShape();
         this.mass = c.getMass();
+        this.materialJME = c.getMaterialJME();
     }
 
     
@@ -76,13 +78,8 @@ public class SimpleShapeCell extends Cell {
     public float getMass() {
         return mass;
     }
-    
-    /**
-     * Return the color of this shape
-     * @return
-     */
-//    public ColorRGBA getColor() {
-//        return color;
-//    }
 
+    public MaterialJME getMaterialJME() {
+        return materialJME;
+    }
 }

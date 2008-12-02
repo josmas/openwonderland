@@ -31,7 +31,9 @@ import org.jdesktop.mtgame.PickDetails;
 import com.jme.math.Ray;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import com.jme.math.Matrix4f;
 import com.jme.renderer.Camera;
+import com.jme.renderer.AbstractCamera;
 import java.awt.Button;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -198,8 +200,17 @@ public abstract class InputPicker {
     /** The camera movement listener (used by drag events). */
     private MyCameraListener cameraListener = new MyCameraListener();
 
+    /** An object used to lock the following camera-related variables */
+    private Integer cameraLock = new Integer(0);
+
     /** The current camera position (in world coordinates). */
     private Vector3f cameraPositionWorld = new Vector3f();
+
+    /** The current model view matrix of the camera. */
+    private Matrix4f cameraModelViewMatrix;
+
+    /** The current inverse of the model view matrix of the camera. */
+    private Matrix4f cameraModelViewMatrixInverse;
 
     /**
      * Create a new instance of InputPicker.
@@ -646,24 +657,64 @@ public abstract class InputPicker {
      */
     private class MyCameraListener implements ViewManager.CameraListener {
         public void cameraMoved(CellTransform cameraWorldTransform) {
-	    synchronized (cameraPositionWorld) {
+	    synchronized (cameraLock) {
 		cameraWorldTransform.getTranslation(cameraPositionWorld);
+		if (cameraComp != null) {
+		    Camera camera = cameraComp.getCamera();
+		    cameraModelViewMatrix = ((AbstractCamera)camera).getModelViewMatrix();
+		    cameraModelViewMatrixInverse = null;
+		}
 	    }
 	}
     }
 
     /**
-     * Returns the current camera position (in world coordinates)./
+     * Returns the current camera position (in world coordinates).
      * <br>
      * INTERNAL ONLY.
      */
     @InternalAPI
     public Vector3f getCameraPosition (Vector3f ret) {
-	synchronized (cameraPositionWorld) {
+	synchronized (cameraLock) {
 	    if (ret == null) {
 		return new Vector3f(cameraPositionWorld);
 	    }
 	    ret.set(cameraPositionWorld);
+	    return ret;
+	}
+    }
+
+    /**
+     * Returns the current model view matrix of the camera.
+     * <br>
+     * INTERNAL ONLY.
+     */
+    @InternalAPI
+    public Matrix4f getCameraModelViewMatrix (Matrix4f ret) {
+	synchronized (cameraLock) {
+	    if (ret == null) {
+		return new Matrix4f(cameraModelViewMatrix);
+	    }
+	    ret.set(cameraModelViewMatrix);
+	    return ret;
+	}
+    }
+
+    /**
+     * Returns the current inverse model view matrix of the camera.
+     * <br>
+     * INTERNAL ONLY.
+     */
+    @InternalAPI
+    public Matrix4f getCameraModelViewMatrixInverse (Matrix4f ret) {
+	synchronized (cameraLock) {
+	    if (cameraModelViewMatrixInverse == null) {
+		cameraModelViewMatrixInverse = cameraModelViewMatrix.invert(new Matrix4f());
+	    }
+	    if (ret == null) {
+		return new Matrix4f(cameraModelViewMatrixInverse);
+	    }
+	    ret.set(cameraModelViewMatrixInverse);
 	    return ret;
 	}
     }

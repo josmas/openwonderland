@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellID
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
@@ -70,6 +71,7 @@ import com.sun.voip.client.connector.CallStatusListener;
 import java.io.IOException;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Audio Manager
@@ -84,7 +86,10 @@ public class AudioManagerConnectionHandler
     
     private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
 
-    private ConcurrentHashMap<WonderlandClientSender, String> senderMap = 
+    private ConcurrentHashMap<WonderlandClientSender, String> senderCallIDMap = 
+	new ConcurrentHashMap();
+
+    private ConcurrentHashMap<String, WonderlandClientSender> callIDSenderMap = 
 	new ConcurrentHashMap();
 
     public AudioManagerConnectionHandler() {
@@ -100,14 +105,14 @@ public class AudioManagerConnectionHandler
     }
 
     public void clientConnected(WonderlandClientSender sender, 
-	    ClientSession session, Properties properties) {
+	    WonderlandClientID clientID, Properties properties) {
 
         //throw new UnsupportedOperationException("Not supported yet.");
 	logger.fine("client connected...");
     }
 
     public void messageReceived(WonderlandClientSender sender, 
-	    ClientSession session, Message message) {
+	    WonderlandClientID clientID, Message message) {
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -121,7 +126,7 @@ public class AudioManagerConnectionHandler
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
 	    String username = 
-		UserManager.getUserManager().getUser(session).getUsername();
+		UserManager.getUserManager().getUser(clientID).getUsername();
 
 	    logger.fine("Got voice bridge request message from " + username);
 
@@ -150,6 +155,7 @@ public class AudioManagerConnectionHandler
 	    CallParticipant cp = new CallParticipant();
 
 	    setup.cp = cp;
+	    setup.listener = this;
 
 	    String callID = msg.getSoftphoneCallID();
 
@@ -162,7 +168,7 @@ public class AudioManagerConnectionHandler
 	    }
 
 	    cp.setCallId(callID);
-	    cp.setName(UserManager.getUserManager().getUser(session).getUsername());
+	    cp.setName(UserManager.getUserManager().getUser(clientID).getUsername());
             cp.setPhoneNumber(msg.getSipURL());
             cp.setConferenceId(vm.getConferenceId());
             cp.setVoiceDetection(true);
@@ -171,8 +177,6 @@ public class AudioManagerConnectionHandler
             cp.setHandleSessionProgress(true);
             cp.setJoinConfirmationTimeout(0);
 	    cp.setCallAnsweredTreatment(null);
-
-            vm.addCallStatusListener(this, null);
 
 	    Call call;
 
@@ -183,14 +187,10 @@ public class AudioManagerConnectionHandler
 		return;
             }
 
-	    ManagedReference<ClientSession> sessionRef = 
-		AppContext.getDataManager().createReference(session);
-
 	    callID = call.getId();
 
-            vm.addCallStatusListener(this, callID);
-
-	    senderMap.put(sender, callID);
+	    senderCallIDMap.put(sender, callID);
+	    callIDSenderMap.put(callID, sender);
 
             PlayerSetup ps = new PlayerSetup();
             ps.x = (double) msg.getX();
@@ -270,17 +270,18 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
+    public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
 //        throw new UnsupportedOperationException("Not supported yet.");
 
-	String callID = senderMap.get(sender);
+	String callID = senderCallIDMap.get(sender);
 
 	if (callID == null) {
 	    logger.warning("Unable to find callID for sender " + sender);
 	    return;
 	}
 
-	senderMap.remove(sender);
+	senderCallIDMap.remove(sender);
+	callIDSenderMap.remove(callID);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -299,7 +300,65 @@ public class AudioManagerConnectionHandler
     }
 
     public void callStatusChanged(CallStatus status) {
-	logger.fine("got status " + status);
+	logger.finer("GOT STATUS " + status);
+
+	int code = status.getCode();
+
+	String callId = status.getCallId();
+
+	if (callId == null) {
+	    logger.warning("No callId in status:  " + status);
+	    return;
+	}
+
+	WonderlandClientSender sender = callIDSenderMap.get(callId);
+
+	switch (code) {
+	case CallStatus.ESTABLISHED:
+	    Call call = AppContext.getManager(VoiceManager.class).getCall(callId);
+
+	    if (call == null) {
+		System.out.println("Couldn't find call for " + callId);
+		return;
+	    }
+
+	    Player player = call.getPlayer();
+
+	    if (player == null) {
+		System.out.println("Couldn't find player for " + call);
+		return;
+	    }
+
+	    /*
+	     * XXX Fix me.  This is just to force the private mixes to be recalulated.
+	     */
+	    player.setCall(call);
+	    break;
+
+        case CallStatus.STARTEDSPEAKING:
+	    //sender.send(new SpeakingMessage(true));
+            break;
+
+        case CallStatus.STOPPEDSPEAKING:
+	    //sender.send(new SpeakingMessage(false));
+            break;
+
+	case CallStatus.BRIDGE_OFFLINE:
+            logger.info("Bridge offline: " + status);
+
+            /*
+             * After the last bridge_offline call (callID=''),
+             * we have to tell the voice manager to restore
+             * all the pm's for live players.
+             */
+            if (callId.length() == 0) {
+                logger.fine("Restoring private mixes...");
+
+		// XXX need a way to tell the voice manager to reset all of the private mixes.
+            }
+            break;
+        }
     }
 
 }
+

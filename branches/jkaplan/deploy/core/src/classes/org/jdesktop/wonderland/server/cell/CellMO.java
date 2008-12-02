@@ -27,6 +27,7 @@ import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,9 +40,10 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
@@ -419,20 +421,20 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Called by the ViewCellCacheMO as part of makeing a cell active, only 
      * applicable to cells with a ChannelComponent.
      * 
-     * @param session
+     * @param clientID the ID of the client that is being added
      * @param capabilities
      * @return
      */
-    protected CellSessionProperties addSession(ClientSession session, 
+    protected CellSessionProperties addClient(WonderlandClientID clientID,
                                             ClientCapabilities capabilities) {
         ChannelComponentMO chan = getComponent(ChannelComponentMO.class);
         if (chan!=null) {
-            chan.addUserToCellChannel(session);
+            chan.addUserToCellChannel(clientID);
         }
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
-                getClientCellClassName(session, capabilities),
-                getCellConfig(session, capabilities));
+                getClientCellClassName(clientID, capabilities),
+                getCellConfig(clientID, capabilities));
     }
     
     /**
@@ -440,15 +442,15 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * have changed. This call is made from the ViewCellCacheOperations exectue
      * method returned by addSession.
      * 
-     * @param session
+     * @param clientID
      * @param capabilities
      * @return
      */
-    protected CellSessionProperties changeSession(ClientSession session, 
+    protected CellSessionProperties changeClient(WonderlandClientID clientID,
                                                ClientCapabilities capabilities) {
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
-                getClientCellClassName(session, capabilities),
-                getCellConfig(session, capabilities));
+                getClientCellClassName(clientID, capabilities),
+                getCellConfig(clientID, capabilities));
         
     }
     
@@ -457,12 +459,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * with a ChannelComponent. This modifies the ChannelComponent for this cell
      * (if it exists) but does not modify the CellMO itself.
      * 
-     * @param session
+     * @param clientID
      */
-    protected void removeSession(ClientSession session) {
+    protected void removeSession(WonderlandClientID clientID) {
         ChannelComponentMO chan = getComponent(ChannelComponentMO.class);
         if (chan!=null) {
-            chan.removeUserFromCellChannel(session);
+            chan.removeUserFromCellChannel(clientID);
         }
     }
 
@@ -470,13 +472,16 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Returns the fully qualified name of the class that represents
      * this cell on the client
      */
-    protected abstract String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities);
+    protected abstract String getClientCellClassName(WonderlandClientID clientID,
+                                                     ClientCapabilities capabilities);
     
     /**
      * Get the cellconfig for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    protected CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig(WonderlandClientID clientID,
+                                       ClientCapabilities capabilities)
+    {
         return null;
     }
     
@@ -494,8 +499,24 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param setup the properties to setup with
      */
     public void setupCell(BasicCellSetup setup) {
+        // Set up the transform (origin, rotation, scaling) and cell bounds
         setLocalTransform(BasicCellSetupHelper.getCellTransform(setup));
         setLocalBounds(BasicCellSetupHelper.getCellBounds(setup));
+        
+        // For all components in the setup class, create the component classes
+        // and setup them up and add to the cell.
+        for (CellComponentSetup compSetup : setup.getCellComponentSetups()) {
+            String className = compSetup.getServerComponentClassName();
+            try {
+                Class clazz = Class.forName(className);
+                Constructor<CellComponentMO> constructor = clazz.getConstructor(CellMO.class);
+                CellComponentMO comp = constructor.newInstance(this);
+                comp.setupCellComponent(compSetup);
+                this.addComponent(comp);
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
     /**

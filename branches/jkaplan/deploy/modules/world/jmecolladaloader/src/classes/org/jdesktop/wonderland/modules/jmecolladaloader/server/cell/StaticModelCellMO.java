@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.StaticModelCellConfig;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
 /**
@@ -45,12 +46,12 @@ public class StaticModelCellMO extends CellMO {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
     }
     
-    @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.StaticModelCell";
     }
 
     @Override
-    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return new StaticModelCellConfig();
     }
 

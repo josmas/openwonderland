@@ -27,6 +27,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.glassfish.embed.EmbeddedException;
 import org.glassfish.embed.EmbeddedHttpListener;
 import org.glassfish.embed.EmbeddedVirtualServer;
 import org.glassfish.server.ServerEnvironmentImpl;
+import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleAttributes;
@@ -80,6 +82,8 @@ public class RunAppServer {
     }
     
     public RunAppServer() throws IOException {
+        // set up URL handlers for Wonderland types
+        URL.setURLStreamHandlerFactory(new WonderlandURLStreamHandlerFactory()); 
         // check if we need to make any changes
         if (Boolean.parseBoolean(
                 System.getProperty(Constants.WEBSERVER_NEWVERSION_PROP)))

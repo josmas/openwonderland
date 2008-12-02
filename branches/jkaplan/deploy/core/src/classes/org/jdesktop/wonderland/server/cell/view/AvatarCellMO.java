@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellTransformChangeListener;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Superclass for all avatar cells. 
@@ -59,7 +60,9 @@ public class AvatarCellMO extends ViewCellMO {
     }
     
     @Override 
-    protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
+    protected String getClientCellClassName(WonderlandClientID clientID,
+                                            ClientCapabilities capabilities)
+    {
         return "org.jdesktop.wonderland.client.cell.view.AvatarCell";
     }
     

@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellConfig;
 import org.jdesktop.wonderland.modules.swingtest.common.SwingTestTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
@@ -54,7 +55,7 @@ public class SwingTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.swingtest.client.SwingTestCell";
     }
 
@@ -69,7 +70,7 @@ public class SwingTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
 	SwingTestCellConfig config = new SwingTestCellConfig(pixelScale);
 	config.setPreferredWidth(preferredWidth);
 	config.setPreferredHeight(preferredHeight);

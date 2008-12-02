@@ -273,14 +273,15 @@ public abstract class Window2D extends Window {
 	super.setVisible(visible);
 	update(Window2DView.CHANGED_VISIBILITY);
     }
-
+    
     /**
      * Change whether this is a top-level window or not. A top-level window has an enclosing frame.
      */
     public void setTopLevel (boolean topLevel) { 
 	if (this.topLevel == topLevel) return;
 	this.topLevel = topLevel;
-	update(Window2DView.CHANGED_VISIBILITY);
+	update(Window2DView.CHANGED_VISIBILITY |
+	       Window2DView.CHANGED_TOP_LEVEL);
     }
 
     /**

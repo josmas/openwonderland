@@ -47,10 +47,11 @@ public class JarURI extends ResourceURI {
     }
 
     /**
-     * Constructor which takes the module name, relative path and server name/port
+     * Constructor which takes the module name, host name and host port, and
+     * asset path. This host name and port is given as: <host name>:<port>
      */
-    public JarURI(String moduleName, String path, String server) throws URISyntaxException {
-        super("wlj://" + moduleName + "@" + server + "/" + path);
+    public JarURI(String moduleName, String hostNameAndPort, String assetPath) {
+        super("wlj", moduleName, hostNameAndPort, assetPath);
     }
     
     /**
@@ -60,11 +61,7 @@ public class JarURI extends ResourceURI {
      * @return The relative path within the URI
      */
     public String getRelativePath() {
-        String relativePath = this.getURI().getPath();
-        if (relativePath.startsWith("/") == true) {
-            relativePath = relativePath.substring(1);
-        }
-        return relativePath;
+        return this.getAssetPath();
     }
     
     /**
