@@ -42,6 +42,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.assetmgr.TrackingInputStream.ProgressListener;
 import org.jdesktop.wonderland.client.modules.CachedModule;
 import org.jdesktop.wonderland.common.modules.Checksum;
@@ -50,7 +51,6 @@ import org.jdesktop.wonderland.client.modules.ServerCache;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.ResourceURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import org.jdesktop.wonderland.common.modules.ModuleChecksums;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
 import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
@@ -148,7 +148,8 @@ public class AssetManager {
      * @return The asset manager cache directory
      */
     public String getCacheDirectory() {
-        return WonderlandConfigUtil.getWonderlandDir() + File.separatorChar + "cache";
+        File cacheFile = new File(ClientContext.getUserDirectory(), "cache");
+        return cacheFile.getPath();
     }
     
     /**

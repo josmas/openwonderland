@@ -105,18 +105,55 @@
         </java>
     </target>
     
-    <target name="run-slave" depends="jar-slave">
+    <target name="run-slave" depends="jar-slave, -set-slave-classpath">
+        <property name="wonderland.user.dir" location="${user.home}/.wonderland/${wonderland.version}/test"/>
+
+        <propertyset id="slave.run.properties">
+            <propertyref name="wonderland.version"/>
+            <propertyref name="wonderland.user.dir"/>
+        </propertyset>
+
         <java classname="org.jdesktop.wonderland.testharness.slave.SlaveMain" fork="true">
-            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+            <syspropertyset refid="slave.run.properties"/>
+            
             <classpath>
                 <path location="${build.lib.dir}/testharness-slave.jar"/>
                 <path location="${build.lib.dir}/testharness-common.jar"/>
-		<pathelement path="${core-client.classpath}"/>
+                <pathelement path="${slave-client.classpath}"/>
             </classpath>  
-            
+
+            <!--start debug-->
+            <!--
+	        <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
+            -->
+            <!--end debug-->
+
             <arg value="${harness.master.hostname}"/>
             <arg value="${harness.master.port}"/>
         </java>
+    </target>
+
+    <target name="-set-slave-classpath">
+        <mkdir dir="${build.dir}/tmp"/>
+        <tempfile destdir="${build.dir}/tmp" property="slave.path.tmp" deleteonexit="true"/>
+
+        <for param="copy.jar" list="${core-client.classpath}" delimiter="${path.separator}">
+            <sequential>
+                <if>
+                    <not>
+                        <contains string="@{copy.jar}" substring="wonderland-client.jar"/>
+                    </not>
+                    <then>
+                        <echo file="${slave.path.tmp}" append="true" message="@{copy.jar}"/>
+                        <echo file="${slave.path.tmp}" append="true" message="${path.separator}"/>
+                    </then>
+                </if>
+            </sequential>
+        </for>
+
+        <loadfile property="slave-client.classpath" srcfile="${slave.path.tmp}"/>
+        <delete file="${slave.path.tmp}"/>
     </target>
 
     <target name="run-manager" depends="compile-manager-ui">
@@ -148,14 +185,28 @@
     
      <target name="jar-slave" depends="jar-common, compile-slave" 
             description="Build slave jar">
-       <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-slave.jar">    
+
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-slave-processors.jar">
             <fileset dir="${build.classes.dir}/">
                 <include name="org/jdesktop/wonderland/testharness/slave/**"/>
+                <exclude name="org/jdesktop/wonderland/testharness/slave/*"/>
+            </fileset>
+        </jar>
+
+        <jar compress="${jar.compress}" jarfile="${build.lib.dir}/testharness-slave.jar">
+            <fileset dir="${build.classes.dir}/">
+                <include name="org/jdesktop/wonderland/testharness/slave/*"/>
             </fileset>
             <fileset dir="${javasrc.dir}/">
                 <include name="org/jdesktop/wonderland/testharness/slave/resources/**"/>
             </fileset>
-         </jar>
+            <fileset dir="${build.lib.dir}">
+                <include name="testharness-slave-processors.jar"/>
+            </fileset>
+            <fileset dir="${core.dir}/build/lib">
+                <include name="wonderland-client.jar"/>
+            </fileset>
+        </jar>
     </target>
     
      <target name="jar-master" depends="jar-common, compile-master" 

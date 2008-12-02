@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * The WFSCellGLO class is a cell that represents a portion of the world which
@@ -65,12 +66,12 @@ public class WFSCellMO extends CellMO implements ManagedObject, Serializable {
         return WFSCellMO.WFS_CELL_GLO + this.rootName;
     }
  
-    @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.WFSCell";
     }
     
     @Override
-    public CellConfig getCellConfig(ClientSession clientSession,ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(WonderlandClientID clientID,ClientCapabilities capabilities) {
         return null;
     }
 }

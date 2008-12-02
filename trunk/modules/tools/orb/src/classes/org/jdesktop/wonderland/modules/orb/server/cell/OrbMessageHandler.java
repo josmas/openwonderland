@@ -76,6 +76,7 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides Orb functionality
@@ -118,7 +119,7 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
     }
 
     public void messageReceived(WonderlandClientSender sender, 
-	    ClientSession session, CellMessage message) {
+	    WonderlandClientID clientID, CellMessage message) {
 
 	logger.fine("got message " + message);
     }

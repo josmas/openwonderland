@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
 /**
@@ -155,7 +156,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
 	if (config == null) {
 	    config = new AppConventionalCellConfig(masterHost, appName, pixelScale, connectionInfo);
 	    if (userLaunched) {

@@ -15,16 +15,14 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.common.config;
+package org.jdesktop.wonderland.testharness.common;
 
 /**
- * Represents Wonderland configuration options common to the entire system (server/client)
+ *
+ * @author jkaplan
  */
-public interface WonderlandConfigInterface {
-    String getName();
-    String getDescription();
-
-    void init();
-    boolean writeSystemConfig();
-    boolean writeUserConfig();
+public class LogoutRequest  extends TestRequest {
+    public LogoutRequest(String username) {
+        super (username);
+    }
 }

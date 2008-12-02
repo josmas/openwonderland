@@ -71,6 +71,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -82,7 +83,6 @@ import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
-import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import org.jdesktop.wonderland.common.modules.ModuleUploader;
 
 /**
@@ -163,9 +163,9 @@ public class ImportSessionFrame extends javax.swing.JFrame
         // Load the config file which contains the directory from which we last
         // loaded a model.
         try {
-            String tmp = WonderlandConfigUtil.getUserConfigDir() + File.separator + "last_model_dir";
-            if (new File(tmp).exists()) {            
-                DataInputStream in = new DataInputStream(WonderlandConfigUtil.getInputStream(tmp));
+            File lastModelFile = getLastModelFile();
+            if (lastModelFile.exists()) {
+                DataInputStream in = new DataInputStream(new FileInputStream(lastModelFile));
                 String str;
                 if (in.readBoolean()) {
                     str = in.readUTF();
@@ -211,7 +211,8 @@ public class ImportSessionFrame extends javax.swing.JFrame
      */
     void writeDefaultsConfig() {
         try {
-            DataOutputStream out = new DataOutputStream(WonderlandConfigUtil.getOutputStream(WonderlandConfigUtil.getUserConfigDir() + File.separator + "last_model_dir"));
+            File lastModelFile = getLastModelFile();
+            DataOutputStream out = new DataOutputStream(new FileOutputStream(lastModelFile));
             out.writeBoolean(lastModelDir!=null);
             if (lastModelDir!=null)
                 out.writeUTF(lastModelDir.getAbsolutePath());
@@ -223,6 +224,11 @@ public class ImportSessionFrame extends javax.swing.JFrame
             Logger.getLogger(ModelImporterFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+    }
+
+    private File getLastModelFile() {
+        File configDir = ClientContext.getUserDirectory("config");
+        return new File(configDir, "last_model_dir");
     }
 
     /** This method is called from within the constructor to
@@ -629,12 +635,12 @@ public class ImportSessionFrame extends javax.swing.JFrame
 }//GEN-LAST:event_serverBActionPerformed
 
     private void saveImportGroupMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveImportGroupMIActionPerformed
-        File sessionFile = new File(WonderlandConfigUtil.getUserConfigDir() + File.separator + "import_session");
+        File sessionFile = new File(ClientContext.getUserDirectory("config"), "import_session");
         saveImportSession(sessionFile);
 }//GEN-LAST:event_saveImportGroupMIActionPerformed
 
     private void loadImportGroupMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadImportGroupMIActionPerformed
-        File sessionFile = new File(WonderlandConfigUtil.getUserConfigDir() + File.separator + "import_session");
+        File sessionFile = new File(ClientContext.getUserDirectory("config"), "import_session");
         for (ImportedModel m : imports) {
             m.getRootBG().getParent().detachChild(m.getRootBG());
         }

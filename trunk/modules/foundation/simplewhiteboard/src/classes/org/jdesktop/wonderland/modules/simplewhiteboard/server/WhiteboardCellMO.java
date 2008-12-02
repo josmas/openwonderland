@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
@@ -81,7 +82,7 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardCell";
     }
 
@@ -96,7 +97,7 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (ClientSession clientSession, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
 	WhiteboardCellConfig config = new WhiteboardCellConfig(pixelScale);
 	config.setPreferredWidth(preferredWidth);
 	config.setPreferredHeight(preferredHeight);
@@ -136,7 +137,7 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * @param message The message which was received.
      * @param commComponent The communications component that received the message.
      */
-    public void receivedMessage(WonderlandClientSender clientSender, ClientSession clientSession, CellMessage message) {
+    public void receivedMessage(WonderlandClientSender clientSender, WonderlandClientID clientID, CellMessage message) {
         WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
         logger.fine("received whiteboard message: " + cmsg);
 
@@ -148,7 +149,7 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
             
             while (iter.hasNext()) {
                 WhiteboardCompoundCellMessage msg = iter.next();
-		clientSender.send(clientSession, msg);
+		clientSender.send(clientID, msg);
             }
         } else {
 
@@ -201,8 +202,7 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
             lastMessage = cmsg;
 
 	    // Broadcast message to all clients (including the original sender of the message).
-            BigInteger sessionId = AppContext.getDataManager().createReference(clientSession).getId();
-            commComponent.sendAllClients(sessionId, msg);
+            commComponent.sendAllClients(clientID, msg);
         }
     }
 }

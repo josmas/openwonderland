@@ -45,8 +45,9 @@ public class LoginManager {
     /** the primary manager */
     private static ServerSessionManager primaryLoginManager;
 
-    /** whether to load plugins */
-    private static boolean loadPlugins = true;
+    /** the default plugin filter to use */
+    private static PluginFilter defaultPluginFilter = 
+            new PluginFilter.DefaultPluginFilter();
 
     /**
      * Set the LoginUI to call back to during login attempts.
@@ -56,8 +57,28 @@ public class LoginManager {
         LoginManager.ui = ui;
     }
 
+    /**
+     * Get the LoginUI to call back during login attempts
+     * @return the login UI
+     */
     synchronized static LoginUI getLoginUI() {
         return ui;
+    }
+
+    /**
+     * Set the default plugin filter for all session managers created.
+     * @param filter the plugin filter to use
+     */
+    public synchronized static void setPluginFilter(PluginFilter filter) {
+        LoginManager.defaultPluginFilter = filter;
+    }
+
+    /**
+     * Get the default plugin filter for all session managers created.
+     * @return the plugin filter to use
+     */
+    synchronized static PluginFilter getPluginFilter() {
+        return defaultPluginFilter;
     }
 
     /**
@@ -115,22 +136,6 @@ public class LoginManager {
      */
     public synchronized static void setPrimary(ServerSessionManager primary) {
         LoginManager.primaryLoginManager = primary;
-    }
-
-    /**
-     * Get whether or not plugins are being loaded.
-     * @return true if plugins are being loaded, or false if not
-     */
-    public synchronized static boolean getLoadPlugins() {
-        return LoginManager.loadPlugins;
-    }
-
-    /**
-     * Set whether or not to load plugins
-     * @param loadPlugins true to load plugins, or false to skip them
-     */
-    public synchronized static void setLoadPlugins(boolean loadPlugins) {
-        LoginManager.loadPlugins = loadPlugins;
     }
 
     /**

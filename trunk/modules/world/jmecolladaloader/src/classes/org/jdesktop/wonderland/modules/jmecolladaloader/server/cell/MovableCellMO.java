@@ -23,6 +23,7 @@ import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * For cells that are expected to move frequently
@@ -42,13 +43,13 @@ public class MovableCellMO extends JmeColladaCellMO {
     }
     
 
-    @Override protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(WonderlandClientID clientID,ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.MovableCell";
     }
     
     @Override
-    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
-        CellConfig ret = super.getCellConfig(clientSession, capabilities);
+    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+        CellConfig ret = super.getCellConfig(clientID, capabilities);
         ret.addClientComponentClasses(new String[] {
             "org.jdesktop.wonderland.client.cell.ChannelComponent",
             "org.jdesktop.wonderland.client.cell.MovableComponent"

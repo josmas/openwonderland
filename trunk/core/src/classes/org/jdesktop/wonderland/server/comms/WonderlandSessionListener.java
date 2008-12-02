@@ -31,6 +31,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -176,7 +177,7 @@ public class WonderlandSessionListener
             WonderlandClientSender sender = senders.get(clientID);
             
             // call the handler
-            handler.messageReceived(sender, getSession(), m);
+            handler.messageReceived(sender, getWonderlandClientID(), m);
             
         } catch (PackerException eme) {
             logger.log(Level.WARNING, "Error extracting message from client", 
@@ -290,7 +291,15 @@ public class WonderlandSessionListener
     protected ClientSession getSession() {
         return sessionRef.get();
     }
-    
+
+    /**
+     * Get the WonderlandClientID for this session
+     * @return the WonderlandClientID
+     */
+    protected WonderlandClientID getWonderlandClientID() {
+        return new WonderlandClientID(sessionRef);
+    }
+
     /**
      * Get a client handler by client ID
      * @param clientID the id of the client to get
@@ -381,7 +390,7 @@ public class WonderlandSessionListener
         }
         
         // notify the handler
-        ref.get().clientConnected(sender, session, properties);
+        ref.get().clientConnected(sender, getWonderlandClientID(), properties);
     }
     
     /**
@@ -412,7 +421,7 @@ public class WonderlandSessionListener
         removeHandler(Short.valueOf(clientID));
         
         // notify the handler
-        handler.clientDisconnected(sender, getSession());
+        handler.clientDisconnected(sender, getWonderlandClientID());
     }
     
     /**
@@ -544,11 +553,11 @@ public class WonderlandSessionListener
             return type;
         }
 
-        public Set<ClientSession> getSessions() { 
-            Set<ClientSession> out = new HashSet<ClientSession>();
+        public Set<WonderlandClientID> getClients() {
+            Set<WonderlandClientID> out = new LinkedHashSet<WonderlandClientID>();
             
             for (ManagedReference<ClientSession> ref : sessionsRef.get()) {
-                out.add(ref.get());
+                out.add(new WonderlandClientID(ref));
             }
             
             return out;
@@ -562,15 +571,15 @@ public class WonderlandSessionListener
             send(channelRef.get(), message);
         }
 
-        public void send(ClientSession session, Message message) {
-            session.send(serializeMessage(message, clientID));
+        public void send(WonderlandClientID wlID, Message message) {
+            wlID.getSession().send(serializeMessage(message, clientID));
         }
 
-        public void send(Set<ClientSession> sessions, Message message) 
+        public void send(Set<WonderlandClientID> wlIDs, Message message)
         {
             // send to each individual session
-            for (ClientSession session : sessions) {
-                send(session, message);
+            for (WonderlandClientID wlID : wlIDs) {
+                send(wlID, message);
             }
         }
 
@@ -635,20 +644,20 @@ public class WonderlandSessionListener
         }
         
         public void clientConnected(WonderlandClientSender sender,
-                                    ClientSession session,
+                                    WonderlandClientID clientID,
                                     Properties properties) 
         {
             // ignore
         }
         
         public void clientDisconnected(WonderlandClientSender sender,
-                                       ClientSession session) 
+                                       WonderlandClientID clientID)
         {
             // ignore
         }
 
         public void messageReceived(WonderlandClientSender sender,
-                                    ClientSession session, 
+                                    WonderlandClientID clientID,
                                     Message message)
         {
             if (message instanceof AttachClientMessage) {

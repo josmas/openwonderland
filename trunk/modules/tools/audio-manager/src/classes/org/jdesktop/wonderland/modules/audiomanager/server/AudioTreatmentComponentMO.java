@@ -67,6 +67,7 @@ import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  *
@@ -158,7 +159,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
             compRef = AppContext.getDataManager().createReference(comp);
         }
 
-        public void messageReceived(WonderlandClientSender sender, ClientSession session, 
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
 		CellMessage message) {
 
             AudioTreatmentMessage msg = (AudioTreatmentMessage) message;

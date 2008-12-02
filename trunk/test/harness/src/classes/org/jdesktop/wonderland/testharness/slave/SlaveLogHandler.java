@@ -47,7 +47,8 @@ public class SlaveLogHandler extends Handler {
             try {
                 out.writeObject(record);
             } catch (IOException ex) {
-                Logger.getLogger(SlaveLogHandler.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Error writing log:");
+                ex.printStackTrace();
             }
         }
     }
@@ -59,7 +60,8 @@ public class SlaveLogHandler extends Handler {
                 try {
                     out.flush();
                 } catch (IOException ex) {
-                    Logger.getLogger(SlaveLogHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    System.out.println("Error writing log:");
+                    ex.printStackTrace();
                 }
             }
         }

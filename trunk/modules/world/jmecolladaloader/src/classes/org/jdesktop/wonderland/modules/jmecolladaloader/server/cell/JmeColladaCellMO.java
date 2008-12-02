@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -64,12 +65,12 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
         super(bounds, transform);
     }
     
-    @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCell";
     }
 
     @Override
-    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation);
     }
 

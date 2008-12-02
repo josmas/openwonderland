@@ -47,31 +47,31 @@ public interface ClientConnectionHandler {
      * connects when a client calls <code>WonderlandSession.connect()</code>.
      * @param sender the sender that can be used to send to clients
      * of this handler
-     * @param session the session that connected
+     * @param clientID the ID of the session that connected
      * @param properties the properties of the connection, or an
      * empty property object if the client didn't send any properties
      */
     public void clientConnected(WonderlandClientSender sender,
-                                ClientSession session,
+                                WonderlandClientID clientID,
                                 Properties properties);
     
     /**
      * Handle a message from a client
      * @param sender the sender that can be used to send to clients of
      * this handler
-     * @param session the session that sent the message
+     * @param clientID the ID of the session that connected
      * @param message the message that was generated
      */
     public void messageReceived(WonderlandClientSender sender,
-                                ClientSession session,
+                                WonderlandClientID clientID,
                                 Message message);
     
     /**
      * Handle when a session disconnects from this handler
      * @param sender the sender that can be used to send to clients
      * of this handler
-     * @param session the session that disconnected
+     * @param clientID the ID of the session that connected
      */
     public void clientDisconnected(WonderlandClientSender sender,
-                               ClientSession session);
+                                   WonderlandClientID clientID);
 }

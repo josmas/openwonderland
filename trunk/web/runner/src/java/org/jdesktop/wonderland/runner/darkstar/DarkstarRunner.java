@@ -351,7 +351,7 @@ public class DarkstarRunner extends BaseRunner {
      * @param status the status to set
      */
     @Override
-    protected synchronized void setStatus(Status status) {
+    protected void setStatus(Status status) {
         if (status == Status.RUNNING) {
             return;
         }

@@ -146,7 +146,7 @@ public class HarnessManagerUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
 private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMIActionPerformed
-// TODO add your handling code here:
+    System.exit(0);
 }//GEN-LAST:event_exitMIActionPerformed
 
     /**

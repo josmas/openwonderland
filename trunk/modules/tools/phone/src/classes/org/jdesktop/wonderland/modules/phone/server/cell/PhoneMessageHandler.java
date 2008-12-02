@@ -103,6 +103,7 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides conference phone functionality
@@ -146,7 +147,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
-	    final ClientSession session, final CellMessage message) {
+	    final WonderlandClientID clientID, final CellMessage message) {
 
 	PhoneControlMessage msg = (PhoneControlMessage) message;
 
