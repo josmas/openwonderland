@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * This class represensents a real world user. A user can be logged into
@@ -47,9 +48,9 @@ public class UserMO implements ManagedObject, Serializable {
     private String fullname;
     private ArrayList<String> groups = null;
     
-    private Set<ManagedReference<ClientSession>> activeSessions = null;
+    private Set<WonderlandClientID> activeClients = null;
     private Map<String, Serializable> extendedData = null;
-    private Map<ManagedReference<ClientSession>, Map<String, ManagedReference<AvatarCellMO>>> avatars = new HashMap();
+    private Map<WonderlandClientID, Map<String, ManagedReference<AvatarCellMO>>> avatars = new HashMap();
     
     protected static Logger logger = Logger.getLogger(UserMO.class.getName());
 
@@ -120,9 +121,8 @@ public class UserMO implements ManagedObject, Serializable {
      * @param avatarName
      * @return
      */
-    public AvatarCellMO getAvatar(ClientSession session, String avatarName) {
-        Map<String, ManagedReference<AvatarCellMO>> sessionAvatars = 
-                avatars.get(AppContext.getDataManager().createReference(session));
+    public AvatarCellMO getAvatar(WonderlandClientID clientID, String avatarName) {
+        Map<String, ManagedReference<AvatarCellMO>> sessionAvatars = avatars.get(clientID);
             
         if (sessionAvatars==null)
             return null;
@@ -142,15 +142,14 @@ public class UserMO implements ManagedObject, Serializable {
      * @param avatarName
      * @param avatar
      */
-    public void putAvatar(ClientSession session, String avatarName, AvatarCellMO avatar) {
+    public void putAvatar(WonderlandClientID clientID, String avatarName, AvatarCellMO avatar) {
         DataManager dm = AppContext.getDataManager();
-        ManagedReference<ClientSession> sessionRef = AppContext.getDataManager().createReference(session);
-        Map<String, ManagedReference<AvatarCellMO>> sessionAvatars = avatars.get(sessionRef);
-        if (sessionAvatars==null) {
-            sessionAvatars = new HashMap();
-            avatars.put(sessionRef, sessionAvatars);
+        Map<String, ManagedReference<AvatarCellMO>> clientAvatars = avatars.get(clientID);
+        if (clientAvatars==null) {
+            clientAvatars = new HashMap();
+            avatars.put(clientID, clientAvatars);
         }
-        sessionAvatars.put(avatarName, dm.createReference(avatar));
+        clientAvatars.put(avatarName, dm.createReference(avatar));
     }
     
     /**
@@ -158,15 +157,15 @@ public class UserMO implements ManagedObject, Serializable {
      * @param session
      * @param protocol
      */
-    void login(ClientSession session) {
+    void login(WonderlandClientID clientID) {
         DataManager dm = AppContext.getDataManager();
                 
-        if (activeSessions==null) {
-            activeSessions = new HashSet<ManagedReference<ClientSession>>();
+        if (activeClients==null) {
+            activeClients = new HashSet<WonderlandClientID>();
         }
         
         logger.info("User Login " + username);
-        activeSessions.add(dm.createReference(session));
+        activeClients.add(clientID);
     }
     
     /**
@@ -174,9 +173,8 @@ public class UserMO implements ManagedObject, Serializable {
      * @param session
      * @param protocol
      */
-    void logout(ClientSession session) {
-        DataManager dm = AppContext.getDataManager();        
-        activeSessions.remove(dm.createReference(session));
+    void logout(WonderlandClientID clientID) {
+        activeClients.remove(clientID);
     }
     
     /**
@@ -184,7 +182,7 @@ public class UserMO implements ManagedObject, Serializable {
      * @return
      */
     boolean isLoggedIn() {
-        return activeSessions.size()>0;
+        return activeClients.size()>0;
     }
     
     /**

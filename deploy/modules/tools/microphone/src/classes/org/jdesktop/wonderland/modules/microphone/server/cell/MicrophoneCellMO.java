@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -77,6 +78,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides conference microphone functionality
@@ -107,14 +109,14 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    protected String getClientCellClassName(ClientSession clientSession, 
+    protected String getClientCellClassName(WonderlandClientID clientID,
 	    ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.microphone.client.cell.MicrophoneCell";
     }
 
     @Override
-    public CellConfig getCellConfig(ClientSession clientSession, 
+    public CellConfig getCellConfig(WonderlandClientID clientID,
 	    ClientCapabilities capabilities) {
 
         MicrophoneCellConfig config = new MicrophoneCellConfig();
@@ -134,8 +136,6 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
     @Override
     public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
-
-	MicrophoneCellSetup pcs = (MicrophoneCellSetup) setup;
     }
 
     @Override

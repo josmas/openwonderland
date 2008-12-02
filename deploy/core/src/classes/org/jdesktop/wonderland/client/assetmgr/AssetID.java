@@ -88,7 +88,7 @@ public class AssetID {
         }
         
         /* Check to make sure the URIs are equals, return false if not */
-        if (this.assetURI.getURI().equals(this.getResourceURI().getURI()) == false) {
+        if (this.assetURI.equals(this.getResourceURI()) == false) {
             return false;
         }
         
@@ -115,7 +115,7 @@ public class AssetID {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 29 * hash + (this.assetURI != null ? this.assetURI.getURI().hashCode() : 0);
+        hash = 29 * hash + (this.assetURI != null ? this.assetURI.hashCode() : 0);
         hash = 29 * hash + (this.checksum != null ? this.checksum.hashCode() : 0);
         return hash;
     }

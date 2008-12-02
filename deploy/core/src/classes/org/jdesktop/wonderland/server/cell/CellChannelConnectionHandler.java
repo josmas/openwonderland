@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -43,26 +44,26 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
     }
 
     public void clientConnected(WonderlandClientSender sender,
-            ClientSession session, Properties properties) {
+            WonderlandClientID clientID, Properties properties) {
         // ignore
     }
 
     public void clientDisconnected(WonderlandClientSender sender,
-            ClientSession session) {
+            WonderlandClientID clientID) {
         // ignore
     }
 
     public void messageReceived(WonderlandClientSender sender,
-            ClientSession session,
+            WonderlandClientID clientID,
             
             Message message) {
         if (message instanceof CellMessage) {
-            messageReceived(sender, session, (CellMessage) message);
+            messageReceived(sender, clientID, (CellMessage) message);
         } else {
             Message error = new ErrorMessage(message.getMessageID(),
                     "Unexpected message type: " + message.getClass());
 
-            sender.send(session, error);
+            sender.send(clientID, error);
         }
     }
 
@@ -75,7 +76,7 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
     
      */
     public void messageReceived(WonderlandClientSender sender,
-            ClientSession session,
+            WonderlandClientID clientID,
             CellMessage message) {
         
         // find the appropriate cell
@@ -83,20 +84,20 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
 
         // if there was no cell, handle the error
         if (cell == null) {
-            sender.send(session, new ErrorMessage(message.getMessageID(),
+            sender.send(clientID, new ErrorMessage(message.getMessageID(),
                     "Unknown cell id: " + message.getCellID()));
             return;
         }
         ChannelComponentMO channelComponent = cell.getComponent(ChannelComponentMO.class);
 
         if (channelComponent == null) {
-            sender.send(session, new ErrorMessage(message.getMessageID(),
+            sender.send(clientID, new ErrorMessage(message.getMessageID(),
                     "Cell does not have a ChannelComponent id: " + message.getCellID()));
             return;
 
         }
 
         // dispatch the message
-        channelComponent.messageReceived(sender, session, message);
+        channelComponent.messageReceived(sender, clientID, message);
     }
 }

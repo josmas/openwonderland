@@ -26,6 +26,7 @@ import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -35,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -94,12 +96,20 @@ public class ChannelComponentMO extends CellComponentMO {
     
     /**
      * Send message to all clients on this channel
+     * @param senderID the id of the sender session, or null if this
+     * message being sent by the server
      * @param message
+     *
      */
-    public void sendAll(Message message) {
+    public void sendAll(WonderlandClientID senderID, CellMessage message) {
         if (cellChannelRef==null) {
             return;
         }
+
+        if (senderID != null) {
+            message.setSenderID(senderID.getID());
+        }
+
 //        System.out.println("Sending data "+cellSender.getSessions().size());
         cellSender.send(cellChannelRef.get(), message);
     }
@@ -108,22 +118,22 @@ public class ChannelComponentMO extends CellComponentMO {
      * Add user to the cells channel, if there is no channel simply return
      * @param userID
      */
-    public void addUserToCellChannel(ClientSession session) {
+    public void addUserToCellChannel(WonderlandClientID clientID) {
         if (cellChannelRef == null)
             return;
             
-        cellChannelRef.getForUpdate().join(session);
+        cellChannelRef.getForUpdate().join(clientID.getSession());
     }
     
     /**
      * Remove user from the cells channel
      * @param userID
      */
-    public void removeUserFromCellChannel(ClientSession session) {
+    public void removeUserFromCellChannel(WonderlandClientID clientID) {
         if (cellChannelRef == null)
             return;
             
-        cellChannelRef.getForUpdate().leave(session);        
+        cellChannelRef.getForUpdate().leave(clientID.getSession());
     }
      
     /**
@@ -147,7 +157,7 @@ public class ChannelComponentMO extends CellComponentMO {
      * @param message
      */
     public void messageReceived(WonderlandClientSender sender, 
-                                ClientSession session,
+                                WonderlandClientID clientID,
                                 CellMessage message ) {
         
         ManagedReference<ComponentMessageReceiver> recvRef = messageReceivers.get(message.getClass());
@@ -156,12 +166,12 @@ public class ChannelComponentMO extends CellComponentMO {
             return;
         }
         
-        recvRef.get().messageReceived(sender, session, message);
+        recvRef.get().messageReceived(sender, clientID, message);
     }
     
     static public interface ComponentMessageReceiver extends ManagedObject, Serializable {
         public void messageReceived(WonderlandClientSender sender, 
-                                    ClientSession session,
+                                    WonderlandClientID clientID,
                                     CellMessage message );        
     }
 }

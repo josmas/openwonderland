@@ -17,39 +17,31 @@
  */
 package org.jdesktop.wonderland.testharness.common;
 
+import java.util.Properties;
+
 /**
  *
  * @author paulby
  */
 public class LoginRequest extends TestRequest {
-
-    private String sgsServerName;
-    private int sgsServerPort;
-    private char[] passwd;
+    private String processorName;
+    private Properties props;
     
-    public LoginRequest(String sgsServerName, 
-                        int sgsServerPort,
-                        String username,
-                        char[] passwd,
-                        float x, float y, float z) {
+    public LoginRequest(String processorName,
+                        Properties props,
+                        String username)
+    {
         super(username);
-        this.sgsServerName = sgsServerName;
-        this.sgsServerPort = sgsServerPort;
-        this.passwd = passwd;
+
+        this.processorName = processorName;
+        this.props = props;
     }
 
-    public String getSgsServerName() {
-        return sgsServerName;
+    public String getProcessorName() {
+        return processorName;
     }
 
-    public int getSgsServerPort() {
-        return sgsServerPort;
+    public Properties getProps() {
+        return props;
     }
-
-
-    public char[] getPasswd() {
-        return passwd;
-    }
-    
-    
 }

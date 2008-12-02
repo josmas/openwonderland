@@ -58,7 +58,7 @@ public class MouseSpinCell extends SimpleShapeCell {
         Vector3f dest = new Vector3f(currentLoc);
         dest.y+=0.3;
 
-        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, node, 0f, (float)Math.PI*2f);
+        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, node, 0f, 360);
         Clip clip2 = Clip.create(1000, spinner);
         clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
 

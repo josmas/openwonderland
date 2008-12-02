@@ -114,8 +114,8 @@ public class TestWorld implements ServerPlugin {
             if (pos.x > 40 || pos.x < 4) {
                 dir = -dir;
             }
-            cellRef.get().getComponent(MovableComponentMO.class).moveRequest(new CellTransform(null, pos));
-            cell2Ref.get().getComponent(MovableComponentMO.class).moveRequest(new CellTransform(null, pos2));
+            cellRef.get().getComponent(MovableComponentMO.class).moveRequest(null, new CellTransform(null, pos));
+            cell2Ref.get().getComponent(MovableComponentMO.class).moveRequest(null, new CellTransform(null, pos2));
         }
     }
 }

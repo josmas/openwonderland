@@ -26,7 +26,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
 /**
@@ -39,6 +41,7 @@ public class SimpleShapeCellMO extends CellMO {
     
     private SimpleShapeConfig.Shape shape;
     private float mass;
+    private MaterialJME materialJME = null;
     
     /** Default constructor, used when cell is created via WFS */
     public SimpleShapeCellMO() {
@@ -54,19 +57,24 @@ public class SimpleShapeCellMO extends CellMO {
     }
     
     public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape, float mass) {
+        this(center, size, shape, mass, null);
+    }
+
+    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape, float mass, MaterialJME materialJME) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
         this.shape = shape;
         this.mass = mass;
+        this.materialJME = materialJME;
     }
     
     @Override
-    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell";
     }
 
     @Override
-    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
-        return new SimpleShapeConfig(shape, mass);
+    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+        return new SimpleShapeConfig(shape, mass, materialJME);
     }
 
     @Override

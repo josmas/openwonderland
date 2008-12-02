@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Handler for app base conventional connections.
@@ -52,20 +53,20 @@ class AppConventionalConnectionHandler implements ClientConnectionHandler, Seria
         // ignore
     }
     
-    public void clientConnected (WonderlandClientSender sender, ClientSession session, Properties properties) {
+    public void clientConnected (WonderlandClientSender sender, WonderlandClientID clientID, Properties properties) {
 	// TODO: anything to do?
     }
 
-    public void clientDisconnected (WonderlandClientSender sender, ClientSession session) {
+    public void clientDisconnected (WonderlandClientSender sender, WonderlandClientID clientID) {
 	// TODO: anything to do?
     }
     
-    public void messageReceived (WonderlandClientSender sender, ClientSession session, Message message)
+    public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, Message message)
     {
         if (message instanceof AppConventionalMessage) {
-            messageReceived(sender, session, (AppConventionalMessage) message);
+            messageReceived(sender, clientID, (AppConventionalMessage) message);
         } else {
-            sender.send(session, new ErrorMessage(message.getMessageID(), 
+            sender.send(clientID, new ErrorMessage(message.getMessageID(),
 						  "Unexpected message type: " + message.getClass()));
         }
     }
@@ -76,7 +77,7 @@ class AppConventionalConnectionHandler implements ClientConnectionHandler, Seria
      * @session The client session
      * @param message The app base message
      */
-    public void messageReceived (WonderlandClientSender sender, ClientSession session, AppConventionalMessage message)
+    public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, AppConventionalMessage message)
     {        
         switch(message.getActionType()) {
 
@@ -86,7 +87,7 @@ class AppConventionalConnectionHandler implements ClientConnectionHandler, Seria
 
 	default :
 	    logger.severe("Unexpected message in AppConventionalClientHandler " + message.getActionType());
-	    sender.send(session, new ErrorMessage(message.getMessageID(),
+	    sender.send(clientID, new ErrorMessage(message.getMessageID(),
 						  "Unexpected message in AppConventionalClientHandler: " +
 						  message.getActionType()));
 	    break;

@@ -622,36 +622,22 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	if (player == null) {
 	    logger.warning("got AvatarMovedMessage but can't find player for " + clientId);
 	} else {
-	    Vector3f heading = new Vector3f(0, 0, -1);
+	    float[] angles = new float[3];
 
-	    Vector3f angleV = heading.clone();
+	    localToWorldTransform.getRotation(null).toAngles(angles);
 
-	    localToWorldTransform.getRotation(null).multLocal(angleV);
-
-	    double h = heading.angleBetween(angleV);
-
-	    double angle = Math.toDegrees(h) % 360;
-
-	    /*
-	     * For wonderland, a clockwise rotation results in a bigger
-             * angle, i. e., rotation is in the opposite direction of
-             * what the voice manager expects.  Correct for that here.
-	     */
-	    //angle = 360 - angle;
+	    double angle = Math.toDegrees(angles[1]) % 360 + 90;
 
 	    Vector3f location = localToWorldTransform.getTranslation(null);
 	
 	    logger.fine(player + " x " + -location.getX()
 		+ " y " + location.getY() + " z " + location.getZ()
-		+ " angle " + angle + " radians " + h);
+		+ " angle " + angle);
 
 	    /*
 	     * The x coordinate increases to the left so we correct
 	     * for that here.
 	     */
-	    // XXX angle isn't right just yet!
-	    angle = 90;
-
 	    player.moved(-location.getX(), location.getY(), location.getZ(), angle);
 	}
     }

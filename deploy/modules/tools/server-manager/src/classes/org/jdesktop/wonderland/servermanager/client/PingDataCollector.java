@@ -40,6 +40,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLog
 import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.LoginUI;
+import org.jdesktop.wonderland.client.login.PluginFilter;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
 import org.jdesktop.wonderland.runner.darkstar.DarkstarRunner;
@@ -72,7 +73,7 @@ public class PingDataCollector
     
     public PingDataCollector() {
         LoginManager.setLoginUI(new ServerManagerLoginUI());
-        LoginManager.setLoadPlugins(false);
+        LoginManager.setPluginFilter(new PluginFilter.NoPluginFilter());
         
         Collection<DarkstarRunner> runners = 
                 RunManager.getInstance().getAll(DarkstarRunner.class);
@@ -166,9 +167,13 @@ public class PingDataCollector
      * @param runner the runner that changed status
      * @param status the new status
      */
-    public void statusChanged(Runner runner, Status status) {
+    public void statusChanged(final Runner runner, final Status status) {
         if (status == Status.RUNNING) {
-            connectTo((DarkstarRunner) runner);
+            new Thread(new Runnable() {
+                public void run() {
+                    connectTo((DarkstarRunner) runner);
+                }
+            }).start();
         } else {
             disconnectFrom((DarkstarRunner) runner);
         }

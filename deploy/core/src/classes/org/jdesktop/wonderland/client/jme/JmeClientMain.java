@@ -21,33 +21,23 @@ import java.awt.event.ActionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
 import imi.loaders.repository.Repository;
-import imi.scene.processors.JSceneAWTEventProcessor;
-import imi.scene.processors.JSceneEventProcessor;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
-import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.FrameRateListener;
-import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsSystem;
-import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
-import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
@@ -58,7 +48,6 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 
 /**
  *
@@ -288,12 +277,12 @@ public class JmeClientMain {
     private void createUI(WorldManager wm) {
         ViewManager.initialize(width, height); // Initialize an onscreen view
         
-        frame = new MainFrame(wm, width, height);
+        frame = new MainFrameImpl(wm, width, height);
         // center the frame
-        frame.setLocationRelativeTo(null);
+        frame.getFrame().setLocationRelativeTo(null);
 
         // show frame
-        frame.setVisible(true);
+        frame.getFrame().setVisible(true);
 
         ViewManager.getViewManager().attachViewCanvas(frame.getCanvas3DPanel());
 
@@ -339,6 +328,14 @@ public class JmeClientMain {
      */
     public static MainFrame getFrame () {
         return frame;
+    }
+
+    /**
+     * Set the main frame
+     * @param frame the new main frame
+     */
+    public static void setFrame(MainFrame frame) {
+        JmeClientMain.frame = frame;
     }
 
     protected void loadProperties(URL propsURL) {

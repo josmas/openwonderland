@@ -21,6 +21,7 @@ import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
+import java.math.BigInteger;
 import java.util.Collection;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -30,6 +31,7 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * The server side of the communication component that provides communication between the whiteboard client and server.
@@ -63,12 +65,14 @@ public class WhiteboardComponentMO extends CellComponentMO {
     
     /**
      * Broadcast the given message to all clients.
+     * @param sourceID the originator of this message, or null if it originated
+     * with the server
      * @param message The message to broadcast.
      */
-    public void sendAllClients (WhiteboardCompoundCellMessage message) {
+    public void sendAllClients (WonderlandClientID clientID, WhiteboardCompoundCellMessage message) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent = channelComponentRef.getForUpdate();
-	channelComponent.sendAll(message);
+	channelComponent.sendAll(clientID, message);
     }
     
     /**
@@ -85,10 +89,10 @@ public class WhiteboardComponentMO extends CellComponentMO {
 	    this.cellRef = cellRef;
         }
 
-        public void messageReceived (WonderlandClientSender sender, ClientSession session, CellMessage message) {
+        public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
 	    WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
 	    CellMO cell = cellRef.get();
-	    ((WhiteboardCellMO)cell).receivedMessage(sender, session, cmsg);
+	    ((WhiteboardCellMO)cell).receivedMessage(sender, clientID, cmsg);
         }
     }
 }

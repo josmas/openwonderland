@@ -62,7 +62,7 @@
             <jvmarg value="-Xmx512m"/>
 	        <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${softphone.jar.location}"/>
             <jvmarg value="-Dwonderland.version=${wonderland.version}"/>
-            
+ 
             <!--start debug-->
 	    <!-- 
             <jvmarg value="-Xdebug"/>

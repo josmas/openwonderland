@@ -20,7 +20,6 @@
 package org.jdesktop.wonderland.common;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -60,10 +59,19 @@ public class AssetURI extends ResourceURI {
     }
     
     /**
-     * Constructor which takes the module name, relative path and server name/port
+     * Constructor which takes the module name, asset path and host name and
+     * host port.
      */
-    public AssetURI(String moduleName, String path, String server) throws URISyntaxException {
-        super("wla://" + moduleName + "@" + server + "/" + path);
+    public AssetURI(String moduleName, String hostName, int hostPort, String assetPath) {
+        super("wla", moduleName, hostName, hostPort, assetPath);
+    }
+    
+    /**
+     * Constructor which takes the module name, host name/port, and asset path.
+     * The host name/port is given as: <host name>:<port>
+     */
+    public AssetURI(String moduleName, String hostNameAndPort, String assetPath) {
+        super("wla", moduleName, hostNameAndPort, assetPath);
     }
     
     /**
@@ -73,7 +81,7 @@ public class AssetURI extends ResourceURI {
      * @return The relative path within the URI
      */
     public String getRelativePath() {
-       return "art" + this.getURI().getPath();
+       return "art/" + this.getAssetPath();
     }
     
     /**
@@ -90,11 +98,11 @@ public class AssetURI extends ResourceURI {
      * Annotates this URI with a <server name>:<port>. Returns a new instance
      * of AssetURI with this annotation
      * 
-     * @param server The <server name>:<port>
+     * @param hostNameAndPort The <server name>:<port>
      * @return A new AssetURI with annotated with the <server name>:<port>
      * @throw URISyntaxException If the URI is not properly formed
      */
-    public AssetURI getAnnotatedURI(String server) throws URISyntaxException {
-        return new AssetURI(this.getModuleName(), this.getRawPath(), server);
+    public AssetURI getAnnotatedURI(String hostNameAndPort) throws URISyntaxException {
+        return new AssetURI(this.getModuleName(), hostNameAndPort, this.getAssetPath());
     }
 }

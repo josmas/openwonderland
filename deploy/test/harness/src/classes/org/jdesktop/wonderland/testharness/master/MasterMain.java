@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.testharness.manager.common.CommsHandler;
 import org.jdesktop.wonderland.testharness.manager.common.CommsHandler.MessageListener;
 import org.jdesktop.wonderland.testharness.manager.common.ManagerMessage;
 import org.jdesktop.wonderland.testharness.manager.common.MasterStatus;
+import org.jdesktop.wonderland.testharness.master.SlaveConnection.SlaveConnectionListener;
 
 /**
  *
@@ -50,8 +51,8 @@ public class MasterMain {
     
     public static final int MANAGER_PORT = 5567;
 
-    private Set<SlaveConnection> activeSlaves = new HashSet();
-    private Set<SlaveConnection> passiveSlaves = new HashSet();
+    private final Set<SlaveConnection> activeSlaves = new HashSet();
+    private final Set<SlaveConnection> passiveSlaves = new HashSet();
     
     private Properties props;
     
@@ -102,6 +103,12 @@ public class MasterMain {
             while(true) {
                 Socket s = serverSocket.accept();
                 SlaveConnection slaveController = new SlaveConnection(s, slaveID++); 
+                slaveController.addListener(new SlaveConnectionListener() {
+                    public void disconnected(SlaveConnection connection) {
+                        slaveLeft(connection);
+                    }
+                });
+
                 if (director.slaveJoined(slaveController)) {
                     // Director is using the slave
                     synchronized(activeSlaves) {
@@ -196,9 +203,9 @@ public class MasterMain {
      * Manage the connected managers
      */
     class ManagerController extends Thread implements CommsHandler {
-        private HashSet<ManagerConnection> connections = new HashSet();
-        private ArrayList<TestDirector> testDirectors = new ArrayList();
-        private HashMap<Class, LinkedList<MessageListener>> messageListeners = new HashMap();
+        private final HashSet<ManagerConnection> connections = new HashSet();
+        private final ArrayList<TestDirector> testDirectors = new ArrayList();
+        private final HashMap<Class, LinkedList<MessageListener>> messageListeners = new HashMap();
         
         private MasterStatus lastStatusMessage = null;
         

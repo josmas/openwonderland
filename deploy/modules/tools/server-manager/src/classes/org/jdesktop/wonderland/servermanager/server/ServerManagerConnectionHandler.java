@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.servermanager.common.PingRequestMessage;
 import org.jdesktop.wonderland.servermanager.common.PingResponseMessage;
@@ -53,25 +54,25 @@ public class ServerManagerConnectionHandler
     }
 
     public void clientConnected(WonderlandClientSender sender, 
-                                ClientSession session, 
+                                WonderlandClientID clientID,
                                 Properties properties) 
     {
         logger.fine("ServerManager client connected");
     }
 
     public void messageReceived(WonderlandClientSender sender, 
-                                ClientSession session,
+                                WonderlandClientID clientID,
                                 Message message) 
     {
         if (message instanceof PingRequestMessage) {
             logger.fine("Received ping message");
             PingRequestMessage req = (PingRequestMessage) message;
             PingResponseMessage resp = new PingResponseMessage(req);
-            sender.send(session, resp);
+            sender.send(clientID, resp);
         }
     }
 
-    public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
+    public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger.fine("ServerManager client disconnected");
     }
 }
