@@ -128,9 +128,46 @@ class WindowSwingEmbeddedToolkit
     @Override
     // Note: peer should be the owning WindowSwing.embeddedPeer	
     public Popup getPopup(EmbeddedPeer peer, Component contents, int x, int y) {
+	System.err.println("getPopup: xy = " + x + ", " + y);
+
+       	JmeClientMain.getFrame().getCanvas3DPanel().add(contents);
+	contents.validate();
+	System.err.println("!!!!!!!! contents width = " + contents.getWidth());
+	System.err.println("!!!!!!!! contents height = " + contents.getHeight());
+
+	// TODO: how do I find out how big contents is?
+	int width = 200;
+	int height = 200;
+
+	if (!(peer instanceof WindowSwingEmbeddedPeer)) {
+	    throw new RuntimeException("Invalid embedded peer type");
+	}
+	WindowSwing winOwner = ((WindowSwingEmbeddedPeer)peer).getWindowSwing();
+	WindowSwing winPopup = null;
+	try {
+	    winPopup = new WindowSwing(winOwner.getApp(), width, height, false, winOwner.getPixelScale());
+	    winPopup.setComponent(contents);
+	} catch (InstantiationException ex) {
+	    logger.warning("Cannot create a WindowSwing popup");
+	    return null;
+	}
+	final WindowSwing popup = winPopup;
+
+	winPopup.positionRelativeTo(winOwner, x, y);
+	
+        return new Popup() {
+            @Override
+            public void show() {
+		popup.setVisible(true);
+            } 
+            @Override
+            public void hide() {
+		popup.setVisible(false);
+            }
+        };
 
 	// TODO: for now
-	return null;
+	//return null;
 
 	/* Old: sort of worked, but not very well
 	//final WindowSwingPopup wsp =  new WindowSwingPopup(peer, x, y, contents.getWidth(), contents.getHeight());
@@ -139,6 +176,13 @@ class WindowSwingEmbeddedToolkit
 	*/
 
 	/* Old: Original Igor code
+
+This walks the up SG scene graph adding in the parent-relative offsets of each ancestor embedded peer
+and creates a transform group to position the popup at a (x,y) offset relative to the owning embedded peer
+Note that I don't support nested embedded components - an embedded swing component is always top-level.
+So I don't need to walk up any tree. I just need to calc the transform offset of the popup from the center
+of the cell.
+
         WindowSwingEmbeddedPeer embeddedPeer = (WindowSwingEmbeddedPeer) peer;
         SGGroup topSGGroup = null;
         AffineTransform accTransform = new AffineTransform();
@@ -169,9 +213,7 @@ class WindowSwingEmbeddedToolkit
             SGTransform.createAffine(accTransform, sgComponent);
         sgTransform.setVisible(false);
         topSGGroup.add(sgTransform);
-	*/
 
-	/*
         return new Popup() {
             @Override
             public void show() {

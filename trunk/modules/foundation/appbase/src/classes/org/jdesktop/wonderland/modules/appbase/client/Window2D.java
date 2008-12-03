@@ -55,6 +55,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public abstract class Window2D extends Window {
 
+    /** The XY (planar) translation of the window within the cell. */
+    protected Vector2f xyTranslation;
+
     /** The width of the window (in pixels) */
     protected int width;
 
@@ -97,6 +100,9 @@ public abstract class Window2D extends Window {
     /** The angle of rotation around the local Y axis (in radians) specified by the user */
     protected float rotY;
 
+    /** The local (cell relative) Z depth */
+    protected float depth = 0f;
+
     /**
      * Create a Window2D instance and its "World" view.
      *
@@ -119,7 +125,7 @@ public abstract class Window2D extends Window {
 	// By default every window has a primary world view, which is 
 	// visible when the window is visible
 	float widthWorld = (float)width * (float)pixelScale.x;
-	float heightWorld = (float)height * (float)pixelScale.x;
+	float heightWorld = (float)height * (float)pixelScale.y;
        	viewWorld = (Window2DViewWorld) createView("World");
 	if (viewWorld == null) {
 	    throw new InstantiationException("Cannot create world view of window");
@@ -156,6 +162,48 @@ public abstract class Window2D extends Window {
      */
     public int getStackPosition () {
 	return ((App2D)app).stack.getStackPosition(this);
+    }
+
+    /**
+     * Specify the XY translation.
+     */
+    // TODO: should this apply to the other views?
+    public void setXYTranslation (Vector2f trans) {
+	xyTranslation = trans;
+	viewWorld.setTranslation(new Vector3f(xyTranslation.x, xyTranslation.y, depth));
+	update(Window2DView.CHANGED_TRANSFORM);
+    }
+
+    /**
+     * Specify the depth of the window (relative to the center z=0 plane).
+     */
+    public void setDepth (float depth) {
+	this.depth = depth;
+	viewWorld.setTranslation(new Vector3f(xyTranslation.x, xyTranslation.y, depth));
+	update(Window2DView.CHANGED_TRANSFORM);
+    }
+
+    /**
+     * Returns the depth of the window.
+     */
+    public float getDepth () {
+	return depth;
+    }
+
+    /**
+     * Set the translation of this window so it is positioned relative to the given window
+     * at an offset of (x, y) where the top left corner of the interior of the given window
+     * is (0, 0). This is also placed a slight depth epsilon above the given window.
+     */
+    public void positionRelativeTo (Window2D window, int x, int y) {
+	Vector2f pixelScale = window.getPixelScale();
+	Vector2f offset = new Vector2f();
+	offset.x = (window.getWidth() * pixelScale.x) / 2f;
+	offset.y = (window.getHeight() * pixelScale.y) / 2f;
+	offset.x += x * pixelScale.x;
+	offset.y -= y * pixelScale.y;
+	setXYTranslation(offset);
+	setDepth(window.getDepth() + viewWorld.getPopupDepthOffset());
     }
 
     /**
