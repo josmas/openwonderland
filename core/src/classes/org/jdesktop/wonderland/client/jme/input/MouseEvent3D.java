@@ -82,7 +82,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
     /**
      * Returns the entity hit by the event, based on the destination pick details which were calculated
      * by the input system. Normally, this will be the pick hit entity unless previously overridden by 
-     * the input system grab calculations.
+     * the input system grab calculations. 
      */
     public Entity getEntity () {
 	if (entity == null) {
