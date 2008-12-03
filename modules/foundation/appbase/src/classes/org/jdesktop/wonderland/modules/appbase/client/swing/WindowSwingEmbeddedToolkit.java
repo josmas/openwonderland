@@ -130,14 +130,9 @@ class WindowSwingEmbeddedToolkit
     public Popup getPopup(EmbeddedPeer peer, Component contents, int x, int y) {
 	System.err.println("getPopup: xy = " + x + ", " + y);
 
-       	JmeClientMain.getFrame().getCanvas3DPanel().add(contents);
-	contents.validate();
-	System.err.println("!!!!!!!! contents width = " + contents.getWidth());
-	System.err.println("!!!!!!!! contents height = " + contents.getHeight());
-
 	// TODO: how do I find out how big contents is?
-	int width = 200;
-	int height = 200;
+	int width = (int) contents.getPreferredSize().getWidth();
+	int height = (int) contents.getPreferredSize().getHeight();
 
 	if (!(peer instanceof WindowSwingEmbeddedPeer)) {
 	    throw new RuntimeException("Invalid embedded peer type");
