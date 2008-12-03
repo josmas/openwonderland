@@ -556,14 +556,6 @@ public abstract class InputPicker {
 	}
 	*/
 
-	// If no grab is active and we didn't hit anything return a miss */
-	if (!grabIsActive && (hitPickInfo == null || hitPickInfo.size() <= 0)) {
-	    if (e.getID() == MouseEvent.MOUSE_RELEASED) {
-		lastButtonReleasedPickInfo = null;
-	    }
-	    return null;
-	}
-
 	// Calculate how the grab state should change. If the a grab should activate, activate it.
 	GrabChangeType grabChange = GrabChangeType.GRAB_NO_CHANGE;
         int eventID = e.getID();
