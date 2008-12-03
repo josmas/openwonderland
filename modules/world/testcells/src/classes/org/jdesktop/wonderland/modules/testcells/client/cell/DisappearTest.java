@@ -31,24 +31,28 @@ import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.DragTestRenderer;
+import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.DisappearTestRenderer;
 
 /**
- * Test for MouseDraggedEvent3D events. Click on the object and drag it left or right.
- * The object (and its containing cell) should move as you drag it.
+ * Test for object removal from the scene graph. Click on the small cube to make it disappear.
+ * Click on the large cube to make both disappear (the small cube is a child of the large cube).
+ * You can also drag the cubes around by left button dragging either cube (similar to DragTest).
+ *
+ * Note: the entities disappear, but the cell does not.
  * 
  * @author deronj
  */
-public class DragTest extends SimpleShapeCell {
+public class DisappearTest extends SimpleShapeCell {
     
     MyDragListener dragListener = new MyDragListener();
+    MyDisappearListener disappearListener = new MyDisappearListener();
     private MovableComponent movableComp;
-    private DragTestRenderer cellRenderer;
+    private DisappearTestRenderer cellRenderer;
 
     static Node sceneRoot;
     Entity smallCubeEntity;
 
-    public DragTest(CellID cellID, CellCache cellCache) {
+    public DisappearTest(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         addComponent(new ChannelComponent(this));
         addComponent(new MovableComponent(this));
@@ -62,7 +66,7 @@ public class DragTest extends SimpleShapeCell {
 	    // No 2D Renderer yet
 	    return null;
 	case RENDERER_JME :
-	    cellRenderer = new DragTestRenderer(this);
+	    cellRenderer = new DisappearTestRenderer(this);
 	    break;                
         }
 
@@ -77,10 +81,14 @@ public class DragTest extends SimpleShapeCell {
 
 	case ACTIVE:
 	    dragListener.addToEntity(cellRenderer.getEntity());
+	    disappearListener.addToEntity(cellRenderer.getEntity());
+	    disappearListener.addToEntity(cellRenderer.getSecondaryEntity());
 	    break;
 
         case DISK:
 	    dragListener.removeFromEntity(cellRenderer.getEntity());
+	    disappearListener.removeFromEntity(cellRenderer.getEntity());
+	    disappearListener.removeFromEntity(cellRenderer.getSecondaryEntity());
 	}
 
 	return ret;
@@ -104,7 +112,6 @@ public class DragTest extends SimpleShapeCell {
 	}
 
 	public void commitEvent (Event event) {
-
 	    CellTransform transform = getLocalTransform();
 
 	    if (event instanceof MouseButtonEvent3D) {
@@ -133,6 +140,31 @@ public class DragTest extends SimpleShapeCell {
 	    Vector3f newTranslation = translationOnPress.add(dragVector);
 	    transform.setTranslation(newTranslation);
 	    movableComp.localMoveRequest(transform);
+	}
+    }
+
+    private class MyDisappearListener extends EventClassListener {
+
+	public Class[] eventClassesToConsume () {
+	    return new Class[] { MouseEvent3D.class };
+	}
+
+	public boolean propagatesToParent (Event event) {
+	    return false;
+	}
+
+	public void commitEvent (Event event) {
+	    if (event instanceof MouseButtonEvent3D) {
+		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
+		if (buttonEvent.isClicked()) {
+		    if (event.getEntity().equals(cellRenderer.getSecondaryEntity())) {
+			cellRenderer.disconnectSecondaryObject();
+		    } else {
+			cellRenderer.disconnectPrimaryObject();
+		    }
+		}
+		return;
+	    } 
 	}
     }
 }
