@@ -29,6 +29,9 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 
+// For debug
+import org.jdesktop.mtgame.ProcessorArmingCondition;
+
 /**
  * The base implementation of a Wonderland event listener. Almost all custom event listeners should
  * extend this class.
@@ -265,7 +268,8 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /** Arm the listener's processor. */
     void arm () {
-	setArmingCondition(new PostEventCondition(this, new long[] { MTGAME_EVENT_ID}));
+	ProcessorArmingCondition condition = new PostEventCondition(this, new long[] { MTGAME_EVENT_ID});
+	setArmingCondition(condition);
     }
 
     /** Disarm the listener's processor. */
