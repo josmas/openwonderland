@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.testcells.server.cell;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
-import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -49,7 +49,7 @@ public class DisappearTestMO extends SimpleShapeCellMO {
     }
     
     @Override 
-    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
+    protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.testcells.client.cell.DisappearTest";
     }
 
