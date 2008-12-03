@@ -209,7 +209,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      * Returns the depth offset above a base window that popup windows should be positioned.
      */
     public float getPopupDepthOffset () {
-	return 0.1f;
+	return 0.01f;
     }
 
     /**

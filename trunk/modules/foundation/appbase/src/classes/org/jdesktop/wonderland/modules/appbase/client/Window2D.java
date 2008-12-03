@@ -198,8 +198,10 @@ public abstract class Window2D extends Window {
     public void positionRelativeTo (Window2D window, int x, int y) {
 	Vector2f pixelScale = window.getPixelScale();
 	Vector2f offset = new Vector2f();
-	offset.x = (window.getWidth() * pixelScale.x) / 2f;
-	offset.y = (window.getHeight() * pixelScale.y) / 2f;
+	offset.x = -window.getWidth() * pixelScale.x / 2f;
+	offset.y = window.getHeight() * pixelScale.y / 2f;
+	offset.x += getWidth() * pixelScale.x / 2f;
+	offset.y -= getHeight() * pixelScale.y / 2f;
 	offset.x += x * pixelScale.x;
 	offset.y -= y * pixelScale.y;
 	setXYTranslation(offset);
