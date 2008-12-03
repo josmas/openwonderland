@@ -130,7 +130,6 @@ class WindowSwingEmbeddedToolkit
     public Popup getPopup(EmbeddedPeer peer, Component contents, int x, int y) {
 	System.err.println("getPopup: xy = " + x + ", " + y);
 
-	// TODO: how do I find out how big contents is?
 	int width = (int) contents.getPreferredSize().getWidth();
 	int height = (int) contents.getPreferredSize().getHeight();
 
