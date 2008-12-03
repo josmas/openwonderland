@@ -88,9 +88,6 @@ public class DragTest extends SimpleShapeCell {
 
     private class MyDragListener extends EventClassListener {
 
-	// TODO: workaround for bug 27
-	boolean dragging;
-
 	// The intersection point on the entity over which the button was pressed, in world coordinates.
 	Vector3f dragStartWorld;
 
@@ -114,14 +111,12 @@ public class DragTest extends SimpleShapeCell {
 		    dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
 		    dragStartWorld = buttonEvent.getIntersectionPointWorld();
 		    translationOnPress = transform.getTranslation(null);
-		    dragging = true;
-		} else {
-		    dragging = false;
 		}
 		return;
 	    } 
+	    
 
-	    if (!dragging || !(event instanceof MouseDraggedEvent3D)) {
+	    if (!(event instanceof MouseDraggedEvent3D)) {
 		return;
 	    }
 
