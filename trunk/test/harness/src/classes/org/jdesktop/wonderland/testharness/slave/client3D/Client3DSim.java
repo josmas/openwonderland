@@ -21,6 +21,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -436,12 +437,20 @@ public class Client3DSim
         private Canvas canvas;
 
         public FakeMainFrame() {
-            frame = new JFrame();
+            try { 
+                frame = new JFrame();
+            } catch (HeadlessException he) {
+                // ignore
+                logger.log(Level.INFO, "Running in headless mode"); 
+            }
             canvasPanel = new JPanel(new BorderLayout());
             canvas = new Canvas();
 
             canvasPanel.add(canvas, BorderLayout.CENTER);
-            frame.setContentPane(canvasPanel);
+            
+            if (frame != null) { 
+                frame.setContentPane(canvasPanel);
+            }
         }
 
         public JFrame getFrame() {
