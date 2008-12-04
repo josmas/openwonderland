@@ -68,13 +68,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     @InternalAPI
     public static void initialize() {
-        logger.warning("CellManagerMO Initializing");
+        logger.fine("CellManagerMO Initializing");
 
         // create a new manager.  This only happens during a cold start (when
         // there is no Darkstar database).
         // In any other case, this step is skipped and reinitialize() is
         // called instead to load the cells in the world
-        CellManagerMO manager = new CellManagerMO();
+        new CellManagerMO();
 
         // register the cell channel message listener
         CommsManager cm = WonderlandContext.getCommsManager();
