@@ -107,10 +107,12 @@
     
     <target name="run-slave" depends="jar-slave, -set-slave-classpath">
         <property name="wonderland.user.dir" location="${user.home}/.wonderland/${wonderland.version}/test"/>
+        <property name="java.awt.headless" value="true"/>
 
         <propertyset id="slave.run.properties">
             <propertyref name="wonderland.version"/>
             <propertyref name="wonderland.user.dir"/>
+            <propertyref name="java.awt.headless"/>
         </propertyset>
 
         <java classname="org.jdesktop.wonderland.testharness.slave.SlaveMain" fork="true">

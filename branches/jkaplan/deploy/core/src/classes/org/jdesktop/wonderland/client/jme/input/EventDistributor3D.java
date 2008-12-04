@@ -82,7 +82,6 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    logger.fine("entity = " + InputPicker.pickDetailsToEntity(hitPickInfo.get(0)));
 	}
 	*/
-
 	// Track the last mouse pick info for focus-follows-mouse keyboard focus policy
 	if (event instanceof MouseEvent3D) {
 	    mousePickInfoPrev = destPickInfo;
@@ -128,6 +127,16 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 		}
 	    }
 	    Entity entity = InputPicker.pickDetailsToEntity(pickDetails);
+	    if (entity == null) {
+		idx++;
+		if (idx >= destPickInfo.size()) {
+		    // No more picked objects underneath. We're done.
+		    break;
+		} else {
+		    continue;
+		}
+	    }
+
 	    tryListenersForEntity(entity, event, propState);
 
 	    // See whether any of the picked entity's parents want the event

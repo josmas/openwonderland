@@ -51,6 +51,12 @@ public class Window2DViewNull extends Window2DView implements Window2DViewWorld 
      */
     public void cleanup () {}
 
+    public float getPopupDepthOffset () { return 0f; }
+
+    public void setTranslation (Vector3f translation) {}
+
+    public Vector3f getTranslation () { return new Vector3f(); }
+
     /**
      * Sets the visibility of the view (independent of the window).
      * Don't forget to call update(CHANGED_VISIBILITY) afterward.

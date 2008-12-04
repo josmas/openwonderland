@@ -37,6 +37,9 @@ import org.jdesktop.wonderland.modules.testcells.client.timingframework.util.Mou
 
 /**
  * Test for mouse over spin
+ *
+ * TODO this is not the correct model, Cells should not have any detailed knowledge of
+ * the renderer and in this implementation we are exposing JME Node
  * 
  * @deprecated
  * @author paulby
