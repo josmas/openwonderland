@@ -192,15 +192,9 @@
         </java>
     </target>
 
-    <target name="core-run-wfs-reader" depends="-core-setup-wfs-reader, core-run-server"
-            description="Run WFS reader for Project Wonderland"/>
-
-    <target name="-core-setup-wfs-reader">
+    <target name="core-clean-server" description="Delete Darkstar database">
         <!-- reset the data directory -->
         <delete dir="${sgs.data.dir}" failonerror="false"/>
-
-        <!-- override the default cofnig file -->
-        <property name="sgs.config.file" value="WFSReader.cfg"/>
     </target>
 
 

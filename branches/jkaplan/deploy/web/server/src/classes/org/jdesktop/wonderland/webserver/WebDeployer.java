@@ -43,7 +43,7 @@ public class WebDeployer implements ModuleDeployerSPI {
             Logger.getLogger(WebDeployer.class.getName());
     
     /** list of deployed wars to avoid duplicate deploys */
-    private static List<DeployRecord> deployed = 
+    private static final List<DeployRecord> deployed =
             new ArrayList<DeployRecord>();
     
     /**
@@ -83,7 +83,7 @@ public class WebDeployer implements ModuleDeployerSPI {
      * @param part the web module part
      */
     public void deploy(String type, Module module, ModulePart part) {
-        File deployDir = new File(RunUtil.getRunDir(), "deploy");
+        File deployDir = RunUtil.createTempDir("webmodule", "deploy");
         
         for (File war : getWebApps(part.getFile())) {
             
