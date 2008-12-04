@@ -15,7 +15,7 @@ import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
  *
  * @author paulby
  */
-public class UniverseServiceManagerImpl implements UniverseServiceManager {
+public class UniverseServiceManagerImpl implements UniverseManager {
 
     private UniverseService service;
 

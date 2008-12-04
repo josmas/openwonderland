@@ -30,7 +30,9 @@ import com.sun.sgs.impl.service.data.DataServiceImpl;
 import com.sun.sgs.impl.util.TransactionContext;
 import com.sun.sgs.impl.util.TransactionContextFactory;
 import com.sun.sgs.kernel.ComponentRegistry;
+import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.TaskScheduler;
+import com.sun.sgs.kernel.TransactionScheduler;
 import com.sun.sgs.service.Service;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
@@ -40,6 +42,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.logging.Logger;
@@ -47,6 +50,7 @@ import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import org.jdesktop.wonderland.server.spatial.impl.SpatialCellImpl;
@@ -56,7 +60,7 @@ import org.jdesktop.wonderland.server.spatial.impl.UniverseImpl;
  *
  * @author paulby
  */
-public class UniverseService implements UniverseServiceManager, Service {
+public class UniverseService implements UniverseManager, Service {
 
         // logger
     private static final Logger logger =
@@ -94,6 +98,25 @@ public class UniverseService implements UniverseServiceManager, Service {
         changeApplication = new ChangeApplication();
         universe = new UniverseImpl(registry, transactionProxy);
 
+        // reload the world inside a transaction
+        TransactionScheduler txnScheduler = 
+                registry.getComponent(TransactionScheduler.class);
+        Identity taskOwner =
+                transactionProxy.getCurrentOwner();
+
+        try {
+            txnScheduler.runTask(new KernelRunnable() {
+                public String getBaseTaskType() {
+                    return NAME + ".CellReloader";
+                }
+
+                public void run() {
+                    CellManagerMO.reinitialize(UniverseService.this);
+                }
+            }, taskOwner);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error reloading cells", ex);
+        }
     }
 
     public String getName() {
@@ -108,7 +131,7 @@ public class UniverseService implements UniverseServiceManager, Service {
         return true; // Success
     }
 
-
+    
 //    private SpatialCell cloneGraph(CellMO cellMO) {
 //        SpatialCell ret = universe.createSpatialCell(cellMO.getCellID(), false);
 //
@@ -120,7 +143,7 @@ public class UniverseService implements UniverseServiceManager, Service {
 //    }
 
     private void scheduleChange(Change change) {
-        // get the current transaction state
+        // get the current transaction state, and add the change to it
         ctxFactory.joinTransaction().addChange(change);
     }
 
@@ -188,10 +211,24 @@ public class UniverseService implements UniverseServiceManager, Service {
 
     public void setLocalTransform(CellMO cellMO, CellTransform localTransform) {
         final Identity identity = proxy.getCurrentOwner();
+
+        /*
+        try {
+            throw new Exception("Trace");
+        } catch (Exception ex) {
+            logger.log(Level.INFO, "set local transform for cell " + 
+                       cellMO.getCellID(), ex);
+        }
+         */
+
         scheduleChange(new Change(cellMO.getCellID(), null, localTransform) {
             public void run() {
                 SpatialCell sc = universe.getSpatialCell(cellID);
-                sc.setLocalTransform(localTransform, identity);
+                if (sc == null) {
+                    logger.warning("Cell " + cellID + " not found!");
+                } else {
+                    sc.setLocalTransform(localTransform, identity);
+                }
             }
         });
     }

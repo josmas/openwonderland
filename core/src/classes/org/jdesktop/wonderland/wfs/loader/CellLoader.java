@@ -19,13 +19,18 @@
 package org.jdesktop.wonderland.wfs.loader;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.AppListener;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
@@ -73,7 +78,7 @@ public class CellLoader {
     public static Logger getLogger() {
         return CellLoader.logger;
     }
-    
+
     /**
      * Returns the parent cell MO class, using the canonical name of its parent
      * cell given during its creation.

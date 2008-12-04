@@ -46,6 +46,7 @@ import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
+import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 
 /**
  * Superclass for all server side representation of a cell
@@ -145,7 +146,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (!live)
             throw new IllegalStateException("Cell is not live");
         
-        return UniverseManager.getUniverseManager().getWorldBounds(this, null);
+        return UniverseManagerFactory.getUniverseManager().getWorldBounds(this, null);
     }
    
     /**
@@ -163,7 +164,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (!live)
             throw new IllegalStateException("Unsupported Operation, only valid for a live Cell "+this.getClass().getName());
         
-        return UniverseManager.getUniverseManager().getWorldTransform(this, result);
+        return UniverseManagerFactory.getUniverseManager().getWorldTransform(this, result);
     }
     
     /**
@@ -205,7 +206,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 if (live) {
                     child.setLive(false);
                 }
-                UniverseManager.getUniverseManager().removeChild(this, child);
+                UniverseManagerFactory.getUniverseManager().removeChild(this, child);
                 return true;
             } catch (MultipleParentException ex) {
                 // This should never happen
@@ -315,7 +316,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         this.localTransform = (CellTransform) transform.clone(null);
 
         if (live)
-            UniverseManager.getUniverseManager().setLocalTransform(this, localTransform);
+            UniverseManagerFactory.getUniverseManager().setLocalTransform(this, localTransform);
     }
     
 
@@ -369,18 +370,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 localBounds = new BoundingSphere(1f, new Vector3f());
             }
 
-            UniverseManager.getUniverseManager().createCell(this);
-            System.err.println("CREATING SPATIAL CELL "+getCellID().toString()+" "+this.getClass().getName());
-            
-            if (transformChangeListeners!=null)
-                for(TransformChangeListenerSrv listener : transformChangeListeners)
-                    UniverseManager.getUniverseManager().addTransformChangeListener(this, listener);
-
-            if (parentRef!=null)
-                UniverseManager.getUniverseManager().addChild(parentRef.getForUpdate(), this);
-
+            addToUniverse(UniverseManagerFactory.getUniverseManager());
         } else {
-            UniverseManager.getUniverseManager().removeCell(this);
+            removeFromUniverse(UniverseManagerFactory.getUniverseManager());
         }
 
 
@@ -395,7 +387,33 @@ public abstract class CellMO implements ManagedObject, Serializable {
             child.setLive(live);
         }
     }
-    
+
+    /**
+     * Add this cell to the universe
+     */
+    void addToUniverse(UniverseManager universe) {
+        System.out.println("Creating spatial cell " + getCellID() + " " + getClass().getName());
+        universe.createCell(this);
+        //System.err.println("CREATING SPATIAL CELL " + getCellID().toString() + " " + this.getClass().getName());
+
+        if (transformChangeListeners != null) {
+            for (TransformChangeListenerSrv listener : transformChangeListeners) {
+                universe.addTransformChangeListener(this, listener);
+            }
+        }
+
+        if (parentRef != null) {
+            universe.addChild(parentRef.getForUpdate(), this);
+        }
+    }
+
+    /**
+     * Remove this cell from the universe
+     */
+    void removeFromUniverse(UniverseManager universe) {
+        universe.removeCell(this);
+    }
+
     /**
      * Get the name of the cell, by default the name is the cell id.
      * @return the cell's name
@@ -609,7 +627,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         transformChangeListeners.add(listener);
 
         if (isLive())
-            UniverseManager.getUniverseManager().addTransformChangeListener(this, listener);
+            UniverseManagerFactory.getUniverseManager().addTransformChangeListener(this, listener);
 
     }
     
@@ -620,7 +638,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     public void removeTransformChangeListener(TransformChangeListenerSrv listener) {
         transformChangeListeners.remove(listener);
         if (isLive())
-            UniverseManager.getUniverseManager().removeTransformChangeListener(this, listener);
+            UniverseManagerFactory.getUniverseManager().removeTransformChangeListener(this, listener);
     }
     
 }

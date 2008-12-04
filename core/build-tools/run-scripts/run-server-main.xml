@@ -12,7 +12,51 @@
     <property name="core.lib.dir" location="core/lib"/>
 
     <!-- import the core build script -->
-    <import file="core/build-tools/run-scripts/run-server.xml"/>
+    <property name="core.run-scripts.dir"
+              location="core/build-tools/run-scripts"/>
     
-    <target name="run" depends="core-run-server"/>
+    <!-- macro for the remote ant call -->
+    <macrodef name="run-server">
+        <attribute name="target" default="core-run-server"/>
+        <sequential>
+            <ant dir="${core.run-scripts.dir}"
+                 antfile="run-server.xml"
+                 inheritall="false"
+                 target="@{target}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- run the server, based on the value of the sgs.startup.type
+         variable -->
+    <target name="run" depends="-run-setup, 
+                                -run-warmstart,
+                                -run-coldstart-write,
+                                -run-coldstart-read"/>
+
+    <target name="-run-setup">
+        <condition property="run.warmstart">
+            <equals arg1="${sgs.startup.type}" arg2="warmstart"
+                    casesensitive="false"/>
+        </condition>
+
+        <condition property="run.coldstart.write">
+            <equals arg1="${sgs.startup.type}" arg2="coldstart_write"
+                    casesensitive="false"/>
+        </condition>
+    </target>
+
+    <target name="-run-warmstart" if="run.warmstart">
+        <property name="server.run" value="true"/>
+        <run-server target="core-run-server"/>
+    </target>
+
+    <target name="-run-coldstart-write" if="run.coldstart.write">
+        <property name="server.run" value="true"/>
+        <fail message="Write not implemented"/>
+    </target>
+
+    <target name="-run-coldstart-read" unless="server.run">
+        <run-server target="core-clean-server"/>
+        <run-server target="core-run-server"/>
+    </target>
 </project>

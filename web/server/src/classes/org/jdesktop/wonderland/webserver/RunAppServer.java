@@ -22,16 +22,15 @@ import com.sun.enterprise.web.WebDeployer;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
 import com.sun.hk2.component.InhabitantsParser;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -56,7 +55,9 @@ import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleAttributes;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
+import org.jdesktop.wonderland.utils.FileListUtil;
 import org.jvnet.hk2.component.Habitat;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -75,21 +76,31 @@ public class RunAppServer {
     private static int port;
 
     static {
-        String portStr = SystemPropertyUtil.getProperty(WebServerLauncher.WEBSERVER_PORT_PROP,
+        String portStr = SystemPropertyUtil.getProperty(Constants.WEBSERVER_PORT_PROP,
                                                         "8080");
         port = Integer.parseInt(portStr);
     }
     
     public RunAppServer() throws IOException {
         // set up URL handlers for Wonderland types
-        URL.setURLStreamHandlerFactory(new WonderlandURLStreamHandlerFactory());
+        URL.setURLStreamHandlerFactory(new WonderlandURLStreamHandlerFactory()); 
+        // check if we need to make any changes
+        if (Boolean.parseBoolean(
+                System.getProperty(Constants.WEBSERVER_NEWVERSION_PROP)))
+        {
+            // remove old modules
+            uninstallModules();
+        
+            // install the default modules
+            installModules();
+            
+            // write the web server's document root
+            writeDocumentRoot();
+            
+            // write the updated webapps
+            writeWebApps();
+        }
 
-        // remove old modules
-        uninstallModules();
-        
-        // install the default modules
-        installModules();
-        
         // redeploy any other modules that haven't yet been deployed
         ModuleManager.getModuleManager().redeployAll();
         
@@ -99,46 +110,82 @@ public class RunAppServer {
 
     private void deployWebApps() throws IOException {
         WonderlandAppServer as = getAppServer();
-                
-        // copy files to document root of web server
-        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/docroot.files");
-        BufferedReader in = in = new BufferedReader(new InputStreamReader(is));
-        
-        File docDir = new File(RunUtil.getRunDir(), "docRoot");
-        docDir.mkdirs();
-        
-        String line;
-        while ((line = in.readLine()) != null) {
-            InputStream fileIs = WebServerLauncher.class.getResourceAsStream(line);
-            if (line.lastIndexOf("/") != -1) {
-                line = line.substring(line.lastIndexOf("/"));
-            }
-            RunUtil.writeToFile(fileIs, new File(docDir, line));
-        }
-        
-        // read the list of .war files to deploy
-        is = WebServerLauncher.class.getResourceAsStream("/META-INF/deploy.jars");
-        in = new BufferedReader(new InputStreamReader(is));
 
-        // write to a subdirectory of the default temp directory
+        // deploy all webapps
         File deployDir = new File(RunUtil.getRunDir(), "deploy");
-        deployDir.mkdirs();
-        
-        while ((line = in.readLine()) != null) {
-            File f = RunUtil.extractJar(getClass(), line, deployDir);
+        for (File war : deployDir.listFiles()) {
             try {
-                as.deploy(f);
+                as.deploy(war);
             } catch (Exception excp) {
                 // ignore any exception and continue
             }
         }
     }
-    
+
+    private void writeDocumentRoot() throws IOException {
+        File docDir = new File(RunUtil.getRunDir(), "docRoot");
+        docDir.mkdirs();
+
+        // figure out the set of files to add or remove
+        List<String> addFiles = new ArrayList<String>();
+        List<String> removeFiles = new ArrayList<String>();
+        FileListUtil.compareDirs("META-INF/docroot", docDir,
+                                 addFiles, removeFiles);
+
+        for (String removeFile : removeFiles) {
+            File file = new File(docDir, removeFile);
+            file.delete();
+        }
+
+        for (String addFile : addFiles) {
+            String fullPath = "/docroot/" + addFile;
+            InputStream fileIs =
+                    WebServerLauncher.class.getResourceAsStream(fullPath);
+
+            RunUtil.writeToFile(fileIs, new File(docDir, addFile));
+        }
+
+        // write the updated checksum list
+        RunUtil.extract(getClass(), "/META-INF/docroot/files.list", docDir);
+    }
+
+    private void writeWebApps() throws IOException {
+        // write to a subdirectory of the default temp directory
+        File deployDir = new File(RunUtil.getRunDir(), "deploy");
+        deployDir.mkdirs();
+
+        // figure out the set of files to add or remove
+        List<String> addFiles = new ArrayList<String>();
+        List<String> removeFiles = new ArrayList<String>();
+        FileListUtil.compareDirs("META-INF/deploy", deployDir,
+                                 addFiles, removeFiles);
+
+        // remove the files to remove
+        for (String removeFile : removeFiles) {
+            File remove = new File(deployDir, removeFile);
+
+            // files have been extracted into directories
+            if (remove.isDirectory()) {
+                RunUtil.deleteDir(remove);
+            }
+        }
+
+        for (String addFile : addFiles) {
+            String fullPath = "/deploy/" + addFile;
+            RunUtil.extractJar(getClass(), fullPath, deployDir);
+        }
+
+        // write the updated checksum list
+        RunUtil.extract(getClass(), "/META-INF/deploy/files.list", deployDir);
+    }
+
     private void uninstallModules() throws IOException {
         ModuleManager mm = ModuleManager.getModuleManager();
         Map<String, Module> system = 
                 mm.getInstalledModulesByKey(ModuleAttributes.SYSTEM_MODULE);
-        
+        Map<String, String> checksums =
+                FileListUtil.readChecksums("META-INF/modules");
+
         logger.warning("Uninstalling " + system.size() + " modules.");
         
         // add to the list of modules to uninstall
@@ -149,23 +196,20 @@ public class RunAppServer {
     }
     
     private void installModules() throws IOException {
-        // read the list of .war files to deploy
-        InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/module.jars");
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-    
         // extract modules to a directory, and make a list of the extracted
         // modules
         File moduleDir = RunUtil.createTempDir("module", ".jar");
-       
-        // keep a collection of File object that we want to add
+
+        // build a collection of File object that we want to add
         Collection<File> modules = new ArrayList<File>();
-        
-        String line;
-        while ((line = in.readLine()) != null) {
-            File f = RunUtil.extract(getClass(), line, moduleDir);
-            modules.add(f);
+
+        Map<String, String> checksums =
+                FileListUtil.readChecksums("META-INF/modules");
+        for (String file : checksums.keySet()) {
+            String fullPath = "/modules/" + file;
+            modules.add(RunUtil.extract(getClass(), fullPath, moduleDir));
         }
-        
+
         // add all modules at once to the module manager.  This will ensure
         // that dependency checks take all modules into account. This can also
         // check return values.

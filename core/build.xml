@@ -125,7 +125,10 @@
             </classpath>
         </java>
     </target>
-    
+
+    <!-- deploy -->
+    <target name="deploy" depends="dist, -core-deploy"/>
+
     <!-- clean -->
     <target name="clean" depends="-core-clean" description="Clean core directories"/>
     

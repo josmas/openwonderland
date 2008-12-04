@@ -30,7 +30,7 @@ public class ListFilesTask extends Task {
     private File jar;
     private String dir;
     private File output;
-    
+
     private static final FileUtils FILE_UTILS = FileUtils.getFileUtils();
     
     @Override
@@ -72,7 +72,7 @@ public class ListFilesTask extends Task {
                 Matcher m = p.matcher(je.getName());
                 if (m.matches() && m.groupCount() == 1) {
                     String line = "/" + m.group();
-                    
+
                     // see if this is different
                     if (!changed && !line.equals(check.readLine())) {
                         changed = true;
@@ -104,7 +104,7 @@ public class ListFilesTask extends Task {
         }
         
     }
-    
+
     public void setJar(File jar) {
         this.jar = jar;
     }
@@ -116,5 +116,5 @@ public class ListFilesTask extends Task {
     public void setOutput(File output) {
         this.output = output;
     }
-    
+
 }
