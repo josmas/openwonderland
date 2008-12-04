@@ -54,7 +54,7 @@ import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.server.spatial.UniverseManager;
+import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 
 /**
  * Container for the cell cache for an avatar.
@@ -121,7 +121,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             }
         }
 
-        UniverseManager.getUniverseManager().viewLogin(view);
+        UniverseManagerFactory.getUniverseManager().viewLogin(view);
 
         username = view.getUser().getUsername();
         
@@ -152,7 +152,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     void logout(WonderlandClientID clientID) {
         logger.warning("DEBUG - logout");
         ViewCellMO view = viewRef.get();
-        UniverseManager.getUniverseManager().viewLogout(view);
+        UniverseManagerFactory.getUniverseManager().viewLogout(view);
         WonderlandContext.getCellManager().removeCellFromWorld(view);
     }
      

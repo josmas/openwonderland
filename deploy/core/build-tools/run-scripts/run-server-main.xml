@@ -56,7 +56,7 @@
     </target>
 
     <target name="-run-coldstart-read" unless="server.run">
-        <run-server target="core-run-wfs-reader"/>
+        <run-server target="core-clean-server"/>
         <run-server target="core-run-server"/>
     </target>
 </project>
