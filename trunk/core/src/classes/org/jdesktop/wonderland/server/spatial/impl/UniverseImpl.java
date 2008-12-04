@@ -25,7 +25,6 @@ import com.sun.sgs.kernel.TransactionScheduler;
 import com.sun.sgs.service.DataService;
 import com.sun.sgs.service.TransactionProxy;
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -39,7 +38,7 @@ import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 public class UniverseImpl implements Universe {
 
     private SpaceManager spaceManager = new SpaceManagerGridImpl();
-    private HashMap<CellID, SpatialCellImpl> cells = new HashMap();
+    private final HashMap<CellID, SpatialCellImpl> cells = new HashMap();
     private TaskScheduler taskScheduler;
     private static UniverseImpl universe;
     private TransactionProxy transactionProxy;
@@ -156,7 +155,14 @@ public class UniverseImpl implements Universe {
         synchronized(cells) {
             viewCell = (ViewCellImpl) cells.get(viewCellID);
         }
-        viewCell.getViewCache().logout();
+        
+        // it's possible the viewcell won't be in our list of cells.  For
+        // example when there is a warm restart, this node will see all the
+        // clients log out, even though it never saw them log in.  This is
+        // fine, just ignore the request.
+        if (viewCell != null && viewCell.getViewCache() != null) {
+            viewCell.getViewCache().logout();
+        }
     }
 
     public void addTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener) {

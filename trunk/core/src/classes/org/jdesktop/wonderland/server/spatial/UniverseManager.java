@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.server.spatial;
 
 import com.jme.bounding.BoundingVolume;
-import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
@@ -32,69 +31,31 @@ import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
  *
  * @author paulby
  */
-public class UniverseManager {
+public interface UniverseManager {
 
-    private static UniverseManager universeManager=new UniverseManager();
+    public void addChild(CellMO parent, CellMO child);
 
-    private UniverseServiceManager serviceMgr;
+    public void addTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener);
 
-    UniverseManager() {
-        serviceMgr = AppContext.getManager(UniverseServiceManager.class);
-    }
+    public void createCell(CellMO cellMO);
 
-    public static UniverseManager getUniverseManager() {
-        return universeManager;
-    }
+    public void removeCell(CellMO cellMO);
 
-    public void addChild(CellMO parent, CellMO child) {
-        serviceMgr.addChild(parent,child);
-    }
+    public void removeChild(CellMO parent, CellMO child);
 
-    public void createCell(CellMO cellMO) {
-        serviceMgr.createCell(cellMO);
-    }
+    public  void addRootToUniverse(CellMO rootCellMO);
 
-    public void removeCell(CellMO cellMO) {
-        serviceMgr.removeCell(cellMO);
-    }
+    public void removeRootFromUniverse(CellMO rootCellMO);
 
-    public void removeChild(CellMO parent, CellMO child) {
-        serviceMgr.removeChild(parent, child);
-    }
+    public void removeTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener);
 
-    public  void addRootToUniverse(CellMO rootCellMO) {
-        serviceMgr.addRootToUniverse(rootCellMO);
-    }
+    public void setLocalTransform(CellMO cell, CellTransform localCellTransform);
 
-    public void removeRootFromUniverse(CellMO rootCellMO) {
-        serviceMgr.removeRootFromUniverse(rootCellMO);
-    }
+    public CellTransform getWorldTransform(CellMO cell, CellTransform result);
 
-    public void setLocalTransform(CellMO cell, CellTransform localCellTransform) {
-        serviceMgr.setLocalTransform(cell, localCellTransform);
-    }
+    public BoundingVolume getWorldBounds(CellMO cell, BoundingVolume result);
 
-    public CellTransform getWorldTransform(CellMO cell, CellTransform result) {
-        return serviceMgr.getWorldTransform(cell, result);
-    }
+    public void viewLogin(ViewCellMO viewCell);
 
-    public BoundingVolume getWorldBounds(CellMO cell, BoundingVolume result) {
-        return serviceMgr.getWorldBounds(cell, result);
-    }
-
-    public void viewLogin(ViewCellMO viewCell) {
-        serviceMgr.viewLogin(viewCell);
-    }
-
-    public void viewLogout(ViewCellMO viewCell) {
-        serviceMgr.viewLogout(viewCell);
-    }
-
-    public void addTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener) {
-        serviceMgr.addTransformChangeListener(cell, listener);
-    }
-
-    public void removeTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener) {
-        serviceMgr.removeTransformChangeListener(cell, listener);
-    }
+    public void viewLogout(ViewCellMO viewCell);
 }

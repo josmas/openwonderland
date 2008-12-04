@@ -382,7 +382,7 @@ public class DarkstarRunner extends BaseRunner {
      */
     protected class DarkstarOutputReader extends BaseRunner.ProcessOutputReader {
         private static final String DARKSTAR_STARTUP =
-                "Wonderland server started successfully";
+                "Wonderland: application is ready";
                 
         public DarkstarOutputReader(InputStream in, Logger out) {
             super (in, out);

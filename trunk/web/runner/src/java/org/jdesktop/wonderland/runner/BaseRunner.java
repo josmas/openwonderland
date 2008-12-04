@@ -123,7 +123,8 @@ public abstract class BaseRunner implements Runner {
      */
     protected synchronized File getRunDir() {
         if (runDir == null) {
-            runDir = RunUtil.createTempDir("server", "run");
+            runDir = new File(RunUtil.getRunDir(), getLogName());
+            runDir.mkdir();
         }
         
         return runDir;
@@ -151,6 +152,13 @@ public abstract class BaseRunner implements Runner {
      */
     public void deploy(String filename, InputStream in) throws IOException {
         RunUtil.extractZip(new ZipInputStream(in), getRunDir());
+    }
+
+    /**
+     * Clear the run directory
+     */
+    public void clear() {
+        RunUtil.deleteDir(getRunDir());
     }
 
     /**

@@ -41,7 +41,9 @@
                         fullpath="run.xml"/>
             
             <!-- include wonderland properties -->
-            <zipfileset file="${src.dir}/darkstar_config/WonderlandMain.cfg" prefix="core"/>
+            <zipfileset dir="${src.dir}/darkstar_config" prefix="core">
+                <include name="*.cfg"/>
+            </zipfileset>
             <zipfileset file="${src.dir}/darkstar_config/sgs-logging.properties" prefix="core/lib/sgs/sgs-${core.sgs.version}"/>
         </zip> 
     </target>

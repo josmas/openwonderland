@@ -15,6 +15,7 @@
         <pathconvert property="web-extra.classpath">
             <path path="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
             <path path="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
+            <path path="${core.dir}/build/lib/wonderland-common.jar"/>
             <path path="${current.dir}/lib/winp-1.5.jar"/>
         </pathconvert>
     </target>
@@ -54,11 +55,7 @@
                 <include name="META-INF/**"/>
             </zipfileset>
             
-            <!-- package core distribution files -->
-            <zipfileset dir="${core.dir}/dist" prefix="META-INF/deploy"/>
-            
             <!-- package module distribution files -->
-            <zipfileset dir="../../modules/dist/runner/deploy" prefix="META-INF/deploy"/>
             <zipfileset dir="../../modules/dist/runner/classes"/>
         </jar>
     </target>

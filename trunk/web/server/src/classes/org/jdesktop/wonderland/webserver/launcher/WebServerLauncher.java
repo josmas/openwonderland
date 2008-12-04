@@ -17,21 +17,26 @@
  */
 package org.jdesktop.wonderland.webserver.launcher;
 
+import org.jdesktop.wonderland.utils.FileListUtil;
 import java.net.URLConnection;
 import org.jdesktop.wonderland.utils.RunUtil;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +46,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
@@ -51,10 +57,6 @@ import org.jdesktop.wonderland.utils.SystemPropertyUtil;
  * @author jkaplan
  */
 public class WebServerLauncher {
-    // properties
-    public static final String WEBSERVER_PORT_PROP = "wonderland.webserver.port";
-    public static final String WEBSERVER_HOST_PROP = "wonderland.webserver.host";
-    public static final String WEBSERVER_URL_PROP  = "wonderland.web.server.url";
 
     // port to listen for killswitch connections
     private static final String WEBSERVER_KILLSWITCH_PROPERTY =
@@ -128,28 +130,31 @@ public class WebServerLauncher {
         }
 
         try {
-            // read the list of web server jar files
-            InputStream is = WebServerLauncher.class.getResourceAsStream("/META-INF/webserver.jars");
-            BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        
             // extract to a webserver directory in the default temp dir
             File webDir = new File(RunUtil.getRunDir(), "webserver");
             webDir.mkdirs();
-            
-            String line;
-            List<URL> urls = new ArrayList<URL>();
-            while ((line = in.readLine()) != null) {
-                File f = RunUtil.extract(WebServerLauncher.class, line, webDir);
-                if (f != null) {
-                    f.deleteOnExit();
-                    
-                    URL u = f.toURI().toURL();
-                    System.out.println("Adding URL " + u);
-                    
-                    urls.add(u);
-                }
+
+            // see if we are a new version
+            if (!compareVersions(RunUtil.getRunDir())) {
+                System.setProperty(Constants.WEBSERVER_NEWVERSION_PROP, "true");
+
+                // if the versions are different, then extract the webserver
+                // jars into the webserver directory
+                extractWebserverJars(webDir);
+
+                // now write the updated version number
+                writeVersion(RunUtil.getRunDir());
             }
-            
+
+            // gather URLs by finding all files in the web directory
+            List<URL> urls = new ArrayList<URL>();
+            for (File jar : webDir.listFiles()) {
+                URL u = jar.toURI().toURL();
+                System.out.println("Adding URL " + u);
+
+                urls.add(u);
+            }
+
             // create a classloader with those files and use it
             // to reflectively instantiate an instance of the 
             // RunAppServer class, and call its run method
@@ -190,7 +195,7 @@ public class WebServerLauncher {
             // TODO: get the host too
             System.out.println("Web server running on " +
                                SystemPropertyUtil.getProperty(
-                                    WebServerLauncher.WEBSERVER_URL_PROP));
+                                    Constants.WEBSERVER_URL_PROP));
             System.out.println("-----------------------------------------------------------");
         
         } catch (Exception ex) {
@@ -246,25 +251,25 @@ public class WebServerLauncher {
         
         // override the port and directory if specified
         if (port != null) {
-            System.setProperty(WEBSERVER_PORT_PROP, port);
+            System.setProperty(Constants.WEBSERVER_PORT_PROP, port);
         } else {
-            System.setProperty(WEBSERVER_PORT_PROP, "8080");
+            System.setProperty(Constants.WEBSERVER_PORT_PROP, "8080");
         }
 
         if (directory != null) {
-            System.setProperty(RunUtil.RUN_DIR_PROP, directory);
+            System.setProperty(Constants.RUN_DIR_PROP, directory);
         }
 
         // set guess the hostname for this server
-        if (System.getProperty(WEBSERVER_HOST_PROP) == null) {
-            System.setProperty(WEBSERVER_HOST_PROP, getHostname());
+        if (System.getProperty(Constants.WEBSERVER_HOST_PROP) == null) {
+            System.setProperty(Constants.WEBSERVER_HOST_PROP, getHostname());
         }
 
         // set the web server URL based on the hostname and port
-        if (System.getProperty(WEBSERVER_URL_PROP) == null) {
-            System.setProperty(WEBSERVER_URL_PROP,
-                "http://" + System.getProperty(WEBSERVER_HOST_PROP).trim() +
-                ":" + System.getProperty(WEBSERVER_PORT_PROP).trim() + "/");
+        if (System.getProperty(Constants.WEBSERVER_URL_PROP) == null) {
+            System.setProperty(Constants.WEBSERVER_URL_PROP,
+                "http://" + System.getProperty(Constants.WEBSERVER_HOST_PROP).trim() +
+                ":" + System.getProperty(Constants.WEBSERVER_PORT_PROP).trim() + "/");
         }
 
         return true;
@@ -278,6 +283,94 @@ public class WebServerLauncher {
             logger.log(Level.WARNING, "Error determining host name", ioe);
             return "localhost";
         }
+    }
+
+    /**
+     * Compare the Wonderland.jar to the jar file in the run directory.
+     * @param runDir the run directory
+     * @return true if the versions are the same, or false if they are different
+     * @throws IOException if there is an error reading a version file
+     */
+    private static boolean compareVersions(File runDir)
+        throws IOException
+    {
+        // read the version from the jar file
+        String jarVersion = getJarVersion();
+
+        // read the version in the run directory
+        String dirVersion = null;
+        File versionFile = new File(runDir, "wonderland.version");
+        if (versionFile.exists()) {
+            BufferedReader br = new BufferedReader(new FileReader(versionFile));
+            dirVersion = br.readLine();
+        }
+
+        logger.warning("Comparing versions.  Jar file: " + jarVersion +
+                       " Directory: " + dirVersion);
+
+        // compare the values
+        if (jarVersion == null || dirVersion == null) {
+            // if either value is unset, treat them as different
+            return false;
+        }
+
+        return (jarVersion.equals(dirVersion));
+    }
+
+    private static void writeVersion(File runDir)
+        throws IOException
+    {
+        String currentVersion = getJarVersion();
+        if (currentVersion != null) {
+            File versionFile = new File(runDir, "wonderland.version");
+            PrintWriter pr = new PrintWriter(new FileWriter(versionFile));
+            pr.println(currentVersion);
+            pr.close();
+        }
+    }
+
+    private static String getJarVersion() throws IOException {
+        String version = null;
+
+        // try the classpath
+        String paths[] = System.getProperty("java.class.path").split(
+                System.getProperty("path.separator"));
+        for (String path : paths) {
+            if (path.endsWith("Wonderland.jar")) {
+                File f = new File(path);
+                version = String.valueOf(f.lastModified());
+            }
+        }
+
+        return version;
+    }
+
+    private static void extractWebserverJars(File webDir)
+        throws IOException
+    {
+        // figure out the set of files to add or remove
+        List<String> addFiles = new ArrayList<String>();
+        List<String> removeFiles = new ArrayList<String>();
+        FileListUtil.compareDirs("META-INF/webserver", webDir,
+                addFiles, removeFiles);
+
+        // remove files from the remove list
+        for (String removeFile : removeFiles) {
+            System.out.println("Removing " + removeFile);
+            File remove = new File(webDir, removeFile);
+            remove.delete();
+        }
+
+        // add files from the add list
+        for (String addFile : addFiles) {
+            System.out.println("Adding " + addFile);
+            String fullPath = "/webserver/" + addFile;
+            RunUtil.extract(WebServerLauncher.class, fullPath, webDir);
+        }
+
+        // write the checksums to the webserver directory
+        RunUtil.extract(WebServerLauncher.class,
+                "/META-INF/webserver/files.list", webDir);
     }
 
     /**
@@ -310,7 +403,18 @@ public class WebServerLauncher {
 
         @Override
         protected String toExternalForm(URL u) {
-            return u.getPath();
+            // de-URLEncode the result. The path on Windows will be
+            // of the form:
+            // /C:/Documents%20and%20Settings/whatever
+            // Which is not a valid path.  Replace it with
+            // /C:/Documents and Settings/whatever
+
+            try {
+                return URLDecoder.decode(u.getPath(), "UTF-8");
+            } catch (UnsupportedEncodingException uee) {
+                logger.log(Level.WARNING, "Unable to decode " + u.getPath(), uee);
+                return u.getPath();
+            }
         }
     }
 
