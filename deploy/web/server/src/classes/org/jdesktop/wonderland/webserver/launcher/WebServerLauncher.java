@@ -29,12 +29,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -401,7 +403,18 @@ public class WebServerLauncher {
 
         @Override
         protected String toExternalForm(URL u) {
-            return u.getPath();
+            // de-URLEncode the result. The path on Windows will be
+            // of the form:
+            // /C:/Documents%20and%20Settings/whatever
+            // Which is not a valid path.  Replace it with
+            // /C:/Documents and Settings/whatever
+
+            try {
+                return URLDecoder.decode(u.getPath(), "UTF-8");
+            } catch (UnsupportedEncodingException uee) {
+                logger.log(Level.WARNING, "Unable to decode " + u.getPath(), uee);
+                return u.getPath();
+            }
         }
     }
 
