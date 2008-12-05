@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import imi.character.ninja.NinjaContext.TriggerNames;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.AvatarCharacter;
 
 /**
  * A test to demonstrate triggering motion from other interfaces
