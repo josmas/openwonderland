@@ -19,18 +19,13 @@
 package org.jdesktop.wonderland.wfs.loader;
 
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.AppListener;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
@@ -110,28 +105,9 @@ public class CellLoader {
          */
         if (wfsRoots.getRoots().length > 0) {
             String rootName = wfsRoots.getRoots()[0];
-//        for (String rootName : wfsRoots.getRoots()) {
-//            logger.info("CellLoader: loading the WFS root " + rootName);
-//        
-//            /*
-//             * Attempt to create a new MO based upon the WFS root. We need to setup
-//             * some basic properties about the cell by hand (e.g.name).
-//             */
-//            WFSCellMO mo = new WFSCellMO(rootName);
-//            mo.setName(rootName);
-//
-//            try {
-//                AppContext.getDataManager().setBinding(mo.getBindingName(), mo);
-//                WonderlandContext.getCellManager().insertCellInWorld(mo);
-//            } catch (java.lang.Exception excp) {
-//                logger.severe("Unable to load WFS into world: " + excp.toString());
-//            }
-//            logger.info("CellLoader: WFSCellMO (ID=" + mo.getCellID().toString() +
-//                    ") name=" + rootName);
             
             /* Load in the cells in the WFS based upon this root */
             this.loadWFSRoot(rootName);
-//        }
         }
     }
     
