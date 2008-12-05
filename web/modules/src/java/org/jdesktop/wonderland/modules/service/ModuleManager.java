@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.service;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,6 +64,23 @@ public class ModuleManager {
     
     /* The logger for the module manager */
     private static final Logger logger = Logger.getLogger(ModuleManager.class.getName());
+    
+    /**
+     * The TaggedModule is an immutable class that represents a module to be
+     * installed that is 'tagged' with a certain set of key-value pairs.
+     */
+    public static class TaggedModule {
+        private File file;
+        private Map<String, String> attributes;
+        
+        public TaggedModule(File file, Map<String, String> attributes) {
+            this.file = file;
+            this.attributes = attributes;
+        }
+        
+        public File getFile() { return this.file; }
+        public Map<String, String> getAttributes() { return this.attributes; }
+    }
     
     /** Constructor */
     private ModuleManager() {
@@ -161,6 +179,52 @@ public class ModuleManager {
         return added;
     }
 
+    /**
+     * Attempts to add a collection of modules to install. Takes a collection
+     * of TaggedModules as an argument.
+     * 
+     * @param taggedModules
+     * @return
+     */
+    public Collection<Module> addTaggedToInstall(Collection<TaggedModule> taggedModules) {
+        /* Returns a collection of modules added */
+        Collection<Module> added = new LinkedList<Module>();
+        
+        /*
+         * Iterate through each module URL and make it a pending module
+         */
+        Iterator<TaggedModule> it = taggedModules.iterator();
+        while (it.hasNext() == true) {
+            /* Fetch the next tagged module in the collection */
+            TaggedModule tm = it.next();
+            File file = tm.getFile();
+            Map<String, String> attributes = tm.getAttributes();
+            
+            /* Give the File to the manager of pending modules to add */
+            Module module = this.pendingMananger.add(file);
+            if (module == null) {
+                logger.warning("[MODULES] INSTALL Failed to add " + file);
+                continue;
+            }
+            
+            /* See if we want to set attributes on the module and add if so */
+            if (attributes != null) {
+                ModuleInfo info = module.getInfo();
+                info.putAttibutes(attributes);
+                File infoFile = module.getFile(Module.MODULE_INFO);
+                try {
+                    info.encode(new FileWriter(infoFile));
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "[MODULES] INSTALL Failed to update module.xml", ex);
+                }
+            }
+            
+            /* Add to the list of modules waiting to be installed */
+            added.add(module);
+        }
+        return added;
+    }
+    
     /**
      * Attempts to remove a collection of modules. Returns a new collection of
      * all of the module names that were successfully removed and now pending
@@ -589,6 +653,33 @@ public class ModuleManager {
         return satisfied;
     }
     
+    public void test() {
+        File file1 = new File("/Users/jordanslott/sample-modules/mpk20.jar");
+        File file2 = new File("/Users/jordanslott/sample-modules/demo.jar");
+        File file3 = new File("/Users/jordanslott/sample-modules/medical.jar");
+        
+        Map<String, String> attr1 = new HashMap();
+        Map<String, String> attr3 = new HashMap();
+        
+        attr1.put("enabled", "false"); attr1.put("checksum", "AABBCC");
+        attr3.put("checksum", "BBBCCC");
+        
+        TaggedModule tm1 = new TaggedModule(file1, attr1);
+        TaggedModule tm2 = new TaggedModule(file2, null);
+        TaggedModule tm3 = new TaggedModule(file3, attr3);
+        
+        Collection<TaggedModule> modules = new LinkedList();
+        modules.add(tm1); modules.add(tm2); modules.add(tm3);
+        
+        Collection<Module> result = this.addTaggedToInstall(modules);
+        System.out.println("RESULT SIZE " + result.size());
+        Iterator<Module> it = result.iterator();
+        while (it.hasNext() == true) {
+            Module m = it.next();
+            System.out.println(m.getName() + " " + m.getFile().toString());
+        }
+    }
+    
     public static void main(String args[]) throws MalformedURLException {
         System.setProperty("wonderland.webserver.modules.root", "/Users/jordanslott/src/moduletest");
         ModuleManager manager = ModuleManager.getModuleManager();
@@ -610,10 +701,10 @@ public class ModuleManager {
 //        manager.installAll();
 //        
 
-        Collection<String> names = new LinkedList<String>();
-        names.add("example");
-        Collection<String> removed = manager.addToUninstall(names);
-        System.out.println(removed);
-        manager.uninstallAll();
+//        Collection<String> names = new LinkedList<String>();
+//        names.add("example");
+//        Collection<String> removed = manager.addToUninstall(names);
+//        System.out.println(removed);
+//        manager.uninstallAll();
     }
 }

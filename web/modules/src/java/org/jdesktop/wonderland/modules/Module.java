@@ -50,7 +50,7 @@ import org.jdesktop.wonderland.common.modules.ModuleRepository;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public abstract class Module {
-    
+
     /* Useful names of files within the archive */
     public static final String MODULE_INFO       = "module.xml";
     public static final String MODULE_REQUIRES   = "requires.xml";
@@ -92,6 +92,16 @@ public abstract class Module {
      */
     public void setFile(File root) {
         this.root = root;
+    }
+    
+    /**
+     * Returns the file object for one of the key files within the module.
+     * 
+     * @param name The name of the key module file
+     * @return A new File
+     */
+    public File getFile(String name) {
+        return new File(this.getFile(), name);
     }
     
     /**
