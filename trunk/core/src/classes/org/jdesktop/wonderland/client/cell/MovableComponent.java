@@ -37,13 +37,13 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 @ExperimentalAPI
 public class MovableComponent extends CellComponent {
     
-    private static Logger logger = Logger.getLogger(MovableComponent.class.getName());
-    private ArrayList<CellMoveListener> serverMoveListeners = null;
-    private ChannelComponent channelComp;
+    protected static Logger logger = Logger.getLogger(MovableComponent.class.getName());
+    protected ArrayList<CellMoveListener> serverMoveListeners = null;
+    protected ChannelComponent channelComp;
     
     public enum CellMoveSource { LOCAL, REMOTE }; // Do we need BOTH as well ?
     
-    private ChannelComponent.ComponentMessageReceiver msgReceiver;
+    protected ChannelComponent.ComponentMessageReceiver msgReceiver;
     
     public MovableComponent(Cell cell) {
         super(cell);
@@ -65,8 +65,10 @@ public class MovableComponent extends CellComponent {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
                         public void messageReceived(CellMessage message) {
-                            MovableMessage mov = (MovableMessage)message;
-                            serverMoveRequest(new CellTransform(mov.getRotation(), mov.getTranslation()));
+                            // Ignore messages from this client, TODO move this up into addMessageReciever with an option to turn off the test
+                            if (message.getSenderID()!=cell.getCellCache().getSession().getID()) {
+                                serverMoveRequest((MovableMessage)message);
+                            }
                         }
                     };                    
                     channelComp.addMessageReceiver(MovableMessage.class, msgReceiver);
@@ -89,21 +91,13 @@ public class MovableComponent extends CellComponent {
     public void localMoveRequest(CellTransform transform, 
                                  final CellMoveModifiedListener listener) {
     
-//        CellManager.getCellManager().notifyCellMoved(cell, false);  
-        
         // make sure we are connected to the server
         if (channelComp == null || 
-                channelComp.getStatus() != ClientConnection.Status.CONNECTED)
-        {
+                channelComp.getStatus() != ClientConnection.Status.CONNECTED) {
             logger.warning("Cell channel not connected when moving cell " +
                            cell.getCellID());
             return;
         }
-        
-        // TODO at the moment this request does not apply a local change, rather
-        // it relies on the MOVED message sent by the server as a result of this
-        // request to actually move the local cell. Obviously needs updating
-        // so a local change is applied.
         
         // TODO throttle sends, we should only send so many times a second.
         if (listener!=null) {
@@ -128,6 +122,8 @@ public class MovableComponent extends CellComponent {
                                                     transform.getTranslation(null), 
                                                     transform.getRotation(null)));
         }
+
+        cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.LOCAL);
     }
     
     /**
@@ -140,22 +136,17 @@ public class MovableComponent extends CellComponent {
      */
     public void localMoveRequest(CellTransform transform) {
         localMoveRequest(transform, null);
-        cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.LOCAL);
     }
     
     /**
      * Called when a message arrives from the server requesting that the
      * cell be moved.
-     * @param transform
+     * @param msg the message received from the server
      */
-    protected void serverMoveRequest(CellTransform transform) {
+    protected void serverMoveRequest(MovableMessage msg) {
+        CellTransform transform = new CellTransform(msg.getRotation(), msg.getTranslation());
         cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.REMOTE);
-//        if (cell.getTransform()!=null)
-//            System.out.println("serverMoveRequest "+cell.getTransform().getTranslation(null)+"  "+cell);
-//        else
-//            System.out.println("serverMoveRequest with null transform "+cell.getName());
-//        CellManager.getCellManager().notifyCellMoved(cell, true);
-        notifyServerCellMoveListeners(transform, CellMoveSource.REMOTE);
+        notifyServerCellMoveListeners(msg, transform, CellMoveSource.REMOTE);
     }
     
     
@@ -186,7 +177,7 @@ public class MovableComponent extends CellComponent {
      * 
      * @param transform
      */
-    private void notifyServerCellMoveListeners(CellTransform transform, CellMoveSource source) {
+    protected void notifyServerCellMoveListeners(MovableMessage msg, CellTransform transform, CellMoveSource source) {
         if (serverMoveListeners==null)
             return;
 
