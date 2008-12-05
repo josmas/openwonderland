@@ -201,6 +201,14 @@ public class ModuleInfo implements Serializable {
     }
     
     /**
+     * Adds a map of key-value attribute pairs to the attribute map.
+     * @param attributes
+     */
+    public void putAttibutes(Map<String, String> attributes) {
+        this.attributeMap.putAll(attributes);
+    }
+    
+    /**
      * Returns an attribute givens it key, or null if it does not exist
      */
     public String getAttribute(String key) {
