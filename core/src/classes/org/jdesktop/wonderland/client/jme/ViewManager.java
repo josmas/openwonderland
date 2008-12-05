@@ -116,7 +116,7 @@ public class ViewManager {
         this.aspect = (float)width/(float)height;
 
         String avatarDetail = System.getProperty("avatar.detail", "low");
-        if (avatarDetail.equalsIgnoreCase("high"))
+        if (avatarDetail.equalsIgnoreCase("high") || avatarDetail.equalsIgnoreCase("medium"))
             useAvatars=true;
     }
 
@@ -234,12 +234,18 @@ public class ViewManager {
         Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
 
         CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-        if (renderer!=null && renderer instanceof BasicRenderer) {
-            BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
-            if (moveProc!=null) {
-                avatarControls.addToChain(moveProc);
-                moveProc.setChained(true);
-                avatarControls.addToChain(cameraProcessor);
+        if (renderer!=null) {
+            if (renderer instanceof AvatarControls.AvatarInputSelector) {
+                ((AvatarControls.AvatarInputSelector)renderer).selectForInput();
+            }
+
+            if (renderer instanceof BasicRenderer) {
+                BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
+                if (moveProc!=null) {
+                    avatarControls.addToChain(moveProc);
+                    moveProc.setChained(true);
+                    avatarControls.addToChain(cameraProcessor);
+                }
             }
         }
 
