@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 /**
@@ -58,4 +59,18 @@ public interface UniverseManager {
     public void viewLogin(ViewCellMO viewCell);
 
     public void viewLogout(ViewCellMO viewCell);
+
+    /**
+     * Add a ViewUpdateLIstener to this cell. This listener will be called
+     * whenever the view of a ViewCache that contains this cell is updated
+     *
+     * @param viewUpdateListener listener to add
+     */
+//    public void addViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
+
+    /**
+     * Remove the specified ViewUpdateListener
+     * @param viewUpdateListener listener to remove
+     */
+ //   public void removeViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
 }
