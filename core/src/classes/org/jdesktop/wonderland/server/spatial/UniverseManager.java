@@ -21,7 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
-import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
+//import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 /**
