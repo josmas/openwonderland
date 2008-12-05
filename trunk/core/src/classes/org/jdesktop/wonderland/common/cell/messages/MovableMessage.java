@@ -43,7 +43,7 @@ public class MovableMessage extends CellMessage {
     
     private ActionType actionType;
     
-    private MovableMessage(CellID cellID, ActionType actionType) {
+    protected MovableMessage(CellID cellID, ActionType actionType) {
         super(cellID);
         this.actionType = actionType;
     }
@@ -52,7 +52,7 @@ public class MovableMessage extends CellMessage {
         return translation;
     }
 
-    private void setTranslation(Vector3f locationVW) {
+    protected void setTranslation(Vector3f locationVW) {
         this.translation = locationVW;
     }
 
@@ -60,7 +60,7 @@ public class MovableMessage extends CellMessage {
         return rotation;
     }
 
-    public void setRotation(Quaternion orientation) {
+    protected void setRotation(Quaternion orientation) {
         this.rotation = orientation;
     }
 
