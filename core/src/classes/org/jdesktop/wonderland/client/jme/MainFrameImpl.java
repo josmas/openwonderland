@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.UIManager;
 
 /**
  * The Main JFrame for the wonderland jme client
@@ -59,11 +60,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
         // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
         // For now, force the cross-platform (metal) LAF to be used
-//        try {
-//            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-//        } catch (Exception ex) {
-//            logger.warning("Loading of Metal look-and-feel failed, exception = " + ex);
-//        } 
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+        } catch (Exception ex) {
+            logger.warning("Loading of Metal look-and-feel failed, exception = " + ex);
+        } 
 
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
