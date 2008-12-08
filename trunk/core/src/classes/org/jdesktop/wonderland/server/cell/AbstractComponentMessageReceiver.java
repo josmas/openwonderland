@@ -19,10 +19,10 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -67,5 +67,5 @@ public abstract class AbstractComponentMessageReceiver implements ComponentMessa
     }
     
     public abstract void messageReceived(WonderlandClientSender sender,
-            ClientSession session, CellMessage message);
+            WonderlandClientID clientID, CellMessage message);
 }

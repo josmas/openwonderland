@@ -16,8 +16,10 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.loader;
+package org.jdesktop.wonderland.server.wfs.importer;
 
+import org.jdesktop.wonderland.common.wfs.CellList;
+import org.jdesktop.wonderland.common.wfs.WorldRootList;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,12 +27,12 @@ import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 
 /**
- * The CellLoaderUtils contains a collection of static utility methods to load
+ * The CellImporterUtils contains a collection of static utility methods to load
  * WFS information from the WFS web service.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class CellLoaderUtils {
+public class CellImporterUtils {
     /* The prefix to add to URLs for the WFS web service */
     private static final String WFS_PREFIX = "wonderland-web-wfs/wfs/";
     
@@ -51,27 +53,6 @@ public class CellLoaderUtils {
             return null;
         }
     }
-
-    /**
-     * Returns the cell's setup information, null upon error. The canonicalName
-     * argument must never begin with a "/".
-     */
-//    public static BasicCellSetup getWFSCell(String root, String canonicalName) {
-//        /*
-//         * Try to open up a connection the Jersey RESTful resource and parse
-//         * the stream. Upon error return null.
-//         */
-//        try {
-//            URL url = new URL(getWebServerURL(), WFS_PREFIX + root + "/cell/" + canonicalName);
-//            
-//            /* Read in and parse the cell setup information */
-//            InputStreamReader isr = new InputStreamReader(url.openStream());
-//            return BasicCellSetup.decode(isr);
-//        } catch (java.lang.Exception excp) {
-//            System.out.println(excp.toString());
-//            return null;
-//        }
-//    }
     
     /**
      * Returns the cell's setup information, null upon error. The relativePath
@@ -134,17 +115,17 @@ public class CellLoaderUtils {
     /**
      * Returns all of the WFS root names or null upon error
      */
-    public static CellRoots getWFSRoots() {
+    public static WorldRootList getWFSRoots() {
         /*
          * Try to open up a connection the Jersey RESTful resource and parse
          * the stream. Upon error return null.
          */
         try {
             URL url = new URL(getWebServerURL(), WFS_PREFIX + "roots");
-            CellLoader.getLogger().info("WFS: Loading roots at " + url.toExternalForm());
-            return CellRoots.decode(url.openStream());
+            CellImporter.getLogger().info("WFS: Loading roots at " + url.toExternalForm());
+            return WorldRootList.decode(url.openStream());
         } catch (java.lang.Exception excp) {
-            CellLoader.getLogger().info("WFS: Error loading roots: " + excp.toString());
+            CellImporter.getLogger().info("WFS: Error loading roots: " + excp.toString());
             return null;
         }
     }

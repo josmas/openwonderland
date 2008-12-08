@@ -16,10 +16,10 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.loader;
+package org.jdesktop.wonderland.server.wfs.importer;
 
+import org.jdesktop.wonderland.common.wfs.WorldRootList;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,36 +30,34 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
-import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
+import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 
 
 /**
- * The CellLoader class is responsible for loading a WFS from the HTTP-based
+ * The CellImporter class is responsible for loading a WFS from the HTTP-based
  * WFS service.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class CellLoader {
+public class CellImporter {
     /* The logger for the wfs loader */
-    private static final Logger logger = Logger.getLogger(CellLoader.class.getName());
+    private static final Logger logger = Logger.getLogger(CellImporter.class.getName());
     
     /* Conatins a map of canonical cell names in WFS to cell objects */
     private CellMap<ManagedReference<CellMO>> cellMOMap = new CellMap();
-    
-    /* Contains a map of canonical cell names in WFS to last modified dates */
-    private CellMap<Long> cellModifiedMap = new CellMap();
     
     /* The URL for the web server for this loader instance */
     private URL webServerURL = null;
     
     /** Default Constructor */
-    public CellLoader() {
+    public CellImporter() {
         try {
-            this.webServerURL = CellLoaderUtils.getWebServerURL();
+            this.webServerURL = CellImporterUtils.getWebServerURL();
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "[WFS] No web server URL", excp);
         }
@@ -71,7 +69,7 @@ public class CellLoader {
      * @return The error logger
      */
     public static Logger getLogger() {
-        return CellLoader.logger;
+        return CellImporter.logger;
     }
 
     /**
@@ -93,7 +91,7 @@ public class CellLoader {
      */
     public void load() {
         /* First fetch all of the individual WFSs there are in the system. */
-        CellRoots wfsRoots = CellLoaderUtils.getWFSRoots();
+        WorldRootList wfsRoots = CellImporterUtils.getWFSRoots();
         if (wfsRoots == null) {
             logger.info("WFSLoader: did not find any valid WFS roots");
             return;
@@ -122,7 +120,7 @@ public class CellLoader {
         LinkedList<CellList> children = new LinkedList<CellList>();
 
         /* Find the children in the top-level directory and go! */
-        CellList dir = CellLoaderUtils.getWFSRootChildren(rootName);
+        CellList dir = CellImporterUtils.getWFSRootChildren(rootName);
         if (dir == null) {
             /* Log an error and return, though this should never happen */
             logger.warning("WFSLoader: did not find root directory for wfs " + rootName);
@@ -149,20 +147,6 @@ public class CellLoader {
             /* Recursively load the cells for this child */
             this.loadCells(rootName, childdir, children);
         }
-        
-        /*
-         * Once we are done, we need to place the mapping of cells into the
-         * data manager
-         */
-        DataManager dm = AppContext.getDataManager();
-        dm.setBinding(CellLoaderDefs.WFS_OBJECT_MAP, this.cellMOMap);
-        dm.setBinding(CellLoaderDefs.WFS_MODIFIED_MAP, this.cellModifiedMap);
-
-        /*
-         * Create the reload phase and initial it to none.
-         */
-        CellReloadPhase phase = new CellReloadPhase();
-        dm.setBinding(CellLoaderDefs.WFS_RELOAD_PHASE, phase);
     }
     
     /**
@@ -209,7 +193,7 @@ public class CellLoader {
              * Download and parse the cell configuration information. Create a
              * new cell based upon the information.
              */
-            BasicCellSetup setup = CellLoaderUtils.getWFSCell(root, relativePath, child.name);
+            BasicCellSetup setup = CellImporterUtils.getWFSCell(root, relativePath, child.name);
             if (setup == null) {
                 logger.info("WFSLoader: unable to read cell setup info " + relativePath + "/" + child.name);
                 continue;
@@ -281,14 +265,13 @@ public class CellLoader {
              */
             ManagedReference<CellMO> cellRef = AppContext.getDataManager().createReference(cellMO);
             this.cellMOMap.put(cellPath, cellRef);
-            this.cellModifiedMap.put(cellPath, child.lastModified);
             logger.info("WFSLoader: putting " + cellPath + " (ID=" + cellMO.getCellID().toString() + ") into map with " + child.lastModified);
             logger.info(setup.toString());
             
             /*
              * See if the cell has any children and add to the linked list.
              */
-            CellList newChildren = CellLoaderUtils.getWFSChildren(root, cellPath);
+            CellList newChildren = CellImporterUtils.getWFSChildren(root, cellPath);
             if (newChildren != null) {
                 children.addLast(newChildren);
             }

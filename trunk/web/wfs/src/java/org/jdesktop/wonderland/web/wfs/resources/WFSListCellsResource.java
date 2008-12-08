@@ -33,8 +33,8 @@ import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.tools.wfs.WFSCell;
 import org.jdesktop.wonderland.tools.wfs.WFSCellDirectory;
-import org.jdesktop.wonderland.wfs.loader.CellList;
-import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
+import org.jdesktop.wonderland.common.wfs.CellList;
+import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 
 
 /**

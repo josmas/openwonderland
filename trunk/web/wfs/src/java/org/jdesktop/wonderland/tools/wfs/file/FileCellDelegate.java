@@ -163,5 +163,7 @@ public class FileCellDelegate implements CellDelegate {
     public void encode(String cellSetup) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(this.getFile()));
         writer.write(cellSetup, 0, cellSetup.length());
+        writer.flush();
+        writer.close();
     }
 }
