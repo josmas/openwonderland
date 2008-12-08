@@ -177,7 +177,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 	}
 
 	audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true, 
-	     AudioGroupPlayerInfo.ChatType.SECRET));
+	     AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
 
 	player.attenuateOtherGroups(audioGroup, 0, 0);
     }

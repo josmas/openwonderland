@@ -44,7 +44,6 @@ import com.sun.voip.client.connector.CallStatus;
 import java.io.IOException;
 import java.lang.String;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Timer;
@@ -99,7 +98,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this));
+		new OrbMessageHandler(this, null));
 	}
     }
     
@@ -111,7 +110,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this));
+		new OrbMessageHandler(this, null));
 	}
     }
 
@@ -122,10 +121,8 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    logger.fine("Adding channel component...");
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this));
+		new OrbMessageHandler(this, callID));
 	}
-
-	orbMessageHandlerRef.get().setCallID(callID);
     }
 
     @Override

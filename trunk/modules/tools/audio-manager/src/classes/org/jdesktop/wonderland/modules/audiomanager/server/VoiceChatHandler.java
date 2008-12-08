@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 
 import java.util.Properties;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Enumeration;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +49,7 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import com.sun.sgs.app.AppContext;
@@ -100,17 +101,17 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     }
 
     public void processVoiceChatMessage(WonderlandClientSender sender, 
-	    VoiceChatMessage message) {
+	    WonderlandClientID clientID, VoiceChatMessage message) {
 
 	String group = message.getGroup();
 
 	if (message instanceof VoiceChatInfoRequestMessage) {
-	    sendVoiceChatInfo(sender, group);
+	    sendVoiceChatInfo(sender, clientID, group);
 	    return;
 	}
 
 	if (message instanceof VoiceChatBusyMessage) {
-	    sendVoiceChatBusyMessage(sender, (VoiceChatBusyMessage) message);
+	    sendVoiceChatBusyMessage(sender, clientID, (VoiceChatBusyMessage) message);
 	    return;
 	}
 
@@ -201,7 +202,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		logger.fine("Asking " + players[i] + " to join audio group " + group + " chatType " 
 	    	    + msg.getChatType());
 
-	        requestPlayerJoinAudioGroup(sender, group, msg.getCaller(),
+	        requestPlayerJoinAudioGroup(sender, clientID, group, msg.getCaller(),
 		    msg.getCalleeList(), msg.getChatType());
 	    }
 	}
@@ -262,17 +263,17 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     }
 
     private void requestPlayerJoinAudioGroup(WonderlandClientSender sender,
-	    String group, String caller, String calleeList, 
+	    WonderlandClientID clientID, String group, String caller, String calleeList, 
 	    VoiceChatMessage.ChatType chatType) {
 
 	VoiceChatMessage message = new VoiceChatJoinRequestMessage(group, 
 	    caller, calleeList, chatType);
 
-        sender.send(message);
+        sender.send(clientID, message);
     }
 
     private void sendVoiceChatBusyMessage(WonderlandClientSender sender,
-	    VoiceChatBusyMessage message) {
+	    WonderlandClientID clientID, VoiceChatBusyMessage message) {
 
 	logger.fine("Sending busy message to " + message.getCaller());
 
@@ -280,11 +281,11 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	     message.getGroup(), message.getCaller(), message.getCalleeList(),
 	     message.getChatType());
 
-        sender.send(msg);
+        sender.send(clientID, msg);
     }
 
     private void sendVoiceChatInfo(WonderlandClientSender sender,
-	    String group) {
+	    WonderlandClientID clientID, String group) {
 
 	String chatInfo = "";
 
@@ -307,7 +308,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
         VoiceChatMessage msg = new VoiceChatInfoResponseMessage(group, chatInfo);
 
-        sender.send(msg);
+        sender.send(clientID, msg);
     }
 
     private void removePlayerFromAudioGroups(String callId) {
@@ -449,7 +450,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	 */
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	ArrayList<VirtualPlayer> othersToRemove = new ArrayList();
+	CopyOnWriteArrayList<VirtualPlayer> othersToRemove = new CopyOnWriteArrayList();
 
 	ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = 
 	    audioGroup.getPlayers();
@@ -555,7 +556,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     private void moveVirtualPlayers(Player player, double x, double y, double z, 
 	    double direction) {
 
-	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+	CopyOnWriteArrayList<AudioGroup> audioGroups = player.getAudioGroups();
 
 	for (AudioGroup audioGroup : audioGroups) {
 	    ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = audioGroup.getPlayers();
@@ -607,6 +608,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
     public void addTransformChangeListener(CellID cellID) {
         CellManagerMO.getCell(cellID).addTransformChangeListener(this);
+    }
+
+    public void removeTransformChangeListener(CellID cellID) {
+        CellManagerMO.getCell(cellID).removeTransformChangeListener(this);
     }
 
     public void transformChanged(ManagedReference<CellMO> cellMORef, 

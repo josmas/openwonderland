@@ -53,7 +53,6 @@ public class AudioTreatmentComponent extends CellComponent {
         channelComp = cell.getComponent(ChannelComponent.class);
     }
     
-    
     @Override
     public void setStatus(CellStatus status) {
          switch(status) {
