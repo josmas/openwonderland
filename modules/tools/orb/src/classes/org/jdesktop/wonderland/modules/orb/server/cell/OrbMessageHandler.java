@@ -41,6 +41,9 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.voip.CallParticipant;
 import com.sun.voip.client.connector.CallStatus;
 
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
+
+import org.jdesktop.wonderland.server.WonderlandContext;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -76,6 +79,7 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbStartCallMessage;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -95,11 +99,20 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
 
     private ManagedReference<OrbStatusListener> orbStatusListenerRef;
 
-    public OrbMessageHandler(OrbCellMO orbCellMO) {
+    public OrbMessageHandler(OrbCellMO orbCellMO, String callID) {
+	this.callID = callID;
+
+	logger.finest("Call id is " + callID);
+
         orbCellMORef = AppContext.getDataManager().createReference(
                 (OrbCellMO) CellManagerMO.getCell(orbCellMO.getCellID()));
 
         OrbStatusListener orbStatusListener = new OrbStatusListener(orbCellMORef);
+
+	WonderlandClientSender sender =  
+	    WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
+
+	orbStatusListener.mapCall(callID, sender, null);
 
         orbStatusListenerRef =  AppContext.getDataManager().createReference(orbStatusListener);
 
@@ -112,20 +125,16 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
 
         channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
 
+        channelComponent.addMessageReceiver(OrbStartCallMessage.class, this);
         channelComponent.addMessageReceiver(OrbEndCallMessage.class, this);
         channelComponent.addMessageReceiver(OrbMuteCallMessage.class, this);
         channelComponent.addMessageReceiver(OrbSetVolumeMessage.class, this);
-
     }
 
     public void messageReceived(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, CellMessage message) {
 
-	logger.fine("got message " + message);
+	logger.finest("got message " + message);
     }
    
-    public void setCallID(String callID) {
-	orbStatusListenerRef.get().addCallStatusListener(callID);
-    }
-
 }

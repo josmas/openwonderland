@@ -138,6 +138,15 @@ public class PhoneCell extends Cell implements CellStatusChangeListener {
 	return getCellCache().getSession();
     }
 
+    public void phoneSelected() {
+	if (phoneMessageHandler == null) {
+	    logger.warning("No phoneMessageHandler");
+	    return;
+	}
+
+	phoneMessageHandler.phoneSelected();
+    }
+
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {

@@ -50,7 +50,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 
@@ -141,12 +140,12 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
-	    sender.send(msg);
+	    sender.send(clientID, msg);
 	    return;
 	}
 
 	if (message instanceof PlaceCallMessage) {
-	    logger.fine("Got place call message");
+	    logger.fine("Got place call message from " + clientID);
 
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
 
@@ -263,7 +262,8 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof VoiceChatMessage) {
-	    voiceChatHandler.processVoiceChatMessage(sender, (VoiceChatMessage) message);
+	    voiceChatHandler.processVoiceChatMessage(sender, clientID, 
+		(VoiceChatMessage) message);
 	    return;
 	}
 
@@ -318,14 +318,14 @@ public class AudioManagerConnectionHandler
 	    Call call = AppContext.getManager(VoiceManager.class).getCall(callId);
 
 	    if (call == null) {
-		System.out.println("Couldn't find call for " + callId);
+		logger.warning("Couldn't find call for " + callId);
 		return;
 	    }
 
 	    Player player = call.getPlayer();
 
 	    if (player == null) {
-		System.out.println("Couldn't find player for " + call);
+		logger.warning("Couldn't find player for " + call);
 		return;
 	    }
 
@@ -336,11 +336,11 @@ public class AudioManagerConnectionHandler
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
-	    //sender.send(new SpeakingMessage(true));
+	    //sender.send(clientID, new SpeakingMessage(true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    //sender.send(new SpeakingMessage(false));
+	    //sender.send(clientID, new SpeakingMessage(false));
             break;
 
 	case CallStatus.BRIDGE_OFFLINE:

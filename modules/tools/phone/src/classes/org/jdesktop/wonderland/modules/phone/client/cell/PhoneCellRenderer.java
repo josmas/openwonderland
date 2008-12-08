@@ -39,6 +39,10 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -67,6 +71,8 @@ public class PhoneCellRenderer extends BasicRenderer {
         lightState.attach(light);
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
+
+	new MyMouseListener().addToEntity(entity);
         return createWireframeEntity();
     }
 
@@ -112,6 +118,23 @@ public class PhoneCellRenderer extends BasicRenderer {
 
 	logger.fine("WIRE FRAME ENTITY CREATED");
         return node;
+    }
+
+    class MyMouseListener extends EventClassListener {
+
+	public Class[] eventClassesToConsume () {
+	    return new Class[] { MouseEvent3D.class };
+	}
+
+	public void commitEvent (Event event) {
+	    if (event instanceof MouseButtonEvent3D) {
+		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
+		if (buttonEvent.isPressed()) {
+		    ((PhoneCell) cell).phoneSelected();
+		}
+		return;
+	    } 
+	}
     }
 
 }

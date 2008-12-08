@@ -57,7 +57,6 @@ import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMe
 import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.modules.phone.client.cell.VirtualPhoneListener;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -65,13 +64,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.modules.phone.client.cell.PhoneMenu;
 
 /**
  *
  * @author jprovino
  */
-public class PhoneMessageHandler implements VirtualPhoneListener {
+public class PhoneMessageHandler {
 
     private static final Logger logger =
             Logger.getLogger(PhoneMessageHandler.class.getName());
@@ -96,8 +94,6 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
     public PhoneMessageHandler(PhoneCell phoneCell) {
 	this.phoneCell = phoneCell;
 
-        JmeClientMain.getFrame().addToToolMenu(PhoneMenu.getPhoneMenu(this));
-
 	channelComp = phoneCell.getComponent(ChannelComponent.class);
 
 	logger.fine("Channel comp is " + channelComp);
@@ -121,7 +117,7 @@ public class PhoneMessageHandler implements VirtualPhoneListener {
         channelComp.addMessageReceiver(PlaceCallResponseMessage.class, msgReceiver);
     }
 
-    public void virtualPhoneMenuItemSelected() {
+    public void phoneSelected() {
 	if (phoneForm == null) {
 	    boolean locked = phoneCell.getLocked();
 	    boolean passwordProtected = true;
