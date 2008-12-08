@@ -1,7 +1,5 @@
 /**
- * Project Looking Glass
- *
- * $RCSfile: PhoneForm.java,v $
+ * Project Wonderland
  *
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.27 $
- * $Date: 2008/06/18 06:02:11 $
- * $State: Exp $
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 

@@ -1,7 +1,5 @@
 /**
- * Project Looking Glass
- *
- * $RCSfile: JDialogKeypad.java,v $
+ * Project Wonderland
  *
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.4 $
- * $Date: 2008/06/12 06:15:28 $
- * $State: Exp $
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
