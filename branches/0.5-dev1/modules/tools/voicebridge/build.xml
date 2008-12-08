@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-voice-bridge" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-voice-bridge}"/>
+    <property name="modules.dir" location="${current.dir}/../.."/>
+        
+    <property name="module.src" value="org/jdesktop/wonderland/modules/voicebridge"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.voicebridge"/>
+    
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <pathconvert property="module-server.classpath">
+        <path location="${top.dir}/web/runner/dist/wonderland-runner-api.jar"/>
+    </pathconvert>   
+       
+    <target name="build" depends="-module-init,  -module-compile-server"/>
+    
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}/runner"/>
+        <mkdir dir="${module.dist.dir}/runner/classes"/>
+        <mkdir dir="${module.dist.dir}/runner/deploy"/>
+        
+        <copy todir="${module.dist.dir}/runner/deploy"
+              file="${current.dir}/lib/zip/voicebridge-dist.zip"/>
+        <copy todir="${module.dist.dir}/runner/classes">
+            <fileset dir="${build.classes.dir}"/>
+        </copy>
+    </target>                                  
+             
+    <target name="clean" depends="-module-clean"/>
+</project>
