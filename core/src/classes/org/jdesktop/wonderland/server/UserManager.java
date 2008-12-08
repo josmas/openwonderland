@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server;
 
@@ -27,7 +27,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Manages the entire set of users logged into the system.
@@ -37,8 +36,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class UserManager implements ManagedObject, Serializable {
     
-    private HashMap<WonderlandClientID, ManagedReference<UserMO>> clientToUser =
-	    new HashMap<WonderlandClientID, ManagedReference<UserMO>>();
+    private HashMap<ManagedReference<ClientSession>, ManagedReference<UserMO>> sessionToUser =
+	    new HashMap<ManagedReference<ClientSession>, ManagedReference<UserMO>>();
     
     /**
      * Name used in binding this object in DataManager
@@ -69,9 +68,9 @@ public class UserManager implements ManagedObject, Serializable {
     /**
      * Add a user to the set of logged in users
      */
-    public void addUser(WonderlandClientID clientID, UserMO user) {
+    public void addUser(ClientSession session, UserMO user) {
         DataManager dm = AppContext.getDataManager();
-        clientToUser.put(clientID, dm.createReference(user));
+        sessionToUser.put(dm.createReference(session), dm.createReference(user));
     }
     
     /**
@@ -79,9 +78,11 @@ public class UserManager implements ManagedObject, Serializable {
      *
      * @return reference to the UserGLO
      */
-    public UserMO removeUser(WonderlandClientID clientID) {
+    public UserMO removeUser(ClientSession session) {
+        DataManager dm = AppContext.getDataManager();
+        
         ManagedReference<UserMO> userRef = 
-                clientToUser.remove(clientID);
+                sessionToUser.remove(dm.createReference(session));
         if (userRef == null) {
             return null;
         }
@@ -94,9 +95,11 @@ public class UserManager implements ManagedObject, Serializable {
      *
      * @return reference to the UserGLO
      */
-    public UserMO getUser(WonderlandClientID clientID) {
+    public UserMO getUser(ClientSession session) {
+        DataManager dm = AppContext.getDataManager();
+                
         ManagedReference<UserMO> userRef = 
-                clientToUser.get(clientID);
+                sessionToUser.get(dm.createReference(session));
         if (userRef == null) {
             return null;
         }
@@ -166,42 +169,44 @@ public class UserManager implements ManagedObject, Serializable {
      * @return collection of ManagedReferences to UserGLO's
      */
     public Collection<ManagedReference<UserMO>> getAllUsers() {
-        return clientToUser.values();
+        return sessionToUser.values();
     }
     
     /**
      * Log the user in from the specificed session. 
      * @param session 
      */
-    public void login(WonderlandClientID clientID) {
+    public void login(ClientSession session) {
         DataManager dm = AppContext.getDataManager();
         
         // find the user object from the database, create it if necessary
-        UserMO user = getUserMO(clientID.getSession().getName());
+        UserMO user = getUserMO(session.getName());
         if (user==null) {
-            user = createUserMO(clientID.getSession().getName());
+            user = createUserMO(session.getName());
         }
         
         // user is now logged in
-        user.login(clientID);
+        user.login(session);
         
         // add this session to our map
-        clientToUser.put(clientID, user.getReference());
+        sessionToUser.put(dm.createReference(session), user.getReference());
     }
     
     /**
      * Log user out of s÷pecified session
      * @param session
      */
-    public void logout(WonderlandClientID clientID) {
+    public void logout(ClientSession session) {
+        DataManager dm = AppContext.getDataManager();
+        
         // make sure there is a user
-        UserMO user = getUser(clientID);
+        UserMO user = getUser(session);
         assert(user!=null);
         if (user != null) {
-            user.logout(clientID);
+            user.logout(session);
         }
         
-        clientToUser.remove(clientID);
+        sessionToUser.remove(dm.createReference(session));
    }
     
     /**
@@ -219,7 +224,7 @@ public class UserManager implements ManagedObject, Serializable {
      *  @return total number of users currently logged in
      **/
     public int getUserCount() {
-        return clientToUser.size();
+        return sessionToUser.size();
     }
     
     /**

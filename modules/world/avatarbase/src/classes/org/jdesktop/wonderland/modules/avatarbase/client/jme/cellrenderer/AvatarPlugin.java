@@ -11,22 +11,19 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
@@ -41,8 +38,6 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  * @author paulby
  */
 public class AvatarPlugin implements ClientPlugin {
-
-    private WeakReference<AvatarTestPanel> testPanelRef = null;
 
     public void initialize(ServerSessionManager loginManager) {
         ClientContextJME.getAvatarRenderManager().registerRenderer(AvatarImiJME.class);
@@ -59,39 +54,44 @@ public class AvatarPlugin implements ClientPlugin {
                     return;
 
                 final AvatarImiJME avatar = (AvatarImiJME)rend;
-
-                if (testPanelRef==null || testPanelRef.get()==null) {
-                    // Do nothing
-                } else {
-                    testPanelRef.get().setAvatarCharactar(avatar.getAvatarCharacter());
-                }
-                
+                String[] animations = avatar.getAnimations();
 
                 JMenu animationMenu = new JMenu("Avatar Actions");
 
+                ButtonGroup buttonGroup = new ButtonGroup();
 
-                JmeClientMain.getFrame().addToEditMenu(animationMenu);
+                for(int i=0; i<animations.length; i++) {
+                    JRadioButtonMenuItem m = new JRadioButtonMenuItem(animations[i]);
+                    buttonGroup.add(m);
+                    animationMenu.add(m);
+                    m.addActionListener(new ActionListener() {
 
-                JMenuItem avatarControlFrameMI = new JMenuItem("Avatar Controls");
-                avatarControlFrameMI.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            avatar.setAnimation(((JMenuItem)e.getSource()).getText());
+                        }
+                    });
+                }
+
+                JMenuItem startMI = new JMenuItem("Start Animation");
+                startMI.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
-                        if (testPanelRef==null || testPanelRef.get()==null) {
-                            AvatarTestPanel test = new AvatarTestPanel();
-                            JFrame f = new JFrame("Test Controls");
-                            f.getContentPane().add(test);
-                            f.pack();
-                            f.setVisible(true);
-                            f.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-                            test.setAvatarCharactar(avatar.getAvatarCharacter());
-                            testPanelRef = new WeakReference(test);
-                        } else {
-                            SwingUtilities.getRoot(testPanelRef.get().getParent()).setVisible(true);
-                        }
+                        avatar.triggerActionStart();
                     }
                 });
 
-                JmeClientMain.getFrame().addToEditMenu(avatarControlFrameMI);
+                JMenuItem stopMI = new JMenuItem("Stop Animation");
+                stopMI.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        avatar.triggerActionStop();
+                    }
+                });
+
+                animationMenu.add(startMI);
+                animationMenu.add(stopMI);
+
+                JmeClientMain.getFrame().addToEditMenu(animationMenu);
             }
         });
     }

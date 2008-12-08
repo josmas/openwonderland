@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.login;
 
@@ -359,12 +359,7 @@ public class ServerSessionManager {
 
         for (JarURI uri : list.getJarURIs()) {
             try {
-                URL url = uri.toURL();
-                
-                // check the filter to see if we should add this URL
-                if (LoginManager.getPluginFilter().shouldDownload(this, url)) {
-                    urls.add(url);
-                }
+                urls.add(uri.toURL());
             } catch (Exception excp) {
                 excp.printStackTrace();
            }
@@ -384,18 +379,14 @@ public class ServerSessionManager {
                                                       loader);
         while (it.hasNext()) {
             ClientPlugin plugin = it.next();
-
-            // check with the filter to see if we should load this plugin
-            if (LoginManager.getPluginFilter().shouldInitialize(this, plugin)) {
-                try {
-                    plugin.initialize(this);
-                } catch(Exception e) {
-                    logger.log(Level.WARNING, "Error initializing plugin " +
-                               plugin.getClass().getName(), e);
-                } catch(Error e) {
-                    logger.log(Level.WARNING, "Error initializing plugin " +
-                               plugin.getClass().getName(), e);
-                }
+            try {
+                plugin.initialize(this);
+            } catch(Exception e) {
+                logger.log(Level.WARNING, "Error initializing plugin " +
+                           plugin.getClass().getName(), e);
+            } catch(Error e) {
+                logger.log(Level.WARNING, "Error initializing plugin " +
+                           plugin.getClass().getName(), e);
             }
         }
     }
@@ -487,13 +478,13 @@ public class ServerSessionManager {
         protected synchronized void loginComplete(LoginParameters params) {
             this.params = params;
             if (params != null) {
-                // setup the classloader
-                this.classLoader = setupClassLoader(getServerURL());
+                if (LoginManager.getLoadPlugins()) {
+                    // setup the classloader
+                    this.classLoader = setupClassLoader(getServerURL());
 
-                // initialize plugins
-                initPlugins(classLoader);
-
-                // if we get here, the login has succeeded
+                    // initialize plugins
+                    initPlugins(classLoader);
+                }
                 this.success = true;
             }
 

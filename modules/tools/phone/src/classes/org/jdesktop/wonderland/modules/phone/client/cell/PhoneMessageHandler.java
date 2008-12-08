@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
 //import org.jdesktop.wonderland.avatarorb.client.cell.AvatarOrbCell;
@@ -57,6 +56,7 @@ import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMe
 import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.modules.phone.client.cell.VirtualPhoneListener;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -64,12 +64,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.modules.phone.client.cell.PhoneMenu;
 
 /**
  *
  * @author jprovino
  */
-public class PhoneMessageHandler {
+public class PhoneMessageHandler implements VirtualPhoneListener {
 
     private static final Logger logger =
             Logger.getLogger(PhoneMessageHandler.class.getName());
@@ -94,6 +95,8 @@ public class PhoneMessageHandler {
     public PhoneMessageHandler(PhoneCell phoneCell) {
 	this.phoneCell = phoneCell;
 
+        JmeClientMain.getFrame().addToToolMenu(PhoneMenu.getPhoneMenu(this));
+
 	channelComp = phoneCell.getComponent(ChannelComponent.class);
 
 	logger.fine("Channel comp is " + channelComp);
@@ -117,7 +120,7 @@ public class PhoneMessageHandler {
         channelComp.addMessageReceiver(PlaceCallResponseMessage.class, msgReceiver);
     }
 
-    public void phoneSelected() {
+    public void virtualPhoneMenuItemSelected() {
 	if (phoneForm == null) {
 	    boolean locked = phoneCell.getLocked();
 	    boolean passwordProtected = true;

@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.web.wfs.resources;
 
 import java.io.StringWriter;
@@ -33,8 +32,8 @@ import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.tools.wfs.WFSCell;
 import org.jdesktop.wonderland.tools.wfs.WFSCellDirectory;
-import org.jdesktop.wonderland.common.wfs.CellList;
-import org.jdesktop.wonderland.common.wfs.CellList.Cell;
+import org.jdesktop.wonderland.wfs.loader.CellList;
+import org.jdesktop.wonderland.wfs.loader.CellList.Cell;
 
 
 /**

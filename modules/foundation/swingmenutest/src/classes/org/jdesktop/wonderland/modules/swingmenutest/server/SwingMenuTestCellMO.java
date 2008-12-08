@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.swingmenutest.server;
 
@@ -28,7 +28,6 @@ import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestCellCon
 import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
@@ -55,7 +54,7 @@ public class SwingMenuTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.swingmenutest.client.SwingMenuTestCell";
     }
 
@@ -70,7 +69,7 @@ public class SwingMenuTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig (ClientSession clientSession, ClientCapabilities capabilities) {
 	SwingMenuTestCellConfig config = new SwingMenuTestCellConfig(pixelScale);
 	config.setPreferredWidth(preferredWidth);
 	config.setPreferredHeight(preferredHeight);

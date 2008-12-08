@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.tools.wfs.file;
 
 import java.io.BufferedReader;
@@ -163,7 +162,5 @@ public class FileCellDelegate implements CellDelegate {
     public void encode(String cellSetup) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(this.getFile()));
         writer.write(cellSetup, 0, cellSetup.length());
-        writer.flush();
-        writer.close();
     }
 }

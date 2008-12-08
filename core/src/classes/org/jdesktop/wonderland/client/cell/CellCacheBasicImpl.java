@@ -1,8 +1,6 @@
 /**
  * Project Wonderland
  *
- * $Id$
- * 
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
@@ -13,8 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.cell;
 
@@ -152,7 +151,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             cell.configure(setup);
 
         // Force the cell to create the JME renderer entity
-        createCellRenderer(cell);
+        cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
 
         if (viewCell!=null) {
             // No point in makeing cells active if we don't have a view
@@ -162,14 +161,6 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
         return cell;
-    }
-
-    /**
-     * Create a the cell renderer for this cache.
-     * @param cell the cell to create a renderer for
-     */
-    protected CellRenderer createCellRenderer(Cell cell) {
-        return cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
     }
 
     /**

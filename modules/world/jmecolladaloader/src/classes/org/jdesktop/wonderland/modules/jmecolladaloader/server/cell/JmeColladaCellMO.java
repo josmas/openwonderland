@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
@@ -30,7 +30,6 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -65,12 +64,12 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
         super(bounds, transform);
     }
     
-    @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCell";
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation);
     }
 

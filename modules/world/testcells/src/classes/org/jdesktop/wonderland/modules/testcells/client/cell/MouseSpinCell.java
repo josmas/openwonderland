@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.testcells.client.cell;
 
@@ -37,9 +37,6 @@ import org.jdesktop.wonderland.modules.testcells.client.timingframework.util.Mou
 
 /**
  * Test for mouse over spin
- *
- * TODO this is not the correct model, Cells should not have any detailed knowledge of
- * the renderer and in this implementation we are exposing JME Node
  * 
  * @deprecated
  * @author paulby

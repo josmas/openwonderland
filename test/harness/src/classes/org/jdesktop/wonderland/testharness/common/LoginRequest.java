@@ -11,37 +11,45 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.testharness.common;
-
-import java.util.Properties;
 
 /**
  *
  * @author paulby
  */
 public class LoginRequest extends TestRequest {
-    private String processorName;
-    private Properties props;
+
+    private String sgsServerName;
+    private int sgsServerPort;
+    private char[] passwd;
     
-    public LoginRequest(String processorName,
-                        Properties props,
-                        String username)
-    {
+    public LoginRequest(String sgsServerName, 
+                        int sgsServerPort,
+                        String username,
+                        char[] passwd,
+                        float x, float y, float z) {
         super(username);
-
-        this.processorName = processorName;
-        this.props = props;
+        this.sgsServerName = sgsServerName;
+        this.sgsServerPort = sgsServerPort;
+        this.passwd = passwd;
     }
 
-    public String getProcessorName() {
-        return processorName;
+    public String getSgsServerName() {
+        return sgsServerName;
     }
 
-    public Properties getProps() {
-        return props;
+    public int getSgsServerPort() {
+        return sgsServerPort;
     }
+
+
+    public char[] getPasswd() {
+        return passwd;
+    }
+    
+    
 }

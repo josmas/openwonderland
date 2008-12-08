@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.swingmenutest.client;
 
@@ -61,8 +61,5 @@ public class SwingMenuTestWindow extends WindowSwing  {
 	// TODO: test without
        	JmeClientMain.getFrame().getCanvas3DPanel().add(menuPanel);
 	setComponent(menuPanel);
-
-	setSize((int)menuPanel.getPreferredSize().getWidth(),
-		(int)menuPanel.getPreferredSize().getHeight());
     }
 }

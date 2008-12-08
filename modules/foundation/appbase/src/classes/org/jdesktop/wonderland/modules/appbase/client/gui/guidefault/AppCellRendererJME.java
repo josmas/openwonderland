@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
@@ -162,15 +162,13 @@ public class AppCellRendererJME extends AppCellRenderer {
     @Override
     public void detachView (WindowView view) {
 	ViewWorldDefault viewWorld = (ViewWorldDefault) view;
+	getEntity().removeEntity(viewWorld.getEntity());
 
         FrameWorldDefault frame = viewWorld.getFrame();
 	if (frame != null) {
-	    frame.setParentEntity(null);
 	    getEntity().removeEntity(frame.getEntity());
+	    frame.setParentEntity(null);
 	}
-
-	viewWorld.setParentEntity(null);
-	getEntity().removeEntity(viewWorld.getEntity());
     }
 
     /**

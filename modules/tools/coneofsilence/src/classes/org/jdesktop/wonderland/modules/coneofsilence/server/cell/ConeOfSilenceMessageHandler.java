@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.coneofsilence.server.cell;
 
 import com.sun.sgs.app.ManagedReference;
@@ -90,7 +89,6 @@ import org.jdesktop.wonderland.modules.coneofsilence.common.messages.ConeOfSilen
 import org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides conference coneofsilence functionality
@@ -126,7 +124,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
-	    final WonderlandClientID clientID, final CellMessage message) {
+	    final ClientSession session, final CellMessage message) {
 
 	ConeOfSilenceEnterCellMessage msg = (ConeOfSilenceEnterCellMessage) message;
 
@@ -177,7 +175,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 	}
 
 	audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true, 
-	     AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+	     AudioGroupPlayerInfo.ChatType.SECRET));
 
 	player.attenuateOtherGroups(audioGroup, 0, 0);
     }

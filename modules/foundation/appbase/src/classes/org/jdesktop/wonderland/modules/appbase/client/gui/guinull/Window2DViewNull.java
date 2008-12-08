@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guinull;
 
@@ -50,12 +50,6 @@ public class Window2DViewNull extends Window2DView implements Window2DViewWorld 
      * Clean up resources.
      */
     public void cleanup () {}
-
-    public float getPopupDepthOffset () { return 0f; }
-
-    public void setTranslation (Vector3f translation) {}
-
-    public Vector3f getTranslation () { return new Vector3f(); }
 
     /**
      * Sets the visibility of the view (independent of the window).

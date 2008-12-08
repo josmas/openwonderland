@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.webserver;
 
@@ -43,7 +43,7 @@ public class WebDeployer implements ModuleDeployerSPI {
             Logger.getLogger(WebDeployer.class.getName());
     
     /** list of deployed wars to avoid duplicate deploys */
-    private static final List<DeployRecord> deployed =
+    private static List<DeployRecord> deployed = 
             new ArrayList<DeployRecord>();
     
     /**
@@ -83,7 +83,7 @@ public class WebDeployer implements ModuleDeployerSPI {
      * @param part the web module part
      */
     public void deploy(String type, Module module, ModulePart part) {
-        File deployDir = RunUtil.createTempDir("webmodule", "deploy");
+        File deployDir = new File(RunUtil.getRunDir(), "deploy");
         
         for (File war : getWebApps(part.getFile())) {
             

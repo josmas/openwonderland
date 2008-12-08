@@ -1,9 +1,7 @@
 /**
  * Project Wonderland
  *
- * $RCSfile:$
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision:$
- * $Date:$
- * $State:$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.assetmgr;
 
@@ -42,7 +40,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.assetmgr.TrackingInputStream.ProgressListener;
 import org.jdesktop.wonderland.client.modules.CachedModule;
 import org.jdesktop.wonderland.common.modules.Checksum;
@@ -51,6 +48,7 @@ import org.jdesktop.wonderland.client.modules.ServerCache;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.ResourceURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import org.jdesktop.wonderland.common.modules.ModuleChecksums;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
 import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
@@ -148,8 +146,7 @@ public class AssetManager {
      * @return The asset manager cache directory
      */
     public String getCacheDirectory() {
-        File cacheFile = new File(ClientContext.getUserDirectory(), "cache");
-        return cacheFile.getPath();
+        return WonderlandConfigUtil.getWonderlandDir() + File.separatorChar + "cache";
     }
     
     /**

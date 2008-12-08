@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.login;
 
@@ -45,9 +45,8 @@ public class LoginManager {
     /** the primary manager */
     private static ServerSessionManager primaryLoginManager;
 
-    /** the default plugin filter to use */
-    private static PluginFilter defaultPluginFilter = 
-            new PluginFilter.DefaultPluginFilter();
+    /** whether to load plugins */
+    private static boolean loadPlugins = true;
 
     /**
      * Set the LoginUI to call back to during login attempts.
@@ -57,28 +56,8 @@ public class LoginManager {
         LoginManager.ui = ui;
     }
 
-    /**
-     * Get the LoginUI to call back during login attempts
-     * @return the login UI
-     */
     synchronized static LoginUI getLoginUI() {
         return ui;
-    }
-
-    /**
-     * Set the default plugin filter for all session managers created.
-     * @param filter the plugin filter to use
-     */
-    public synchronized static void setPluginFilter(PluginFilter filter) {
-        LoginManager.defaultPluginFilter = filter;
-    }
-
-    /**
-     * Get the default plugin filter for all session managers created.
-     * @return the plugin filter to use
-     */
-    synchronized static PluginFilter getPluginFilter() {
-        return defaultPluginFilter;
     }
 
     /**
@@ -136,6 +115,22 @@ public class LoginManager {
      */
     public synchronized static void setPrimary(ServerSessionManager primary) {
         LoginManager.primaryLoginManager = primary;
+    }
+
+    /**
+     * Get whether or not plugins are being loaded.
+     * @return true if plugins are being loaded, or false if not
+     */
+    public synchronized static boolean getLoadPlugins() {
+        return LoginManager.loadPlugins;
+    }
+
+    /**
+     * Set whether or not to load plugins
+     * @param loadPlugins true to load plugins, or false to skip them
+     */
+    public synchronized static void setLoadPlugins(boolean loadPlugins) {
+        LoginManager.loadPlugins = loadPlugins;
     }
 
     /**

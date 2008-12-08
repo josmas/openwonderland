@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.client.jme;
 
 import java.net.URL;
@@ -73,7 +72,33 @@ public class Webstart {
         //
         // Note if we return null here, it will go on to try the normal
         // mechanisms defined in URL
-        URL.setURLStreamHandlerFactory(new WonderlandURLStreamHandlerFactory());
+        URL.setURLStreamHandlerFactory(new URLStreamHandlerFactory() {
+            public URLStreamHandler createURLStreamHandler(String protocol) {
+                URLStreamHandler u = null;
+
+                
+                // hardcode the list of protocol handelers.  We do this because
+                // trying to load a handler class that doesn't exist using 
+                // Class.forName() throws a ClassCircularityError. 
+                String[] protocols = { "wla", "wlj", "wltexture", "wlzip" };
+                for (String p : protocols) {
+                    if (p.equalsIgnoreCase(protocol)) {
+                        String className = 
+                                "org.jdesktop.wonderland.client.protocols" +
+                                "." + p + ".Handler";
+                        try {
+                            Class clazz = Class.forName(className);
+                            u = (URLStreamHandler) clazz.newInstance(); 
+                        } catch (Exception ex) {
+                            logger.log(Level.FINE, "Error loading Wonderland " +
+                                       "protocol handler " + className, ex);
+                        }
+                    }
+                }
+               
+                return u;
+            }
+        });
         
         // set our own security manager
         logger.info("Setting security manager");

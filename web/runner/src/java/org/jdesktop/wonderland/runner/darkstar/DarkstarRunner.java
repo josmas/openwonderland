@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.runner.darkstar;
 
 import java.io.BufferedReader;
@@ -351,7 +350,7 @@ public class DarkstarRunner extends BaseRunner {
      * @param status the status to set
      */
     @Override
-    protected void setStatus(Status status) {
+    protected synchronized void setStatus(Status status) {
         if (status == Status.RUNNING) {
             return;
         }
@@ -382,7 +381,7 @@ public class DarkstarRunner extends BaseRunner {
      */
     protected class DarkstarOutputReader extends BaseRunner.ProcessOutputReader {
         private static final String DARKSTAR_STARTUP =
-                "Wonderland: application is ready";
+                "Wonderland server started successfully";
                 
         public DarkstarOutputReader(InputStream in, Logger out) {
             super (in, out);

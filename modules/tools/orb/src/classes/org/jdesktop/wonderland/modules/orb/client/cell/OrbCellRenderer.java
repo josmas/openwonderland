@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
@@ -68,7 +68,6 @@ public class OrbCellRenderer extends BasicRenderer {
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
         //return createWireframeEntity();
-
 	return createAnimationEntity();
     }
 
@@ -187,5 +186,4 @@ public class OrbCellRenderer extends BasicRenderer {
 	logger.fine("ANIMATION ENTITY CREATED");
 	return node;
     }
-
 }

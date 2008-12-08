@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
@@ -29,24 +29,6 @@ import org.jdesktop.wonderland.client.input.EventListener;
  */
 
 public interface Window2DViewWorld {
-
-    /**
-     * Returns the depth offset above a base window that popup windows should be positioned.
-     */
-    public float getPopupDepthOffset ();
-
-
-    /**
-     * Sets the translation of the view. Don't forget to also call update(CHANGED_TRANSFORM) afterward.
-     *
-     * @param translation The new translation of the window relative to the center of the cell.
-     */
-    public void setTranslation (Vector3f translation);
-
-    /**
-     * Returns the translation of the view.
-     */
-    public Vector3f getTranslation ();
 
     /**
      * Sets the dimensions of the position of the view. Don't forget to 

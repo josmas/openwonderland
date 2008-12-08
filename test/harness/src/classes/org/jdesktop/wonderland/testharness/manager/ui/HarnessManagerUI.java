@@ -1,4 +1,3 @@
-
 /**
  * Project Wonderland
  *
@@ -12,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.testharness.manager.ui;
 
@@ -146,7 +145,7 @@ public class HarnessManagerUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
 private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMIActionPerformed
-    System.exit(0);
+// TODO add your handling code here:
 }//GEN-LAST:event_exitMIActionPerformed
 
     /**

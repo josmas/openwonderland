@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.cell;
 
@@ -36,7 +36,6 @@ import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -77,7 +76,7 @@ public class MovableComponentMO extends CellComponentMO {
      * if the server originated it
      * @param transform
      */
-    public void moveRequest(WonderlandClientID clientID, CellTransform transform) {
+    public void moveRequest(BigInteger sourceID, CellTransform transform) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent;
         cell.setLocalTransform(transform);
@@ -85,7 +84,7 @@ public class MovableComponentMO extends CellComponentMO {
         channelComponent = channelComponentRef.getForUpdate();
 
         if (cell.isLive()) {
-            channelComponent.sendAll(clientID, MovableMessage.newMovedMessage(cell.getCellID(), transform));
+            channelComponent.sendAll(sourceID, MovableMessage.newMovedMessage(cell.getCellID(), transform));
         }
     }
     
@@ -104,15 +103,16 @@ public class MovableComponentMO extends CellComponentMO {
             compRef = AppContext.getDataManager().createReference(comp);
         }
 
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        public void messageReceived(WonderlandClientSender sender, ClientSession session, CellMessage message) {
             MovableMessage ent = (MovableMessage) message;
-            
+            BigInteger sessionID = AppContext.getDataManager().createReference(session).getId();
+
 //            System.out.println("MovableComponentMO.messageReceived "+ent.getActionType());
             switch (ent.getActionType()) {
                 case MOVE_REQUEST:
                     // TODO check permisions
                     
-                    compRef.getForUpdate().moveRequest(clientID, new CellTransform(ent.getRotation(), ent.getTranslation()));
+                    compRef.getForUpdate().moveRequest(sessionID, new CellTransform(ent.getRotation(), ent.getTranslation()));
 
                     // Only need to send a response if the move can not be completed as requested
                     //sender.send(session, MovableMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));

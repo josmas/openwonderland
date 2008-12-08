@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.jme.input;
 
@@ -82,7 +82,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
     /**
      * Returns the entity hit by the event, based on the destination pick details which were calculated
      * by the input system. Normally, this will be the pick hit entity unless previously overridden by 
-     * the input system grab calculations. 
+     * the input system grab calculations.
      */
     public Entity getEntity () {
 	if (entity == null) {

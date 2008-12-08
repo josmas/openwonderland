@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server;
 
@@ -55,9 +55,6 @@ public class WonderlandBoot implements AppListener, Serializable {
         
         // load the initial world
         WonderlandContext.getCellManager().loadWorld();
-        
-        // save the world (to test)
-        //WonderlandContext.getCellManager().saveWorld();
 
         logger.warning("Wonderland server started successfully");
     }

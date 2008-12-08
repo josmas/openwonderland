@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.comms;
 
@@ -151,8 +151,7 @@ public class ProtocolSessionListener
             
             // TODO: is this the right thing to do, or should we only
             // do this automatically for the Wonderland protocol?
-            WonderlandClientID clientID = new WonderlandClientID(session);
-            WonderlandContext.getUserManager().login(clientID);
+            WonderlandContext.getUserManager().login(session);
             
             // record the client connection
             this.protocol = cp;
@@ -175,8 +174,7 @@ public class ProtocolSessionListener
             
             // TODO: is this the right thing to do, or should we only
             // do this automatically from the Wonderland protocol?
-            WonderlandClientID clientID = new WonderlandClientID(getSession());
-            WonderlandContext.getUserManager().logout(clientID);
+            WonderlandContext.getUserManager().logout(getSession());
         }
         
         // record client disconnect

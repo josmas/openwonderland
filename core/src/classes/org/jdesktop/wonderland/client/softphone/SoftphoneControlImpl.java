@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: SoftphoneControlImpl.java,v $
- *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.28 $
- * $Date: 2007/12/17 19:45:54 $
- * $State: Exp $
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.softphone;
 
@@ -139,13 +137,13 @@ public class SoftphoneControlImpl {
 	    throw new IOException("Unable to find softphone.jar");
 	}
 
-	String s = "";
+	StringBuffer sb = new StringBuffer();
 
-        for (int i = 0; i < command.length; i++) {
-	    s += " " + command[i];
+        for (int i=0; i<command.length; i++) {
+            sb.append(" "+command[i]);
         }
 
-        System.out.println("Launching communicator: " + s);
+        logger.info("Launching communicator:\n "+sb.toString());
 
         softphoneProcess = Runtime.getRuntime().exec(command);
             

@@ -1,8 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.utils.ant;
 
 import java.io.BufferedReader;
@@ -30,7 +42,7 @@ public class ListFilesTask extends Task {
     private File jar;
     private String dir;
     private File output;
-
+    
     private static final FileUtils FILE_UTILS = FileUtils.getFileUtils();
     
     @Override
@@ -72,7 +84,7 @@ public class ListFilesTask extends Task {
                 Matcher m = p.matcher(je.getName());
                 if (m.matches() && m.groupCount() == 1) {
                     String line = "/" + m.group();
-
+                    
                     // see if this is different
                     if (!changed && !line.equals(check.readLine())) {
                         changed = true;
@@ -104,7 +116,7 @@ public class ListFilesTask extends Task {
         }
         
     }
-
+    
     public void setJar(File jar) {
         this.jar = jar;
     }
@@ -116,5 +128,5 @@ public class ListFilesTask extends Task {
     public void setOutput(File output) {
         this.output = output;
     }
-
+    
 }

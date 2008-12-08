@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
 import com.sun.sgs.app.ManagedReference;
@@ -52,6 +51,7 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 
 import com.sun.voip.CallParticipant;
@@ -64,7 +64,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 
@@ -103,7 +102,6 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides conference phone functionality
@@ -147,7 +145,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
-	    final WonderlandClientID clientID, final CellMessage message) {
+	    final ClientSession session, final CellMessage message) {
 
 	PhoneControlMessage msg = (PhoneControlMessage) message;
 
@@ -259,8 +257,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 
 	    logger.fine("Got place call message " + externalCallID);
 
-	    phoneStatusListenerRef.get().mapCall(externalCallID, sender, clientID, 
-		listing);
+	    phoneStatusListenerRef.get().mapCall(externalCallID, sender, listing);
 
 	    PlayerSetup playerSetup = new PlayerSetup();
 	    //playerSetup.x =  translation.x;
@@ -278,7 +275,6 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 		CallParticipant cp = new CallParticipant();
 
 		setup.cp = cp;
-
 		try {
 		    setup.bridgeInfo = vm.getVoiceBridge();
 	 	} catch (IOException e) {
@@ -331,10 +327,10 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 		audioGroup = vm.createAudioGroup(audioGroupId, audioGroupSetup);
 		audioGroup.addPlayer(externalPlayer, 
 		    new AudioGroupPlayerInfo(true, 
-		    AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+		    AudioGroupPlayerInfo.ChatType.PRIVATE));
 		audioGroup.addPlayer(softphonePlayer, 
 		    new AudioGroupPlayerInfo(true, 
-		    AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+		    AudioGroupPlayerInfo.ChatType.PRIVATE));
 
 		logger.fine("done with audio groups");
             }
@@ -381,8 +377,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	     * Send PLACE_CALL_RESPONSE message back to all the clients 
 	     * to signal success.
 	     */
-            sender.send(clientID, new PlaceCallResponseMessage(
-		phoneCellMORef.get().getCellID(), listing, true));
+            sender.send(new PlaceCallResponseMessage(phoneCellMORef.get().getCellID(), listing, true));
 
 	    logger.fine("back from notifying user");
 	    return;
@@ -424,8 +419,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
             listing.setPrivateClientName("");
               
             //Inform the PhoneCells that the call has been joined successfully
-            sender.send(clientID, new JoinCallResponseMessage(
-		phoneCellMORef.get().getCellID(), listing, true));
+            sender.send(new JoinCallResponseMessage(phoneCellMORef.get().getCellID(), listing, true));
             
             spawnOrb(externalCallID);
 	    return;
@@ -462,8 +456,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
             }         
             
             //Send SUCCESS to phone cell
-            sender.send(clientID, new EndCallResponseMessage(
-		phoneCellMORef.get().getCellID(), listing, true, 
+            sender.send(new EndCallResponseMessage(phoneCellMORef.get().getCellID(), listing, true, 
 		"User requested call end"));
 	    return;
         } 

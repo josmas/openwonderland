@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client;
 
@@ -148,17 +148,5 @@ public class ClientContext {
         }
 
         return dir;
-    }
-
-    /**
-     * @InternalAPI
-     * Set the default user directory.  This is useful in cases where
-     * multiple clients are running in the same VM, so changing the
-     * System property is not viable.  In other cases, the system
-     * property should be used.
-     * @param userDirectory the user directory to use
-     */
-    public static void setUserDirectory(File userDir) {
-        ClientContext.userDir = userDir;
     }
 }

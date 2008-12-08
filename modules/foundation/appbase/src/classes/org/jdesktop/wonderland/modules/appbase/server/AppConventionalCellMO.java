@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.server;
 
@@ -30,7 +30,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
 /**
@@ -156,7 +155,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellConfig getCellConfig (ClientSession clientSession, ClientCapabilities capabilities) {
 	if (config == null) {
 	    config = new AppConventionalCellConfig(masterHost, appName, pixelScale, connectionInfo);
 	    if (userLaunched) {

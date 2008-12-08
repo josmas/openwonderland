@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.simplewhiteboard.server;
 
@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * The server side of the communication component that provides communication between the whiteboard client and server.
@@ -69,10 +68,10 @@ public class WhiteboardComponentMO extends CellComponentMO {
      * with the server
      * @param message The message to broadcast.
      */
-    public void sendAllClients (WonderlandClientID clientID, WhiteboardCompoundCellMessage message) {
+    public void sendAllClients (BigInteger sourceID, WhiteboardCompoundCellMessage message) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent = channelComponentRef.getForUpdate();
-	channelComponent.sendAll(clientID, message);
+	channelComponent.sendAll(sourceID, message);
     }
     
     /**
@@ -89,10 +88,10 @@ public class WhiteboardComponentMO extends CellComponentMO {
 	    this.cellRef = cellRef;
         }
 
-        public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        public void messageReceived (WonderlandClientSender sender, ClientSession session, CellMessage message) {
 	    WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
 	    CellMO cell = cellRef.get();
-	    ((WhiteboardCellMO)cell).receivedMessage(sender, clientID, cmsg);
+	    ((WhiteboardCellMO)cell).receivedMessage(sender, session, cmsg);
         }
     }
 }

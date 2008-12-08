@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
@@ -52,6 +52,7 @@ public class AudioTreatmentComponent extends CellComponent {
         super(cell);
         channelComp = cell.getComponent(ChannelComponent.class);
     }
+    
     
     @Override
     public void setStatus(CellStatus status) {

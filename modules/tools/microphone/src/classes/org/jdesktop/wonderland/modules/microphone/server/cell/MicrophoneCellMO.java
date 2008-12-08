@@ -1,21 +1,19 @@
 /**
- * Project Looking Glass
- * 
- * $RCSfile: MicrophoneCellGLO.java,v $
- * 
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
- * 
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
- * 
+ *
  * The contents of this file are subject to the GNU General Public
  * License, Version 2 (the "License"); you may not use this file
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
- * 
- * $Revision: 1.43 $
- * $Date: 2008/06/16 18:08:29 $
- * $State: Exp $ 
+ *
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
@@ -78,7 +76,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides conference microphone functionality
@@ -109,14 +106,14 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    protected String getClientCellClassName(WonderlandClientID clientID,
+    protected String getClientCellClassName(ClientSession clientSession, 
 	    ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.microphone.client.cell.MicrophoneCell";
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID,
+    public CellConfig getCellConfig(ClientSession clientSession, 
 	    ClientCapabilities capabilities) {
 
         MicrophoneCellConfig config = new MicrophoneCellConfig();

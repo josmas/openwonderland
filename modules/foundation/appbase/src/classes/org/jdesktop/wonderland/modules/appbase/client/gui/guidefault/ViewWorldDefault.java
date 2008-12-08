@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guidefault;
 
@@ -65,7 +65,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     private static final Logger logger = Logger.getLogger(ViewWorldDefault.class.getName());
 
     /** The vector offset from the center of the cell to the center of the window */
-    protected Vector3f translation = new Vector3f();
+    protected Vector3f position;
 
     /** The width of the view (excluding the frame) */
     protected float width;
@@ -206,13 +206,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     }
 
     /**
-     * Returns the depth offset above a base window that popup windows should be positioned.
-     */
-    public float getPopupDepthOffset () {
-	return 0.01f;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public void setVisible (boolean visible) {
@@ -250,19 +243,19 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     }
 
     /**
-     * Sets the translation of the view. Don't forget to also call update(CHANGED_TRANSFORM) afterward.
+     * Sets the position of the view. Don't forget to also call update(CHANGED_POSITION) afterward.
      *
-     * @param translation The new translation of the window relative to the center of the cell.
+     * @param position The new position of the window (in cell local coordinates).
      */
-    public void setTranslation (Vector3f translation) { 
-	this.translation.set(translation);
+    public void setPosition (Vector3f position) { 
+	this.position = position;
     }
 
     /**
-     * Returns the translation of the view.
+     * Returns the position of the window.
      */
-    public Vector3f getTranslation () { 
-	return new Vector3f(translation);
+    public Vector3f getPosition () { 
+	return position;
     }
 
     /**
@@ -384,7 +377,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
     /** Update the view's transform */
     protected void updateTransform () {
-	baseNode.setLocalTranslation(translation);
+	// TODO: currently identity
     }
 
     /**

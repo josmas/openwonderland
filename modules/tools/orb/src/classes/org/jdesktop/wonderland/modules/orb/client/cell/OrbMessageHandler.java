@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
 import java.util.logging.Logger;
@@ -31,7 +30,6 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbStartCallMessage;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
@@ -78,14 +76,12 @@ public class OrbMessageHandler {
                 }
             };
 
-        channelComp.addMessageReceiver(OrbStartCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbEndCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbMuteCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbSetVolumeMessage.class, msgReceiver);
     }
 
     public void processMessage(final Message message) {
-	logger.finest("process message " + message);
     }
     
 }

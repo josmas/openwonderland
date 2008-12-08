@@ -11,67 +11,50 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.testharness.slave.client3D;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.HeadlessException;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Properties;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
-import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
-import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
+import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.MainFrame;
-import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.LoginUI;
-import org.jdesktop.wonderland.client.login.PluginFilter;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
-import org.jdesktop.wonderland.client.login.SessionCreator;
+import org.jdesktop.wonderland.client.modules.ModulePluginList;
+import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.testharness.common.Client3DRequest;
+import org.jdesktop.wonderland.testharness.common.LoginRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
-import org.jdesktop.wonderland.testharness.slave.ProcessingException;
-import org.jdesktop.wonderland.testharness.slave.RequestProcessor;
+import sun.misc.Service;
 
 /**
  * A test client that simulates a 3D client
  */
 public class Client3DSim
-        implements RequestProcessor, SessionStatusListener
+        implements SessionStatusListener
 {
     /** a logger */
     private static final Logger logger = 
@@ -80,103 +63,70 @@ public class Client3DSim
             Logger.getLogger(MessageTimer.class.getName());
     
     /** the name of this client */
-    private String username;
-
-    /** the session we are attached to */
-    private CellClientSession session;
-
+    private String name;
+    
     /** the mover thread */
     private UserSimulator userSim;
     
     private MessageTimer messageTimer = new MessageTimer();
+    
+    public Client3DSim(LoginRequest loginRequest) throws LoginFailureException {
+        this.name = loginRequest.getUsername();
+        
+        WonderlandServerInfo server = new WonderlandServerInfo(loginRequest.getSgsServerName(), 
+                                                               loginRequest.getSgsServerPort());
+        LoginParameters login = new LoginParameters(name, loginRequest.getPasswd());
+                
+        // setup a classloader with the module jars
+        ClassLoader loader = setupClassLoader();
+        
+        
+        CellClientSession session = new CellClientSession(server, loader);
+        
+        
+        // load any client plugins from that class loader
+        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
+                                                      loader);
 
-    public Client3DSim() {
-    }
-
-    public String getName() {
-        return "Client3DSim";
-    }
-
-    public void initialize(String username, Properties props)
-        throws ProcessingException
-    {
-        this.username = username;
-
-        // set the user directory to one specific to this client
-        File userDir = new File(ClientContext.getUserDirectory("test"),
-                                username);
-        ClientContext.setUserDirectory(userDir);
-
-        // set up the login system to
-
-        // read the server URL from a property
-        String serverURL = props.getProperty("serverURL");
-        if (serverURL == null) {
-            throw new ProcessingException("No serverURL found");
+        while (it.hasNext()) {
+            ClientPlugin plugin = it.next(); 
+            plugin.initialize(session);
         }
-
-        // set the login callback to give the right user name
-        LoginManager.setLoginUI(new ClientSimLoginUI(username, props));
-
-        // for now, load all plugins.  We should modify this to only load
-        // some plugins, depending on the test
-        LoginManager.setPluginFilter(new BlacklistPluginFilter());
-
-        // create a fake mainframe
-        JmeClientMain.setFrame(new FakeMainFrame());
-
-        try {
-            ServerSessionManager mgr = LoginManager.getInstance(serverURL);
-            session = mgr.createSession(new SessionCreator<CellClientSession>() {
-                public CellClientSession createSession(WonderlandServerInfo serverInfo,
-                                                       ClassLoader loader)
-                {
-                    CellClientSession ccs = new CellClientSession(serverInfo, loader) {
-                        @Override
-                        protected CellCache createCellCache() {
-                            CellCacheBasicImpl impl = new CellCacheBasicImpl(this,
-                                    getClassLoader(), getCellCacheConnection(),
-                                    getCellChannelConnection())
-                            {
-                                @Override
-                                protected CellRenderer createCellRenderer(Cell cell) {
-                                    return null;
-                                }
-                            };
-                            
-                            getCellCacheConnection().addListener(impl);
-                            return impl;
-                        }
-                    };
-                    ccs.addSessionStatusListener(Client3DSim.this);
-
-                    final LocalAvatar avatar = ccs.getLocalAvatar();
-                    avatar.addViewCellConfiguredListener(new ViewCellConfiguredListener() {
-                        public void viewConfigured(LocalAvatar localAvatar) {
-                            MovableComponent mc =
-                                    avatar.getViewCell().getComponent(MovableComponent.class);
-                            mc.addServerCellMoveListener(messageTimer);
-
-                            // start the simulator
-                            userSim.start();
-                        }
-                    });
-                    userSim = new UserSimulator(avatar);
-
-                    return ccs;
-                }
-            });
-        } catch (IOException ioe) {
-            throw new ProcessingException(ioe);
-        } catch (LoginFailureException lfe) {
-            throw new ProcessingException(lfe);
-        }
+        
+        
+        // login
+        session.addSessionStatusListener(this);
+        session.login(login);
+        
+        logger.info(getName() + " login succeeded");
+        
+        final LocalAvatar avatar = session.getLocalAvatar();
+        
+        avatar.addViewCellConfiguredListener(new LocalAvatar.ViewCellConfiguredListener() {
+            public void viewConfigured(LocalAvatar localAvatar) {
+                ((MovableComponent)avatar.getViewCell().getComponent(MovableComponent.class)).addServerCellMoveListener(messageTimer);
+                
+                // Start the userSim once the view is fully configured
+                userSim.start();
+            }
+        });
+                      
+        userSim = new UserSimulator(avatar);        
     }
-
-    public void destroy() {
-        if (session != null) {
-            session.logout();
+    
+    private ClassLoader setupClassLoader() {
+        ModulePluginList list = ModuleUtils.fetchPluginJars();
+        List<URL> urls = new ArrayList<URL>();
+        
+        for (String uri : list.getJarURIs()) {
+            try {
+                urls.add(new URL(uri));
+            } catch (Exception excp) {
+                excp.printStackTrace();
+           }
         }
+        
+        return new URLClassLoader(urls.toArray(new URL[0]));
     }
 
     public void processRequest(TestRequest request) {
@@ -197,8 +147,8 @@ public class Client3DSim
         }
     }
     
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
     
     public void sessionStatusChanged(WonderlandSession session, 
@@ -370,7 +320,7 @@ public class Client3DSim
 
                 if (System.nanoTime()-lastReport > REPORT_INTERVAL*1000000) {
                     long avg = timeSum/count;
-                    messageTimerLogger.info("Roundtrip time avg "+avg + "ms "+username+" min "+min+" max "+max);
+                    messageTimerLogger.info("Roundtrip time avg "+avg + "ms "+name+" min "+min+" max "+max);
                     timeSum=0;
                     lastReport = System.nanoTime();
                     count = 0;
@@ -396,132 +346,6 @@ public class Client3DSim
         public TimeRecord(CellTransform transform, long sendTime) {
             this.transform = transform;
             this.sendTime = sendTime;
-        }
-    }
-
-    class ClientSimLoginUI implements LoginUI {
-        private String username;
-        private Properties props;
-
-        public ClientSimLoginUI(String username, Properties props) {
-            this.username = username;
-            this.props = props;
-        }
-
-        public void requestLogin(NoAuthLoginControl control) {
-            String fullname = props.getProperty("fullname");
-            if (fullname == null) {
-                fullname = username;
-            }
-
-            try {
-                control.authenticate(username, fullname);
-            } catch (LoginFailureException lfe) {
-                logger.log(Level.WARNING, "Login failed", lfe);
-                control.cancel();
-            }
-        }
-
-        public void requestLogin(UserPasswordLoginControl control) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void requestLogin(WebURLLoginControl control) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-
-    class FakeMainFrame implements MainFrame {
-        private JFrame frame;
-        private JPanel canvasPanel;
-        private Canvas canvas;
-
-        public FakeMainFrame() {
-            try { 
-                frame = new JFrame();
-            } catch (HeadlessException he) {
-                // ignore
-                logger.log(Level.INFO, "Running in headless mode"); 
-            }
-            canvasPanel = new JPanel(new BorderLayout());
-            canvas = new Canvas();
-
-            canvasPanel.add(canvas, BorderLayout.CENTER);
-            
-            if (frame != null) { 
-                frame.setContentPane(canvasPanel);
-            }
-        }
-
-        public JFrame getFrame() {
-            return frame;
-        }
-
-        public Canvas getCanvas() {
-            return canvas;
-        }
-
-        public JPanel getCanvas3DPanel() {
-            return canvasPanel;
-        }
-
-        public void addToToolMenu(JMenuItem menuItem) {
-            // ignore
-        }
-
-        public void addToEditMenu(JMenuItem menuItem) {
-            // ignore
-        }
-
-        public void setServerURL(String serverURL) {
-            // ignore
-        }
-
-        public void addServerURLListener(ServerURLListener listener) {
-            // ignore
-        }
-    }
-
-    class BlacklistPluginFilter implements PluginFilter {
-        private final String[] JAR_BLACKLIST = {
-            "ant",
-            "ant-launcher",
-            "artimport-client",
-            "audiomanager-client",
-            "avatarbase-client",
-            "defaultenvironment-client",
-            "kmzloader-client"
-        };
-
-        private final String[] CLASS_BLACKLIST = {
-        };
-
-        public boolean shouldDownload(ServerSessionManager sessionManager, URL jarURL) {
-            String urlPath = jarURL.getPath();
-            int idx = urlPath.lastIndexOf("/");
-            if (idx != -1) {
-                urlPath = urlPath.substring(idx);
-            }
-
-            for (String check : JAR_BLACKLIST) {
-                if (urlPath.contains(check)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public boolean shouldInitialize(ServerSessionManager sessionManager,
-                                        ClientPlugin plugin)
-        {
-            for (String check : CLASS_BLACKLIST) {
-                if (plugin.getClass().getName().equals(check)) {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

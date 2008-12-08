@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.testharness.slave;
 
@@ -47,8 +47,7 @@ public class SlaveLogHandler extends Handler {
             try {
                 out.writeObject(record);
             } catch (IOException ex) {
-                System.out.println("Error writing log:");
-                ex.printStackTrace();
+                Logger.getLogger(SlaveLogHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -60,8 +59,7 @@ public class SlaveLogHandler extends Handler {
                 try {
                     out.flush();
                 } catch (IOException ex) {
-                    System.out.println("Error writing log:");
-                    ex.printStackTrace();
+                    Logger.getLogger(SlaveLogHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }

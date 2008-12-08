@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.comms;
 
@@ -31,7 +31,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -177,7 +176,7 @@ public class WonderlandSessionListener
             WonderlandClientSender sender = senders.get(clientID);
             
             // call the handler
-            handler.messageReceived(sender, getWonderlandClientID(), m);
+            handler.messageReceived(sender, getSession(), m);
             
         } catch (PackerException eme) {
             logger.log(Level.WARNING, "Error extracting message from client", 
@@ -291,15 +290,7 @@ public class WonderlandSessionListener
     protected ClientSession getSession() {
         return sessionRef.get();
     }
-
-    /**
-     * Get the WonderlandClientID for this session
-     * @return the WonderlandClientID
-     */
-    protected WonderlandClientID getWonderlandClientID() {
-        return new WonderlandClientID(sessionRef);
-    }
-
+    
     /**
      * Get a client handler by client ID
      * @param clientID the id of the client to get
@@ -390,7 +381,7 @@ public class WonderlandSessionListener
         }
         
         // notify the handler
-        ref.get().clientConnected(sender, getWonderlandClientID(), properties);
+        ref.get().clientConnected(sender, session, properties);
     }
     
     /**
@@ -421,7 +412,7 @@ public class WonderlandSessionListener
         removeHandler(Short.valueOf(clientID));
         
         // notify the handler
-        handler.clientDisconnected(sender, getWonderlandClientID());
+        handler.clientDisconnected(sender, getSession());
     }
     
     /**
@@ -553,11 +544,11 @@ public class WonderlandSessionListener
             return type;
         }
 
-        public Set<WonderlandClientID> getClients() {
-            Set<WonderlandClientID> out = new LinkedHashSet<WonderlandClientID>();
+        public Set<ClientSession> getSessions() { 
+            Set<ClientSession> out = new HashSet<ClientSession>();
             
             for (ManagedReference<ClientSession> ref : sessionsRef.get()) {
-                out.add(new WonderlandClientID(ref));
+                out.add(ref.get());
             }
             
             return out;
@@ -571,15 +562,15 @@ public class WonderlandSessionListener
             send(channelRef.get(), message);
         }
 
-        public void send(WonderlandClientID wlID, Message message) {
-            wlID.getSession().send(serializeMessage(message, clientID));
+        public void send(ClientSession session, Message message) {
+            session.send(serializeMessage(message, clientID));
         }
 
-        public void send(Set<WonderlandClientID> wlIDs, Message message)
+        public void send(Set<ClientSession> sessions, Message message) 
         {
             // send to each individual session
-            for (WonderlandClientID wlID : wlIDs) {
-                send(wlID, message);
+            for (ClientSession session : sessions) {
+                send(session, message);
             }
         }
 
@@ -644,20 +635,20 @@ public class WonderlandSessionListener
         }
         
         public void clientConnected(WonderlandClientSender sender,
-                                    WonderlandClientID clientID,
+                                    ClientSession session,
                                     Properties properties) 
         {
             // ignore
         }
         
         public void clientDisconnected(WonderlandClientSender sender,
-                                       WonderlandClientID clientID)
+                                       ClientSession session) 
         {
             // ignore
         }
 
         public void messageReceived(WonderlandClientSender sender,
-                                    WonderlandClientID clientID,
+                                    ClientSession session, 
                                     Message message)
         {
             if (message instanceof AttachClientMessage) {

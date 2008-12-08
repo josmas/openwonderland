@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
 import com.sun.sgs.client.ClientChannel;
@@ -56,8 +55,6 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
     private static final float NORMALSCALE = 1.25f;
     
     private OrbMessageHandler orbMessageHandler;
-
-    private String callID;
 
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -101,7 +98,7 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
 	logger.fine("Create cell renderer...");
 
         if (rendererType == RendererType.RENDERER_JME) {
-	    return new OrbCellRenderer(this);
+            return new OrbCellRenderer(this);
         }
 
         throw new IllegalStateException("Cell does not support " + rendererType);

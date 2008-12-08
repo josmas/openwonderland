@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.jme;
 
@@ -187,9 +187,5 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
             }
         }
         
-    }
-
-    public interface AvatarInputSelector {
-        public void selectForInput();
     }
 }

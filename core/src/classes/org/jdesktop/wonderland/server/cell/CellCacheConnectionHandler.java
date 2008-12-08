@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.cell;
 
@@ -34,7 +34,6 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -59,7 +58,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
     }
     
     public void clientConnected(WonderlandClientSender sender,
-                                WonderlandClientID clientID,
+                                ClientSession session,
                                 Properties properties)   
     {
         // Nothing to do, setup is done when we get the SET_VIEW
@@ -67,27 +66,27 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
     }
 
     public void clientDisconnected(WonderlandClientSender sender,
-                                   WonderlandClientID clientID)
+                               ClientSession session) 
     {
-        UserMO user = WonderlandContext.getUserManager().getUser(clientID);
-        AvatarCellMO avatar = user.getAvatar(clientID, viewID);
+        UserMO user = WonderlandContext.getUserManager().getUser(session);
+        AvatarCellMO avatar = user.getAvatar(session, viewID);
         if (avatar == null) {
             logger.severe("clientDetached has null avatar for session");
             return;
         }
 
         avatar.detach();    // Detach avatar from world
-        avatar.getCellCache().logout(clientID);
+        avatar.getCellCache().logout(session);
     }
     
     public void messageReceived(WonderlandClientSender sender,
-                                WonderlandClientID clientID,
+                                ClientSession session, 
                                 Message message)
     {
         if (message instanceof CellHierarchyMessage) {
-            messageReceived(sender, clientID, (CellHierarchyMessage) message);
+            messageReceived(sender, session, (CellHierarchyMessage) message);
         } else {
-            sender.send(clientID, new ErrorMessage(message.getMessageID(),
+            sender.send(session, new ErrorMessage(message.getMessageID(),
                         "Unexpected message type: " + message.getClass()));
         }
     }
@@ -99,21 +98,21 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
      * @param sender the message sender to send responses to
      */
     public void messageReceived(WonderlandClientSender sender,
-                                WonderlandClientID clientID,
+                                ClientSession session,
                                 CellHierarchyMessage message)
     {        
         switch(message.getActionType()) {
             case SET_VIEW :
                 // TODO - should not assume this is an avatar, could be a camera
                 ViewCreateResponseMessage response = createAvatar(sender, 
-                                                                    clientID,
+                                                                    session, 
                                                                     message);
-                sender.send(clientID, response);
+                sender.send(session, response);
                 
                 break;
             default :
                 logger.severe("Unexpected message in CellCacheClientHandler "+message.getActionType());
-                sender.send(clientID, new ErrorMessage(message.getMessageID(),
+                sender.send(session, new ErrorMessage(message.getMessageID(),
                         "Unexpected message in CellCacheClientHandler: " +
                         message.getActionType()));
                 break;
@@ -121,18 +120,18 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
     }
     
     private ViewCreateResponseMessage createAvatar(WonderlandClientSender sender,
-                                                     WonderlandClientID clientID,
+                                                     ClientSession session, 
                                                      CellHierarchyMessage msg) {
-        UserMO user = WonderlandContext.getUserManager().getUser(clientID);
-        AvatarCellMO avatar = user.getAvatar(clientID, msg.getViewID());
+        UserMO user = WonderlandContext.getUserManager().getUser(session);
+        AvatarCellMO avatar = user.getAvatar(session, msg.getViewID());
         if (avatar == null) {
             user.getReference().getForUpdate(); // Mark for update
             avatar = new AvatarCellMO(user);
             viewID = msg.getViewID();
-            user.putAvatar(clientID, viewID, avatar);
+            user.putAvatar(session, viewID, avatar);
         }
         
-        avatar.getCellCache().login(sender, clientID);
+        avatar.getCellCache().login(sender, session);
         
         return new ViewCreateResponseMessage(msg.getMessageID(), avatar.getCellID());
     }

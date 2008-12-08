@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.setup;
 
@@ -45,14 +45,4 @@ public interface BeanSetupMO {
      * @param setup a Java bean with updated properties
      */
     public void reconfigureCell(BasicCellSetup setup);
-    
-    /**
-     * Returns the setup information currently configured on the cell. If the
-     * setup argument is non-null, fill in that object and return it. If the
-     * setup argument is null, create a new setup object.
-     * 
-     * @param setup The setup object, if null, creates one.
-     * @return The current setup information
-     */
-    public BasicCellSetup getCellSetup(BasicCellSetup setup);
 }

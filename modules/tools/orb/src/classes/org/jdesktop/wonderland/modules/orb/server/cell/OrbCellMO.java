@@ -1,21 +1,19 @@
 /**
- * Project Looking Glass
- * 
- * $RCSfile: OrbCellGLO.java,v $
- * 
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
- * 
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
- * 
+ *
  * The contents of this file are subject to the GNU General Public
  * License, Version 2 (the "License"); you may not use this file
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
- * 
- * $Revision: 1.43 $
- * $Date: 2008/06/16 18:08:29 $
- * $State: Exp $ 
+ *
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.orb.server.cell;
 
@@ -44,6 +42,7 @@ import com.sun.voip.client.connector.CallStatus;
 import java.io.IOException;
 import java.lang.String;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Timer;
@@ -80,7 +79,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides Orb functionality
@@ -98,7 +96,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null));
+		new OrbMessageHandler(this));
 	}
     }
     
@@ -110,7 +108,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null));
+		new OrbMessageHandler(this));
 	}
     }
 
@@ -121,19 +119,21 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    logger.fine("Adding channel component...");
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, callID));
+		new OrbMessageHandler(this));
 	}
+
+	orbMessageHandlerRef.get().setCallID(callID);
     }
 
     @Override
-    protected String getClientCellClassName(WonderlandClientID clientID,
+    protected String getClientCellClassName(ClientSession clientSession, 
 	    ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.orb.client.cell.OrbCell";
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID,
+    public CellConfig getCellConfig(ClientSession clientSession, 
 	    ClientCapabilities capabilities) {
 
         OrbCellConfig config = new OrbCellConfig();

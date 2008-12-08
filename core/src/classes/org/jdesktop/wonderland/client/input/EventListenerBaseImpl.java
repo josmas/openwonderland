@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.input;
 
@@ -28,9 +28,6 @@ import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
-
-// For debug
-import org.jdesktop.mtgame.ProcessorArmingCondition;
 
 /**
  * The base implementation of a Wonderland event listener. Almost all custom event listeners should
@@ -268,8 +265,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /** Arm the listener's processor. */
     void arm () {
-	ProcessorArmingCondition condition = new PostEventCondition(this, new long[] { MTGAME_EVENT_ID});
-	setArmingCondition(condition);
+	setArmingCondition(new PostEventCondition(this, new long[] { MTGAME_EVENT_ID}));
     }
 
     /** Disarm the listener's processor. */

@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.web.wfs.resources;
 
 import java.io.StringWriter;
@@ -26,7 +25,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
-import org.jdesktop.wonderland.common.wfs.WorldRootList;
+import org.jdesktop.wonderland.wfs.loader.CellRoots;
 
 
 /**
@@ -66,7 +65,7 @@ public class WFSRootsResource {
          */
         WFSManager wfsm = WFSManager.getWFSManager();
         String roots[] = wfsm.getWFSRoots();
-        WorldRootList wfsRoots = new WorldRootList(roots);
+        CellRoots wfsRoots = new CellRoots(roots);
         
         /* Send the serialized cell names to the client */
         try {

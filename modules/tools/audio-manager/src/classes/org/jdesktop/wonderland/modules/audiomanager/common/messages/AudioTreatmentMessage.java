@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
@@ -21,24 +21,14 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
 /**
  *
  * @author jprovino
  */
 public class AudioTreatmentMessage extends CellMessage {
     
-    private boolean startTreatment;
-
-    public AudioTreatmentMessage(CellID cellID, boolean startTreatment) {
-	super(cellID);
-	
-	this.startTreatment = startTreatment;
+    public AudioTreatmentMessage() {
+	super(null);
     }
     
-    public boolean startTreatment() {
-	return startTreatment;
-    }
-
 }

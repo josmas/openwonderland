@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.input;
 
@@ -291,16 +291,6 @@ public abstract class InputPicker {
 	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
 	    Entity entity = pickDetailsToEntity(pickDetails);
 	    logger.fine("Picker: entity = " + entity);
-	    if (entity == null) {
-		// Search next depth level for entities willing to consume this event
-		idx++;
-		if (idx < destPickInfo.size()) {
-		    pickDetails = destPickInfo.get(idx);
-		} else {
-		    pickDetails = null;
-		}
-		continue;
-	    }
 	    boolean consumesEvent = false;
             propagatesToUnder = false;
 	    EventListenerCollection listeners = (EventListenerCollection) 
@@ -538,9 +528,7 @@ public abstract class InputPicker {
 	if (swingHitPickInfo == null) {
 	    hitPickInfo = pickEventScreenPos(e.getX(), e.getY());
 	    logger.finest("Result of pickEventScreenPos = " + hitPickInfo);
-	    if (hitPickInfo != null) {
-		logger.finest("hitPickInfo.size() = " + hitPickInfo.size());
-	    }
+	    logger.finest("hitPickInfo.size() = " + hitPickInfo.size());
 	} else {
 	    hitPickInfo = swingHitPickInfo;
 	}
@@ -556,6 +544,14 @@ public abstract class InputPicker {
 	}
 	*/
 
+	// If no grab is active and we didn't hit anything return a miss */
+	if (!grabIsActive && (hitPickInfo == null || hitPickInfo.size() <= 0)) {
+	    if (e.getID() == MouseEvent.MOUSE_RELEASED) {
+		lastButtonReleasedPickInfo = null;
+	    }
+	    return null;
+	}
+
 	// Calculate how the grab state should change. If the a grab should activate, activate it.
 	GrabChangeType grabChange = GrabChangeType.GRAB_NO_CHANGE;
         int eventID = e.getID();
@@ -566,35 +562,16 @@ public abstract class InputPicker {
 	    if (grabChange == GrabChangeType.GRAB_ACTIVATE) {
 		grabIsActive = true;
 		grabPickInfo = hitPickInfo;
-		logger.finest("Grab activate, grabPickInfo = " + grabPickInfo);
-		if (grabPickInfo != null) {
-		    logger.finest("grabPickInfo.size() = " + grabPickInfo.size());
-		    if (grabPickInfo.size() > 0) {
-			PickDetails pd = grabPickInfo.get(0);
-			logger.finest("Grab pickDetails[0] = " + pd);
-			if (pd != null) {
-			    logPickDetailsEntity(pd);
-			    CollisionComponent cc = pd.getCollisionComponent();
-			    logger.finest("cc = " + cc);
-			    if (cc != null) {
-				logger.finest("cc entity = " + cc.getEntity());
-			    }
-			}
-		    }
-		}
 	    }
 	}
 
 	// If a grab is active, the event destination pick info will be the grabbed pick info
 	PickInfo destPickInfo;
-	logger.finest("grabIsActive = " + grabIsActive);
 	if (grabIsActive) {
 	    destPickInfo = grabPickInfo;
-	    logger.finest("Grab is active, grabPickInfo = " + grabPickInfo);
 	} else {
 	    destPickInfo = hitPickInfo;
 	}
-	logger.finest("After grab calc, destPickInfo = " + destPickInfo);
 
 	// It is now safe to disable the grab
 	if (grabChange == GrabChangeType.GRAB_DEACTIVATE) {
@@ -774,8 +751,8 @@ public abstract class InputPicker {
 	logger.fine("pick at " + x + ", " + y);
 	Ray pickRayWorld = calcPickRayWorld(x, y);
 
-	// Note: pickAll is needed to in order to pick through transparent objects.
-	return collisionSys.pickAllWorldRay(pickRayWorld, true, false/*TODO:interp*/);
+	// Note: pickAll is needed to in order to pick through transparent objects
+        return collisionSys.pickAllWorldRay(pickRayWorld, true, false/*TODO:interp*/);
     }
 
     private GrabChangeType evaluateButtonGrabStateChange (int eventID, MouseEvent e) {
@@ -931,24 +908,6 @@ public abstract class InputPicker {
 	int idx = 0;
 	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
 	    Entity entity = pickDetailsToEntity(pickDetails);
-	    if (pickDetails != null) {
-		CollisionComponent cc = pickDetails.getCollisionComponent();
-		logger.finest("pd cc = " + cc);
-		if (cc != null) {
-		    logger.finest("cc entity = " + cc.getEntity());
-		}
-	    }
-
-	    if (entity == null) {
-		idx++;
-		if (idx < destPickInfo.size()) {
-		    pickDetails = destPickInfo.get(idx);
-		} else {
-		    pickDetails = null;
-		}
-		continue;
-	    }
-
 	    insideEntities.add(new EntityAndPickDetails(entity, pickDetails));
 	    
 	    propagatesToUnder = false;

@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.comms;
 
@@ -47,14 +47,14 @@ public interface WonderlandClientSender {
     
     /**
      * Get all sessions associated with this sender.  This will return a 
-     * set containing the IDs of all sessions connected with the given type.
+     * set containing all sessions connected with the given type.
      * <p>
      * To send to a particular client of the given type, use the 
-     * <code>send(WonderlandClientID, Message)</code> method.
+     * <code>send(ClientSession, Message)</code> method.
      * @return a set of session ids that are connected via the given
      * client type. 
      */
-    public Set<WonderlandClientID> getClients();
+    public Set<ClientSession> getSessions();
      
     /**
      * Return if there are any sessions associated with this sender.
@@ -87,7 +87,7 @@ public interface WonderlandClientSender {
      * @throws IllegalStateException if the handler for this client type
      * has been unregistered
      */
-    public void send(WonderlandClientID clientID, Message message);
+    public void send(ClientSession session, Message message);
     
     /**
      * Send a message to a set of sessions connected via this sender.  The
@@ -104,7 +104,7 @@ public interface WonderlandClientSender {
      * @throws IllegalStateException if the handler for this client type
      * has been unregistered
      */
-    public void send(Set<WonderlandClientID> sessions, Message message);
+    public void send(Set<ClientSession> sessions, Message message);
     
     /**
      * Send a message to all sessions joined to the given channel.  The

@@ -11,17 +11,17 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.spatial;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
-//import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 /**
@@ -32,45 +32,69 @@ import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
  *
  * @author paulby
  */
-public interface UniverseManager {
+public class UniverseManager {
 
-    public void addChild(CellMO parent, CellMO child);
+    private static UniverseManager universeManager=new UniverseManager();
 
-    public void addTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener);
+    private UniverseServiceManager serviceMgr;
 
-    public void createCell(CellMO cellMO);
+    UniverseManager() {
+        serviceMgr = AppContext.getManager(UniverseServiceManager.class);
+    }
 
-    public void removeCell(CellMO cellMO);
+    public static UniverseManager getUniverseManager() {
+        return universeManager;
+    }
 
-    public void removeChild(CellMO parent, CellMO child);
+    public void addChild(CellMO parent, CellMO child) {
+        serviceMgr.addChild(parent,child);
+    }
 
-    public  void addRootToUniverse(CellMO rootCellMO);
+    public void createCell(CellMO cellMO) {
+        serviceMgr.createCell(cellMO);
+    }
 
-    public void removeRootFromUniverse(CellMO rootCellMO);
+    public void removeCell(CellMO cellMO) {
+        serviceMgr.removeCell(cellMO);
+    }
 
-    public void removeTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener);
+    public void removeChild(CellMO parent, CellMO child) {
+        serviceMgr.removeChild(parent, child);
+    }
 
-    public void setLocalTransform(CellMO cell, CellTransform localCellTransform);
+    public  void addRootToUniverse(CellMO rootCellMO) {
+        serviceMgr.addRootToUniverse(rootCellMO);
+    }
 
-    public CellTransform getWorldTransform(CellMO cell, CellTransform result);
+    public void removeRootFromUniverse(CellMO rootCellMO) {
+        serviceMgr.removeRootFromUniverse(rootCellMO);
+    }
 
-    public BoundingVolume getWorldBounds(CellMO cell, BoundingVolume result);
+    public void setLocalTransform(CellMO cell, CellTransform localCellTransform) {
+        serviceMgr.setLocalTransform(cell, localCellTransform);
+    }
 
-    public void viewLogin(ViewCellMO viewCell);
+    public CellTransform getWorldTransform(CellMO cell, CellTransform result) {
+        return serviceMgr.getWorldTransform(cell, result);
+    }
 
-    public void viewLogout(ViewCellMO viewCell);
+    public BoundingVolume getWorldBounds(CellMO cell, BoundingVolume result) {
+        return serviceMgr.getWorldBounds(cell, result);
+    }
 
-    /**
-     * Add a ViewUpdateLIstener to this cell. This listener will be called
-     * whenever the view of a ViewCache that contains this cell is updated
-     *
-     * @param viewUpdateListener listener to add
-     */
-//    public void addViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
+    public void viewLogin(ViewCellMO viewCell) {
+        serviceMgr.viewLogin(viewCell);
+    }
 
-    /**
-     * Remove the specified ViewUpdateListener
-     * @param viewUpdateListener listener to remove
-     */
- //   public void removeViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
+    public void viewLogout(ViewCellMO viewCell) {
+        serviceMgr.viewLogout(viewCell);
+    }
+
+    public void addTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener) {
+        serviceMgr.addTransformChangeListener(cell, listener);
+    }
+
+    public void removeTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener) {
+        serviceMgr.removeTransformChangeListener(cell, listener);
+    }
 }

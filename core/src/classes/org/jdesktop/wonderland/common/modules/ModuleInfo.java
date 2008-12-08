@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.common.modules;
 
 import java.io.File;
@@ -198,14 +197,6 @@ public class ModuleInfo implements Serializable {
      */
     public void putAttribute(String key, String value) {
         this.attributeMap.put(key, value);
-    }
-    
-    /**
-     * Adds a map of key-value attribute pairs to the attribute map.
-     * @param attributes
-     */
-    public void putAttibutes(Map<String, String> attributes) {
-        this.attributeMap.putAll(attributes);
     }
     
     /**

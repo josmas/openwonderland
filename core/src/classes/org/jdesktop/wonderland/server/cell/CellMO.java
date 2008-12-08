@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.cell;
 
@@ -43,11 +43,8 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
-import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 
 /**
  * Superclass for all server side representation of a cell
@@ -55,7 +52,7 @@ import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
  * @author paulby
  */
 @ExperimentalAPI
-public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO {
+public abstract class CellMO implements ManagedObject, Serializable {
 
     private ManagedReference<CellMO> parentRef=null;
     private ArrayList<ManagedReference<CellMO>> childCellRefs = null;
@@ -147,7 +144,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         if (!live)
             throw new IllegalStateException("Cell is not live");
         
-        return UniverseManagerFactory.getUniverseManager().getWorldBounds(this, null);
+        return UniverseManager.getUniverseManager().getWorldBounds(this, null);
     }
    
     /**
@@ -165,7 +162,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         if (!live)
             throw new IllegalStateException("Unsupported Operation, only valid for a live Cell "+this.getClass().getName());
         
-        return UniverseManagerFactory.getUniverseManager().getWorldTransform(this, result);
+        return UniverseManager.getUniverseManager().getWorldTransform(this, result);
     }
     
     /**
@@ -207,7 +204,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
                 if (live) {
                     child.setLive(false);
                 }
-                UniverseManagerFactory.getUniverseManager().removeChild(this, child);
+                UniverseManager.getUniverseManager().removeChild(this, child);
                 return true;
             } catch (MultipleParentException ex) {
                 // This should never happen
@@ -317,7 +314,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         this.localTransform = (CellTransform) transform.clone(null);
 
         if (live)
-            UniverseManagerFactory.getUniverseManager().setLocalTransform(this, localTransform);
+            UniverseManager.getUniverseManager().setLocalTransform(this, localTransform);
     }
     
 
@@ -371,9 +368,18 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
                 localBounds = new BoundingSphere(1f, new Vector3f());
             }
 
-            addToUniverse(UniverseManagerFactory.getUniverseManager());
+            UniverseManager.getUniverseManager().createCell(this);
+            System.err.println("CREATING SPATIAL CELL "+getCellID().toString()+" "+this.getClass().getName());
+            
+            if (transformChangeListeners!=null)
+                for(TransformChangeListenerSrv listener : transformChangeListeners)
+                    UniverseManager.getUniverseManager().addTransformChangeListener(this, listener);
+
+            if (parentRef!=null)
+                UniverseManager.getUniverseManager().addChild(parentRef.getForUpdate(), this);
+
         } else {
-            removeFromUniverse(UniverseManagerFactory.getUniverseManager());
+            UniverseManager.getUniverseManager().removeCell(this);
         }
 
 
@@ -388,33 +394,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
             child.setLive(live);
         }
     }
-
-    /**
-     * Add this cell to the universe
-     */
-    void addToUniverse(UniverseManager universe) {
-        System.out.println("Creating spatial cell " + getCellID() + " " + getClass().getName());
-        universe.createCell(this);
-        //System.err.println("CREATING SPATIAL CELL " + getCellID().toString() + " " + this.getClass().getName());
-
-        if (transformChangeListeners != null) {
-            for (TransformChangeListenerSrv listener : transformChangeListeners) {
-                universe.addTransformChangeListener(this, listener);
-            }
-        }
-
-        if (parentRef != null) {
-            universe.addChild(parentRef.getForUpdate(), this);
-        }
-    }
-
-    /**
-     * Remove this cell from the universe
-     */
-    void removeFromUniverse(UniverseManager universe) {
-        universe.removeCell(this);
-    }
-
+    
     /**
      * Get the name of the cell, by default the name is the cell id.
      * @return the cell's name
@@ -440,20 +420,20 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * Called by the ViewCellCacheMO as part of makeing a cell active, only 
      * applicable to cells with a ChannelComponent.
      * 
-     * @param clientID the ID of the client that is being added
+     * @param session
      * @param capabilities
      * @return
      */
-    protected CellSessionProperties addClient(WonderlandClientID clientID,
+    protected CellSessionProperties addSession(ClientSession session, 
                                             ClientCapabilities capabilities) {
         ChannelComponentMO chan = getComponent(ChannelComponentMO.class);
         if (chan!=null) {
-            chan.addUserToCellChannel(clientID);
+            chan.addUserToCellChannel(session);
         }
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
-                getClientCellClassName(clientID, capabilities),
-                getCellConfig(clientID, capabilities));
+                getClientCellClassName(session, capabilities),
+                getCellConfig(session, capabilities));
     }
     
     /**
@@ -461,15 +441,15 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * have changed. This call is made from the ViewCellCacheOperations exectue
      * method returned by addSession.
      * 
-     * @param clientID
+     * @param session
      * @param capabilities
      * @return
      */
-    protected CellSessionProperties changeClient(WonderlandClientID clientID,
+    protected CellSessionProperties changeSession(ClientSession session, 
                                                ClientCapabilities capabilities) {
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
-                getClientCellClassName(clientID, capabilities),
-                getCellConfig(clientID, capabilities));
+                getClientCellClassName(session, capabilities),
+                getCellConfig(session, capabilities));
         
     }
     
@@ -478,12 +458,12 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * with a ChannelComponent. This modifies the ChannelComponent for this cell
      * (if it exists) but does not modify the CellMO itself.
      * 
-     * @param clientID
+     * @param session
      */
-    protected void removeSession(WonderlandClientID clientID) {
+    protected void removeSession(ClientSession session) {
         ChannelComponentMO chan = getComponent(ChannelComponentMO.class);
         if (chan!=null) {
-            chan.removeUserFromCellChannel(clientID);
+            chan.removeUserFromCellChannel(session);
         }
     }
 
@@ -491,16 +471,13 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * Returns the fully qualified name of the class that represents
      * this cell on the client
      */
-    protected abstract String getClientCellClassName(WonderlandClientID clientID,
-                                                     ClientCapabilities capabilities);
+    protected abstract String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities);
     
     /**
      * Get the cellconfig for this cell. Subclasses should overload to
      * return their specific setup object.
      */
-    protected CellConfig getCellConfig(WonderlandClientID clientID,
-                                       ClientCapabilities capabilities)
-    {
+    protected CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return null;
     }
     
@@ -549,30 +526,6 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         setupCell(setup);
     }
 
-    /**
-     * Returns the setup information currently configured on the cell. If the
-     * setup argument is non-null, fill in that object and return it. If the
-     * setup argument is null, create a new setup object.
-     * 
-     * @param setup The setup object, if null, creates one.
-     * @return The current setup information
-     */
-    public BasicCellSetup getCellSetup(BasicCellSetup setup) {
-        // In the case of CellMO, if the 'setup' parameter is null, it means
-        // it was not created by the super class. In which case, this class
-        // should just return null
-        if (setup == null) {
-            return null;
-        }
-        
-        // Fill in the details about the origin, rotation, and scaling
-        setup.setBounds(BasicCellSetupHelper.getSetupBounds(localBounds));
-        setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(localTransform));
-        setup.setRotation(BasicCellSetupHelper.getSetupRotation(localTransform));
-        setup.setScaling(BasicCellSetupHelper.getSetupScaling(localTransform));
-        return setup;
-    }
-    
     /**
      * Return the priorty of the cell. A cells priority dictates the order
      * in which it is loaded by a client. Priortity 0 cells are loaded first, 
@@ -652,7 +605,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         transformChangeListeners.add(listener);
 
         if (isLive())
-            UniverseManagerFactory.getUniverseManager().addTransformChangeListener(this, listener);
+            UniverseManager.getUniverseManager().addTransformChangeListener(this, listener);
 
     }
     
@@ -663,7 +616,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
     public void removeTransformChangeListener(TransformChangeListenerSrv listener) {
         transformChangeListeners.remove(listener);
         if (isLive())
-            UniverseManagerFactory.getUniverseManager().removeTransformChangeListener(this, listener);
+            UniverseManager.getUniverseManager().removeTransformChangeListener(this, listener);
     }
     
 }

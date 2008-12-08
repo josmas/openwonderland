@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.cell.view;
 
@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellTransformChangeListener;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Superclass for all avatar cells. 
@@ -60,9 +59,7 @@ public class AvatarCellMO extends ViewCellMO {
     }
     
     @Override 
-    protected String getClientCellClassName(WonderlandClientID clientID,
-                                            ClientCapabilities capabilities)
-    {
+    protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.view.AvatarCell";
     }
     

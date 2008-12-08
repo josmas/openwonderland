@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
@@ -23,7 +23,6 @@ import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * For cells that are expected to move frequently
@@ -43,13 +42,13 @@ public class MovableCellMO extends JmeColladaCellMO {
     }
     
 
-    @Override protected String getClientCellClassName(WonderlandClientID clientID,ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(ClientSession clientSession,ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.MovableCell";
     }
     
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        CellConfig ret = super.getCellConfig(clientID, capabilities);
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
+        CellConfig ret = super.getCellConfig(clientSession, capabilities);
         ret.addClientComponentClasses(new String[] {
             "org.jdesktop.wonderland.client.cell.ChannelComponent",
             "org.jdesktop.wonderland.client.cell.MovableComponent"

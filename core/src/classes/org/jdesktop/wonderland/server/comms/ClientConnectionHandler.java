@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.comms;
 
@@ -47,31 +47,31 @@ public interface ClientConnectionHandler {
      * connects when a client calls <code>WonderlandSession.connect()</code>.
      * @param sender the sender that can be used to send to clients
      * of this handler
-     * @param clientID the ID of the session that connected
+     * @param session the session that connected
      * @param properties the properties of the connection, or an
      * empty property object if the client didn't send any properties
      */
     public void clientConnected(WonderlandClientSender sender,
-                                WonderlandClientID clientID,
+                                ClientSession session,
                                 Properties properties);
     
     /**
      * Handle a message from a client
      * @param sender the sender that can be used to send to clients of
      * this handler
-     * @param clientID the ID of the session that connected
+     * @param session the session that sent the message
      * @param message the message that was generated
      */
     public void messageReceived(WonderlandClientSender sender,
-                                WonderlandClientID clientID,
+                                ClientSession session,
                                 Message message);
     
     /**
      * Handle when a session disconnects from this handler
      * @param sender the sender that can be used to send to clients
      * of this handler
-     * @param clientID the ID of the session that connected
+     * @param session the session that disconnected
      */
     public void clientDisconnected(WonderlandClientSender sender,
-                                   WonderlandClientID clientID);
+                               ClientSession session);
 }
