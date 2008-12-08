@@ -24,7 +24,6 @@ import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.Serializable;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -34,7 +33,8 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
-import org.jdesktop.wonderland.wfs.loader.CellLoader;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExporter;
+import org.jdesktop.wonderland.server.wfs.importer.CellImporter;
 
 /**
  *
@@ -158,9 +158,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * from WFS
      */
     public void loadWorld() {
-        new CellLoader().load();
+        new CellImporter().load();
     }
 
+    public void saveWorld() {
+        new CellExporter().export();
+    }
+    
     /**
      * Reload all root cells into the universe, based on the set of root
      * cells we can find. Be sure to only do this once, during the initial

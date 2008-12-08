@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.wfs.loader;
+package org.jdesktop.wonderland.common.wfs;
 
 import java.io.InputStream;
 import java.io.Writer;

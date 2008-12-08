@@ -45,4 +45,14 @@ public interface BeanSetupMO {
      * @param setup a Java bean with updated properties
      */
     public void reconfigureCell(BasicCellSetup setup);
+    
+    /**
+     * Returns the setup information currently configured on the cell. If the
+     * setup argument is non-null, fill in that object and return it. If the
+     * setup argument is null, create a new setup object.
+     * 
+     * @param setup The setup object, if null, creates one.
+     * @return The current setup information
+     */
+    public BasicCellSetup getCellSetup(BasicCellSetup setup);
 }

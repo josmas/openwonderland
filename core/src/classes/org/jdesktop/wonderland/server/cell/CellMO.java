@@ -45,6 +45,7 @@ import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 
@@ -54,7 +55,7 @@ import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
  * @author paulby
  */
 @ExperimentalAPI
-public abstract class CellMO implements ManagedObject, Serializable {
+public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO {
 
     private ManagedReference<CellMO> parentRef=null;
     private ArrayList<ManagedReference<CellMO>> childCellRefs = null;
@@ -548,6 +549,30 @@ public abstract class CellMO implements ManagedObject, Serializable {
         setupCell(setup);
     }
 
+    /**
+     * Returns the setup information currently configured on the cell. If the
+     * setup argument is non-null, fill in that object and return it. If the
+     * setup argument is null, create a new setup object.
+     * 
+     * @param setup The setup object, if null, creates one.
+     * @return The current setup information
+     */
+    public BasicCellSetup getCellSetup(BasicCellSetup setup) {
+        // In the case of CellMO, if the 'setup' parameter is null, it means
+        // it was not created by the super class. In which case, this class
+        // should just return null
+        if (setup == null) {
+            return null;
+        }
+        
+        // Fill in the details about the origin, rotation, and scaling
+        setup.setBounds(BasicCellSetupHelper.getSetupBounds(localBounds));
+        setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(localTransform));
+        setup.setRotation(BasicCellSetupHelper.getSetupRotation(localTransform));
+        setup.setScaling(BasicCellSetupHelper.getSetupScaling(localTransform));
+        return setup;
+    }
+    
     /**
      * Return the priorty of the cell. A cells priority dictates the order
      * in which it is loaded by a client. Priortity 0 cells are loaded first, 

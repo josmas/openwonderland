@@ -15,7 +15,7 @@
         <pathconvert property="web-extra.classpath">
             <path path="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
             <path path="${web.dir}/modules/dist/wonderland-web-utils.jar"/>
-            <path path="${core.dir}/build/lib/wonderland-server.jar"/>
+            <path path="${core.dir}/build/lib/wonderland-common.jar"/>
         </pathconvert>
     </target>
 
@@ -28,7 +28,7 @@
             </zipfileset>
 
             <zipfileset dir="${core.dir}/build/lib" prefix="WEB-INF/lib">
-                <include name="wonderland-server.jar"/>
+                <include name="wonderland-common.jar"/>
             </zipfileset>
 
             <fileset dir="${current.dir}/web"/>

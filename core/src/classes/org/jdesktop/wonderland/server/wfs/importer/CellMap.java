@@ -15,9 +15,8 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.wfs.loader;
+package org.jdesktop.wonderland.server.wfs.importer;
 
-import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 
@@ -30,7 +29,7 @@ import java.util.LinkedHashMap;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class CellMap<T> extends LinkedHashMap<String, T> implements ManagedObject, Serializable {
+public class CellMap<T> extends LinkedHashMap<String, T> implements Serializable {
     
     /** Default constructor */
     public CellMap() {
