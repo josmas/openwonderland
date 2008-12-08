@@ -21,24 +21,14 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
 /**
  *
  * @author jprovino
  */
 public class AudioTreatmentMessage extends CellMessage {
     
-    private boolean startTreatment;
-
-    public AudioTreatmentMessage(CellID cellID, boolean startTreatment) {
-	super(cellID);
-	
-	this.startTreatment = startTreatment;
+    public AudioTreatmentMessage() {
+	super(null);
     }
     
-    public boolean startTreatment() {
-	return startTreatment;
-    }
-
 }

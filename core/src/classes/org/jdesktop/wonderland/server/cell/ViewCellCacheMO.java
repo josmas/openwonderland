@@ -52,9 +52,8 @@ import org.jdesktop.wonderland.server.CellAccessControl;
 import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
+import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
 /**
  * Container for the cell cache for an avatar.
@@ -78,7 +77,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private String username;
    
     private WonderlandClientSender sender;
-    private WonderlandClientID clientID;
+    private ManagedReference<ClientSession> sessionRef;
     
     private ClientCapabilities capabilities = null;
          
@@ -107,9 +106,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Notify CellCache that user has logged in
      */
-    void login(WonderlandClientSender sender, WonderlandClientID clientID) {
+    void login(WonderlandClientSender sender, ClientSession session) {
         this.sender = sender;
-        this.clientID = clientID;
 
         ViewCellMO view = viewRef.get();
 
@@ -121,7 +119,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             }
         }
 
-        UniverseManagerFactory.getUniverseManager().viewLogin(view);
+        UniverseManager.getUniverseManager().viewLogin(view);
 
         username = view.getUser().getUsername();
         
@@ -131,9 +129,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         else
             securityContextRef = null;
 
+        DataManager dm = AppContext.getDataManager();
+        sessionRef = dm.createReference(session);
         
         logger.info("AvatarCellCacheMO.login() CELL CACHE LOGIN FOR USER "
-                    + clientID.getSession().getName() + " AS " + username);
+                    + session.getName() + " AS " + username);
                 
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
@@ -142,17 +142,17 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 //        sender.send(session, msg);
         
         // set up the revalidate scheduler
-        scheduler = new ImmediateRevalidateScheduler(sender, clientID);
+        scheduler = new ImmediateRevalidateScheduler(sender, session);
 
     }
     
     /**
      * Notify CellCache that user has logged out
      */
-    void logout(WonderlandClientID clientID) {
+    void logout(ClientSession session) {
         logger.warning("DEBUG - logout");
         ViewCellMO view = viewRef.get();
-        UniverseManagerFactory.getUniverseManager().viewLogout(view);
+        UniverseManager.getUniverseManager().viewLogout(view);
         WonderlandContext.getCellManager().removeCellFromWorld(view);
     }
      
@@ -174,7 +174,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                                  " cellcache for user "+username);
 
                 CellLoadOp op = new CellLoadOp(cellDescription,
-                                             clientID,
+                                             sessionRef,
                                              viewCellCacheRef,
                                              capabilities);
                 scheduler.schedule(op);
@@ -193,7 +193,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
             // schedule the add operation
             CellUnloadOp op = new CellUnloadOp(ref,
-                                               clientID,
+                                               sessionRef,
                                                viewCellCacheRef,
                                                capabilities);
             scheduler.schedule(op);
@@ -217,7 +217,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     protected ClientSession getSession() {
         try {
-            return clientID.getSession();
+            return sessionRef.get();
         } catch(ObjectNotFoundException e) {
             return null;
         }
@@ -234,7 +234,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             implements Serializable, Runnable 
     {
         protected CellDescription desc;
-        protected WonderlandClientID clientID;
+        protected ManagedReference<ClientSession> sessionRef;
         protected ManagedReference<ViewCellCacheMO> viewCellCacheRef;
         protected ClientCapabilities capabilities;
         
@@ -249,12 +249,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         private WonderlandClientSender sender;
     
         public CellOp(CellDescription desc,
-                      WonderlandClientID clientID,
+                      ManagedReference<ClientSession> sessionRef, 
                       ManagedReference<ViewCellCacheMO> viewCellCacheRef,
                       ClientCapabilities capabilities) 
         {
             this.desc = desc;
-            this.clientID = clientID;
+            this.sessionRef = sessionRef;
             this.viewCellCacheRef = viewCellCacheRef;
             this.capabilities = capabilities;
         }
@@ -273,7 +273,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 messageList.addMessage(message);
             } else {
                 // no list, send immediately
-                sender.send(clientID, message);
+                sender.send(sessionRef.get(), message);
             }
         }
     }
@@ -283,10 +283,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     private static class CellLoadOp extends CellOp {
         public CellLoadOp(CellDescription desc,
-                         WonderlandClientID clientID,
+                         ManagedReference<ClientSession> sessionRef, 
                          ManagedReference<ViewCellCacheMO> viewCellCacheRef,
                          ClientCapabilities capabilities) {
-            super (desc, clientID, viewCellCacheRef, capabilities);
+            super (desc, sessionRef, viewCellCacheRef, capabilities);
         }
         
         public void run() {
@@ -294,7 +294,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             CellMO cell = CellManagerMO.getCell(desc.getCellID());
                           
             //System.out.println("SENDING "+msg.getActionType()+" "+msg.getBytes().length);
-            CellSessionProperties prop = cell.addClient(clientID, capabilities);
+            CellSessionProperties prop = cell.addSession(sessionRef.get(), capabilities);
             
             ViewCellCacheRevalidationListener listener = prop.getViewCellCacheRevalidationListener();
             if (listener!=null) {
@@ -312,10 +312,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      */
     private static class CellUnloadOp extends CellOp {
         public CellUnloadOp(CellDescription desc,
-                         WonderlandClientID clientID,
+                         ManagedReference<ClientSession> sessionRef, 
                          ManagedReference<ViewCellCacheMO> viewCellCacheRef,
                          ClientCapabilities capabilities) {
-            super (desc, clientID, viewCellCacheRef, capabilities);
+            super (desc, sessionRef, viewCellCacheRef, capabilities);
         }
         
         public void run() {
@@ -326,7 +326,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             try {
                 CellMO cell = CellManagerMO.getCellManager().getCell(desc.getCellID());
 
-                cell.removeSession(clientID);
+                cell.removeSession(sessionRef.get());
 
                 ViewCellCacheRevalidationListener listener = cell.getViewCellCacheRevalidationListener();
                 if (listener!=null) {
@@ -335,7 +335,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             
                 // get suceeded, so cell is just inactive
                 msg = newUnloadCellMessage(cell);
-                cell.removeSession(clientID);
+                cell.removeSession(sessionRef.get());
             } catch (ObjectNotFoundException onfe) {
                 // get failed, cell is deleted
                 msg = newDeleteCellMessage(desc.getCellID());
@@ -379,18 +379,20 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         // the sender to send to
         private WonderlandClientSender sender;
         
-        // the client to send to
-        private WonderlandClientID clientID;
-
+        // a reference to the client session
+        private ManagedReference<ClientSession> sessionRef;
+        
         // the message list
         private MessageList messageList;
         
         
         public ImmediateRevalidateScheduler(WonderlandClientSender sender,
-                                            WonderlandClientID clientID)
+                                            ClientSession session)
         {
             this.sender = sender;
-            this.clientID = clientID;
+            
+            DataManager dm = AppContext.getDataManager();
+            sessionRef = dm.createReference(session);
         }
         
         public void startRevalidate() {
@@ -411,7 +413,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         
         public void endRevalidate() {
             if (AGGREGATE_MESSAGES) {                
-                sender.send(clientID, messageList);
+                sender.send(sessionRef.get(), messageList);
             }
         }
     }
@@ -463,7 +465,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             // schedule tasks to handle up to count operations
             if (opsRef.get().size() > 0) {
                 TaskManager tm = AppContext.getTaskManager();
-                tm.scheduleTask(new SharedListRevalidateTask(sender, clientID,
+                tm.scheduleTask(new SharedListRevalidateTask(sender, sessionRef,
                                                              count, opsRef));
             }
         }
@@ -477,18 +479,18 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             implements Task, Serializable
     {
         private WonderlandClientSender sender;
-        private WonderlandClientID clientID;
+        private ManagedReference<ClientSession> sessionRef;
         private ManagedReference<List<CellOp>> opsRef;
         private int count;
         private MessageList messageList;
         
         public SharedListRevalidateTask(WonderlandClientSender sender,
-                                        WonderlandClientID clientID,
+                                        ManagedReference<ClientSession> sessionRef,
                                         int count, 
                                         ManagedReference<List<CellOp>> opsRef)
         {
             this.sender = sender;
-            this.clientID = clientID;
+            this.sessionRef = sessionRef;
             this.count = count;
             this.opsRef = opsRef;
         }
@@ -515,13 +517,13 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             
             // send all messages
             if (AGGREGATE_MESSAGES) {
-                sender.send(clientID, messageList);
+                sender.send(sessionRef.get(), messageList);
             }
             
             // schedule a task to handle more
             if (num > 0) {
                 TaskManager tm = AppContext.getTaskManager();
-                tm.scheduleTask(new SharedListRevalidateTask(sender, clientID,
+                tm.scheduleTask(new SharedListRevalidateTask(sender, sessionRef,
                                                              count, opsRef));
             }
         }

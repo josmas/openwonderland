@@ -51,6 +51,7 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 
 import com.sun.voip.CallParticipant;
@@ -65,8 +66,8 @@ import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -116,17 +117,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
      
     ManagedReference<PhoneCellMO> phoneCellMORef;
 
-    private class SenderInfo implements Serializable {
-	public WonderlandClientSender sender;
-	public WonderlandClientID clientID;
-
-	public SenderInfo(WonderlandClientSender sender, WonderlandClientID clientID) {
-	    this.sender = sender;
-	    this.clientID = clientID;
-	}
-    }
-
-    private ConcurrentHashMap<String, SenderInfo> senderMap =
+    private ConcurrentHashMap<String, WonderlandClientSender> senderMap =
         new ConcurrentHashMap();
 
     private ConcurrentHashMap<String, CallListing> callListingMap = 
@@ -140,14 +131,14 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
     }
 
     public void mapCall(String externalCallID, WonderlandClientSender sender,
-	    WonderlandClientID clientID, CallListing listing) {
+	    CallListing listing) {
 
-	senderMap.put(externalCallID, new SenderInfo(sender, clientID));
+	senderMap.put(externalCallID, sender);
 	callListingMap.put(externalCallID, listing);
     }
 	
     public void callStatusChanged(CallStatus status) {    
-	logger.finest("got status " + status);
+	logger.fine("FOO:  got status " + status);
 
         String externalCallID = status.getCallId();
 
@@ -156,15 +147,12 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 	    return;
 	}
 
-	SenderInfo senderInfo = senderMap.get(externalCallID);
+	WonderlandClientSender sender = senderMap.get(externalCallID);
 
-	if (senderInfo == null) {
-	    logger.warning("Can't find senderInfo for status:  " + status);
+	if (sender == null) {
+	    logger.warning("Can't find sender for status:  " + status);
 	    return;
 	}
-
-	WonderlandClientSender sender = senderInfo.sender;
-	WonderlandClientID clientID = senderInfo.clientID;
 
 	CallListing listing;
 
@@ -204,7 +192,8 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
             CallInvitedResponseMessage invitedResponse = 
 		new CallInvitedResponseMessage(phoneCellMORef.get().getCellID(), listing, true);
 
-            sender.send(clientID, invitedResponse);
+            sender.send(invitedResponse);
+                
             break;
 
         //Something's picked up, the call has been connected
@@ -223,7 +212,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 		new CallEstablishedResponseMessage(phoneCellMORef.get().getCellID(), listing, true);
 
 	    logger.fine("Sending ESTABLISHED RESPONSE");
-            sender.send(clientID, EstablishedResponse);
+            sender.send(EstablishedResponse);
             break;
 
         case CallStatus.STARTEDSPEAKING:
@@ -284,7 +273,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
             CallEndedResponseMessage endedResponse = new CallEndedResponseMessage(phoneCellMORef.get().getCellID(),
 		listing, true, status.getOption("Reason"));
 
-            sender.send(clientID, endedResponse);
+            sender.send(endedResponse);
             break;
         }
     }

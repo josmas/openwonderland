@@ -32,9 +32,6 @@ public class TestWorld implements ServerPlugin {
     }
 
     public void initialize() {
-//        if (true)
-//            return;
-        
         try {
 
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);

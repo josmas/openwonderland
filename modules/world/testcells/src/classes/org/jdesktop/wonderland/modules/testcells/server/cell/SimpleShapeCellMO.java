@@ -28,7 +28,6 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
 /**
@@ -68,12 +67,12 @@ public class SimpleShapeCellMO extends CellMO {
     }
     
     @Override
-    protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell";
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return new SimpleShapeConfig(shape, mass, materialJME);
     }
 

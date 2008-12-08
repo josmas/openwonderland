@@ -351,7 +351,7 @@ public class DarkstarRunner extends BaseRunner {
      * @param status the status to set
      */
     @Override
-    protected void setStatus(Status status) {
+    protected synchronized void setStatus(Status status) {
         if (status == Status.RUNNING) {
             return;
         }
@@ -382,7 +382,7 @@ public class DarkstarRunner extends BaseRunner {
      */
     protected class DarkstarOutputReader extends BaseRunner.ProcessOutputReader {
         private static final String DARKSTAR_STARTUP =
-                "Wonderland: application is ready";
+                "Wonderland server started successfully";
                 
         public DarkstarOutputReader(InputStream in, Logger out) {
             super (in, out);

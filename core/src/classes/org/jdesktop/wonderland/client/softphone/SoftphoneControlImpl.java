@@ -139,13 +139,13 @@ public class SoftphoneControlImpl {
 	    throw new IOException("Unable to find softphone.jar");
 	}
 
-	String s = "";
+	StringBuffer sb = new StringBuffer();
 
-        for (int i = 0; i < command.length; i++) {
-	    s += " " + command[i];
+        for (int i=0; i<command.length; i++) {
+            sb.append(" "+command[i]);
         }
 
-        System.out.println("Launching communicator: " + s);
+        logger.info("Launching communicator:\n "+sb.toString());
 
         softphoneProcess = Runtime.getRuntime().exec(command);
             

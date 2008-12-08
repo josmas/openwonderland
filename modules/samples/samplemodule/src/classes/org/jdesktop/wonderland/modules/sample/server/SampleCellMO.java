@@ -28,7 +28,6 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -49,12 +48,12 @@ public class SampleCellMO extends CellMO implements BeanSetupMO {
     }
     
     @Override 
-    protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.sample.client.SampleCell";
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    public CellConfig getCellConfig(ClientSession clientSession, ClientCapabilities capabilities) {
         return new SampleCellConfig();
     }
 

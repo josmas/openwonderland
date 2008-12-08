@@ -90,7 +90,6 @@ import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup;
 import org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneCellMO;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides conference microphone functionality
@@ -126,7 +125,7 @@ public class MicrophoneMessageHandler implements Serializable, ComponentMessageR
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
-	    final WonderlandClientID clientID, final CellMessage message) {
+	    final ClientSession session, final CellMessage message) {
 
 	MicrophoneEnterCellMessage msg = (MicrophoneEnterCellMessage) message;
 

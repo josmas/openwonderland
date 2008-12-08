@@ -55,9 +55,6 @@ public class WonderlandBoot implements AppListener, Serializable {
         
         // load the initial world
         WonderlandContext.getCellManager().loadWorld();
-        
-        // save the world (to test)
-        //WonderlandContext.getCellManager().saveWorld();
 
         logger.warning("Wonderland server started successfully");
     }

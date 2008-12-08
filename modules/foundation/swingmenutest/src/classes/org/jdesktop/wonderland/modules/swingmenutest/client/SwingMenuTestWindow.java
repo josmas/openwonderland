@@ -61,8 +61,5 @@ public class SwingMenuTestWindow extends WindowSwing  {
 	// TODO: test without
        	JmeClientMain.getFrame().getCanvas3DPanel().add(menuPanel);
 	setComponent(menuPanel);
-
-	setSize((int)menuPanel.getPreferredSize().getWidth(),
-		(int)menuPanel.getPreferredSize().getHeight());
     }
 }

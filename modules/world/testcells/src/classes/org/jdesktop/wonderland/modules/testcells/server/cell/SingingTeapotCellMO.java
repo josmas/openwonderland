@@ -25,9 +25,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+
 
 /**
  * Test Cell for use until WFS is integrated, this will be removed.
@@ -46,10 +45,9 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO implements BeanSetupM
     public SingingTeapotCellMO(Vector3f center, float size, MaterialJME materialJME) {
         super(center, size, SimpleShapeConfig.Shape.BOX.TEAPOT, 1f, materialJME);
 
-	addComponent(new ChannelComponentMO(this));
     }
     
-    @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.testcells.client.cell.SingingTeapotCell";
     }
 

@@ -69,4 +69,8 @@ public abstract class ViewCellMO extends CellMO {
     public void localMoveRequest(CellTransform transform) {
 //        movableComp.localMoveRequest(transform);
     }
+
+    @Override
+    protected abstract String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities);
+
 }

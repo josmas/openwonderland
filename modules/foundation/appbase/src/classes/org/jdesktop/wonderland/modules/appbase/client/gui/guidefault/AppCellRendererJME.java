@@ -162,15 +162,13 @@ public class AppCellRendererJME extends AppCellRenderer {
     @Override
     public void detachView (WindowView view) {
 	ViewWorldDefault viewWorld = (ViewWorldDefault) view;
+	getEntity().removeEntity(viewWorld.getEntity());
 
         FrameWorldDefault frame = viewWorld.getFrame();
 	if (frame != null) {
-	    frame.setParentEntity(null);
 	    getEntity().removeEntity(frame.getEntity());
+	    frame.setParentEntity(null);
 	}
-
-	viewWorld.setParentEntity(null);
-	getEntity().removeEntity(viewWorld.getEntity());
     }
 
     /**

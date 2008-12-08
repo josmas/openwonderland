@@ -68,7 +68,6 @@ public class OrbCellRenderer extends BasicRenderer {
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
         //return createWireframeEntity();
-
 	return createAnimationEntity();
     }
 
@@ -187,5 +186,4 @@ public class OrbCellRenderer extends BasicRenderer {
 	logger.fine("ANIMATION ENTITY CREATED");
 	return node;
     }
-
 }

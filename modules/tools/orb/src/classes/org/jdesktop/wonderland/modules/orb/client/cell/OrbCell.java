@@ -57,8 +57,6 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
     
     private OrbMessageHandler orbMessageHandler;
 
-    private String callID;
-
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
@@ -101,7 +99,7 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
 	logger.fine("Create cell renderer...");
 
         if (rendererType == RendererType.RENDERER_JME) {
-	    return new OrbCellRenderer(this);
+            return new OrbCellRenderer(this);
         }
 
         throw new IllegalStateException("Cell does not support " + rendererType);

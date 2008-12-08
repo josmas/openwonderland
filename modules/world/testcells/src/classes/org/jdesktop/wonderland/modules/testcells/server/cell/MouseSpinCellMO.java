@@ -27,7 +27,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
 /**
@@ -48,7 +47,7 @@ public class MouseSpinCellMO extends SimpleShapeCellMO{
         super(center, size);
     }
     
-    @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    @Override protected String getClientCellClassName(ClientSession clientSession, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.testcells.client.cell.MouseSpinCell";
     }
 

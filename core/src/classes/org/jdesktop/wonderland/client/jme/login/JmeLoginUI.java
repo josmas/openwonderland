@@ -63,8 +63,7 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
                 LoginPanel lp = new NoAuthLoginPanel(control.getServerURL(),
                                                      control);
                 WonderlandLoginDialog dialog = new WonderlandLoginDialog(
-                                                   parent.getFrame(), true, lp);
-                dialog.setLocationRelativeTo(parent.getFrame());
+                                                              parent, true, lp);
                 dialog.setVisible(true);
             }
         });

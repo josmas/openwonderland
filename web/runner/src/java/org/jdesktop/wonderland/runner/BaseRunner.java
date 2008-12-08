@@ -71,8 +71,7 @@ public abstract class BaseRunner implements Runner {
     
     /** the current status */
     private Status status = Status.NOT_RUNNING;
-    private final Object statusLock = new Object();
-
+    
     /** status listeners */
     private Set<RunnerStatusListener> listeners = 
             new CopyOnWriteArraySet<RunnerStatusListener>();
@@ -123,8 +122,7 @@ public abstract class BaseRunner implements Runner {
      */
     protected synchronized File getRunDir() {
         if (runDir == null) {
-            runDir = new File(RunUtil.getRunDir(), getLogName());
-            runDir.mkdir();
+            runDir = RunUtil.createTempDir("server", "run");
         }
         
         return runDir;
@@ -152,13 +150,6 @@ public abstract class BaseRunner implements Runner {
      */
     public void deploy(String filename, InputStream in) throws IOException {
         RunUtil.extractZip(new ZipInputStream(in), getRunDir());
-    }
-
-    /**
-     * Clear the run directory
-     */
-    public void clear() {
-        RunUtil.deleteDir(getRunDir());
     }
 
     /**
@@ -292,10 +283,8 @@ public abstract class BaseRunner implements Runner {
         }
     }
 
-    public Status getStatus() {
-        synchronized (statusLock) {
-            return status;
-        }
+    public synchronized Status getStatus() {
+        return status;
     }
 
     /**
@@ -304,39 +293,37 @@ public abstract class BaseRunner implements Runner {
      * creating deadlocks.
      * @param status the new status
      */
-    protected void setStatus(final Status status) {
-        synchronized (statusLock) {
-            this.status = status;
+    protected synchronized void setStatus(final Status status) {
+        this.status = status;
         
-            // make sure any notification that is in progress completes.  Otherwise
-            // we could get out-of-order notifcations
-            while (statusUpdater != null && statusUpdater.isAlive()) {
-                try {
-                   statusUpdater.join();
-                } catch (InterruptedException ie) {
-                    // ignore
-                }
+        // make sure any notification that is in progress completes.  Otherwise
+        // we could get out-of-order notifcations
+        while (statusUpdater != null && statusUpdater.isAlive()) {
+            try {
+                statusUpdater.join();
+            } catch (InterruptedException ie) {
+                // ignore
             }
-        
-            // start a new thread to do the notifications
-            statusUpdater = new Thread(new Runnable() {
-                public void run() {
-                    for (RunnerStatusListener l : listeners) {
-                        try {
-                            l.statusChanged(BaseRunner.this, status);
-                        } catch (Error e) {
-                            // log the exception, since it seems to get
-                            // swallowed otherwise
-                            logger.log(Level.WARNING, "Error notifying " + l, e);
-                            throw e;
-                        }
-                    }
-                }
-            });
-        
-            statusUpdater.setName(getName() + " status update notifier");
-            statusUpdater.start();
         }
+        
+        // start a new thread to do the notifications
+        statusUpdater = new Thread(new Runnable() {
+            public void run() {
+                for (RunnerStatusListener l : listeners) {
+                    try {
+                        l.statusChanged(BaseRunner.this, status);
+                    } catch (Error e) {
+                        // log the exception, since it seems to get
+                        // swallowed otherwise
+                        logger.log(Level.WARNING, "Error notifying " + l, e);
+                        throw e;
+                    }
+                }                
+            }
+        });
+        
+        statusUpdater.setName(getName() + " status update notifier");
+        statusUpdater.start();
     }
     
     /**

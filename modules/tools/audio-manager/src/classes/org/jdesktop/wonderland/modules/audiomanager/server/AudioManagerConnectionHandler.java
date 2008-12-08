@@ -50,6 +50,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 
@@ -70,7 +71,6 @@ import com.sun.voip.client.connector.CallStatusListener;
 import java.io.IOException;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Audio Manager
@@ -104,14 +104,14 @@ public class AudioManagerConnectionHandler
     }
 
     public void clientConnected(WonderlandClientSender sender, 
-	    WonderlandClientID clientID, Properties properties) {
+	    ClientSession session, Properties properties) {
 
         //throw new UnsupportedOperationException("Not supported yet.");
 	logger.fine("client connected...");
     }
 
     public void messageReceived(WonderlandClientSender sender, 
-	    WonderlandClientID clientID, Message message) {
+	    ClientSession session, Message message) {
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -125,7 +125,7 @@ public class AudioManagerConnectionHandler
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
 	    String username = 
-		UserManager.getUserManager().getUser(clientID).getUsername();
+		UserManager.getUserManager().getUser(session).getUsername();
 
 	    logger.fine("Got voice bridge request message from " + username);
 
@@ -140,12 +140,12 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
-	    sender.send(clientID, msg);
+	    sender.send(msg);
 	    return;
 	}
 
 	if (message instanceof PlaceCallMessage) {
-	    logger.fine("Got place call message from " + clientID);
+	    logger.fine("Got place call message");
 
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
 
@@ -167,7 +167,7 @@ public class AudioManagerConnectionHandler
 	    }
 
 	    cp.setCallId(callID);
-	    cp.setName(UserManager.getUserManager().getUser(clientID).getUsername());
+	    cp.setName(UserManager.getUserManager().getUser(session).getUsername());
             cp.setPhoneNumber(msg.getSipURL());
             cp.setConferenceId(vm.getConferenceId());
             cp.setVoiceDetection(true);
@@ -262,15 +262,14 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof VoiceChatMessage) {
-	    voiceChatHandler.processVoiceChatMessage(sender, clientID, 
-		(VoiceChatMessage) message);
+	    voiceChatHandler.processVoiceChatMessage(sender, (VoiceChatMessage) message);
 	    return;
 	}
 
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
+    public void clientDisconnected(WonderlandClientSender sender, ClientSession session) {
 //        throw new UnsupportedOperationException("Not supported yet.");
 
 	String callID = senderCallIDMap.get(sender);
@@ -318,14 +317,14 @@ public class AudioManagerConnectionHandler
 	    Call call = AppContext.getManager(VoiceManager.class).getCall(callId);
 
 	    if (call == null) {
-		logger.warning("Couldn't find call for " + callId);
+		System.out.println("Couldn't find call for " + callId);
 		return;
 	    }
 
 	    Player player = call.getPlayer();
 
 	    if (player == null) {
-		logger.warning("Couldn't find player for " + call);
+		System.out.println("Couldn't find player for " + call);
 		return;
 	    }
 
@@ -336,11 +335,11 @@ public class AudioManagerConnectionHandler
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
-	    //sender.send(clientID, new SpeakingMessage(true));
+	    //sender.send(new SpeakingMessage(true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    //sender.send(clientID, new SpeakingMessage(false));
+	    //sender.send(new SpeakingMessage(false));
             break;
 
 	case CallStatus.BRIDGE_OFFLINE:

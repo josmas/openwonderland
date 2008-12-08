@@ -38,7 +38,6 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -58,16 +57,16 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
     }
 
     public void clientConnected(WonderlandClientSender sender,
-            WonderlandClientID clientID, Properties properties) {
+            ClientSession session, Properties properties) {
         // ignore
     }
 
     public void clientDisconnected(WonderlandClientSender sender,
-            WonderlandClientID clientID) {
+            ClientSession session) {
         // ignore
     }
 
-    public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, Message message) {
+    public void messageReceived(WonderlandClientSender sender, ClientSession session, Message message) {
         
         Logger logger = Logger.getLogger(CellEditConnectionHandler.class.getName());
         

@@ -77,7 +77,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides conference coneofsilence functionality
@@ -104,14 +103,14 @@ public class ConeOfSilenceCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    protected String getClientCellClassName(WonderlandClientID clientID,
+    protected String getClientCellClassName(ClientSession clientSession, 
 	    ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.coneofsilence.client.cell.ConeOfSilenceCell";
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID,
+    public CellConfig getCellConfig(ClientSession clientSession, 
 	    ClientCapabilities capabilities) {
 
         ConeOfSilenceCellConfig config = new ConeOfSilenceCellConfig();

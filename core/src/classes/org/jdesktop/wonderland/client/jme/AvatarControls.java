@@ -188,8 +188,4 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
         }
         
     }
-
-    public interface AvatarInputSelector {
-        public void selectForInput();
-    }
 }

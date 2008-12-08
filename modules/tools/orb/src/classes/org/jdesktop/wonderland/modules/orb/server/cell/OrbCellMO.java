@@ -44,6 +44,7 @@ import com.sun.voip.client.connector.CallStatus;
 import java.io.IOException;
 import java.lang.String;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Timer;
@@ -80,7 +81,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server cell that provides Orb functionality
@@ -98,7 +98,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null));
+		new OrbMessageHandler(this));
 	}
     }
     
@@ -110,7 +110,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null));
+		new OrbMessageHandler(this));
 	}
     }
 
@@ -121,19 +121,21 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    logger.fine("Adding channel component...");
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, callID));
+		new OrbMessageHandler(this));
 	}
+
+	orbMessageHandlerRef.get().setCallID(callID);
     }
 
     @Override
-    protected String getClientCellClassName(WonderlandClientID clientID,
+    protected String getClientCellClassName(ClientSession clientSession, 
 	    ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.orb.client.cell.OrbCell";
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID,
+    public CellConfig getCellConfig(ClientSession clientSession, 
 	    ClientCapabilities capabilities) {
 
         OrbCellConfig config = new OrbCellConfig();

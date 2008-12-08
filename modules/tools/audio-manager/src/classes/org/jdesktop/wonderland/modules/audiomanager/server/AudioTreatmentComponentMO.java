@@ -21,6 +21,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.shape.Quad;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
@@ -66,7 +67,6 @@ import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  *
@@ -158,12 +158,10 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
             compRef = AppContext.getDataManager().createReference(comp);
         }
 
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
+        public void messageReceived(WonderlandClientSender sender, ClientSession session, 
 		CellMessage message) {
 
             AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
-
-	    logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());    
         }
     }
 

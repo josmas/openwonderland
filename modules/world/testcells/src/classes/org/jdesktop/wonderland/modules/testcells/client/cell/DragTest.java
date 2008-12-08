@@ -22,16 +22,16 @@ import java.awt.event.MouseEvent;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.DragTestRenderer;
 
 /**
  * Test for MouseDraggedEvent3D events. Click on the object and drag it left or right.
@@ -41,13 +41,8 @@ import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.DragTes
  */
 public class DragTest extends SimpleShapeCell {
     
-    MyDragListener dragListener = new MyDragListener();
     private MovableComponent movableComp;
-    private DragTestRenderer cellRenderer;
-
-    static Node sceneRoot;
-    Entity smallCubeEntity;
-
+    
     public DragTest(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         addComponent(new ChannelComponent(this));
@@ -57,36 +52,29 @@ public class DragTest extends SimpleShapeCell {
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        switch(rendererType) {
-	case RENDERER_2D :
-	    // No 2D Renderer yet
-	    return null;
-	case RENDERER_JME :
-	    cellRenderer = new DragTestRenderer(this);
-	    break;                
-        }
+        CellRenderer ret = super.createCellRenderer(rendererType);
 
-        return cellRenderer;
+	MyDragListener dragListener = new MyDragListener();
+        Entity entity = ((CellRendererJME)ret).getEntity();
+	dragListener.addToEntity(entity);
+
+        return ret;
     }
     
-    @Override
-    public boolean setStatus (CellStatus status) {
-	boolean ret = super.setStatus(status);
-
-	switch(status) {
-
-	case ACTIVE:
-	    dragListener.addToEntity(cellRenderer.getEntity());
-	    break;
-
-        case DISK:
-	    dragListener.removeFromEntity(cellRenderer.getEntity());
-	}
-
-	return ret;
+    
+    static Node getSceneRoot (Entity entity) {
+        RenderComponent renderComp = (RenderComponent) entity.getComponent(RenderComponent.class);
+        if (renderComp == null) {
+            return null;
+        }
+        Node node = renderComp.getSceneRoot();
+        return node;
     }
 
     private class MyDragListener extends EventClassListener {
+
+	// TODO: workaround for bug 27
+	boolean dragging;
 
 	// The intersection point on the entity over which the button was pressed, in world coordinates.
 	Vector3f dragStartWorld;
@@ -111,12 +99,14 @@ public class DragTest extends SimpleShapeCell {
 		    dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
 		    dragStartWorld = buttonEvent.getIntersectionPointWorld();
 		    translationOnPress = transform.getTranslation(null);
+		    dragging = true;
+		} else {
+		    dragging = false;
 		}
 		return;
 	    } 
-	    
 
-	    if (!(event instanceof MouseDraggedEvent3D)) {
+	    if (!dragging || !(event instanceof MouseDraggedEvent3D)) {
 		return;
 	    }
 

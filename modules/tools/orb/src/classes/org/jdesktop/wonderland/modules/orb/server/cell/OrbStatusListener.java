@@ -18,9 +18,8 @@
 
 package org.jdesktop.wonderland.modules.orb.server.cell;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.AppContext;
 
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
@@ -31,18 +30,12 @@ import org.jdesktop.wonderland.common.cell.CellID;
 
 import com.sun.voip.client.connector.CallStatus;
 
-import org.jdesktop.wonderland.server.WonderlandContext;
-
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 
 import java.io.IOException;
 import java.io.Serializable;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.logging.Logger;
 
@@ -56,19 +49,6 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 
     private CellID cellID;
 
-    private ConcurrentHashMap<String, SenderInfo> senderMap =
-        new ConcurrentHashMap();
-
-    private class SenderInfo implements Serializable {
-        public WonderlandClientSender sender;
-        public ManagedReference<ClientSession> sessionRef;
-
-        public SenderInfo(WonderlandClientSender sender, ClientSession session) {
-            this.sender = sender;
-            //this.sessionRef = AppContext.getDataManager().createReference(session);
-        }
-    }
-
     public OrbStatusListener(ManagedReference<OrbCellMO> orbCellMORef) {
         this.orbCellMORef = orbCellMORef;
 
@@ -78,33 +58,15 @@ public class OrbStatusListener implements ManagedCallStatusListener,
     private boolean muteMessageSpoken;
     private boolean isMuted;
 
-    public void mapCall(String callID, WonderlandClientSender sender,
-	    ClientSession session) {
-
-	senderMap.put(callID, new SenderInfo(sender, session));
-
-	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, callID);
+    public void addCallStatusListener(String callID) {
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	vm.addCallStatusListener(this, callID);
     }
 
     public void callStatusChanged(CallStatus status) {
-	logger.finest("Orb Status:  " + status);
+	logger.fine("Status:  " + status);
         
 	String callID = status.getCallId();
-
-	if (callID == null || callID.length() == 0) {
-	    logger.finest("Missing call id in status:  " + status);
-	    return;
-	}
-
-        SenderInfo senderInfo = senderMap.get(callID);
-
-        if (senderInfo == null) {
-            logger.warning("Can't find senderInfo for status:  " + status);
-            return;
-        }
-
-        WonderlandClientSender sender = senderInfo.sender;
-        //ClientSession session = senderInfo.sessionRef.get();
 
         switch (status.getCode()) {
 	case CallStatus.DTMF_KEY:
@@ -128,11 +90,13 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 		}
 	    }
 
-            sender.send(new OrbSpeakingMessage(cellID, true));
+            OrbSpeakingMessage orbStartedSpeakingMessage = new OrbSpeakingMessage(cellID, true);
+            // TODO send message to all clients.
             break;
             
         case CallStatus.STOPPEDSPEAKING:
-            sender.send(new OrbSpeakingMessage(cellID, false));
+            OrbSpeakingMessage orbStoppedSpeakingMessage = new OrbSpeakingMessage(cellID, false);
+	    // TODO send message to all clients.
             break;
             
 	case CallStatus.TREATMENTDONE:
@@ -149,12 +113,17 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    break;
 
         case CallStatus.ENDED: 
-	    logger.finest("Sending OrbEndCallMessage");
-	    WonderlandContext.getCellManager().removeCellFromWorld(orbCellMORef.get());
+	    callEnded(callID);
 	    break;
 	}
     }
 
+    private void callEnded(String callID) {
+	OrbEndCallMessage message = new OrbEndCallMessage(cellID, callID);
+
+        // notify everybody cellChannel.send(cellChannel.getSessions(), orbMessage.getBytes());            
+    }
+    
     private boolean starPressed;
 
     private boolean playingHelp;
