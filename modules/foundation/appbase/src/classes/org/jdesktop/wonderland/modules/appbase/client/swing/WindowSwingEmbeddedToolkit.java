@@ -74,15 +74,12 @@ class WindowSwingEmbeddedToolkit
 	JFrame frame = (JFrame) e.getSource();
 	Point framePoint = e.getPoint();
 	Point canvasPoint = SwingUtilities.convertPoint(frame, framePoint, canvas);
-	MouseEvent newEvent = new MouseEvent(canvas, e.getID(), e.getWhen(), e.getModifiers(), 
-					     e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), 
-					     e.getButton());
-	newEvent.translatePoint(canvasPoint.x - framePoint.x, canvasPoint.y - framePoint.y);
-	logger.fine("pick event = " + newEvent);
+	e.translatePoint(canvasPoint.x - framePoint.x, canvasPoint.y - framePoint.y);
 
-	InputManager.PickEventReturn ret = InputManager.inputManager().pickMouseEventSwing(newEvent);
+	InputManager.PickEventReturn ret = InputManager.inputManager().pickMouseEventSwing(e);
 	if (ret == null || ret.entity == null || ret.pickDetails == null) {
 	    logger.fine("WindowSwing miss");
+	    e.translatePoint(-(canvasPoint.x - framePoint.x), -(canvasPoint.y - framePoint.y));
 	    return null;
 	}
 	logger.fine("WindowSwing hit");
@@ -122,6 +119,7 @@ class WindowSwingEmbeddedToolkit
 		return dst;
             }
         };
+	e.translatePoint(-(canvasPoint.x - framePoint.x), -(canvasPoint.y - framePoint.y));
         return coordinateHandler;
     }
 
