@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.media.cell;
+package org.jdesktop.wonderland.client.cell.registry;
 
 import java.util.Set;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;

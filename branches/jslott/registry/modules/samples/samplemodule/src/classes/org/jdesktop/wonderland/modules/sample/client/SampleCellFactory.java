@@ -16,28 +16,27 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
+package org.jdesktop.wonderland.modules.sample.client;
 
 import java.util.Set;
-import org.jdesktop.wonderland.client.media.cell.CellConfigPanel;
-import org.jdesktop.wonderland.client.media.cell.CellFactory;
-import org.jdesktop.wonderland.client.media.cell.CellPaletteInfo;
+import org.jdesktop.wonderland.client.cell.registry.CellConfigPanel;
+import org.jdesktop.wonderland.client.cell.registry.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
+import org.jdesktop.wonderland.modules.sample.common.SampleCellSetup;
 
 /**
- * A factory that generates a setup class for the kmz loader
- * 
- * @author Jordan Slott <jslott@dev.java.net>
+ *
+ * @author jordanslott
  */
-public class JmeColladaCellFactory implements CellFactory {
+public class SampleCellFactory implements CellFactory {
 
     public String[] getExtensions() {
-        return new String[] { "kmz" };
+        return new String[] {};
     }
 
     public int getDetailLevels() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return 1;
     }
 
     public Set<CellConfigPanel> getCellConfigPanels(int level) {
@@ -45,10 +44,10 @@ public class JmeColladaCellFactory implements CellFactory {
     }
 
     public <T extends BasicCellSetup> T getDefaultCellSetup() {
-        return (T) new JMEColladaCellSetup();
+        return (T)new SampleCellSetup();
     }
 
     public CellPaletteInfo getCellPaletteInfo() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SampleCellPaletteInfo();
     }
 }

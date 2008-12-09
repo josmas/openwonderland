@@ -16,37 +16,42 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.media;
+package org.jdesktop.wonderland.client.cell.registry;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.jdesktop.wonderland.client.media.cell.CellFactory;
 
 /**
- * The media manager manages the entire set of cell types in the system. XXX
- * TBD
+ * The cell registry manages the collection of cell types registered with the
+ * system. This is used to display them in the palette and also provides the
+ * necessary information to create them in-world and edit their properties.
+ * 
+ * XXX This does not work with federation -- need to listen for login events!
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class MediaManager {
+public class CellRegistry {
 
+    /* A set of all cell factories */
+    private Set<CellFactory> cellFactorySet;
+    
     /* A map of cell factories and the extensions the support */
     private Map<String, Set<CellFactory>> cellFactoryMap;
     
     /** Default constructor */
-    public MediaManager() {
+    public CellRegistry() {
         cellFactoryMap = new HashMap();
+        cellFactorySet = new HashSet();
     }
     
     /**
-     * Singleton to hold instance of MediaManager. This holder class is loaded
-     * on the first execution of MediaManager.getMediaManager().
+     * Singleton to hold instance of CellRegistry. This holder class is loaded
+     * on the first execution of CellRegistry.getMediaManager().
      */
-    private static class MediaManagerHolder {
-        private final static MediaManager MediaManager = new MediaManager();
+    private static class CellRegistryHolder {
+        private final static CellRegistry cellRegistry = new CellRegistry();
     }
     
     /**
@@ -54,31 +59,36 @@ public class MediaManager {
      * <p>
      * @return Single instance of this class.
      */
-    public static final MediaManager getMediaManager() {
-        return MediaManagerHolder.MediaManager;
+    public static final CellRegistry getCellRegistry() {
+        return CellRegistryHolder.cellRegistry;
     }
     
     /**
-     * Registers a CellFactory given an array of media file name extensions.
-     * This cell factory is used to generate cell setup classes, GUI panels
-     * to configuration the cell setup information, and information so that
-     * the cell type can be used in a world assembly palette of cell types.
+     * Registers a CellFactory. This cell factory is used to generate cell setu
+     * classes, GUI panels to configuration the cell setup information, and
+     * information so that the cell type can be used in a world assembly palette
+     * of cell types.
      * 
-     * @param extensions An array of file extensions (e.g. "jpg", "dae")
      * @param factory The cell factory
      */
-    public void registerCellFactory(String[] extensions, CellFactory factory) {
+    public void registerCellFactory(CellFactory factory) {
         // For now, don't check if the factory already exists. We may need to
         // create an entry in cellFactoryMap for the extension type if it does
         // not yet exist.
-        for (String extension : extensions) {
-            Set<CellFactory> factories = cellFactoryMap.get(extension);
-            if (factories == null) {
-                factories = new HashSet<CellFactory>();
-                cellFactoryMap.put(extension, factories);
+        String[] extensions = factory.getExtensions();
+        if (extensions != null) {
+            for (String extension : extensions) {
+                Set<CellFactory> factories = cellFactoryMap.get(extension);
+                if (factories == null) {
+                    factories = new HashSet<CellFactory>();
+                    cellFactoryMap.put(extension, factories);
+                }
+                factories.add(factory);
             }
-            factories.add(factory);
         }
+        
+        // Add to the set containing all cell factories
+        cellFactorySet.add(factory);
     }
     
     /**
@@ -88,16 +98,7 @@ public class MediaManager {
      * @return A set of registered cell factories
      */
     public Set<CellFactory> getAllCellFactories() {
-        Set<CellFactory> factories = new HashSet();
-        
-        // Puts factories for all extensions into a single hash set. The set
-        // will take care of making sure no duplicates exist.
-        Iterator<Map.Entry<String, Set<CellFactory>>> it = cellFactoryMap.entrySet().iterator();
-        while (it.hasNext() == true) {
-            Map.Entry<String, Set<CellFactory>> entry = it.next();
-            factories.addAll(entry.getValue());
-        }
-        return factories;
+        return new HashSet(cellFactorySet);
     }
     
     /**

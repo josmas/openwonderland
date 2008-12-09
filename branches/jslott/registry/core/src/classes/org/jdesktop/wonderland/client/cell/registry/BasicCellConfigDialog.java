@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.media.cell;
+package org.jdesktop.wonderland.client.cell.registry;
 
 /**
  * A basic Ok-Cancel dialog displaying a series of configuration panels for a
