@@ -1,4 +1,0 @@
-sgs.server=http://localhost:8080/
-auth.username=username
-auth.fullname=Users Name
-avatar.detail=low
