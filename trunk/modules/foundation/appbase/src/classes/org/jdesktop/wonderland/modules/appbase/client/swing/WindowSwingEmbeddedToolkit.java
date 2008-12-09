@@ -29,6 +29,7 @@ import com.sun.embeddedswing.EmbeddedPeer;
 import java.awt.Canvas;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
@@ -221,6 +222,7 @@ of the cell.
     
     static class WindowSwingEmbeddedPeer extends EmbeddedPeer {
 
+	// TODO: painter thread is now obsolete. Remove
 	private static PainterThread painterThread;
 
 	WindowSwingEmbeddedToolkit toolkit;
@@ -231,8 +233,8 @@ of the cell.
             super(parent, embedded);
 	    this.toolkit = toolkit;
 
-	    painterThread = new PainterThread();
-	    painterThread.start();
+	    //painterThread = new PainterThread();
+	    //painterThread.start();
         }
 
 	void repaint () {
@@ -293,8 +295,17 @@ of the cell.
 	    */
         }
 
-	private void paintOnWindow (WindowSwing window) {
-	    painterThread.enqueuePaint(this, window);
+	private void paintOnWindow (final WindowSwing window) {
+
+	    EventQueue.invokeLater(new Runnable () {
+		public void run () {
+		    DrawingSurface drawingSurface = window.getSurface();
+		    Graphics2D gDst = drawingSurface.getGraphics();
+		    paint(gDst);
+		}
+	    });
+
+	    //painterThread.enqueuePaint(this, window);
 	}
 
 	private static class PainterThread extends Thread {
