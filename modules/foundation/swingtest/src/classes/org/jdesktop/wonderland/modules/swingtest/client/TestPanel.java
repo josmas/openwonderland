@@ -88,7 +88,7 @@ public class TestPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        //TODO: add(jTextField1, gridBagConstraints);
+        add(jTextField1, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
