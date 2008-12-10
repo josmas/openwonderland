@@ -62,6 +62,9 @@
                 
                 <!--<filter token="SGS_SERVICES" value="org.jdesktop.wonderland.server.spatial.UniverseService"/>
                 <filter token="SGS_MANAGERS" value="org.jdesktop.wonderland.server.spatial.UniverseServiceManagerImpl"/>-->
+
+                <filter token="WONDERLAND_PRIVATE_LOCAL_ADDRESS" value="localhost"/>
+                <filter token="WONDERLAND_NETWORK_INTERFACE" value=""/>
             </filterset>            
         </copy>
     

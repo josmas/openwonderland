@@ -498,7 +498,7 @@ public class SoftphoneControlImpl {
 
     private void lineReceived(ProcOutputListener source, String line) {
         if (source == stdErrListener) {
-            logger.warning(line);
+            System.err.println(line);
         } else if (source == stdOutListener) {
 	    if (quiet == false) {	
                 logger.info(line);

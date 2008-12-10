@@ -30,6 +30,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
+import org.jdesktop.wonderland.common.NetworkAddress;
+
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -54,9 +56,12 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 
 import java.io.IOException;
 
-import java.util.logging.Logger;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
-import org.jdesktop.wonderland.common.NetworkAddress;
+import java.util.logging.Logger;
 
 /**
  *
@@ -97,6 +102,9 @@ public class AudioManagerClient extends BaseConnection implements
         JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
         
 	logger.fine("Starting AudioManagerCLient");
+    }
+
+    public synchronized void execute(final Runnable r) {
     }
 
     @Override
@@ -194,29 +202,56 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
+	    /*
+	     * The voice bridge info is a String of values separated by ":".
+	     * The numbers indicate the index in tokens[].
+	     *
+	     *     0      1      2                   3                 4
+	     * <bridgeId>::<privateHostName>:<privateControlPort>:<privateSipPort>
+	     *			 5                   6                 7
+	     *   	  :<publicHostName>:<publicControlPort>:<publicSipPort>
+	     */
             String tokens[] = msg.getBridgeInfo().split(":");
 
-            String registrarAddress = tokens[2] + ";sip-stun:";
+            String registrarAddress = tokens[5] + ";sip-stun:";
 
-            registrarAddress += tokens[4];
+            registrarAddress += tokens[7];
 
-	    String localHost = NetworkAddress.getDefaultHostAddress();
+	    String localAddress = null;
 
 	    try {
-	        String sipURL = sc.startSoftphone(
-		    msg.getUsername(), registrarAddress, 10, localHost, AudioQuality.VPN);
+	        InetAddress ia = NetworkAddress.getPrivateLocalAddress(
+		    "server:" + tokens[5] + ":" + tokens[6] + ":10000");
 
-	        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+	        localAddress = ia.getHostAddress();
+	    } catch (UnknownHostException e) {
+	        logger.warning(e.getMessage());
+	    }
 
-		logger.fine("Softphone call id is " + cellID.toString());
+	    if (localAddress != null) {
+	        try {
+	            String sipURL = sc.startSoftphone(
+		        msg.getUsername(), registrarAddress, 10, localAddress, AudioQuality.VPN);
 
-		sc.setCallID(cellID.toString());
+	            CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
 
-	        // XXX need location and direction
-	        session.send(this, new PlaceCallMessage(
-		    cellID.toString(), sipURL, 0., 0., 0., 90., false));
-	    } catch (IOException e) {
-                logger.warning(e.getMessage());
+		    logger.fine("Softphone call id is " + cellID.toString());
+
+		    sc.setCallID(cellID.toString());
+
+	            // XXX need location and direction
+	            session.send(this, new PlaceCallMessage(
+		        cellID.toString(), sipURL, 0., 0., 0., 90., false));
+	        } catch (IOException e) {
+                    logger.warning(e.getMessage());
+	        }
+	    } else {
+		// XXX Put up a dialog box here
+		logger.warning("UNABLE TO START SOFTPHONE.  AUDIO WILL NOT WORK!!!!!!!!!!!!");
+		/*
+		 * Try again.
+		 */
+		connectSoftphone();
 	    }
 	} else if (message instanceof VoiceChatJoinRequestMessage) {
 	   VoiceChatJoinRequestMessage msg = (VoiceChatJoinRequestMessage) message;

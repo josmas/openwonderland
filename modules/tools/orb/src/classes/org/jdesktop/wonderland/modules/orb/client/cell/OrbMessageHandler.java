@@ -64,6 +64,8 @@ public class OrbMessageHandler {
         
     private OrbCell orbCell;
 
+    private OrbDialog orbDialog;
+
     public OrbMessageHandler(OrbCell orbCell) {
 	this.orbCell = orbCell;
 
@@ -88,4 +90,12 @@ public class OrbMessageHandler {
 	logger.finest("process message " + message);
     }
     
+    public void orbSelected() {
+	if (orbDialog == null) {
+	    orbDialog = new OrbDialog(orbCell.getCellID(), channelComp, this);
+	}
+
+	orbDialog.setVisible(true);
+    }
+
 }

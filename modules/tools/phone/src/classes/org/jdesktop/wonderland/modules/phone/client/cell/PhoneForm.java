@@ -25,8 +25,6 @@ import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
 import java.awt.Color;
 import java.awt.Point;
 
@@ -45,8 +43,6 @@ public class PhoneForm extends JDialog implements KeypadListener {
     private boolean locked = false;
     private String phoneNumber;
 
-    private WonderlandSession session;
-
     private PhoneMessageHandler phoneMessageHandler;
 
     private CellID phoneCellID;
@@ -64,7 +60,6 @@ public class PhoneForm extends JDialog implements KeypadListener {
         getRootPane().setDefaultButton(callButton);
 
 	this.phoneCellID = phoneCellID;
-	this.session = session;
 	this.phoneMessageHandler = phoneMessageHandler;
         this.phoneNumber = phoneNumber;
 
