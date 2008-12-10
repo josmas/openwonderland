@@ -25,6 +25,7 @@ package org.jdesktop.wonderland.client.jme.login;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 /**
  *
@@ -38,6 +39,11 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
     public WonderlandLoginDialog(Frame parent, boolean modal,
                                  LoginPanel login) {
         super(parent, modal);
+        
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+        }
 
         // remember the child panel
         this.login = login;
@@ -78,7 +84,6 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         loginButton = new javax.swing.JButton();
         getRootPane().setDefaultButton(loginButton);
-        jPanel1 = new javax.swing.JPanel();
 
         userPasswordPanel.setOpaque(false);
 
@@ -173,9 +178,11 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setResizable(false);
 
         gradientPanel1.setGradientEndColor(new java.awt.Color(163, 183, 255));
         gradientPanel1.setGradientStartColor(new java.awt.Color(0, 51, 255));
+        gradientPanel1.setMinimumSize(new java.awt.Dimension(0, 82));
 
         worldNameLabel.setFont(new java.awt.Font("Arial", 1, 36));
         worldNameLabel.setForeground(new java.awt.Color(255, 255, 255));
@@ -206,18 +213,22 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         loginSpecificPanel.setLayout(new java.awt.BorderLayout());
         gradientPanel2.add(loginSpecificPanel, java.awt.BorderLayout.CENTER);
 
-        tagLineLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        tagLineLabel.setFont(new java.awt.Font("Arial", 1, 18));
         tagLineLabel.setForeground(new java.awt.Color(255, 255, 255));
         tagLineLabel.setText("Log in");
+        tagLineLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        tagLineLabel.setAlignmentY(0.0F);
         tagLineLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        tagLineLabel.setFocusable(false);
         gradientPanel2.add(tagLineLabel, java.awt.BorderLayout.NORTH);
 
         buttonPanel.setOpaque(false);
         buttonPanel.setPreferredSize(new java.awt.Dimension(453, 50));
 
         cancelButton.setBackground(new java.awt.Color(255, 255, 255));
-        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
+        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13));
         cancelButton.setText("Cancel");
+        cancelButton.setAlignmentX(0.5F);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -225,8 +236,9 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         });
 
         loginButton.setBackground(new java.awt.Color(255, 255, 255));
-        loginButton.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
+        loginButton.setFont(new java.awt.Font("Dialog", 1, 13));
         loginButton.setText("Login");
+        loginButton.setAlignmentX(0.5F);
         loginButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loginButtonActionPerformed(evt);
@@ -237,55 +249,38 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         buttonPanel.setLayout(buttonPanelLayout);
         buttonPanelLayout.setHorizontalGroup(
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonPanelLayout.createSequentialGroup()
-                .add(99, 99, 99)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
+                .addContainerGap(159, Short.MAX_VALUE)
                 .add(cancelButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(loginButton)
-                .addContainerGap(206, Short.MAX_VALUE))
+                .add(152, 152, 152))
         );
         buttonPanelLayout.setVerticalGroup(
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
-                .addContainerGap(17, Short.MAX_VALUE)
-                .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+            .add(buttonPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(cancelButton)
                     .add(loginButton))
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         gradientPanel2.add(buttonPanel, java.awt.BorderLayout.PAGE_END);
-
-        jPanel1.setFocusable(false);
-        jPanel1.setFont(new java.awt.Font("Dialog", 0, 13));
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 482, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 4, Short.MAX_VALUE)
-        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(gradientPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE)
+            .add(gradientPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(gradientPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
+                .add(4, 4, 4)
+                .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE))
         );
 
         pack();
@@ -318,7 +313,6 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
     private org.jdesktop.wonderland.client.jme.login.GradientPanel gradientPanel1;
     private org.jdesktop.wonderland.client.jme.login.GradientPanel gradientPanel2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton loginButton;
     private javax.swing.JPanel loginSpecificPanel;
     private javax.swing.JLabel tagLineLabel;

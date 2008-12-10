@@ -87,6 +87,9 @@
     <Component class="javax.swing.JTextField" name="naServerField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[98, 22]"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="naUsernameField">
@@ -100,6 +103,11 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="naFullNameField">
+      <Properties>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[98, 22]"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
