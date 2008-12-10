@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.client.jme.login;
 
 import java.io.File;
@@ -27,6 +26,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
@@ -37,9 +37,9 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginCont
  * @author jkaplan
  */
 public class NoAuthLoginPanel extends JPanel implements LoginPanel {
+
     private static final Logger logger =
             Logger.getLogger(NoAuthLoginPanel.class.getName());
-
     private NoAuthLoginControl control;
 
     /** Creates new form NoAuthLoginPanel */
@@ -47,6 +47,11 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         this.control = control;
 
         initComponents();
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+        }
 
         // load any saved credentials
         loadCredentials();
@@ -144,9 +149,12 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
         naUsernameLabel.setText("Username:");
 
         naServerField.setEditable(false);
+        naServerField.setMinimumSize(new java.awt.Dimension(98, 22));
 
-        naUsernameField.setFont(new java.awt.Font("Dialog", 0, 13));
+        naUsernameField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         naUsernameField.setMinimumSize(new java.awt.Dimension(98, 22));
+
+        naFullNameField.setMinimumSize(new java.awt.Dimension(98, 22));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -160,7 +168,7 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
                     .add(naServerLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(naFullNameField)
+                    .add(naFullNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(naUsernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(naServerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 274, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -183,8 +191,6 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField naFullNameField;
     private javax.swing.JLabel naFullNameLabel;
@@ -193,5 +199,4 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
     private javax.swing.JTextField naUsernameField;
     private javax.swing.JLabel naUsernameLabel;
     // End of variables declaration//GEN-END:variables
-
 }
