@@ -193,7 +193,23 @@ public class Cell {
      * @param component the componnet to be added
      */
     public void addComponent(CellComponent component) {
-        CellComponent previous = components.put(component.getClass(),component);
+        addComponent(component, component.getClass());
+    }
+
+    /**
+     * Add a component to this cell, with the specified componentClass. This allows for specialized
+     * subclasses to be registered with a higher level interface/class.
+     * Only a single instance of each component
+     * class can be added to a cell. Adding duplicate components will result in
+     * an IllegalArgumentException.
+     *
+     * When a component is added component.setStatus is called automatically with
+     * the current status of this cell.
+     *
+     * @param component the componnet to be added
+     */
+    public void addComponent(CellComponent component, Class componentClass) {
+        CellComponent previous = components.put(componentClass,component);
         if (previous!=null)
             throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
         synchronized(currentStatus) {
