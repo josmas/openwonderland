@@ -107,4 +107,13 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
         throw new IllegalStateException("Cell does not support " + rendererType);
     }
 
+    public void orbSelected() {
+	if (orbMessageHandler == null) {
+	    logger.warning("No phoneMessageHandler");
+	    return;
+	}
+
+	orbMessageHandler.orbSelected();
+    }
+
 }

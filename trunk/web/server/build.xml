@@ -101,6 +101,7 @@
             <checksumfileset file="${top.dir}/core/build/lib/wonderland-client.jar" prefix="webserver"/>
             <checksumfileset file="${top.dir}/core/build/lib/wonderland-common.jar" prefix="webserver"/>
             <checksumfileset dir="${core.sgs.client.dir}/lib" prefix="webserver"/>
+	    <checksumfileset file="${core.common.dir}/stun.jar" prefix="webserver"/>
             
             <!-- contents of the document root -->
             <checksumfileset dir="${current.dir}/web" prefix="docroot"/>

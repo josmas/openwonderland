@@ -32,6 +32,9 @@
             <jvmarg value="-Dsgs.port=${sgs.port}"/>
             <jvmarg value="-Dsgs.server=${sgs.server}"/>
            
+	    <jvmarg value="-Dwonderland.local.hostname=${wonderland.local.hostname}"/>
+	    <jvmarg value="-Dwonderland.network.interface=${wonderland.network.interface}"/>
+
             <classpath>
 		<pathelement path="${core-client.classpath}"/>
 	    </classpath>

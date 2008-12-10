@@ -51,6 +51,7 @@
 	<path path="${jme.classpath}"/>
         <path path="${jaxb.classpath}"/>
 	<path location="${core.common.dir}/Scenario.jar"/>
+	<path location="${core.common.dir}/stun.jar"/>
     </pathconvert>
     
     <pathconvert property="core-common.classpath">

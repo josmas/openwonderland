@@ -9,245 +9,102 @@
 
 package org.jdesktop.wonderland.common;
 
+import java.io.IOException;
+
+import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+
 import java.util.logging.Logger;
 
-/**
- * A class that tries to figure out the IP address of the local machine that can
- * preferably route to the outside world.
- * 
- * It does this by first building up a list of possible IP addresses and then picking the most
- * logical one. First all the network interfaces and their IP addresses are scanned and
- * those interfaces that are up (active) and not loopback and addresses that are not
- * link-local are added to a list of possible candidates.  It then adds "localhost"
- * to this list (least preferred).
- *
- * It then tries to auto-detect the IP address by opening a socket to the SGS server/port
- * and looking at the local address on that socket connection. If a valid non-loopback
- * address is found, then this is initially preferred.
- * 
- * It then looks to see if a IP address/interface has been manually set using the
- * "wonderland.local.hostAddress" system property. If there is one and is valid, this
- * becomes the preferred
- *
- * If no preferred address is found, it just picks the first one in the list that was built.
- *
- * @author kkg
- */
+import com.sun.stun.NetworkAddressManager;
+
 public class NetworkAddress {
 
-    private static Logger logger = Logger.getLogger("wonderland.util");
+    private static Logger logger = Logger.getLogger(NetworkAddress.class.getName());
 
-    private static final String LOCALHOST = "localhost";
+    public static InetAddress getPrivateLocalAddress() throws UnknownHostException {
+	InetAddress ia = NetworkAddressManager.getPrivateLocalAddress();
 
-    private static ArrayList<NetworkAddress> networkAddressList = null;
-    private static NetworkAddress defaultNetworkAddress = null;
+	logger.finer("Default:  " + ia);
+	return ia;
+    } 
 
-    public synchronized static NetworkAddress[] getNetworkAddresses() {
-	if (networkAddressList == null)
-	    setupNetworkAddresses();
+    public static InetAddress getPrivateLocalAddress(String s) throws UnknownHostException {
+	if (s == null || s.length() == 0) {
+	    InetAddress ia = NetworkAddressManager.getPrivateLocalAddress();
 
-	return networkAddressList.toArray(new NetworkAddress[0]);
-    }
-
-    private static void setupNetworkAddresses() {
-	networkAddressList = new ArrayList<NetworkAddress>();
-
-	// First add network interfaces which are up and arent loopback
-	// (since we will add localhost separately)
-	try {
-	    Enumeration<NetworkInterface> eni = NetworkInterface.getNetworkInterfaces();
-
-	    while (eni.hasMoreElements()) {
-		NetworkInterface ni = eni.nextElement();
-
-		/* Java 5 backport: these two methods don't exist in Java 5
-		   This means that the list of interfaces may contain some
-		   invalid interfaces that aren't in the Java 6 list
-		if (!ni.isLoopback() && ni.isUp()) {
-		*/
-		    Enumeration<InetAddress> eia = ni.getInetAddresses();
-		    while (eia.hasMoreElements()) {
-			InetAddress ia = eia.nextElement();
-
-			if (!ia.isLinkLocalAddress() && !ia.isLoopbackAddress()) {
-			    networkAddressList.add(
-				new NetworkAddress(ni.getName(), ia.getHostAddress()));
-			    break;
-			}
-		    }
-		/* Java 5 backport
-		}
-		*/
-	    }
-	} catch (Exception e) {}
-
-	// Then add the LOCALHOST entry.
-	try {
-	    InetAddress ia = InetAddress.getByName(LOCALHOST);
-
-	    if (ia != null)
-		networkAddressList.add(
-		    new NetworkAddress(LOCALHOST, ia.getHostAddress()));
-
-	} catch (Exception e) {}
-
-	addAddress("auto", detectLocalAddress(), true);
-	addAddress("manual", System.getProperty("wonderland.local.hostAddress",""), true);
-
-	if ((defaultNetworkAddress == null) && (networkAddressList.size() > 0))
-	    defaultNetworkAddress = networkAddressList.get(0);
-    }
-
-    public synchronized static NetworkAddress addAddress(String name, String address, boolean setDefault) {
-	if ((address == null) || "".equals(address))
-	    return null;
-
-	NetworkAddress na = null;
-
-	String hostAddress = null;
-
-	// See if it a hostname or IP address.
-	try {
-	    InetAddress ia = InetAddress.getByName(address);
-
-	    if (ia != null)
-		hostAddress = ia.getHostAddress();
-
-	} catch (Exception e) {}
-
-	for (int i = 0; i < networkAddressList.size(); i++) {
-	    na = networkAddressList.get(i);
-
-	    // If the address is specified as a network interface or a tag
-	    // then just use that...
-	    if (na.getName().equals(address)) {
-		if (setDefault) defaultNetworkAddress = na;
-		return na;
-	    }
-
-	    // If the host address matches that of an existing entry just use that...
-	    if ((hostAddress != null) && (na.getHostAddress().equals(hostAddress))) {
-		if (setDefault) defaultNetworkAddress = na;
-		return na;
-	    }
-
-	    // If the tag name matches, then override this entries host address
-	    if (na.getName().equals(name))
-		break;
-
-	    na = null;
+	    logger.finer("Default:  " + ia);
+	    return ia;
 	}
 
-	if (hostAddress == null)
-	    return null;
+	logger.finer(s);
 
-	if (na == null) {
-	    na = new NetworkAddress(name, hostAddress);
-	    networkAddressList.add(na);
-	} else {
-	    na.setHostAddress(hostAddress);
+	String[] tokens = s.split(":");
+
+	if (tokens.length == 1 || tokens[0].equalsIgnoreCase("host")) {
+	    /*
+	     * It's a host name or address
+	     */
+	    InetAddress ia = InetAddress.getByName(tokens[0]);
+
+	    logger.finer("Host " + s + ": " + ia);
+	    return ia;
 	}
 
-	if (setDefault) defaultNetworkAddress = na;
-	return na;
-    }
+	if (tokens[0].equalsIgnoreCase("interface")) {
+	    InetAddress ia = NetworkAddressManager.getPrivateLocalAddress(tokens[1]);
 
-    public synchronized static void setDefaultNetworkAddress(NetworkAddress na) {
-	defaultNetworkAddress = na;
-    }
+	    logger.finer("Interface " + tokens[1] + ": " + ia);
+	    return ia;
+	}
 
-    public synchronized static NetworkAddress getDefaultNetworkAddress() {
-	if (defaultNetworkAddress == null)
-	    getNetworkAddresses();
+	if (tokens[0].equalsIgnoreCase("server") == false) {
+	    logger.warning("Invalid specification:  " + s);
+	    throw new UnknownHostException("Invalid specification:  " + s);
+	}
 
-	return defaultNetworkAddress;
-    }
+	if (tokens.length < 3) {
+	    logger.warning("Invalid server specified:  " + s);
+	    throw new UnknownHostException("Invalid server specified:  " + s);
+	}
 
-    public static String getDefaultHostAddress() {
-	NetworkAddress na = getDefaultNetworkAddress();
+	int port;
 
-	if (na == null)
-	    return LOCALHOST;
-
-	return na.getHostAddress();
-    }
-
-    public static InetAddress getDefaultInetAddress() {
 	try {
-	    return InetAddress.getByName(getDefaultHostAddress());
-	} catch (Exception e) {}
+	    port = Integer.parseInt(tokens[2]);	
+	} catch (NumberFormatException e) {
+	    logger.warning("Invalid port specified:  " + s);
+	    throw new UnknownHostException("Invalid port specified:  " + s);
+	}
+	
+	int timeout = 500;
 
-	return null;
-    }
-
-    public static String detectLocalAddress(String server, String port) {
-	if ((server == null) || (port == null))
-	    return null;
-
-	String localAddress = null;
-	Socket s = null;
-
-        try {
-	    if ((s = new Socket(server, Integer.decode(port))) != null) {
-		InetAddress ia = s.getLocalAddress();
-
-		if ((ia != null) && !ia.isLoopbackAddress())
-		    localAddress = ia.getHostAddress();
+	if (tokens.length == 4) {
+	    try {
+		timeout = Integer.parseInt(tokens[3]);
+	    } catch (NumberFormatException e) {
+		logger.warning("Invalid timeout specified:  " + s
+		    + " defaulting to " + timeout);
 	    }
+	}
 
-        } catch (Exception e) {}
+	InetAddress ia = NetworkAddressManager.getPrivateLocalAddress(
+	    tokens[1], port, timeout);
 
-	if (s != null)
-	    try { s.close(); } catch (Exception e) {}
-
-	if (localAddress != null)
-	    logger.warning("Auto-detected LOCAL host address = " + localAddress);
-
-	return localAddress;
+	logger.finer("server " + tokens[1] + ":" + port + ": " + ia);
+	return ia;
     }
 
-    public static String detectLocalAddress() {
-	return detectLocalAddress(System.getProperty("sgs.server"),
-				  System.getProperty("sgs.port"));
+    /*
+     * Ask stunServer to resolve socket.getAddress().
+     */
+    public static InetSocketAddress getPublicAddressFor(
+            InetSocketAddress stunServer, DatagramSocket socket)
+            throws IOException {
+
+	return NetworkAddressManager.getPublicAddressFor(stunServer, socket);
     }
 
-    /** Creates a new instance of NetworkAddress */
-    private String name;
-    private String hostAddress;
-
-    private NetworkAddress(String name, String hostAddress) {
-	setName(name);
-	setHostAddress(hostAddress);
-    }
-
-    public String toString() {
-	if (getName().equals(getHostAddress()))
-	    return getName();
-
-	if ("".equals(getName()))
-	    return getHostAddress();
-
-	return getHostAddress() + " [" + getName() + "]";
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getHostAddress() {
-        return hostAddress;
-    }
-
-    public void setHostAddress(String hostAddress) {
-        this.hostAddress = hostAddress;
-    }
 }

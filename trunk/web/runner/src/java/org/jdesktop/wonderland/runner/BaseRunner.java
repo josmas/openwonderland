@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipInputStream;
+import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jvnet.winp.WinProcess;
@@ -103,6 +105,42 @@ public abstract class BaseRunner implements Runner {
         this.name = name;
     }
     
+    protected String getPrivateLocalAddress() {
+        String s = System.getProperty("wonderland.private.local.address");
+
+	String hostAddress = null;
+
+	try {
+	    hostAddress = NetworkAddress.getPrivateLocalAddress(s).getHostAddress();
+
+	    if (s == null || s.length() == 0) {
+	        logger.info("private local address " + hostAddress 
+		    + " was chosen from the list of interfaces");
+	    } else {
+	        logger.info("private local address " + hostAddress 
+		    + " was determined by using " + s);
+	    }
+
+	    return hostAddress;
+	} catch (UnknownHostException e) {
+	    logger.warning("Unable to get private local address using " + s
+		+ " " + e.getMessage());
+	
+	    try {
+                hostAddress = NetworkAddress.getPrivateLocalAddress().getHostAddress();
+	        logger.info("chose private local address " + hostAddress 
+		        + " from the list of interfaces: " + e.getMessage());
+	    } catch (UnknownHostException ee) {
+                logger.log(Level.WARNING, "Unable to determine private local address, "
+		    + " using localhost:  " + e.getMessage());
+
+                hostAddress = "localhost";
+	    }
+	}
+
+	return hostAddress;
+    }
+
     /**
      * Configure the runner.  Curently parses the following properties:
      * <ul><li><code>runner.name</code> - the name to return in 

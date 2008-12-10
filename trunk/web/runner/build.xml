@@ -16,6 +16,7 @@
             <path path="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
             <path path="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
             <path path="${core.dir}/build/lib/wonderland-common.jar"/>
+            <path path="${core.dir}/ext/common/stun.jar"/>
             <path path="${current.dir}/lib/winp-1.5.jar"/>
         </pathconvert>
     </target>
