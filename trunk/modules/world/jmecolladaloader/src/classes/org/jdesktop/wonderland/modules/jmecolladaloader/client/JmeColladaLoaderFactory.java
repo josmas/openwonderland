@@ -22,8 +22,6 @@ import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.media.MediaManager;
-import org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCellFactory;
 
 /**
  * LoaderFactory for the JmeColladaLoader.
@@ -36,9 +34,6 @@ public class JmeColladaLoaderFactory extends ModelLoaderFactory
 
     public void initialize(ServerSessionManager manager) {
         LoaderManager.getLoaderManager().registerLoader(this);
-        
-        // Register kmz extension handler with the media manager
-        MediaManager.getMediaManager().registerCellFactory(new String[] { "kmz" }, new JmeColladaCellFactory());
     }
     
     public String getFileExtension() {
