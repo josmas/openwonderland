@@ -48,6 +48,8 @@
                     <include name="${module.src}/common/**"/>                   
                 </serverjar>    
 	    </server>
+
+	    <audio dir="${current.dir}/audio"/>
         </module>
     </target>                                  
                                            

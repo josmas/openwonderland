@@ -92,7 +92,7 @@ public class AssetDeployer implements ModuleDeployerSPI {
     }
 
     public String[] getTypes() {
-        return new String[] { "art", "client", "common" };
+        return new String[] { "art", "client", "common", "audio" };
     }
 
     public boolean isDeployable(String type, Module module, ModulePart part) {
