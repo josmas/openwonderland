@@ -24,4 +24,10 @@ package org.jdesktop.wonderland.modules;
 public class ModuleAttributes {
     /** a module that was installed by the system */
     public static final String SYSTEM_MODULE = "SYSTEM_MODULE";
+
+    /** the checksum for this module */
+    public static final String CHECKSUM = "CHECKSUM";
+
+    /** the original filename this module was intalled from */
+    public static final String FILENAME = "FILENAME";
 }
