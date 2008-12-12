@@ -19,6 +19,16 @@
                 <action name="build">
                     <target>release</target>
                 </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>release</target>
+                </action>
+                <action name="javadoc">
+                    <target>javadoc</target>
+                </action>
             </ide-actions>
             <view>
                 <items>
@@ -32,6 +42,13 @@
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="javadoc"/>
+                    <action>
+                        <label>Run Server</label>
+                        <target>run-server</target>
+                    </action>
                 </context-menu>
             </view>
             <subprojects/>
