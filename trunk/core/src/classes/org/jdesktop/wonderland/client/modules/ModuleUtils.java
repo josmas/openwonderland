@@ -126,6 +126,31 @@ public class ModuleUtils {
             return null;
         }
     }
+
+    /**
+     * Asks the web server for the module's checksum information given the
+     * unique name of the module and a particular asset type, returns null if
+     * the module does not exist or upon some general I/O error.
+     * 
+     * @param serverURL The base web server URL
+     * @param moduleName The unique name of a module
+     * @param assetType The name of the asset type (art, audio, client, etc.)
+     * @return The checksum information for a module
+     */
+    public static ModuleChecksums fetchAssetChecksums(String serverURL,
+            String moduleName, String assetType) {
+        
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            String uriPart = moduleName + "/checksums/get/" + assetType;
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + uriPart);
+            return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
+        } catch (java.lang.Exception excp) {
+            /* Log an error and return null */
+            logger.log(Level.WARNING, "[MODULES] FETCH CHECKSUMS Failed", excp);
+            return null;
+        }
+    }
     
     /**
      * Asks the web server for the module's plugin jar information that is
