@@ -19,22 +19,22 @@ package org.jdesktop.wonderland.webserver;
 
 import com.sun.enterprise.deployment.archivist.WebArchivist;
 import com.sun.enterprise.web.WebDeployer;
+import org.jdesktop.wonderland.utils.AppServerMonitor;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
 import com.sun.hk2.component.InhabitantsParser;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -55,6 +55,7 @@ import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleAttributes;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.modules.service.ModuleManager.TaggedModule;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.utils.FileListUtil;
@@ -88,11 +89,8 @@ public class RunAppServer {
         if (Boolean.parseBoolean(
                 System.getProperty(Constants.WEBSERVER_NEWVERSION_PROP)))
         {
-            // remove old modules
-            uninstallModules();
-        
-            // install the default modules
-            installModules();
+            // replace old versions of modules with newer versions
+            updateModules();
             
             // write the web server's document root
             writeDocumentRoot();
@@ -101,11 +99,22 @@ public class RunAppServer {
             writeWebApps();
         }
 
-        // redeploy any other modules that haven't yet been deployed
-        ModuleManager.getModuleManager().redeployAll();
-        
-        // now deploy web apps
+        // deploy built-in web apps
         deployWebApps();
+
+        // mark the app server as started
+        getAppServer().setStarted(true);
+
+        // redeploy any other modules, including web modules,
+        // that haven't yet been deployed
+        ModuleManager.getModuleManager().redeployAll();
+
+        // install any modules that weren't already installed
+        ModuleManager.getModuleManager().installAll();
+
+        // now that all the modules are deployed, notify anyone waiting
+        // for startup
+        AppServerMonitor.getInstance().fireStartupComplete();
     }
 
     private void deployWebApps() throws IOException {
@@ -179,66 +188,118 @@ public class RunAppServer {
         RunUtil.extract(getClass(), "/META-INF/deploy/files.list", deployDir);
     }
 
-    private void uninstallModules() throws IOException {
+    /**
+     * Update any system-installed module to be the latest version from
+     * the Wonderland.jar file.
+     * @throws IOException if there is an error reading or writing modules
+     */
+    private void updateModules() throws IOException {
         ModuleManager mm = ModuleManager.getModuleManager();
-        Map<String, Module> system = 
-                mm.getInstalledModulesByKey(ModuleAttributes.SYSTEM_MODULE);
-        Map<String, String> checksums =
-                FileListUtil.readChecksums("META-INF/modules");
 
-        logger.warning("Uninstalling " + system.size() + " modules.");
-        
-        // add to the list of modules to uninstall
-        mm.addToUninstall(system.keySet());
-        
-        // actually uninstall all modules on the uninstall list
-        mm.uninstallAll();
-    }
-    
-    private void installModules() throws IOException {
-        // extract modules to a directory, and make a list of the extracted
-        // modules
+        // create the directory to extract modules to, if it doesn't already
+        // exist
         File moduleDir = RunUtil.createTempDir("module", ".jar");
 
-        // build a collection of File object that we want to add
-        Collection<File> modules = new ArrayList<File>();
-
+        // read the list of modules and their checksums from the jar file
         Map<String, String> checksums =
                 FileListUtil.readChecksums("META-INF/modules");
-        for (String file : checksums.keySet()) {
-            String fullPath = "/modules/" + file;
-            modules.add(RunUtil.extract(getClass(), fullPath, moduleDir));
+
+        // get the list of all installed module with the "system-installed"
+        // key set.  This is set on all modules installed by the system
+        Map<String, Module> installed =
+                mm.getInstalledModulesByKey(ModuleAttributes.SYSTEM_MODULE);
+
+        // get the checksum of any module that has a checksum.  As a
+        // side-effect, any module with a checksum is removed from the
+        // list of installed modules, so that list can be used to decide
+        // which modules to uninstall
+        Map<String, String> installedChecksums = getChecksums(installed);
+
+        // add all modules remaining in the installed list to the
+        // uninstall list.  These are modules that were installed by an
+        // old version of Wonderland and do not have a filename or
+        // checksum attribute set.
+        Collection<String> uninstall = new ArrayList<String>(installed.keySet());
+
+        // now go through the checksums of old and new modules to determine
+        // which modules need to be installed and which are unchanged
+        List<TaggedModule> install = new ArrayList<TaggedModule>();
+        for (Map.Entry<String, String> checksum : checksums.entrySet()) {
+
+            // compare an existing checksum to an old checksum. If the
+            // old checksum doesn't exist or is different than the new
+            // checksum, install the new file.  This will overwrite the old
+            // checksum in the process.
+            String installedChecksum = installedChecksums.remove(checksum.getKey());
+            if (installedChecksum == null ||
+                    !installedChecksum.equals(checksum.getValue()))
+            {
+                install.add(createTaggedModule(checksum.getKey(),
+                                               checksum.getValue(),
+                                               moduleDir));
+            }
         }
 
-        // add all modules at once to the module manager.  This will ensure
-        // that dependency checks take all modules into account. This can also
-        // check return values.
-        Collection<Module> added = ModuleManager.getModuleManager().addToInstall(modules);
-        
-        // now go through each module we added, and tag it with the 
-        // system module metadata tag so we can be sure it gets removed
-        // next time we install the jar
-        for (Module m : added) {
-            tagModule(m);
+        // any modules not removed from the installedChecksums list are
+        // old modules that were installed by a previous version of Wonderland
+        // (not by the user) and aren't in the new module list.  We need to
+        // remove these modules
+        uninstall.addAll(installedChecksums.keySet());
+
+        // uninstall any modules on the uninstall list
+        logger.warning("Uninstall: " + uninstall);
+        mm.addToUninstall(uninstall);
+        mm.uninstallAll();
+
+        // install any modules on the install list
+        String installList = "";
+        for (TaggedModule tm : install) {
+            installList += " " + tm.getFile().getName();
         }
+        logger.warning("Install: " + installList);
+        mm.addTaggedToInstall(install);
     }
-    
-    private void tagModule(Module m) throws IOException {
-        try {
-            File infoFile = new File(m.getFile(), Module.MODULE_INFO);
-            ModuleInfo info = ModuleInfo.decode(new FileReader(infoFile));
-            info.putAttribute(ModuleAttributes.SYSTEM_MODULE,
-                              String.valueOf(true));
-            info.encode(new FileWriter(infoFile));
-        } catch (JAXBException je) {
-            IOException ioe = new IOException("Error writing module info");
-            ioe.initCause(je);
-            throw ioe;
+
+    private Map<String, String> getChecksums(Map<String, Module> modules) {
+        Map<String, String> out = new HashMap<String, String>();
+
+        for (Iterator<Module> i = modules.values().iterator(); i.hasNext();) {
+            ModuleInfo info = i.next().getInfo();
+            String filename = info.getAttribute(ModuleAttributes.FILENAME);
+            String checksum = info.getAttribute(ModuleAttributes.CHECKSUM);
+
+            if (filename != null) {
+                // add to the list of files with checksums
+                out.put(filename, checksum);
+
+                // remove from the installed list
+                i.remove();
+            }
         }
+
+        return out;
     }
-    
+
+    private TaggedModule createTaggedModule(String file, String checksum,
+                                            File moduleDir)
+        throws IOException
+    {
+        // extract the file
+        String fullPath = "/modules/" + file;
+        File extracted = RunUtil.extract(getClass(), fullPath, moduleDir);
+
+        // now generate the attributes
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put(ModuleAttributes.SYSTEM_MODULE, String.valueOf(true));
+        attributes.put(ModuleAttributes.FILENAME, file);
+        attributes.put(ModuleAttributes.CHECKSUM, checksum);
+
+        // create the tagged module
+        return new TaggedModule(extracted, attributes);
+    }
+
     // get the main instance
-    public synchronized static WonderlandAppServer getAppServer() {
+    synchronized static WonderlandAppServer getAppServer() {
         if (appServer == null) {
             appServer = new WonderlandAppServer(port);
         }
@@ -247,10 +308,20 @@ public class RunAppServer {
     }
     
     static class WonderlandAppServer extends AppServer {
+        private boolean started = false;
+
         public WonderlandAppServer(int port) {
             super (port);
         }
-        
+
+        public synchronized boolean isStarted() {
+            return started;
+        }
+
+        synchronized void setStarted(boolean started) {
+            this.started = started;
+        }
+
         public Habitat getHabitat() {
             return habitat;
         }

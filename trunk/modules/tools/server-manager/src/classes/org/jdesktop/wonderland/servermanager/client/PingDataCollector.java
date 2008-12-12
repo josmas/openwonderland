@@ -45,6 +45,7 @@ import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
 import org.jdesktop.wonderland.runner.darkstar.DarkstarRunner;
 import org.jdesktop.wonderland.runner.RunManager;
+import org.jdesktop.wonderland.runner.RunManager.RunnerListener;
 import org.jdesktop.wonderland.runner.Runner;
 import org.jdesktop.wonderland.runner.Runner.RunnerStatusListener;
 import org.jdesktop.wonderland.runner.Runner.Status;
@@ -54,7 +55,8 @@ import org.jdesktop.wonderland.runner.Runner.Status;
  * @author jkaplan
  */
 public class PingDataCollector 
-        implements PingListener, RunnerStatusListener, SessionStatusListener 
+        implements PingListener, RunnerListener,
+                   RunnerStatusListener, SessionStatusListener
 {
     private Logger logger =
             Logger.getLogger(PingDataCollector.class.getName());
@@ -74,14 +76,15 @@ public class PingDataCollector
     public PingDataCollector() {
         LoginManager.setLoginUI(new ServerManagerLoginUI());
         LoginManager.setPluginFilter(new PluginFilter.NoPluginFilter());
-        
-        Collection<DarkstarRunner> runners = 
+
+        // listen for runners
+        RunManager.getInstance().addRunnerListener(this);
+
+        // if any runners already exist, add them
+        Collection<DarkstarRunner> runners =
                 RunManager.getInstance().getAll(DarkstarRunner.class);
         for (DarkstarRunner dr : runners) {
-            Status status = dr.addStatusListener(this);
-            if (status == Status.RUNNING) {
-                connectTo(dr);
-            }
+            runnerAdded(dr);
         }
     }
 
@@ -219,6 +222,9 @@ public class PingDataCollector
      * Shut down the collector and remove all registered listeners
      */
     public synchronized void shutdown() {
+        // remove runner listener
+        RunManager.getInstance().removeRunnerListener(this);
+
         // remove status listeners
         Collection<DarkstarRunner> runners = 
                 RunManager.getInstance().getAll(DarkstarRunner.class);
@@ -231,7 +237,18 @@ public class PingDataCollector
             session.logout();
         }
     }
-    
+
+    public void runnerAdded(Runner runner) {
+        if (!(runner instanceof DarkstarRunner)) {
+            return;
+        }
+
+        Status status = runner.addStatusListener(this);
+        if (status == Status.RUNNING) {
+            connectTo((DarkstarRunner) runner);
+        }
+    }
+
     // connect to a server
     protected void connectTo(DarkstarRunner dr) {
         // TODO: connect to a particular Darkstar server
@@ -268,6 +285,14 @@ public class PingDataCollector
             logger.log(Level.WARNING, "Error logging in to server " +
                        ServerInfo.getServerURL(), ioe);
         }
+    }
+
+    public void runnerRemoved(Runner runner) {
+        if (!(runner instanceof DarkstarRunner)) {
+            return;
+        }
+
+        disconnectFrom((DarkstarRunner) runner);
     }
     
     // disconnect from the server

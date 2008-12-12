@@ -63,10 +63,10 @@ public class WebDeployer implements ModuleDeployerSPI {
     }
 
     /**
-     * Web modules are always deployable
+     * Web modules are always deployable if the server is running
      */
     public boolean isDeployable(String type, Module module, ModulePart part) {
-        return true;
+        return RunAppServer.getAppServer().isStarted();
     }
 
     /**

@@ -28,7 +28,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.utils.AppServerMonitor;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.FileListUtil;
 import org.jdesktop.wonderland.utils.RunUtil;
@@ -70,7 +74,10 @@ public class RunManager {
     
     /** the set of runners we manage, index by name */
     private Map<String, Runner> runners = new LinkedHashMap<String, Runner>();
-    
+
+    /** runner listeners */
+    private Set<RunnerListener> listeners = new CopyOnWriteArraySet<RunnerListener>();
+
     /**
      * Get the singleton instance
      */
@@ -97,6 +104,32 @@ public class RunManager {
      * runners.
      */
     public void initialize() throws RunnerException {
+        // before we start everything up, we need to make sure the web
+        // server startup is complete. Until then, there may be modules needed
+        // by the various runners that aren't installed yet.
+        // If the startup is not complete, register a listener that will be
+        // notified when the server startup is complete
+        
+        if (AppServerMonitor.getInstance().isStartupComplete()) {
+            doInit();
+        } else {
+            AppServerMonitor.getInstance().addListener(
+                    new AppServerMonitor.AppServerStartupListener()
+            {
+                public void startupComplete() {
+                    try {
+                        doInit();
+                    } catch (RunnerException re) {
+                        logger.log(Level.WARNING, "Error during initialization",
+                                   re);
+                    }
+                }
+            });
+        }
+    }
+
+    protected void doInit() throws RunnerException {
+
         logger.info("[RunManager] Starting all apps");
 
         boolean overwrite = Boolean.parseBoolean(
@@ -175,11 +208,19 @@ public class RunManager {
      * @throws IOException if there is an error adding the runner or
      * deploying zips to it.
      */
-    public synchronized Runner add(Runner runner) throws IOException {
-        // deploy to this runner
-        deployTo(runner);
+    public Runner add(Runner runner) throws IOException {
+        synchronized (this) {
+            // deploy to this runner
+            deployTo(runner);
         
-        runners.put(runner.getName(), runner);
+            runners.put(runner.getName(), runner);
+        }
+
+        // notify listeners
+        for (RunnerListener rl : listeners) {
+            rl.runnerAdded(runner);
+        }
+
         return runner;
     }
     
@@ -226,9 +267,22 @@ public class RunManager {
      * @param name the name of the runner to remove
      * @return the removed runner, or null if the runner isn't found
      */
-    public synchronized Runner remove(String name) {
-        return runners.remove(name);
-    } 
+    public Runner remove(String name) {
+        Runner runner;
+
+        synchronized (this) {
+            runner = runners.remove(name);
+        }
+
+        if (runner != null) {
+            // notify listeners
+            for (RunnerListener rl : listeners) {
+                rl.runnerRemoved(runner);
+            }
+        }
+        
+        return runner;
+    }
 
     /**
      * Start the given runner.
@@ -311,6 +365,22 @@ public class RunManager {
         } else {
             return runner.getDefaultProperties();
         }
+    }
+
+    /**
+     * Add a listener
+     * @param listener the listener to add
+     */
+    public void addRunnerListener(RunnerListener rl) {
+        listeners.add(rl);
+    }
+
+    /**
+     * Remove a listener
+     * @param listener the listener to remove
+     */
+    public void removeRunnerListener(RunnerListener rl) {
+        listeners.remove(rl);
     }
 
     /**
@@ -415,5 +485,22 @@ public class RunManager {
         }
 
         return false;
+    }
+
+    /**
+     * A listener that will be notified when runners are added or removed
+     */
+    public interface RunnerListener {
+        /**
+         * Called when a runner is added
+         * @param runner the runner that was added
+         */
+        public void runnerAdded(Runner runner);
+
+        /**
+         * Called when a runner is removed
+         * @param runner the runner that was removed
+         */
+        public void runnerRemoved(Runner runner);
     }
 }

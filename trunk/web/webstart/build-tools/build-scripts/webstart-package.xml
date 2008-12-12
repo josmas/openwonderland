@@ -8,7 +8,7 @@
                                               -webstart-update-jnlp, 
                                               -webstart-sign-jars"/>
                                     
-    <target name="-webstart-setup">                               
+    <target name="-webstart-setup" depends="-setup-pack200">
         <!-- create the app dir -->
         <mkdir dir="${webstart.dist.dir}"/>
     </target>
