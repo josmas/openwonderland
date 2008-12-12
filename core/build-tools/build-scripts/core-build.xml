@@ -62,7 +62,6 @@
         <wl-compile>
             <compile-classes>
                 <include name="org/jdesktop/wonderland/server/**"/>
-                <include name="org/jdesktop/wonderland/wfs/**"/>
             </compile-classes>
             
             <compile-classpath>
@@ -90,7 +89,6 @@
         <jar compress="${jar.compress}" jarfile="${build.lib.dir}/wonderland-server.jar">
             <fileset dir="${build.classes.dir}">
 		<include name="org/jdesktop/wonderland/server/**"/>
-                <include name="org/jdesktop/wonderland/wfs/**"/>
 	    </fileset>
         </jar>
     </target>
