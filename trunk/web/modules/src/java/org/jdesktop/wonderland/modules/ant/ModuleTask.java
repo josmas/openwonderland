@@ -109,6 +109,10 @@ public class ModuleTask extends Jar {
         addConfiguredPart(art);
     }
 
+    public void addConfiguredAudio(AudioPart audio) {
+        addConfiguredPart(audio);
+    }
+        
     public void addConfiguredHelp(HelpPart help) {
         addConfiguredPart(help);
     }
@@ -437,7 +441,13 @@ public class ModuleTask extends Jar {
             super ("art");
         }
     }
-    
+ 
+    public static class AudioPart extends ModulePart {
+        public AudioPart() {
+            super ("audio");
+        }
+    }
+        
     public static class WFSPart extends ModulePart {
         public WFSPart() {
             super ("wfs");
