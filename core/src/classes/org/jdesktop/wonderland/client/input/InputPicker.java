@@ -338,7 +338,12 @@ public abstract class InputPicker {
 		// interface we cannot do any further propagation of the event to parents or unders.
 		logger.fine("Hit windowswing");
 		generateSwingEnterExitEvents(entity);
-		return new InputManager.PickEventReturn(entity, pickDetails);
+		if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null &&
+		    idx < hitPickInfo.size()) {
+		    return new InputManager.PickEventReturn(entity, pickDetails, hitPickInfo.get(idx));
+		} else {
+		    return new InputManager.PickEventReturn(entity, pickDetails, null);
+		}
 	    }
 
 	    if (propagatesToUnder) {

@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.appbase.client.swing;
 
 import com.jme.math.Vector3f;
 import java.awt.Component;
-import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import javax.swing.JComponent;
@@ -31,16 +30,16 @@ import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 
 /**
- * The main interface to Embedded Swing. This class provides access to the three basic capabilities
+ * The main interface to Embedded Swing. This singleton provides access to the three basic capabilities
  * of Embedded Swing.
  * <br><br>
  * 1. Component embedding for the purpose of drawing.
@@ -78,7 +77,7 @@ class WindowSwingEmbeddedToolkit
 	e.translatePoint(canvasPoint.x - framePoint.x, canvasPoint.y - framePoint.y);
 
 	InputManager.PickEventReturn ret = InputManager.inputManager().pickMouseEventSwing(e);
-	if (ret == null || ret.entity == null || ret.pickDetails == null) {
+	if (ret == null || ret.entity == null || ret.destPickDetails == null) {
 	    logger.fine("WindowSwing miss");
 	    e.translatePoint(-(canvasPoint.x - framePoint.x), -(canvasPoint.y - framePoint.y));
 	    return null;
@@ -91,26 +90,31 @@ class WindowSwingEmbeddedToolkit
 	final WindowSwing windowSwing = ((WindowSwing.WindowSwingReference)comp).getWindowSwing();
 	assert windowSwing != null;
 
-	final Vector3f intersectionPointWorld = ret.pickDetails.getPosition();
+	final Vector3f intersectionPointWorld;
+	if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
+	    if (ret.hitPickDetails != null) {
+		intersectionPointWorld = ret.hitPickDetails.getPosition();
+	    } else {
+		intersectionPointWorld = null;
+	    }
+	} else {
+	    intersectionPointWorld = ret.destPickDetails.getPosition();
+	}
 	logger.fine("intersectionPointWorld = " + intersectionPointWorld);
 
         final EmbeddedPeer targetEmbeddedPeer = windowSwing.getEmbeddedPeer();
         CoordinateHandler coordinateHandler = new CoordinateHandler() {
+            		
             public EmbeddedPeer getEmbeddedPeer() {
                 return targetEmbeddedPeer;
             }
 
             public Point2D transform(Point2D src, Point2D dst) {
-		Point pt = windowSwing.calcWorldPositionInPixelCoordinates(intersectionPointWorld);
+		Point pt = windowSwing.calcWorldPositionInPixelCoordinates(intersectionPointWorld, true);
 		logger.fine("pt = " + pt);
 
 		if (dst == null) {
 		    dst = new Point2D.Double();
-		}
-		
-		if (pt == null) {
-		    logger.warning("Event world point is outside window bounds");
-		    return dst;
 		}
 
 		// TODO: for now
@@ -127,7 +131,6 @@ class WindowSwingEmbeddedToolkit
     @Override
     // Note: peer should be the owning WindowSwing.embeddedPeer	
     public Popup getPopup(EmbeddedPeer peer, Component contents, int x, int y) {
-	System.err.println("getPopup: xy = " + x + ", " + y);
 
 	int width = (int) contents.getPreferredSize().getWidth();
 	int height = (int) contents.getPreferredSize().getHeight();
@@ -222,9 +225,6 @@ of the cell.
     
     static class WindowSwingEmbeddedPeer extends EmbeddedPeer {
 
-	// TODO: painter thread is now obsolete. Remove
-	private static PainterThread painterThread;
-
 	WindowSwingEmbeddedToolkit toolkit;
 
         private WindowSwing windowSwing = null;
@@ -232,26 +232,22 @@ of the cell.
         protected WindowSwingEmbeddedPeer(JComponent parent, Component embedded, WindowSwingEmbeddedToolkit toolkit) {
             super(parent, embedded);
 	    this.toolkit = toolkit;
-
-	    //painterThread = new PainterThread();
-	    //painterThread.start();
         }
 
 	void repaint () {
-	    // TODO: for now
-	    repaint(0, 0, 0, 0);
+            Component embedded = getEmbeddedComponent();
+	    repaint(embedded.getX(), embedded.getY(), embedded.getWidth(), embedded.getHeight());
 	}
 
         @Override
 	public void repaint(int x, int y, int width, int height) {
-
             if (windowSwing == null) {
                 return;
             }
 
-	    paintOnWindow(windowSwing);
+	    //System.err.println("repaint xywh = " + x + ", " + y + ", " + width + ", " + height);
 
-  	    /* TODO: if I do this it needs to be in the painter thread
+	    // Clip the dirty region to the component
             Component embedded = getEmbeddedComponent();
             int compX0 = embedded.getX();
             int compY0 = embedded.getY();
@@ -261,17 +257,12 @@ of the cell.
             int y0 = Math.max(y, compY0);
             int x1 = Math.min(x + width, compX1);
             int y1 = Math.min(y + height, compY1);
-            
-            if (x0 == compX0 && y0 == compY0
-                    && x1 == compX1 && y1 == compY1) {
-		// TODO: windowSwing
-                sgComponent.repaint(false);
-            } else if (x1 > x0 && y1 > y0){
-		// TODO: windowSwing
-                sgComponent.repaint(
-                        new Rectangle2D.Float(x0, y0, x1 - x0, y1 - y0));
-            }
-	    */
+	    x = x0;
+	    y = y0;
+	    width = x1 - x0;
+	    height = y1 - y0;
+
+	    paintOnWindow(windowSwing, x, y, width, height);
         }
 
         void setWindowSwing(WindowSwing windowSwing) {
@@ -288,63 +279,31 @@ of the cell.
     
         @Override
         protected void sizeChanged(Dimension oldSize, Dimension newSize) {
-	    /* TODO
-            if (getSGComponent() != null) {
-                getSGComponent().repaint(true);
-            }
-	    */
+	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Size changed");
+	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> oldSize = " + oldSize);
+	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> newSize = " + newSize);
+	    windowSwing.setSize(newSize.width, newSize.height);
         }
 
-	private void paintOnWindow (final WindowSwing window) {
+	private void paintOnWindow (final WindowSwing window,
+				    final int x, final int y, final int width, final int height) {
+
+	    final EmbeddedPeer embeddedPeer = this;
 
 	    EventQueue.invokeLater(new Runnable () {
 		public void run () {
 		    DrawingSurface drawingSurface = window.getSurface();
-		    Graphics2D gDst = drawingSurface.getGraphics();
-		    paint(gDst);
+		    final DrawingSurfaceBufferedImage.DirtyTrackingGraphics gDst = 
+			(DrawingSurfaceBufferedImage.DirtyTrackingGraphics) drawingSurface.getGraphics();
+		    gDst.setClip(x, y, width, height);
+		    gDst.executeAtomic(new Runnable () {
+			public void run () {
+			    embeddedPeer.paint(gDst);
+			    gDst.addDirtyRectangle(x, y, width, height);
+			}
+		    });
 		}
 	    });
-
-	    //painterThread.enqueuePaint(this, window);
-	}
-
-	private static class PainterThread extends Thread {
-
-	    private static final Logger logger = Logger.getLogger(PainterThread.class.getName());
-
-	    private static class PaintRequest {
-		private WindowSwingEmbeddedPeer embeddedPeer;
-		private WindowSwing window;
-		private PaintRequest (WindowSwingEmbeddedPeer embeddedPeer, WindowSwing window) {
-		    this.embeddedPeer = embeddedPeer;
-		    this.window = window;
-		}
-	    }
-
-	    private LinkedBlockingQueue<PaintRequest> queue = new LinkedBlockingQueue<PaintRequest>();
-
-	    private PainterThread () {
-		super("WindowSwingEmbeddedPeer-PainterThread");
-	    }
-
-	    private void enqueuePaint (WindowSwingEmbeddedPeer embeddedPeer, WindowSwing window) {
-		queue.add(new PaintRequest(embeddedPeer, window));
-	    }
-
-	    public void run () {
-		while (true) {
-		    try {
-			PaintRequest request = null;
-			request = queue.take();
-			DrawingSurface drawingSurface = request.window.getSurface();
-			Graphics2D gDst = drawingSurface.getGraphics();
-			request.embeddedPeer.paint(gDst);
-		    } catch (Exception ex) {
-			ex.printStackTrace();
-			logger.warning("Exception caught in WindowSwingEmbeddedToolkit Painter Thread.");
-		    }
-		}
-	    }
 	}
     }
 }
