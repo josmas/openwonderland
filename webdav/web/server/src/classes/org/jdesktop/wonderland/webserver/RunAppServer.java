@@ -106,11 +106,9 @@ public class RunAppServer {
         getAppServer().setStarted(true);
 
         // redeploy any other modules, including web modules,
-        // that haven't yet been deployed
+        // that haven't yet been deployed.  This will also
+        // install all pending modules
         ModuleManager.getModuleManager().redeployAll();
-
-        // install any modules that weren't already installed
-        ModuleManager.getModuleManager().installAll();
 
         // now that all the modules are deployed, notify anyone waiting
         // for startup
@@ -249,8 +247,7 @@ public class RunAppServer {
         // uninstall any modules on the uninstall list
         logger.warning("Uninstall: " + uninstall);
         mm.addToUninstall(uninstall);
-        mm.uninstallAll();
-
+        
         // install any modules on the install list
         String installList = "";
         for (TaggedModule tm : install) {
