@@ -441,6 +441,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      */
     public abstract class ViewGeometryObject extends Node {
 
+	private Point lastPosition = null;
+
 	/** The view for which the geometry object was created. */
 	protected ViewWorldDefault view;
 
@@ -481,11 +483,27 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	/** 
 	 * The view's texture may have changed. You should get the view's
 	 * texture and make your geometry display it.
+	 *
 	 */
 	public abstract void updateTexture ();
 
-	public Point calcPositionInPixelCoordinates (Vector3f point) {
-	    if (point == null) return null;
+	/**
+	 * Transform the given 3D point in local coordinates into the corresponding point
+	 * in the texel space of the geometry. The given point must be in the plane of the window.
+	 * @param point The point to transform.
+	 * @param clamp If true return the last position if the argument point is null or the resulting
+	 * position is outside of the geometry's rectangle. Otherwise, return null if these conditions hold.
+	 * @return the 2D position of the pixel space the window's image.
+	 */
+	public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp) {
+	    if (point == null) {
+		if (clamp) {
+		    return lastPosition;
+		} else {
+		    lastPosition = null;
+		    return null;
+		}
+	    }
 	    logger.fine("point = " + point);
 
 	    // First calculate the actual coordinates of the corners of the view in world coords.
@@ -526,9 +544,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    logger.fine("y pct = " + y);
 
 	    // Assumes window is never scaled
-	    if (x < 0 || x >= 1 || y < 0 || y >= 1) {
-		logger.fine("Outside!");
-		return null;
+	    if (clamp) {
+		if (x < 0 || x >= 1 || y < 0 || y >= 1) {
+		    logger.fine("Outside!");
+		    return lastPosition;
+		}
 	    }
         
 	    int winWidth = ((Window2D)window).getWidth();
@@ -537,7 +557,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	    logger.fine("winHeight = " + winHeight);
 
 	    logger.fine("Final xy " + (int)(x * winWidth) + ", "+ (int)(y * winHeight));
-	    return new Point((int)(x * winWidth), (int)(y * winHeight));
+	    lastPosition = new Point((int)(x * winWidth), (int)(y * winHeight));
+	    return lastPosition;
 	}
 
 	/**
@@ -696,9 +717,9 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public Point calcPositionInPixelCoordinates (Vector3f point) {
+    public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp) {
 	if (geometryObj == null) return null;
-	return geometryObj.calcPositionInPixelCoordinates(point);
+	return geometryObj.calcPositionInPixelCoordinates(point, clamp);
     }
 
     /**
@@ -764,14 +785,13 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	Point point;
 	if (me3d.getID() == MouseEvent.MOUSE_DRAGGED) {
 	    MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) me3d;
-	    point = geometryObj.calcPositionInPixelCoordinates(de3d.getHitIntersectionPointWorld());
+	    point = geometryObj.calcPositionInPixelCoordinates(de3d.getHitIntersectionPointWorld(), true);
 	} else {
-	    point = geometryObj.calcPositionInPixelCoordinates(me3d.getIntersectionPointWorld());
+	    point = geometryObj.calcPositionInPixelCoordinates(me3d.getIntersectionPointWorld(), false);
 	}
 	if (point == null) {
             // Event was outside our panel so do nothing
             // This can happen for drag events
-            // TODO fix so that drags continue in the plane of the panel
 	    return;
 	}
 

@@ -499,13 +499,17 @@ public abstract class InputManager
 	/** The pick hit entity. */
 	public Entity entity;
 
-	/** One level of pick information for what is immediately under the event in eye space **/
-	public PickDetails pickDetails;
+	/** Pick details for the destination input sensitive object. **/
+	public PickDetails destPickDetails;
+
+	/** Pick details for the hit input sensitive object. **/
+	public PickDetails hitPickDetails;
 
 	/** Constructs a new instance of PickEventReturn */
-	public PickEventReturn (Entity entity, PickDetails pickDetails) {
+	public PickEventReturn (Entity entity, PickDetails destPickDetails, PickDetails hitPickDetails) {
 	    this.entity = entity;
-	    this.pickDetails = pickDetails;
+	    this.destPickDetails = destPickDetails;
+	    this.hitPickDetails = hitPickDetails;
 	}
     }    
 
