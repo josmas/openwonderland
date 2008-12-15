@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.webdav.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
@@ -37,6 +38,10 @@ public class WebdavContentResource extends WebdavContentNode
 
     public long getSize() {
         return getResource().getGetContentLength();
+    }
+
+    public Date getLastModified() {
+        return new Date(getResource().getGetLastModified());
     }
 
     public InputStream getInputStream() throws ContentRepositoryException {

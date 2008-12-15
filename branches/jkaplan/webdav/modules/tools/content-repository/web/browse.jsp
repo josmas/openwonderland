@@ -14,7 +14,7 @@
     <head>
         <title>Project Wonderland Content Repository Browser</title>
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-        <link href="repobrowser.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="${pageContext.servletContext.contextPath}/repobrowser.css" rel="stylesheet" type="text/css" media="screen" />
     </head>
     <body>
         <c:set var="current" value="${requestScope['current']}"/>

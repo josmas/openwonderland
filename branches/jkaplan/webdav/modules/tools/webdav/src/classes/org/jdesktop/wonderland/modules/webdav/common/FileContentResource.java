@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.Date;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 
@@ -38,6 +39,10 @@ public class FileContentResource extends FileContentNode
 
     public long getSize() {
         return getFile().length();
+    }
+
+    public Date getLastModified() {
+        return new Date(getFile().lastModified());
     }
 
     public FileInputStream getInputStream() throws ContentRepositoryException {

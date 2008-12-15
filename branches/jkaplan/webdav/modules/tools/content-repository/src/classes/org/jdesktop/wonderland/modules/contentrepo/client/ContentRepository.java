@@ -32,6 +32,13 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
  */
 public interface ContentRepository {
     /**
+     * Get the root of the repository, typically the parent of the system
+     * and user roots.
+     * @return the root
+     */
+    public ContentCollection getRoot() throws ContentRepositoryException;
+
+    /**
      * Get the root of the system content tree
      * @return the system root resource
      */

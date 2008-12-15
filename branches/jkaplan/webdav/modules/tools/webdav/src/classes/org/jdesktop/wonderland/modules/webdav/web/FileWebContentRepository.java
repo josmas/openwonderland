@@ -42,6 +42,10 @@ public class FileWebContentRepository implements WebContentRepository {
         };
     }
 
+    public FileContentCollection getRoot() {
+        return rootCollection;
+    }
+
     public FileContentCollection getSystemRoot() throws ContentRepositoryException {
         return (FileContentCollection) rootCollection.getChild("system");
     }

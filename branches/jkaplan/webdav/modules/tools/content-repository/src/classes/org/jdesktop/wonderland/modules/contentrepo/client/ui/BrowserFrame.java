@@ -16,6 +16,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
@@ -151,7 +152,9 @@ public class BrowserFrame extends javax.swing.JFrame {
 
             typeLabel.setText("File");
             sizeLabel.setText(String.valueOf(r.getSize()));
-            modifiedLabel.setText("");
+            
+            DateFormat df = DateFormat.getDateInstance();
+            modifiedLabel.setText(df.format(r.getLastModified()));
 
             enableDownload = true;
             enableDelete = true;

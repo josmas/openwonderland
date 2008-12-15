@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.contentrepo.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 /**
  * A leaf node in the content structure.  Resources have properties and
@@ -32,6 +33,13 @@ public interface ContentResource extends ContentNode {
      * @return the file size of this resource, or -1 if the size isn't known
      */
     public long getSize();
+
+    /**
+     * Get the time this file was last modified.
+     * @return the file's last modification time, in standard Java
+     * Date format
+     */
+    public Date getLastModified();
 
     /**
      * Get the content of this resource as an input stream.

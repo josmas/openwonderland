@@ -40,6 +40,10 @@ public class WebdavContentRepository implements ContentRepository {
         this.userId = userId;
     }
 
+    public WebdavContentCollection getRoot() {
+        return root;
+    }
+
     public WebdavContentCollection getSystemRoot()
             throws ContentRepositoryException
     {
