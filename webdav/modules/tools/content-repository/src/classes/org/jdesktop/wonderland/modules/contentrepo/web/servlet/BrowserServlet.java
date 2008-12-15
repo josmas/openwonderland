@@ -16,6 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +26,7 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.jdesktop.wonderland.front.admin.AdminRegistration;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
@@ -36,9 +39,13 @@ import org.jdesktop.wonderland.utils.RunUtil;
  *
  * @author jkaplan
  */
-public class BrowserServlet extends HttpServlet {
+public class BrowserServlet extends HttpServlet
+        implements ServletContextListener
+{
     private static final Logger logger =
             Logger.getLogger(BrowserServlet.class.getName());
+
+    private AdminRegistration ar;
 
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -65,7 +72,7 @@ public class BrowserServlet extends HttpServlet {
             ContentNode node = translatePath(wcr, request.getPathInfo());
             if (node == null) {
                 error(request, response, "Path " + request.getPathInfo() +
-                      "not found.");
+                      " not found.");
                 return;
             }
 
@@ -114,24 +121,33 @@ public class BrowserServlet extends HttpServlet {
         // find the root (system or users)
         ContentCollection root = null;
 
-        if (path.startsWith("/system")) {
+        if (path == null || path.equals("/")) {
+            root = wcr.getRoot();
+        } else if (path.startsWith("/system")) {
             path = path.substring("/system".length());
             root = wcr.getSystemRoot();
         } else if (path.startsWith("/users/")) {
             path = path.substring("/users/".length());
+            String userId = path;
+
             int endIdx = path.indexOf("/");
-            if (endIdx > 0) {
-                String userId = path.substring(0, endIdx - 1);
+            if (endIdx != -1) {
+                userId = path.substring(0, endIdx);
                 path = path.substring(endIdx);
-                root = wcr.getUserRoot(userId);
+            } else {
+                path = null;
             }
+
+            root = wcr.getUserRoot(userId);
+        } else {
+            root = wcr.getRoot();
         }
 
         if (root == null) {
             return null;
         }
 
-        if (path.length() == 0 || path.equals("/")) {
+        if (path == null || path.length() == 0 || path.equals("/")) {
             return root;
         }
 
@@ -343,6 +359,20 @@ public class BrowserServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    public void contextInitialized(ServletContextEvent sce) {
+        // register with the admininstration page
+        ServletContext sc = sce.getServletContext();
+        ar = new AdminRegistration("Content Repository",
+                                   "/content-repository/wonderland-content-repository/browse");
+        AdminRegistration.register(ar, sc);
+    }
+
+    public void contextDestroyed(ServletContextEvent sce) {
+        // register with the admininstration page
+        ServletContext sc = sce.getServletContext();
+        AdminRegistration.unregister(ar, sc);
+    }
+
     public static class DirectoryEntry {
         public enum Type { FILE, DIRECTORY };
 
@@ -353,7 +383,11 @@ public class BrowserServlet extends HttpServlet {
 
         public DirectoryEntry(ContentNode node) {
             name = node.getName();
+
             path = node.getPath();
+            if (path.equals("")) {
+                path = "/";
+            }
 
             if (node instanceof ContentCollection) {
                 type = Type.FILE;
