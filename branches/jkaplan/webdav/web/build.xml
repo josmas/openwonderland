@@ -17,7 +17,6 @@
          directly, call the top level "package" target instead, since
          that will build everything that is needed. -->
     <target name="-package">
-        <ant dir="runner" target="package" inheritall="false"/>
         <ant dir="server" target="package" inheritall="false">
             <property name="server.package.dir" value="${server.package.dir}"/>
         </ant>

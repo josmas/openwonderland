@@ -93,8 +93,10 @@ public class RunnerUploadServlet extends HttpServlet {
                 String name = item.getFieldName();
                 InputStream stream = item.openStream();
                 if (item.isFormField() == false) {
-                    File uploaded = writeFile(name, stream);
-                    updateChecksums(name, uploaded);
+                    File tmp = File.createTempFile("runnerupload", "tmp");
+                    RunUtil.writeToFile(stream, tmp);
+                    RunManager.getInstance().addRunnerZip(name, tmp);
+                    tmp.delete();
                 }
             }
         } catch (FileUploadException excp) {
@@ -116,30 +118,6 @@ public class RunnerUploadServlet extends HttpServlet {
         /* If we have reached here, then post a simple message */
         logger.info("[Runner] UPLOAD Added runner files successfuly");
         writer.print("Runner file added successfully.");
-    }
-
-    protected File writeFile(String name, InputStream is)
-        throws IOException
-    {
-        File deployDir = new File(RunUtil.getRunDir(), RunManager.DEPLOY_DIR);
-        deployDir.mkdirs();
-
-        File outFile = new File(deployDir, name);
-        return RunUtil.writeToFile(is, outFile);
-    }
-
-    protected void updateChecksums(String name, File file)
-        throws IOException
-    {
-        File deployDir = new File(RunUtil.getRunDir(), RunManager.DEPLOY_DIR);
-        File fileListFile = new File(deployDir, "files.list");
-        Map<String, String> checksums = FileListUtil.readChecksums(fileListFile);
-
-        if (checksums.containsKey(name)) {
-            FileInputStream fis = new FileInputStream(file);
-            checksums.put(name, FileListUtil.generateChecksum(fis));
-            FileListUtil.writeChecksums(checksums, fileListFile);
-        }
     }
 
     /** 

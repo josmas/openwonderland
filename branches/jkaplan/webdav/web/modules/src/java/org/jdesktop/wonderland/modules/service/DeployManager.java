@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
@@ -259,7 +260,9 @@ public class DeployManager {
      */
     private Class[] getClasses() {
         Iterator<ModuleDeployerSPI> it = Service.providers(ModuleDeployerSPI.class);
-        Collection<Class> names = new HashSet<Class>();
+        
+        // use a linked hash set to preserve a static ordering
+        Collection<Class> names = new LinkedHashSet<Class>();
         while (it.hasNext() == true) {
             names.add(it.next().getClass());
         }

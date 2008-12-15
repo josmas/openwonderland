@@ -384,32 +384,110 @@ public class RunManager {
     }
 
     /**
+     * Write a file containing a runner zip
+     * @param name the name of the zip file
+     * @param data an input stream containing the data
+     */
+    public File addRunnerZip(final String name, final File file) throws IOException
+    {
+        return addRunnerZip(name, new ZipWriter() {
+            public String getChecksum() throws IOException {
+                return FileListUtil.generateChecksum(new FileInputStream(file));
+            }
+
+            public void writeTo(File dest) throws IOException {
+                RunUtil.writeToFile(new FileInputStream(file), dest);
+            }
+        });
+    }
+
+    /**
+     * Write a file containing a runner zip
+     * @param name the name of the zip file
+     * @param file the file to write
+     * @param checksum the checksum, or null to generate one
+     * @param writer the class that will write the runner zip
+     * @return the written zip file, or the existing zip file if there
+     * was no change
+     */
+    public File addRunnerZip(String name, ZipWriter writer)
+            throws IOException
+    {
+        File deployDir = new File(RunUtil.getRunDir(), RunManager.DEPLOY_DIR);
+        deployDir.mkdirs();
+
+        File outFile = new File(deployDir, name);
+
+        // read the checksums for the directory
+        File fileListFile = new File(deployDir, "files.list");
+        Map<String, String> checksums = FileListUtil.readChecksums(fileListFile);
+
+        // get the checksum for this file
+        String checksum = writer.getChecksum();
+        String existingChecksum = checksums.get(name);
+
+        if (existingChecksum == null || !checksum.equals(existingChecksum)) {
+            // write the file
+            writer.writeTo(outFile);
+
+            // update the checksums
+            checksums.put(name, checksum);
+            FileListUtil.writeChecksums(checksums, fileListFile);
+        }
+
+        return outFile;
+    }
+
+    /**
+     * Remove a file containing a runner zip
+     * @param name the name of the file to remove
+     */
+    public void removeRunnerZip(String name) throws IOException {
+        // remove the file
+        File deployDir = new File(RunUtil.getRunDir(), RunManager.DEPLOY_DIR);
+        File removeFile = new File(deployDir, name);
+        System.out.println("Remove: " + removeFile);
+
+        if (removeFile.exists()) {
+            removeFile.delete();
+        }
+
+        // update checksums
+        File fileListFile = new File(deployDir, "files.list");
+        Map<String, String> checksums = FileListUtil.readChecksums(fileListFile);
+        String checksum = checksums.remove(name);
+        if (checksum != null) {
+            FileListUtil.writeChecksums(checksums, fileListFile);
+        }
+    }
+
+    /**
      * Deploy all zip files to the runner directory
      */
     protected void deployZips() throws IOException {
         File deployDir = new File(RunUtil.getRunDir(), DEPLOY_DIR);
         deployDir.mkdirs();
 
-        // figure out the set of files to add or remove
-        List<String> addFiles = new ArrayList<String>();
-        List<String> removeFiles = new ArrayList<String>();
-        FileListUtil.compareDirs("META-INF/runner", deployDir,
-                                 addFiles, removeFiles);
+        InputStream in = getClass().getResourceAsStream("/META-INF/runner/files.list");
+        Map<String, String> checksums = FileListUtil.readChecksums(in);
 
-        for (String removeFile : removeFiles) {
-            File file = new File(deployDir, removeFile);
-            file.delete();
+        for (Map.Entry<String, String> e : checksums.entrySet()) {
+            final String name = e.getKey();
+            final String checksum = e.getValue();
+
+            addRunnerZip(name, new ZipWriter() {
+                public String getChecksum() throws IOException {
+                    return checksum;
+                }
+
+                public void writeTo(File dest) throws IOException {
+                    String fullPath = "/runner/" + name;
+                    InputStream fileIs = getClass().getResourceAsStream(fullPath);
+
+                    RunUtil.writeToFile(fileIs, dest);
+                }
+            });
         }
-
-        for (String addFile : addFiles) {
-            String fullPath = "/runner/" + addFile;
-            InputStream fileIs = getClass().getResourceAsStream(fullPath);
-
-            RunUtil.writeToFile(fileIs, new File(deployDir, addFile));
-        }
-
-        // write the updated checksum list
-        RunUtil.extract(getClass(), "/META-INF/runner/files.list", deployDir);
     }
 
     /**
@@ -485,6 +563,11 @@ public class RunManager {
         }
 
         return false;
+    }
+
+    protected interface ZipWriter {
+        public String getChecksum() throws IOException;
+        public void writeTo(File file) throws IOException;
     }
 
     /**

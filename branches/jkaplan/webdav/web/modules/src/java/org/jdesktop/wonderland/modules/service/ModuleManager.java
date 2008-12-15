@@ -140,8 +140,18 @@ public class ModuleManager {
      * Redeploys all installed modules. This method does not check whether
      * modules can or cannot be deployed, it assumes this method is called when
      * the system is in an appropriate state for deployment
+     * <p>
+     * Before redeploying, this method installs all pending modules. No modules
+     * are deployed until all the pending modules are installed.
      */
     public void redeployAll() {
+        // remove all modules pending for removal
+        uninstallAll();
+
+        // install all modules pending for install
+        installAll(false);
+
+        // deploy all modules
         Map<String, Module> modules = this.installedMananger.getModules();
         Iterator<Map.Entry<String, Module>> it = modules.entrySet().iterator();
         while (it.hasNext() == true) {
@@ -264,6 +274,17 @@ public class ModuleManager {
      * is started and stopped.
      */
     public void installAll() {
+        installAll(true);
+    }
+
+    /**
+     * Installs all pending modules.  The value of the deploy boolean tells
+     * whether or not to deploy modules after they are installed.  This is
+     * used at startup so that all modules are deployed at the same time,
+     * after they are installed.
+     * @param deploy true to deploy modules, or false not to
+     */
+    protected void installAll(boolean deploy) {
         Map<String, Module> installed = new HashMap(this.installedMananger.getModules());
        
         /*
@@ -338,10 +359,12 @@ public class ModuleManager {
             this.pendingMananger.remove(moduleName);
             
             /* Deploy the module */
-            try {
-                this.deployManager.deploy(module);
-            } catch (DeployerException excp) {
-                logger.log(Level.WARNING, "[MODULES] INSTALL ALL Unable to deploy " + moduleName, excp);
+            if (deploy) {
+                try {
+                    this.deployManager.deploy(module);
+                } catch (DeployerException excp) {
+                    logger.log(Level.WARNING, "[MODULES] INSTALL ALL Unable to deploy " + moduleName, excp);
+                }
             }
         }
     }

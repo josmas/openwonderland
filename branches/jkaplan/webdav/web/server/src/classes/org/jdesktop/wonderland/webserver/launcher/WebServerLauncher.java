@@ -64,7 +64,9 @@ public class WebServerLauncher {
 
     private static final Logger logger = 
             Logger.getLogger(WebServerLauncher.class.getName());
-    
+
+    private static LauncherClassLoader classLoader;
+
     public static void main(String[] args) {
         // before we do anything, ready the default properties
         try {
@@ -150,7 +152,7 @@ public class WebServerLauncher {
             List<URL> urls = new ArrayList<URL>();
             for (File jar : webDir.listFiles()) {
                 URL u = jar.toURI().toURL();
-                System.out.println("Adding URL " + u);
+                logger.fine("Adding URL " + u);
 
                 urls.add(u);
             }
@@ -158,31 +160,10 @@ public class WebServerLauncher {
             // create a classloader with those files and use it
             // to reflectively instantiate an instance of the 
             // RunAppServer class, and call its run method
-            ClassLoader cl = new URLClassLoader(urls.toArray(new URL[0])) {
-
-                @Override
-                public URL[] getURLs() {
-                    NoProtocolURLStreamHandler npush =
-                            new NoProtocolURLStreamHandler();
-
-                    URL[] out = super.getURLs();
-                    for (int i = 0; i < out.length; i++) {
-                        if (out[i].getProtocol().equals("file")) {
-                            try {
-                                out[i] = new URL(out[i], "", npush);
-                            } catch (MalformedURLException ex) {
-                                // ignore, leave URL as is
-                            }
-                        }
-                    }
-
-                    return out;
-                }
-
-            };
-            Thread.currentThread().setContextClassLoader(cl);
+            classLoader = new LauncherClassLoader(urls.toArray(new URL[0]));
+            Thread.currentThread().setContextClassLoader(classLoader);
             
-            Class c = cl.loadClass("org.jdesktop.wonderland.webserver.RunAppServer");
+            Class c = classLoader.loadClass("org.jdesktop.wonderland.webserver.RunAppServer");
             c.newInstance();
 
             // log that everything is started up
@@ -202,6 +183,10 @@ public class WebServerLauncher {
             logger.log(Level.SEVERE, "Error loading web server", ex);
             System.exit(-1);
         }
+    }
+
+    public static LauncherClassLoader getClassLoader() {
+        return classLoader;
     }
 
     private static void usage() {
@@ -356,14 +341,14 @@ public class WebServerLauncher {
 
         // remove files from the remove list
         for (String removeFile : removeFiles) {
-            System.out.println("Removing " + removeFile);
+            logger.fine("Removing " + removeFile);
             File remove = new File(webDir, removeFile);
             remove.delete();
         }
 
         // add files from the add list
         for (String addFile : addFiles) {
-            System.out.println("Adding " + addFile);
+            logger.fine("Adding " + addFile);
             String fullPath = "/webserver/" + addFile;
             RunUtil.extract(WebServerLauncher.class, fullPath, webDir);
         }
@@ -371,6 +356,45 @@ public class WebServerLauncher {
         // write the checksums to the webserver directory
         RunUtil.extract(WebServerLauncher.class,
                 "/META-INF/webserver/files.list", webDir);
+    }
+
+    /**
+     * Classloader that can dynamically add URLs.  Used to support modules
+     * with weblib components.
+     */
+    public static class LauncherClassLoader extends URLClassLoader {
+        public LauncherClassLoader(URL[] urls) {
+            super (urls);
+        }
+
+        /**
+         * Add a URL.  Note that URLs cannot be replaced or removed
+         * @param URL the URL to add
+         */
+        @Override
+        public void addURL(URL url) {
+            super.addURL(url);
+        }
+
+        // workaround for Windows issues -- see below
+        @Override
+        public URL[] getURLs() {
+            NoProtocolURLStreamHandler npush =
+                    new NoProtocolURLStreamHandler();
+
+            URL[] out = super.getURLs();
+            for (int i = 0; i < out.length; i++) {
+                if (out[i].getProtocol().equals("file")) {
+                    try {
+                        out[i] = new URL(out[i], "", npush);
+                    } catch (MalformedURLException ex) {
+                        // ignore, leave URL as is
+                    }
+                }
+            }
+
+            return out;
+        }
     }
 
     /**
