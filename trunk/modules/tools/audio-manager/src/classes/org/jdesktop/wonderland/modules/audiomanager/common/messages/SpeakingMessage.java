@@ -30,10 +30,17 @@ import org.jdesktop.wonderland.common.cell.CellID;
 @ExperimentalAPI
 public class SpeakingMessage extends Message {
 
+    private String callID;
+
     private boolean isSpeaking;
 
-    public SpeakingMessage(boolean isSpeaking) {
+    public SpeakingMessage(String callID, boolean isSpeaking) {
+	this.callID = callID;
 	this.isSpeaking = isSpeaking;
+    }
+
+    public String getCallID() {
+	return callID;
     }
 
     public boolean isSpeaking() {

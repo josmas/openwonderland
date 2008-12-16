@@ -147,7 +147,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
     }
 	
     public void callStatusChanged(CallStatus status) {    
-	logger.finest("got status " + status);
+	logger.finer("got status " + status);
 
         String externalCallID = status.getCallId();
 

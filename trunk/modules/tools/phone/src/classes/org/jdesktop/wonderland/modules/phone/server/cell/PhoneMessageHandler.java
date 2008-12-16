@@ -367,7 +367,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
                     logger.fine("back from attenuate other groups");
                 }
             } else {
-                spawnOrb(externalCallID);
+                spawnOrb(externalCallID, listing.simulateCalls());
 	    }
 
             if (listing.simulateCalls() == false) {
@@ -427,7 +427,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
             sender.send(clientID, new JoinCallResponseMessage(
 		phoneCellMORef.get().getCellID(), listing, true));
             
-            spawnOrb(externalCallID);
+            spawnOrb(externalCallID, false);
 	    return;
 	}
 
@@ -496,7 +496,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	}
     }
 
-    private void spawnOrb(String externalCallID) {
+    private void spawnOrb(String externalCallID, boolean simulateCalls) {
 	/*
 	 * XXX I was trying to get this to delay for 2 seconds,
 	 * But there are no managers in the system context in which run() runs.
@@ -508,7 +508,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
         String cellType = 
 	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
 
-        OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, externalCallID);
+        OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, externalCallID, simulateCalls);
 
 	if (orbCellMO == null) {
 	    logger.warning("Unable to spawn orb");

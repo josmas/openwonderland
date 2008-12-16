@@ -27,11 +27,18 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.TaskManager;
 
+import java.io.InputStreamReader;
 import java.io.IOException;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +56,9 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+
+import org.jdesktop.wonderland.common.modules.Checksum;
+import org.jdesktop.wonderland.common.modules.ModuleChecksums;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -77,6 +87,8 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentComponentMO.class.getName());
 
+    private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
+
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
     
     private String groupId;
@@ -84,6 +96,12 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
     private double x;
     private double y;
     private double z;
+
+    private static String serverURL;
+
+    static {
+	serverURL = System.getProperty("wonderland.web.server.url");
+    }
 
     /**
      * Create a AudioTreatmentComponent for the given cell. The cell must already
@@ -124,8 +142,64 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
 	for (int i = 0; i < treatments.length; i++) {
 	    TreatmentSetup setup = new TreatmentSetup();
 
-	    setup.treatment = treatments[i];
-	    
+	    String treatment = treatments[i];
+
+	    logger.fine("Processing " + treatment);
+
+	    String treatmentId = treatment;
+
+	    if (treatment.startsWith("wls://")) {
+		/*
+		 * We need to create a URL from wls:<module>/path
+		 */
+		treatment = treatment.substring(6);  // skip past wls://
+
+		int ix = treatment.indexOf("/");
+
+		if (ix < 0) {
+		    logger.warning("Bad treatment:  " + treatments[i]);
+		    continue;
+		}
+		
+		String moduleName = treatment.substring(0, ix);
+		
+		String path = treatment.substring(ix + 1);
+
+		logger.fine("Module:  " + moduleName + " treatment " + treatment);
+
+		treatmentId = treatment;
+
+		URL url;
+
+		try {
+		    url = new URL(new URL(serverURL), 
+		        ASSET_PREFIX + moduleName + "/asset/get/audio/" + path);
+
+		    treatment = url.toString();
+		    logger.fine("Treatment: " + treatment);
+		} catch (MalformedURLException e) {
+		    logger.warning("bad url:  " + e.getMessage());
+		    continue;
+		}
+
+		ModuleChecksums mc = fetchAssetChecksums(serverURL, moduleName, 
+		    "audio");
+
+		if (mc == null) {
+		    System.out.println("ModuleChecksums is null");
+		} else {
+	            Map<String, Checksum> checksums = mc.getChecksums();
+
+	            Iterator<String> it = checksums.keySet().iterator();
+
+	            while (it.hasNext()) {
+		        logger.warning("Checksum:  " + it.next());
+	            }
+		}
+	    }
+
+	    setup.treatment = treatment;
+
 	    if (setup.treatment == null || setup.treatment.length() == 0) {
 		logger.warning("Invalid treatment '" + setup.treatment + "'");
 		continue;
@@ -141,7 +215,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
 		+ " at (" + setup.x + ":" + setup.y + ":" + setup.z + ")");
 
 	    try {
-	        group.addTreatment(vm.createTreatment(setup.treatment, setup));
+	        group.addTreatment(vm.createTreatment(treatmentId, setup));
 	    } catch (IOException e) {
 	        logger.warning("Unable to create treatment " + setup.treatment
 		    + e.getMessage());
@@ -180,4 +254,29 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
 
     }
 
+    /**
+     * Asks the web server for the module's checksum information given the
+     * unique name of the module and a particular asset type, returns null if
+     * the module does not exist or upon some general I/O error.
+     * 
+     * @param serverURL The base web server URL
+     * @param moduleName The unique name of a module
+     * @param assetType The name of the asset type (art, audio, client, etc.)
+     * @return The checksum information for a module
+     */
+    public static ModuleChecksums fetchAssetChecksums(String serverURL,
+            String moduleName, String assetType) {
+        
+        try {
+            /* Open an HTTP connection to the Jersey RESTful service */
+            String uriPart = moduleName + "/checksums/get/" + assetType;
+            URL url = new URL(new URL(serverURL), ASSET_PREFIX + uriPart);
+	    System.out.println("fetchAssetChecksums:  " + url.toString());
+            return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
+        } catch (java.lang.Exception e) {
+            /* Log an error and return null */
+            System.out.println("[MODULES] FETCH CHECKSUMS Failed " + e.getMessage());
+            return null;
+        }
+    }
 }

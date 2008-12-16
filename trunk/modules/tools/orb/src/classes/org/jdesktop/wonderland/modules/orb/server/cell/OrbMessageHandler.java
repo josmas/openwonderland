@@ -26,7 +26,6 @@ import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
@@ -93,16 +92,19 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
      
     private String callID;
 
+    private boolean simulateCalls;
+
     private ManagedReference<OrbCellMO> orbCellMORef;
 
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
 
     private ManagedReference<OrbStatusListener> orbStatusListenerRef;
 
-    public OrbMessageHandler(OrbCellMO orbCellMO, String callID) {
+    public OrbMessageHandler(OrbCellMO orbCellMO, String callID, boolean simulateCalls) {
 	this.callID = callID;
+	this.simulateCalls = simulateCalls;
 
-	logger.finest("Call id is " + callID);
+	logger.info("Call id is " + callID + " simulateCalls " + simulateCalls);
 
         orbCellMORef = AppContext.getDataManager().createReference(
                 (OrbCellMO) CellManagerMO.getCell(orbCellMO.getCellID()));
@@ -135,6 +137,75 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
 	    WonderlandClientID clientID, CellMessage message) {
 
 	logger.finest("got message " + message);
+
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	Call call = null;
+
+	Player player = null;
+
+	if (simulateCalls == false) {
+	    call = vm.getCall(callID);
+
+	    if (call == null) {
+	        logger.warning("Can't find call for " + callID);
+	        return;
+	    }
+
+	    player = vm.getPlayer(callID);
+	}
+
+	if (message instanceof OrbEndCallMessage) {
+	    if (call != null) {
+	        try {
+	            vm.endCall(call, true);
+	        } catch (IOException e) {
+		    logger.warning("Unable to end call " + call + ": " 
+		        + e.getMessage());
+	        }
+	        return;
+ 	    } else {
+		orbStatusListenerRef.get().endCall(callID);
+	    }
+	}
+
+	if (message instanceof OrbMuteCallMessage) {
+	    try {
+	        call.mute(((OrbMuteCallMessage)message).isMuted());
+	    } catch (IOException e) {
+		logger.warning("Unable to mute call " + call + ": " 
+		    + e.getMessage());
+	    }
+	    return;
+	}
+
+	if (message instanceof OrbSetVolumeMessage) {
+	    if (player == null) {
+		logger.warning("no player for " + callID);
+		return;
+	    }
+
+	    OrbSetVolumeMessage msg = (OrbSetVolumeMessage) message;
+
+	    String softphoneCallID = msg.getSoftphoneCallID();
+
+	    Player softphonePlayer = vm.getPlayer(softphoneCallID);
+
+	    if (softphonePlayer == null) {
+		logger.warning("Can't find Player for softphone " + softphoneCallID);
+		return;
+	    }
+
+	    DefaultSpatializer spatializer = (DefaultSpatializer)
+		vm.getVoiceManagerParameters().livePlayerSpatializer.clone();
+
+	    spatializer.setAttenuator(msg.getVolume() * .2);
+
+	    softphonePlayer.setPrivateSpatializer(player, spatializer);
+
+	    return;
+ 	}
+	
     }
    
 }
