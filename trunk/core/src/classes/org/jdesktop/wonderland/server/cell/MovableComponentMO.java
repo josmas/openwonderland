@@ -62,14 +62,18 @@ public class MovableComponentMO extends CellComponentMO {
         return MovableMessage.class;
     }
     
+    void moveRequest(WonderlandClientID clientID, MovableMessage msg) {
+        CellTransform transform = new CellTransform(msg.getRotation(), msg.getTranslation());
+        moveRequest(clientID, transform);
+    }
+
     /**
      * Set the transform for the cell and notify all client cells of the move.
      * @param sessionID the id of the session that originated the move, or null
      * if the server originated it
      * @param transform
      */
-    public void moveRequest(WonderlandClientID clientID, MovableMessage msg) {
-        CellTransform transform = new CellTransform(msg.getRotation(), msg.getTranslation());
+    public void moveRequest(WonderlandClientID clientID, CellTransform transform) {
 
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent;
