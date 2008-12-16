@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.contentrepo.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Date;
 
 /**
@@ -46,6 +47,12 @@ public interface ContentResource extends ContentNode {
      * @return an input stream with content for this node
      */
     public InputStream getInputStream() throws ContentRepositoryException;
+
+    /**
+     * Get a URL for access to this resources's data.
+     * @return the URL for this resource
+     */
+    public URL getURL() throws ContentRepositoryException;
 
     /**
      * Read the content of this node into the given file.

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.webdav.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Date;
 import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
@@ -47,6 +48,14 @@ public class WebdavContentResource extends WebdavContentNode
     public InputStream getInputStream() throws ContentRepositoryException {
         try {
             return getResource().getMethodData();
+        } catch (IOException ioe) {
+            throw new ContentRepositoryException(ioe);
+        }
+    }
+
+    public URL getURL() throws ContentRepositoryException {
+        try {
+            return new URL(getResource().getHttpURL().toString());
         } catch (IOException ioe) {
             throw new ContentRepositoryException(ioe);
         }

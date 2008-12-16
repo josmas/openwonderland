@@ -141,10 +141,12 @@ public class BrowserFrame extends javax.swing.JFrame {
             typeLabel.setText("");
             sizeLabel.setText("");
             modifiedLabel.setText("");
+            urlLabel.setText("");
         } else if (selected instanceof ContentCollection) {
             typeLabel.setText("Directory");
             sizeLabel.setText("");
             modifiedLabel.setText("");
+            urlLabel.setText("");
 
             enableDelete = true;
         } else if (selected instanceof ContentResource) {
@@ -155,6 +157,13 @@ public class BrowserFrame extends javax.swing.JFrame {
             
             DateFormat df = DateFormat.getDateInstance();
             modifiedLabel.setText(df.format(r.getLastModified()));
+
+            try {
+                urlLabel.setText(r.getURL().toExternalForm());
+            } catch (ContentRepositoryException cre) {
+                logger.log(Level.WARNING, "Unable to get URL for " + r, cre);
+                urlLabel.setText("Error: " + cre.getMessage());
+            }
 
             enableDownload = true;
             enableDelete = true;
@@ -201,6 +210,8 @@ public class BrowserFrame extends javax.swing.JFrame {
         modifiedLabel = new javax.swing.JLabel();
         sizeLabel = new javax.swing.JLabel();
         typeLabel = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        urlLabel = new javax.swing.JLabel();
         mkdirTF = new javax.swing.JTextField();
         mkdirButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
@@ -255,6 +266,10 @@ public class BrowserFrame extends javax.swing.JFrame {
 
         typeLabel.setText("type");
 
+        jLabel5.setText("URL:");
+
+        urlLabel.setText("url");
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -264,9 +279,11 @@ public class BrowserFrame extends javax.swing.JFrame {
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel4)
                     .add(jLabel3)
-                    .add(jLabel2))
+                    .add(jLabel2)
+                    .add(jLabel5))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(urlLabel)
                     .add(typeLabel)
                     .add(sizeLabel)
                     .add(modifiedLabel))
@@ -286,7 +303,11 @@ public class BrowserFrame extends javax.swing.JFrame {
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
                     .add(modifiedLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(urlLabel))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
 
         mkdirButton.setText("New Directory");
@@ -322,15 +343,15 @@ public class BrowserFrame extends javax.swing.JFrame {
                             .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, fileTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(downloadButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-                            .add(mkdirButton)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, mkdirButton)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(browseButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(uploadButton))
-                            .add(deleteButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))))
+                            .add(downloadButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                            .add(deleteButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -531,6 +552,7 @@ public class BrowserFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton mkdirButton;
@@ -539,6 +561,7 @@ public class BrowserFrame extends javax.swing.JFrame {
     private javax.swing.JLabel sizeLabel;
     private javax.swing.JLabel typeLabel;
     private javax.swing.JButton uploadButton;
+    private javax.swing.JLabel urlLabel;
     // End of variables declaration//GEN-END:variables
 
 }

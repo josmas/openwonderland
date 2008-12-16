@@ -37,16 +37,16 @@
                           <Component id="fileTF" alignment="0" pref="242" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="downloadButton" pref="194" max="32767" attributes="1"/>
-                          <Component id="mkdirButton" min="-2" max="-2" attributes="0"/>
-                          <Component id="jPanel1" alignment="1" max="32767" attributes="1"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="mkdirButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="uploadButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="deleteButton" alignment="0" pref="194" max="32767" attributes="0"/>
+                          <Component id="downloadButton" alignment="1" pref="194" max="32767" attributes="1"/>
+                          <Component id="deleteButton" alignment="1" pref="194" max="32767" attributes="0"/>
+                          <Component id="jPanel1" alignment="0" max="32767" attributes="1"/>
                       </Group>
                   </Group>
               </Group>
@@ -168,9 +168,11 @@
                       <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="typeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="sizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="modifiedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -196,7 +198,12 @@
                       <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="modifiedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace pref="14" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -230,6 +237,16 @@
         <Component class="javax.swing.JLabel" name="typeLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="type"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel5">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="URL:"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="urlLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="url"/>
           </Properties>
         </Component>
       </SubComponents>

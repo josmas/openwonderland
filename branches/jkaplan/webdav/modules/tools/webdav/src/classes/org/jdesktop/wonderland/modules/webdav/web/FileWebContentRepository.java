@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.webdav.web;
 
 import java.io.File;
+import java.net.URL;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.web.spi.WebContentRepository;
@@ -31,13 +32,20 @@ public class FileWebContentRepository implements WebContentRepository {
     private File root;
     private FileContentCollection rootCollection;
 
-    public FileWebContentRepository(File root) {
+    public FileWebContentRepository(File root, final URL baseURL) {
         this.root = root;
+
         rootCollection = new FileContentCollection(root, null) {
             // don't include this path
             @Override
             public String getPath() {
                 return "";
+            }
+
+            // add a base URL
+            @Override
+            public URL getBaseURL() {
+                return baseURL;
             }
         };
     }
