@@ -134,7 +134,7 @@ public class WindowSwing extends WindowGraphics2D {
         }
 
 	// TODO: Uncomment this to demonstrate the embedded component enter/exit bug
-	//component.addMouseListener(new MyAwtEnterListener());
+	component.addMouseListener(new MyAwtEnterListener());
 
        	addWorldEventListener(new MySwingEnterExitListener());
 
@@ -283,16 +283,6 @@ public class WindowSwing extends WindowGraphics2D {
         return bounds;
     }
     */
-
-    /**
-     * Transform the given 3D point in local coordinates into the corresponding point
-     * in the coordinate space of the embedded Swing component.
-     * @param p3f The point to transform.
-     * @return the 2D position of p3f in the component, or null if p3f is outside the component
-     */
-    Point calcPositionInComponent(Vector3f p3f) {
-	return calcWorldPositionInPixelCoordinates (p3f);
-    }
 
     /** 
      * Set the input enable for this window. By default, input for a WindowSwing is enabled.
