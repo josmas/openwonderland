@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.webdav.common;
 
 import java.io.File;
+import java.net.URL;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 
 /**
@@ -27,10 +28,15 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 public class FileContentNode implements ContentNode {
     private File file;
     private FileContentCollection parent;
+    private URL baseURL;
 
     FileContentNode(File file, FileContentCollection parent) {
         this.file = file;
         this.parent = parent;
+        
+        if (parent != null) {
+            this.baseURL = parent.getBaseURL();
+        }
     }
 
     public String getName() {
@@ -55,5 +61,9 @@ public class FileContentNode implements ContentNode {
 
     protected File getFile() {
         return file;
+    }
+
+    protected URL getBaseURL() {
+        return baseURL;
     }
 }

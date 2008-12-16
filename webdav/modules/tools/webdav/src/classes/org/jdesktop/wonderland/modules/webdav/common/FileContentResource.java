@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.Date;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
@@ -48,6 +49,14 @@ public class FileContentResource extends FileContentNode
     public FileInputStream getInputStream() throws ContentRepositoryException {
         try {
             return new FileInputStream(getFile());
+        } catch (IOException ioe) {
+            throw new ContentRepositoryException(ioe);
+        }
+    }
+
+    public URL getURL() throws ContentRepositoryException {
+        try {
+            return new URL(getBaseURL(), getPath());
         } catch (IOException ioe) {
             throw new ContentRepositoryException(ioe);
         }
