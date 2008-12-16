@@ -262,7 +262,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
             listModel.clear();
         } else {
             entityNameTF.setText(entity.getName());
-            DefaultListModel listModel = (DefaultListModel) cellComponentList.getModel();
+            DefaultListModel listModel = (DefaultListModel) entityComponentList.getModel();
             listModel.clear();
             for(EntityComponent c : entity.getComponents()) {
                 listModel.addElement(c.getClass().getName());
