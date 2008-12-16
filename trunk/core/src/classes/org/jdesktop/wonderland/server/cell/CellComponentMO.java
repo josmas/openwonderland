@@ -21,6 +21,7 @@ import java.io.Serializable;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
 /**
@@ -29,9 +30,11 @@ import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
  */
 public class CellComponentMO implements ManagedObject, Serializable {
     protected ManagedReference<CellMO> cellRef;
+    protected CellID cellID;
     
     public CellComponentMO(CellMO cell) {        
         this.cellRef = AppContext.getDataManager().createReference(cell);
+        cellID = cell.getCellID();
     }
     
     protected void setLive(boolean live) {
@@ -46,4 +49,5 @@ public class CellComponentMO implements ManagedObject, Serializable {
     public void setupCellComponent(CellComponentSetup setup) {
         // Do nothing by default
     }
+
 }

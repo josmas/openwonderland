@@ -393,9 +393,8 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * Add this cell to the universe
      */
     void addToUniverse(UniverseManager universe) {
-        System.out.println("Creating spatial cell " + getCellID() + " " + getClass().getName());
         universe.createCell(this);
-        //System.err.println("CREATING SPATIAL CELL " + getCellID().toString() + " " + this.getClass().getName());
+        System.err.println("CREATING SPATIAL CELL " + getCellID().toString() + " " + this.getClass().getName());
 
         if (transformChangeListeners != null) {
             for (TransformChangeListenerSrv listener : transformChangeListeners) {
@@ -627,7 +626,11 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * @param component
      */
     public void addComponent(CellComponentMO component) {
-        ManagedReference<CellComponentMO> previous = components.put(component.getClass(), 
+        addComponent(component, component.getClass());
+    }
+
+    public void addComponent(CellComponentMO component, Class componentClass) {
+        ManagedReference<CellComponentMO> previous = components.put(componentClass, 
                 AppContext.getDataManager().createReference(component));
         if (previous!=null)
             throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 

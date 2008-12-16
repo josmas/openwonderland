@@ -19,19 +19,15 @@ package org.jdesktop.wonderland.server.spatial;
 
 import java.util.logging.Level;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
-import org.jdesktop.wonderland.server.spatial.impl.SpatialCell;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 import org.jdesktop.wonderland.server.spatial.impl.Universe;
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Matrix4f;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.auth.Identity;
-import com.sun.sgs.impl.service.data.DataServiceImpl;
 import com.sun.sgs.impl.util.TransactionContext;
 import com.sun.sgs.impl.util.TransactionContextFactory;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
-import com.sun.sgs.kernel.TaskScheduler;
 import com.sun.sgs.kernel.TransactionScheduler;
 import com.sun.sgs.service.Service;
 import com.sun.sgs.service.Transaction;
@@ -39,20 +35,17 @@ import com.sun.sgs.service.TransactionProxy;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
+import org.jdesktop.wonderland.server.spatial.impl.SpatialCell;
 import org.jdesktop.wonderland.server.spatial.impl.SpatialCellImpl;
 import org.jdesktop.wonderland.server.spatial.impl.UniverseImpl;
 
@@ -142,7 +135,7 @@ public class UniverseService implements UniverseManager, Service {
 //        return ret;
 //    }
 
-    private void scheduleChange(Change change) {
+    private void scheduleChange(Runnable change) {
         // get the current transaction state, and add the change to it
         ctxFactory.joinTransaction().addChange(change);
     }
@@ -248,7 +241,6 @@ public class UniverseService implements UniverseManager, Service {
     public void viewLogout(ViewCellMO viewCell) {
         scheduleChange(new Change(viewCell.getCellID(), null, null) {
             public void run() {
-                System.err.println("Calling universe.logout");
                 universe.viewLogout(cellID);
             }
         });
@@ -256,11 +248,14 @@ public class UniverseService implements UniverseManager, Service {
     }
 
     public CellTransform getWorldTransform(CellMO cell, CellTransform result) {
-        SpatialCellImpl spatial = (SpatialCellImpl) universe.getSpatialCell(cell.getCellID());
+        SpatialCellImpl spatial = (SpatialCellImpl ) universe.getSpatialCell(cell.getCellID());
 
         CellTransform ret;
         spatial.acquireRootReadLock();
-        ret = spatial.getWorldTransform().clone(result);
+        if (spatial.getWorldTransform()==null)
+            ret = null;
+        else
+            ret = spatial.getWorldTransform().clone(result);
         spatial.releaseRootReadLock();
 
         return ret;
@@ -293,6 +288,25 @@ public class UniverseService implements UniverseManager, Service {
         });
     }
 
+    public void addViewUpdateListener(CellMO cell, final ViewUpdateListener viewUpdateListener) {
+        scheduleChange(new Change(cell.getCellID(), null, null) {
+            public void run() {
+                universe.addViewUpdateListener(cellID, viewUpdateListener);
+            }
+        });
+    }
+
+    public void removeViewUpdateListener(CellMO cell, final ViewUpdateListener viewUpdateListener) {
+        scheduleChange(new Change(cell.getCellID(), null, null) {
+            public void run() {
+                universe.removeViewUpdateListener(cellID, viewUpdateListener);
+            }
+        });
+    }
+
+    public void schedule(Runnable runnable) {
+        scheduleChange(runnable);
+    }
     /**
      * A change to apply to the cell.  This change will be applied when
      * the current transaction commits.  The run() method of subclasses
@@ -321,7 +335,7 @@ public class UniverseService implements UniverseManager, Service {
      * Transaction state
      */
     private class BoundsTransactionContext extends TransactionContext {
-        private List<Change> changes;
+        private List<Runnable> changes;
 
         public BoundsTransactionContext(Transaction txn) {
             super (txn);
@@ -329,7 +343,7 @@ public class UniverseService implements UniverseManager, Service {
             changes = new ArrayList();
         }
 
-        public void addChange(Change change) {
+        public void addChange(Runnable change) {
             changes.add(change);
         }
 
@@ -354,20 +368,20 @@ public class UniverseService implements UniverseManager, Service {
 
     private class ChangeApplication extends Thread {
 
-        private LinkedBlockingQueue<Change> changeList = new LinkedBlockingQueue();
+        private LinkedBlockingQueue<Runnable> changeList = new LinkedBlockingQueue();
 
         public ChangeApplication() {
             super(ThreadManager.getThreadGroup(), "ChangeApplication");
             start();
         }
 
-        public void addChanges(Collection<Change> changes) {
+        public void addChanges(Collection<Runnable> changes) {
             changeList.addAll(changes);
         }
 
         @Override
         public void run() {
-            Change change;
+            Runnable change;
 
             while(true) {
                 try {

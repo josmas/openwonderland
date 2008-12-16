@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
+import java.io.Serializable;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  * Listener for the view entering/exiting the proximity bounds of a cell.
@@ -28,7 +30,7 @@ import com.jme.bounding.BoundingVolume;
  * 
  * @author paulby
  */
-public interface ProximityListenerMO {
+public interface ProximityListenerSrv extends Serializable {
 
     /**
      * The origin of the view cell for this client has entered or exited a proximity bounds
@@ -37,6 +39,6 @@ public interface ProximityListenerMO {
      * @param proximityVolume the bounding volume entered/exited
      * @param proximityIndex the index of the bounding volume in the ProximityComponent
      */
-    public void viewEnterExit(boolean entered, CellMO cell, BoundingVolume proximityVolume, int proximityIndex);
+    public void viewEnterExit(boolean entered, CellID cell, BoundingVolume proximityVolume, int proximityIndex);
     
 }

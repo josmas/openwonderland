@@ -20,29 +20,25 @@ package org.jdesktop.wonderland.client.jme;
 import com.jme.math.Vector3f;
 import com.jme.math.Matrix3f;
 import com.jme.math.Quaternion;
-import com.jme.scene.Node;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import org.jdesktop.mtgame.AWTInputComponent;
-import org.jdesktop.mtgame.AwtEventCondition;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.processor.AWTEventProcessorComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
-import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.client.jme.input.MouseMovedEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 
@@ -51,6 +47,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * camera control
  * 
  * @author Doug Twilleager
+ * @deprecated Replaced with AvatarControls
  */
 public class SimpleAvatarControls extends ProcessorComponent {
     /**
@@ -127,7 +124,7 @@ public class SimpleAvatarControls extends ProcessorComponent {
      * The Node to modify
      */
     private Cell target = null;
-    private MovableComponent movableComponent = null;
+    private MovableAvatarComponent movableComponent = null;
     
     /**
      * The WorldManager
@@ -146,7 +143,7 @@ public class SimpleAvatarControls extends ProcessorComponent {
     public SimpleAvatarControls(Cell viewCell, WorldManager wm) {
         super();
         target = viewCell;
-        movableComponent = viewCell.getComponent(MovableComponent.class);
+        movableComponent = (MovableAvatarComponent) viewCell.getComponent(MovableComponent.class);
         worldManager = wm;
 
         // Set initial position and orientation from cell transform
@@ -302,7 +299,7 @@ public class SimpleAvatarControls extends ProcessorComponent {
     public void commit(ProcessorArmingCollection collection) {
         if (state!=STOPPED || updateRotations) {
 //            System.err.println("localMoveRequest "+position+"  "+this);
-            movableComponent.localMoveRequest(new CellTransform(quaternion, position));
+            movableComponent.localMoveRequest(new CellTransform(quaternion, position), -1, false, null);
         }
     }
     

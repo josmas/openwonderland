@@ -84,6 +84,7 @@ public class JmeCellCache extends CellCacheBasicImpl {
         CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         if (cell!=null && rend!=null) {
             if (rend instanceof CellRendererJME) {
+                System.err.println("Unload cell !");
                 Entity e = ((CellRendererJME) rend).getEntity();
                 ClientContextJME.getWorldManager().removeEntity(e);
                 rootEntities.remove(e);

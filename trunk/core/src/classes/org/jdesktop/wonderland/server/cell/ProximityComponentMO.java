@@ -19,12 +19,18 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import java.util.HashMap;
 import java.util.HashSet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.Math3DUtils;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
+import org.jdesktop.wonderland.server.spatial.UniverseManager;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 /**
  * Provides a mechanism for listener notification when the a view cell
@@ -56,7 +62,8 @@ import org.jdesktop.wonderland.common.Math3DUtils;
 @ExperimentalAPI
 public class ProximityComponentMO extends CellComponentMO {
 
-    private HashSet<ProximityListenerMO> proximityListeners = null;
+    private HashMap<ProximityListenerSrv, ServerProximityListenerRecord> proximityListeners = null;
+    private boolean isLive = false;
     
     /**
      * Set a list of bounds for which the system will track view enter/exit for
@@ -74,37 +81,41 @@ public class ProximityComponentMO extends CellComponentMO {
     }
     
     
-    public void addProximityListener(ProximityListenerMO listener, BoundingVolume[] localBounds) {
-        synchronized(this) {
-            if (proximityListeners==null)
-                proximityListeners = new HashSet();
+    public void addProximityListener(ProximityListenerSrv listener, BoundingVolume[] localBounds) {
+        if (proximityListeners==null)
+            proximityListeners = new HashMap();
 
-            proximityListeners.add(listener);
+        ServerProximityListenerRecord rec = new ServerProximityListenerRecord(new ServerProximityListenerWrapper(cellID, listener), localBounds);
+        proximityListeners.put(listener, rec);
+
+        if (isLive) {
+            UniverseManager mgr = AppContext.getManager(UniverseManager.class);
+            CellMO cell = cellRef.get();
+            mgr.addTransformChangeListener(cell, rec);
+            mgr.addViewUpdateListener(cell, rec);
         }
     }
     
-//    @Override
-//    public void setLive(boolean live) {
-//        super.setLive(live);
-//        
-//        if (live) {
-//                if (viewTransformListener==null)
-//                    viewTransformListener = new ViewTransformListener();
-//                updateWorldBounds();
-//                cell.getCellCache().getViewCell().addTransformChangeListener(viewTransformListener);
-//        } else {
-//                if (viewTransformListener!=null)
-//                    cell.getCellCache().getViewCell().removeTransformChangeListener(viewTransformListener);
-//        }
-//    }
-//    
-//    private void notifyProximityListeners(boolean entered, BoundingVolume enterVolume, int enterVolumeIndex) {
-//        synchronized(this) {
-//            for(ProximityListenerMO listener : proximityListeners) {
-//                listener.viewEnterExit(entered, cell, enterVolume, enterVolumeIndex);
-//            }
-//        }
-//    }
-    
+    @Override
+    public void setLive(boolean isLive) {
+        super.setLive(isLive);
+
+        System.err.println("PROX setLive "+isLive);
+
+        if (isLive) {
+            UniverseManager mgr = AppContext.getManager(UniverseManager.class);
+            CellMO cell = cellRef.get();
+            for(ServerProximityListenerRecord rec : proximityListeners.values()) {
+                rec.setLive(isLive, cell, mgr);
+            }
+        } else {
+            UniverseManager mgr = AppContext.getManager(UniverseManager.class);
+            CellMO cell = cellRef.get();
+            for(ServerProximityListenerRecord rec : proximityListeners.values()) {
+                rec.setLive(isLive, cell, mgr);
+            }
+         }
+
+    }
 
 }

@@ -15,27 +15,25 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.client.cell;
+package org.jdesktop.wonderland.server.spatial;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- * Client side class for world root cells.
- * 
+ * This listener is used by cells to get notification when a view which is
+ * displaying a cell is updaetd
+ *
  * @author paulby
  */
-public class RootCell extends Cell {
+public interface ViewUpdateListener {
 
-    public RootCell(CellID cellID, CellCache cellCache) {
-        super(cellID, cellCache);
-    }
-    
     /**
-     * Create the renderer for this cell
+     * This may be called concurrently from multiple threads, so implentations must
+     * be thread safe
+     * @param cell
+     * @param viewCellID
+     * @param viewWorldTransform
      */
-    @Override
-    protected CellRenderer createCellRenderer(RendererType rendererType) {
-        // Overloaded to prevent log message wrt null rederer
-        return null;
-    }
+    public void viewTransformChanged(CellID cell, CellID viewCellID, CellTransform viewWorldTransform);
 }

@@ -17,12 +17,16 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- * Listener for tracking cell transform changes
+ * Listener for tracking cell transform changes. If the implementation of this
+ * interface is a ManagedObject then transormChanged is called from within a
+ * darkstar transaction. If it does not implement ManageObject then the
+ * listener is called from outside the Darkstar transaction system.
  * 
  * @author paulby
  */
