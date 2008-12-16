@@ -39,7 +39,7 @@ public abstract class ViewCellMO extends CellMO {
     public ViewCellMO(BoundingVolume localBounds, CellTransform transform) {
         super(localBounds, transform);
         addComponent(new ChannelComponentMO(this));
-        addComponent(new MovableComponentMO(this));
+        addComponent(new MovableAvatarComponentMO(this), MovableComponentMO.class);
     }
     
     /**
@@ -66,7 +66,7 @@ public abstract class ViewCellMO extends CellMO {
      * Convenience method, simply calls moveableComponent.localMoveRequest
      * @param transform
      */
-    public void localMoveRequest(CellTransform transform) {
+//    public void localMoveRequest(CellTransform transform) {
 //        movableComp.localMoveRequest(transform);
-    }
+//    }
 }

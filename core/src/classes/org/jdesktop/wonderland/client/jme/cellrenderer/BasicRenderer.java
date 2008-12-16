@@ -45,7 +45,9 @@ import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
@@ -94,38 +96,38 @@ public abstract class BasicRenderer implements CellRendererJME {
     public void setStatus(CellStatus status) {
         switch(status) {
             case ACTIVE :
-                CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                if (cell!=null && rend!=null && !isRendering) {
-                    if (rend instanceof CellRendererJME) {
-                        Entity parentEntity= findParentEntity(cell.getParent());
-                        Entity thisEntity = ((CellRendererJME)rend).getEntity();
+                if (cell!=null && !isRendering) {
+                    Entity parentEntity= findParentEntity(cell.getParent());
+                    Entity thisEntity = getEntity();
 
-                        thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(cell));
+                    thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(cell));
 
-                        if (parentEntity!=null) {
-//                            System.err.println("ADDING to parent "+parentEntity+"  "+thisEntity);
-                            parentEntity.addEntity(thisEntity);
-                        } else {
-//                            System.err.println("ADDING ROOT "+thisEntity);
-                            ClientContextJME.getWorldManager().addEntity(thisEntity);
+                    if (parentEntity!=null) {
+                        parentEntity.addEntity(thisEntity);
+                    } else {
+                        ClientContextJME.getWorldManager().addEntity(thisEntity);
+                    }
+
+                    // Figure out the correct parent entity for this cells entity.
+                    if (parentEntity!=null && thisEntity!=null) {
+                        RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+                        RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
+                        if (parentRendComp!=null && parentRendComp.getSceneRoot()!=null && thisRendComp!=null) {
+                            thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
                         }
+                    }
+                    isRendering = true;
 
-                        // Figure out the correct parent entity for this cells entity.
-                        if (parentEntity!=null && thisEntity!=null) {
-                            RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
-                            RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
-                            if (parentRendComp!=null && parentRendComp.getSceneRoot()!=null && thisRendComp!=null) {
-                                thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
-                            }
-                        }
-                        isRendering = true;
-
-                    } else
-                        logger.warning("Unexpected renderer class "+rend.getClass().getName());
                 } else {
                     logger.info("No Entity for Cell "+cell.getClass().getName());
                 }
             break;
+            case BOUNDS :
+                if (isRendering) {
+                    getEntity().getParent().removeEntity(getEntity());
+                    isRendering = false;
+                }
+                break;
         }
 
     }
@@ -139,7 +141,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         if (cell==null)
             return null;
 
-        CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        CellRenderer rend = cell.getCellRenderer(ClientContext.getRendererType());
         if (cell!=null && rend!=null) {
             if (rend instanceof CellRendererJME) {
 //                    System.out.println("FOUND PARENT ENTITY on CELL "+cell.getName());
@@ -191,9 +193,9 @@ public abstract class BasicRenderer implements CellRendererJME {
             rootNode.updateWorldBound();
 
             CollisionComponent cc=null;
-            if (rootNode.getWorldBound()==null) {
-                logger.warning("No BOUNDS FOR "+this.getClass().getName());
-            } else {
+//            if (rootNode.getWorldBound()==null) {
+//                logger.warning("No BOUNDS FOR "+this.getClass().getName());
+//            } else {
                 cc = setupCollision(collisionSystem, rootNode);
                 if (cc!=null)
                     entity.addComponent(CollisionComponent.class, cc);
@@ -204,7 +206,7 @@ public abstract class BasicRenderer implements CellRendererJME {
 //                    PhysicsComponent pc = setupPhysics(cc, physicsSystem, rootNode);
 //                    entity.addComponent(PhysicsComponent.class, pc);
 //                }
-            }
+//            }
         }
 
     }

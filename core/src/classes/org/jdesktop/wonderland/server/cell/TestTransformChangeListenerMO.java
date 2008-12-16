@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 

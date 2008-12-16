@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.Math3DUtils;
+import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 
 /**
  * Provides a mechanism for listener notification when the local view cell
@@ -60,7 +61,7 @@ public class ProximityComponent extends CellComponent {
     private ViewTransformListener viewTransformListener=null;
     private CellTransformListener  cellTransformListener=null;
     
-    private HashSet<ListenerRecord> listenerRecords = new HashSet();
+    private HashSet<ProximityListenerRecord> listenerRecords = new HashSet();
     
     /**
      * Set a list of bounds for which the system will track view enter/exit for
@@ -83,10 +84,10 @@ public class ProximityComponent extends CellComponent {
      */
     public void addProximityListener(ProximityListener listener, BoundingVolume[] localBounds) {
         synchronized(listenerRecords) {
-           ListenerRecord lr = new ListenerRecord(listener, localBounds);
+           ProximityListenerRecord lr = new ProximityListenerRecord(new ClientProximityListenerWrapper(cell,listener), localBounds);
            listenerRecords.add(lr);
            if (status!=null && status.ordinal()>=CellStatus.ACTIVE.ordinal())
-               lr.updateWorldBounds();
+               lr.updateWorldBounds(cell.getWorldTransform());
         }
     }
     
@@ -97,7 +98,7 @@ public class ProximityComponent extends CellComponent {
      */
     public void removeProximityListener(ProximityListener listener) {
         synchronized(listenerRecords) {
-            listenerRecords.remove(new ListenerRecord(listener, null));
+            listenerRecords.remove(new ClientProximityListenerWrapper(cell, listener));
         }
     }
     
@@ -113,8 +114,9 @@ public class ProximityComponent extends CellComponent {
                         cellTransformListener = new CellTransformListener();
                     }
 
-                    for(ListenerRecord l : listenerRecords)
-                        l.updateWorldBounds();
+                    CellTransform worldTransform = cell.getWorldTransform();
+                    for(ProximityListenerRecord l : listenerRecords)
+                        l.updateWorldBounds(worldTransform);
 
                     cell.getCellCache().getViewCell().addTransformChangeListener(viewTransformListener);
                     cell.addTransformChangeListener(cellTransformListener);
@@ -138,8 +140,9 @@ public class ProximityComponent extends CellComponent {
         public void transformChanged(Cell cell, ChangeSource source) {
             
             synchronized(listenerRecords) {
-                for(ListenerRecord l : listenerRecords) {
-                    l.transformChanged(cell);
+                CellTransform worldTransform = cell.getWorldTransform();
+                for(ProximityListenerRecord l : listenerRecords) {
+                    l.viewCellMoved(worldTransform);
                 }
             }
         }
@@ -153,12 +156,13 @@ public class ProximityComponent extends CellComponent {
     class CellTransformListener implements TransformChangeListener {
 
         public void transformChanged(Cell cell, ChangeSource source) {
+            CellTransform worldTransform = cell.getWorldTransform();
             synchronized(listenerRecords) {
-                for(ListenerRecord l : listenerRecords) {
-                    l.updateWorldBounds();
+                for(ProximityListenerRecord l : listenerRecords) {
+                    l.updateWorldBounds(worldTransform);
                     
                     // Reevalute view position and send enter/exit events as necessary
-                    l.transformChanged(cell.getCellCache().getViewCell());
+                    l.viewCellMoved(cell.getCellCache().getViewCell().getWorldTransform());
                 }
             }
         }
@@ -168,111 +172,35 @@ public class ProximityComponent extends CellComponent {
     /**
      * Internal structure containing the array of bounds for a given listener.
      */
-    class ListenerRecord {
-        ProximityListener proximityListener;
-        BoundingVolume[] localProxBounds;
-        BoundingVolume[] worldProxBounds;
-        private BoundingVolume currentlyIn = null;
-        private int currentlyInIndex = -1;
-        
-        public ListenerRecord(ProximityListener proximityListener, BoundingVolume[] localBounds) {
-            this.proximityListener = proximityListener;
-            setProximityBounds(localBounds);
-        }
-        
-         /**
-         * Set a list of bounds for which the system will track view enter/exit for
-         * this cell. When the view enters/exits one of these bounds the listener
-         * will be called with the index of the bounds in the supplied array.
-         * 
-         * The bounds must be ordered from largest to smallest, thus localBounds[i]
-         * must enclose localBounds[i+1]. An IllegalArgumentException will be thrown
-         * if this is not the case.
-         * 
-         * @param bounds
-         */
-        void setProximityBounds(BoundingVolume[] localBounds) {
-            this.localProxBounds = new BoundingVolume[localBounds.length];
-            this.worldProxBounds = new BoundingVolume[localBounds.length];
-            int i=0;
-            for(BoundingVolume b : localBounds) {
-                this.localProxBounds[i] = b.clone(null);
-                worldProxBounds[i] = b.clone(null);
+    class ClientProximityListenerWrapper implements ProximityListenerRecord.ProximityListenerWrapper {
 
-                if (i>0 && !Math3DUtils.encloses(localProxBounds[i-1], localProxBounds[i]))
-                        throw new IllegalArgumentException("Proximity Bounds incorrectly ordered");
-                i++;
-            }
+        private ProximityListener listener;
+        private Cell cell;
+
+        public ClientProximityListenerWrapper(Cell cell, ProximityListener listener) {
+            this.listener = listener;
+            this.cell = cell;
         }
 
-        /**
-         * The cell world bounds have been updated, so update our internal
-         * structures
-         */
-        private void updateWorldBounds() {
-            if (localProxBounds==null)
-                return;
-
-            // Update the world proximity bounds
-            CellTransform worldTransform = cell.getWorldTransform();
-            int i=0;
-            synchronized(worldProxBounds) {
-                for(BoundingVolume lb : localProxBounds) {
-                    worldProxBounds[i] = lb.clone(worldProxBounds[i]);
-                    worldTransform.transform(worldProxBounds[i]);
-                    i++;
-                }
-            }        
+        public void viewEnterExit(boolean enter, BoundingVolume proximityVolume, int proximityIndex) {
+            listener.viewEnterExit(enter, cell, proximityVolume, proximityIndex);
         }
 
-        /**
-         * The cells transform has changed so update our internal structures
-         * @param cell
-         */
-        public void transformChanged(Cell cell) {
-            Vector3f worldTransform = cell.getWorldTransform().getTranslation(null);
-            
-            // View Cell has moved
-            synchronized(worldProxBounds) {
-                BoundingVolume nowIn = null;
-                int nowInIndex=-1;      // -1 = not in any bounding volume
-                int i=0;
-                while(i<worldProxBounds.length) {
-                    if (worldProxBounds[i].contains(worldTransform)) {
-                        nowIn = worldProxBounds[i];
-                        nowInIndex = i;
-                    } else {
-                        i=worldProxBounds.length; // Exit the while
-                    }
-                    i++;
-                }
-                
-                if (currentlyInIndex!=nowInIndex) {
-                    if (nowInIndex<currentlyInIndex) {
-                        // EXIT
-                        proximityListener.viewEnterExit(false, cell, currentlyIn, currentlyInIndex);
-                    } else {
-                        // ENTER
-                        proximityListener.viewEnterExit(true, cell, nowIn, nowInIndex);
-                    }
-                    currentlyIn = nowIn;
-                    currentlyInIndex = nowInIndex;
-                }
-            }
-        }
-        
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof ListenerRecord))
+            if (!(o instanceof ClientProximityListenerWrapper))
                 return false;
-            
-            return ((ListenerRecord)o).proximityListener==proximityListener;
+
+            if (((ClientProximityListenerWrapper)o).listener==listener)
+                return true;
+
+            return false;
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 89 * hash + (this.proximityListener != null ? this.proximityListener.hashCode() : 0);
+            hash = 41 * hash + (this.listener != null ? this.listener.hashCode() : 0);
             return hash;
         }
     }

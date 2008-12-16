@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.spatial.impl.SpatialCell;
-import org.jdesktop.wonderland.server.spatial.impl.SpatialCellImpl;
+import org.jdesktop.wonderland.server.spatial.impl.SpatialCell;
 import org.jdesktop.wonderland.server.spatial.impl.UniverseImpl;
 
 /**
@@ -85,7 +85,7 @@ public class SpatialTest {
 //            this.cell = cell;
 //            this.start = new Vector3f(start);
 //            this.end = new Vector3f(end);
-//            transform = ((SpatialCellImpl)cell).getWorldTransform();
+//            transform = ((SpatialCell)cell).getWorldTransform();
 //        }
 //
 //        public void run() {
