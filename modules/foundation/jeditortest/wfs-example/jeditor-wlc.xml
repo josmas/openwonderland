@@ -10,4 +10,5 @@
         <z>0.0</z>
 	<angle>3.141569</angle>
     </rotation>
+    <preferredWidth>700</preferredWidth>
 </jeditortest-cell>
