@@ -17,10 +17,19 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Node;
+import com.jme.scene.shape.Teapot;
+import com.jme.scene.state.MaterialState;
+import com.jme.scene.state.RenderState;
 import imi.character.ninja.NinjaAvatarAttributes;
-import imi.scene.PScene;
+import imi.environments.ColladaEnvironment;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
@@ -30,35 +39,37 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  */
 public class AvatarAttributes extends NinjaAvatarAttributes {
 
-    public AvatarAttributes(String name) {
-        super(name, false, false);
+    public AvatarAttributes(Cell cell) {
+        super(cell.getName(), false, false);
         // Animations are setup in the super class
 
-        String avatarDetail = System.getProperty("avatar.detail", "medium");
-
-        if (avatarDetail.equalsIgnoreCase("medium")) {
-            setUseSimpleStaticModel(true, null);
-
-//                    try {
-//                        URL model = new URL("wla://avatarbase@"+serverHostAndPort+"/CylinderMan.dae");
-//
-//                        ColladaEnvironment loader = new ColladaEnvironment(ClientContextJME.getWorldManager(), model, "SimpleAvatar");
-//                        System.err.println("--------------> LOADED <----------------");
-//                        setUseSimpleSphereModel(true, loader.getPScene());
-//                    } catch(MalformedURLException e) {
-//                        logger.warning("Unable to load model");
-//                        e.printStackTrace();
-//                        setUseSimpleSphereModel(true, null);
-//                    }
-        }
-    }
-
-    public void setCell(Cell cell) {
         WonderlandSession session = cell.getCellCache().getSession();
         ServerSessionManager manager = LoginManager.find(session);
         String serverHostAndPort = manager.getServerNameAndPort();
 
         setBaseURL("wla://avatarbase@"+serverHostAndPort+"/");
+
+        String avatarDetail = System.getProperty("avatar.detail", "medium");
+
+        if (avatarDetail.equalsIgnoreCase("low")) {
+//            try {
+//                URL model = new URL("wla://avatarbase@"+serverHostAndPort+"/TeapotAvatar.dae");
+//
+//                ColladaEnvironment loader = new ColladaEnvironment(ClientContextJME.getWorldManager(), model, "SimpleAvatar");
+//                System.err.println("--------------> LOADED <----------------");
+//                setUseSimpleStaticModel(true, loader.getPScene());
+//            } catch(MalformedURLException e) {
+////                logger.warning("Unable to load model");
+//                e.printStackTrace();
+//                setUseSimpleStaticModel(true, null);
+//            }
+            setUseSimpleStaticModel(true, null);
+        } else if (avatarDetail.equalsIgnoreCase("medium")) {
+            setUseSimpleStaticModel(true, null);
+        } else {
+            // High is the default
+        }
+
     }
 
 }

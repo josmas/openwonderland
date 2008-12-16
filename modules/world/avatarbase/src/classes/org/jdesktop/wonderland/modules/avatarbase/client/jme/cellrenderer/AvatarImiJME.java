@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -26,31 +29,20 @@ import imi.character.statemachine.GameContextListener;
 import imi.scene.PMatrix;
 import imi.scene.processors.JSceneEventProcessor;
 import imi.utils.input.NinjaControlScheme;
-import java.util.ArrayList;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import imi.character.ninja.NinjaAvatar;
-import imi.character.Character;
-import imi.character.GoTo;
 import imi.character.ninja.NinjaContext;
 import imi.character.ninja.NinjaContext.TriggerNames;
-import imi.character.ninja.PunchState;
-import imi.character.statemachine.GameContext;
-import imi.environments.ColladaEnvironment;
-import java.awt.event.KeyEvent;
-import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.JFrame;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarInputSelector;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.LoginManager;
 
 /**
  * Renderer for Avatars, using the new avatar system
@@ -58,7 +50,7 @@ import org.jdesktop.wonderland.client.login.LoginManager;
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector {
+public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, AvatarActionTrigger {
 
     private AvatarCharacter avatarCharacter=null;
     private boolean selectedForInput = false;
@@ -90,7 +82,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector {
     public void cellTransformUpdate(CellTransform transform) {
         super.cellTransformUpdate(transform);
         if (!selectedForInput && avatarCharacter!=null) {
-//            avatarCharacter.triggerActionStart(TriggerNames.Move_Forward);
             ((AvatarController)avatarCharacter.getController()).cellTransformUpdate(transform);
         }
     }
@@ -101,13 +92,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector {
         origin.setTranslation(transform.getTranslation(null));
         origin.setRotation(transform.getRotation(null));
 
-        AvatarAttributes attributes = new AvatarAttributes("Avatar");
-        attributes.setCell(cell);
+        AvatarAttributes attributes = new AvatarAttributes(cell);
 
+        // Create the character, but don't add the entity to wm
+        // TODO this will change to take the config
         avatarCharacter = new AvatarCharacter(attributes, wm);
         avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(origin);
+        
+//        try {
+//            // Now load the config
+//            avatarCharacter.loadConfiguration(new URL("file:////Users/paulby/src/java.net/avatars/trunk/assets/configurations/test1.xml"));
+//        } catch (MalformedURLException ex) {
+//            Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 
-        System.err.println("CREATING ENTITY "+avatarCharacter);
 //        JScene jscene = avatar.getJScene();
 //        jscene.renderToggle();      // both renderers
 //        jscene.renderToggle();      // jme renderer only
@@ -115,9 +113,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector {
 //        jscene.toggleRenderPRendererMesh();   // turn off mesh
 //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
-
-        // The entity will be added by the cell
-        wm.removeEntity(avatarCharacter);
+//        wm.removeEntity(avatarCharacter);
 
         return avatarCharacter;
     }
@@ -150,7 +146,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector {
         avatarCharacter.getController().addCharacterMotionListener(new CharacterMotionListener() {
 
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                cell.getComponent(MovableComponent.class).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
+                ((MovableAvatarComponent)cell.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation), -1, false, null);
             }
         });
 
@@ -159,11 +155,22 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector {
         avatarCharacter.getContext().addGameContextListener(new GameContextListener() {
 
             public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation) {
-                System.err.println(pressed+" "+trigger+" "+translation);
+                ((MovableAvatarComponent)cell.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, null);
             }
 
         });
 
+    }
+
+    public void trigger(int trigger, boolean pressed) {
+        if (!selectedForInput) {
+            System.err.println("Trigger "+trigger);
+            if (pressed)
+                avatarCharacter.triggerActionStart(TriggerNames.Move_Forward);
+            else
+                avatarCharacter.triggerActionStop(TriggerNames.Move_Forward);
+
+        }
     }
 
 
