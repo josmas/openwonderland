@@ -31,8 +31,11 @@ import org.jdesktop.mtgame.WorldManager;
 public class AvatarCharacter extends NinjaAvatar {
 
 
+    /**
+     * Create the avatar character, but don't add it to wm
+     */
     public AvatarCharacter(AvatarAttributes attributes, WorldManager wm) {
-        super(attributes,wm);
+        super(attributes,wm, false);
     }
 
     @Override
