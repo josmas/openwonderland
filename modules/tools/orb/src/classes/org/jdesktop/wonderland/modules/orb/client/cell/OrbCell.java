@@ -55,9 +55,9 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
     private static final float HOVERSCALE = 1.5f;
     private static final float NORMALSCALE = 1.25f;
     
-    private OrbMessageHandler orbMessageHandler;
+    private OrbCellRenderer orbCellRenderer;
 
-    private String callID;
+    private OrbMessageHandler orbMessageHandler;
 
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -68,13 +68,14 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
     }
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
-        logger.fine("got status " + status + " for cell " + cell.getCellID());
+        logger.finer("callStatusChanged got status " + status + " for cell " + cell.getCellID());
 
         if (cell.getCellID() != getCellID()) {
             return;
         }
 
         if (status.equals(CellStatus.ACTIVE) && orbMessageHandler == null) {
+	    logger.fine("Creating orb Message handler for " + cell.getCellID());
             orbMessageHandler = new OrbMessageHandler(this);
         }
     }
@@ -101,10 +102,15 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
 	logger.fine("Create cell renderer...");
 
         if (rendererType == RendererType.RENDERER_JME) {
-	    return new OrbCellRenderer(this);
+	    orbCellRenderer = new OrbCellRenderer(this);
+	    return orbCellRenderer;
         }
 
         throw new IllegalStateException("Cell does not support " + rendererType);
+    }
+
+    public void removeMouseListener() {
+	orbCellRenderer.removeMouseListener();
     }
 
     public void orbSelected() {

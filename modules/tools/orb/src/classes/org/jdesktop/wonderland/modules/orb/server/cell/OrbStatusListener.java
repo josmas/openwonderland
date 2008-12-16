@@ -149,12 +149,15 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    break;
 
         case CallStatus.ENDED: 
-	    logger.finest("Sending OrbEndCallMessage");
 	    WonderlandContext.getCellManager().removeCellFromWorld(orbCellMORef.get());
 	    break;
 	}
     }
 
+    public void endCall(String callID) {
+	WonderlandContext.getCellManager().removeCellFromWorld(orbCellMORef.get());
+    }
+ 	
     private boolean starPressed;
 
     private boolean playingHelp;
@@ -272,7 +275,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 
 	    isMuted = true;
 
-	    OrbMuteCallMessage orbMuteCallMessage = new OrbMuteCallMessage(cellID, callID, true);
+	    OrbMuteCallMessage orbMuteCallMessage = new OrbMuteCallMessage(cellID, true);
 
             // send to everybody cellChannel.send(cellChannel.getSessions(), orbMessage.getBytes());            
 	    try {
@@ -300,7 +303,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 		logger.warning("unable to play unmuted treatment to " + call
 		    + ":  " + e.getMessage());
 	    }
-	    OrbMuteCallMessage orbUnmuteCallMessage = new OrbMuteCallMessage(cellID, callID, false);
+	    OrbMuteCallMessage orbUnmuteCallMessage = new OrbMuteCallMessage(cellID, false);
 
             // send to everybody cellChannel.send(cellChannel.getSessions(), orbMessage.getBytes());            
 	    return;

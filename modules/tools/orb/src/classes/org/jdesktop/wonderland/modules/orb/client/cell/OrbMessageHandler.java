@@ -58,20 +58,20 @@ public class OrbMessageHandler {
 
     private WonderlandSession session;
 
-    private String name;
-
     private ChannelComponent channelComp;
         
     private OrbCell orbCell;
 
     private OrbDialog orbDialog;
 
+    private String callID;
+
     public OrbMessageHandler(OrbCell orbCell) {
 	this.orbCell = orbCell;
 
         channelComp = orbCell.getComponent(ChannelComponent.class);
 
-        logger.fine("Channel comp is " + channelComp);
+        logger.finer("OrbCellID " + orbCell.getCellID() + ", Channel comp is " + channelComp);
 
         ChannelComponent.ComponentMessageReceiver msgReceiver =
             new ChannelComponent.ComponentMessageReceiver() {
@@ -88,12 +88,18 @@ public class OrbMessageHandler {
 
     public void processMessage(final Message message) {
 	logger.finest("process message " + message);
+
+	if (message instanceof OrbStartCallMessage) {
+	    callID = ((OrbStartCallMessage) message).getCallID();
+	}
     }
     
     public void orbSelected() {
 	if (orbDialog == null) {
-	    orbDialog = new OrbDialog(orbCell.getCellID(), channelComp, this);
-	}
+	    logger.finer("Creating new OrbDialog for " + callID);
+
+	    orbDialog = new OrbDialog(orbCell, channelComp, this);
+	} 
 
 	orbDialog.setVisible(true);
     }

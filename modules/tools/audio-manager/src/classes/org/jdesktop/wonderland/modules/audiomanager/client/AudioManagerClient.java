@@ -44,6 +44,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
@@ -284,6 +285,11 @@ public class AudioManagerClient extends BaseConnection implements
             } else {
                 voiceChatDialog.setChatters(msg.getChatInfo());
             }
+	} else if (message instanceof SpeakingMessage) {
+	    SpeakingMessage msg = (SpeakingMessage) message;
+
+	    System.out.println("CallId " + msg.getCallID() 
+		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}

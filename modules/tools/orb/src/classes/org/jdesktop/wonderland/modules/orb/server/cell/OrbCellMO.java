@@ -98,7 +98,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null));
+		new OrbMessageHandler(this, null, false));
 	}
     }
     
@@ -110,18 +110,18 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null));
+		new OrbMessageHandler(this, null, false));
 	}
     }
 
-    public OrbCellMO(String callID) {
+    public OrbCellMO(String callID, boolean simulateCalls) {
 	if (orbMessageHandlerRef == null) {
 	    addComponent(new ChannelComponentMO(this));
 
 	    logger.fine("Adding channel component...");
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, callID));
+		new OrbMessageHandler(this, callID, simulateCalls));
 	}
     }
 

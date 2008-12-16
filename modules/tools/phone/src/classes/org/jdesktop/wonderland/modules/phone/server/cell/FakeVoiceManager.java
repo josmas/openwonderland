@@ -94,20 +94,21 @@ public class FakeVoiceManager /*implements VoiceManager*/ {
         options.put("CallId", callID);
         CallStatus newStatus = CallStatus.getInstance("", CallStatus.ENDED, options);  
        
-            while(iter.hasNext()) {
-                ManagedReference ref = (ManagedReference)iter.next();
-                String mappedCallID = callList.get(ref);
+        while(iter.hasNext()) {
+            ManagedReference ref = (ManagedReference)iter.next();
+            String mappedCallID = callList.get(ref);
                 
-                if (mappedCallID == null || mappedCallID.compareTo(callID) == 0) {
-                    try {
-                        ManagedCallStatusListener listener = (ManagedCallStatusListener)
-			    ref.getForUpdate();
-                        listener.callStatusChanged(newStatus); 
-                    } catch (Exception ex) {
-                        //HARRISTODO: Catch this properly
-                    }
-                }                
-            }
+            if (mappedCallID == null || mappedCallID.compareTo(callID) == 0) {
+                try {
+                    ManagedCallStatusListener listener = (ManagedCallStatusListener)
+			ref.getForUpdate();
+                    listener.callStatusChanged(newStatus); 
+                } catch (Exception ex) {
+                    //HARRISTODO: Catch this properly
+                }
+            }                
+        }
+
         logger.info("Ended fake call. CallID: " + callID);
     }
     
