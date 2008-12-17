@@ -34,7 +34,15 @@ public class TestJEditorPane extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setText("jLabel1");
+ 	String resourceName = "/org/jdesktop/wonderland/modules/jeditortest/client/resources/test.html";
+ 	URL url = this.getClass().getResource(resourceName);
+ 	try {
+ 	    jEditorPane1 = new javax.swing.JEditorPane(url);
+ 	} catch (Exception ex) {
+ 	    System.err.println("Cannot find resource " + url);
+ 	}
+        jLabel1.setText("<html>This is 1ine 1<br>This is line 2<br>This is line 3<html>");
+
         add(jLabel1, java.awt.BorderLayout.NORTH);
 
         jScrollPane1.setViewportView(jEditorPane1);
