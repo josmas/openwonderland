@@ -15,7 +15,6 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.web.asset.resources;
 
 import java.io.StringWriter;
@@ -30,7 +29,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.common.modules.ModuleChecksums;
-import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;
 
@@ -44,6 +42,45 @@ import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;
  */
 @Path("/{modulename}/checksums/get")
 public class ModuleChecksumsResource {
+    
+    @GET
+    @Produces("text/plain")
+    @Path("/{assettype}")
+    public Response getAssetChecksums(@PathParam("modulename") String moduleName,
+            @PathParam("assettype") String assetType) {
+
+        /*
+         * Get a map of all of the Checksum objects for each art asset. We see
+         * if the module name matches each entry and collect its checksum
+         * entries into a single map.
+         */
+        ModuleChecksums cks = new ModuleChecksums();
+        Map<DeployedAsset, ModuleChecksums> checksumMap = AssetDeployer.getChecksumMap();
+        Iterator<DeployedAsset> it = checksumMap.keySet().iterator();
+        while (it.hasNext() == true) {
+            DeployedAsset asset = it.next();
+            if (asset.moduleName.equals(moduleName) == true) {
+                if (assetType == null || asset.assetType.equals(assetType) == true) {
+                    ModuleChecksums checksums = checksumMap.get(asset);
+                    cks.putChecksums(checksums.getChecksums());
+                }
+            }
+        }
+        
+        /* Write the XML encoding to a writer and return it */
+        StringWriter sw = new StringWriter();
+        try {
+            cks.encode(sw);
+            ResponseBuilder rb = Response.ok(sw.toString());
+            return rb.build();
+        } catch (javax.xml.bind.JAXBException excp) {
+            /* Log an error and return an error response */
+            Logger logger = Logger.getLogger(ModuleChecksumsResource.class.getName());
+            logger.log(Level.WARNING, "[ASSET] Unable to encode checksums", excp);
+            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
+            return rb.build();
+        }
+    }
     
     /**
      * Returns the checksums information about a module's resources, given its
@@ -62,36 +99,6 @@ public class ModuleChecksumsResource {
     @GET
     @Produces("text/plain")
     public Response getModuleChecksums(@PathParam("modulename") String moduleName) {
-        /* Fetch thhe error logger for use in this method */
-        Logger logger = ModuleManager.getLogger();
-
-        /*
-         * Get a map of all of the Checksum objects for each art asset. We see
-         * if the module name matches each entry and collect its checksum
-         * entries into a single map.
-         */
-        ModuleChecksums cks = new ModuleChecksums();
-        Map<DeployedAsset, ModuleChecksums> checksumMap = AssetDeployer.getChecksumMap();
-        Iterator<DeployedAsset> it = checksumMap.keySet().iterator();
-        while (it.hasNext() == true) {
-            DeployedAsset asset = it.next();
-            if (asset.moduleName.equals(moduleName) == true) {
-                ModuleChecksums checksums = checksumMap.get(asset);
-                cks.putChecksums(checksums.getChecksums());
-            }
-        }
-        
-        /* Write the XML encoding to a writer and return it */
-        StringWriter sw = new StringWriter();
-        try {
-            cks.encode(sw);
-            ResponseBuilder rb = Response.ok(sw.toString());
-            return rb.build();
-        } catch (javax.xml.bind.JAXBException excp) {
-            /* Log an error and return an error response */
-            logger.log(Level.WARNING, "[ASSET] Unable to encode checksums", excp);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
-        }
+        return getAssetChecksums(moduleName, null);
     }
 }
