@@ -65,6 +65,8 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    processMouseKeyboardEvent(event, mousePickInfoPrev, null);
 	} else if (event instanceof FocusChangeEvent) {
 	    processFocusChangeEvent(((FocusChangeEvent)event).getChanges());
+	} else if (event instanceof Event) {
+	    processGlobalEvent(event);
 	} else {
 	    logger.warning("Invalid event type encountered, event = " + event);
 	}
@@ -173,6 +175,11 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 	    logger.fine("Propogating to parents");
 	    tryListenersForEntityParents(entity.getParent(), event, propState);
 	}
+    }
+
+    private void processGlobalEvent (Event event) {
+	logger.fine("Distributor: received global event = " + event);
+	tryGlobalListeners(event);
     }
 }
 
