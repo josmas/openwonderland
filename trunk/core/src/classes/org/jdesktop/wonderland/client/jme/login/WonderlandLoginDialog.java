@@ -40,10 +40,12 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
                                  LoginPanel login) {
         super(parent, modal);
         
+	/* DISABLE for cutoff popup fix
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
         }
+	*/
 
         // remember the child panel
         this.login = login;

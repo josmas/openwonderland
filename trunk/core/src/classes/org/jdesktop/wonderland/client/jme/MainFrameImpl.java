@@ -60,11 +60,17 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
         // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
         // For now, force the cross-platform (metal) LAF to be used
-//        try {
-//            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-//        } catch (Exception ex) {
-//            logger.warning("Loading of Metal look-and-feel failed, exception = " + ex);
-//        }
+	// Also workaround bug 10.
+        try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+	    if ("Mac OS X".equals(System.getProperty("os.name"))) {
+		//to workaround popup clipping on the mac we force top-level popups
+		//note: this is implemented in scenario's EmbeddedPopupFactory
+		javax.swing.UIManager.put("PopupFactory.forceHeavyWeight", Boolean.TRUE);
+	    }
+        } catch (Exception ex) {
+            logger.warning("Loading of " + UIManager.getCrossPlatformLookAndFeelClassName() + " look-and-feel failed, exception = " + ex);
+        }
 
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
