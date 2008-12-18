@@ -57,7 +57,7 @@ public class LoaderManager {
     }
     
     public ModelLoader getLoader(File file) {
-        ModelLoaderFactory loaderFactory = activeLoaders.get(org.jdesktop.wonderland.common.FileUtils.getFileExtension(file.getName()));
+        ModelLoaderFactory loaderFactory = activeLoaders.get(org.jdesktop.wonderland.common.FileUtils.getFileExtension(file.getName()).toLowerCase());
         
         return loaderFactory.getLoader();
     }
