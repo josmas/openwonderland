@@ -17,13 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import imi.character.CharacterAttributes;
 import imi.character.CharacterMotionListener;
 import imi.character.statemachine.GameContextListener;
 import imi.scene.PMatrix;
@@ -38,7 +36,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import imi.character.ninja.NinjaContext;
 import imi.character.ninja.NinjaContext.TriggerNames;
-import java.net.URL;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
@@ -92,7 +89,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         origin.setTranslation(transform.getTranslation(null));
         origin.setRotation(transform.getRotation(null));
 
-        AvatarAttributes attributes = new AvatarAttributes(cell);
+        CharacterAttributes attributes = new AvatarAttributes(cell);
 
         // Create the character, but don't add the entity to wm
         // TODO this will change to take the config

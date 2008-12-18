@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 public class AvatarAttributes extends NinjaAvatarAttributes {
 
     public AvatarAttributes(Cell cell) {
-        super(cell.getName(), false, false);
+        super(cell.getName(), true, true);
         // Animations are setup in the super class
 
         WonderlandSession session = cell.getCellCache().getSession();
@@ -52,8 +52,11 @@ public class AvatarAttributes extends NinjaAvatarAttributes {
         String avatarDetail = System.getProperty("avatar.detail", "medium");
 
         if (avatarDetail.equalsIgnoreCase("low")) {
+            setUseSimpleStaticModel(true, null);
+        } else if (avatarDetail.equalsIgnoreCase("medium")) {
 //            try {
-//                URL model = new URL("wla://avatarbase@"+serverHostAndPort+"/TeapotAvatar.dae");
+////                URL model = new URL("wla://avatarbase@"+serverHostAndPort+"/TeapotAvatar.dae");
+//                URL model = new URL("wla://avatarbase@"+serverHostAndPort+"/CylinderMan.dae");
 //
 //                ColladaEnvironment loader = new ColladaEnvironment(ClientContextJME.getWorldManager(), model, "SimpleAvatar");
 //                System.err.println("--------------> LOADED <----------------");
@@ -63,8 +66,6 @@ public class AvatarAttributes extends NinjaAvatarAttributes {
 //                e.printStackTrace();
 //                setUseSimpleStaticModel(true, null);
 //            }
-            setUseSimpleStaticModel(true, null);
-        } else if (avatarDetail.equalsIgnoreCase("medium")) {
             setUseSimpleStaticModel(true, null);
         } else {
             // High is the default

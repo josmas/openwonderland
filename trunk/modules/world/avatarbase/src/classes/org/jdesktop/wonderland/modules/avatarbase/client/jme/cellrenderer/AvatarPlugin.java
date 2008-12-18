@@ -46,7 +46,7 @@ public class AvatarPlugin implements ClientPlugin {
 
     public void initialize(ServerSessionManager loginManager) {
         ClientContextJME.getAvatarRenderManager().registerRenderer(AvatarImiJME.class);
-        
+
         ClientContextJME.getViewManager().addViewManagerListener(new ViewManagerListener() {
             public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
                 if (oldViewCell!=null) {
