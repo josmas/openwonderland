@@ -159,7 +159,8 @@ public abstract class InputEvent3D extends Event {
     /**
      * INTERNAL ONLY.
      * <br>
-     * Returns the pickInfo for this event.
+     * Returns the pickInfo for this event. This provides full event information to Wonderland components
+     * which need it, such as the World Builder.
      */
     public PickInfo getPickInfo() {
         return pickInfo;
