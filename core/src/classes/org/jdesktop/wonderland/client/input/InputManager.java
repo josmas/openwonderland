@@ -489,6 +489,17 @@ public abstract class InputManager
     }
 
     /**
+     * Inject an event into the input system. The event doesn't have an associated entity. Therefore
+     * it will only be distributed to the global event listeners.
+     * @param event The event to be distributed to enabled global event listeners.
+     */
+    public void postEvent (Event event) {
+	eventDistributor.enqueueEvent(event);
+    }
+
+    /* NOTE: I've decided not to implement an entity variant of postEvent at this time. */
+
+    /**
      * The return type for pickMouseEventSwing. If entity is non-null it is the entity hit by the pick.
      * The pickDetails is the specific picking details for that entity.
      * <br>
