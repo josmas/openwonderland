@@ -48,10 +48,12 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
         initComponents();
 
+	/* DISABLE for cutoff popup fix
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
         }
+	*/
 
         // load any saved credentials
         loadCredentials();
