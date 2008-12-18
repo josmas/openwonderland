@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import imi.character.CharacterAttributes;
+import imi.character.ninja.Ninja;
 import imi.character.ninja.NinjaAvatar;
 import imi.character.ninja.NinjaContext.TriggerNames;
 import imi.character.ninja.PunchState;
@@ -29,19 +30,19 @@ import org.jdesktop.mtgame.WorldManager;
  *
  * @author paulby
  */
-public class AvatarCharacter extends NinjaAvatar {
+public class SimpleAvatarCharacter extends AvatarCharacter {
 
 
     /**
      * Create the avatar character, but don't add it to wm
      */
-    public AvatarCharacter(CharacterAttributes attributes, WorldManager wm) {
-        super(attributes,wm, false);
+    public SimpleAvatarCharacter(CharacterAttributes attributes, WorldManager wm) {
+        super(attributes,wm);
     }
 
     @Override
     protected GameContext instantiateContext() {
-        return new AvatarContext(this);
+        return new SimpleAvatarContext(this);
     }
 
     @Override

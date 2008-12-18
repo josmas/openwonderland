@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import imi.character.CharacterEyes;
 import imi.character.ninja.NinjaContext.TriggerNames;
+import java.util.logging.Logger;
 
 /**
  * A test to demonstrate triggering motion from other interfaces
@@ -47,6 +49,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
         boolean enabled = (avatar!=null);
 
         if (enabled) {
+            actionCB.removeAllItems();
             for(String anim : avatar.getAnimations()) {
                 actionCB.addItem(anim);
             }
@@ -59,7 +62,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
         backwardB.setEnabled(enabled);
         leftB.setEnabled(enabled);
         actionCB.setEnabled(enabled);
-        expressionCB.setEnabled(enabled);
+//        expressionCB.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -71,6 +74,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jSlider1 = new javax.swing.JSlider();
         jPanel1 = new javax.swing.JPanel();
         forwardB = new javax.swing.JButton();
         backwardB = new javax.swing.JButton();
@@ -80,6 +84,11 @@ public class AvatarTestPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         expressionCB = new javax.swing.JComboBox();
+        runActionB = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        renderQuality = new javax.swing.JComboBox();
+        winkB = new javax.swing.JButton();
+        eyeSelectionCB = new javax.swing.JComboBox();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Movement"));
 
@@ -160,21 +169,42 @@ public class AvatarTestPanel extends javax.swing.JPanel {
                     .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
-        actionCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCBActionPerformed(evt);
-            }
-        });
-
         jLabel1.setText("Action");
 
         jLabel2.setText("Expression");
 
+        expressionCB.setEnabled(false);
         expressionCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 expressionCBActionPerformed(evt);
             }
         });
+
+        runActionB.setText("Run");
+        runActionB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runActionBActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Render Quality");
+
+        renderQuality.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "High", "Medium", "Low" }));
+        renderQuality.setEnabled(false);
+        renderQuality.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renderQualityActionPerformed(evt);
+            }
+        });
+
+        winkB.setText("Wink");
+        winkB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                winkBActionPerformed(evt);
+            }
+        });
+
+        eyeSelectionCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Left Eye", "Right Eye" }));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -184,31 +214,53 @@ public class AvatarTestPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(jLabel1)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(actionCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
+                        .add(28, 28, 28)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(jLabel2)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                            .add(expressionCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(jLabel1))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(actionCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(runActionB))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(eyeSelectionCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(expressionCB, 0, 128, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(winkB))))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel3)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(renderQuality, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(actionCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(8, 8, 8)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(runActionB)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jLabel1)
+                        .add(actionCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(expressionCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(95, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(eyeSelectionCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(winkB))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 18, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(renderQuality, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -244,26 +296,55 @@ public class AvatarTestPanel extends javax.swing.JPanel {
 //        }
     }//GEN-LAST:event_expressionCBActionPerformed
 
-    private void actionCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionCBActionPerformed
-//        if (avatarCharacter!=null) {
-//            avatarCharacter.setAnimation((String) actionCB.getSelectedItem());
-//
-//            // TODO trigger a single cycle of this animation
-//            avatarCharacter.triggerActionStart(TriggerNames.Punch);
-//        }
-    }//GEN-LAST:event_actionCBActionPerformed
+    private void runActionBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runActionBActionPerformed
+        if (avatarCharacter!=null) {
+            avatarCharacter.setAnimation((String) actionCB.getSelectedItem());
+
+            // TODO trigger a single cycle of this animation
+            avatarCharacter.triggerActionStart(TriggerNames.Punch);
+        }
+}//GEN-LAST:event_runActionBActionPerformed
+
+    private void renderQualityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderQualityActionPerformed
+        switch(renderQuality.getSelectedIndex()) {
+            case 0 :
+                
+                break;
+            case 1:
+                break;
+            case 2 :
+                break;
+            default :
+                Logger.getAnonymousLogger().severe("Unknown render quality");
+                return;
+        }
+}//GEN-LAST:event_renderQualityActionPerformed
+
+    private void winkBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_winkBActionPerformed
+        // TODO add your handling code here:
+        CharacterEyes eyes = avatarCharacter.getEyes();
+
+        eyes.wink((eyeSelectionCB.getSelectedIndex()==1));
+
+}//GEN-LAST:event_winkBActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox actionCB;
     private javax.swing.JButton backwardB;
     private javax.swing.JComboBox expressionCB;
+    private javax.swing.JComboBox eyeSelectionCB;
     private javax.swing.JButton forwardB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JSlider jSlider1;
     private javax.swing.JButton leftB;
+    private javax.swing.JComboBox renderQuality;
     private javax.swing.JButton rightB;
+    private javax.swing.JButton runActionB;
+    private javax.swing.JButton winkB;
     // End of variables declaration//GEN-END:variables
 
 }
