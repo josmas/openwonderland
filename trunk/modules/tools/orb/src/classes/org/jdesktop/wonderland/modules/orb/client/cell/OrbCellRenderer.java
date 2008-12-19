@@ -130,7 +130,7 @@ public class OrbCellRenderer extends BasicRenderer {
     }
 
     private Node createAnimationEntity() {
-	Sphere s=new Sphere("My sphere",30,30,5);
+	Sphere s=new Sphere("My sphere",30,30,(float).5);
 	// I will rotate this pivot to move my light
 	Node pivot=new Node("Pivot node");
 	// This light will rotate around my sphere. Notice I don't
@@ -188,6 +188,7 @@ public class OrbCellRenderer extends BasicRenderer {
         node.updateModelBound();
 
         CellTransform transform = cell.getLocalTransform();
+	logger.fine("transform:  " + transform);
         Vector3f translation = transform.getTranslation(null);
         Vector3f scaling = transform.getScaling(null);
         Quaternion rotation = transform.getRotation(null);

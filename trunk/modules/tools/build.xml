@@ -13,6 +13,7 @@
         <include name="microphone/build.xml"/>
         <include name="coneofsilence/build.xml"/>
         <include name="phone/build.xml"/>
+        <include name="audiorecorder/build.xml"/>
         <include name="artimport/build.xml"/>
     </fileset>
     
