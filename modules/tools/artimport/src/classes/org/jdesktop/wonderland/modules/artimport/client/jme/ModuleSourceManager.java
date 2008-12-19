@@ -27,9 +27,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
 /**
  *
@@ -55,7 +55,7 @@ public class ModuleSourceManager {
 
         String srcPkg = "org.jdesktop.wonderland.modules."+moduleName;
 
-        String srcPkgDir = ("src.classes."+srcPkg).replaceAll("\\.", File.separator);
+        String srcPkgDir = ("src.classes."+srcPkg).replaceAll("\\.", Matcher.quoteReplacement(File.separator));
 
         File clientSrc = new File(moduleDir.getAbsolutePath()+File.separatorChar+srcPkgDir+File.separatorChar+"client");
         clientSrc.mkdirs();
