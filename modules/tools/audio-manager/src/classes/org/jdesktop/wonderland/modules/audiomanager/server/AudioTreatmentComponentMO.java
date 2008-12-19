@@ -212,7 +212,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
 
 	    Vector3f location = cellRef.get().getLocalTransform(null).getTranslation(null);
 
-	    setup.x = -location.getX();
+	    setup.x = location.getX();
 	    setup.y = location.getY();
 	    setup.z = location.getZ();
 
