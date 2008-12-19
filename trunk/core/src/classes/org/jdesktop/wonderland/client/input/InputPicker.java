@@ -996,6 +996,7 @@ public abstract class InputPicker {
 	    exitEvent.setPickDetails(entry.pickDetails);
 	    exitEvent.setPickInfo(pickInfo);
 	    //System.err.println("Try sending exitEvent = " + exitEvent);
+	    eventDistributor.tryGlobalListeners(exitEvent);
 	    //System.err.println("Try entity = " + entry.entity);
 	    tryListenersForEntity(entry.entity, exitEvent);
 	}
@@ -1010,6 +1011,7 @@ public abstract class InputPicker {
 		EventDistributor.createEventForEntity(enterEventProto, entry.entity);
 	    enterEvent.setPickDetails(entry.pickDetails);
 	    enterEvent.setPickInfo(pickInfo);
+	    eventDistributor.tryGlobalListeners(enterEvent);
 	    tryListenersForEntity(entry.entity, enterEvent);
 	}
     }
