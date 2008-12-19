@@ -491,6 +491,9 @@ public abstract class InputManager
     /**
      * Inject an event into the input system. The event doesn't have an associated entity. Therefore
      * it will only be distributed to the global event listeners.
+     *
+     * NOTE: make sure that the class of the argument event implements clone.
+     *
      * @param event The event to be distributed to enabled global event listeners.
      */
     public void postEvent (Event event) {
