@@ -180,15 +180,15 @@ public abstract class EventDistributor implements Runnable {
         synchronized (globalEventListeners) {
                 Iterator<EventListener> it = globalEventListeners.iterator();
             while (it.hasNext()) {
-                    EventListener listener = it.next();
-            if (listener.isEnabled()) {
-                logger.fine("Calling consume for listener " + listener);
-                Event distribEvent = createEventForGlobalListener(event);
-                if (listener.consumesEvent(distribEvent)) {
-                logger.fine("CONSUMED.");
-                listener.postEvent(distribEvent);
-                }
-            }
+		EventListener listener = it.next();
+		if (listener.isEnabled()) {
+		    logger.fine("Calling consume for listener " + listener);
+		    Event distribEvent = createEventForGlobalListener(event);
+		    if (listener.consumesEvent(distribEvent)) {
+			logger.fine("CONSUMED.");
+			listener.postEvent(distribEvent);
+		    }
+		}
             }
         }
     }
