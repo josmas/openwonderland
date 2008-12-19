@@ -288,7 +288,7 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof SpeakingMessage) {
 	    SpeakingMessage msg = (SpeakingMessage) message;
 
-	    System.out.println("CallId " + msg.getCallID() 
+	    logger.fine("CallId " + msg.getCallID() 
 		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");

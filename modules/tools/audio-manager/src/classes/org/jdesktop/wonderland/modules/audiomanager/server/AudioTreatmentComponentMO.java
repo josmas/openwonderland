@@ -192,9 +192,14 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
 
 	            Iterator<String> it = checksums.keySet().iterator();
 
-	            while (it.hasNext()) {
-		        logger.warning("Checksum:  " + it.next());
-	            }
+		    if (it.hasNext() == false) {
+			System.out.println("There are no checksums!");
+		    } else {
+	                while (it.hasNext()) {
+			    String s = it.next();
+		            logger.fine("Checksum:  " + s + ":" + checksums.get(s).getChecksum());
+	                }
+		    }
 		}
 	    }
 
@@ -271,7 +276,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
             /* Open an HTTP connection to the Jersey RESTful service */
             String uriPart = moduleName + "/checksums/get/" + assetType;
             URL url = new URL(new URL(serverURL), ASSET_PREFIX + uriPart);
-	    System.out.println("fetchAssetChecksums:  " + url.toString());
+	    logger.fine("fetchAssetChecksums:  " + url.toString());
             return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception e) {
             /* Log an error and return null */

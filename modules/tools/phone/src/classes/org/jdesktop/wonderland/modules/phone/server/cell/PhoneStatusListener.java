@@ -68,6 +68,10 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageRe
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
+import org.jdesktop.wonderland.server.comms.CommsManager;
+
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
+
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -116,17 +120,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
      
     ManagedReference<PhoneCellMO> phoneCellMORef;
 
-    private class SenderInfo implements Serializable {
-	public WonderlandClientSender sender;
-	public WonderlandClientID clientID;
-
-	public SenderInfo(WonderlandClientSender sender, WonderlandClientID clientID) {
-	    this.sender = sender;
-	    this.clientID = clientID;
-	}
-    }
-
-    private ConcurrentHashMap<String, SenderInfo> senderMap =
+    private ConcurrentHashMap<String, WonderlandClientID> senderMap =
         new ConcurrentHashMap();
 
     private ConcurrentHashMap<String, CallListing> callListingMap = 
@@ -139,10 +133,10 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 	        (PhoneCellMO) CellManagerMO.getCell(phoneCellMORef.get().getCellID()));
     }
 
-    public void mapCall(String externalCallID, WonderlandClientSender sender,
-	    WonderlandClientID clientID, CallListing listing) {
+    public void mapCall(String externalCallID, WonderlandClientID clientID, 
+	    CallListing listing) {
 
-	senderMap.put(externalCallID, new SenderInfo(sender, clientID));
+	senderMap.put(externalCallID, clientID);
 	callListingMap.put(externalCallID, listing);
     }
 	
@@ -156,15 +150,16 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 	    return;
 	}
 
-	SenderInfo senderInfo = senderMap.get(externalCallID);
+	WonderlandClientID clientID = senderMap.get(externalCallID);
 
-	if (senderInfo == null) {
-	    logger.warning("Can't find senderInfo for status:  " + status);
+	if (clientID == null) {
+	    logger.warning("Can't find clientID:  " + status);
 	    return;
 	}
 
-	WonderlandClientSender sender = senderInfo.sender;
-	WonderlandClientID clientID = senderInfo.clientID;
+        CommsManager cm = WonderlandContext.getCommsManager();
+
+        WonderlandClientSender sender = cm.getSender(CellChannelConnectionType.CLIENT_TYPE);
 
 	CallListing listing;
 

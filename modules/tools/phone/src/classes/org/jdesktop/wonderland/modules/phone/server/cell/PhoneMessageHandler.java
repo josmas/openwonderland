@@ -89,6 +89,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Origin;
 
 import org.jdesktop.wonderland.server.UserManager;
 
@@ -102,7 +103,10 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
 
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
 
+import com.jme.bounding.BoundingVolume;
+
 import com.jme.math.Vector3f;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -259,7 +263,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 
 	    logger.fine("Got place call message " + externalCallID);
 
-	    phoneStatusListenerRef.get().mapCall(externalCallID, sender, clientID, 
+	    phoneStatusListenerRef.get().mapCall(externalCallID, clientID, 
 		listing);
 
 	    PlayerSetup playerSetup = new PlayerSetup();
@@ -505,18 +509,36 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 
 	logger.fine("Spawning orb...");
 
+	CellMO cellMO = phoneCellMORef.get();
+
+	BoundingVolume boundingVolume = phoneCellMORef.get().getWorldBounds();
+
+	Vector3f center = new Vector3f();
+
+	boundingVolume.getCenter(center);
+
+	center.setY((float)1.5);
+
+	logger.finer("phone bounding volume:  " + boundingVolume
+	    + " center " + center);
+
         String cellType = 
 	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
 
-        OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, externalCallID, simulateCalls);
+        OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
+	    center, (float) .5, externalCallID, simulateCalls);
 
 	if (orbCellMO == null) {
 	    logger.warning("Unable to spawn orb");
 	    return;
 	}
 
+	OrbCellSetup setup = new OrbCellSetup();
+
+	setup.setOrigin(new Origin(center));
+
 	try {
-            ((BeanSetupMO)orbCellMO).setupCell(new OrbCellSetup());
+            ((BeanSetupMO)orbCellMO).setupCell(setup);
         } catch (ClassCastException e) {
             logger.warning("Error setting up new cell " +
                 orbCellMO.getName() + " of type " +

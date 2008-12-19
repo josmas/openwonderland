@@ -114,7 +114,7 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
 	WonderlandClientSender sender =  
 	    WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
 
-	orbStatusListener.mapCall(callID, sender, null);
+	orbStatusListener.addCallStatusListener(callID);
 
         orbStatusListenerRef =  AppContext.getDataManager().createReference(orbStatusListener);
 
