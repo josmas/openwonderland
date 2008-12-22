@@ -116,7 +116,7 @@ public class DisappearTest extends SimpleShapeCell {
 
 	    if (event instanceof MouseButtonEvent3D) {
 		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
-		if (buttonEvent.isPressed()) {
+		if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
 		    MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
 		    dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
 		    dragStartWorld = buttonEvent.getIntersectionPointWorld();
@@ -156,8 +156,8 @@ public class DisappearTest extends SimpleShapeCell {
 	public void commitEvent (Event event) {
 	    if (event instanceof MouseButtonEvent3D) {
 		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
-		if (buttonEvent.isClicked()) {
-		    if (event.getEntity().equals(cellRenderer.getSecondaryEntity())) {
+		if (buttonEvent.isClicked() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+ 		    if (event.getEntity().equals(cellRenderer.getSecondaryEntity())) {
 			cellRenderer.disconnectSecondaryObject();
 		    } else {
 			cellRenderer.disconnectPrimaryObject();
