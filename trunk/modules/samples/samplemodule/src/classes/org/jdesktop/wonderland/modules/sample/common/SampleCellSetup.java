@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.modules.sample.server;
+package org.jdesktop.wonderland.modules.sample.common;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;

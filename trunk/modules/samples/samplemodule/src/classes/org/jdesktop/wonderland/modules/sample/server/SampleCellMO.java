@@ -18,9 +18,7 @@
 package org.jdesktop.wonderland.modules.sample.server;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
-import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -29,7 +27,6 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 

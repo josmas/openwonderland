@@ -43,7 +43,8 @@ public class SampleCell extends Cell {
      * @param setupData
      */
     @Override
-    public void configure(CellConfig setupData) {
+    public void configure(CellConfig configData) {
+        super.configure(configData);
     }
     
     @Override
