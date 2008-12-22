@@ -58,6 +58,14 @@ public class MouseButtonEvent3D extends MouseEvent3D {
     }
     
     /**
+     * Returns the button which initiated this event. This is one of the following constants
+     * one of the following constants: MouseEvent.BUTTON1, MouseEvent.BUTTON2 or MouseEvent.BUTTON3.
+     */
+    public int getButton () {
+	return awtEvent.getButton();
+    }
+
+    /**
      * Returns true if this event indicates mouse click.
      */
     public boolean isClicked() {
