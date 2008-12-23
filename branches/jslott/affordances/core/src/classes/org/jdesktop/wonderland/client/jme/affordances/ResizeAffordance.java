@@ -27,8 +27,8 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.ControlCube;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -58,9 +58,6 @@ public class ResizeAffordance extends Affordance {
             b.setRandomColors();
             rootNode.attachChild(b);
         }
-        rootNode.updateWorldBound();
-        CellTransform t = cell.getLocalTransform();
-        rootNode.setLocalTranslation(t.getTranslation(null));
     }
     
     protected Node getRootNode() {
@@ -70,7 +67,7 @@ public class ResizeAffordance extends Affordance {
     public static ResizeAffordance addToCell(Cell cell) {
         ResizeAffordance resizeEntity = new ResizeAffordance(cell);
         CellRendererJME r = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        r.getEntity().addEntity(resizeEntity);
+        BasicRenderer.entityAddChild(r.getEntity(), resizeEntity);
         ClientContextJME.getWorldManager().addToUpdateList(resizeEntity.getRootNode());
         return resizeEntity;
     }

@@ -38,17 +38,17 @@ public class TestWorld implements ServerPlugin {
 
     public void initialize() {
         try {
-            //WonderlandContext.getCellManager().insertCellInWorld(new SimpleShapeCellMO(new Vector3f(7, 0, 5), 1));
+            WonderlandContext.getCellManager().insertCellInWorld(new AffordanceTestCellMO(new Vector3f(-8, 0, 2), 1, "TRANSLATE"));
+            WonderlandContext.getCellManager().insertCellInWorld(new AffordanceTestCellMO(new Vector3f(-20, 0, 2), 1, "ROTATE"));
+            WonderlandContext.getCellManager().insertCellInWorld(new AffordanceTestCellMO(new Vector3f(-32, 0, 2), 1, "RESIZE"));
 
-            WonderlandContext.getCellManager().insertCellInWorld(new MouseSpinCellMO(new Vector3f(-8, 0, 2), 1));
-
-//            WonderlandContext.getCellManager().insertCellInWorld(new SingingTeapotCellMO(new Vector3f(-8, 0, 7), 1, new MaterialJME(ColorRGBA.green, null, null, null, 0.5f)));
+                       
             
-            WonderlandContext.getCellManager().insertCellInWorld(new DragTestMO(new Vector3f(8, 0, 2), 1));
-
+            //WonderlandContext.getCellManager().insertCellInWorld(new SimpleShapeCellMO(new Vector3f(7, 0, 5), 1));
+//            WonderlandContext.getCellManager().insertCellInWorld(new MouseSpinCellMO(new Vector3f(-8, 0, 2), 1));
+//            WonderlandContext.getCellManager().insertCellInWorld(new SingingTeapotCellMO(new Vector3f(-8, 0, 7), 1, new MaterialJME(ColorRGBA.green, null, null, null, 0.5f)));
+            //            WonderlandContext.getCellManager().insertCellInWorld(new DragTestMO(new Vector3f(8, 0, 2), 1));
 	    //WonderlandContext.getCellManager().insertCellInWorld(new DisappearTestMO(new Vector3f(16, 0, 2), 1));
-
-
 //            WonderlandContext.getCellManager().insertCellInWorld(new SimpleShapeCellMO(new Vector3f(0, 2, -5), 1, SimpleShapeConfig.Shape.SPHERE));
 //
 //            WonderlandContext.getCellManager().insertCellInWorld(new SimpleShapeCellMO(new Vector3f(0, 2, 5), 1, SimpleShapeConfig.Shape.CONE));

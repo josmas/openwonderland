@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.client.jme.affordances;
 
-import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
@@ -29,6 +28,8 @@ import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
@@ -67,7 +69,8 @@ public class TranslateAffordance extends Affordance {
         RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
         this.addComponent(RenderComponent.class, rc);
         
-        /* Tube in the +z direction, color blue */
+        /* Arrow in the +z direction, color blue */
+        Entity e1 = new Entity("Arrow Z");
         Arrow a1 = new Arrow("Arrow Z", 1.5f, 0.05f);
         Node n1 = new Node();
         a1.setSolidColor(ColorRGBA.blue);
@@ -79,42 +82,52 @@ public class TranslateAffordance extends Affordance {
         n1.setLocalRotation(q);
         n1.setLocalTranslation(new Vector3f(0, 0, 0.75f));
         n1.attachChild(a1);
-        rootNode.attachChild(n1);
+        RenderComponent rc1 = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(n1);
+        e1.addComponent(RenderComponent.class, rc1);
+        BasicRenderer.entityAddChild(this, e1);
 
-        /* Tube in the +y direction, color green */
-//        Arrow a2 = new Arrow("Arrow Y", 1.5f, 0.05f);
-//        Node n2 = new Node();
-//        a2.setSolidColor(ColorRGBA.green);        
-//        MaterialState matState2 = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
-//        matState2.setDiffuse(ColorRGBA.green);
-//        n2.setRenderState(matState2);
-//        n2.setRenderState(zbuf);
-//        n2.setLocalTranslation(new Vector3f(0, 0.75f, 0));
-//        n2.attachChild(a2);
-//        rootNode.attachChild(n2);
-//        
-//        /* Tube in the +x direction, color red */
-//        Arrow a3 = new Arrow("Arrow X", 1.5f, 0.05f);
-//        Node n3 = new Node();
-//        a3.setSolidColor(ColorRGBA.red);
-//        MaterialState matState3 = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
-//        matState3.setDiffuse(ColorRGBA.red);
-//        n3.setRenderState(matState3);
-//        n3.setRenderState(zbuf);
-//        Quaternion q3 = new Quaternion().fromAngleAxis(1.5707f, new Vector3f(0, 0, 1));
-//        n3.setLocalRotation(q3);
-//        n3.setLocalTranslation(new Vector3f(-0.75f, 0, 0));
-//        n3.attachChild(a3);
-//        rootNode.attachChild(n3);
+        /* Arrow in the +y direction, color green */
+        Entity e2 = new Entity("Arrow Y");
+        Arrow a2 = new Arrow("Arrow Y", 1.5f, 0.05f);
+        Node n2 = new Node();
+        a2.setSolidColor(ColorRGBA.green);        
+        MaterialState matState2 = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+        matState2.setDiffuse(ColorRGBA.green);
+        n2.setRenderState(matState2);
+        n2.setRenderState(zbuf);
+        n2.setLocalTranslation(new Vector3f(0, 0.75f, 0));
+        n2.attachChild(a2);
+        RenderComponent rc2 = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(n2);
+        e2.addComponent(RenderComponent.class, rc2);
+        BasicRenderer.entityAddChild(this, e2);
         
-
-        CellTransform t = cell.getLocalTransform();
-        rootNode.setLocalTranslation(t.getTranslation(null));
-        rootNode.setModelBound(new BoundingSphere());
-        rootNode.updateModelBound();        
+        /* Arrow in the +x direction, color red */
+        Entity e3 = new Entity("Arrow X");
+        Arrow a3 = new Arrow("Arrow X", 1.5f, 0.05f);
+        Node n3 = new Node();
+        a3.setSolidColor(ColorRGBA.red);
+        MaterialState matState3 = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+        matState3.setDiffuse(ColorRGBA.red);
+        n3.setRenderState(matState3);
+        n3.setRenderState(zbuf);
+        Quaternion q3 = new Quaternion().fromAngleAxis(1.5707f, new Vector3f(0, 0, 1));
+        n3.setLocalRotation(q3);
+        n3.setLocalTranslation(new Vector3f(-0.75f, 0, 0));
+        n3.attachChild(a3);
+        RenderComponent rc3 = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(n3);
+        e3.addComponent(RenderComponent.class, rc3);
+        BasicRenderer.entityAddChild(this, e3);
+        
+        // Add collision to the Entities so they get events
         makeEntityPickable(this, rootNode);
-        MyDragListener listener = new MyDragListener();
-        listener.addToEntity(this);
+        makeEntityPickable(e1, n1);
+        makeEntityPickable(e2, n2);
+        makeEntityPickable(e3, n3);
+        
+        // Add listeners to each of the three entities for each axis.
+        new MyDragListener().addToEntity(e1);
+        new MyDragListener().addToEntity(e2);
+        new MyDragListener().addToEntity(e3);
     }
     
     protected Node getRootNode() {
@@ -124,12 +137,12 @@ public class TranslateAffordance extends Affordance {
     public static TranslateAffordance addToCell(Cell cell) {
         TranslateAffordance translateAffordance = new TranslateAffordance(cell);
         CellRendererJME r = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        r.getEntity().addEntity(translateAffordance);
+        BasicRenderer.entityAddChild(r.getEntity(), translateAffordance);
         ClientContextJME.getWorldManager().addToUpdateList(translateAffordance.getRootNode());
         return translateAffordance;
     }
     
-        private class MyDragListener extends EventClassListener {
+    private class MyDragListener extends EventClassListener {
 
 	// TODO: workaround for bug 27
 	boolean dragging;
@@ -144,12 +157,13 @@ public class TranslateAffordance extends Affordance {
 
         @Override
 	public Class[] eventClassesToConsume () {
-	    return new Class[] { MouseEvent3D.class };
+	    return new Class[] { MouseEvent3D.class, MouseButtonEvent3D.class };
 	}
 
         @Override
 	public void commitEvent (Event event) {
-
+            Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
+            logger.warning("COMMIT");
 	    CellTransform transform = cell.getLocalTransform();
 	    if (event instanceof MouseButtonEvent3D) {
 		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
@@ -173,24 +187,8 @@ public class TranslateAffordance extends Affordance {
 	    Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen, 
 							       new Vector3f());
             
-            MouseEvent awtMouseEvent = (MouseEvent)dragEvent.getAwtEvent();
-            Point dragScreen = new Point(awtMouseEvent.getX(), awtMouseEvent.getY());
-            
-            System.out.println("START: " + dragStartScreen + " END: " + dragScreen); 
-            // Distance
-            float dx = dragScreen.x - dragStartScreen.x;
-            float dy = dragScreen.y - dragStartScreen.y;
-            float dz = 0;
-            float distance = (float)Math.sqrt((dx * dx) /*+ (dy * dy) + (dz * dz)*/);
-            dragVector.x = 0;
-            dragVector.y = 0;
-            dragVector.z = distance;
-                   
-	    // Now add the drag vector the node translation and move the cell.
-	    Vector3f newTranslation = translationOnPress.add(dragVector);
-	    transform.setTranslation(newTranslation);
-	    movableComp.localMoveRequest(transform);
-         //   System.out.println(dragVector.toString());
+            // DO SOME TRANSLATION HERE!
+            logger.warning("DRAG FOR ENTITY " + event.getEntity().getName());
 	}
     }
 }

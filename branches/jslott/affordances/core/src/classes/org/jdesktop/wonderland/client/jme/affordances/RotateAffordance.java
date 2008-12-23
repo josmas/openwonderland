@@ -26,10 +26,12 @@ import com.jme.scene.shape.Tube;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -58,6 +60,7 @@ public class RotateAffordance extends Affordance {
         this.addComponent(RenderComponent.class, rc);
         
         /* Tube in the x-y plane, color red */
+        Entity e1 = new Entity("Tube X-Y");
         Tube t1 = new Tube("Tube X-Y", 3f, 2.8f, 0.1f, 50, 50);
         Node n1 = new Node();
         t1.setSolidColor(ColorRGBA.red);
@@ -68,9 +71,12 @@ public class RotateAffordance extends Affordance {
         Quaternion q = new Quaternion().fromAngleAxis(1.5707f, new Vector3f(1, 0, 0));
         n1.setLocalRotation(q);
         n1.attachChild(t1);
-        rootNode.attachChild(n1);
+        RenderComponent rc1 = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(n1);
+        e1.addComponent(RenderComponent.class, rc1);
+        BasicRenderer.entityAddChild(this, e1);
 
         /* Tube in the x-z plane, color green */
+        Entity e2 = new Entity("Tube X-Z");
         Tube t2 = new Tube("Tube X-Z", 3f, 2.8f, 0.1f, 50, 50);
         Node n2 = new Node();
         t2.setSolidColor(ColorRGBA.green);        
@@ -79,9 +85,12 @@ public class RotateAffordance extends Affordance {
         n2.setRenderState(matState2);
         n2.setRenderState(zbuf);
         n2.attachChild(t2);
-        rootNode.attachChild(n2);
+        RenderComponent rc2 = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(n2);
+        e2.addComponent(RenderComponent.class, rc2);
+        BasicRenderer.entityAddChild(this, e2);
         
         /* Tube in the y-z plane, color blue */
+        Entity e3 = new Entity("Tube Y-Z");
         Tube t3 = new Tube("Tube Y-Z", 3f, 2.8f, 0.1f, 50, 50);
         Node n3 = new Node();
         t2.setSolidColor(ColorRGBA.blue);
@@ -92,12 +101,9 @@ public class RotateAffordance extends Affordance {
         Quaternion q3 = new Quaternion().fromAngleAxis(1.5707f, new Vector3f(0, 0, 1));
         n3.setLocalRotation(q3);
         n3.attachChild(t3);
-        rootNode.attachChild(n3);
-        
-        
-        rootNode.updateWorldBound();
-        CellTransform t = cell.getLocalTransform();
-        rootNode.setLocalTranslation(t.getTranslation(null));
+        RenderComponent rc3 = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(n3);
+        e3.addComponent(RenderComponent.class, rc3);
+        BasicRenderer.entityAddChild(this, e3);        
     }
     
     protected Node getRootNode() {
@@ -107,7 +113,7 @@ public class RotateAffordance extends Affordance {
     public static RotateAffordance addToCell(Cell cell) {
         RotateAffordance rotateAffordance = new RotateAffordance(cell);
         CellRendererJME r = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        r.getEntity().addEntity(rotateAffordance);
+        BasicRenderer.entityAddChild(r.getEntity(), rotateAffordance);
         ClientContextJME.getWorldManager().addToUpdateList(rotateAffordance.getRootNode());
         return rotateAffordance;
     }

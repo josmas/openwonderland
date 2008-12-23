@@ -283,6 +283,25 @@ public abstract class BasicRenderer implements CellRendererJME {
     }
 
     /**
+     * Convenience method which attaches the child entity to the specified
+     * parent AND sets the attachpoint of the childs RenderComponent to the
+     * scene root of the parents RenderComponent
+     *
+     * @param parentEntity
+     * @param child
+     */
+    public static void entityAddChild(Entity parentEntity, Entity child) {
+        if (parentEntity != null && child != null) {
+            RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+            RenderComponent thisRendComp = (RenderComponent) child.getComponent(RenderComponent.class);
+            if (parentRendComp != null && parentRendComp.getSceneRoot() != null && thisRendComp != null) {
+                thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
+            }
+            parentEntity.addEntity(child);
+        }
+    }
+
+    /**
      * Given a url, determine and return the full asset URL.
      * 
      * @param origURL
