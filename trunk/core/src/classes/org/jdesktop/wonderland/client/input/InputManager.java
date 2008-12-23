@@ -349,11 +349,16 @@ public abstract class InputManager
     }
 
     /**
-     * Add an event listener to be tried once per event. This global listener can be added only once.
-     * Subsequent attempts to add it will be ignored.
+     * Register a global event listener with the input manager. If the listener has already been
+     * registered this action is a no-op. 
      *
-     * Note: It is not a good idea to call this from inside EventListener.computeEvent function.
-     * However, it is okay to call this from inside EventListener.commitEvent function if necessary.
+     * The input manager attempts to distribute newly arriving events to all registered global listeners.
+     * It calls the consumesEvent method of the listener. If this returns true then the computeEvent 
+     * and commitEvent of the listener are called.
+     *
+     * Note: It is not a good idea to call addGlobalEventListener from inside the 
+     * EventListener.computeEvent method. However, it is okay to call this from inside EventListener.
+     * commitEvent method if necessary.
      *
      * @param listener The global event listener to be added.
      */
