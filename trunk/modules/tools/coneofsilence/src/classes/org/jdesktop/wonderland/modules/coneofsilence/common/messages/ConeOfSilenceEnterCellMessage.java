@@ -29,17 +29,25 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 public class ConeOfSilenceEnterCellMessage extends CellMessage {
 
     private CellID avatarCellID;
+    private String softphoneCallID;
     private boolean entered;
 
-    public ConeOfSilenceEnterCellMessage(CellID coneCellID, CellID avatarCellID, boolean entered) {
+    public ConeOfSilenceEnterCellMessage(CellID coneCellID, CellID avatarCellID, 
+	    String softphoneCallID, boolean entered) {
+
 	super(coneCellID);
 
 	this.avatarCellID = avatarCellID;
+	this.softphoneCallID = softphoneCallID;
 	this.entered = entered;
     }
     
     public CellID getAvatarCellID() {
 	return avatarCellID;
+    }
+
+    public String getSoftphoneCallID() {
+	return softphoneCallID;
     }
 
     public boolean getEntered() {

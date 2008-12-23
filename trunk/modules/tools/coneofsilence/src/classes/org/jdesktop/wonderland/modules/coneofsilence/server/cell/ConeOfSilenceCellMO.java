@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Rotation;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -160,9 +161,10 @@ public class ConeOfSilenceCellMO extends CellMO implements BeanSetupMO {
 
         /* Set the origin, scale, and rotation of the cell */
         CellTransform transform = this.getLocalTransform(null);
+
         if (transform != null) {
             setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
-            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
+	    setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
             setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
         }
 

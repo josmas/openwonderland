@@ -46,11 +46,14 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.modules.coneofsilence.common.messages.ConeOfSilenceEnterCellMessage;
 
@@ -117,12 +120,7 @@ public class ConeOfSilenceMessageHandler implements ProximityListener {
    public void viewEnterExit(boolean entered, Cell cell, BoundingVolume proximityVolume, 
 	    int proximityIndex) {
 
-	logger.warning("cell " + cell + " entered = " + entered);
-
-	ConeOfSilenceEnterCellMessage message = new ConeOfSilenceEnterCellMessage(
-	    coneOfSilenceCell.getCellID(), cell.getCellID(), entered);
-
-	channelComp.send(message);
+	logger.warning("cellID " + cell.getCellID() + " entered = " + entered);
    }
 
 }
