@@ -97,7 +97,11 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
             ((InputEvent3D)event).setPickInfo(destPickInfo);
         }
 
-	// First try the global event listeners
+
+	// Try the global event listeners. Set the pickDetails of mouse events to topmost pickDetails.
+        if (event instanceof MouseEvent3D && destPickInfo != null && destPickInfo.size() > 0) {
+	    ((MouseEvent3D)event).setPickDetails(destPickInfo.get(0));
+	}
 	tryGlobalListeners(event);
 
 	// Start out the entity search assuming no propagation to unders
@@ -105,7 +109,7 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
 
 	// Walk through successive depth levels, as long as propagateToUnder is true,
 	// searching up the parent chain in each level
-        if (destPickInfo == null) return;
+        if (destPickInfo == null || destPickInfo.size() <=0) return;
 	PickDetails pickDetails = destPickInfo.get(0);
 	logger.fine("pickDetails = " + pickDetails);
 	int idx = 0;
