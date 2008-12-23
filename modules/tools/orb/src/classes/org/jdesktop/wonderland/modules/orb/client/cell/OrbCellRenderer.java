@@ -188,7 +188,6 @@ public class OrbCellRenderer extends BasicRenderer {
         node.updateModelBound();
 
         CellTransform transform = cell.getLocalTransform();
-	logger.fine("transform:  " + transform);
         Vector3f translation = transform.getTranslation(null);
         Vector3f scaling = transform.getScaling(null);
         Quaternion rotation = transform.getRotation(null);

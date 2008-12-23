@@ -22,7 +22,10 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Rotation;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellSetup;
+
+import com.jme.math.Vector3f;
 
 /**
  * The cell factory for the sample cell.
@@ -40,6 +43,13 @@ public class ConeOfSilenceCellFactory implements CellFactory {
         ConeOfSilenceCellSetup setup = new ConeOfSilenceCellSetup();
         setup.setName("COS");
         setup.setFullVolumeRadius(2.0);
+
+	Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
+	/*
+	 * Try rotating 45 degrees to see what that does.
+	 */
+	setup.setRotation(new Rotation(axis, (float) Math.PI / 4));
+
         Logger.getLogger(ConeOfSilenceCellFactory.class.getName()).warning("COS!!!!");
         return (T)setup;
     }

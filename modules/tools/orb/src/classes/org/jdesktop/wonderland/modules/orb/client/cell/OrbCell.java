@@ -34,9 +34,11 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 import org.jdesktop.wonderland.modules.orb.common.OrbCellConfig;
@@ -63,6 +65,8 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
         super(cellID, cellCache);
 
 	logger.fine("CREATED NEW ORB CELL " + cellID);
+
+	//addComponent(new MovableComponent(this));
 
 	CellManager.getCellManager().addCellStatusChangeListener(this);
     }

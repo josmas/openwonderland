@@ -27,8 +27,8 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
+import com.jme.scene.shape.Cone;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.RenderState;
@@ -67,50 +67,45 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
         lightState.attach(light);
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        return createWireframeEntity();
+        return createCone();
     }
 
     /**
      * Creates a wireframe box or sphere with the same size as the bounds.
      */
-    private Node createWireframeEntity() {
+    private Node createCone() {
         /* Fetch the basic info about the cell */
         String name = cell.getCellID().toString();
         CellTransform transform = cell.getLocalTransform();
-        Vector3f translation = transform.getTranslation(null);
+        Vector3f translation = new Vector3f();
+	transform.getTranslation(translation);
+	translation.setY((float) 2.5);
         Vector3f scaling = transform.getScaling(null);
         Quaternion rotation = transform.getRotation(null);
         
         /* Create the new object -- either a Box or Sphere */
-        TriMesh mesh = null;
-        if (cell.getLocalBounds() instanceof BoundingBox) {
-            Vector3f extent = ((BoundingBox)cell.getLocalBounds()).getExtent(null);
-            mesh = new Box(name, new Vector3f(), extent.x, extent.y, extent.z);
-        }
-        else if (cell.getLocalBounds() instanceof BoundingSphere) {
-            float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
-            mesh = new Sphere(name, new Vector3f(), 10, 10, radius);
-        }
-        else {
-            logger.warning("Unsupported Bounds type " +cell.getLocalBounds().getClass().getName());
-            return new Node();
-        }
-        
+        float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
+        Cone cone = new Cone(name, 30, 30, radius, (float) 1.0 * radius);
         /* Create the scene graph object and set its wireframe state */
         Node node = new Node();
-        node.attachChild(mesh);
+        node.attachChild(cone);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
         node.setLocalTranslation(translation);
         node.setLocalScale(scaling);
+
+	rotation = new Quaternion((float) 1, (float) 0, (float) 0, (float) Math.PI / 4);
+
         node.setLocalRotation(rotation);
+
+	System.out.println("Rotation:  " + rotation);
 
         WireframeState wiState = (WireframeState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
         wiState.setEnabled(true);
         node.setRenderState(wiState);
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
-	logger.fine("WIRE FRAME ENTITY CREATED");
+	logger.fine("Cone Created");
         return node;
     }
 

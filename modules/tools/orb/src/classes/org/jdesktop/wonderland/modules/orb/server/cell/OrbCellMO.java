@@ -68,6 +68,7 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellConfig;
 
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -96,6 +97,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
     public OrbCellMO() {
 	if (orbMessageHandlerRef == null) {
 	    addComponent(new ChannelComponentMO(this));
+	    //addComponent(new MovableComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
 		new OrbMessageHandler(this, null, false));
