@@ -100,8 +100,6 @@ public class ProximityComponentMO extends CellComponentMO {
     public void setLive(boolean isLive) {
         super.setLive(isLive);
 
-        System.err.println("PROX setLive "+isLive);
-
         if (isLive) {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
             CellMO cell = cellRef.get();

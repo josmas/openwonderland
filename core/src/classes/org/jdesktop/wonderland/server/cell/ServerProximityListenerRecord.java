@@ -27,7 +27,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
     }
 
     public void viewTransformChanged(CellID cell, CellID viewCellID, CellTransform viewWorldTransform) {
-        viewCellMoved(viewWorldTransform);
+        viewCellMoved(viewCellID, viewWorldTransform);
     }
 
     public void transformChanged(ManagedReference<CellMO> cellRef, CellTransform localTransform, CellTransform worldTransform) {
@@ -67,9 +67,9 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             return cellID;
         }
 
-        public void viewEnterExit(boolean enter, BoundingVolume proximityVolume, int proximityIndex) {
+        public void viewEnterExit(boolean enter, BoundingVolume proximityVolume, int proximityIndex, CellID viewCellID) {
             // TODO Check if listener is an MO and call from a Transaction if it is
-            listener.viewEnterExit(enter, cellID, proximityVolume, proximityIndex);
+            listener.viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
         }
 
         @Override
