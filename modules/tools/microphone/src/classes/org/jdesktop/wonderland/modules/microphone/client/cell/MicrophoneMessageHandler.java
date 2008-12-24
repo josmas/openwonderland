@@ -105,7 +105,7 @@ public class MicrophoneMessageHandler implements ProximityListener {
         // ignore
     }
     
-    public void viewEnterExit(boolean entered, Cell cell, BoundingVolume proximityVolume,
+    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
         logger.warning("cell " + cell + " entered = " + entered);

@@ -144,7 +144,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 	}
 
         public void viewEnterExit(boolean entered, CellID cellID, 
-		BoundingVolume proximityVolume, int proximityIndex) {
+		CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
 
 	// TODO:  Use this after Paul adds the arugment
         //public void viewEnterExit(boolean entered, CellID cellID, 
