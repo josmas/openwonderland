@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.Math3DUtils;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 
 /**
@@ -142,7 +143,7 @@ public class ProximityComponent extends CellComponent {
             synchronized(listenerRecords) {
                 CellTransform worldTransform = cell.getWorldTransform();
                 for(ProximityListenerRecord l : listenerRecords) {
-                    l.viewCellMoved(worldTransform);
+                    l.viewCellMoved(cell.getCellID(), worldTransform);
                 }
             }
         }
@@ -162,7 +163,7 @@ public class ProximityComponent extends CellComponent {
                     l.updateWorldBounds(worldTransform);
                     
                     // Reevalute view position and send enter/exit events as necessary
-                    l.viewCellMoved(cell.getCellCache().getViewCell().getWorldTransform());
+                    l.viewCellMoved(cell.getCellID(), cell.getCellCache().getViewCell().getWorldTransform());
                 }
             }
         }
@@ -182,8 +183,8 @@ public class ProximityComponent extends CellComponent {
             this.cell = cell;
         }
 
-        public void viewEnterExit(boolean enter, BoundingVolume proximityVolume, int proximityIndex) {
-            listener.viewEnterExit(enter, cell, proximityVolume, proximityIndex);
+        public void viewEnterExit(boolean enter, BoundingVolume proximityVolume, int proximityIndex, CellID viewCellID) {
+            listener.viewEnterExit(enter, cell, viewCellID, proximityVolume, proximityIndex);
         }
 
         @Override

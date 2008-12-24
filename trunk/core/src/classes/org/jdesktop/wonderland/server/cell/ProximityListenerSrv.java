@@ -39,6 +39,6 @@ public interface ProximityListenerSrv extends Serializable {
      * @param proximityVolume the bounding volume entered/exited
      * @param proximityIndex the index of the bounding volume in the ProximityComponent
      */
-    public void viewEnterExit(boolean entered, CellID cell, BoundingVolume proximityVolume, int proximityIndex);
+    public void viewEnterExit(boolean entered, CellID cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex);
     
 }

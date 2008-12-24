@@ -87,7 +87,7 @@ public class ProximityListenerRecord {
      * The view cells transform has changed so update our internal structures
      * @param cell
      */
-    public void viewCellMoved(CellTransform worldTransform) {
+    public void viewCellMoved(CellID viewCellID, CellTransform worldTransform) {
         Vector3f worldTranslation = worldTransform.getTranslation(null);
 
         // View Cell has moved
@@ -108,10 +108,10 @@ public class ProximityListenerRecord {
             if (currentlyInIndex!=nowInIndex) {
                 if (nowInIndex<currentlyInIndex) {
                     // EXIT
-                    proximityListener.viewEnterExit(false, currentlyIn, currentlyInIndex);
+                    proximityListener.viewEnterExit(false, currentlyIn, currentlyInIndex, viewCellID);
                 } else {
                     // ENTER
-                    proximityListener.viewEnterExit(true, nowIn, nowInIndex);
+                    proximityListener.viewEnterExit(true, nowIn, nowInIndex, viewCellID);
                 }
                 currentlyIn = nowIn;
                 currentlyInIndex = nowInIndex;
@@ -139,6 +139,6 @@ public class ProximityListenerRecord {
      * different interface
      */
     public interface ProximityListenerWrapper {
-        public void viewEnterExit(boolean enter, BoundingVolume proximityVolume, int proximityIndex );
+        public void viewEnterExit(boolean enter, BoundingVolume proximityVolume, int proximityIndex, CellID viewCellID );
     }
 }
