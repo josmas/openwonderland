@@ -35,37 +35,38 @@ import org.jdesktop.wonderland.common.InternalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class MouseEvent3D extends InputEvent3D {
 
     /** The supported button codes. */
-    public enum ButtonId {NOBUTTON, BUTTON1, BUTTON2, BUTTON3};
-    
+    public enum ButtonId {
+
+        NOBUTTON, BUTTON1, BUTTON2, BUTTON3
+    };
     /** The destination pick details for the event (accounts for grabs) */
     private PickDetails pickDetails;
-
     /** A temporary used for getIntersectionPointLocal */
     protected Matrix4f world2Local;
 
     /** Default constructor (for cloning) */
-    protected MouseEvent3D () {}
+    protected MouseEvent3D() {
+    }
 
     /**
      * Create an instance of MouseEvent3D.
      * @param awtEvent The originating AWT mouse event
      * @param pickDetails The pick details for the event.
      */
-    public MouseEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
+    public MouseEvent3D(MouseEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent);
-	this.pickDetails = pickDetails;
+        this.pickDetails = pickDetails;
     }
-    
+
     /**
      * Returns the original pick details of the event. 
      */
-    public PickDetails getPickDetails () {
-	return pickDetails;
+    public PickDetails getPickDetails() {
+        return pickDetails;
     }
 
     /**
@@ -75,8 +76,8 @@ public abstract class MouseEvent3D extends InputEvent3D {
      * accounting for grabs.
      */
     @InternalAPI
-    public void setPickDetails (PickDetails pickDetails) {
-	this.pickDetails = pickDetails;
+    public void setPickDetails(PickDetails pickDetails) {
+        this.pickDetails = pickDetails;
     }
 
     /**
@@ -84,21 +85,21 @@ public abstract class MouseEvent3D extends InputEvent3D {
      * by the input system. Normally, this will be the pick hit entity unless previously overridden by 
      * the input system grab calculations. 
      */
-    public Entity getEntity () {
-	if (entity == null) {
-	    entity = InputPicker.pickDetailsToEntity(pickDetails);
-	}
-	return entity;
+    public Entity getEntity() {
+        if (entity == null) {
+            entity = InputPicker.pickDetailsToEntity(pickDetails);
+        }
+        return entity;
     }
 
     /**
      * Returns which, if any, of the mouse buttons has changed state.
      * @return one of the following enums: NOBUTTON, BUTTON1, BUTTON2 or BUTTON3.
      */
-    public ButtonId getButton () {
+    public ButtonId getButton() {
         ButtonId ret = ButtonId.NOBUTTON;
-        
-        int button = ((MouseEvent)awtEvent).getButton();
+
+        int button = ((MouseEvent) awtEvent).getButton();
         switch (button) {
             case MouseEvent.BUTTON1:
                 ret = ButtonId.BUTTON1;
@@ -110,10 +111,10 @@ public abstract class MouseEvent3D extends InputEvent3D {
                 ret = ButtonId.BUTTON3;
                 break;
             default:
-                assert(button == MouseEvent.NOBUTTON);
+                assert (button == MouseEvent.NOBUTTON);
         }
-        
-	return ret;
+
+        return ret;
     }
 
     /**
@@ -121,51 +122,53 @@ public abstract class MouseEvent3D extends InputEvent3D {
      * which were calculated by the input system. (This distance is in world coordinates). If the event has 
      * no pick details, 0 is returned. 
      */
-    public float getDistance () {
-	if (pickDetails == null) {
-	    return 0f;
-	} else {
-	    return pickDetails.getDistance();
-	}
+    public float getDistance() {
+        if (pickDetails == null) {
+            return 0f;
+        } else {
+            return pickDetails.getDistance();
+        }
     }
 
     /**
      * Returns the intersection point in world coordinates, based on the destination pick details 
      * which were calculated by the input system.
      */
-    public Vector3f getIntersectionPointWorld () {
-	if (pickDetails == null) {
-	    return null;
-	} else {
-	    return pickDetails.getPosition();
-	}
+    public Vector3f getIntersectionPointWorld() {
+        if (pickDetails == null) {
+            return null;
+        } else {
+            return pickDetails.getPosition();
+        }
     }
 
     /**
      * Returns the intersection point in object (node) local coordinates, based on the destination 
      * pick details which were calculated by the input system.
      */
-    public Vector3f getIntersectionPointLocal () {
-	if (pickDetails == null) {
-	    return null;
-	} else {
-	    Vector3f posWorld = pickDetails.getPosition();
-	    if (posWorld == null) return null;
-	    CollisionComponent cc = pickDetails.getCollisionComponent();
-	    Node node = cc.getNode();
-	    node.getLocalToWorldMatrix(world2Local);
-	    world2Local.invert();
-	    return world2Local.mult(pickDetails.getPosition(), new Vector3f());
-	}
+    public Vector3f getIntersectionPointLocal() {
+        if (pickDetails == null) {
+            return null;
+        } else {
+            Vector3f posWorld = pickDetails.getPosition();
+            if (posWorld == null) {
+                return null;
+            }
+            CollisionComponent cc = pickDetails.getCollisionComponent();
+            Node node = cc.getNode();
+            node.getLocalToWorldMatrix(world2Local);
+            world2Local.invert();
+            return world2Local.mult(pickDetails.getPosition(), new Vector3f());
+        }
     }
 
     /** 
      * {@inheritDoc}
      */
     @Override
-    public Event clone (Event event) {
-	super.clone(event);
-	((MouseEvent3D)event).pickDetails = pickDetails;
-	return event;
+    public Event clone(Event event) {
+        super.clone(event);
+        ((MouseEvent3D) event).pickDetails = pickDetails;
+        return event;
     }
 }

@@ -27,12 +27,10 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class InputEvent3D extends Event {
 
     private PickInfo pickInfo;
-
     /** The originating AWT input event. */
     protected InputEvent awtEvent;
 
@@ -40,36 +38,36 @@ public abstract class InputEvent3D extends Event {
      * Enum values which indicate which modifiers keys are held down for this event.
      */
     public enum ModifierId {
+
         ALT, ALT_GRAPH, CTRL, META, SHIFT, BUTTON1, BUTTON2, BUTTON3,
     };
-    
     private static final ModifierConvTable[] modifierConvTable = {
-        new ModifierConvTable(InputEvent.ALT_DOWN_MASK,     ModifierId.ALT),
-        new ModifierConvTable(InputEvent.ALT_GRAPH_DOWN_MASK, ModifierId.ALT_GRAPH), 
-        new ModifierConvTable(InputEvent.CTRL_DOWN_MASK,    ModifierId.CTRL), 
-        new ModifierConvTable(InputEvent.META_DOWN_MASK,    ModifierId.META), 
-        new ModifierConvTable(InputEvent.SHIFT_DOWN_MASK,   ModifierId.SHIFT), 
-        new ModifierConvTable(InputEvent.BUTTON1_DOWN_MASK, ModifierId.BUTTON1), 
-        new ModifierConvTable(InputEvent.BUTTON2_DOWN_MASK, ModifierId.BUTTON2), 
-        new ModifierConvTable(InputEvent.BUTTON3_DOWN_MASK, ModifierId.BUTTON3), 
-    };     
-    
+        new ModifierConvTable(InputEvent.ALT_DOWN_MASK, ModifierId.ALT),
+        new ModifierConvTable(InputEvent.ALT_GRAPH_DOWN_MASK, ModifierId.ALT_GRAPH),
+        new ModifierConvTable(InputEvent.CTRL_DOWN_MASK, ModifierId.CTRL),
+        new ModifierConvTable(InputEvent.META_DOWN_MASK, ModifierId.META),
+        new ModifierConvTable(InputEvent.SHIFT_DOWN_MASK, ModifierId.SHIFT),
+        new ModifierConvTable(InputEvent.BUTTON1_DOWN_MASK, ModifierId.BUTTON1),
+        new ModifierConvTable(InputEvent.BUTTON2_DOWN_MASK, ModifierId.BUTTON2),
+        new ModifierConvTable(InputEvent.BUTTON3_DOWN_MASK, ModifierId.BUTTON3),};
+
     /** Default constructor (for cloning) */
-    protected InputEvent3D () {}
+    protected InputEvent3D() {
+    }
 
     /**
      * Create a new instance of Event3D.
      * @param awtEvent The AWT input event which generates this 3D input event.
      */
-    public InputEvent3D (InputEvent awtEvent) {
-	this.awtEvent = awtEvent;
+    public InputEvent3D(InputEvent awtEvent) {
+        this.awtEvent = awtEvent;
     }
 
     /**
      * Returns the ID of the associated AWT input event.
      */
-    public int getID () {
-	return awtEvent.getID();
+    public int getID() {
+        return awtEvent.getID();
     }
 
     /**
@@ -78,7 +76,7 @@ public abstract class InputEvent3D extends Event {
     public InputEvent getAwtEvent() {
         return awtEvent;
     }
-    
+
     /** 
      * Returns the time stamp of when this event occurred
      * @return time stamp for event
@@ -86,7 +84,7 @@ public abstract class InputEvent3D extends Event {
     public long getWhen() {
         return getAwtEvent().getWhen();
     }
-    
+
     /**
      * Returns a set of the extended modifiers this event. Extended modifiers 
      * represent the state of all modal keys, such as ALT, CTRL, META, 
@@ -99,40 +97,41 @@ public abstract class InputEvent3D extends Event {
      * @see java.awt.event.InputEvent
      */
     public ModifierId[] getModifiersEx(ModifierId[] ret) {
-        
+
         int modifiers = getAwtEvent().getModifiersEx();
         int numBits = 0;
         int tmpMod = modifiers;
-        
+
         while (tmpMod > 0) {
             numBits += (tmpMod & 0x1);
             tmpMod /= 2;
         }
-        
+
         if (ret == null || numBits > ret.length) {
             ret = new ModifierId[numBits];
         }
-        
+
         int idx = 0;
-        for (ModifierConvTable entry: modifierConvTable) {
+        for (ModifierConvTable entry : modifierConvTable) {
             if ((modifiers & entry.modifierAwt) > 0) {
-                assert(idx < ret.length);
+                assert (idx < ret.length);
                 ret[idx] = entry.modifier3D;
                 idx++;
             }
         }
         // null-out the rest
-        for ( ; idx < ret.length; idx++) {
-            ret[idx] = null; 
+        for (; idx < ret.length; idx++) {
+            ret[idx] = null;
         }
-        
+
         return ret;
     }
-    
+
     private static class ModifierConvTable {
+
         int modifierAwt;
         ModifierId modifier3D;
-        
+
         ModifierConvTable(int awtModifier, ModifierId modifier3D) {
             this.modifierAwt = awtModifier;
             this.modifier3D = modifier3D;
@@ -141,10 +140,10 @@ public abstract class InputEvent3D extends Event {
 
     /** {@inheritDoc} */
     @Override
-    public Event clone (Event event) {
-	((InputEvent3D)event).awtEvent = awtEvent;
-        ((InputEvent3D)event).pickInfo = pickInfo;
-	return event;
+    public Event clone(Event event) {
+        ((InputEvent3D) event).awtEvent = awtEvent;
+        ((InputEvent3D) event).pickInfo = pickInfo;
+        return event;
     }
 
     /**
