@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.client.selection.event;
 
+import java.awt.event.MouseEvent;
 import java.util.List;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
@@ -35,16 +36,20 @@ public class ContextEvent extends Event {
     /* The list of Entities associated with the context event */
     private List<Entity> entities = null;
     
+    /* The MouseEvent that resulted in this context event */
+    private MouseEvent mouseEvent = null;
+    
     /** Default constructor */
     public ContextEvent() {
     }
     
-    /** Constructor, takes the list of Enitities of the context event. */
-    public ContextEvent(List<Entity> entities) {
+    /** Constructor, takes the list of Enitities and mouse event. */
+    public ContextEvent(List<Entity> entities, MouseEvent mouseEvent) {
         if (entities != null && entities.size() > 0) {
             setEntity(entities.get(0));
         }
         this.entities = entities;
+        this.mouseEvent = mouseEvent;
     }
     
     /**
@@ -55,6 +60,15 @@ public class ContextEvent extends Event {
      */
     public List<Entity> getEntities() {
         return entities;
+    }
+    
+    /**
+     * Returns the mouse event that resulted in this context event.
+     * 
+     * @return The MouseEvent object
+     */
+    public MouseEvent getMouseEvent() {
+        return mouseEvent;
     }
     
     /** 
@@ -68,6 +82,7 @@ public class ContextEvent extends Event {
 	    event = new ContextEvent();
 	}
         ((ContextEvent)event).entities = entities;
+        ((ContextEvent)event).mouseEvent = mouseEvent;
 	return super.clone(event);
     }
 }
