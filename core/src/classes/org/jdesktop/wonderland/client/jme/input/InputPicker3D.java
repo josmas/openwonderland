@@ -34,45 +34,45 @@ public class InputPicker3D extends InputPicker {
     /**
      * Returns the entity resolver singleton.
      */
-    static InputPicker getInputPicker () {
-	if (inputPicker == null) {
-	    inputPicker = new InputPicker3D();
-	}
-	return inputPicker;
+    static InputPicker getInputPicker() {
+        if (inputPicker == null) {
+            inputPicker = new InputPicker3D();
+        }
+        return inputPicker;
     }
 
     /**
      * {@inheritDoc}
      */
-    protected Event createWonderlandEvent (AWTEvent awtEvent) {
-	Event event = null;
+    protected Event createWonderlandEvent(AWTEvent awtEvent) {
+        Event event = null;
 
-	if (awtEvent instanceof KeyEvent) {
-	    event = new KeyEvent3D((KeyEvent)awtEvent);
-	} else if (awtEvent instanceof MouseWheelEvent) {
-	    event = new MouseWheelEvent3D((MouseWheelEvent)awtEvent);
-	} else if (awtEvent instanceof MouseEvent) {
-	    switch (awtEvent.getID()) {
-	    case MouseEvent.MOUSE_CLICKED:
-	    case MouseEvent.MOUSE_RELEASED:
-	    case MouseEvent.MOUSE_PRESSED:
-		event = new MouseButtonEvent3D((MouseEvent)awtEvent);
-		break;
-	    case MouseEvent.MOUSE_ENTERED:
-	    case MouseEvent.MOUSE_EXITED:
-		event = new MouseEnterExitEvent3D((MouseEvent)awtEvent);
-		break;
-	    case MouseEvent.MOUSE_MOVED:
-		event = new MouseMovedEvent3D((MouseEvent)awtEvent);
-		break;
-	    case MouseEvent.MOUSE_DRAGGED:
-		event = new MouseDraggedEvent3D((MouseEvent)awtEvent);
-		break;
-            default:
-	        logger.warning("Invalid AWT event type");
+        if (awtEvent instanceof KeyEvent) {
+            event = new KeyEvent3D((KeyEvent) awtEvent);
+        } else if (awtEvent instanceof MouseWheelEvent) {
+            event = new MouseWheelEvent3D((MouseWheelEvent) awtEvent);
+        } else if (awtEvent instanceof MouseEvent) {
+            switch (awtEvent.getID()) {
+                case MouseEvent.MOUSE_CLICKED:
+                case MouseEvent.MOUSE_RELEASED:
+                case MouseEvent.MOUSE_PRESSED:
+                    event = new MouseButtonEvent3D((MouseEvent) awtEvent);
+                    break;
+                case MouseEvent.MOUSE_ENTERED:
+                case MouseEvent.MOUSE_EXITED:
+                    event = new MouseEnterExitEvent3D((MouseEvent) awtEvent);
+                    break;
+                case MouseEvent.MOUSE_MOVED:
+                    event = new MouseMovedEvent3D((MouseEvent) awtEvent);
+                    break;
+                case MouseEvent.MOUSE_DRAGGED:
+                    event = new MouseDraggedEvent3D((MouseEvent) awtEvent);
+                    break;
+                default:
+                    logger.warning("Invalid AWT event type");
             }
-	}
+        }
 
-	return event;
+        return event;
     }
 }
