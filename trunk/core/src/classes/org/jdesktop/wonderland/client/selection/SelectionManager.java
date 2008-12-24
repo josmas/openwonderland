@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.client.selection;
 
+import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -225,7 +226,11 @@ public class SelectionManager {
                 selectedEntityList.add(entity);
                 inputManager.postEvent(new SelectionEvent(new LinkedList(selectedEntityList)));
             }
-            inputManager.postEvent(new ContextEvent(new LinkedList(selectedEntityList)));
+
+            // Pass the mouse event for now so we know where the event was
+            // fired. This has to be replaced at some point. XXX
+            MouseEvent mouseEvent = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
+            inputManager.postEvent(new ContextEvent(new LinkedList(selectedEntityList), mouseEvent));
         }
     }
     
