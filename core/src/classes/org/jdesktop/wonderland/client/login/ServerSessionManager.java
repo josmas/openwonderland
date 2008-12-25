@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -92,7 +93,12 @@ public class ServerSessionManager {
         // load the server details
         try {
             URL detailsURL = new URL(new URL(serverURL), DETAILS_URL);
-            this.details = ServerDetails.decode(new InputStreamReader(detailsURL.openStream()));
+            //this.details = ServerDetails.decode(new InputStreamReader(detailsURL.openStream()));
+
+	    URLConnection detailsURLConn = detailsURL.openConnection();
+	    detailsURLConn.setRequestProperty("Accept", "application/xml");
+
+	    this.details = ServerDetails.decode(new InputStreamReader(detailsURLConn.getInputStream()));
         } catch (JAXBException jbe) {
             IOException ioe = new IOException("Error reading server details " +
                                               "from: " + serverURL);
