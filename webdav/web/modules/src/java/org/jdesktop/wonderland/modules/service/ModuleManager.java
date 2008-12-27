@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -153,11 +154,18 @@ public class ModuleManager {
 
         // deploy all modules
         Map<String, Module> modules = this.installedMananger.getModules();
-        Iterator<Map.Entry<String, Module>> it = modules.entrySet().iterator();
-        while (it.hasNext() == true) {
-            Map.Entry<String, Module> entry = it.next();
+
+        // calculate a valid deployment order
+        List<String> order = DeployManager.getDeploymentOrder(modules);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("[MODULES] Calculated deployment order: " + order.toString());
+        }
+
+        for (String name : order) {
+            Module module = modules.get(name);
+
             try {
-                this.deployManager.deploy(entry.getValue());
+                this.deployManager.deploy(module);
             } catch (DeployerException excp) {
                 /* Log a warning message and continue */
                 logger.log(Level.WARNING, "[MODULE] REDEPLOY FAILED FOR " +
@@ -323,13 +331,16 @@ public class ModuleManager {
         }
         
         /*
-         * Go ahead and install the module and deploy
+         * Go ahead and install the module and deploy.  Make sure to do
+         * this in a valid deploy order
          */
-        Iterator<Map.Entry<String, Module>> it2 = passed.entrySet().iterator();
-        while (it2.hasNext() == true) {
-            Map.Entry<String, Module> entry = it2.next();
-            String moduleName = entry.getKey();
-            Module module = entry.getValue();
+        List<String> ordered = DeployManager.getDeploymentOrder(passed);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("[MODULES] Calculated deployment order: " + ordered.toString());
+        }
+        
+        for (String moduleName : ordered) {
+            Module module = passed.get(moduleName);
             
             /*
              * Check to see if the module is already installed. If we have

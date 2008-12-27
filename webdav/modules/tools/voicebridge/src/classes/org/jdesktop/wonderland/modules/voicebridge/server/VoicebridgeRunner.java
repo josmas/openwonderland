@@ -26,8 +26,7 @@ import org.jdesktop.wonderland.runner.RunnerConfigurationException;
 
 import org.jdesktop.wonderland.common.NetworkAddress;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import org.jdesktop.wonderland.utils.Constants;
 
 /**
  * An extension of <code>BaseRunner</code> to launch the Darkstar server.
@@ -90,7 +89,8 @@ public class VoicebridgeRunner extends BaseRunner {
         props.setProperty("voicebridge.long.distance.prefix", "1");
         props.setProperty("voicebridge.international.prefix", "011");
 
-        props.setProperty("voicebridge.local.hostAddress", getPrivateLocalAddress());
+        props.setProperty("voicebridge.local.hostAddress", 
+                          System.getProperty(Constants.WEBSERVER_HOST_PROP));
 
         return props;
     }

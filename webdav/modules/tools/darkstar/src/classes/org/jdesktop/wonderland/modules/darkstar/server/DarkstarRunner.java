@@ -16,32 +16,35 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.runner.darkstar;
+package org.jdesktop.wonderland.modules.darkstar.server;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
+import java.io.Reader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import org.jdesktop.wonderland.modules.Module;
-import org.jdesktop.wonderland.modules.ModulePart;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.runner.BaseRunner;
 import org.jdesktop.wonderland.runner.RunManager;
+import org.jdesktop.wonderland.runner.RunnerChecksum;
+import org.jdesktop.wonderland.runner.RunnerChecksums;
 import org.jdesktop.wonderland.runner.RunnerConfigurationException;
 import org.jdesktop.wonderland.runner.RunnerException;
+import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
@@ -55,6 +58,10 @@ public class DarkstarRunner extends BaseRunner {
     /** the default port to run on */
     private static final int DEFAULT_PORT = 1139;
 
+    /** the URL for listing available files */
+    private static final String CHECKSUM_URL =
+                                  "darkstar/darkstarserver/services/checksums";
+
     /** the logger */
     private static final Logger logger =
             Logger.getLogger(DarkstarRunner.class.getName());
@@ -64,6 +71,17 @@ public class DarkstarRunner extends BaseRunner {
 
     /** the sgs port.  Only valid when starting up or running */
     private int currentPort;
+
+    /** managers and services found as we deployed files */
+    private List<String> managers;
+    private List<String> services;
+
+    /**
+     * The current list of modules, implemented as a thread-local variable
+     * that is only valid during a single call to start()
+     */
+    private static ThreadLocal<RunnerChecksums> moduleChecksums =
+        new ThreadLocal<RunnerChecksums>();
 
     /**
      * Configure this runner.  This method sets values to the default for the
@@ -95,9 +113,21 @@ public class DarkstarRunner extends BaseRunner {
      */
     @Override
     public Collection<String> getDeployFiles() {
+        // add all the files from the superclass
         Collection<String> files = super.getDeployFiles();
+
+        // and the Darkstar server jar
         files.add("wonderland-server-dist.zip");
-        
+
+        // now add each module
+        try {
+            for (String module : getModuleChecksums().getChecksums().keySet()) {
+                files.add(module);
+            }
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading module checksums", ioe);
+        }
+
         return files;
     }
 
@@ -109,16 +139,28 @@ public class DarkstarRunner extends BaseRunner {
         props.setProperty("wonderland.web.server.url", webserverURL);
         return props;
     }
-    
-    /**
-     * Start the Darkstar server with the given properties.  This method first
-     * manages deploying any modules specified by the module manager.
-     * 
-     * @param props the properties to run with
-     * @throws RunnerException if there is an error starting the server
-     */
+
     @Override
     public synchronized void start(Properties props) throws RunnerException {
+        try {
+            super.start(props);
+        } finally {
+            // reset the module checksums
+            moduleChecksums.remove();
+        }
+    }
+   
+    /**
+     * Deploy files to the Darkstar server with the given properties.
+     * This method first manages deploying any modules specified by the module
+     * manager, and also detects any Darkstar runners or services we need
+     * to install
+     * 
+     * @param props the properties to run with
+     * @throws IOException if there is an error deploying files
+     */
+    @Override
+    protected void deployFiles(Properties props) throws IOException {
         ModuleManager mm = ModuleManager.getModuleManager();
         
         // first tell the module manager to remove any modules scheduled for
@@ -127,30 +169,25 @@ public class DarkstarRunner extends BaseRunner {
         
         // next tell the module manager to install any pending modules
         mm.installAll();
-        
-        // now clear any existing modules
-        File moduleDir = getModuleDir();
-        if (moduleDir.exists()) {
-            RunUtil.deleteDir(moduleDir);
-        }
 
-        // go through each module part in turn and deploy the files in that
-        // part.  Keep track of any Darkstar managers and services which
-        // are created as well
-        Map<Module, List<ModulePart>> deploy = DarkstarModuleDeployer.getModules();
-        List<String> managers = new ArrayList<String>();
-        List<String> services = new ArrayList<String>();
-        for (Entry<Module, List<ModulePart>> e : deploy.entrySet()) {
-            for (ModulePart mp : e.getValue()) {
-                try {
-                    writeModulePart(moduleDir, e.getKey(), mp,
-                                    managers, services);
-                } catch (IOException ioe) {
-                    // skip this module and keep going
-                    logger.log(Level.WARNING, "Error writing module " + 
-                               e.getKey().getName() + " part " + mp.getName(),
-                               ioe);
-                }
+        // then call the super class's deployFiles() method, which will
+        // call the other methods in this class
+        super.deployFiles(props);
+
+        // go through al the module jars looking for any Darkstar managers and
+        // services
+        managers = new ArrayList<String>();
+        services = new ArrayList<String>();
+
+        File[] moduleFiles = getModuleDir().listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".jar");
+            }
+        });
+
+        if (moduleFiles != null) {
+            for (File moduleFile : moduleFiles) {
+                checkForServices(moduleFile, managers, services);
             }
         }
 
@@ -162,6 +199,7 @@ public class DarkstarRunner extends BaseRunner {
             }
             props.put("sgs.managers", sb.toString());
         }
+
         if (services.size() > 0) {
             StringBuffer sb = new StringBuffer();
             for (String service : services) {
@@ -173,8 +211,62 @@ public class DarkstarRunner extends BaseRunner {
         // set the current port to the one we are now running with.  This
         // will stay valid until the runner is stopped.
         currentPort = getPort(props);
-       
-        super.start(props);
+    }
+
+    /**
+     * Deploy zip files as normal using the superclass.  Copy any
+     * .jar files (which are assumed to be modules) into the modules
+     * directory
+     * @param deploy the file to deploy
+     * @throws IOException
+     */
+    @Override
+    protected void deployFile(File deploy) throws IOException {
+        if (deploy.getName().endsWith(".jar")) {
+            File out = new File(getModuleDir(), deploy.getName());
+            RunUtil.writeToFile(new FileInputStream(deploy), out);
+        } else {
+            super.deployFile(deploy);
+        }
+    }
+
+    @Override
+    protected RunnerChecksums getServerChecksums() throws IOException {
+        // get the server checksums
+        RunnerChecksums serverChecksums = super.getServerChecksums();
+
+        // now add in the checksums for the modules
+        Map<String, RunnerChecksum> checksums = serverChecksums.getChecksums();
+        checksums.putAll(getModuleChecksums().getChecksums());
+        serverChecksums.setChecksums(checksums);
+        return serverChecksums;
+    }
+
+    /**
+     * Get the module checksums from the thread-local variable.  This is only
+     * valid during the method calls within a single invocation of start()
+     */
+    protected synchronized RunnerChecksums getModuleChecksums()
+        throws IOException
+    {
+        RunnerChecksums out = moduleChecksums.get();
+        if (out == null) {
+            // read in the new checksums from the server
+            URL checksumURL = new URL(webserverURL + CHECKSUM_URL);
+            try {
+                Reader in = new InputStreamReader(checksumURL.openStream());
+                out = RunnerChecksums.decode(in);
+
+                moduleChecksums.set(out);
+            } catch (JAXBException je) {
+                IOException ioe = new IOException("Error reading checksums " +
+                                                  "from " + checksumURL);
+                ioe.initCause(je);
+                throw ioe;
+            }
+        }
+
+        return out;
     }
 
     /**
@@ -182,7 +274,7 @@ public class DarkstarRunner extends BaseRunner {
      * @return the external hostname of the Darkstar server
      */
     public String getHostname() {
-	return getPrivateLocalAddress();
+        return System.getProperty(Constants.WEBSERVER_HOST_PROP);
     }
 
     /**
@@ -223,65 +315,9 @@ public class DarkstarRunner extends BaseRunner {
      * @return the server module directory
      */
     protected File getModuleDir() {
-        return new File(getRunDir(), "modules");
-    }
-
-    /**
-     * Write a module part to the module directory
-     * @param moduleDir the directory to write to
-     * @param module the module to write a part for
-     * @param modulePart the part to write
-     * @param managers the list of Darkstar managers to add to
-     * @param services the list of Darkstar services to add to
-     */
-    protected void writeModulePart(File moduleDir, Module module, 
-                                   ModulePart part, List<String> managers,
-                                   List<String> services)
-        throws IOException
-    {
-        File moduleSpecificDir = new File(moduleDir, module.getName());
-        File partDir = new File(moduleSpecificDir, part.getName());
-        partDir.mkdirs();
-        
-        // write each file from the part
-        copyFiles(part.getFile(), partDir, managers, services);
-    }
-
-    /**
-     * Recursively copy all files from a given source directory to a target 
-     * directory.  If any jar files are encountered, check them for
-     * Darkstar managers and services
-     * @param src the source directory
-     * @param target the target directory
-     * @param managers the list of Darkstar managers to add to
-     * @param services the list of Darkstar services to add to
-     */
-    private void copyFiles(File src, File dest, List<String> managers,
-                           List<String> services)
-        throws IOException
-    {
-        File[] files = src.listFiles();
-        if (files == null) {
-            return;
-        }
-        
-        for (File f : files) {
-            File newDest = new File(dest, f.getName());
-            
-            if (f.isDirectory()) {
-                // recursively copy a directory
-                newDest.mkdir();
-                copyFiles(f, newDest, managers, services);
-            } else {
-                // copy a single file
-                FileInputStream fis = new FileInputStream(f);
-                RunUtil.writeToFile(fis, newDest);
-
-                if (f.getName().endsWith(".jar")) {
-                    checkForServices(f, managers, services);
-                }
-            }
-        }
+        File moduleDir = new File(getRunDir(), "modules");
+        moduleDir.mkdirs();
+        return moduleDir;
     }
 
     /**

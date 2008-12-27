@@ -17,15 +17,10 @@
  */
 package org.jdesktop.wonderland.runner;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -33,9 +28,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.utils.AppServerMonitor;
-import org.jdesktop.wonderland.utils.Constants;
-import org.jdesktop.wonderland.utils.FileListUtil;
-import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
@@ -131,17 +123,6 @@ public class RunManager {
     protected void doInit() throws RunnerException {
 
         logger.info("[RunManager] Starting all apps");
-
-        boolean overwrite = Boolean.parseBoolean(
-                SystemPropertyUtil.getProperty(Constants.WEBSERVER_NEWVERSION_PROP));
-        if (overwrite) {
-            try {
-                deployZips();
-            } catch (IOException ioe) {
-                throw new RunnerException("Error deploying zips", ioe);
-            }
-        }
-
         if (Boolean.parseBoolean(SystemPropertyUtil.getProperty(STOP_PROP))) {
             // Add a listener that will stop all active processes when the
             // container shuts down
@@ -210,9 +191,6 @@ public class RunManager {
      */
     public Runner add(Runner runner) throws IOException {
         synchronized (this) {
-            // deploy to this runner
-            deployTo(runner);
-        
             runners.put(runner.getName(), runner);
         }
 
@@ -298,19 +276,6 @@ public class RunManager {
         StatusWaiter out = null;
 
         if (runner.getStatus() == Runner.Status.NOT_RUNNING) {
-            try {
-                if (needsClear(runner)) {
-                    // get rid of all the old files
-                    runner.clear();
-                
-                    // replace them with new files
-                    deployTo(runner);
-                }
-            } catch (IOException ioe) {
-                throw new RunnerException("Error starting " + runner.getName(),
-                                          ioe);
-            }
-
             runner.start(getStartProperties(runner));
 
             if (wait) {
@@ -381,193 +346,6 @@ public class RunManager {
      */
     public void removeRunnerListener(RunnerListener rl) {
         listeners.remove(rl);
-    }
-
-    /**
-     * Write a file containing a runner zip
-     * @param name the name of the zip file
-     * @param data an input stream containing the data
-     */
-    public File addRunnerZip(final String name, final File file) throws IOException
-    {
-        return addRunnerZip(name, new ZipWriter() {
-            public String getChecksum() throws IOException {
-                return FileListUtil.generateChecksum(new FileInputStream(file));
-            }
-
-            public void writeTo(File dest) throws IOException {
-                RunUtil.writeToFile(new FileInputStream(file), dest);
-            }
-        });
-    }
-
-    /**
-     * Write a file containing a runner zip
-     * @param name the name of the zip file
-     * @param file the file to write
-     * @param checksum the checksum, or null to generate one
-     * @param writer the class that will write the runner zip
-     * @return the written zip file, or the existing zip file if there
-     * was no change
-     */
-    public File addRunnerZip(String name, ZipWriter writer)
-            throws IOException
-    {
-        File deployDir = new File(RunUtil.getRunDir(), RunManager.DEPLOY_DIR);
-        deployDir.mkdirs();
-
-        File outFile = new File(deployDir, name);
-
-        // read the checksums for the directory
-        File fileListFile = new File(deployDir, "files.list");
-        Map<String, String> checksums = FileListUtil.readChecksums(fileListFile);
-
-        // get the checksum for this file
-        String checksum = writer.getChecksum();
-        String existingChecksum = checksums.get(name);
-
-        if (existingChecksum == null || !checksum.equals(existingChecksum)) {
-            // write the file
-            writer.writeTo(outFile);
-
-            // update the checksums
-            checksums.put(name, checksum);
-            FileListUtil.writeChecksums(checksums, fileListFile);
-        }
-
-        return outFile;
-    }
-
-    /**
-     * Remove a file containing a runner zip
-     * @param name the name of the file to remove
-     */
-    public void removeRunnerZip(String name) throws IOException {
-        // remove the file
-        File deployDir = new File(RunUtil.getRunDir(), RunManager.DEPLOY_DIR);
-        File removeFile = new File(deployDir, name);
-        System.out.println("Remove: " + removeFile);
-
-        if (removeFile.exists()) {
-            removeFile.delete();
-        }
-
-        // update checksums
-        File fileListFile = new File(deployDir, "files.list");
-        Map<String, String> checksums = FileListUtil.readChecksums(fileListFile);
-        String checksum = checksums.remove(name);
-        if (checksum != null) {
-            FileListUtil.writeChecksums(checksums, fileListFile);
-        }
-    }
-
-    /**
-     * Deploy all zip files to the runner directory
-     */
-    protected void deployZips() throws IOException {
-        File deployDir = new File(RunUtil.getRunDir(), DEPLOY_DIR);
-        deployDir.mkdirs();
-
-        InputStream in = getClass().getResourceAsStream("/META-INF/runner/files.list");
-        Map<String, String> checksums = FileListUtil.readChecksums(in);
-
-        for (Map.Entry<String, String> e : checksums.entrySet()) {
-            final String name = e.getKey();
-            final String checksum = e.getValue();
-
-            addRunnerZip(name, new ZipWriter() {
-                public String getChecksum() throws IOException {
-                    return checksum;
-                }
-
-                public void writeTo(File dest) throws IOException {
-                    String fullPath = "/runner/" + name;
-                    InputStream fileIs = getClass().getResourceAsStream(fullPath);
-
-                    RunUtil.writeToFile(fileIs, dest);
-                }
-            });
-        }
-    }
-
-    /**
-     * Deploy zips to a runner.  This will find the appropriate zips
-     * based on the classname of the runner, and deploy each of them
-     * in turn.
-     * @param runner the runner to deploy to
-     * @throws IOException if there is an error reading the zip files
-     * from the archive or an error writing them to the runner.
-     */
-    private void deployTo(Runner runner) throws IOException {
-        File deployDir = new File(RunUtil.getRunDir(), DEPLOY_DIR);
-
-        // find the checksums for the files we are deploying
-        File fileListFile = new File(deployDir, "files.list");
-        Map<String, String> checksums = FileListUtil.readChecksums(fileListFile);
-        Map<String, String> writtenChecksums = new HashMap<String, String>();
-
-        // get the list of deployment files
-        Collection<String> files = runner.getDeployFiles();
-        for (String file : files) {
-            File deployFile = new File(deployDir, file);
-            if (!deployFile.exists()) {
-                throw new IOException("Unable to find deploy file " + deployFile);
-            }
-            InputStream deploy = new FileInputStream(deployFile);
-            
-            // deploy the file
-            runner.deploy(file, deploy);
-
-            // find the checksum for the specific file
-            String checksum = checksums.get(file);
-            if (checksum != null) {
-                writtenChecksums.put(file, checksum);
-            }
-        }
-
-        // write the checksums we wrote
-        File deployedFile = new File(deployDir, runner.getName() + ".files");
-        FileListUtil.writeChecksums(writtenChecksums, deployedFile);
-    }
-
-    /**
-     * Determine if a runner needs to be cleared before starting up.  This
-     * method will return true if the set of deployed checksums for
-     * the runners deployed files does not match the set of checksums
-     * @param runner the runner to check
-     */
-    private boolean needsClear(Runner runner) throws IOException {
-        File deployDir = new File(RunUtil.getRunDir(), DEPLOY_DIR);
-
-        // find the checksums for the files we are deploying
-        File fileListFile = new File(deployDir, "files.list");
-        Map<String, String> checksums = FileListUtil.readChecksums(fileListFile);
-
-        // read the checksums of the deployed files
-        File deployedFile = new File(deployDir, runner.getName() + ".files");
-        Map<String, String> deployed = FileListUtil.readChecksums(deployedFile);
-
-        // check each file we want to deploy
-        for (String file : runner.getDeployFiles()) {
-            String systemCS = checksums.get(file);
-            String deployedCS = deployed.get(file);
-
-            // if there is no checksum, we should probably clear the directory
-            if (systemCS == null || deployedCS == null) {
-                return true;
-            }
-
-            if (!deployedCS.equals(systemCS)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected interface ZipWriter {
-        public String getChecksum() throws IOException;
-        public void writeTo(File file) throws IOException;
     }
 
     /**

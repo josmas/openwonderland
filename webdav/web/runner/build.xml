@@ -14,6 +14,7 @@
     <target name="-set-extra-classpath">
         <pathconvert property="web-extra.classpath">
             <path path="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+            <path path="${web.dir}/asset/dist/wonderland-asset-core.jar"/>
             <path path="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
             <path path="${core.dir}/build/lib/wonderland-common.jar"/>
             <path path="${core.dir}/ext/common/stun.jar"/>
@@ -36,7 +37,6 @@
         <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
             <fileset dir="${build.classes.dir}">
                 <include name="org/jdesktop/wonderland/runner/*.class"/>
-                <include name="org/jdesktop/wonderland/runner/darkstar/*.class"/>
                 <include name="org/jdesktop/wonderland/runner/ant/**"/>
             </fileset>
         </jar>

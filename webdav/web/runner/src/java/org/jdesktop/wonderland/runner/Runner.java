@@ -57,29 +57,6 @@ public interface Runner {
     public void configure(Properties props) throws RunnerConfigurationException;
 
     /**
-     * Get the set of files needed to deploy this runner.  It is assumed
-     * that files of the given name will be available to the RunManager.
-     * The contents of these files will then be passed into the "deploy" 
-     * method as input streams.
-     * @return a collection of file names.
-     */
-    public Collection<String> getDeployFiles();
-    
-    /**
-     * Deploy the given file
-     * @param filename the name of the file to deploy
-     * @param in an inputstream containing the data from the file to deploy
-     */
-    public void deploy(String filename, InputStream in) throws IOException;
-
-    /**
-     * Remove all deployed files. After this is called, new version
-     * of the deploy files for this runner will be sent using the
-     * <code>deploy()</code> method.
-     */
-    public void clear();
-
-    /**
      * Get the default runtime properties for this runner.  Return an empty
      * property list if there are no default properties.
      * @return the default properties for this runner.

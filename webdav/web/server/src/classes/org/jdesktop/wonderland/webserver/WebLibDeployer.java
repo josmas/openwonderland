@@ -66,6 +66,9 @@ public class WebLibDeployer extends WebDeployer {
     protected void doDeploy(DeployRecord record) throws IOException {
         // add the URL of the record's file to the global classpath
         URL u = record.getFile().toURI().toURL();
+        
+        logger.warning("Weblib deploy: " + u);
+
         WebServerLauncher.getClassLoader().addURL(u);
     }
 
