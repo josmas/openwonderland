@@ -15,16 +15,11 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.runner.darkstar;
+package org.jdesktop.wonderland.modules.darkstar.server;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
-import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
 
@@ -32,14 +27,11 @@ import org.jdesktop.wonderland.runner.Runner;
  * Deploy server and common jars to the Darkstar server
  * @author jkaplan
  */
-public class DarkstarModuleDeployer implements ModuleDeployerSPI {
+public class DarkstarModuleDeployer extends AssetDeployer {
     /** the types of modules we deploy */
     private static final String[] TYPES = { "server", "common" };
    
-    /** the files to deploy */
-    private static Map<Module, List<ModulePart>> modules = 
-            new LinkedHashMap<Module, List<ModulePart>>();
-
+    @Override
     public String getName() {
         return "Darkstar Server";
     }
@@ -48,6 +40,7 @@ public class DarkstarModuleDeployer implements ModuleDeployerSPI {
      * The types of module we are interested in
      * @return common and server modules
      */
+    @Override
     public String[] getTypes() {
         return TYPES; 
     }
@@ -59,6 +52,7 @@ public class DarkstarModuleDeployer implements ModuleDeployerSPI {
      * @param part The part of the module to be deployed
      * @return true if the module part can be deployed by the deployer
      */
+    @Override
     public boolean isDeployable(String type, Module module, ModulePart part) {
         // get all darkstar servers, and make sure they are in the 
         // NOT_RUNNING state
@@ -81,6 +75,7 @@ public class DarkstarModuleDeployer implements ModuleDeployerSPI {
      * @param part The part of the module to be deployed
      * @return true if the module part can be undeployed by the deployer
      */
+    @Override
     public boolean isUndeployable(String type, Module module, ModulePart part) {
          // get all darkstar servers, and make sure they are in the 
         // NOT_RUNNING state
@@ -95,56 +90,4 @@ public class DarkstarModuleDeployer implements ModuleDeployerSPI {
         
         return !running;
     }
-     
-    /**
-     * Deploy the given module part.  This puts the module part on a list
-     * to deploy the next time the server is actually started.
-     * @param type the type of module
-     * @param module the module
-     * @param part the part of the module
-     */
-    public void deploy(String type, Module module, ModulePart part) 
-    {
-        synchronized (modules) {
-            List<ModulePart> parts = modules.get(module);
-            if (parts == null) {
-                parts = new ArrayList<ModulePart>();
-                modules.put(module, parts);
-            }
-            
-            parts.add(part);
-        }
-        
-    }
-
-    /**
-     * Undeploy the given module part.  This removes the module part from
-     * the list of modules to deploy.
-     * @param type the type of module
-     * @param module the module
-     * @param part the part of the module
-     */
-    public void undeploy(String type, Module module, ModulePart part) 
-    {
-        synchronized (modules) {
-            List<ModulePart> parts = modules.get(module);
-            if (parts != null) {
-                parts.remove(part);
-                
-                if (parts.isEmpty()) {
-                    modules.remove(module);
-                }
-            }   
-        }
-    } 
-    
-    /**
-     * Return the modules and parts that are currently installed.
-     * @return the set of modules that are available
-     */
-    public static Map<Module, List<ModulePart>> getModules() {
-        synchronized (modules) {
-            return Collections.unmodifiableMap(modules);
-        }
-    }   
 }

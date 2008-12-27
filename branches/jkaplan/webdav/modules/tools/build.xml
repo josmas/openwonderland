@@ -5,9 +5,10 @@
     
     <!-- all projects -->
     <fileset dir="${current.dir}" id="all.projects">
+        <include name="darkstar/build.xml"/>
+        <include name="voicebridge/build.xml"/>
         <include name="server-manager/build.xml"/>
         <include name="audio-manager/build.xml"/>
-        <include name="voicebridge/build.xml"/>
         <include name="artimport/build.xml"/>
         <include name="orb/build.xml"/>
         <include name="microphone/build.xml"/>

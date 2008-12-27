@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -38,6 +37,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.net.URLStreamHandler;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -46,6 +46,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
@@ -245,29 +246,7 @@ public class WebServerLauncher {
             System.setProperty(Constants.RUN_DIR_PROP, directory);
         }
 
-        // set guess the hostname for this server
-        if (System.getProperty(Constants.WEBSERVER_HOST_PROP) == null) {
-            System.setProperty(Constants.WEBSERVER_HOST_PROP, getHostname());
-        }
-
-        // set the web server URL based on the hostname and port
-        if (System.getProperty(Constants.WEBSERVER_URL_PROP) == null) {
-            System.setProperty(Constants.WEBSERVER_URL_PROP,
-                "http://" + System.getProperty(Constants.WEBSERVER_HOST_PROP).trim() +
-                ":" + System.getProperty(Constants.WEBSERVER_PORT_PROP).trim() + "/");
-        }
-
         return true;
-    }
-
-    // get the hostname to send out
-    private static String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostAddress();
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error determining host name", ioe);
-            return "localhost";
-        }
     }
 
     /**
