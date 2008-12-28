@@ -27,47 +27,47 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class KeyEvent3D extends InputEvent3D {
 
     static {
-	/** Allocate this event type's class ID. */
-	EVENT_CLASS_ID = Event.allocateEventClassID();
+        /** Allocate this event type's class ID. */
+        EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
     /** Default constructor (for cloning) */
-    protected KeyEvent3D () {}
+    protected KeyEvent3D() {
+    }
 
     /** 
      * Create a new instance of <code>KeyEvent3D</code>.
      * @param awtEvent The originating AWT key event.
      */
-    KeyEvent3D (KeyEvent awtEvent) {
+    KeyEvent3D(KeyEvent awtEvent) {
         super(awtEvent);
     }
-    
+
     /**
      * Returns true if this event is a key type.
      */
-    public boolean isTyped () {
+    public boolean isTyped() {
         return (awtEvent.getID() == KeyEvent.KEY_TYPED);
     }
-    
+
     /**
      * Returns true if this event is a key press.
      */
-    public boolean isPressed () {
+    public boolean isPressed() {
         return (awtEvent.getID() == KeyEvent.KEY_PRESSED);
     }
-    
+
     /**
      * Returns true if this event is a key release.
      */
     public boolean isReleased() {
         return (awtEvent.getID() == KeyEvent.KEY_RELEASED);
     }
-    
+
     /**
      * Returns the character associated with the key in this event.
      * For example, the <code>KEY_TYPED</code> event for shift + "a" returns
@@ -82,10 +82,10 @@ public class KeyEvent3D extends InputEvent3D {
      * If no valid Unicode character exists for this key event,
      * <code>CHAR_UNDEFINED</code> is returned.
      */
-    public char getKeyChar () {
-        return ((KeyEvent)awtEvent).getKeyChar();
+    public char getKeyChar() {
+        return ((KeyEvent) awtEvent).getKeyChar();
     }
-    
+
     /**
      * Returns the integer key code associated with the key in this event.
      * The key code is the same as that of the originating AWT event.
@@ -93,24 +93,24 @@ public class KeyEvent3D extends InputEvent3D {
      * @return the integer code for an actual key on the keyboard.
      * (For <code>KEY_TYPED events</code>, the key code is <code>VK_UNDEFINED</code>.)
      */
-    public int getKeyCode () {
-        return ((KeyEvent)awtEvent).getKeyCode();
+    public int getKeyCode() {
+        return ((KeyEvent) awtEvent).getKeyCode();
     }
 
     /** {@inheritDoc} */
     @Override
-    public String toString () {
-	return "Key " + keyAction() + ": keyCode=" + getKeyCode() + ", keyChar=" + getKeyChar(); 
+    public String toString() {
+        return "Key " + keyAction() + ": keyCode=" + getKeyCode() + ", keyChar=" + getKeyChar();
     }
 
-    private String keyAction () {
-	if (isPressed()) {
-	    return "PRESS";
-	} else if (isReleased()) {
-	    return "RELEASE";
-	} else {
-	    return "CLICK";
-	}
+    private String keyAction() {
+        if (isPressed()) {
+            return "PRESS";
+        } else if (isReleased()) {
+            return "RELEASE";
+        } else {
+            return "CLICK";
+        }
     }
 
     /** 
@@ -119,10 +119,10 @@ public class KeyEvent3D extends InputEvent3D {
      * If event is null, a new event of this class is created and returned.
      */
     @Override
-    public Event clone (Event event) {
-	if (event == null) {
-	    event = new KeyEvent3D();
-	}
-	return super.clone(event);
+    public Event clone(Event event) {
+        if (event == null) {
+            event = new KeyEvent3D();
+        }
+        return super.clone(event);
     }
 }

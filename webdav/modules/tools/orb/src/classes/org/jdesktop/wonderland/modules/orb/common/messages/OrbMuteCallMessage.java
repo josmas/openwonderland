@@ -21,16 +21,18 @@ package org.jdesktop.wonderland.modules.orb.common.messages;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
 /**
  *
  * @author jprovino
  */
-public class OrbMuteCallMessage extends OrbControlMessage {   
+public class OrbMuteCallMessage extends CellMessage {   
     
     private boolean isMuted;
 
-    public OrbMuteCallMessage(CellID cellID, String callID, boolean isMuted) {
-	super(cellID, callID);
+    public OrbMuteCallMessage(CellID cellID, boolean isMuted) {
+	super(cellID);
 
 	this.isMuted = isMuted;
     }

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.cell.view;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -36,13 +37,13 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 @ExperimentalAPI
 public class ViewCell extends Cell {
     
-    private MovableComponent movableComp;
+    private MovableAvatarComponent movableComp;
 
     public ViewCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         addComponent(new ChannelComponent(this));
-        addComponent(new MovableComponent(this));
-        movableComp = getComponent(MovableComponent.class);
+        addComponent(new MovableAvatarComponent(this), MovableComponent.class);
+        movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
     }
     
     /**
@@ -50,6 +51,6 @@ public class ViewCell extends Cell {
      * @param transform
      */
     public void localMoveRequest(CellTransform transform) {
-        movableComp.localMoveRequest(transform);
+        movableComp.localMoveRequest(transform, -1, false, null);
     }
 }

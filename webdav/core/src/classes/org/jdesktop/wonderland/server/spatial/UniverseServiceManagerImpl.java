@@ -9,6 +9,7 @@ import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 /**
@@ -73,5 +74,17 @@ public class UniverseServiceManagerImpl implements UniverseManager {
 
     public void removeTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener) {
         service.removeTransformChangeListener(cell, listener);
+    }
+
+    public void addViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener) {
+        service.addViewUpdateListener(cell, viewUpdateListener);
+    }
+
+    public void removeViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener) {
+        service.removeViewUpdateListener(cell, viewUpdateListener);
+    }
+
+    public void schedule(Runnable runnable) {
+        service.schedule(runnable);
     }
 }

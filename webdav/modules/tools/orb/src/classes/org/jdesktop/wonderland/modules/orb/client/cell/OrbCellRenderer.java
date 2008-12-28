@@ -52,11 +52,16 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 public class OrbCellRenderer extends BasicRenderer {
     
+    private Entity entity;
+    private MyMouseListener listener;
+
     public OrbCellRenderer(Cell cell) {
         super(cell);
     }
     
     protected Node createSceneGraph(Entity entity) {
+	this.entity = entity;
+
         ColorRGBA color = new ColorRGBA();
 
         ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -75,7 +80,9 @@ public class OrbCellRenderer extends BasicRenderer {
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
         //return createWireframeEntity();
 
-	new MyMouseListener().addToEntity(entity);
+	listener = new MyMouseListener();
+	listener.addToEntity(entity);
+	//System.out.println("Added mouse listener to " + cell.getCellID());
 	return createAnimationEntity();
     }
 
@@ -123,7 +130,7 @@ public class OrbCellRenderer extends BasicRenderer {
     }
 
     private Node createAnimationEntity() {
-	Sphere s=new Sphere("My sphere",30,30,5);
+	Sphere s=new Sphere("My sphere",30,30,(float).5);
 	// I will rotate this pivot to move my light
 	Node pivot=new Node("Pivot node");
 	// This light will rotate around my sphere. Notice I don't
@@ -193,6 +200,11 @@ public class OrbCellRenderer extends BasicRenderer {
 
 	logger.fine("ANIMATION ENTITY CREATED");
 	return node;
+    }
+
+    public void removeMouseListener() {
+	//System.out.println("Removing mouse listener for " + cell.getCellID());
+	listener.removeFromEntity(entity);
     }
 
     class MyMouseListener extends EventClassListener {

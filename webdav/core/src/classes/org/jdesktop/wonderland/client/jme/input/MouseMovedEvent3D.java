@@ -27,23 +27,23 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class MouseMovedEvent3D extends MouseEvent3D {
 
     static {
-	/** Allocate this event type's class ID. */
-	EVENT_CLASS_ID = Event.allocateEventClassID();
+        /** Allocate this event type's class ID. */
+        EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
     /** Default constructor (for cloning) */
-    protected MouseMovedEvent3D () {}
+    protected MouseMovedEvent3D() {
+    }
 
     /**
      * Create a new instance of MouseMovedEvent3D with a null pickDetails.
      * @param event The AWT event.
      */
-    MouseMovedEvent3D (MouseEvent awtEvent) {
+    MouseMovedEvent3D(MouseEvent awtEvent) {
         super(awtEvent, null);
     }
 
@@ -52,15 +52,15 @@ public class MouseMovedEvent3D extends MouseEvent3D {
      * @param event The AWT event.
      * @param pickDetails The pick data for the event.
      */
-    MouseMovedEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
+    MouseMovedEvent3D(MouseEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent, pickDetails);
     }
 
     /** {@inheritDoc} */
     @Override
-    public String toString () {
-	// TODO: add internal state when drag methods are added
-	return "Mouse Move: xy = " + ((MouseEvent)awtEvent).getX() + "," + ((MouseEvent)awtEvent).getY();
+    public String toString() {
+        // TODO: add internal state when drag methods are added
+        return "Mouse Move: xy = " + ((MouseEvent) awtEvent).getX() + "," + ((MouseEvent) awtEvent).getY();
     }
 
     /** 
@@ -69,10 +69,10 @@ public class MouseMovedEvent3D extends MouseEvent3D {
      * If event is null, a new event of this class is created and returned.
      */
     @Override
-    public Event clone (Event event) {
-	if (event == null) {
-	    event = new MouseMovedEvent3D();
-	}
-	return super.clone(event);
+    public Event clone(Event event) {
+        if (event == null) {
+            event = new MouseMovedEvent3D();
+        }
+        return super.clone(event);
     }
 }

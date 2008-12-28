@@ -27,35 +27,33 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class InputManager3D extends InputManager {
 
     /**
      * Return the input manager singleton.
      */
-    public static InputManager getInputManager () {
-	if (inputManager == null) {
-	    inputManager = new InputManager3D();
+    public static InputManager getInputManager() {
+        if (inputManager == null) {
+            inputManager = new InputManager3D();
             ClientContext.registerInputManager(inputManager);
-	}
-	return inputManager;
+        }
+        return inputManager;
     }
 
     /**
      * Create a new instance of <code>InputManager3D</code>.
      */
-    protected InputManager3D () {
-	inputPicker = InputPicker3D.getInputPicker();
+    protected InputManager3D() {
+        inputPicker = InputPicker3D.getInputPicker();
         eventDistributor = EventDistributor3D.getEventDistributor();
         inputPicker.setEventDistributor(eventDistributor);
     }
 
-
     /** 
      * Returns the current camera.
      */
-    Camera getCamera () {
-	return inputPicker.getCameraComponent().getCamera();
+    Camera getCamera() {
+        return inputPicker.getCameraComponent().getCamera();
     }
 }

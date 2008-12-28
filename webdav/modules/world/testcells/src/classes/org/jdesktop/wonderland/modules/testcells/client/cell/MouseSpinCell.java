@@ -24,6 +24,7 @@ import com.sun.scenario.animation.Interpolators;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.test.MouseEvent3DLogger;
@@ -54,24 +55,27 @@ public class MouseSpinCell extends SimpleShapeCell {
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         CellRenderer ret = super.createCellRenderer(rendererType);
 
-        Entity entity = ((CellRendererJME)ret).getEntity();
+        if (ClientContext.getRendererType()==RendererType.RENDERER_JME) {
+            // TODO move this JME specific code into a Component
+            Entity entity = ((CellRendererJME)ret).getEntity();
 
-        Node node = getSceneRoot(entity);
-        Vector3f currentLoc = node.getLocalTranslation();
-        Vector3f dest = new Vector3f(currentLoc);
-        dest.y+=0.3;
+            Node node = getSceneRoot(entity);
+            Vector3f currentLoc = node.getLocalTranslation();
+            Vector3f dest = new Vector3f(currentLoc);
+            dest.y+=0.3;
 
-        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, node, 0f, 360);
-        Clip clip2 = Clip.create(1000, spinner);
-        clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
+            RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, node, 0f, 360);
+            Clip clip2 = Clip.create(1000, spinner);
+            clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
 
-        Mouse3DTrigger.addTrigger(entity, clip2, Mouse3DTriggerEvent.PRESS);
+            Mouse3DTrigger.addTrigger(entity, clip2, Mouse3DTriggerEvent.PRESS);
 
-        TranslationAnimationProcessor trans = new TranslationAnimationProcessor(entity, node, currentLoc, dest);
-        Clip clip = Clip.create(500, Clip.INDEFINITE, trans);
-        clip.setAutoReverse(true);
-        clip.start();
-//        Mouse3DTrigger.addTrigger(entity, clip, Mouse3DTriggerEvent.ENTER);
+            TranslationAnimationProcessor trans = new TranslationAnimationProcessor(entity, node, currentLoc, dest);
+            Clip clip = Clip.create(500, Clip.INDEFINITE, trans);
+            clip.setAutoReverse(true);
+            clip.start();
+    //        Mouse3DTrigger.addTrigger(entity, clip, Mouse3DTriggerEvent.ENTER);
+        }
 
         return ret;
     }

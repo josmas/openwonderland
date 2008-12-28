@@ -27,52 +27,50 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class SwingEnterExitEvent3D extends Event {
 
     static {
-	/** Allocate this event type's class ID. */
-	EVENT_CLASS_ID = Event.allocateEventClassID();
+        /** Allocate this event type's class ID. */
+        EVENT_CLASS_ID = Event.allocateEventClassID();
     }
-
     /** Whether this event is an enter or an exit. */
     private boolean isEntered;
-
     /** The entity entered or exitted. */
     private Entity entity;
 
     /** Default constructor (for cloning) */
-    protected SwingEnterExitEvent3D () {}
+    protected SwingEnterExitEvent3D() {
+    }
 
     /**
      * Create a new SwingEnterExitEvent3D.
      * @param isEntered Whether this is an enter or exit event.
      * @param entity The entity entered or exitted.
      */
-    public SwingEnterExitEvent3D (boolean isEntered, Entity entity) {
-	this.isEntered = isEntered;
-	this.entity = entity;
+    public SwingEnterExitEvent3D(boolean isEntered, Entity entity) {
+        this.isEntered = isEntered;
+        this.entity = entity;
     }
 
     /**
      * Returns true if this event is an enter.
      */
-    public boolean isEntered () {
+    public boolean isEntered() {
         return isEntered;
     }
 
     /**
      * Returns the event's entity.
      */
-    public Entity getEntity () {
+    public Entity getEntity() {
         return entity;
     }
-    
+
     /**
      *
     public String toString () {
-	return "SwingEnterExitEvent3D, isEntered = " + isEntered + ", entity = " + entity);
+    return "SwingEnterExitEvent3D, isEntered = " + isEntered + ", entity = " + entity);
     }
 
     /** 
@@ -81,10 +79,10 @@ public class SwingEnterExitEvent3D extends Event {
      * If event is null, a new event of this class is created and returned.
      */
     @Override
-    public Event clone (Event event) {
-	if (event == null) {
-	    event = new SwingEnterExitEvent3D(isEntered, entity);
-	}
-	return super.clone(event);
+    public Event clone(Event event) {
+        if (event == null) {
+            event = new SwingEnterExitEvent3D(isEntered, entity);
+        }
+        return super.clone(event);
     }
 }

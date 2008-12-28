@@ -18,9 +18,6 @@
 package org.jdesktop.wonderland.server.spatial.impl;
 
 import com.jme.bounding.BoundingVolume;
-import org.jdesktop.wonderland.server.cell.*;
-import com.jme.math.Vector3f;
-import java.io.Serializable;
 
 /**
  *

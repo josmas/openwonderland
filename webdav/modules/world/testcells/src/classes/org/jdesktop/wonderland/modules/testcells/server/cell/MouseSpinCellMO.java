@@ -17,16 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.testcells.server.cell;
 
+import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.server.cell.*;
-import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
-import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -46,6 +43,12 @@ public class MouseSpinCellMO extends SimpleShapeCellMO{
 
     public MouseSpinCellMO(Vector3f center, float size) {
         super(center, size);
+        System.err.println("**** MOUSE SPIN CELL");
+
+        ProximityComponentMO prox = new ProximityComponentMO(this);
+        BoundingVolume[] bounds = new BoundingVolume[] { new BoundingSphere(2f, new Vector3f()) };
+        prox.addProximityListener(new ProximityTest(), bounds );
+        addComponent(prox);
     }
     
     @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {

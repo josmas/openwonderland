@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMess
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.UserMO;
 
@@ -40,6 +41,7 @@ import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import java.io.Serializable;
@@ -86,9 +88,6 @@ public class AudioManagerConnectionHandler
     private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
 
     private ConcurrentHashMap<WonderlandClientSender, String> senderCallIDMap = 
-	new ConcurrentHashMap();
-
-    private ConcurrentHashMap<String, WonderlandClientSender> callIDSenderMap = 
 	new ConcurrentHashMap();
 
     public AudioManagerConnectionHandler() {
@@ -189,7 +188,6 @@ public class AudioManagerConnectionHandler
 	    callID = call.getId();
 
 	    senderCallIDMap.put(sender, callID);
-	    callIDSenderMap.put(callID, sender);
 
             PlayerSetup ps = new PlayerSetup();
             ps.x = (double) msg.getX();
@@ -281,7 +279,6 @@ public class AudioManagerConnectionHandler
 	}
 
 	senderCallIDMap.remove(sender);
-	callIDSenderMap.remove(callID);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -311,7 +308,9 @@ public class AudioManagerConnectionHandler
 	    return;
 	}
 
-	WonderlandClientSender sender = callIDSenderMap.get(callId);
+	CommsManager cm = WonderlandContext.getCommsManager();
+
+	WonderlandClientSender sender = cm.getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
 	switch (code) {
 	case CallStatus.ESTABLISHED:
@@ -336,11 +335,11 @@ public class AudioManagerConnectionHandler
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
-	    //sender.send(clientID, new SpeakingMessage(true));
+	    sender.send(new SpeakingMessage(callId, true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    //sender.send(clientID, new SpeakingMessage(false));
+	    sender.send(new SpeakingMessage(callId, false));
             break;
 
 	case CallStatus.BRIDGE_OFFLINE:

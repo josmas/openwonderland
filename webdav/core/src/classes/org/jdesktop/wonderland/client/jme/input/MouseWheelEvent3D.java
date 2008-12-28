@@ -27,35 +27,35 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class MouseWheelEvent3D extends MouseEvent3D {
 
     static {
-	/** Allocate this event type's class ID. */
-	EVENT_CLASS_ID = Event.allocateEventClassID();
+        /** Allocate this event type's class ID. */
+        EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
     /** Default constructor (for cloning) */
-    protected MouseWheelEvent3D () {}
+    protected MouseWheelEvent3D() {
+    }
 
     /**
      * Create a new instance of MouseWheelEvent3D will a null pickDetails.
      * @param awtEvent The AWT event.
      */
-    MouseWheelEvent3D (MouseWheelEvent awtEvent) {
+    MouseWheelEvent3D(MouseWheelEvent awtEvent) {
         this(awtEvent, null);
     }
-    
+
     /**
      * Create a new instance of MouseWheelEvent3D.
      * @param awtEvent The AWT event.
      * @param pickDetails The pick data for the event.
      */
-    MouseWheelEvent3D (MouseWheelEvent awtEvent, PickDetails pickDetails) {
+    MouseWheelEvent3D(MouseWheelEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent, pickDetails);
     }
-    
+
     /**
      * Returns the number of "clicks" the mouse wheel was rotated.
      *
@@ -64,13 +64,13 @@ public class MouseWheelEvent3D extends MouseEvent3D {
      * towards the user
      */
     public int getWheelRotation() {
-        return ((MouseWheelEvent)awtEvent).getWheelRotation();
+        return ((MouseWheelEvent) awtEvent).getWheelRotation();
     }
 
     /** {@inheritDoc} */
     @Override
-    public String toString () {
-       	return "Mouse Wheel, rot=" + getWheelRotation();
+    public String toString() {
+        return "Mouse Wheel, rot=" + getWheelRotation();
     }
 
     /** 
@@ -79,10 +79,10 @@ public class MouseWheelEvent3D extends MouseEvent3D {
      * If event is null, a new event of this class is created and returned.
      */
     @Override
-    public Event clone (Event event) {
-	if (event == null) {
-	    event = new MouseWheelEvent3D();
-	}
-	return super.clone(event);
+    public Event clone(Event event) {
+        if (event == null) {
+            event = new MouseWheelEvent3D();
+        }
+        return super.clone(event);
     }
 }

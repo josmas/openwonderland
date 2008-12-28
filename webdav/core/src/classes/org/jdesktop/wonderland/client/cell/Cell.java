@@ -74,7 +74,11 @@ public class Cell {
         /**
          * A 2D rendering (not yet implemented)
          */
-        RENDERER_2D
+        RENDERER_2D,
+        /**
+         * No Renderer
+         */
+        NONE,
         /**
          * Low end 3D rendering, cell phone renderer etc, TBD
          */

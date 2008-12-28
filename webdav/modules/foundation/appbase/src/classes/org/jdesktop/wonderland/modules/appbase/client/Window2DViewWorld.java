@@ -95,12 +95,13 @@ public interface Window2DViewWorld {
 
     /**
      * Transform the given 3D point in local coordinates into the corresponding point
-     * in the pixel space of the window image. The given point must be on the surface of the window.
+     * in the pixel space of the window image. The given point must be in the plane of the window.
      * @param point The point to transform.
-     * @return the 2D position of the pixel space the window's image, or null if the point is not within the window
-     * or is not on the surface of the window.
+     * @param clamp If true return the last position if the argument point is null or the resulting
+     * position is outside of the geometry's rectangle. Otherwise, return null if these conditions hold.
+     * @return the 2D position of the pixel space the window's image.
      */
-    public Point calcPositionInPixelCoordinates (Vector3f point);
+    public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp);
 
     /**
      * Add an event listener to this view.

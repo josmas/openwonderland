@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import java.lang.reflect.Method;
+import javax.media.opengl.GLContext;
 
 /**
  * A type of drawing surface is based on using an AWT Graphics2D to draw to an AWT BufferedImage
@@ -60,15 +62,24 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     /** The buffered image. */
     protected BufferedImage bufImage;
 
-    /** 
-     * Tracks whether the bufImage is dirty (i.e. has been drawn on). 
-     * Note: we must maintain this flag with the buffered image rather then with the DirtyTrackingGraphics
-     * because swing makes several copies of the graphics.
-     */
-    protected ImageDirtyTracker dirtyTracker = new ImageDirtyTracker();
-
     /** The Graphics2D we return from getGraphics */
     protected DirtyTrackingGraphics g;
+
+    // We need to call this method reflectively because it isn't available in Java 5
+    // BTW: we don't support Java 5 on Linux, so this is okay.
+    private static boolean isLinux = System.getProperty("os.name").equals("Linux");
+    private static Method isAWTLockHeldByCurrentThreadMethod;
+    static {
+	if (isLinux) {
+	    try {
+		Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
+		isAWTLockHeldByCurrentThreadMethod = 
+		    awtToolkitClass.getMethod("isAWTLockHeldByCurrentThread");
+	    } catch (ClassNotFoundException ex) {
+	    } catch (NoSuchMethodException ex) {
+	    }
+	}
+    }
 
     /**  
      * Create an instance of DrawingSurfaceBufferedImage.
@@ -110,13 +121,14 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 
 	// Create a dirty-tracking Graphics2D which renders onto this buffered image
 	g = new DirtyTrackingGraphics((Graphics2D)bufImage.getGraphics());
-	g.clipRect(0, 0, width, height);
+	g.setClip(0, 0, width, height);
 
 	// Erase the buffered image to all white
 	Color bkgdSave = g.getBackground();
         g.setBackground(Color.WHITE);
         g.clearRect(0, 0, width, height);
         g.setBackground(bkgdSave);
+	g.addDirtyRectangle(0, 0, width, height);
     }
     
     /**
@@ -133,9 +145,11 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     @Override
     public void initializeSurface () {
 	initSurface(g);
+	/* TODO: I don't think this is necessary anymore 
 	if (!imageGraphics.drawImage(bufImage, 0, 0, null)) {
 	    logger.warning("imageGraphics.drawImage returned false! Skipping image rendering.");
 	}
+	*/
     }
 
     /**
@@ -152,21 +166,66 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
      */
     protected class BufferedImageUpdateProcessor extends UpdateProcessor {
 
+	private boolean checkForUpdateReturn;
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	protected boolean checkForUpdate () {
+
+	    // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
+	    // In order to avoid deadlock with any threads which are already holding the AWT lock and which 
+	    // want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
+	    // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
+	    // the AWT lock afterward.
+	    GLContext glContext = null;
+	    if (isAWTLockHeldByCurrentThreadMethod != null) {
+		try {
+		    Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
+		    if (ret.booleanValue()) {
+			glContext = GLContext.getCurrent();
+			glContext.release();
+		    }
+		} catch (Exception ex) {}
+	    }
+
 	    // In this implementation, we need to check our DirtyTrackingGraphics to see whether it is dirty.
 	    // If it is dirty, we copy the entire buffered image into the imageGraphics.
-	    if (dirtyTracker.isDirty()) {
-		if (!imageGraphics.drawImage(bufImage, 0, 0, null)) {
-		    logger.warning("imageGraphics.drawImage returned false! Skipping image rendering.");
-		}
-		dirtyTracker.clearDirty();
-		return true;
+	    g.executeAtomic (new Runnable () {
+	        public void run () {
+		    Rectangle dirtyRect = g.getDirtyRectangle();
+    	            if (dirtyRect != null) {
+			/*
+			System.err.println("copy dirty rect = " + 
+					   dirtyRect.x + ", " + dirtyRect.y + ", " + 
+					   dirtyRect.width + ", " + dirtyRect.height);
+			*/
+
+			/* TODO: debug hack
+			   FAILS!
+		        if (!imageGraphics.drawImage(bufImage, 
+						     dirtyRect.x, dirtyRect.y, 
+						     dirtyRect.width, dirtyRect.width, 
+						     null)) {
+			*/
+			if (!imageGraphics.drawImage(bufImage, 0, 0, 
+						     bufImage.getWidth(), bufImage.getHeight(), null)) {
+		            logger.warning("drawImage returned false. Skipping image rendering.");
+		        }
+		        g.clearDirty();
+		        checkForUpdateReturn = true;
+		    } else {
+		        checkForUpdateReturn = false;
+		    }
+		}});
+
+	    // Linux-specific workaround: Reacquire the lock if necessary.
+	    if (glContext != null) {
+		glContext.makeCurrent();
 	    }
-	    return false;
+
+	    return checkForUpdateReturn;
 	}
 
 	private void start () {
@@ -179,48 +238,64 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     }
 
     /**
-     * This is an encapsulation of a dirty flag. Used to track whether the buffered
-     * image of the parent class has been drawn upon.
-     */
-    private class ImageDirtyTracker { 
-	private boolean isDirty;
-	private boolean isDirty () { return isDirty; }
-	private void makeDirty () { isDirty = true; }
-	private void clearDirty () { isDirty = false; }
-    }
-
-    /**
      * A Graphics2D which sets a dirty flag whenever it is used for rendering.
      */
-    // TODO: public for debugging: was private
     public class DirtyTrackingGraphics extends Graphics2D {
 
 	/** The delegate Graphics2D */
 	private Graphics2D delegate;
 
+	/** The union of all dirty rectangles since the last clear */
+	Rectangle dirtyRect;
+
 	private DirtyTrackingGraphics (Graphics2D delegate) {
 	    this.delegate = delegate;
 	}
 
-	/** 
-	 * Have any rendering methods of this Graphics2D been called since we last cleared the dirty flag?
-	 */
-	public synchronized boolean isDirty() {
-	    return dirtyTracker.isDirty();
+	public synchronized void addDirtyRectangle (int x, int y, int width, int height) {
+	    //System.err.println("addDirtyRect, newRect = " + x + ", " + y + ", " + width + ", " + height);
+	    Rectangle newRect = new Rectangle(x, y, width, height);
+	    if (dirtyRect == null) {
+		dirtyRect = newRect;
+	    } else {
+		dirtyRect = unionRects(dirtyRect, newRect);
+	    }
+	    /*
+	      System.err.println("addDirtyRect, union = " + dirtyRect.x + ", " + dirtyRect.y + ", " + 
+			       dirtyRect.width + ", " + dirtyRect.height);
+	    */
 	}
 
-	/**
-	 * Set the dirty flag. Must be called from inside a synchronized (this) block.
-	 */
-      	private final void makeDirty () {
-	    dirtyTracker.makeDirty();
+	// The union of two rectangles returned in a third rectangle.
+	private Rectangle unionRects (Rectangle r1, Rectangle r2) {
+	    int r1x0 = r1.x;
+	    int r1y0 = r1.y;
+	    int r1x1 = r1.x + r1.width;
+	    int r1y1 = r1.y + r1.width;
+
+	    int r2x0 = r2.x;
+	    int r2y0 = r2.y;
+	    int r2x1 = r2.x + r2.width;
+	    int r2y1 = r2.y + r2.width;
+
+            int x0 = Math.min(r1x0, r2x0);
+            int y0 = Math.min(r1y0, r2y0);
+            int x1 = Math.max(r1x1, r2x1);
+            int y1 = Math.max(r1y1, r2y1);
+
+	    return new Rectangle(x0, y0, x1 - x0, y1 - y0);
 	}
 
-	/**
-	 * Clear the dirty flag.
-	 */
-	private synchronized final void clearDirty () {
-	    dirtyTracker.clearDirty();
+	public Rectangle getDirtyRectangle () {
+	    return dirtyRect;
+	}
+
+	public void clearDirty () {
+	    dirtyRect = null;
+	}
+
+	public synchronized void executeAtomic (Runnable runnable) {
+	    runnable.run();
 	}
 
 	public Color getColor() {
@@ -387,164 +462,134 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 	    return new DirtyTrackingGraphics((Graphics2D)delegate.create(x, y, width, height));
         }
 
-	public synchronized void copyArea( int x, int y, int width, int height, int dx, int dy ) {
-	    makeDirty();
+	public void copyArea( int x, int y, int width, int height, int dx, int dy ) {
 	    delegate.copyArea( x, y, width, height, dx, dy );
 	}
 
-	public synchronized void drawLine( int x1, int y1, int x2, int y2 ) {
-	    makeDirty();
+	public void drawLine( int x1, int y1, int x2, int y2 ) {
 	    delegate.drawLine( x1, y1, x2, y2 );
 	}
 
-	public synchronized void fillRect( int x, int y, int width, int height ) {
-	    makeDirty();
+	public void fillRect( int x, int y, int width, int height ) {
 	    delegate.fillRect( x, y, width, height );
 	}
 
-	public synchronized void clearRect( int x, int y, int width, int height ) {
-	    makeDirty();
+	public void clearRect( int x, int y, int width, int height ) {
 	    delegate.clearRect( x, y, width, height );
 	}
 
-	public synchronized void drawRoundRect( int x, int y, int width, int height, int arcWidth, 
+	public void drawRoundRect( int x, int y, int width, int height, int arcWidth, 
 						int arcHeight ) {
-	    makeDirty();
 	    delegate.drawRoundRect( x, y, width, height, arcWidth, arcHeight );
 	}
 
-	public synchronized void fillRoundRect( int x, int y, int width, int height, int arcWidth, 
+	public void fillRoundRect( int x, int y, int width, int height, int arcWidth, 
 						int arcHeight ) {
-	    makeDirty();
 	    delegate.fillRoundRect( x, y, width, height, arcWidth, arcHeight );
 	}
 
-	public synchronized void drawOval( int x, int y, int width, int height ) {
-	    makeDirty();
+	public void drawOval( int x, int y, int width, int height ) {
 	    delegate.drawOval( x, y, width, height );
 	}
 
-	public synchronized void fillOval( int x, int y, int width, int height ) {
-	    makeDirty();
+	public void fillOval( int x, int y, int width, int height ) {
 	    delegate.fillOval( x, y, width, height );
 	}
 
-	public synchronized void drawArc( int x, int y, int width, int height, int startAngle, 
+	public void drawArc( int x, int y, int width, int height, int startAngle, 
 					  int arcAngle ) {
-	    makeDirty();
 	    delegate.drawArc( x, y, width, height, startAngle, arcAngle );
 	}
 
-	public synchronized void fillArc( int x, int y, int width, int height, int startAngle, 
+	public void fillArc( int x, int y, int width, int height, int startAngle, 
 					  int arcAngle ) {
-	    makeDirty();
 	    delegate.fillArc( x, y, width, height, startAngle, arcAngle );
 	}
 
-	public synchronized void drawPolyline( int[] xPoints, int[] yPoints, int nPoints ) {
-	    makeDirty();
+	public void drawPolyline( int[] xPoints, int[] yPoints, int nPoints ) {
 	    delegate.drawPolyline( xPoints, yPoints, nPoints );
 	}
 
-	public synchronized void drawPolygon( int[] xPoints, int[] yPoints, int nPoints ) {
-	    makeDirty();
+	public void drawPolygon( int[] xPoints, int[] yPoints, int nPoints ) {
 	    delegate.drawPolygon( xPoints, yPoints, nPoints );
 	}
 
-	public synchronized void fillPolygon( int[] xPoints, int[] yPoints, int nPoints ) {
-	    makeDirty();
+	public void fillPolygon( int[] xPoints, int[] yPoints, int nPoints ) {
             delegate.fillPolygon( xPoints, yPoints, nPoints );
 	}
 
-	public synchronized boolean drawImage( java.awt.Image img, int x, int y, ImageObserver observer ) {
-	    makeDirty();
+	public boolean drawImage( java.awt.Image img, int x, int y, ImageObserver observer ) {
 	    return delegate.drawImage( img, x, y, observer );
 	}
 
-	public synchronized boolean drawImage( java.awt.Image img, int x, int y, int width, int height, 
+	public boolean drawImage( java.awt.Image img, int x, int y, int width, int height, 
 					       ImageObserver observer ) {
-	    makeDirty();
 	    return delegate.drawImage( img, x, y, width, height, observer );
 	}
 
-	public synchronized boolean drawImage( java.awt.Image img, int x, int y, Color bgcolor, 
+	public boolean drawImage( java.awt.Image img, int x, int y, Color bgcolor, 
 					       ImageObserver observer ) {
-	    makeDirty();
 	    return delegate.drawImage( img, x, y, bgcolor, observer );
 	}
 
-	public synchronized boolean drawImage( java.awt.Image img, int x, int y, int width, int height, 
+	public boolean drawImage( java.awt.Image img, int x, int y, int width, int height, 
 					       Color bgcolor, ImageObserver observer ) {
-	    makeDirty();
 	    return delegate.drawImage( img, x, y, width, height, bgcolor, observer );
 	}
 
-	public synchronized boolean drawImage( java.awt.Image img, int dx1, int dy1, int dx2, int dy2, 
+	public boolean drawImage( java.awt.Image img, int dx1, int dy1, int dx2, int dy2, 
 					       int sx1, int sy1, int sx2, int sy2, ImageObserver observer ) {
-	    makeDirty();
 	    return delegate.drawImage( img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, observer );
 	}
 
-	public synchronized boolean drawImage( java.awt.Image img, int dx1, int dy1, int dx2, int dy2, 
+	public boolean drawImage( java.awt.Image img, int dx1, int dy1, int dx2, int dy2, 
 					       int sx1, int sy1, int sx2, int sy2, Color bgcolor, 
 					       ImageObserver observer ) {
-	    makeDirty();
 	    return delegate.drawImage( img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, bgcolor, observer );
 	}
 
-	public synchronized void draw( Shape s ) {
-	    makeDirty();
+	public void draw( Shape s ) {
 	    delegate.draw( s );
 	}
 
-	public synchronized boolean drawImage( java.awt.Image img, AffineTransform xform, 
+	public boolean drawImage( java.awt.Image img, AffineTransform xform, 
 					       ImageObserver obs ) {
-	    makeDirty();
 	    return delegate.drawImage( img, xform, obs );
 	}
 
-	public synchronized void drawImage( BufferedImage img, BufferedImageOp op, int x, int y ) {
-	    makeDirty();
+	public void drawImage( BufferedImage img, BufferedImageOp op, int x, int y ) {
 	    delegate.drawImage( img, op, x, y );
 	}
 
-	public synchronized void drawRenderedImage( RenderedImage img, AffineTransform xform ) {
-	    makeDirty();
+	public void drawRenderedImage( RenderedImage img, AffineTransform xform ) {
 	    delegate.drawRenderedImage( img, xform );
 	}
 
-	public synchronized void drawRenderableImage( RenderableImage img, AffineTransform xform ) {
-	    makeDirty();
+	public void drawRenderableImage( RenderableImage img, AffineTransform xform ) {
 	    delegate.drawRenderableImage( img, xform );
 	}
 
-	public synchronized void drawString( String str, int x, int y ) {
-	    makeDirty();
+	public void drawString( String str, int x, int y ) {
 	    delegate.drawString( str, x, y );
 	}
 
-	public synchronized void drawString( String s, float x, float y ) {
-	    makeDirty();
+	public void drawString( String s, float x, float y ) {
 	    delegate.drawString( s, x, y );
 	}
 
-	public synchronized void drawString( AttributedCharacterIterator iterator, int x, int y ) {
-	    makeDirty();
+	public void drawString( AttributedCharacterIterator iterator, int x, int y ) {
 	    delegate.drawString( iterator, x, y );
 	}
 
-	public synchronized void drawString( AttributedCharacterIterator iterator, float x, float y ) {
-	    makeDirty();
+	public void drawString( AttributedCharacterIterator iterator, float x, float y ) {
 	    delegate.drawString( iterator, x, y );
 	}
 
-	public synchronized void drawGlyphVector( GlyphVector g, float x, float y ) {
-	    makeDirty();
+	public void drawGlyphVector( GlyphVector g, float x, float y ) {
 	    delegate.drawGlyphVector( g, x, y );
 	}
 
-	public synchronized void fill( Shape s ) {
-	    makeDirty(); 
+	public void fill( Shape s ) {
 	    delegate.fill( s );
 	}
     }

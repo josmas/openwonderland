@@ -18,9 +18,9 @@
 package org.jdesktop.wonderland.server.spatial.impl;
 
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Matrix4f;
 import com.sun.sgs.auth.Identity;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 /**
  *
@@ -94,4 +94,18 @@ public interface SpatialCell {
      * Destroy this cell, removing it from all the view caches
      */
     public void destroy();
+
+    /**
+     * Add a ViewUpdateLIstener to this cell. This listener will be called
+     * whenever the view of a ViewCache that contains this cell is updated
+     * 
+     * @param viewUpdateListener listener to add
+     */
+    public void addViewUpdateListener(ViewUpdateListener viewUpdateListener);
+
+    /**
+     * Remove the specified ViewUpdateListener
+     * @param viewUpdateListener listener to remove
+     */
+    public void removeViewUpdateListener(ViewUpdateListener viewUpdateListener);
 }

@@ -21,22 +21,31 @@ package org.jdesktop.wonderland.modules.orb.common.messages;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
 /**
  *
  * @author jprovino
  */
-public class OrbSetVolumeMessage extends OrbControlMessage {   
+public class OrbSetVolumeMessage extends CellMessage {   
     
     private double volume;
 
-    public OrbSetVolumeMessage(CellID cellID, String callID, double volume) {
-	super(cellID, callID);
+    private String softphoneCallID;
 
+    public OrbSetVolumeMessage(CellID cellID, String softphoneCallID, double volume) {
+	super(cellID);
+
+	this.softphoneCallID = softphoneCallID;
 	this.volume = volume;
     }
     
     public double getVolume() {
 	return volume;
+    }
+
+    public String getSoftphoneCallID() {
+	return softphoneCallID;
     }
 
 }

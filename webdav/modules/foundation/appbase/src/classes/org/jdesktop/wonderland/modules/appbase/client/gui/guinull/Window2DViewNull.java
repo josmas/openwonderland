@@ -167,7 +167,7 @@ public class Window2DViewNull extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public Point calcPositionInPixelCoordinates (Vector3f point) {
+    public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp) {
 	return null;
     }
 

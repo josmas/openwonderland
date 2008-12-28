@@ -19,8 +19,6 @@ package org.jdesktop.wonderland.server.spatial.impl;
 
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Matrix4f;
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.auth.Identity;
@@ -30,12 +28,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 /**
  *
@@ -65,7 +69,10 @@ public class SpatialCellImpl implements SpatialCell {
 
     private ArrayList<TransformChangeListenerSrv> transformChangeListeners = null;
 
+    private CopyOnWriteArraySet<ViewUpdateListener> viewUpdateListeners = null;
+
     private boolean isRoot = false;
+    private HashSet<ProximityListenerSrv> proximityListeners = null;
 
     public SpatialCellImpl(CellID id, BigInteger dsID) {
 //        System.out.println("Creating SpatialCell "+id);
@@ -83,12 +90,15 @@ public class SpatialCellImpl implements SpatialCell {
 
     public void setLocalBounds(BoundingVolume localBounds) {
         acquireRootWriteLock();
-        this.localBounds = localBounds;
+        try {
+            this.localBounds = localBounds;
 
-        if (rootNode!=null) {
-            throw new RuntimeException("Updating bounds of live cell not supported yet");
+            if (rootNode!=null) {
+                throw new RuntimeException("Updating bounds of live cell not supported yet");
+            }
+        } finally {
+            releaseRootWriteLock();
         }
-        releaseRootWriteLock();
     }
 
     /**
@@ -109,12 +119,16 @@ public class SpatialCellImpl implements SpatialCell {
 
     public void setLocalTransform(CellTransform transform, Identity identity) {
         acquireRootWriteLock();
-        this.localTransform = transform;
-        
-        if (rootNode!=null) {
-            updateWorldTransform(identity);
+
+        try {
+            this.localTransform = transform;
+
+            if (rootNode!=null) {
+                updateWorldTransform(identity);
+            }
+        } finally {
+            releaseRootWriteLock();
         }
-        releaseRootWriteLock();
     }
 
     public CellTransform getWorldTransform() {
@@ -126,18 +140,20 @@ public class SpatialCellImpl implements SpatialCell {
             throw new RuntimeException("Multiple parent exception");
         
         acquireRootWriteLock();
+        try {
+            if (children==null) {
+                children = new ArrayList();
+            }
 
-        if (children==null) {
-            children = new ArrayList();
-        }
-        
-        children.add((SpatialCellImpl) child);
-        ((SpatialCellImpl)child).setParent(this);
+            children.add((SpatialCellImpl) child);
+            ((SpatialCellImpl)child).setParent(this);
 
-        if (rootNode!=null) {
-            worldBounds.mergeLocal(((SpatialCellImpl)child).updateWorldTransform(identity));
+            if (rootNode!=null) {
+                worldBounds.mergeLocal(((SpatialCellImpl)child).updateWorldTransform(identity));
+            }
+        } finally {
+            releaseRootWriteLock();
         }
-        releaseRootWriteLock();
     }
 
     void addTransformChangeListener(TransformChangeListenerSrv listener) {
@@ -167,6 +183,47 @@ public class SpatialCellImpl implements SpatialCell {
         }
     }
 
+    /**
+     * Listener for changes to any view to which this cell is close
+     * @param viewUpdateListener
+     */
+    public void addViewUpdateListener(ViewUpdateListener viewUpdateListener) {
+        if (viewUpdateListeners==null)
+            viewUpdateListeners = new CopyOnWriteArraySet();
+
+        synchronized(viewUpdateListeners) {
+            viewUpdateListeners.add(viewUpdateListener);
+        }
+
+        if (rootNode!=null) {
+            // Only root cells track caches
+
+            // Add the listener to all the view caches
+            acquireRootReadLock();
+            HashMap<ViewCache, HashSet<Space>> rootViewCaches = ((SpatialCellImpl)getRoot()).viewCache;
+            if (rootViewCaches!=null) {
+                for(ViewCache cache : rootViewCaches.keySet()) {
+                    cache.addViewUpdateListener(cellID, viewUpdateListener);
+                }
+            }
+            releaseRootReadLock();
+        }
+    }
+
+    /**
+     * TODO Implement
+     * @param listener
+     */
+    public void removeViewUpdateListener(ViewUpdateListener listener) {
+        throw new RuntimeException("Not Implemented");
+    }
+
+    Iterator<ViewUpdateListener> getViewUpdateListeners() {
+        if (viewUpdateListeners==null)
+            return null;
+
+        return viewUpdateListeners.iterator();
+    }
 
     /**
      * Update the world transform of this node and all it's children iterating
@@ -176,6 +233,7 @@ public class SpatialCellImpl implements SpatialCell {
      */
     private BoundingVolume updateWorldTransform(Identity identity) {
         CellTransform oldWorld;
+        boolean transformChanged = false;
         if (worldTransform==null)
             oldWorld=null;
         else
@@ -191,8 +249,7 @@ public class SpatialCellImpl implements SpatialCell {
         if (!worldTransform.equals(oldWorld)) {         // TODO should be epsilonEquals
             if (worldTransformChangeListener!=null)     // For view cells
                 worldTransformChangeListener.transformChanged(this);
-            notifyViewCaches(worldTransform);
-            notifyTransformChangeListeners(identity);
+            transformChanged = true;
         }
 
         computeWorldBounds();
@@ -201,12 +258,13 @@ public class SpatialCellImpl implements SpatialCell {
             for(SpatialCellImpl s : children) {
                 worldBounds.mergeLocal(s.updateWorldTransform(identity));
             }
-            if (boundsChangeListener!=null)
-                boundsChangeListener.worldBoundsChanged(this);
         }
 
-//        System.err.println("Cell "+cellID+"  "+worldTransform.toTranslationVector());
-
+        if (transformChanged) {
+            notifyViewCaches(worldTransform);
+            notifyTransformChangeListeners(identity);
+        }
+        
         return worldBounds;
     }
     
@@ -236,8 +294,11 @@ public class SpatialCellImpl implements SpatialCell {
 
     public void removeChild(SpatialCell child) {
         acquireRootWriteLock();
-        children.remove(child);
-        releaseRootWriteLock();
+        try {
+            children.remove(child);
+        } finally {
+            releaseRootWriteLock();
+        }
     }
 
     public void setAttribute(Object attr) {
@@ -261,43 +322,38 @@ public class SpatialCellImpl implements SpatialCell {
      * @param root
      */
     void setRoot(SpatialCell root, Identity identity) {
-        // Now set the rootNode in all children
         this.rootNode = (SpatialCellImpl) root;
 
-        if (root==this) {
-            readWriteLock = new ReentrantReadWriteLock(true);
-            viewCache = new HashMap();
-            isRoot = true;
-            spaces = new HashSet();
-            acquireRootWriteLock();
+        try {
+            if (root==this) {
+                readWriteLock = new ReentrantReadWriteLock(true);
+                viewCache = new HashMap();
+                isRoot = true;
+                spaces = new HashSet();
+                acquireRootWriteLock();
 
-            // This node is the root of a graph, so set the world transform
-            worldTransform = localTransform.clone(null);
-            computeWorldBounds();
+                // This node is the root of a graph, so set the world transform & bounds
+                updateWorldTransform(identity);
+            }
+
+            if (isRoot) {
+                if (root==null) {
+                    // Root is being removed
+                    for(Space s : spaces) {
+                        s.removeRootSpatialCell(this);
+                    }
+                    spaces.clear();
+                }
+            }
 
             if (children!=null) {
                 for(SpatialCellImpl s : children)
-                    worldBounds.mergeLocal(s.updateWorldTransform(identity));
+                    s.setRoot(root, identity);
             }
-        }
-
-        if (isRoot) {
-            if (root==null) {
-                // Root is being removed
-                for(Space s : spaces) {
-                    s.removeRootSpatialCell(this);
-                }
-                spaces.clear();
+        } finally {
+            if (root==this) {
+                releaseRootWriteLock();
             }
-        }
-
-        if (children!=null) {
-            for(SpatialCellImpl s : children)
-                s.setRoot(root, identity);
-        }
-
-        if (root==this) {
-            releaseRootWriteLock();
         }
     }
 
@@ -305,7 +361,7 @@ public class SpatialCellImpl implements SpatialCell {
         this.parent = parent;
     }
 
-    SpatialCellImpl getParent() {
+    SpatialCell getParent() {
         return parent;
     }
 
@@ -329,6 +385,17 @@ public class SpatialCellImpl implements SpatialCell {
             rootNode.readWriteLock.readLock().unlock();
     }
 
+    /**
+     * Only called for root cells
+     * The cell has entered a space, record all the view caches that
+     * are now interested in this cell.
+     *
+     * A view cache can span a number of spaces, so the viewCache structure
+     * maintains the set of spaces per ViewCache (effectively a reference count)
+     *
+     * @param caches
+     * @param space
+     */
     void addViewCache(Collection<ViewCache> caches, Space space) {
         synchronized(viewCache) {
             for(ViewCache c : caches) {
@@ -340,7 +407,18 @@ public class SpatialCellImpl implements SpatialCell {
                 } else {
                     s.add(space);
                 }
+
             }
+        }
+
+        // Notify all cells in the graph that caches have
+        // been added. TODO this could be optimized to only notify
+        // children that have expressed an interest
+        try {
+            acquireRootReadLock();
+            viewCachesAddedOrRemoved(caches, true, this);
+        } finally {
+            releaseRootReadLock();
         }
     }
 
@@ -354,14 +432,49 @@ public class SpatialCellImpl implements SpatialCell {
                     s.remove(space);
                 }
                 
-                if (s.size()==0)
+                if (s.size()==0) {
                     viewCache.remove(c);
+                }
+            }
+        }
+
+        // Notify all cells in the graph that caches have
+        // been added. TODO this could be optimized to only notify
+        // children that have expressed an interest
+        try {
+            acquireRootReadLock();
+            viewCachesAddedOrRemoved(caches, false, this);
+        } finally {
+            releaseRootReadLock();
+        }
+    }
+
+    void viewCachesAddedOrRemoved(Collection<ViewCache> caches, boolean added, SpatialCellImpl cell) {
+        if (viewUpdateListeners!=null) {
+            for(ViewUpdateListener viewUpdateListener : viewUpdateListeners) {
+                for(ViewCache c : caches) {
+                    if (added) {
+                        c.addViewUpdateListener(cellID, viewUpdateListener);
+                    } else {
+                        c.removeViewUpdateListener(cellID, viewUpdateListener);
+                    }
+                }
+            }
+        }
+
+        if (children!=null) {
+            for(SpatialCellImpl child : children) {
+                child.viewCachesAddedOrRemoved(caches, added, child);
             }
         }
     }
 
 
-
+    /**
+     * Notify the ViewCaches that the worldTransform of this root cell
+     * has changed
+     * @param worldTransform
+     */
     private void notifyViewCaches(CellTransform worldTransform) {
         // Called from updateWorldBounds so we have a write lock on the graph
         SpatialCellImpl root = (SpatialCellImpl) getRoot();
@@ -377,31 +490,33 @@ public class SpatialCellImpl implements SpatialCell {
     public void destroy() {
         acquireRootWriteLock();
 
-        SpatialCellImpl root = (SpatialCellImpl) getRoot();
-        if (root==null)
-            return;
+        try {
+            SpatialCellImpl root = (SpatialCellImpl) getRoot();
+            if (root==null)
+                return;
 
-        Iterable<ViewCache> caches = root.viewCache.keySet();
-        for(ViewCache cache : caches) {
-            cache.cellDestroyed(this);
-        }
-
-        if (isRoot) {
-            // This is a root node
-            for(Space space : spaces) {
-                space.removeRootSpatialCell(this);
+            Iterable<ViewCache> caches = root.viewCache.keySet();
+            for(ViewCache cache : caches) {
+                cache.cellDestroyed(this);
             }
-        }
 
-        releaseRootWriteLock();
+            if (isRoot) {
+                // This is a root node
+                for(Space space : spaces) {
+                    space.removeRootSpatialCell(this);
+                }
+            }
+        } finally {
+            releaseRootWriteLock();
+        }
     }
 
     public interface WorldBoundsChangeListener {
-        public void worldBoundsChanged(SpatialCellImpl cell);
+        public void worldBoundsChanged(SpatialCell cell);
     }
 
     public interface TransformChangeListener {
-        public void transformChanged(SpatialCellImpl cell);
+        public void transformChanged(SpatialCell cell);
     }
 
 
@@ -411,6 +526,7 @@ public class SpatialCellImpl implements SpatialCell {
         private CellID cellID;
         private CellTransform localTransform;
         private CellTransform worldTransform;
+        private BoundingVolume worldBounds;
 
         public TransformChangeNotificationTask(Collection<TransformChangeListenerSrv> transformListeners, CellID cellID, CellTransform localTransform, CellTransform worldTransform) {
             listeners = transformListeners.toArray(new TransformChangeListenerSrv[transformListeners.size()]);

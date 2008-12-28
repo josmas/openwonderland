@@ -19,8 +19,10 @@ package org.jdesktop.wonderland.client.cell.view;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailable;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
@@ -36,6 +38,21 @@ public class AvatarCell extends ViewCell {
 
     public AvatarCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+    }
+
+    /**
+     * TODO this is a temporary interface for handling avatar actions, need
+     * to uplevel
+     * @param trigger
+     * @param pressed
+     */
+    public void triggerAction(int trigger, boolean pressed) {
+        if (ClientContext.getRendererType()==RendererType.RENDERER_JME) {
+            CellRenderer rend = getCellRenderer(RendererType.RENDERER_JME);
+            if (rend instanceof AvatarActionTrigger) {
+                ((AvatarActionTrigger)rend).trigger(trigger, pressed);
+            }
+        }
     }
     
     @Override

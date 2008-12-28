@@ -170,7 +170,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             }
 
                 if (logger.isLoggable(Level.FINER))
-                    logger.fine("Entering cell " + cellDescription.getCellID() +
+                    logger.finer("Entering cell " + cellDescription.getCellID() +
                                  " cellcache for user "+username);
 
                 CellLoadOp op = new CellLoadOp(cellDescription,

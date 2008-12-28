@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.spatial.impl;
 
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 import org.jdesktop.wonderland.server.spatial.*;
 import com.sun.sgs.auth.Identity;
 import java.math.BigInteger;
@@ -36,6 +37,8 @@ public interface Universe {
     public void addRootSpatialCell(CellID cellID, Identity identity);
 
     public void addTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener);
+
+    public void addViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener);
 
     /**
      * Remove the root cell (and all it's children)
@@ -57,6 +60,8 @@ public interface Universe {
     public SpatialCell getSpatialCell(CellID cellID);
 
     public void removeTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener);
+
+    public void removeViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener);
 
     public void viewLogin(CellID viewCellId, BigInteger cellCacheId, Identity identity);
 

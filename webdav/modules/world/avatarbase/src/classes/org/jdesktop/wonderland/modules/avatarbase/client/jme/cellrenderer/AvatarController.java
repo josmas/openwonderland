@@ -37,6 +37,10 @@ public class AvatarController extends NinjaController {
 
     @Override
     public float getVelocityScalar() {
+        if (selectedForInput)
+            return super.getVelocityScalar();
+
+        // TODO 1f means the avatar will always be walking
         return 1f;
     }
 
@@ -53,6 +57,7 @@ public class AvatarController extends NinjaController {
             
             if (transform!=null) {
                 body.getTransform().getLocalMatrix(true).setTranslation(transform.getTranslation(null));
+//                body.getTransform().getLocalMatrix(true).setRotation(transform.getRotation(null));
             }
         }
     }

@@ -100,15 +100,24 @@ public class WhiteboardDrawingSurface extends DrawingSurfaceBufferedImage {
         penY = loc.y;
     }
     
-    public void penDrag(Point loc) {
-        Graphics2D g = getGraphics();
-        setClipToDrawingRegion(g, true);
-        g.setColor(selectedColor);
-        g.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g.drawLine(penX, penY, loc.x, loc.y);
-        penX = loc.x;
-        penY = loc.y;
-        setClipToDrawingRegion(g, false);
+    public void penDrag(final Point loc) {
+	// TODO: temporary
+	final DrawingSurfaceBufferedImage.DirtyTrackingGraphics g = 
+			(DrawingSurfaceBufferedImage.DirtyTrackingGraphics) getGraphics();
+
+	g.executeAtomic(new Runnable () {
+	    public void run () {
+		setClipToDrawingRegion(g, true);
+		g.setColor(selectedColor);
+		g.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		g.drawLine(penX, penY, loc.x, loc.y);
+		penX = loc.x;
+		penY = loc.y;
+		setClipToDrawingRegion(g, false);
+		// TODO: must damage everything
+		g.addDirtyRectangle(0, 0, getWidth(), getHeight());
+	    }
+	});
     }
     
     public void penSelect(Point loc) {
@@ -190,11 +199,18 @@ public class WhiteboardDrawingSurface extends DrawingSurfaceBufferedImage {
     }
     
     public void erase() {
-        Graphics2D g = getGraphics();
-        setClipToDrawingRegion(g, true);
-        g.setBackground(Color.WHITE);
-        g.clearRect(0, 0, getWidth(), getHeight());
-        setClipToDrawingRegion(g, false);
+	// TODO: temporary
+	final DrawingSurfaceBufferedImage.DirtyTrackingGraphics g = 
+			(DrawingSurfaceBufferedImage.DirtyTrackingGraphics) getGraphics();
+	g.executeAtomic(new Runnable () {
+	    public void run () {
+		setClipToDrawingRegion(g, true);
+		g.setBackground(Color.WHITE);
+		g.clearRect(0, 0, getWidth(), getHeight());
+		setClipToDrawingRegion(g, false);
+		g.addDirtyRectangle(0, 0, getWidth(), getHeight());
+	    }
+	});
     }
     
     public void penDrag(float x, float y) {
@@ -249,28 +265,38 @@ public class WhiteboardDrawingSurface extends DrawingSurfaceBufferedImage {
             this.command = command;
         }
         
-        public void paint(Graphics2D g) {
-            g.setColor(color);
-            g.fill(rect);
-            if (command != null) {
-                switch (command) {
-                    case ERASE:
-                        g.setColor(Color.RED);
-                        g.drawLine(x+1, y+1, x+width-2, y+height-2);
-                        g.drawLine(x+1, y+height-2, x+width-2, y+1);
-                        break;
-                }
-            } else if (tool != null) {
-                switch (tool) {
-                    case STROKE:
-                        g.setColor(Color.BLUE);
-                        int sixth = width/6;
-                        g.drawLine(x+sixth, y+sixth, x+3*sixth, y+5*sixth);
-                        g.drawLine(x+3*sixth, y+5*sixth, x+4*sixth, y+2*sixth);
-                        g.drawLine(x+4*sixth, y+2*sixth, x+5*sixth, y+5*sixth);
-                        break;
-                }
-            }
+        public void paint(Graphics2D gDst) {
+	    final DrawingSurfaceBufferedImage.DirtyTrackingGraphics g = 
+			(DrawingSurfaceBufferedImage.DirtyTrackingGraphics) gDst;
+	    // TODO: temporary
+	    g.executeAtomic(new Runnable () {
+		public void run () {
+		    g.setColor(color);
+		    g.fill(rect);
+		    if (command != null) {
+			switch (command) {
+			case ERASE:
+			    g.setColor(Color.RED);
+			    g.drawLine(x+1, y+1, x+width-2, y+height-2);
+			    g.drawLine(x+1, y+height-2, x+width-2, y+1);
+			    break;
+			}
+		    } else if (tool != null) {
+			switch (tool) {
+			case STROKE:
+			    g.setColor(Color.BLUE);
+			    int sixth = width/6;
+			    g.drawLine(x+sixth, y+sixth, x+3*sixth, y+5*sixth);
+			    g.drawLine(x+3*sixth, y+5*sixth, x+4*sixth, y+2*sixth);
+			    g.drawLine(x+4*sixth, y+2*sixth, x+5*sixth, y+5*sixth);
+			    break;
+			}
+		    }
+		    g.addDirtyRectangle(0, 0, 
+					WhiteboardDrawingSurface.this.getWidth(), 
+					WhiteboardDrawingSurface.this.getHeight());
+		}
+	    });
         }
         
         /**

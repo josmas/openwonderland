@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.cell;
 import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -56,7 +57,7 @@ public class MovableComponent extends CellComponent {
          switch(status) {
             case DISK :
                 if (msgReceiver!=null) {
-                    channelComp.removeMessageReceiver(MovableMessage.class);
+                    channelComp.removeMessageReceiver(getMessageClass());
                     msgReceiver = null;
                 }
                 break;
@@ -71,10 +72,17 @@ public class MovableComponent extends CellComponent {
                             }
                         }
                     };                    
-                    channelComp.addMessageReceiver(MovableMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
                  }
              }
         }
+    }
+
+    /**
+     * @return the class of the message this component handles.
+     */
+    protected Class getMessageClass() {
+        return MovableMessage.class;
     }
     
     /**
@@ -98,7 +106,7 @@ public class MovableComponent extends CellComponent {
                            cell.getCellID());
             return;
         }
-        
+
         // TODO throttle sends, we should only send so many times a second.
         if (listener!=null) {
             channelComp.send(
@@ -123,7 +131,16 @@ public class MovableComponent extends CellComponent {
                                                     transform.getRotation(null)));
         }
 
-        cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.LOCAL);
+        applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.LOCAL);
+    }
+
+    /**
+     * Apply the transform change to the cell
+     * @param transform
+     * @param source
+     */
+    protected void applyLocalTransformChange(CellTransform transform, ChangeSource source) {
+        cell.setLocalTransform(transform, source);
     }
     
     /**
@@ -145,7 +162,7 @@ public class MovableComponent extends CellComponent {
      */
     protected void serverMoveRequest(MovableMessage msg) {
         CellTransform transform = new CellTransform(msg.getRotation(), msg.getTranslation());
-        cell.setLocalTransform(transform, TransformChangeListener.ChangeSource.REMOTE);
+        applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.REMOTE);
         notifyServerCellMoveListeners(msg, transform, CellMoveSource.REMOTE);
     }
     

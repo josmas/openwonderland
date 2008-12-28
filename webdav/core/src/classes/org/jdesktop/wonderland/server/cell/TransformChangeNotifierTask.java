@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
@@ -35,6 +36,7 @@ class TransformChangeNotifierTask implements Task, Serializable {
     private ManagedReference<CellMO> cellRef;
     private CellTransform local;
     private CellTransform local2VW;
+    private BoundingVolume worldBounds;
     
     TransformChangeNotifierTask(ManagedReference<TransformChangeListenerSrv> listenerRef, 
                                 ManagedReference<CellMO> cellRef,

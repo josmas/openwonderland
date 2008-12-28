@@ -23,6 +23,7 @@
                     
             <client>
                 <clientjar name="sample-client" basedir="${build.classes.dir}">
+                    <clientplugin provider="org.jdesktop.wonderland.modules.sample.client.SampleClientPlugin"/>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar> 
@@ -31,7 +32,7 @@
             <server>
                 <serverjar name="sample-server" basedir="${build.classes.dir}">
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.sample.server.SampleCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.sample.common.SampleCellSetup"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>
