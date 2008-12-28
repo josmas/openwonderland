@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.testcells.server.cell;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import java.util.logging.Level;

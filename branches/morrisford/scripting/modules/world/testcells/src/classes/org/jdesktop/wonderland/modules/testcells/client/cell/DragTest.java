@@ -95,6 +95,7 @@ public class DragTest extends SimpleShapeCell {
 	    if (event instanceof MouseButtonEvent3D) {
 		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
 		if (buttonEvent.isPressed()) {
+System.out.println("In drag test - mouse event");
 		    MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
 		    dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
 		    dragStartWorld = buttonEvent.getIntersectionPointWorld();

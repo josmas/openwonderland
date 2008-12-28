@@ -95,6 +95,15 @@ public class TestWorld implements ServerPlugin {
                             "wla://jmecolladaloader/OutsideFloor10x10/models/OutsideFloor10x10.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(20,0,20), 15,
+                            "wla://jmecolladaloader/Heffernan-meter9/models/Heffernan-meter9.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://127.0.0.1:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
 
             Task t = new TestTask(c3, c2);
 
