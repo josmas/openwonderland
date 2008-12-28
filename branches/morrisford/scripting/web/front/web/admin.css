@@ -1,0 +1,13 @@
+/* ce.css */
+
+#moduleMenu {
+  background:#A2A3A2 none repeat scroll 0% 0%;
+  float:left;
+  min-height:500px;
+  width:12em;
+}
+
+#content {
+  padding-left:14em;
+  height: 100%;
+}
