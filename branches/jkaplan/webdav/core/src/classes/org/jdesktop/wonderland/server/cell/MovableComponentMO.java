@@ -17,24 +17,14 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.scene.shape.Quad;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.Task;
-import com.sun.sgs.app.TaskManager;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
-import org.jdesktop.wonderland.server.TimeManager;
-import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -45,11 +35,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class MovableComponentMO extends CellComponentMO {
 
-    private ArrayList<ManagedReference<CellTransformChangeListener>> listeners = null;
-    private ManagedReference<ChannelComponentMO> channelComponentRef = null;
-    private long transformTimestamp;
-    private CellTransform cellTransformTmp = new CellTransform(new Quaternion(), new Vector3f());
-    private Vector3f v3fTmp = new Vector3f();
+    protected ManagedReference<ChannelComponentMO> channelComponentRef = null;
     
     /**
      * Create a MovableComponent for the given cell. The cell must already
@@ -64,13 +50,23 @@ public class MovableComponentMO extends CellComponentMO {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
         channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
                 
-        channelComponent.addMessageReceiver(MovableMessage.class, new ComponentMessageReceiverImpl(this));
+        channelComponent.addMessageReceiver(getMessageClass(), new ComponentMessageReceiverImpl(this));
     }
     
     @Override
     public void setLive(boolean live) {
+        // Nothing to do
+    }
+
+    protected Class getMessageClass() {
+        return MovableMessage.class;
     }
     
+    void moveRequest(WonderlandClientID clientID, MovableMessage msg) {
+        CellTransform transform = new CellTransform(msg.getRotation(), msg.getTranslation());
+        moveRequest(clientID, transform);
+    }
+
     /**
      * Set the transform for the cell and notify all client cells of the move.
      * @param sessionID the id of the session that originated the move, or null
@@ -78,6 +74,7 @@ public class MovableComponentMO extends CellComponentMO {
      * @param transform
      */
     public void moveRequest(WonderlandClientID clientID, CellTransform transform) {
+
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent;
         cell.setLocalTransform(transform);
@@ -112,7 +109,7 @@ public class MovableComponentMO extends CellComponentMO {
                 case MOVE_REQUEST:
                     // TODO check permisions
                     
-                    compRef.getForUpdate().moveRequest(clientID, new CellTransform(ent.getRotation(), ent.getTranslation()));
+                    compRef.getForUpdate().moveRequest(clientID, ent);
 
                     // Only need to send a response if the move can not be completed as requested
                     //sender.send(session, MovableMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));

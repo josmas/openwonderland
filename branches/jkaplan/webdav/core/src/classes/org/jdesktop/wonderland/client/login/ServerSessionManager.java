@@ -94,10 +94,11 @@ public class ServerSessionManager {
         // load the server details
         try {
             URL detailsURL = new URL(new URL(serverURL), DETAILS_URL);
-            URLConnection detailsURLConn = detailsURL.openConnection();
-            detailsURLConn.setRequestProperty("Accept", "application/xml");
 
-            this.details = ServerDetails.decode(new InputStreamReader(detailsURLConn.getInputStream()));
+	    URLConnection detailsURLConn = detailsURL.openConnection();
+	    detailsURLConn.setRequestProperty("Accept", "application/xml");
+
+	    this.details = ServerDetails.decode(new InputStreamReader(detailsURLConn.getInputStream()));
         } catch (JAXBException jbe) {
             IOException ioe = new IOException("Error reading server details " +
                                               "from: " + serverURL);

@@ -48,6 +48,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoi
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
+import org.jdesktop.wonderland.server.WonderlandContext;
+
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -635,7 +637,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    Vector3f location = localToWorldTransform.getTranslation(null);
 	
-	    logger.fine(player + " x " + -location.getX()
+	    logger.fine(player + " x " + location.getX()
 		+ " y " + location.getY() + " z " + location.getZ()
 		+ " angle " + angle);
 
@@ -643,7 +645,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	     * The x coordinate increases to the left so we correct
 	     * for that here.
 	     */
-	    player.moved(-location.getX(), location.getY(), location.getZ(), angle);
+	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
 	}
     }
 

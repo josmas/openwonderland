@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import imi.character.CharacterAttributes;
 import imi.character.ninja.NinjaAvatar;
 import imi.character.ninja.NinjaContext.TriggerNames;
 import imi.character.ninja.PunchState;
@@ -31,8 +32,11 @@ import org.jdesktop.mtgame.WorldManager;
 public class AvatarCharacter extends NinjaAvatar {
 
 
-    public AvatarCharacter(AvatarAttributes attributes, WorldManager wm) {
-        super(attributes,wm);
+    /**
+     * Create the avatar character, but don't add it to wm
+     */
+    public AvatarCharacter(CharacterAttributes attributes, WorldManager wm) {
+        super(attributes,wm, false);
     }
 
     @Override
@@ -88,7 +92,7 @@ public class AvatarCharacter extends NinjaAvatar {
     }
 
     public void setAnimation(String str) {
-        PunchState punch = (PunchState) getContext().getStates().get(PunchState.class);
+        PunchState punch = (PunchState) getContext().getState(PunchState.class);
         punch.setAnimationSetBoolean(false);
 
         punch.setAnimationName(str);

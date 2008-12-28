@@ -1048,9 +1048,9 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         public boolean accept(File pathname) {
             if (pathname.isDirectory())
                 return true;
-            String e = pathname.getName().toLowerCase();
+            String e = pathname.getName();
             e = e.substring(e.lastIndexOf('.')+1);
-            if (extensions.contains(e))
+            if (extensions.contains(e.toLowerCase()))
                 return true;
             
             return false;

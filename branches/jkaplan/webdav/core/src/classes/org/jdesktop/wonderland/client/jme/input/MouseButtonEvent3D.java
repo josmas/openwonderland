@@ -28,23 +28,23 @@ import com.jme.math.Vector2f;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class MouseButtonEvent3D extends MouseEvent3D {
 
     static {
-	/** Allocate this event type's class ID. */
-	EVENT_CLASS_ID = Event.allocateEventClassID();
+        /** Allocate this event type's class ID. */
+        EVENT_CLASS_ID = Event.allocateEventClassID();
     }
 
     /** Default constructor (for cloning) */
-    protected MouseButtonEvent3D () {}
+    protected MouseButtonEvent3D() {
+    }
 
     /**
      * Create a new MousebuttonEvent3D from the AWT mouse event with a null pickDetails.
      * @param evt the AWT event
      */
-    MouseButtonEvent3D (MouseEvent awtEvent) {
+    MouseButtonEvent3D(MouseEvent awtEvent) {
         this(awtEvent, null);
     }
 
@@ -53,51 +53,51 @@ public class MouseButtonEvent3D extends MouseEvent3D {
      * @param evt the AWT event
      * @param pickDetails The pick data for the event.
      */
-    MouseButtonEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
+    MouseButtonEvent3D(MouseEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent, pickDetails);
     }
-    
+
     /**
      * Returns true if this event indicates mouse click.
      */
     public boolean isClicked() {
         return (getID() == MouseEvent.MOUSE_CLICKED);
     }
-    
+
     /**
      * Returns true if this event indicates mouse press.
      */
     public boolean isPressed() {
         return (getID() == MouseEvent.MOUSE_PRESSED);
     }
-    
+
     /**
      * Returns true if this event indicates mouse release.
      */
     public boolean isReleased() {
         return (getID() == MouseEvent.MOUSE_RELEASED);
     }
-    
+
     /**
      * Returns the number of mouse clicks associated with this event.
      * @return integer value for the number of clicks
      */
     public int getClickCount() {
-        return ((MouseEvent)awtEvent).getClickCount();
+        return ((MouseEvent) awtEvent).getClickCount();
     }
 
-    public String toString () {
-	return "Mouse Button " + butAction();
+    public String toString() {
+        return "Mouse Button " + butAction();
     }
 
-    private String butAction () {
-	if (isPressed()) {
-	    return "PRESS";
-	} else if (isReleased()) {
-	    return "RELEASE";
-	} else {
-	    return "CLICK";
-	}
+    private String butAction() {
+        if (isPressed()) {
+            return "PRESS";
+        } else if (isReleased()) {
+            return "RELEASE";
+        } else {
+            return "CLICK";
+        }
     }
 
     /** 
@@ -106,10 +106,10 @@ public class MouseButtonEvent3D extends MouseEvent3D {
      * If event is null, a new event of this class is created and returned.
      */
     @Override
-    public Event clone (Event event) {
-	if (event == null) {
-	    event = new MouseButtonEvent3D();
-	}
-	return super.clone(event);
+    public Event clone(Event event) {
+        if (event == null) {
+            event = new MouseButtonEvent3D();
+        }
+        return super.clone(event);
     }
 }

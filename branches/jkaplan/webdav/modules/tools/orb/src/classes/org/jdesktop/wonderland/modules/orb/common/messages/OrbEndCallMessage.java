@@ -21,14 +21,16 @@ package org.jdesktop.wonderland.modules.orb.common.messages;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
 /**
  *
  * @author jprovino
  */
-public class OrbEndCallMessage extends OrbControlMessage {   
+public class OrbEndCallMessage extends CellMessage {   
     
-    public OrbEndCallMessage(CellID cellID, String callID) {
-	super(cellID, callID);
+    public OrbEndCallMessage(CellID cellID) {
+	super(cellID);
     }
 
 }

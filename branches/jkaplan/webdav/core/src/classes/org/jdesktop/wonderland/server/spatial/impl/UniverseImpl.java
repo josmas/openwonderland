@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 
 /**
@@ -38,7 +39,7 @@ import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 public class UniverseImpl implements Universe {
 
     private SpaceManager spaceManager = new SpaceManagerGridImpl();
-    private final HashMap<CellID, SpatialCellImpl> cells = new HashMap();
+    private final HashMap<CellID, SpatialCell> cells = new HashMap();
     private TaskScheduler taskScheduler;
     private static UniverseImpl universe;
     private TransactionProxy transactionProxy;
@@ -104,7 +105,7 @@ public class UniverseImpl implements Universe {
 
     }
 
-    public SpatialCell createSpatialCell(CellID id, BigInteger dsID, Class cellClass) {
+    public SpatialCellImpl createSpatialCell(CellID id, BigInteger dsID, Class cellClass) {
         logger.fine("createSpatialCell "+id+"   dsID "+dsID);
         SpatialCellImpl ret;
         if (ViewCellMO.class.isAssignableFrom(cellClass)) {
@@ -167,15 +168,29 @@ public class UniverseImpl implements Universe {
 
     public void addTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener) {
         synchronized(cells) {
-            SpatialCellImpl cell = cells.get(cellID);
+            SpatialCellImpl cell = (SpatialCellImpl) cells.get(cellID);
             cell.addTransformChangeListener(listener);
         }
     }
 
     public void removeTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener) {
         synchronized(cells) {
-            SpatialCellImpl cell = cells.get(cellID);
+            SpatialCellImpl cell = (SpatialCellImpl) cells.get(cellID);
             cell.removeTransformChangeListener(listener);
+        }
+    }
+
+    public void addViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener) {
+        synchronized(cells) {
+            SpatialCell cell = cells.get(cellID);
+            cell.addViewUpdateListener(viewUpdateListener);
+        }
+    }
+
+    public void removeViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener) {
+        synchronized(cells) {
+            SpatialCell cell = cells.get(cellID);
+            cell.removeViewUpdateListener(viewUpdateListener);
         }
     }
 

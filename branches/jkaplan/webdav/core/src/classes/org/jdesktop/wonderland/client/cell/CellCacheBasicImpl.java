@@ -169,7 +169,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * @param cell the cell to create a renderer for
      */
     protected CellRenderer createCellRenderer(Cell cell) {
-        return cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        return cell.getCellRenderer(ClientContext.getRendererType());
     }
 
     /**

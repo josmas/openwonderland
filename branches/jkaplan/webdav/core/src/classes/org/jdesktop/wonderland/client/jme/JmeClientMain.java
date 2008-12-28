@@ -70,7 +70,7 @@ public class JmeClientMain {
     /**
      * The desired frame rate
      */
-    private int desiredFrameRate = 30;
+    private int desiredFrameRate = 60;
     
     /**
      * The width and height of our 3D window
@@ -300,7 +300,7 @@ public class JmeClientMain {
 	// Note: the app base will impose its own (different) policy later
 	inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
 
-	//TODO: temporary: example global key event listener for Paul */
+	/* Note: Example of global key and mouse event listener 
 	InputManager3D.getInputManager().addGlobalEventListener(
 	    new EventClassFocusListener () {
 		private final Logger logger = Logger.getLogger("My Logger");
@@ -315,14 +315,15 @@ public class JmeClientMain {
 			}
 		    } else {
 			logger.fine("Global listener: received mouse event, event = " + event);
+			MouseEvent3D mouseEvent = (MouseEvent3D) event;
+			System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
+			System.err.println("Event entity = " + mouseEvent.getEntity());
 		    }
 		}
     	    });
+	*/
     }
 
-    /**
-     * Load system properties and properties from the named file
-     */
     /**
      * Returns the frame of the Wonderland client window.
      */
@@ -338,6 +339,9 @@ public class JmeClientMain {
         JmeClientMain.frame = frame;
     }
 
+    /**
+     * Load system properties and properties from the named file
+     */
     protected void loadProperties(URL propsURL) {
         // load the given file
         if (propsURL != null) {

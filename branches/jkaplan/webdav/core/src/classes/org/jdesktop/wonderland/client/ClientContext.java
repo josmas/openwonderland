@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -45,6 +47,8 @@ public class ClientContext {
     private static HashMap<WonderlandSession, CellCache> cellCaches=null;
     private static InputManager inputManager=null;
     private static File userDir;
+
+    private static Cell.RendererType currentRendererType = Cell.RendererType.RENDERER_JME;
     
     /**
      * Return the CellCache if the session has one, otherwise
@@ -103,6 +107,24 @@ public class ClientContext {
         throws IOException
     {
         return LoginManager.getInstance(serverURL);
+    }
+
+    /**
+     * Set the default render type for a client. This needs to be set
+     * very early during startup and should not be changed once the system
+     * is running.
+     * @param rendererType
+     */
+    public static void setRendererType(Cell.RendererType rendererType) {
+        currentRendererType = rendererType;
+    }
+
+    /**
+     * Return the default render type for a client
+     * @return
+     */
+    public static Cell.RendererType getRendererType() {
+        return currentRendererType;
     }
 
     /**

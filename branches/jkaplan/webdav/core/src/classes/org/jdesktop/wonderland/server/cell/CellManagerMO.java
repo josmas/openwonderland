@@ -95,13 +95,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
     public static void reinitialize(UniverseManager universe) {
         logger.warning("CellManagerMO Reinitializing");
 
-        try {
-            getCellManager().reloadCells(universe);
-        } catch (NameNotBoundException nnbe) {
-            // if the cell manager has not been initialized, the name
-            // will be unbound.  Ignore the error here, because it
-            // means initialize() will be called later.
-        }
+//        try {
+//            getCellManager().reloadCells(universe);
+//        } catch (NameNotBoundException nnbe) {
+//            // if the cell manager has not been initialized, the name
+//            // will be unbound.  Ignore the error here, because it
+//            // means initialize() will be called later.
+//        }
     }
 
     /**

@@ -44,10 +44,12 @@ public class TestTestPanel extends JFrame {
     class Frame extends JFrame {
 
         JPanel contentPane;
-        JPanel testPanel = new TestPanel();
-
+	TestPanel testPanel = new TestPanel();
+	
         // Construct the frame
         public Frame () {
+	    testPanel.setFrame(this);
+
             addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent e) {
                     dispose();

@@ -39,10 +39,12 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 
+import org.jdesktop.wonderland.server.comms.CommsManager;
+
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
+
 import java.io.IOException;
 import java.io.Serializable;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.logging.Logger;
 
@@ -56,19 +58,6 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 
     private CellID cellID;
 
-    private ConcurrentHashMap<String, SenderInfo> senderMap =
-        new ConcurrentHashMap();
-
-    private class SenderInfo implements Serializable {
-        public WonderlandClientSender sender;
-        public ManagedReference<ClientSession> sessionRef;
-
-        public SenderInfo(WonderlandClientSender sender, ClientSession session) {
-            this.sender = sender;
-            //this.sessionRef = AppContext.getDataManager().createReference(session);
-        }
-    }
-
     public OrbStatusListener(ManagedReference<OrbCellMO> orbCellMORef) {
         this.orbCellMORef = orbCellMORef;
 
@@ -78,11 +67,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
     private boolean muteMessageSpoken;
     private boolean isMuted;
 
-    public void mapCall(String callID, WonderlandClientSender sender,
-	    ClientSession session) {
-
-	senderMap.put(callID, new SenderInfo(sender, session));
-
+    public void addCallStatusListener(String callID) {
 	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, callID);
     }
 
@@ -96,15 +81,9 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    return;
 	}
 
-        SenderInfo senderInfo = senderMap.get(callID);
+        CommsManager cm = WonderlandContext.getCommsManager();
 
-        if (senderInfo == null) {
-            logger.warning("Can't find senderInfo for status:  " + status);
-            return;
-        }
-
-        WonderlandClientSender sender = senderInfo.sender;
-        //ClientSession session = senderInfo.sessionRef.get();
+        WonderlandClientSender sender = cm.getSender(CellChannelConnectionType.CLIENT_TYPE);
 
         switch (status.getCode()) {
 	case CallStatus.DTMF_KEY:
@@ -149,12 +128,15 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    break;
 
         case CallStatus.ENDED: 
-	    logger.finest("Sending OrbEndCallMessage");
 	    WonderlandContext.getCellManager().removeCellFromWorld(orbCellMORef.get());
 	    break;
 	}
     }
 
+    public void endCall(String callID) {
+	WonderlandContext.getCellManager().removeCellFromWorld(orbCellMORef.get());
+    }
+ 	
     private boolean starPressed;
 
     private boolean playingHelp;
@@ -272,7 +254,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 
 	    isMuted = true;
 
-	    OrbMuteCallMessage orbMuteCallMessage = new OrbMuteCallMessage(cellID, callID, true);
+	    OrbMuteCallMessage orbMuteCallMessage = new OrbMuteCallMessage(cellID, true);
 
             // send to everybody cellChannel.send(cellChannel.getSessions(), orbMessage.getBytes());            
 	    try {
@@ -300,7 +282,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 		logger.warning("unable to play unmuted treatment to " + call
 		    + ":  " + e.getMessage());
 	    }
-	    OrbMuteCallMessage orbUnmuteCallMessage = new OrbMuteCallMessage(cellID, callID, false);
+	    OrbMuteCallMessage orbUnmuteCallMessage = new OrbMuteCallMessage(cellID, false);
 
             // send to everybody cellChannel.send(cellChannel.getSessions(), orbMessage.getBytes());            
 	    return;

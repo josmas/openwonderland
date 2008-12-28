@@ -38,28 +38,28 @@ import org.jdesktop.wonderland.common.InternalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class MouseDraggedEvent3D extends MouseMovedEvent3D {
-    
+
     private static final Logger logger = Logger.getLogger(MouseDraggedEvent3D.class.getName());
 
-    static {
-	/** Allocate this event type's class ID. */
-	EVENT_CLASS_ID = Event.allocateEventClassID();
-    }
 
+    static {
+        /** Allocate this event type's class ID. */
+        EVENT_CLASS_ID = Event.allocateEventClassID();
+    }
     /** The raw pick details of the actual pick hit. */
     protected PickDetails hitPickDetails;
 
     /** Default constructor (for cloning) */
-    protected MouseDraggedEvent3D () {}
+    protected MouseDraggedEvent3D() {
+    }
 
     /**
      * Create a new MouseDraggedEvent3D with a null pickDetails from an AWT mouse event.
      * @param awtEvent The AWT event
      */
-    MouseDraggedEvent3D (MouseEvent awtEvent) {
+    MouseDraggedEvent3D(MouseEvent awtEvent) {
         this(awtEvent, null);
     }
 
@@ -68,7 +68,7 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
      * @param awtEvent The AWT event
      * @param pickDetails The pick data for the event.
      */
-    MouseDraggedEvent3D (MouseEvent awtEvent, PickDetails pickDetails) {
+    MouseDraggedEvent3D(MouseEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent, pickDetails);
     }
 
@@ -78,22 +78,22 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
      * INTERNAL ONLY
      */
     @InternalAPI
-    public void setHitPickDetails (PickDetails hitPickDetails) {
-	this.hitPickDetails = hitPickDetails;
+    public void setHitPickDetails(PickDetails hitPickDetails) {
+        this.hitPickDetails = hitPickDetails;
     }
 
     /**
      * Returns the raw hit pick details of this drag event.
      */
-    public PickDetails getHitPickDetails () {
-	return hitPickDetails;
+    public PickDetails getHitPickDetails() {
+        return hitPickDetails;
     }
 
     /**
      * Returns the actually entity hit by the event.
      */
-    public Entity getHitEntity () {
-	return InputPicker.pickDetailsToEntity(hitPickDetails);
+    public Entity getHitEntity() {
+        return InputPicker.pickDetailsToEntity(hitPickDetails);
     }
 
     /**
@@ -101,41 +101,43 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
      * which were calculated by the input system. (This distance is in world coordinates). If the event has 
      * no hit pick details, 0 is returned. 
      */
-   public float getHitDistance () {
-	if (hitPickDetails == null) {
-	    return 0f;
-	} else {
-	    return hitPickDetails.getDistance();
-	}
+    public float getHitDistance() {
+        if (hitPickDetails == null) {
+            return 0f;
+        } else {
+            return hitPickDetails.getDistance();
+        }
     }
 
     /**
      * Returns the intersection point in world coordinates, based on the actual hit pick details.
      */
-    public Vector3f getHitIntersectionPointWorld () {
-	if (hitPickDetails == null) {
-	    return null;
-	} else {
-	    return hitPickDetails.getPosition();
-	}
+    public Vector3f getHitIntersectionPointWorld() {
+        if (hitPickDetails == null) {
+            return null;
+        } else {
+            return hitPickDetails.getPosition();
+        }
     }
 
     /**
      * Returns the intersection point in object (node) local coordinates, based on the actual hit 
      * pick details.
      */
-    public Vector3f getHitIntersectionPointLocal () {
-	if (hitPickDetails == null) {
-	    return null;
-	} else {
-	    Vector3f posWorld = hitPickDetails.getPosition();
-	    if (posWorld == null) return null;
-	    CollisionComponent cc = hitPickDetails.getCollisionComponent();
-	    Node node = cc.getNode();
-	    node.getLocalToWorldMatrix(world2Local);
-	    world2Local.invert();
-	    return world2Local.mult(hitPickDetails.getPosition(), new Vector3f());
-	}
+    public Vector3f getHitIntersectionPointLocal() {
+        if (hitPickDetails == null) {
+            return null;
+        } else {
+            Vector3f posWorld = hitPickDetails.getPosition();
+            if (posWorld == null) {
+                return null;
+            }
+            CollisionComponent cc = hitPickDetails.getCollisionComponent();
+            Node node = cc.getNode();
+            node.getLocalToWorldMatrix(world2Local);
+            world2Local.invert();
+            return world2Local.mult(hitPickDetails.getPosition(), new Vector3f());
+        }
     }
 
     /**
@@ -145,76 +147,73 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
      * @param ret An Vector3f in which to store the drag vector. If null a new vector is created.
      * @return The argument ret is returned. If it was null a new vector is returned.
      */
-    public Vector3f getDragVectorWorld (Vector3f dragStartWorld, Point dragStartScreen, Vector3f ret) {
+    public Vector3f getDragVectorWorld(Vector3f dragStartWorld, Point dragStartScreen, Vector3f ret) {
         if (ret == null) {
             ret = new Vector3f();
         }
-	
-	logger.fine("dragStartWorld rel = " + dragStartWorld);
 
-	// The current world position of the eye
-	Vector3f eyeWorld = InputPicker3D.getInputPicker().getCameraPosition(null);
-	logger.fine("eyeWorld = " + eyeWorld);
+        logger.fine("dragStartWorld rel = " + dragStartWorld);
 
-	// The float movement vector in screen space
-	Vector2f scrPos = new Vector2f(
-				     (float)(((MouseEvent)awtEvent).getX() - dragStartScreen.x),
-                                     (float)(((MouseEvent)awtEvent).getY() - dragStartScreen.y));
-	logger.fine("scrPos = " + scrPos);
+        // The current world position of the eye
+        Vector3f eyeWorld = InputPicker3D.getInputPicker().getCameraPosition(null);
+        logger.fine("eyeWorld = " + eyeWorld);
 
-	Vector2f pressXY = new Vector2f((float)dragStartScreen.x, (float)dragStartScreen.y);
-	Vector3f pressWorld = ((InputManager3D)InputManager3D.getInputManager()).
-	    getCamera().getWorldCoordinates(pressXY, 0f);
+        // The float movement vector in screen space
+        Vector2f scrPos = new Vector2f(
+                (float) (((MouseEvent) awtEvent).getX() - dragStartScreen.x),
+                (float) (((MouseEvent) awtEvent).getY() - dragStartScreen.y));
+        logger.fine("scrPos = " + scrPos);
 
-	Vector2f dragXY = new Vector2f((float)((MouseEvent)awtEvent).getX(),
-				       (float)((MouseEvent)awtEvent).getY());
-	Vector3f dragWorld = ((InputManager3D)InputManager3D.getInputManager()).
-	    getCamera().getWorldCoordinates(dragXY, 0f);
+        Vector2f pressXY = new Vector2f((float) dragStartScreen.x, (float) dragStartScreen.y);
+        Vector3f pressWorld = ((InputManager3D) InputManager3D.getInputManager()).getCamera().getWorldCoordinates(pressXY, 0f);
 
-	// The world position of this event (in the view plane)
-	Vector3f thisWorld = ((InputManager3D)InputManager3D.getInputManager()).
-	    getCamera().getWorldCoordinates(scrPos, 0f);
-	logger.fine("thisWorld = " + thisWorld);
+        Vector2f dragXY = new Vector2f((float) ((MouseEvent) awtEvent).getX(),
+                (float) ((MouseEvent) awtEvent).getY());
+        Vector3f dragWorld = ((InputManager3D) InputManager3D.getInputManager()).getCamera().getWorldCoordinates(dragXY, 0f);
 
-	// The calculations need to take place in eye space. Get the necessary matrices.
-	Matrix4f camMatrix = InputPicker3D.getInputPicker().getCameraModelViewMatrix(null);
-	Matrix4f camInverse = InputPicker3D.getInputPicker().getCameraModelViewMatrixInverse(null);
-	logger.finest("camInverse = " + camInverse);
+        // The world position of this event (in the view plane)
+        Vector3f thisWorld = ((InputManager3D) InputManager3D.getInputManager()).getCamera().getWorldCoordinates(scrPos, 0f);
+        logger.fine("thisWorld = " + thisWorld);
 
-	// Transform vectors from world space into eye space
-	Vector3f dragEye = new Vector3f();
-	Vector3f dragStartEye = new Vector3f();
-	Vector3f pressEye = new Vector3f();
-	Vector3f eyeEye = new Vector3f();
-	Vector3f thisEye = new Vector3f();
-	camInverse.mult(dragWorld, dragEye);
-	camInverse.mult(dragStartWorld, dragStartEye);
-	camInverse.mult(pressWorld, pressEye);
-	// TODO: perf: only really need to recalc eyeEye on camera change
-	camInverse.mult(eyeWorld, eyeEye);
-	camInverse.mult(thisWorld, thisEye);
+        // The calculations need to take place in eye space. Get the necessary matrices.
+        Matrix4f camMatrix = InputPicker3D.getInputPicker().getCameraModelViewMatrix(null);
+        Matrix4f camInverse = InputPicker3D.getInputPicker().getCameraModelViewMatrixInverse(null);
+        logger.finest("camInverse = " + camInverse);
 
-	// The displacement vector of this event from the center of the drag plane
-	Vector3f dragVectorEye = new Vector3f(
-            (dragEye.x - pressEye.x) * (dragStartEye.z - eyeEye.z) / (thisEye.z - eyeEye.z),
-	    (pressEye.y - dragEye.y) * (dragStartEye.z - eyeEye.z) / (thisEye.z - eyeEye.z),
-	    0f);
-	logger.fine("dragVectorEye = " + dragVectorEye);
+        // Transform vectors from world space into eye space
+        Vector3f dragEye = new Vector3f();
+        Vector3f dragStartEye = new Vector3f();
+        Vector3f pressEye = new Vector3f();
+        Vector3f eyeEye = new Vector3f();
+        Vector3f thisEye = new Vector3f();
+        camInverse.mult(dragWorld, dragEye);
+        camInverse.mult(dragStartWorld, dragStartEye);
+        camInverse.mult(pressWorld, pressEye);
+        // TODO: perf: only really need to recalc eyeEye on camera change
+        camInverse.mult(eyeWorld, eyeEye);
+        camInverse.mult(thisWorld, thisEye);
 
-	logger.finest("camInverse = " + camInverse);
+        // The displacement vector of this event from the center of the drag plane
+        Vector3f dragVectorEye = new Vector3f(
+                (dragEye.x - pressEye.x) * (dragStartEye.z - eyeEye.z) / (thisEye.z - eyeEye.z),
+                (pressEye.y - dragEye.y) * (dragStartEye.z - eyeEye.z) / (thisEye.z - eyeEye.z),
+                0f);
+        logger.fine("dragVectorEye = " + dragVectorEye);
 
-	// Convert drag vector from eye space to world space
-	camMatrix.mult(dragVectorEye, ret);
-	logger.fine("dragVectorWorld = " + ret);
+        logger.finest("camInverse = " + camInverse);
 
-	return ret;
+        // Convert drag vector from eye space to world space
+        camMatrix.mult(dragVectorEye, ret);
+        logger.fine("dragVectorWorld = " + ret);
+
+        return ret;
     }
 
     /** {@inheritDoc} */
     @Override
-    public String toString () {
-	// TODO: add internal state when drag methods are added
-	return "Mouse Drag";
+    public String toString() {
+        // TODO: add internal state when drag methods are added
+        return "Mouse Drag";
     }
 
     /** 
@@ -226,11 +225,11 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
      * is not copied into the newly cloned object.
      */
     @Override
-    public Event clone (Event event) {
-	if (event == null) {
-	    event = new MouseDraggedEvent3D();
-	    ((MouseDraggedEvent3D)event).hitPickDetails = hitPickDetails;
-	}
-	return super.clone(event);
+    public Event clone(Event event) {
+        if (event == null) {
+            event = new MouseDraggedEvent3D();
+            ((MouseDraggedEvent3D) event).hitPickDetails = hitPickDetails;
+        }
+        return super.clone(event);
     }
 }

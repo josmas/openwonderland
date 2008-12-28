@@ -349,11 +349,16 @@ public abstract class InputManager
     }
 
     /**
-     * Add an event listener to be tried once per event. This global listener can be added only once.
-     * Subsequent attempts to add it will be ignored.
+     * Register a global event listener with the input manager. If the listener has already been
+     * registered this action is a no-op. 
      *
-     * Note: It is not a good idea to call this from inside EventListener.computeEvent function.
-     * However, it is okay to call this from inside EventListener.commitEvent function if necessary.
+     * The input manager attempts to distribute newly arriving events to all registered global listeners.
+     * It calls the consumesEvent method of the listener. If this returns true then the computeEvent 
+     * and commitEvent of the listener are called.
+     *
+     * Note: It is not a good idea to call addGlobalEventListener from inside the 
+     * EventListener.computeEvent method. However, it is okay to call this from inside EventListener.
+     * commitEvent method if necessary.
      *
      * @param listener The global event listener to be added.
      */
@@ -489,6 +494,20 @@ public abstract class InputManager
     }
 
     /**
+     * Inject an event into the input system. The event doesn't have an associated entity. Therefore
+     * it will only be distributed to the global event listeners.
+     *
+     * NOTE: make sure that the class of the argument event implements clone.
+     *
+     * @param event The event to be distributed to enabled global event listeners.
+     */
+    public void postEvent (Event event) {
+	eventDistributor.enqueueEvent(event);
+    }
+
+    /* NOTE: I've decided not to implement an entity variant of postEvent at this time. */
+
+    /**
      * The return type for pickMouseEventSwing. If entity is non-null it is the entity hit by the pick.
      * The pickDetails is the specific picking details for that entity.
      * <br>
@@ -499,13 +518,17 @@ public abstract class InputManager
 	/** The pick hit entity. */
 	public Entity entity;
 
-	/** One level of pick information for what is immediately under the event in eye space **/
-	public PickDetails pickDetails;
+	/** Pick details for the destination input sensitive object. **/
+	public PickDetails destPickDetails;
+
+	/** Pick details for the hit input sensitive object. **/
+	public PickDetails hitPickDetails;
 
 	/** Constructs a new instance of PickEventReturn */
-	public PickEventReturn (Entity entity, PickDetails pickDetails) {
+	public PickEventReturn (Entity entity, PickDetails destPickDetails, PickDetails hitPickDetails) {
 	    this.entity = entity;
-	    this.pickDetails = pickDetails;
+	    this.destPickDetails = destPickDetails;
+	    this.hitPickDetails = hitPickDetails;
 	}
     }    
 

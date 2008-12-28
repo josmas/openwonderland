@@ -68,6 +68,7 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellConfig;
 
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -96,32 +97,24 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
     public OrbCellMO() {
 	if (orbMessageHandlerRef == null) {
 	    addComponent(new ChannelComponentMO(this));
+	    //addComponent(new MovableComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null));
+		new OrbMessageHandler(this, null, false));
 	}
     }
     
-    public OrbCellMO(Vector3f center, float size) {
+    public OrbCellMO(Vector3f center, float size, String callID, boolean simulateCalls) {
         super(new BoundingBox(new Vector3f(), size, size, size), 
 	    new CellTransform(null, center));
 
+	logger.fine("Orb center " + center + " size " + size);
+
 	if (orbMessageHandlerRef == null) {
 	    addComponent(new ChannelComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null));
-	}
-    }
-
-    public OrbCellMO(String callID) {
-	if (orbMessageHandlerRef == null) {
-	    addComponent(new ChannelComponentMO(this));
-
-	    logger.fine("Adding channel component...");
-
-            orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, callID));
+		new OrbMessageHandler(this, callID, simulateCalls));
 	}
     }
 

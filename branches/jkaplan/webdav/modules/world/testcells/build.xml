@@ -43,6 +43,7 @@
                 </serverjar>
             </server>
             <art dir="${current.dir}/art"/>
+            <audio dir="${current.dir}/audio"/>
         </module>
     </target>
     <target name="deploy" depends="dist, -module-deploy"/>

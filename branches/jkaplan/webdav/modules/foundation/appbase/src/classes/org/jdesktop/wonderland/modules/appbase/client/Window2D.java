@@ -800,13 +800,15 @@ public abstract class Window2D extends Window {
 
     /**
      * Transform the given 3D point in world coordinates into the corresponding point in the pixel space of the image 
-     * of the world view of the window. The given point must be on the surface of the window.
+     * of the world view of the window. The given point must be in the plane.
      * @param point The point to transform.
+     * @param clamp If true return the last position if the argument point is null or the resulting
+     * position is outside of the geometry's rectangle. Otherwise, return null if these conditions hold.
      * @return the 2D position of the pixel space the window's image, or null if the point is not within the window
      * or is not on the surface of the window.
      */
-    public Point calcWorldPositionInPixelCoordinates (Vector3f point) { 
-	return viewWorld.calcPositionInPixelCoordinates(point);
+    public Point calcWorldPositionInPixelCoordinates (Vector3f point, boolean clamp) { 
+	return viewWorld.calcPositionInPixelCoordinates(point, clamp);
     }
 
     /**

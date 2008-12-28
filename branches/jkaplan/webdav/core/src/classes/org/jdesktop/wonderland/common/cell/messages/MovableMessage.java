@@ -69,7 +69,7 @@ public class MovableMessage extends CellMessage {
     }
     
     public static MovableMessage newMovedMessage(CellID cellID, CellTransform transform) {
-        MovableMessage ret = new MovableMessage(cellID, ActionType.MOVED);
+        MovableMessage ret = new MovableMessage(cellID, ActionType.MOVE_REQUEST);
         ret.setTranslation(transform.getTranslation(null));
         ret.setRotation(transform.getRotation(null));
         return ret;

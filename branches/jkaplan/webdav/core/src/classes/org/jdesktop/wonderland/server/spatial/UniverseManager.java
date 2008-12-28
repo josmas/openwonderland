@@ -30,6 +30,10 @@ import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
  * are modified (or parents/children in the graph are modified). Changes to
  * the graph will trigger cell cache updates.
  *
+ * Each modification is scheduled in associating with the calling Darkstar
+ * transaction so the change is not immediate but is guaranteed to complete (or fail)
+ * correctly with the calling transaction.
+ *
  * @author paulby
  */
 public interface UniverseManager {
@@ -66,11 +70,19 @@ public interface UniverseManager {
      *
      * @param viewUpdateListener listener to add
      */
-//    public void addViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
+    public void addViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
 
     /**
      * Remove the specified ViewUpdateListener
      * @param viewUpdateListener listener to remove
      */
- //   public void removeViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
+    public void removeViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
+
+    // Don't expose this until we have a good test case
+    /**
+     * Schedule a runnable to execute when the transaction commits. This
+     * is useful if you need to interact with other changes in the UniverseManager
+     * that are pending on the completion of the current transaction.
+     */
+//    public void schedule(Runnable runnable);
 }

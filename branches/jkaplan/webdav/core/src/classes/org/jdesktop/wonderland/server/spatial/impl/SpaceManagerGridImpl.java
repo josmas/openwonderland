@@ -84,17 +84,18 @@ class SpaceManagerGridImpl implements SpaceManager {
 
         int step = (int) (radius / (SPACE_SIZE * 2));
 //        System.out.println("RADIUS "+radius+"  step "+step);
-
+//        System.out.println("Current "+x+", "+y+", "+z);
 //        System.err.println("In space "+getSpaceBindingName(x, y, z)+"   step="+step);
         // TODO this is brute force, is there a better way ?
-        for(int xs=0; xs<step; xs++) {
-            for(int ys=0; ys<step; ys++) {
-                for(int zs=0; zs<step; zs++) {
+        for(int xs=-step; xs<=step; xs++) {
+            for(int ys=-step; ys<=step; ys++) {
+                for(int zs=-step; zs<=step; zs++) {
+//                    System.out.println("Checking "+(x+xs)+", "+(y+ys)+", "+(z+zs));
                     sp = getEnclosingSpaceImpl(x+xs, y+ys, z+zs);
-                    if (sp!=null && sp.getWorldBounds().intersects(volume)) {
-                        retList.add(sp);
-                    }
-                    sp = getEnclosingSpaceImpl(x-xs, y-ys, z-zs);
+//                    if (sp!=null) {
+//                        System.err.println(sp.getWorldBounds()+"  "+volume+"  "+
+//                        sp.getWorldBounds().intersects(volume));
+//                    }
                     if (sp!=null && sp.getWorldBounds().intersects(volume)) {
                         retList.add(sp);
                     }

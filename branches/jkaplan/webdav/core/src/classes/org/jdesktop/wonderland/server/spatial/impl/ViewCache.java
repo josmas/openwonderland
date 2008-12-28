@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Matrix4f;
 import com.jme.math.Vector3f;
+import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.DataService;
@@ -39,9 +40,11 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellDescription;
 import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
+import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 /**
  *
@@ -52,7 +55,7 @@ class ViewCache {
     private static final Logger logger = Logger.getLogger(ViewCache.class.getName());
     private SpaceManager spaceManager;
     private SpatialCellImpl viewCell;
-    private HashMap<SpatialCellImpl, Integer> rootCells = new HashMap(); // The rootCells visible in this cache
+    private HashMap<SpatialCell, Integer> rootCells = new HashMap(); // The rootCells visible in this cache
 
     private HashSet<Space> spaces = new HashSet();              // Spaces that intersect this caches world bounds
 
@@ -63,7 +66,7 @@ class ViewCache {
 
     private LinkedList<CacheUpdate> pendingCacheUpdates = new LinkedList();
 
-    private ScheduledExecutorService spaceLeftProcessor = Executors.newSingleThreadScheduledExecutor();
+//    private ScheduledExecutorService spaceLeftProcessor = Executors.newSingleThreadScheduledExecutor();
 
     private Identity identity;
     private CacheProcessor cacheProcessor;
@@ -71,6 +74,8 @@ class ViewCache {
     private DataService dataService;
 
     private BoundingSphere proximityBounds = new BoundingSphere(AvatarBoundsHelper.PROXIMITY_SIZE, new Vector3f());
+
+    private LinkedList<ViewUpdateListenerContainer> viewUpdateListeners = new LinkedList();
 
     public ViewCache(SpatialCellImpl cell, SpaceManager spaceManager, Identity identity, BigInteger cellCacheId) {
         this.viewCell = cell;
@@ -82,6 +87,10 @@ class ViewCache {
         dataService = UniverseImpl.getUniverse().getDataService();
     }
 
+    public SpatialCellImpl getViewCell() {
+        return viewCell;
+    }
+
     private void viewCellMoved(CellTransform worldTransform) {
         if (lastSpaceValidationPoint==null ||
             lastSpaceValidationPoint.distanceSquared(worldTransform.getTranslation(null))>REVAL_DISTANCE_SQUARED) {
@@ -90,6 +99,10 @@ class ViewCache {
             lastSpaceValidationPoint = worldTransform.getTranslation(null);
         }
 
+        synchronized(viewUpdateListeners) {
+            for(ViewUpdateListenerContainer cont : viewUpdateListeners)
+                cont.notifyListeners(worldTransform);
+        }
     }
 
     void login() {
@@ -114,8 +127,20 @@ class ViewCache {
 //        System.err.println("-----------------> LOGOUT");
     }
 
+    void addViewUpdateListener(CellID cellID, ViewUpdateListener listener) {
+        synchronized(viewUpdateListeners) {
+            viewUpdateListeners.add(new ViewUpdateListenerContainer(cellID, listener));
+        }
+    }
+
+    void removeViewUpdateListener(CellID cellID, ViewUpdateListener listener) {
+        synchronized(viewUpdateListeners) {
+            viewUpdateListeners.remove(new ViewUpdateListenerContainer(cellID, listener));
+        }
+    }
+
     /**
-     * Notification that a cell has moved, call by SpatialCellImpl
+     * Notification that a cell has moved, call by SpatialCell
      * @param cell
      * @param worldTransform
      */
@@ -130,7 +155,11 @@ class ViewCache {
         }
     }
 
-    void cellDestroyed(SpatialCellImpl cell) {
+    void cellDestroyed(SpatialCell cell) {
+
+        // TODO remove ViewUpdateListeners for destroyed cell
+        
+
         Logger.getAnonymousLogger().warning("ViewCache.cellDestroyed not implemented");
     }
 
@@ -142,21 +171,25 @@ class ViewCache {
     void rootCellAdded(SpatialCellImpl rootCell) {
         viewCell.acquireRootReadLock();
 
-        synchronized(pendingCacheUpdates) {
-            pendingCacheUpdates.add(new CacheUpdate(rootCell, true));
+        try {
+            synchronized(pendingCacheUpdates) {
+                pendingCacheUpdates.add(new CacheUpdate(rootCell, true));
+            }
+        } finally {
+            viewCell.releaseRootReadLock();
         }
-
-        viewCell.releaseRootReadLock();
     }
 
     void rootCellRemoved(SpatialCellImpl rootCell) {
         viewCell.acquireRootReadLock();
 
-        synchronized(pendingCacheUpdates) {
-            pendingCacheUpdates.add(new CacheUpdate(rootCell, false));
+        try {
+            synchronized(pendingCacheUpdates) {
+                pendingCacheUpdates.add(new CacheUpdate(rootCell, false));
+            }
+        } finally {
+            viewCell.releaseRootReadLock();
         }
-
-        viewCell.releaseRootReadLock();
     }
     /**
      * Update the set of spaces which intersect with this caches world bounds
@@ -164,55 +197,57 @@ class ViewCache {
     private void revalidateSpaces() {
         viewCell.acquireRootReadLock();
 
-        HashSet<Space> oldSpaces = (HashSet<Space>) spaces.clone();
+        try {
+            HashSet<Space> oldSpaces = (HashSet<Space>) spaces.clone();
 
-        proximityBounds.setCenter(viewCell.getWorldTransform().getTranslation(null));
+            proximityBounds.setCenter(viewCell.getWorldTransform().getTranslation(null));
 
-        Iterable<Space> newSpaces = spaceManager.getEnclosingSpace(proximityBounds);
-//        System.err.println("ViewCell Bounds "+proximityBounds);
-//        StringBuffer buf = new StringBuffer("View in spaces ");
-        for(Space sp : newSpaces) {
-//            buf.append(sp.getName()+", ");
-            if (spaces.add(sp)) {
-                // Entered a new space
-                synchronized(pendingCacheUpdates) {
-                    pendingCacheUpdates.add(new CacheUpdate(sp, true));
+            Iterable<Space> newSpaces = spaceManager.getEnclosingSpace(proximityBounds);
+//            System.err.println("ViewCell Bounds "+proximityBounds);
+//            StringBuffer buf = new StringBuffer("View in spaces ");
+            for(Space sp : newSpaces) {
+//                buf.append(sp.getName()+", ");
+                if (spaces.add(sp)) {
+                    // Entered a new space
+                    synchronized(pendingCacheUpdates) {
+                        pendingCacheUpdates.add(new CacheUpdate(sp, true));
+                    }
+                    sp.addViewCache(this);
                 }
-                sp.addViewCache(this);
+                oldSpaces.remove(sp);
             }
-            oldSpaces.remove(sp);
-        }
 
-//        System.err.println(buf.toString());
+//            System.err.println(buf.toString());
 
-//        System.out.println("Old spaces cunt "+oldSpaces.size());
-//        buf = new StringBuffer("View leavoing spaces ");
-        for(Space sp : oldSpaces) {
-//            buf.append(sp.getName()+", ");
-            sp.removeViewCache(this);
-            spaces.remove(sp);
-            // We don't remove the space cells immediately in case the user
-            // is moving along the border of the space
+    //        System.out.println("Old spaces cut "+oldSpaces.size());
+    //        buf = new StringBuffer("View leavoing spaces ");
+            for(Space sp : oldSpaces) {
+    //            buf.append(sp.getName()+", ");
+                sp.removeViewCache(this);
+                spaces.remove(sp);
+                // We don't remove the space cells immediately in case the user
+                // is moving along the border of the space
 
-            // TODO this is flawed, we need to track pending removes and make changes
-            // if the user moves so that the cell is visible again.
-            
-//            spaceLeftProcessor.schedule(new CacheUpdate(sp, false), 30, TimeUnit.SECONDS);
+                // TODO this is flawed, we need to track pending removes and make changes
+                // if the user moves so that the cell is visible again.
 
-            // In the meantime update the cache immediately
-            synchronized(pendingCacheUpdates) {
-                pendingCacheUpdates.add(new CacheUpdate(sp,false));
+    //            spaceLeftProcessor.schedule(new CacheUpdate(sp, false), 30, TimeUnit.SECONDS);
+
+                // In the meantime update the cache immediately
+                synchronized(pendingCacheUpdates) {
+                    pendingCacheUpdates.add(new CacheUpdate(sp,false));
+                }
             }
+    //        System.err.println(buf.toString());
+
+    //        System.out.print("ViewCell moved, current spaces ");
+    //        for(Space sp : spaces) {
+    //            System.out.print(sp.getName()+", ");
+    //        }
+    //        System.out.println();
+            } finally {
+            viewCell.releaseRootReadLock();
         }
-//        System.err.println(buf.toString());
-
-//        System.out.print("ViewCell moved, current spaces ");
-//        for(Space sp : spaces) {
-//            System.out.print(sp.getName()+", ");
-//        }
-//        System.out.println();
-
-        viewCell.releaseRootReadLock();
     }
 
     class CacheProcessor extends Thread {
@@ -385,18 +420,19 @@ class ViewCache {
 
         /**
          * Callers must be synchronized on rootCells
-         * @param root
-         * @param newCells
+         * @param root the root of the graph
+         * @param newCells the cummalative set of new cells that have been added
          */
         private void addRootCellImpl(SpatialCellImpl root, ArrayList<CellDescription> newCells) {
             Integer refCount = rootCells.get(root);
             if (refCount==null) {
                 root.acquireRootReadLock();
-
-                newCells.add(new CellDesc(root.getCellID()));
-                addChildCells(newCells, root);
-
-                root.releaseRootReadLock();
+                try {
+                    newCells.add(new CellDesc(root.getCellID()));
+                    processChildCells(newCells, root, CellStatus.ACTIVE);
+                } finally {
+                    root.releaseRootReadLock();
+                }
                 refCount=1;
             } else
                 refCount++;
@@ -407,7 +443,7 @@ class ViewCache {
         /**
          * Callers must be synchronized on rootCells
          * @param root
-         * @param newCells
+         * @param oldCells the cummalative set of cells that are being removed
          */
         private void removeRootCellImpl(SpatialCellImpl root, ArrayList<CellDescription> oldCells) {
             Integer refCount = rootCells.get(root);
@@ -417,11 +453,12 @@ class ViewCache {
 
             if (refCount==1) {
                 root.acquireRootReadLock();
-
-                oldCells.add(new CellDesc(root.getCellID()));
-                addChildCells(oldCells, root);
-
-                root.releaseRootReadLock();
+                try {
+                    oldCells.add(new CellDesc(root.getCellID()));
+                    processChildCells(oldCells, root, CellStatus.DISK);
+                } finally {
+                    root.releaseRootReadLock();
+                }
                 rootCells.remove(root);
             } else {
                 refCount--;
@@ -429,13 +466,13 @@ class ViewCache {
             }
         }
 
-        private void addChildCells(ArrayList<CellDescription> cells, SpatialCellImpl parent) {
+        private void processChildCells(ArrayList<CellDescription> cells, SpatialCellImpl parent, CellStatus status) {
             if (parent.getChildren()==null)
                 return;
             
             for(SpatialCellImpl child : parent.getChildren()) {
                 cells.add(new CellDesc(child.getCellID()));
-                addChildCells(cells, child);
+                processChildCells(cells, child, status);
             }
         }
 
@@ -482,46 +519,42 @@ class ViewCache {
         public CellID getCellID() {
             return cellID;
         }
+    }
 
-        public long getContentsTimestamp() {
-            throw new UnsupportedOperationException("Not supported yet.");
+    class ViewUpdateListenerContainer {
+        private CellID cellID;
+        private ViewUpdateListener viewUpdateListener;
+
+        public ViewUpdateListenerContainer(CellID cellID, ViewUpdateListener listener) {
+            this.cellID = cellID;
+            this.viewUpdateListener = listener;
+
+            if (listener instanceof ManagedObject) {
+                throw new RuntimeException("ManagedObject listeners support not implemented yet");
+            }
         }
 
-        public long getTransformTimestamp() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public void notifyListeners(CellTransform viewWorldTransform) {
+            viewUpdateListener.viewTransformChanged(cellID, viewCell.getCellID(), viewWorldTransform);
         }
 
-        public BoundingVolume getLocalBounds() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof ViewUpdateListenerContainer) {
+                ViewUpdateListenerContainer c = (ViewUpdateListenerContainer) o;
+                if (c.cellID.equals(cellID) && c.viewUpdateListener==viewUpdateListener)
+                    return true;
+            }
+
+            return false;
         }
 
-        public BoundingVolume getWorldBounds() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 29 * hash + (this.cellID != null ? this.cellID.hashCode() : 0);
+            hash = 29 * hash + (this.viewUpdateListener != null ? this.viewUpdateListener.hashCode() : 0);
+            return hash;
         }
-
-        public void setWorldBounds(BoundingVolume worldBounds) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public CellTransform getLocalTransform() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void setLocalTransform(CellTransform localTransform, long timestamp) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public short getPriority() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public Class getCellClass() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public boolean isMovable() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
     }
 }
