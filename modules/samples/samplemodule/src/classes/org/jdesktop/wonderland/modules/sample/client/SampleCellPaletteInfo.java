@@ -20,10 +20,7 @@ package org.jdesktop.wonderland.modules.sample.client;
 
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
 
 /**
@@ -38,14 +35,7 @@ public class SampleCellPaletteInfo implements CellPaletteInfo {
     }
 
     public Image getPreviewImage() {
-        try {
-//        URL url = SampleCellPaletteInfo.class.getResource("resources/sample_preview.jpg");
-//        Logger.getLogger(SampleCellPaletteInfo.class.getName()).warning("INFO " + url.toString());
-            URL url = new URL("file:///Users/jordanslott/Desktop/sample_preview.jpg");
-            return Toolkit.getDefaultToolkit().createImage(url);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(SampleCellPaletteInfo.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+        URL url = SampleCellPaletteInfo.class.getResource("resources/sample_preview.jpg");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }

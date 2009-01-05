@@ -108,8 +108,10 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         previewPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         previewPanel.setMinimumSize(new java.awt.Dimension(128, 128));
         previewPanel.setPreferredSize(new java.awt.Dimension(128, 128));
-        previewPanel.setLayout(new java.awt.GridLayout());
+        previewPanel.setLayout(new java.awt.GridLayout(1, 0));
 
+        previewLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        previewLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         previewLabel.setIconTextGap(0);
         previewPanel.add(previewLabel);
 
@@ -238,16 +240,23 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
      */
     public void valueChanged(ListSelectionEvent e) {
         // Create a JLabel with the image, resized to be 128x128.
-//        String selectedName = (String)cellList.getSelectedValue();
-//        Logger logger = Logger.getLogger(CellPalette.class.getName());
-//        if (selectedName != null) {
-//            CellFactory cellFactory = cellFactoryMap.get(selectedName);
-//            if (cellFactory != null) {
-//                Image image = cellFactory.getCellPaletteInfo().getPreviewImage();
-//                ImageIcon icon = new ImageIcon(image);
-//                previewLabel.setIcon(icon);
-//            }
-//        }
+        String selectedName = (String)cellList.getSelectedValue();
+        Logger logger = Logger.getLogger(CellPalette.class.getName());
+        if (selectedName != null) {
+            CellFactory cellFactory = cellFactoryMap.get(selectedName);
+            if (cellFactory != null) {
+                Image image = cellFactory.getCellPaletteInfo().getPreviewImage();
+                if (image != null) {
+                    ImageIcon icon = new ImageIcon(image);
+                    previewLabel.setIcon(icon);
+                    previewLabel.setText(null);
+                }
+                else {
+                    previewLabel.setIcon(null);
+                    previewLabel.setText("<html><center>No Preview<br>Available</center></html>");
+                }
+            }
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
