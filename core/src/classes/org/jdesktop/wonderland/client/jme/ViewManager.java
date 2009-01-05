@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.math.Vector3f;
 import com.jme.scene.Spatial;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
@@ -230,7 +231,7 @@ public class ViewManager {
         CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         if (renderer!=null) {
             if (renderer instanceof AvatarControls.AvatarInputSelector) {
-                ((AvatarControls.AvatarInputSelector)renderer).selectForInput();
+                ((AvatarControls.AvatarInputSelector)renderer).selectForInput(true);
             }
 
             if (renderer instanceof BasicRenderer) {
@@ -367,6 +368,17 @@ public class ViewManager {
             cameraListeners.add(cameraListener);
         }
         
+    }
+
+    /**
+     * Return the transform of the camera
+     * 
+     * @return the transform of the camera (in world coordinates) for this view
+     */
+    public CellTransform getCameraTransform() {
+        if (cameraNode!=null)
+            return new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation(), cameraNode.getWorldScale());
+        return new CellTransform(null, new Vector3f(0,0,0));
     }
 
     /**
