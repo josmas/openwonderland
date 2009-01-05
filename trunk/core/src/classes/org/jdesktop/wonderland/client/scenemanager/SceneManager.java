@@ -16,7 +16,7 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.selection;
+package org.jdesktop.wonderland.client.scenemanager;
 
 import java.awt.event.MouseEvent;
 import java.util.Collections;
@@ -29,19 +29,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.client.selection.event.ActivatedEvent;
-import org.jdesktop.wonderland.client.selection.event.ContextEvent;
-import org.jdesktop.wonderland.client.selection.event.EnterExitEvent;
-import org.jdesktop.wonderland.client.selection.event.HoverEvent;
-import org.jdesktop.wonderland.client.selection.event.SelectionEvent;
-import org.jdesktop.wonderland.client.selection.jme.JMESelectionPolicy;
+import org.jdesktop.wonderland.client.scenemanager.event.ActivatedEvent;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
+import org.jdesktop.wonderland.client.scenemanager.event.EnterExitEvent;
+import org.jdesktop.wonderland.client.scenemanager.event.HoverEvent;
+import org.jdesktop.wonderland.client.scenemanager.event.SceneEvent;
+import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
 
 /**
  * Manages the global "selection" in Wonderland. The Selection Manager handles
@@ -55,15 +55,15 @@ import org.jdesktop.wonderland.client.selection.jme.JMESelectionPolicy;
  * the Entities.
  * <li>Context: A Context action is one that depends upon the set of Entities
  * that are selected. Typically a menu pops up with further actions possible.
- * <li>Enter/Exit: An Enter/Exit action is where the user enters or exits an
+ * <li>Enter/Exit: An Enter/Exit action is where the pointer enters or exits an
  * Entity, typically with the mouse pointer.
- * <li>Hover: A Hover action is where the user hovers over an Entity (typically
+ * <li>Hover: A Hover action is where the pointer hovers over an Entity (typically
  * by hovering the mouse). This includes the "start" hovering and the "stop"
  * hovering.
  * <li>Activation: The activation of an Entity in the world. For example, when
  * a user double-clicks on an Entity, it is activated.
  * </ol>
- * Threads can register global listeners on the input manager for these actions.
+ * Threads can register listeners on the scene manager for these actions.
  * There are methods to fetch the collection of selected entities and the
  * Entity where there is a hover. Threads can also manually clear the selected
  * Entities.
@@ -74,13 +74,13 @@ import org.jdesktop.wonderland.client.selection.jme.JMESelectionPolicy;
  * <p>
  * Which mouse and keyboard events correspond to the Selection Manager actions
  * are controlled via a "selection policy" as defined by a class that implements
- * the SelectionPolicy interface.
+ * the SceneManagerPolicy interface.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class SelectionManager {
+public class SceneManager {
     /* The selection policy */
-    private SelectionPolicy policy = new JMESelectionPolicy();
+    private SceneManagerPolicy policy = new DefaultSceneManagerPolicy();
     
     /*
      * A bunch of member variables to keep track of the hover process: the
@@ -104,21 +104,20 @@ public class SelectionManager {
     private Set<Entity> selectedEntityList;
     
     /** Default Constructor */
-    public SelectionManager() {
+    public SceneManager() {
         selectedEntityList = Collections.synchronizedSet(new LinkedHashSet());
-        InputManager manager = InputManager.inputManager();
-        manager.addGlobalEventListener(new MouseEventListener());
+        InputManager.inputManager().addGlobalEventListener(new MouseEventListener());
         
         // Uncomment the following line to see an example listener
-        //manager.addGlobalEventListener(new MySelectionListener());
+//        addSceneListener(new MySelectionListener());
     }
     
     /**
-     * Singleton to hold instance of SelectionManager. This holder class is
-     * loader on the first execution of SelectionManager.getSelectionManager().
+     * Singleton to hold instance of SceneManager. This holder class is
+     * loader on the first execution of SceneManager.getSelectionManager().
      */
     private static class SelectionManagerHolder {
-        private final static SelectionManager manager = new SelectionManager();
+        private final static SceneManager manager = new SceneManager();
     }
 
     /**
@@ -126,7 +125,7 @@ public class SelectionManager {
      * <p>
      * @return Single instance of this class.
      */
-    public static final SelectionManager getSelectionManager() {
+    public static final SceneManager getSelectionManager() {
         return SelectionManagerHolder.manager;
     }
     
@@ -134,10 +133,9 @@ public class SelectionManager {
      * Provides a raw input event to process
      */
     protected void inputEvent(Event event) {
-        Logger logger = Logger.getLogger(SelectionManager.class.getName());
+        Logger logger = Logger.getLogger(SceneManager.class.getName());
         InputManager inputManager = InputManager.inputManager();        
-        Entity entity = getEntityFromEvent(event);
-        event.setEntity(entity); /// XXXX
+        Entity entity = event.getEntity();
                         
         // Implement hover. We check if the event interrupts hover and we
         // restart the timer. If we kill a timer, there may be an executing
@@ -287,22 +285,23 @@ public class SelectionManager {
         }
         return ret;
     }
-    
+
     /**
-     * Returns the entity given the event, by looking in the pick details. This
-     * is a temporary routine -- the input manager should deliver Entities in
-     * getEntity().
+     * Adds a listener for scene events.
+     *
+     * @param listener The scene event listener to add
      */
-    private Entity getEntityFromEvent(Event event) {
-        if (event instanceof MouseEvent3D) {
-            MouseEvent3D me = (MouseEvent3D)event;
-            PickInfo pi = me.getPickInfo();
-            if (pi == null || pi.size() == 0) {
-                return null;
-            }
-            return pi.get(0).getEntity();
-        }
-        return null;
+    public void addSceneListener(EventListener listener) {
+        InputManager.inputManager().addGlobalEventListener(listener);
+    }
+
+    /**
+     * Removes a listener for scene events.
+     *
+     * @param listener The scene event listener to remove
+     */
+    public void removeSceneListener(EventListener listener) {
+        InputManager.inputManager().removeGlobalEventListener(listener);
     }
     
     /**
@@ -328,10 +327,10 @@ public class SelectionManager {
             // hovered over and we send an event. There is a possible race
             // condition here. This run() may be called after the event handling
             // mechanism of the Selection Manager tries to cancel any existing
-            // tasks. Therefore, we synchronize on the SelectionManager object
+            // tasks. Therefore, we synchronize on the SceneManager object
             // and check to see if the time this task was started is the same
             // time the Selection Manager thinks the hover task should be.
-            synchronized(SelectionManager.this) {
+            synchronized(SceneManager.this) {
                 if (thisStartTime == hoverStartTime) {
                     hoverEntity = lastEventEntity;
                     InputManager.inputManager().postEvent(new HoverEvent(lastEventEntity, true));
@@ -374,11 +373,12 @@ public class SelectionManager {
         @Override
         public void commitEvent(Event event) {
             Logger logger = Logger.getLogger(MySelectionListener.class.getName());
+            SceneEvent se = (SceneEvent)event;
             if (event instanceof ActivatedEvent) {
-                logger.warning("SELECTION: ACTIVATED EVENT " + event.getEntity());
+                logger.warning("SELECTION: ACTIVATED EVENT " + se.getEntityList().get(0));
             }
             else if (event instanceof SelectionEvent) {
-                List<Entity> selected = SelectionManager.getSelectionManager().getSelectedEntities();
+                List<Entity> selected = SceneManager.getSelectionManager().getSelectedEntities();
                 ListIterator<Entity> it = selected.listIterator();
                 Logger.getLogger(MySelectionListener.class.getName()).warning("SELECTION: SELECTION EVENT " + selected.size());
                 while (it.hasNext() == true) {
@@ -387,13 +387,13 @@ public class SelectionManager {
                 }
             }
             else if (event instanceof ContextEvent) {
-                logger.warning("SELECTION: CONTEXT EVENT " + ((ContextEvent)event).getEntities().size());
+                logger.warning("SELECTION: CONTEXT EVENT " + se.getEntityList().size());
             }
             else if (event instanceof HoverEvent) {
-                logger.warning("SELECTION: HOVER EVENT " + event.getEntity() + " " + ((HoverEvent)event).isStart());
+                logger.warning("SELECTION: HOVER EVENT " + se.getEntityList().get(0) + " " + ((HoverEvent)event).isStart());
             }
             else if (event instanceof EnterExitEvent) {
-                logger.warning("SELECTION: ENTER EXIT EVENT " + event.getEntity() + " " + ((EnterExitEvent)event).isEnter());
+                logger.warning("SELECTION: ENTER EXIT EVENT " + se.getEntityList().get(0) + " " + ((EnterExitEvent)event).isEnter());
             }
         }
     }

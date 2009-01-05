@@ -16,19 +16,23 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.selection.event;
+package org.jdesktop.wonderland.client.scenemanager.event;
 
+import java.util.Arrays;
+import java.util.LinkedList;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 
 /**
  * Event when the user has entered/exited an Entity. Note that this event
  * represents when the user input has entered/exited an Entity (e.g. via a
- * mouse event), and has nothing to do with a user's avatar.
+ * mouse event), and has nothing to do with a user's avatar. The Entity in
+ * question is given as the first element of the list returned by the
+ * getEntityList() method.
  *  
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class EnterExitEvent extends Event {
+public class EnterExitEvent extends SceneEvent {
     /* True if the enter, false if exit */
     private boolean isEnter = false;
 
@@ -38,7 +42,7 @@ public class EnterExitEvent extends Event {
     
     /** Constructor, takes the Enitity that has been entered/exited. */
     public EnterExitEvent(Entity entity, boolean isEnter) {
-        setEntity(entity);
+        super(new LinkedList(Arrays.asList(entity)));
         this.isEnter = isEnter;
     }
 
@@ -58,10 +62,10 @@ public class EnterExitEvent extends Event {
      */
     @Override
     public Event clone (Event event) {
-	if (event == null) {
-	    event = new EnterExitEvent();
-	}
-        ((EnterExitEvent)event).isEnter = isEnter;
-	return super.clone(event);
+        if (event == null) {
+            event = new EnterExitEvent();
+        }
+        ((EnterExitEvent) event).isEnter = isEnter;
+        return super.clone(event);
     }
 }
