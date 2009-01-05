@@ -110,6 +110,8 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 
     private String name;
 
+    private MyProximityListener proximityListener;
+
     public ConeOfSilenceMessageHandler(ConeOfSilenceCellMO coneOfSilenceCellMO, String name) {
 	this.name = name;
 
@@ -132,8 +134,10 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 
 	bounds[0] = coneOfSilenceCellMO.getLocalBounds();
 
-        prox.addProximityListener(new MyProximityListener(name), bounds );
-        coneOfSilenceCellMO.addComponent(prox);
+        proximityListener = new MyProximityListener(name);
+
+        //prox.addProximityListener(proximityListener, bounds );
+        //coneOfSilenceCellMO.addComponent(prox);
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
@@ -141,7 +145,13 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 
 	ConeOfSilenceEnterCellMessage msg = (ConeOfSilenceEnterCellMessage) message;
 
-	logger.warning("Got message " + msg);
+	logger.fine("Got message " + msg);
+
+	if (msg.getEntered()) {
+	    proximityListener.cellEntered(msg.getSoftphoneCallID());
+	} else {
+	    proximityListener.cellExited(msg.getSoftphoneCallID());
+	}
     }
 
 }

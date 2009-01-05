@@ -120,7 +120,11 @@ public class ConeOfSilenceMessageHandler implements ProximityListener {
    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
 	    int proximityIndex) {
 
-	logger.warning("cellID " + cell.getCellID() + " entered = " + entered);
+	logger.info("cellID " + cell.getCellID() + " viewCellID " + viewCellID + " entered = " + entered);
+
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+	channelComp.send(new ConeOfSilenceEnterCellMessage(cell.getCellID(), viewCellID, sc.getCallID(), entered));
    }
 
 }
