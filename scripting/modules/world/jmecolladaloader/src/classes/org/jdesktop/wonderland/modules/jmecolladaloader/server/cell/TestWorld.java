@@ -95,17 +95,98 @@ public class TestWorld implements ServerPlugin {
                             "wla://jmecolladaloader/OutsideFloor10x10/models/OutsideFloor10x10.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
+            Task t = new TestTask(c3, c2);
+/*
             WonderlandContext.getCellManager().insertCellInWorld(
-                    new JmeColladaCellMO(new Vector3f(20,0,20), 15,
-                            "wla://jmecolladaloader/Heffernan-meter9/models/Heffernan-meter9.dae",
+                    new JmeColladaCellMO(new Vector3f(-80,0,-80), 15,
+                            "wla://jmecolladaloader/TestW-184k-House/models/TestW.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
-                            "http://127.0.0.1:8800/test/compiled_models",
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+*/
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(-250,0,-250), 1000,
+                            "wla://jmecolladaloader/BigPaving500/models/BigPaving500.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
                             "Heffernan",
                             "js",
                             "javascript"));
 
-            Task t = new TestTask(c3, c2);
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(-25,0,-25), 100,
+                            "wla://jmecolladaloader/GooBldg1/models/GooBldg1.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(20,0,20), 15,
+                            "wla://jmecolladaloader/Heffernan-meter11/models/Heffernan-meter11.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(45,0,20), 15,
+                            "wla://jmecolladaloader/Heffernan-meter9/models/Heffernan-meter9.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(70,0,20), 15,
+                            "wla://jmecolladaloader/Heffernan-meter9/models/Heffernan-meter9.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(20,0,60), 15,
+                            "wla://jmecolladaloader/Heffernan-meter9/models/Heffernan-meter9.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(45,0,60), 15,
+                            "wla://jmecolladaloader/Heffernan-meter9/models/Heffernan-meter9.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(70,0,60), 15,
+                            "wla://jmecolladaloader/Heffernan-meter9/models/Heffernan-meter9.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+
 
             AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
 

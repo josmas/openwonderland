@@ -32,6 +32,7 @@ import java.util.TimerTask;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -53,10 +54,10 @@ public class ScriptingComponent extends CellComponent
     private String scriptURL;
     private String scriptExt;
     private String scriptType;
-    private String stateString[] = {null,null,null,null,null,null,null,null,null,null};
-    private int stateInt[] = {0,0,0,0,0,0,0,0,0,0};
-    private boolean stateBoolean[] = {false,false,false,false,false,false,false,false,false,false,};
-    private float stateFloat[] = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,};
+    public String stateString[] = {null,null,null,null,null,null,null,null,null,null};
+    public int stateInt[] = {0,0,0,0,0,0,0,0,0,0};
+    public boolean stateBoolean[] = {false,false,false,false,false,false,false,false,false,false};
+    public float stateFloat[] = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
     Map<String, CompiledScript> scriptMap = new HashMap<String, CompiledScript>();
 //    myThread mth = new myThread();
     private ArrayList aniList;
@@ -64,11 +65,69 @@ public class ScriptingComponent extends CellComponent
     private int aniLast = 0;
     private CellTransform atRest;
     private int animation = 0;
+    public String testName = "morrisford";
+    public int testInt = 99;
     
     public ScriptingComponent(Cell cell) 
 	{
         super(cell);
         }
+    
+    public void testMethod(String ibid)
+    {
+        System.out.println("ibid = " + ibid);
+    }
+    
+    public void setStateString(String value, int which)
+        {
+        stateString[which] = value;
+        }
+    
+    public String getStateString(int which)
+        {
+        return stateString[which];
+        }
+    
+    public void setStateInt(int value, int which)
+        {
+        stateInt[which] = value;
+        }
+    
+    public int getStateInt(int which)
+        {
+        return stateInt[which];
+        }
+    
+    public void setStateFloat(float value, int which)
+        {
+        stateFloat[which] = value;
+        }
+    
+    public float getStateFloat(int which)
+        {
+        return stateFloat[which];
+        }
+    
+    public void setStateBoolean(boolean value, int which)
+        {
+        stateBoolean[which] = value;
+        }
+    
+    public boolean getStateBoolean(int which)
+        {
+        return stateBoolean[which];
+        }
+    
+    
+    public String getName()
+    {
+        return testName;
+    }
+    
+    public void putName(String theName)
+    {
+    testName = theName;    
+    }
     
     public void executeScript(String scriptName, Node node, String Clump, String Ext, String Type, String URL)
        {
@@ -78,6 +137,9 @@ public class ScriptingComponent extends CellComponent
        scriptExt = Ext;
        scriptType = Type;
        scriptURL = URL;
+       
+       stateString[0] = "Morris - state string 0";
+       
 // This line is required to start up scripting
        try
            {
@@ -95,7 +157,9 @@ public class ScriptingComponent extends CellComponent
            bindings.put("stateInt", stateInt);
            bindings.put("stateBoolean", stateBoolean);
            bindings.put("stateFloat", stateFloat);
-
+           bindings.put("name", testName);
+           bindings.put("testInt", testInt);
+           
            if(jsEngine instanceof Compilable)
                {
                CompiledScript  theScript = scriptMap.get(scriptName);
@@ -115,11 +179,12 @@ public class ScriptingComponent extends CellComponent
                }
            else
                {
-               System.out.println("Not compilable" + scriptName);
+               System.out.println("Not compilable - " + scriptName);
                URL myURL = new URL(thePath);
                BufferedReader in = new BufferedReader(new InputStreamReader(myURL.openStream()));
-               jsEngine.eval(in);
+               jsEngine.eval(in, bindings);
                }
+           System.out.println("stateString[0] = " + stateString[0] + " name = " + testName + " test int = " + testInt);
            }
        catch(ScriptException ex)
            {
