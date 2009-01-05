@@ -16,18 +16,18 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.selection;
+package org.jdesktop.wonderland.client.scenemanager;
 
 import org.jdesktop.wonderland.client.input.Event;
 
 /**
- * The SelectionPolicy interface defines the mapping between input events and
+ * The SceneManagerPolicy interface defines the mapping between input events and
  * higher-level conception actions in Wonderland that is managed by the
  * Selection Manager.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public interface SelectionPolicy {
+public interface SceneManagerPolicy {
     
     /**
      * Returns true if the event corresponds to clearing the selection.
