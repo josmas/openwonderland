@@ -62,7 +62,7 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
 
     public JmeColladaCellMO(Vector3f center, float size, String modelURI, Vector3f geometryTranslation, 
             Quaternion geometryRotation, String Url, String Clump, String Ext, String Type) {
-        super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
+        super(new BoundingBox(new Vector3f(), size , size , size ), new CellTransform(null, center));
         this.modelURI = modelURI;
         this.geometryRotation = geometryRotation;
         this.geometryTranslation = geometryTranslation;

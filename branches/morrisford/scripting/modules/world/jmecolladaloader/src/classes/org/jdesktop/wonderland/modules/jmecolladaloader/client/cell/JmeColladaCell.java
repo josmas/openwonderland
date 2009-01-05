@@ -20,9 +20,14 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import org.jdesktop.mtgame.CollisionComponent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
@@ -54,6 +59,16 @@ public class JmeColladaCell extends Cell {
         super(cellID, cellCache);
         this.cellID = cellID;
     }
+    
+    // Make this entity pickable by adding a collision component to it
+    protected static void makeEntityPickable (Entity entity, Node node) 
+        {
+        JMECollisionSystem collisionSystem = (JMECollisionSystem)ClientContextJME.getWorldManager().getCollisionManager().
+            loadCollisionSystem(JMECollisionSystem.class);
+
+        CollisionComponent cc = collisionSystem.createCollisionComponent(node);
+        entity.addComponent(CollisionComponent.class, cc);
+        }
     
     /**
      * Called when the cell is initially created and any time there is a 
@@ -98,6 +113,17 @@ public class JmeColladaCell extends Cell {
         myListener.addToEntity(((CellRendererJME)this.renderer).getEntity());
         System.out.println("In createCellRenderer in JmeColladaCell - cell = " + cellID.toString() + 
                 " Clump = " + scriptClump + "   entity = " + ((CellRendererJME)this.renderer).getEntity());
+
+        Entity entity = ((CellRendererJME)this.renderer).getEntity();
+        System.err.println("Entity = " + entity);
+
+        EntityComponent cc = entity.getComponent(CollisionComponent.class);
+        System.err.println("cc = " + cc);
+
+        if (cc == null) 
+            {
+            makeEntityPickable(entity, node);
+            }
         return this.renderer;
     }
     
@@ -145,7 +171,6 @@ public class JmeColladaCell extends Cell {
         @Override
         public Class[] eventClassesToConsume() 
             {
-            System.out.println("Enter eventClassesToConsume in JmeColladaCell - cell = " + cellID.toString());
             return new Class[]{MouseButtonEvent3D.class};
             }
 
