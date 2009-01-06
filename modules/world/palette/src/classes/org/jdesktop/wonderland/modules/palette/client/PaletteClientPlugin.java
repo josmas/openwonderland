@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.palette.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.ClientPlugin;
@@ -33,7 +34,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  */
 public class PaletteClientPlugin implements ClientPlugin {
     /* The single instances of the cell palette dialog */
-    private CellPalette cellPaletteFrame = new CellPalette();
+    private WeakReference<CellPalette> cellPaletteFrameRef = null;
     
     public void initialize(ServerSessionManager loginInfo) {
         // Add the Palette menu and the Cell submenu and dialog that lets users
@@ -42,6 +43,13 @@ public class PaletteClientPlugin implements ClientPlugin {
         JMenuItem item = new JMenuItem("Cell Palette");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                CellPalette cellPaletteFrame;
+                if (cellPaletteFrameRef==null || cellPaletteFrameRef.get()==null) {
+                    cellPaletteFrame = new CellPalette();
+                    cellPaletteFrameRef = new WeakReference(cellPaletteFrame);
+                } else
+                    cellPaletteFrame = cellPaletteFrameRef.get();
+                
                 if (cellPaletteFrame.isVisible() == false) {
                     cellPaletteFrame.setVisible(true);
                 }
