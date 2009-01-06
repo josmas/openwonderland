@@ -343,7 +343,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
         public void commitEvent (Event event) {
             Entity ent = null;
             PickInfo pickInfo = ((InputEvent3D)event).getPickInfo();
-            if (pickInfo!=null)
+            if (pickInfo!=null && pickInfo.size()>0)
                 ent = pickInfo.get(0).getEntity();
             
             if (ent!=null) {
