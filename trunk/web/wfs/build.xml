@@ -24,7 +24,7 @@
 
         <jar jarfile="${dist.dir}/wonderland-web-wfs.war">
             <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
-                <include name="**"/>
+                <include name="org/jdesktop/wonderland/web/wfs/resources/**"/>
             </zipfileset>
 
             <zipfileset dir="${core.dir}/build/lib" prefix="WEB-INF/lib">

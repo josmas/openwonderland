@@ -134,6 +134,18 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
     }
 
     @Override
+    public CellComponentSetup getCellComponentSetup(CellComponentSetup setup) {
+       if (setup == null) {
+           setup = new AudioTreatmentComponentSetup();
+       }
+
+       ((AudioTreatmentComponentSetup) setup).setGroupId(groupId);
+       ((AudioTreatmentComponentSetup) setup).treatments = treatments;
+
+       return setup;
+    }
+
+    @Override
     public void setLive(boolean live) {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 

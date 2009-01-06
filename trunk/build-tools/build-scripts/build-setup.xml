@@ -19,17 +19,21 @@
     
     <!-- basic compile options -->
     <macrodef name="wl-compile">
+        <attribute name="source" default="${build.source.version}"/>
+        <attribute name="target" default="${build.target.version}"/>
+        <attribute name="bootclasspath" default="${build.boot.class.path}"/>
+        
         <element name="compile-classes"/>
         <element name="compile-classpath"/>
-                
+
         <sequential>
             <javac  debug="${build.debug}"
                 debuglevel="${build.debuglevel}"
-		deprecation="${build.showdeprecation}" 
-		destdir="${build.classes.dir}" 
-		nowarn="true" 
-		source="1.5" 
-		target="1.5"
+                deprecation="${build.showdeprecation}"
+                destdir="${build.classes.dir}"
+                nowarn="true"
+                source="@{source}"
+                target="@{target}"
                 srcdir="${javasrc.dir}">
             
                 <compile-classes/>
@@ -37,7 +41,33 @@
                 <classpath>
                     <compile-classpath/>
                 </classpath>
+
+                <bootclasspath>
+                    <path path="@{bootclasspath}"/>
+                </bootclasspath>
             </javac>
+        </sequential>
+    </macrodef>
+
+    <!-- special-case compilation for the client, to use Java 1.5 instead
+         of Java 6 -->
+    <macrodef name="wl-compile-client">
+        <element name="client-compile-classes"/>
+        <element name="client-compile-classpath"/>
+
+        <sequential>
+            <wl-compile source="${build.client.source.version}"
+                        target="${build.client.target.version}"
+                        bootclasspath="${build.client.boot.class.path}">
+
+                <compile-classes>
+                    <client-compile-classes/>
+                </compile-classes>
+
+                <compile-classpath>
+                    <client-compile-classpath/>
+                </compile-classpath>
+            </wl-compile>
         </sequential>
     </macrodef>
     
