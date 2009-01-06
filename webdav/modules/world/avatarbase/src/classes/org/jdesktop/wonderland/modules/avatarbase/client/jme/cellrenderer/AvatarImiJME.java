@@ -130,7 +130,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         return avatarCharacter;
     }
 
-    public void selectForInput() {
+    public void selectForInput(boolean selected) {
         WorldManager wm = ClientContextJME.getWorldManager();
         ((NinjaContext)avatarCharacter.getContext()).getSteering().setEnable(false);
         NinjaControlScheme control = (NinjaControlScheme)((JSceneEventProcessor)wm.getUserData(JSceneEventProcessor.class)).setDefault(new NinjaControlScheme(avatarCharacter));

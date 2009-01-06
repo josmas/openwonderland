@@ -64,14 +64,14 @@ public class JmeClientMain {
     // standard properties
     private static final String PROPS_URL_PROP = "run.properties.file";
     private static final String CONFIG_DIR_PROP = "wonderland.client.config.dir";
+    private static final String DESIRED_FPS_PROP = "wonderland.client.fps";
+
     // default values
     private static final String SERVER_URL_DEFAULT = "http://localhost:8080";
+    private static final String DESIRED_FPS_DEFAULT = "30";
 
-    /**
-     * The desired frame rate
-     */
-    private int desiredFrameRate = 60;
-    
+    private int desiredFrameRate = Integer.parseInt(DESIRED_FPS_DEFAULT);
+
     /**
      * The width and height of our 3D window
      */
@@ -99,6 +99,15 @@ public class JmeClientMain {
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
         worldManager.addUserData(Repository.class, new Repository(worldManager));
+
+        String requestedFPS = System.getProperty(DESIRED_FPS_PROP, DESIRED_FPS_DEFAULT);
+        if (requestedFPS!=null) {
+            try {
+                desiredFrameRate = Integer.parseInt(requestedFPS);
+            } catch(NumberFormatException e) {
+                // No action required, the default has already been set.
+            }
+        }
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
 
         createUI(worldManager);
@@ -134,6 +143,7 @@ public class JmeClientMain {
         });
 
         JMenuItem physicsMI = new JCheckBoxMenuItem("Physics Enabled");
+        physicsMI.setEnabled(false);
         physicsMI.setSelected(false);
         physicsMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

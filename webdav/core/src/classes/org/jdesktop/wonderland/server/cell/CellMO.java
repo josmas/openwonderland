@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -569,6 +571,18 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(localTransform));
         setup.setRotation(BasicCellSetupHelper.getSetupRotation(localTransform));
         setup.setScaling(BasicCellSetupHelper.getSetupScaling(localTransform));
+
+        // add setups for each component
+        List<CellComponentSetup> setups = new LinkedList<CellComponentSetup>();
+        for (ManagedReference<CellComponentMO> componentRef : components.values()) {
+            CellComponentMO component = componentRef.get();
+            CellComponentSetup compSetup = component.getCellComponentSetup(null);
+            if (compSetup != null) {
+                setups.add(compSetup);
+            }
+        }
+        setup.setCellComponentSetups(setups.toArray(new CellComponentSetup[0]));
+
         return setup;
     }
     

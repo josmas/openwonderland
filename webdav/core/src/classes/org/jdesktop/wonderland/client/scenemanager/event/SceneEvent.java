@@ -16,57 +16,56 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.selection.event;
+package org.jdesktop.wonderland.client.scenemanager.event;
 
 import java.util.List;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 
 /**
- * Event when a selection action has been taken for an Entity or a set of Entities.
- * If there is more than one Entity, then the first Entity selected is found
- * in the getEntity() method (from the Event superclass) and the ordered list
- * of all selected Entities is obtained via the getEntities() method.
- * 
+ * The base event class for all scene manager events. This base class manages
+ * a list of Entities to which the scene event applies. In some cases (e.g.
+ * hover event), there will be only one Entity, while there may be more than
+ * one Entity for other events (e.g. selection event). The list of Entities is
+ * ordered: the first Entity in the list was the first Entity selected.
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class SelectionEvent extends Event {
+public class SceneEvent extends Event {
+
     /* The list of Entities associated with the context event */
-    private List<Entity> entities = null;
-    
+    private List<Entity> entityList = null;
+
     /** Default constructor */
-    public SelectionEvent() {
+    public SceneEvent() {
     }
-    
+
     /** Constructor, takes the list of Enitities of the context event. */
-    public SelectionEvent(List<Entity> entities) {
-        if (entities != null && entities.size() > 0) {
-            setEntity(entities.get(0));
-        }
-        this.entities = entities;
+    public SceneEvent(List<Entity> entities) {
+        this.entityList = entities;
     }
-    
+
     /**
      * Returns an ordered list of Entities associated with the context event.
      * The first Entity in the list represents the first Entity selected.
-     * 
+     *
      * @return A list of selected Entities
      */
-    public List<Entity> getEntities() {
-        return entities;
+    public List<Entity> getEntityList() {
+        return entityList;
     }
-    
-    /** 
+
+    /**
      * {@inheritDoc}
      * <br>
      * If event is null, a new event of this class is created and returned.
      */
     @Override
     public Event clone (Event event) {
-	if (event == null) {
-	    event = new SelectionEvent();
-	}
-        ((SelectionEvent)event).entities = entities;
-	return super.clone(event);
+        if (event == null) {
+            event = new SceneEvent();
+        }
+        ((SceneEvent)event).entityList = entityList;
+        return super.clone(event);
     }
 }

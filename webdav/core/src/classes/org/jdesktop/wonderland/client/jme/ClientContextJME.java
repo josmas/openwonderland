@@ -25,7 +25,7 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.selection.SelectionManager;
+import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 
 /**
  * A subclass of ClientContext which adds JME client specific context accessors.
@@ -41,7 +41,7 @@ public class ClientContextJME extends ClientContext {
     static {
         worldManager = new WorldManager("Wonderland");
         InputManager3D.getInputManager(); // worldManager must be instantiated first
-        SelectionManager.getSelectionManager();
+        SceneManager.getSelectionManager();
     }
 
     /**

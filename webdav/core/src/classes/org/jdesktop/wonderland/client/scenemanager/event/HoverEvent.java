@@ -16,18 +16,21 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.selection.event;
+package org.jdesktop.wonderland.client.scenemanager.event;
 
+import java.util.Arrays;
+import java.util.LinkedList;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 
 /**
  * Event when the user input (e.g. mouse pointer) starts and stops hovering
- * above an Entity.
+ * above an Entity. The Entity in question is given as the first element of the
+ * list returned by the getEntityList() method.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class HoverEvent extends Event {
+public class HoverEvent extends SceneEvent {
     /* True if the hovering has started, false if the hovering has stopped */
     private boolean isStart = false;
     
@@ -40,7 +43,7 @@ public class HoverEvent extends Event {
      * whether hovering is starting or stopping
      */
     public HoverEvent(Entity entity, boolean isStart) {
-        setEntity(entity);
+        super(new LinkedList(Arrays.asList(entity)));
         this.isStart = isStart;
     }
     
@@ -61,10 +64,10 @@ public class HoverEvent extends Event {
      */
     @Override
     public Event clone (Event event) {
-	if (event == null) {
-	    event = new HoverEvent();
-	}
-        ((HoverEvent)event).isStart = isStart;
-	return super.clone(event);
+        if (event == null) {
+            event = new HoverEvent();
+        }
+        ((HoverEvent) event).isStart = isStart;
+        return super.clone(event);
     }
 }

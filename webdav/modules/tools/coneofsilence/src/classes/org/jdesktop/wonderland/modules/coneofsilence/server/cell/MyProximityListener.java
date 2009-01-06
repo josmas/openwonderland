@@ -75,6 +75,10 @@ public class MyProximityListener implements ProximityListenerSrv {
     }
 
     private void cellEntered(CellID softphoneCellID) {
+	cellEntered(softphoneCellID.toString());
+    }
+
+    public void cellEntered(String callId) {
 	/*
 	 * The avatar has entered the ConeOfSilence cell.
 	 * Set the public and incoming spatializers for the avatar to be 
@@ -84,9 +88,7 @@ public class MyProximityListener implements ProximityListenerSrv {
 	 * For each avatar already in the cell, set a private spatializer
 	 * for this avatar.
 	 */
-	String callId = softphoneCellID.toString();
-
-	logger.warning(callId + " entered cone " + name + " avatar cell ID "
+	logger.info(callId + " entered cone " + name + " avatar cell ID "
 	    + callId);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
@@ -118,9 +120,11 @@ public class MyProximityListener implements ProximityListenerSrv {
     }
 
     private void cellExited(CellID softphoneCellID) {
-	String callId = softphoneCellID.toString();
+	cellExited(softphoneCellID.toString());
+    }
 
-	logger.warning(callId + " exited cone " + name + " avatar cell ID "
+    public void cellExited(String callId) {
+	logger.info(callId + " exited cone " + name + " avatar cell ID "
 	    + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
