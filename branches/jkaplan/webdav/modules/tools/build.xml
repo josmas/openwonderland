@@ -18,6 +18,7 @@
         <include name="artimport/build.xml"/>
         <include name="content-repository/build.xml"/>
         <include name="webdav/build.xml"/>
+        <include name="snapshot-manager/build.xml"/>
     </fileset>
     
     <!-- build and package all subprojects -->

@@ -28,7 +28,14 @@
         <build-subprojects fileset="simplewhiteboard.module" target="dist"/>
         <build-subprojects fileset="all.projects" target="dist"/>
     </target>
-    
+
+    <!-- build the client portions of the module -->
+    <target name="build-clientonly">
+        <build-subprojects fileset="appbase.module" target="-module-compile-client"/>
+        <build-subprojects fileset="simplewhiteboard.module" target="-module-compile-client"/>
+        <build-subprojects fileset="all.projects" target="-module-compile-client"/>
+    </target>
+
     <!-- clean all sub-projects -->
     <target name="clean">
         <!-- clean sub-projects -->

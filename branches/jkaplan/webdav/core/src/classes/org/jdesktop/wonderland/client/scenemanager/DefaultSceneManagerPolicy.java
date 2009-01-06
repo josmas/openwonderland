@@ -16,21 +16,21 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.selection.jme;
+package org.jdesktop.wonderland.client.scenemanager;
 
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
-import org.jdesktop.wonderland.client.selection.SelectionPolicy;
+import org.jdesktop.wonderland.client.scenemanager.SceneManagerPolicy;
 
 /**
  * Implements a simple selection policy based upon the JME input mechanism.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class JMESelectionPolicy implements SelectionPolicy {
+public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
 
     public boolean isClearedSelection(Event event) {
         // If the event carries no Entity (happens on the background), or if

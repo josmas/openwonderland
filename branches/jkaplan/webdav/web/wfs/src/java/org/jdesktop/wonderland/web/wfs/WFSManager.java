@@ -20,7 +20,10 @@ package org.jdesktop.wonderland.web.wfs;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +31,7 @@ import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.tools.wfs.WFSFactory;
+import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
  *TBD
@@ -41,9 +45,6 @@ public class WFSManager {
     
     /* The location (beneath the wfs root) of the wfs snapshot directories */
     public static final String SNAPSHOT_DIRS = "snapshots";
-    
-    /* For each snapshot, the wfs has this named beneath a time-stamped directory */
-    public static final String SNAPSHOT_WFS = "world-wfs";
     
     /* The File objects to hold the root of the wfs and snapshot directories */
     private File wfsFile = null;
@@ -71,28 +72,6 @@ public class WFSManager {
     /* The logger for the module manager */
     private static final Logger logger = Logger.getLogger(WFSManager.class.getName());
 
-    /**
-     * Represents a collection of snapshot wfs directories, contained the name
-     * of the wfs and the date of the shapshot and the WFS object that points to
-     * it.
-     */
-    public static class WFSSnapshot {
-        private String wfsName = null;
-        private String wfsDate = null;
-        private WFS wfs = null;
-        
-        /** Constructor, takes the wfs name, date, and WFS object */
-        public WFSSnapshot(String wfsName, String wfsDate, WFS wfs) {
-            this.wfsName = wfsName;
-            this.wfsDate = wfsDate;
-            this.wfs = wfs;
-        }
-
-        public WFS getWfs() { return wfs; }
-        public String getWfsDate() { return wfsDate; }
-        public String getWfsName() { return wfsName; }
-    }
-    
     /** Constructor */
     private WFSManager() {
         /* Load in all of the Wonderland file systems */
@@ -160,27 +139,97 @@ public class WFSManager {
         this.loadWFSs();
         return this.wfsRoots.keySet().toArray(new String[] {});
     }
-    
+
+    /**
+     * Get all WFS snapshots
+     * @return a list of all WFS snapshots
+     */
+    public List<WFSSnapshot> getWFSSnapshots() {
+        return new ArrayList<WFSSnapshot>(wfsSnapshots.values());
+    }
+
+    /**
+     * Get a particular WFS snapshot by name
+     * @return the name of the snapshot
+     */
+    public WFSSnapshot getWFSSnapshot(String name) {
+        return wfsSnapshots.get(name);
+    }
+
     /**
      * Create a new snapshot wfs given its date. This method assumes the snapshot
      * does not already exist
      */
-    public WFS createWFSSnapshot(String dateString) {
-        File file = new File(this.snapshotFile, dateString + File.separator + SNAPSHOT_WFS);
-        try {
-            WFS wfs = WFSFactory.create(file.toURL());
-            WFSSnapshot wfsSnapshot = new WFSSnapshot(wfs.getName(), dateString, wfs);
-            wfsSnapshots.put(dateString, wfsSnapshot);
+    public WFSSnapshot createWFSSnapshot(String name) {
+        File snapshotDir = new File(snapshotFile, name);
 
-            String path = SNAPSHOT_DIRS + File.separator + dateString + File.separator + SNAPSHOT_WFS;
-            wfsMap.put(path, wfs);
-            return wfs;
+        try {
+            WFSSnapshot snapshot = WFSSnapshot.getInstance(snapshotDir);
+            if (snapshot.getTimestamp() != null) {
+                // uh-oh, snapshot already exists...
+                logger.log(Level.WARNING, "[WFS] Snapshot " + name + " exists");
+            } else {
+                // set the timestamp to now
+                snapshot.setTimestamp(new Date());
+
+                // update our internal records
+                String path = getSnapshotPath(name, snapshot.getPath());
+                wfsSnapshots.put(name, snapshot);
+                wfsMap.put(path, snapshot.getWfs());
+            }
+
+            return snapshot;
         } catch (java.lang.Exception excp) {
             logger.log(Level.WARNING, "[WFS] Unable to create snapshot", excp);
             return null;
         }
     }
-    
+
+    /**
+     * Remove a snapshot from WFS
+     * @param name the name of the snapshot to remove
+     */
+    public void removeWFSSnapshot(String name) {
+        WFSSnapshot snapshot = wfsSnapshots.remove(name);
+        if (snapshot == null) {
+            return;
+        }
+
+        String path = getSnapshotPath(name, snapshot.getPath());
+        wfsMap.remove(path);
+
+        File snapshotDir = new File(snapshotFile, name);
+        if (snapshotDir.exists()) {
+            RunUtil.deleteDir(snapshotDir);
+        }
+    }
+
+    /**
+     * Rename a snapshot from one name to another
+     * @param oldname the original name
+     * @param newname the new name
+     */
+    void renameSnapshot(String oldname, WFSSnapshot snapshot) {
+        // remove information about the old snapshot
+        String oldpath = getSnapshotPath(oldname, snapshot.getPath());
+        wfsSnapshots.remove(oldname);
+        wfsMap.remove(oldpath);
+
+        // add the new information
+        String newpath = getSnapshotPath(snapshot.getName(), snapshot.getPath());
+        wfsSnapshots.put(snapshot.getName(), snapshot);
+        wfsMap.put(newpath, snapshot.getWfs());
+    }
+
+    /**
+     * Get the path to a snapshot
+     * @param name the name of the snapshot
+     * @param path the snapshot path
+     */
+    private String getSnapshotPath(String name, String path) {
+        return SNAPSHOT_DIRS + File.separator + name + File.separator + path;
+    }
+
     /**
      * Takes a URL and returns the final name in the path (without the -wfs
      * extension.
@@ -219,16 +268,13 @@ public class WFSManager {
      */
     private void loadSnapshots() {
         //XXX when do we clear out the existing lists?
-        
-        for (String root : this.getSnapshotDirectories()) {
+        for (File root : this.getSnapshotDirectories()) {
             try {
-                File file = new File(this.snapshotFile, root + File.separator + SNAPSHOT_WFS);
-                WFS wfs = WFSFactory.open(file.toURL());
-                WFSSnapshot wfsSnapshot = new WFSSnapshot(wfs.getName(), root, wfs);
-                this.wfsSnapshots.put(root, wfsSnapshot);
+                WFSSnapshot snapshot = WFSSnapshot.getInstance(root);
+                String path = getSnapshotPath(root.getName(), snapshot.getPath());
                 
-                String path = SNAPSHOT_DIRS + File.separator + root + File.separator + SNAPSHOT_WFS;
-                wfsMap.put(path, wfs);
+                wfsSnapshots.put(root.getName(), snapshot);
+                wfsMap.put(path, snapshot.getWfs());
             } catch (java.lang.Exception excp) {
                 logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
             }
@@ -264,12 +310,12 @@ public class WFSManager {
      * Returns an array of file names that represent the base directories for
      * each wfs in the snapshots directory
      */
-    private String[] getSnapshotDirectories() {        
+    private File[] getSnapshotDirectories() {
         // return an empty array if the directory doesn't exist, otherwise
         // we get NullPointerExceptions
-        String[] res = snapshotFile.list();
+        File[] res = snapshotFile.listFiles();
         if (res == null) {
-            res = new String[0];
+            res = new File[0];
         }
         
         return res;

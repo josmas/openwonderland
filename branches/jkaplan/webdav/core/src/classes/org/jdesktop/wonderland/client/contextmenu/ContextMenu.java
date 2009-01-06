@@ -34,9 +34,9 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.selection.event.ActivatedEvent;
-import org.jdesktop.wonderland.client.selection.event.ContextEvent;
-import org.jdesktop.wonderland.client.selection.event.SelectionEvent;
+import org.jdesktop.wonderland.client.scenemanager.event.ActivatedEvent;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
+import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
 
 
 /**
@@ -89,7 +89,7 @@ public class ContextMenu implements ActionListener {
     
     /**
      * Singleton to hold instance of ContextMenu. This holder class is
-     * loader on the first execution of ContextMenu.getEntityContextMenu().
+     * loader on the first execution of ContextMenu.getContextMenu().
      */
     private static class ContextMenuHolder {
         private final static ContextMenu manager = new ContextMenu();
@@ -100,7 +100,7 @@ public class ContextMenu implements ActionListener {
      * <p>
      * @return Single instance of this class.
      */
-    public static final ContextMenu getEntityContextMenu() {
+    public static final ContextMenu getContextMenu() {
         return ContextMenuHolder.manager;
     }
 

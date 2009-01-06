@@ -28,32 +28,32 @@
     
     <!-- Compile the common -->
     <target name="-core-compile-common" depends="-core-init" description="Compile common code">
-        <wl-compile>
-            <compile-classes>
+        <wl-compile-client>
+            <client-compile-classes>
                 <include name="org/jdesktop/wonderland/common/**"/>
-            </compile-classes>
+            </client-compile-classes>
             
-            <compile-classpath>
+            <client-compile-classpath>
                 <pathelement path="${core-common-compile.classpath}"/>
-            </compile-classpath>
-        </wl-compile>
+            </client-compile-classpath>
+        </wl-compile-client>
     </target>
     
     <!-- Compile the client side code -->
     <target name="-core-compile-client" depends="-core-compile-common" 
             description="Compile client code">
-        <wl-compile>
-            <compile-classes>
+        <wl-compile-client>
+            <client-compile-classes>
                 <exclude name="org/jdesktop/wonderland/client/picking/**"/>
                 <exclude name="org/jdesktop/wonderland/client/unusedevent/**"/>
                 <exclude name="org/jdesktop/wonderland/client/scripting/**"/>
                 <include name="org/jdesktop/wonderland/client/**"/>
-            </compile-classes>
+            </client-compile-classes>
             
-            <compile-classpath>
-		<pathelement path="${core-client-compile.classpath}"/>
-	    </compile-classpath>
-        </wl-compile>
+            <client-compile-classpath>
+                <pathelement path="${core-client-compile.classpath}"/>
+            </client-compile-classpath>
+        </wl-compile-client>
     </target>
     
     <!-- Compile the server side code -->

@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.server.spatial.UniverseManager;
 import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExporter;
 import org.jdesktop.wonderland.server.wfs.importer.CellImporter;
@@ -88,23 +87,6 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
 
     /**
-     * Reinitialize the master cell cache. This is an implementation detail and
-     * should not be called by users of this class.
-     */
-    @InternalAPI
-    public static void reinitialize(UniverseManager universe) {
-        logger.warning("CellManagerMO Reinitializing");
-
-//        try {
-//            getCellManager().reloadCells(universe);
-//        } catch (NameNotBoundException nnbe) {
-//            // if the cell manager has not been initialized, the name
-//            // will be unbound.  Ignore the error here, because it
-//            // means initialize() will be called later.
-//        }
-    }
-
-    /**
      * Return singleton master cell cache
      * @return the master cell cache
      */
@@ -120,7 +102,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     public static CellMO getCell(CellID cellID) {
         try {
-            return (CellMO) AppContext.getDataManager().getBinding("CELL_"+cellID.toString()); 
+            return (CellMO) AppContext.getDataManager().getBinding(getCellBinding(cellID));
         } catch(NameNotBoundException e) {
             return null;
         }
@@ -166,64 +148,20 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Reload all root cells into the universe, based on the set of root
-     * cells we can find. Be sure to only do this once, during the initial
-     * (untimed) Darkstar transaction
-     */
-    void reloadCells(UniverseManager universe) {
-        // get all the root cells
-        Set<CellID> rootCellIDs = getRootCells();
-
-        int addedCount = 0;
-        int errorCount = 0;
-
-        for (CellID rootCellID : rootCellIDs) {
-            CellMO cell = CellManagerMO.getCell(rootCellID);
-            if (cell == null) {
-                logger.warning("Removing non-existant cell " + rootCellID);
-                AppContext.getDataManager().markForUpdate(rootCellIDs);
-                rootCellIDs.remove(cell);
-                errorCount++;
-                continue;
-            }
-
-            doInsert(cell, universe);
-            universe.addRootToUniverse(cell);
-            addedCount++;
-        }
-
-        logger.info("Added " + addedCount + " cells. " +
-                    errorCount + " errors.");
-    }
-
-    /**
-     * Insert a cell and all of its children into the universe
-     * @param cell the cell to insert
-     */
-    void doInsert(CellMO cell, UniverseManager universe) {
-        if (!cell.isLive()) {
-            return;
-        }
-
-        // add this cell to the universe
-        cell.addToUniverse(universe);
-
-        // now update all children
-        for (ManagedReference<CellMO> childRef : cell.getAllChildrenRefs()) {
-            doInsert(childRef.get(), universe);
-        }
-    }
-  
-    /**
      * Returns a unique cell id and registers the cell with the system
      * @return
      */
     CellID createCellID(CellMO cell) {
         CellID cellID = new CellID(cellCounter++);
-        
-        AppContext.getDataManager().setBinding("CELL_"+cellID.toString(), cell);
-        
+        AppContext.getDataManager().setBinding(getCellBinding(cellID), cell);
         return cellID;
     }
-    
+
+    /**
+     * Return a unique name for a cell, given its ID
+     * @param ID the cell's ID
+     */
+    static String getCellBinding(CellID cellID) {
+        return "CELL_" + cellID.toString();
+    }
 }

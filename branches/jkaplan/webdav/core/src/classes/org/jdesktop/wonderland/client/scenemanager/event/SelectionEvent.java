@@ -16,24 +16,28 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.client.selection.event;
+package org.jdesktop.wonderland.client.scenemanager.event;
 
+import java.util.List;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 
 /**
- * Event when an Entity is activated.
+ * Event when a selection action has been taken for an Entity or a set of
+ * Entities. The ordered list of Entities selected is obtained via the
+ * getEntityList() method on the SceneEvent superclass.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class ActivatedEvent extends Event {
+public class SelectionEvent extends SceneEvent {
+    
     /** Default constructor */
-    public ActivatedEvent() {
+    public SelectionEvent() {
     }
     
-    /** Constructor, takes the Enitity that has been activated. */
-    public ActivatedEvent(Entity entity) {
-        setEntity(entity);
+    /** Constructor, takes the list of Enitities of the context event. */
+    public SelectionEvent(List<Entity> entities) {
+        super(entities);
     }
     
     /** 
@@ -43,9 +47,9 @@ public class ActivatedEvent extends Event {
      */
     @Override
     public Event clone (Event event) {
-	if (event == null) {
-	    event = new ActivatedEvent();
-	}
-	return super.clone(event);
+        if (event == null) {
+            event = new SelectionEvent();
+        }
+        return super.clone(event);
     }
 }

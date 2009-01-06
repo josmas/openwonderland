@@ -26,11 +26,13 @@ import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
+import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
 
 /**
  * Handles Jersey RESTful requests to create a wfs "snapshot" (a backup of a
@@ -54,26 +56,28 @@ public class CreateWFSSnapshotResource {
      */
     @GET
     @Produces({"text/plain", "application/xml", "application/json"})
-    public Response createWFSSnapshot() {
+    public Response createWFSSnapshot(@QueryParam("name") String name) {
         // Do some basic stuff, get the WFS manager class, etc
         Logger logger = Logger.getLogger(CreateWFSSnapshotResource.class.getName());
         WFSManager manager = WFSManager.getWFSManager();
         
-        // Find the currnent date, convert to a suitable formatted string
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        String dateString = df.format(new Date());
-        
+        // if no name is given, use the current date
+        if (name == null) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            name = df.format(new Date());
+        }
+
         // Create the WFS check return value is not null (error if so)
-        WFS wfs = manager.createWFSSnapshot(dateString);
-        if (wfs == null) {
-            logger.warning("[WFS] Unable to create snapshot " + dateString);
+        WFSSnapshot snapshot = manager.createWFSSnapshot(name);
+        if (snapshot == null) {
+            logger.warning("[WFS] Unable to create snapshot " + name);
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
         
         // Form the root path of the wfs: "snapshots/<date>/world-wfs"
         String rootPath = WFSManager.SNAPSHOT_DIRS + File.separator +
-                dateString + File.separator + WFSManager.SNAPSHOT_WFS;
+                          name + File.separator + snapshot.getPath();
         WorldRoot worldRoot = new WorldRoot(rootPath);
         
         // Formulate the response and return the world root object
