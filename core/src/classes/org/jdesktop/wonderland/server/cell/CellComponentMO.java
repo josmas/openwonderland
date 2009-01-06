@@ -50,4 +50,16 @@ public class CellComponentMO implements ManagedObject, Serializable {
         // Do nothing by default
     }
 
+    /**
+     * Returns the setup information currently configured in the component. If
+     * the setup argument is non-null, fill in that object and return it. If the
+     * setup argument is null, create a new setup object.
+     *
+     * @param setup The setup object, if null, creates one.
+     * @return The current setup information
+     */
+    public CellComponentSetup getCellComponentSetup(CellComponentSetup setup) {
+        // Do nothing by default
+        return setup;
+    }
 }

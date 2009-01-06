@@ -19,23 +19,29 @@ package org.jdesktop.wonderland.server.spatial;
 
 import java.util.logging.Level;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
-import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 import org.jdesktop.wonderland.server.spatial.impl.Universe;
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.auth.Identity;
+import com.sun.sgs.impl.sharedutil.LoggerWrapper;
+import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
+import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.impl.util.TransactionContext;
 import com.sun.sgs.impl.util.TransactionContextFactory;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
-import com.sun.sgs.kernel.TransactionScheduler;
-import com.sun.sgs.service.Service;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
@@ -43,7 +49,7 @@ import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.CellPersistence;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import org.jdesktop.wonderland.server.spatial.impl.SpatialCell;
 import org.jdesktop.wonderland.server.spatial.impl.SpatialCellImpl;
@@ -53,19 +59,30 @@ import org.jdesktop.wonderland.server.spatial.impl.UniverseImpl;
  *
  * @author paulby
  */
-public class UniverseService implements UniverseManager, Service {
+public class UniverseService extends AbstractService implements UniverseManager {
 
-        // logger
-    private static final Logger logger =
-            Logger.getLogger(UniverseService.class.getName());
-
-    // our name
+    /** The name of this class. */
     private static final String NAME = UniverseService.class.getName();
 
-    // Darkstar structures
-    private Properties properties;
-    private ComponentRegistry systemRegistry;
-    private TransactionProxy proxy;
+    /** The package name. */
+    private static final String PKG_NAME = "org.jdesktop.wonderland.server.spatial";
+
+    /** The logger for this class. */
+	private static final LoggerWrapper logger =
+        new LoggerWrapper(Logger.getLogger(PKG_NAME));
+
+    /** The name of the version key. */
+    private static final String VERSION_KEY = PKG_NAME + ".service.version";
+
+    /** The major version. */
+    private static final int MAJOR_VERSION = 1;
+
+    /** The minor version. */
+    private static final int MINOR_VERSION = 0;
+
+    // default property values
+    private static final String CELL_LOAD_PROP = NAME + ".cell.load.count";
+    private static final int CELL_LOAD_DEFAULT = 5;
 
     private Universe universe;
     private ChangeApplication changeApplication;
@@ -73,58 +90,125 @@ public class UniverseService implements UniverseManager, Service {
     // manages the context of the current transaction
     private TransactionContextFactory<BoundsTransactionContext> ctxFactory;
 
-    public UniverseService(Properties prop,
+    // the number of cells to load per transaction
+    private final int cellLoadCount;
+
+    public UniverseService(Properties props,
                            ComponentRegistry registry,
-                           TransactionProxy transactionProxy) {
+                           TransactionProxy proxy)
+    {
+        super(props, registry, proxy, logger);
 
-        this.properties = prop;
-        this.systemRegistry = registry;
-        this.proxy = transactionProxy;
 
-        ctxFactory = new TransactionContextFactory<BoundsTransactionContext>(proxy, NAME) {
-            @Override
-            protected BoundsTransactionContext createContext(Transaction txn) {
-                return new BoundsTransactionContext(txn);
-            }
-        };
+        logger.log(Level.CONFIG, "Creating UniverseService properties:{0}",
+                   props);
+        PropertiesWrapper wrappedProps = new PropertiesWrapper(props);
 
+        // read properties
+        cellLoadCount = wrappedProps.getIntProperty(CELL_LOAD_PROP,
+                                                    CELL_LOAD_DEFAULT);
+
+        // create the transaction context factory
+        ctxFactory = new TransactionContextFactoryImpl(proxy);
+
+        // create the cache objects we need
         changeApplication = new ChangeApplication();
-        universe = new UniverseImpl(registry, transactionProxy);
-
-        // reload the world inside a transaction
-        TransactionScheduler txnScheduler = 
-                registry.getComponent(TransactionScheduler.class);
-        Identity taskOwner =
-                transactionProxy.getCurrentOwner();
+        universe = new UniverseImpl(registry, proxy);
 
         try {
-            txnScheduler.runTask(new KernelRunnable() {
+            /*
+	         * Check service version.
+ 	         */
+            transactionScheduler.runTask(new KernelRunnable() {
                 public String getBaseTaskType() {
-                    return NAME + ".CellReloader";
+                    return NAME + ".VersionCheckRunner";
                 }
 
                 public void run() {
-                    CellManagerMO.reinitialize(UniverseService.this);
+                    checkServiceVersion(
+                            VERSION_KEY, MAJOR_VERSION, MINOR_VERSION);
                 }
             }, taskOwner);
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "Error reloading cells", ex);
+            logger.logThrow(Level.SEVERE, ex, "Error reloading cells");
         }
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
 
-    public void ready() throws Exception {
+    @Override
+    protected void doReady() {
+        // now that everything is set up, reload our cache of cells
+        logger.log(Level.CONFIG, "Readying UniverseService");
+
+        final CellPersistence cells = new CellPersistence();
+
+        // the key in the datastore for our iterator binding
+        final String key = NAME + ".ROOTS_ITERATOR";
+        
+        try {
+
+            // get the set of all CellIDs to reload.  This is a ScalableHashSet,
+            // so the iterator is guaranteed to be serializable, and work
+            // properly across multiple transactions.
+            GetRootCells getRoots = new GetRootCells(cells, key);
+            transactionScheduler.runTask(getRoots, taskOwner);
+
+            int addedCount = 0;
+            int errorCount = 0;
+
+            // now iterate through the set of roots, reloading up to
+            // cellLoadCount cells at each iteration.  Note that all access
+            // to the iterator must be done in a transaction, since the
+            // iterator uses the data service
+            boolean finished = false;
+            while (!finished) {
+                ReloadCells reload = new ReloadCells(cells, key, cellLoadCount);
+                transactionScheduler.runTask(reload, taskOwner);
+
+                // process the results
+                for (Map.Entry<CellID, Boolean> result :
+                        reload.getResults().entrySet())
+                {
+                    if (result.getValue().booleanValue()) {
+                        // successful addition
+                        addedCount++;
+                    } else {
+                        // error
+                        logger.log(Level.WARNING, "Error loading " +
+                                   result.getKey());
+                        errorCount++;
+                    }
+                }
+
+                finished = reload.isFinished();
+            }
+
+            logger.log(Level.INFO, "Added " + addedCount + " cells. " +
+                       errorCount + " errors.");
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to reload cells", ex);
+        }
+
+        logger.log(Level.CONFIG, "UniverseService is ready");
+    }
+
+    @Override
+    protected void doShutdown() {
         // nothing to do
     }
 
-    public boolean shutdown() {
-        return true; // Success
+    @Override
+    protected void handleServiceVersionMismatch(Version oldVersion,
+                                                Version currentVersion) {
+        throw new IllegalStateException(
+ 	            "unable to convert version:" + oldVersion +
+	            " to current version:" + currentVersion);
     }
 
-    
 //    private SpatialCell cloneGraph(CellMO cellMO) {
 //        SpatialCell ret = universe.createSpatialCell(cellMO.getCellID(), false);
 //
@@ -141,7 +225,7 @@ public class UniverseService implements UniverseManager, Service {
     }
 
     public void addRootToUniverse(CellMO rootCellMO) {
-        final Identity identity = proxy.getCurrentOwner();
+        final Identity identity = txnProxy.getCurrentOwner();
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
                 universe.addRootSpatialCell(cellID, identity);
@@ -150,7 +234,7 @@ public class UniverseService implements UniverseManager, Service {
     }
 
     public void removeRootFromUniverse(CellMO rootCellMO) {
-        final Identity identity = proxy.getCurrentOwner();
+        final Identity identity = txnProxy.getCurrentOwner();
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
                 universe.removeRootSpatialCell(cellID, identity);
@@ -160,7 +244,7 @@ public class UniverseService implements UniverseManager, Service {
 
     public void createCell(CellMO cellMO) {
         final Class cellClazz = cellMO.getClass();
-        final Identity identity = proxy.getCurrentOwner();
+        final Identity identity = txnProxy.getCurrentOwner();
         final BigInteger dsID = AppContext.getDataManager().createReference(cellMO).getId();
 
         scheduleChange(new Change(cellMO.getCellID(), cellMO.getLocalBounds(), cellMO.getLocalTransform(null)) {
@@ -183,7 +267,7 @@ public class UniverseService implements UniverseManager, Service {
     }
 
     public void addChild(CellMO parent, CellMO child) {
-        final Identity identity = proxy.getCurrentOwner();
+        final Identity identity = txnProxy.getCurrentOwner();
         scheduleChange(new Change(parent.getCellID(), child.getCellID()) {
             public void run() {
                 SpatialCell parent = universe.getSpatialCell(cellID);
@@ -203,13 +287,13 @@ public class UniverseService implements UniverseManager, Service {
     }
 
     public void setLocalTransform(CellMO cellMO, CellTransform localTransform) {
-        final Identity identity = proxy.getCurrentOwner();
+        final Identity identity = txnProxy.getCurrentOwner();
 
         /*
         try {
             throw new Exception("Trace");
         } catch (Exception ex) {
-            logger.log(Level.INFO, "set local transform for cell " + 
+            logger.log(Level.INFO, "set local transform for cell " +
                        cellMO.getCellID(), ex);
         }
          */
@@ -218,7 +302,7 @@ public class UniverseService implements UniverseManager, Service {
             public void run() {
                 SpatialCell sc = universe.getSpatialCell(cellID);
                 if (sc == null) {
-                    logger.warning("Cell " + cellID + " not found!");
+                    logger.log(Level.WARNING, "Cell " + cellID + " not found!");
                 } else {
                     sc.setLocalTransform(localTransform, identity);
                 }
@@ -228,7 +312,7 @@ public class UniverseService implements UniverseManager, Service {
 
     public void viewLogin(ViewCellMO viewCell) {
         final BigInteger cellCacheId = AppContext.getDataManager().createReference( viewCell.getCellCache()).getId();
-        final Identity identity = proxy.getCurrentOwner();
+        final Identity identity = txnProxy.getCurrentOwner();
 
         scheduleChange(new Change(viewCell.getCellID(), null, null) {
             public void run() {
@@ -363,6 +447,120 @@ public class UniverseService implements UniverseManager, Service {
             }
 
             isCommitted = true;
+        }
+    }
+
+    /** Private implementation of {@code TransactionContextFactory}. */
+    private class TransactionContextFactoryImpl
+            extends TransactionContextFactory<BoundsTransactionContext> {
+
+        /** Creates an instance with the given proxy. */
+        TransactionContextFactoryImpl(TransactionProxy proxy) {
+            super(proxy, NAME);
+
+        }
+
+        /** {@inheritDoc} */
+        protected BoundsTransactionContext createContext(Transaction txn) {
+            return new BoundsTransactionContext(txn);
+        }
+    }
+
+    private static class ReloadState implements Serializable, ManagedObject {
+        private Iterator<CellID> rootCells;
+
+        public ReloadState(Iterator<CellID> rootCells) {
+            this.rootCells = rootCells;
+        }
+
+        public Iterator<CellID> getRootCells() {
+            return rootCells;
+        }
+    }
+
+    private class GetRootCells implements KernelRunnable {
+        private CellPersistence cells;
+        private String key;
+
+        GetRootCells(CellPersistence cells, String key) {
+            this.cells = cells;
+            this.key = key;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".GetRootCells";
+        }
+
+        public void run() throws Exception {
+            // get the set of cells to reload, and store the value in a 
+            // binding in the datastore.  Subsequent ReloadCells tasks
+            // will retrieve this value to iterate through a portion of the
+            // cells
+            ReloadState state = new ReloadState(
+                    cells.getRootCellIDs().iterator());
+            dataService.setServiceBinding(key, state);
+        }
+    }
+
+    private class ReloadCells implements KernelRunnable {
+        private CellPersistence cells;
+        private String key;
+        private int max;
+
+        private Map<CellID, Boolean> results = new LinkedHashMap<CellID, Boolean>();
+        private boolean finished;
+
+        ReloadCells(CellPersistence cells, String key, int max) {
+            this.cells = cells;
+            this.key = key;
+            this.max = max;
+        }
+
+        boolean isFinished() {
+            return finished;
+        }
+
+        Map<CellID, Boolean> getResults() {
+            return results;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".ReloadCell";
+        }
+
+        public void run() throws Exception {
+            // load the state of iteration from the data store
+            ReloadState state = (ReloadState) dataService.getServiceBinding(key);
+            if (state == null) {
+                // make sure we haven't finished already
+                finished = true;
+                return;
+            }
+
+            // get the iterator of cells to reload
+            Iterator<CellID> cellIDs = state.getRootCells();
+            int count = 0;
+
+            // load a cell
+            while (cellIDs.hasNext() && (count < max)) {
+                CellID cellID = cellIDs.next();
+
+                // try to reload the cell
+                boolean result = cells.reloadCell(cellID, UniverseService.this);
+
+                // record the result
+                results.put(cellID, result);
+
+                count++;
+            }
+
+            // check if there are more cells left to load
+            finished = !cellIDs.hasNext();
+        
+            // remove the binding if we are finished
+            if (finished) {
+                dataService.removeServiceBinding(key);
+            }
         }
     }
 

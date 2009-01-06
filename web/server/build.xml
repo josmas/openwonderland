@@ -95,13 +95,14 @@
             <checksumfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/front/dist/wonderland-webadmin-core.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/runner/lib/winp-1.5.jar" prefix="webserver"/>
-            
+            <checksumfileset file="${web.dir}/wfs/dist/wonderland-wfs.jar" prefix="webserver"/>
+
             <!-- include wonderland client from core, since many web apps will
                  act as clients of the Wonderland system -->
             <checksumfileset file="${top.dir}/core/build/lib/wonderland-client.jar" prefix="webserver"/>
             <checksumfileset file="${top.dir}/core/build/lib/wonderland-common.jar" prefix="webserver"/>
             <checksumfileset dir="${core.sgs.client.dir}/lib" prefix="webserver"/>
-	    <checksumfileset file="${core.common.dir}/stun.jar" prefix="webserver"/>
+            <checksumfileset file="${core.common.dir}/stun.jar" prefix="webserver"/>
             
             <!-- contents of the document root -->
             <checksumfileset dir="${current.dir}/web" prefix="docroot"/>

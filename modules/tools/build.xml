@@ -15,6 +15,7 @@
         <include name="phone/build.xml"/>
         <include name="audiorecorder/build.xml"/>
         <include name="artimport/build.xml"/>
+        <include name="snapshot-manager/build.xml"/>
     </fileset>
     
     <!-- build and package all subprojects -->

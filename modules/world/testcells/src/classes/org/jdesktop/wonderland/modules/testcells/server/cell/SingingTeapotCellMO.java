@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
+import org.jdesktop.wonderland.modules.testcells.common.cell.setup.SingingTeapotCellSetup;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -64,4 +65,12 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO implements BeanSetupM
         setupCell(setup);
     }
 
+    @Override
+    public BasicCellSetup getCellSetup(BasicCellSetup setup) {
+        if (setup == null) {
+            setup = new SingingTeapotCellSetup();
+        }
+
+        return super.getCellSetup(setup);
+    }
 }

@@ -54,16 +54,16 @@
     </target>
    
     <target name="-module-compile-common" depends="-module-init">
-        <wl-compile>
-            <compile-classes>
+        <wl-compile-client>
+            <client-compile-classes>
                 <include name="${module.src}/common/**"/>
-            </compile-classes>
+            </client-compile-classes>
             
-            <compile-classpath>
-		<pathelement path="${core-common.classpath}"/>
+            <client-compile-classpath>
+                <pathelement path="${core-common.classpath}"/>
                 <pathelement path="${module-common.classpath}"/>
-	    </compile-classpath>
-        </wl-compile>
+            </client-compile-classpath>
+        </wl-compile-client>
     </target>
     
     <target name="-module-compile-server" depends="-module-init, -module-compile-common">
@@ -73,23 +73,23 @@
             </compile-classes>
             
             <compile-classpath>
-		<pathelement path="${core-server.classpath}"/>
+            <pathelement path="${core-server.classpath}"/>
                 <pathelement path="${module-server.classpath}"/>
-	    </compile-classpath>
+            </compile-classpath>
         </wl-compile>
     </target>
     
     <target name="-module-compile-client" depends="-module-init, -module-compile-common">
-        <wl-compile>
-            <compile-classes>
+        <wl-compile-client>
+            <client-compile-classes>
                 <include name="${module.src}/client/**"/>
-            </compile-classes>
+            </client-compile-classes>
             
-            <compile-classpath>
-		<pathelement path="${core-client.classpath}"/>
+            <client-compile-classpath>
+                <pathelement path="${core-client.classpath}"/>
                 <pathelement path="${module-client.classpath}"/>
-	    </compile-classpath>
-        </wl-compile>
+            </client-compile-classpath>
+        </wl-compile-client>
     </target>
                 
     <target name="-module-deploy">
