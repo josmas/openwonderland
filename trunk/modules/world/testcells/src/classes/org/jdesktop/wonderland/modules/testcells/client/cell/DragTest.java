@@ -76,11 +76,13 @@ public class DragTest extends SimpleShapeCell {
 	switch(status) {
 
 	case ACTIVE:
-	    dragListener.addToEntity(cellRenderer.getEntity());
+        if (cellRenderer!=null) // May be null if this is a 2D renderer
+            dragListener.addToEntity(cellRenderer.getEntity());
 	    break;
 
         case DISK:
-	    dragListener.removeFromEntity(cellRenderer.getEntity());
+        if (cellRenderer!=null) // May be null if this is a 2D renderer
+            dragListener.removeFromEntity(cellRenderer.getEntity());
 	}
 
 	return ret;
