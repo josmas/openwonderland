@@ -104,8 +104,6 @@ class SpaceManagerGridImpl implements SpaceManager {
             }
         }
 
-        System.err.println("Intersects with "+retList.size()+" spaces");
-
         return retList;
     }
 
