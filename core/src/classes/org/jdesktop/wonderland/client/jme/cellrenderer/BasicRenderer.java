@@ -93,6 +93,15 @@ public abstract class BasicRenderer implements CellRendererJME {
         this.cell = cell;
     }
 
+
+    /**
+     * Return the cell that contains this component
+     * @return
+     */
+    public Cell getCell() {
+        return cell;
+    }
+
     public void setStatus(CellStatus status) {
         switch(status) {
             case ACTIVE :
@@ -130,6 +139,25 @@ public abstract class BasicRenderer implements CellRendererJME {
                 break;
         }
 
+    }
+
+    /**
+     * Convenience method which attaches the child entity to the specified
+     * parent AND sets the attachpoint of the childs RenderComponent to the
+     * scene root of the parents RenderComponent
+     * 
+     * @param parentEntity
+     * @param child
+     */
+    public static void entityAddChild(Entity parentEntity, Entity child) {
+        if (parentEntity!=null && child!=null) {
+            RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+            RenderComponent thisRendComp = (RenderComponent)child.getComponent(RenderComponent.class);
+            if (parentRendComp!=null && parentRendComp.getSceneRoot()!=null && thisRendComp!=null) {
+                thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
+            }
+            parentEntity.addEntity(child);
+        }
     }
 
     /**
