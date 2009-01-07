@@ -50,13 +50,18 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 public class JmeColladaRenderer extends BasicRenderer {
 
-    public JmeColladaRenderer(Cell cell) {
+    private  Node node = null;
+    
+    public JmeColladaRenderer(Cell cell, Node node) {
         super(cell);
+        this.node = node;
     }
     
-    protected Node createSceneGraph(Entity entity) {
+    protected Node createSceneGraph(Entity entity) 
+        {
+        System.out.println("In createSceneGraph inside JmeColladaRenderer - entity = " + entity + " Cell = " + cell.getCellID().toString());
         return loadColladaAsset(cell.getCellID().toString());        
-    }
+        }
 
     /**
      * Load a collada model from a local file, used to import art during
@@ -98,7 +103,6 @@ public class JmeColladaRenderer extends BasicRenderer {
      * Loads a collada cell from the asset managergiven an asset URL
      */
     public Node loadColladaAsset(String name) {        
-        Node node = new Node();
         Node model=null;
 
         /* Fetch the basic info about the cell */

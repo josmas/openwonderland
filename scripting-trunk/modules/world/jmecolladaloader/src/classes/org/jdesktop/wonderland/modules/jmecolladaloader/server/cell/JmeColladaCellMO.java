@@ -46,6 +46,10 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
     private String modelURI = null;
     private Vector3f geometryTranslation;
     private Quaternion geometryRotation;
+    private String scriptURL;
+    private String scriptClump;
+    private String scriptExt;
+    private String scriptType;
     	
     /** Default constructor, used when cell is created via WFS */
     public JmeColladaCellMO() {
@@ -55,6 +59,18 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
         this.modelURI = modelURI;
         this.geometryRotation = geometryRotation;
         this.geometryTranslation = geometryTranslation;
+    }
+
+    public JmeColladaCellMO(Vector3f center, float size, String modelURI, Vector3f geometryTranslation, 
+            Quaternion geometryRotation, String Url, String Clump, String Ext, String Type) {
+        super(new BoundingBox(new Vector3f(), size , size , size ), new CellTransform(null, center));
+        this.modelURI = modelURI;
+        this.geometryRotation = geometryRotation;
+        this.geometryTranslation = geometryTranslation;
+        this.scriptURL = Url;
+        this.scriptClump = Clump;
+        this.scriptExt = Ext;
+        this.scriptType = Type;
     }
 
     public JmeColladaCellMO(Vector3f center, float size, String modelURI) {
@@ -71,7 +87,8 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
 
     @Override
     public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation);
+        return new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation,
+                scriptURL, scriptClump, scriptExt, scriptType);
     }
 
     @Override
