@@ -63,7 +63,7 @@ class SpaceManagerGridImpl implements SpaceManager {
         Space sp = getEnclosingSpaceImpl(x,y,z);
         
         if (sp==null) {
-            sp = createSpace(point, x, y, z);
+            sp = createSpace(x, y, z);
 //            System.err.println("Created space "+sp.getName());
         }
 
@@ -92,10 +92,11 @@ class SpaceManagerGridImpl implements SpaceManager {
                 for(int zs=-step; zs<=step; zs++) {
 //                    System.out.println("Checking "+(x+xs)+", "+(y+ys)+", "+(z+zs));
                     sp = getEnclosingSpaceImpl(x+xs, y+ys, z+zs);
-//                    if (sp!=null) {
-//                        System.err.println(sp.getWorldBounds()+"  "+volume+"  "+
-//                        sp.getWorldBounds().intersects(volume));
-//                    }
+                    if (sp==null){
+                        // Create the space
+                        sp = createSpace(x+xs, y+ys, z+zs);
+//                        System.out.println("Creating "+(x+xs)+", "+(y+ys)+", "+(z+zs)+"  "+sp.getWorldBounds());
+                    }
                     if (sp!=null && sp.getWorldBounds().intersects(volume)) {
                         retList.add(sp);
                     }
@@ -103,10 +104,12 @@ class SpaceManagerGridImpl implements SpaceManager {
             }
         }
 
+        System.err.println("Intersects with "+retList.size()+" spaces");
+
         return retList;
     }
 
-    private Space createSpace(Vector3f point, int x, int y, int z) {
+    private Space createSpace(int x, int y, int z) {
         
         Vector3f center = new Vector3f((x * SPACE_SIZE*2)+SPACE_SIZE, 
                                        (y * SPACE_SIZE*2)+SPACE_SIZE, 
@@ -121,30 +124,6 @@ class SpaceManagerGridImpl implements SpaceManager {
         synchronized(spaces) {
             spaces.put(bindingName, space);
         }
-
-//        System.out.println("CREATING SPACE "+x+" "+y+" "+z+"    bounds "+gridBounds+"  for point "+point);
-//        SimpleSpace space = new SimpleSpace(gridBounds,
-//                                                center,
-//                                                nextSpaceID());
-
-//        ArrayList<SimpleSpace> list = new ArrayList();
-//        list.add((SimpleSpace)getEnclosingSpaceImpl(x,y,z+1));    // North
-//        list.add((SimpleSpace)getEnclosingSpaceImpl(x+1,y,z));    // East
-//        list.add((SimpleSpace)getEnclosingSpaceImpl(x,y,z-1));    // South
-//        list.add((SimpleSpace)getEnclosingSpaceImpl(x-1,y,z));    // West
-//        list.add((SimpleSpace)getEnclosingSpaceImpl(x+1,y,z+1));  // NE
-//        list.add((SimpleSpace)getEnclosingSpaceImpl(x+1,y,z-1));  // SE
-//        list.add((SimpleSpace)getEnclosingSpaceImpl(x-1,y,z-1));  // SW
-//        list.add((SimpleSpace)getEnclosingSpaceImpl(x-1,y,z+1));  // NW
-//        space.setAdjacentSpaces(list.toArray(new SimpleSpace[list.size()]));
-//
-//        // connect existing neighbour spaces to the new space
-//        for(SimpleSpace n : list) {
-//            if (n!=null)
-//                n.addAdjacentSpace(space);
-//        }
-//
-//        AppContext.getDataManager().setBinding(getSpaceBindingName(x,y,z), space);
         
         return space;
     }
