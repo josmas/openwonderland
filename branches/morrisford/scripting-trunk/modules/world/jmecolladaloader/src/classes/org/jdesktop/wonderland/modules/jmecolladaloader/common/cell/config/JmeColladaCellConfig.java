@@ -32,16 +32,25 @@ public class JmeColladaCellConfig extends CellConfig {
     private String modelURI = null;
     private Vector3f geometryTranslation;
     private Quaternion geometryRotation;
+    private String scriptURL;
+    private String scriptClump;
+    private String scriptExt;
+    private String scriptType;
     
     /** Default constructor */
     public JmeColladaCellConfig() {
     }
     
     /** Constructor, takes the model URI */
-    public JmeColladaCellConfig(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
+    public JmeColladaCellConfig(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation,
+            String Url, String Clump, String Ext, String Type) {
         this.modelURI = modelURI;
         this.geometryRotation = geometryRotation;
         this.geometryTranslation = geometryTranslation;
+        this.scriptURL = Url;
+        this.scriptClump = Clump;
+        this.scriptExt = Ext;
+        this.scriptType = Type;
     }
     
     /**
@@ -68,5 +77,24 @@ public class JmeColladaCellConfig extends CellConfig {
 
     public Quaternion getGeometryRotation() {
         return geometryRotation;
+    }
+    public String getScriptURL()
+    {
+        return scriptURL;
+    }
+    
+    public String getScriptClump()
+    {
+        return scriptClump;
+    }
+    
+    public String getScriptExt()
+    {
+        return scriptExt;
+    }
+    
+    public String getScriptType()
+    {
+        return scriptType;
     }
 }
