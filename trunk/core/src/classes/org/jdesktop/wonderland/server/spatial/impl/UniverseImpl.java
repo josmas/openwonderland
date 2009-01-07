@@ -40,7 +40,6 @@ public class UniverseImpl implements Universe {
 
     private SpaceManager spaceManager = new SpaceManagerGridImpl();
     private final HashMap<CellID, SpatialCell> cells = new HashMap();
-    private TaskScheduler taskScheduler;
     private static UniverseImpl universe;
     private TransactionProxy transactionProxy;
     private DataService dataService;
@@ -49,7 +48,6 @@ public class UniverseImpl implements Universe {
     private static final Logger logger = Logger.getLogger(UniverseImpl.class.getName());
 
     public UniverseImpl(ComponentRegistry componentRegistry, TransactionProxy transactionProxy) {
-//        this.taskScheduler = taskScheduler;
         this.transactionProxy = transactionProxy;
         this.dataService = transactionProxy.getService(DataService.class);
         this.transactionScheduler = componentRegistry.getComponent(TransactionScheduler.class);
@@ -71,10 +69,6 @@ public class UniverseImpl implements Universe {
     public DataService getDataService() {
         return dataService;
     }
-
-//    public void scheduleTask(KernelRunnable task, Identity identity) {
-//        taskScheduler.scheduleTask(task, identity);
-//    }
 
     public void scheduleTransaction(KernelRunnable transaction, Identity identity) {
         transactionScheduler.scheduleTask(transaction, identity);
