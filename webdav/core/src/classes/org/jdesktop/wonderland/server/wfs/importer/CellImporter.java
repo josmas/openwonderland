@@ -45,6 +45,9 @@ import org.jdesktop.wonderland.common.wfs.CellList.Cell;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class CellImporter {
+    /** the property to use when reading the WFS root */
+    public static final String WFS_ROOT_PROP = "sgs.wfs.root";
+
     /* The logger for the wfs loader */
     private static final Logger logger = Logger.getLogger(CellImporter.class.getName());
     
@@ -90,22 +93,9 @@ public class CellImporter {
      * own WFSCellMO class
      */
     public void load() {
-        /* First fetch all of the individual WFSs there are in the system. */
-        WorldRootList wfsRoots = CellImporterUtils.getWFSRoots();
-        if (wfsRoots == null) {
-            logger.info("WFSLoader: did not find any valid WFS roots");
-            return;
-        }
-        
-        /*
-         * Iterator through all of the roots. For each, create a new WFSCellMO
-         * class and load in its cells. Just take the first one for now!
-         */
-        if (wfsRoots.getRoots().length > 0) {
-            String rootName = wfsRoots.getRoots()[0];
-            
-            /* Load in the cells in the WFS based upon this root */
-            this.loadWFSRoot(rootName);
+        String wfsRootName = System.getProperty(WFS_ROOT_PROP);
+        if (wfsRootName != null) {
+            loadWFSRoot(wfsRootName);
         }
     }
     

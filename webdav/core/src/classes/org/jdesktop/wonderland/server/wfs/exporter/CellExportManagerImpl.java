@@ -33,8 +33,8 @@ public class CellExportManagerImpl implements CellExportManager {
         this.service = service;
     }
 
-    public void createSnapshot(SnapshotCreationListener listener) {
-        service.createSnapshot(listener);
+    public void createSnapshot(String name, SnapshotCreationListener listener) {
+        service.createSnapshot(name, listener);
     }
 
     public void exportCells(WorldRoot worldRoot, Set<CellID> cellIDs,

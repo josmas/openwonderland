@@ -21,10 +21,13 @@ package org.jdesktop.wonderland.modules.darkstar.server;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -44,8 +47,11 @@ import org.jdesktop.wonderland.runner.RunnerChecksum;
 import org.jdesktop.wonderland.runner.RunnerChecksums;
 import org.jdesktop.wonderland.runner.RunnerConfigurationException;
 import org.jdesktop.wonderland.runner.RunnerException;
+import org.jdesktop.wonderland.runner.StatusWaiter;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.RunUtil;
+import org.jdesktop.wonderland.web.wfs.WFSManager;
+import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
 
 /**
  * An extension of <code>BaseRunner</code> to launch the Darkstar server.
@@ -62,6 +68,26 @@ public class DarkstarRunner extends BaseRunner {
     private static final String CHECKSUM_URL =
                                   "darkstar/darkstarserver/services/checksums";
 
+    /** the file to save WFS URLs in */
+    private static final String WFS_URL_FILE = "curwfsurl";
+
+    /** the property to check for persistence options */
+    private static final String PERSISTENCE_TYPE_PROP = "wonderland.sgs.persistence";
+    private PersistenceType PERSISTENCE_TYPE_DEFAULT = PersistenceType.FALLBACK;
+    protected enum PersistenceType {
+        NONE, FALLBACK, ALWAYS;
+
+        public static PersistenceType parsePersistenceType(String str) {
+            for (PersistenceType pt : PersistenceType.values()) {
+                if (str.trim().equalsIgnoreCase(pt.name())) {
+                    return pt;
+                }
+            }
+
+            throw new IllegalArgumentException("No such type: " + str);
+        }
+    }
+
     /** the logger */
     private static final Logger logger =
             Logger.getLogger(DarkstarRunner.class.getName());
@@ -75,6 +101,12 @@ public class DarkstarRunner extends BaseRunner {
     /** managers and services found as we deployed files */
     private List<String> managers;
     private List<String> services;
+
+    /** the name of the WFS to load from, or null to load an empty world */
+    private String wfsName;
+
+    /** the current wfs name.  Only valid when starting up */
+    private String currentWFSName;
 
     /**
      * The current list of modules, implemented as a thread-local variable
@@ -104,6 +136,13 @@ public class DarkstarRunner extends BaseRunner {
 
         // record the webserver URL
         webserverURL = props.getProperty("wonderland.web.server.url");
+
+        // attempt to restore the WFS URL
+        try {
+            wfsName = restoreWFSName();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading WFS file", ioe);
+        }
     }
  
     /**
@@ -174,6 +213,18 @@ public class DarkstarRunner extends BaseRunner {
         // call the other methods in this class
         super.deployFiles(props);
 
+        // set the relevant properties before super.start() is called
+        setDarkstarProperties(props);
+    }
+
+    /**
+     * Update the properties associated with this deployer before running.
+     * This will search for all managers and services declared by any
+     * module jar files, and also set the current port for Darkstar
+     */
+    protected void setDarkstarProperties(Properties props)
+        throws IOException
+    {
         // go through al the module jars looking for any Darkstar managers and
         // services
         managers = new ArrayList<String>();
@@ -208,9 +259,21 @@ public class DarkstarRunner extends BaseRunner {
             props.put("sgs.services", sb.toString());
         }
 
-        // set the current port to the one we are now running with.  This
-        // will stay valid until the runner is stopped.
+        // set the current port & WFS URL to the ones we are now running with.
+        // This will stay valid until the runner is stopped.
         currentPort = getPort(props);
+        currentWFSName = getWFSName();
+
+        // see if we need to force a coldstart
+        if (checkColdstart(props)) {
+            props.put("sgs.coldstart", "true");
+        }
+
+        // set the WFS URL to load.  This will only be used in the case of
+        // a cold start
+        if (currentWFSName != null) {
+            props.put("sgs.wfs.root", currentWFSName);
+        }
     }
 
     /**
@@ -270,6 +333,38 @@ public class DarkstarRunner extends BaseRunner {
     }
 
     /**
+     * Check whether we need to force a cold start.  Right now, this just
+     * checks the global persistence type, and if the WFS URL has changed since
+     * the last time we ran.
+     * @param props the properties we are starting with
+     * @return true if a coldstart is required, or false if a warm start is OK
+     */
+    protected boolean checkColdstart(Properties props) {
+        if (getPersistenceType(props) == PersistenceType.NONE) {
+            System.out.println("[Coldstart] Persistence type: NONE");
+            // forece a coldstart
+            return true;
+        }
+
+        // see if the WFS URL has changed since the last time we ran
+        String oldWFSName = null;
+        try {
+            oldWFSName = restoreWFSName();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error restoring WFS URL", ioe);
+        }
+
+        System.out.println("[Coldstart] oldWFSName:  " + oldWFSName +
+                           " curWFSName: " + currentWFSName);
+
+        if (oldWFSName == null) {
+            return (currentWFSName != null);
+        } else {
+            return !oldWFSName.equals(currentWFSName);
+        }
+    }
+
+    /**
      * Get the Darkstar server name for clients to connect to.
      * @return the external hostname of the Darkstar server
      */
@@ -308,6 +403,84 @@ public class DarkstarRunner extends BaseRunner {
         } else {
             return DEFAULT_PORT;
         }
+    }
+
+    /**
+     * Get the current WFS name
+     * @return the current WFS name
+     */
+    public String getWFSName() {
+        return wfsName;
+    }
+
+    /**
+     * Set the current WFS name
+     * @param name the name of the WFS to load the world from, or null to load
+     * an empty world
+     */
+    public void setWFSName(String wfsName) {
+        this.wfsName = wfsName;
+    }
+
+    /**
+     * Save the current WFS name to disk
+     * @param name the name to save
+     */
+    protected void saveWFSName(String wfsName) throws IOException {
+        File wfsFile = new File(getRunDir(), WFS_URL_FILE);
+        PrintWriter out = new PrintWriter(new FileWriter(wfsFile));
+        out.println(wfsName);
+        out.close();
+    }
+
+    /**
+     * Restore the current WFS URL from disk
+     * @return the current URL, or null if no URL is set
+     */
+    protected String restoreWFSName() throws IOException {
+        File wfsFile = new File(getRunDir(), WFS_URL_FILE);
+        if (!wfsFile.exists()) {
+            return null;
+        }
+
+        BufferedReader br = new BufferedReader(new FileReader(wfsFile));
+        return br.readLine();
+    }
+
+    /**
+     * Create a snapshot with the given name.  The runner must be stopped
+     * to call this method.
+     * @param name the snapshot name to create
+     * @return the snapshot that was created
+     * @throws RunnerException if there is an error creating the snapshot
+     */
+    public WFSSnapshot createSnapshot(String name) throws RunnerException {
+        if (getStatus() != Status.NOT_RUNNING) {
+            throw new IllegalStateException("Snapshots require server to " +
+                                            "  be stopped");
+        }
+
+        // run the snapshot runner using the RunManager
+        DarkstarSnapshotRunner snapshot = new DarkstarSnapshotRunner(name);
+        RunManager.getInstance().start(snapshot, false);
+
+        // wait for the snapshot runner to exit, which it should do
+        // as soon as it finishes starting up
+        StatusWaiter waiter = new StatusWaiter(snapshot, Status.NOT_RUNNING);
+        try {
+            waiter.waitFor();
+        } catch (InterruptedException ie) {
+            // not much we can do here...
+        }
+
+        // at this point, hopefully a snapshot was created
+        WFSSnapshot out = WFSManager.getWFSManager().getWFSSnapshot(name);
+        if (out == null) {
+            throw new RunnerException("Error creating snapshot.  See log at: "
+                    + snapshot.getLogFile() + " for details.");
+        }
+
+        return out;
     }
 
     /**
@@ -361,6 +534,26 @@ public class DarkstarRunner extends BaseRunner {
     }
 
     /**
+     * Get the persistence type from a property.  The given properties will
+     * be checked fist, followed by the system properties.  If neither of
+     * those has a value, the default value will be returned
+     * @param props the properties to check first
+     * @return the current persistence type
+     */
+    protected PersistenceType getPersistenceType(Properties props) {
+        String persistStr = props.getProperty(PERSISTENCE_TYPE_PROP);
+        if (persistStr == null) {
+            persistStr = System.getProperty(PERSISTENCE_TYPE_PROP);
+        }
+
+        if (persistStr != null) {
+            return PersistenceType.parsePersistenceType(persistStr);
+        } else {
+            return PERSISTENCE_TYPE_DEFAULT;
+        }
+    }
+
+    /**
      * Override the setStatus() method to ignore the RUNNING status.  Instead,
      * we notify other processes that Darkstar is RUNNING when the output
      * reader gets the startup line successfully.
@@ -383,13 +576,24 @@ public class DarkstarRunner extends BaseRunner {
     protected DarkstarOutputReader createOutputReader(InputStream in,
                                                       Logger out)
     {
-        return new DarkstarOutputReader(in, out);
+        return new DarkstarOutputReader(in, out, new DarkstarStartup() {
+            public void darkstarStarted() {
+                DarkstarRunner.this.darkstarStarted();
+            }
+        });
     }
     
     /**
      * Called when Darkstar starts up
      */
     protected void darkstarStarted() {
+        // save the current WFS URL
+        try {
+            saveWFSName(currentWFSName);
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error saving WFS URL", ioe);
+        }
+
         super.setStatus(Status.RUNNING);
     }
     
@@ -399,19 +603,93 @@ public class DarkstarRunner extends BaseRunner {
     protected class DarkstarOutputReader extends BaseRunner.ProcessOutputReader {
         private static final String DARKSTAR_STARTUP =
                 "Wonderland: application is ready";
-                
-        public DarkstarOutputReader(InputStream in, Logger out) {
+
+        private DarkstarStartup runner;
+
+        protected DarkstarOutputReader(InputStream in, Logger out,
+                                       DarkstarStartup runner)
+        {
             super (in, out);
+            this.runner = runner;
         }
         
         @Override
         protected void handleLine(String line) {
             // see if this is a Darkstar startup message
             if (line.contains(DARKSTAR_STARTUP)) {
-                darkstarStarted();
+                runner.darkstarStarted();
             }
             
             super.handleLine(line);
         }
+    }
+
+    /**
+     * Create a world snapshot
+     */
+    protected class DarkstarSnapshotRunner extends BaseRunner
+        implements DarkstarStartup
+    {
+        private String snapshotName;
+
+        protected DarkstarSnapshotRunner(String snapshotName) {
+            super();
+
+            this.snapshotName = snapshotName;
+        }
+
+        @Override
+        public String getName() {
+            return DarkstarRunner.this.getName() + " Snapshot";
+        }
+
+        @Override
+        public Properties getDefaultProperties() {
+            return RunManager.getInstance().getStartProperties(DarkstarRunner.this);
+        }
+
+        @Override
+        public synchronized void start(Properties props) throws RunnerException {
+            props.put("org.jdesktop.wonderland.server.wfs" +
+                      ".exporter.CellExportService.export.on.startup",
+                      snapshotName);
+
+            // setup the other Darkstar properties
+            try {
+                setDarkstarProperties(props);
+            } catch (IOException ioe) {
+                throw new RunnerException(ioe);
+            }
+
+            // now run
+            super.start(props);
+        }
+
+        @Override
+        protected void deployFiles(Properties props) throws IOException {
+            // do nothing
+        }
+
+        @Override
+        protected synchronized File getBaseDir() {
+            return DarkstarRunner.this.getBaseDir();
+        }
+
+        @Override
+        protected ProcessOutputReader createOutputReader(InputStream in,
+                                                         Logger out)
+        {
+            return new DarkstarOutputReader(in, out, this);
+        }
+
+        public void darkstarStarted() {
+            // once the startup is complete, the snapshot has been written
+            // and we can exit
+            this.stop();
+        }
+    }
+
+    protected static interface DarkstarStartup {
+        void darkstarStarted();
     }
 }
