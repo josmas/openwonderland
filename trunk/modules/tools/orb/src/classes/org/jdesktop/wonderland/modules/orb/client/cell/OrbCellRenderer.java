@@ -240,13 +240,13 @@ public class OrbCellRenderer extends BasicRenderer {
 		    if (buttonEvent.isPressed()) {
 		        ((OrbCell) cell).orbSelected();
 		    }
+		    return;
 		} finally {
 		    // Linux-specific workaround: Reacquire the lock if necessary.
 		    if (glContext != null) {
 			glContext.makeCurrent();
                     }
 		}
-		return;
 	    } 
 	}
 

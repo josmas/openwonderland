@@ -153,13 +153,13 @@ public class PhoneCellRenderer extends BasicRenderer {
 		    if (buttonEvent.isPressed()) {
 		        ((PhoneCell) cell).phoneSelected();
 		    }
+		    return;
 		} finally {
 		    //Linux-specific workaround: Reacquire the lock if necessary.
                     if (glContext != null) {
                         glContext.makeCurrent();
                     }
 		}
-		return;
 	    } 
 	}
     }
