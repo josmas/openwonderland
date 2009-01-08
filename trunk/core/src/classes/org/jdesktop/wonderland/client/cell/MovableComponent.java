@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
@@ -67,7 +68,11 @@ public class MovableComponent extends CellComponent {
 
                         public void messageReceived(CellMessage message) {
                             // Ignore messages from this client, TODO move this up into addMessageReciever with an option to turn off the test
-                            if (message.getSenderID()!=cell.getCellCache().getSession().getID()) {
+                            BigInteger senderID = message.getSenderID();
+                            if (senderID == null) {
+                                senderID = BigInteger.ZERO;
+                            }
+                            if (!senderID.equals(cell.getCellCache().getSession().getID())) {
                                 serverMoveRequest((MovableMessage)message);
                             }
                         }
