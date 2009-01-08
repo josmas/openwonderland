@@ -35,10 +35,12 @@ public interface CellExportManager {
      * Create a new snapshot for writing cells to.  This method will contact
      * the remote web service to create a new snapshot, and then call the
      * given listener with the result of that call.
+     * @param name the name of the snapshot to create, or null to use the
+     * default name
      * @param listener a snapshot creation listener that will be notified of
      * the result of this call
      */
-    public void createSnapshot(SnapshotCreationListener listener);
+    public void createSnapshot(String name, SnapshotCreationListener listener);
 
     /**
      * Write a set of cells to the given snapshot.  This method will fetch the

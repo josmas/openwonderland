@@ -18,9 +18,12 @@
 package org.jdesktop.wonderland.modules.snapshot.web.servlet;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContextEvent;
@@ -30,8 +33,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
+import org.jdesktop.wonderland.runner.RunManager;
+import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
+import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
+import org.jdesktop.wonderland.runner.Runner.Status;
+import org.jdesktop.wonderland.runner.RunnerException;
+import org.jdesktop.wonderland.runner.StatusWaiter;
+import org.jdesktop.wonderland.web.wfs.WFSRoot;
 
 /**
  *
@@ -40,6 +50,9 @@ import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
 public class SnapshotManagerServlet extends HttpServlet
     implements ServletContextListener
 {
+    // the empty world
+    private static final EmptyWorld EMPTY_WORLD = new EmptyWorld();
+
     // our registration with the webadmin system
     private AdminRegistration reg;
 
@@ -67,37 +80,41 @@ public class SnapshotManagerServlet extends HttpServlet
             snapshot = m.getWFSSnapshot(snapshotName);
         }
 
-        String error = null;
+        SnapshotResult result = null;
         if (action.equalsIgnoreCase("update")) {
-            error = doUpdate(request, response, snapshot);
-            if (error != null) {
-                // return to the edit page
-                request.setAttribute("error", error);
-                action = "edit";
-            }
+            result = doUpdate(request, response, snapshot);
+        } else if (action.equalsIgnoreCase("edit")) {
+            result = doEdit(request, response, snapshot);
+        } else if (action.equalsIgnoreCase("remove")) {
+            result = doRemove(request, response, snapshot);
+        } else if (action.equalsIgnoreCase("snapshot")) {
+            result = doSnapshot(request, response);
+        } else if (action.equalsIgnoreCase("currentworld")) {
+            result = doCurrentWorld(request, response);
+        } else if (action.equalsIgnoreCase("currentsnapshot")) {
+            result = doCurrentSnapshot(request, response, snapshot);
         }
-        
-        if (action.equalsIgnoreCase("edit")) {
-            error = doEdit(request, response, snapshot);
-            if (error == null) {
+
+        if (result != null) {
+            request.setAttribute("error", result.getError());
+
+            // redirect to the requested page
+            if (result.hasRedirect()) {
+                RequestDispatcher rd = getServletContext().getRequestDispatcher(result.getRedirect());
+                rd.forward(request, response);
                 return;
             }
-            request.setAttribute("error", error);
         }
 
-        if (action.equalsIgnoreCase("remove")) {
-            error = doRemove(request, response, snapshot);
-        }
-
-        // if we get here, it means we are going to display the main page
-        request.setAttribute("error", error);
+        // if we get here, we are going to display the main page
 
         // store the wfs roots in a variable
-        String[] wfsRoots = m.getWFSRoots();
+        List<WFSRoot> wfsRoots = m.getWFSRoots();
+        wfsRoots.add(0, EMPTY_WORLD);
         request.setAttribute("roots", wfsRoots);
 
         // store the wfs snapshots in a variable.  Sort the snapshots by date
-        List<WFSSnapshot> snapshots = new ArrayList<WFSSnapshot>(m.getWFSSnapshots());
+        List<WFSSnapshot> snapshots = m.getWFSSnapshots();
         Collections.sort(snapshots, new Comparator<WFSSnapshot>() {
             public int compare(WFSSnapshot o1, WFSSnapshot o2) {
                 if (o1.getTimestamp() == null) {
@@ -111,34 +128,37 @@ public class SnapshotManagerServlet extends HttpServlet
         });
         request.setAttribute("snapshots", snapshots);
 
+        // find the current snapshot
+        WFSRoot currentRoot = getCurrentRoot(wfsRoots, snapshots);
+        request.setAttribute("currentroot", currentRoot);
+
         RequestDispatcher rd =
                 getServletContext().getRequestDispatcher("/snapshots.jsp");
         rd.forward(request, response);
     } 
 
-    protected String doEdit(HttpServletRequest request,
+    SnapshotResult doEdit(HttpServletRequest request,
                           HttpServletResponse response,
                           WFSSnapshot snapshot)
         throws ServletException, IOException
     {
         if (snapshot == null) {
-            return "No such snapshot " + request.getParameter("snapshot");
+            return new SnapshotResult("No such snapshot " + request.getParameter("snapshot"),
+                                      null);
         }
         request.setAttribute("snapshot", snapshot);
 
-        RequestDispatcher rd =
-                getServletContext().getRequestDispatcher("/edit.jsp");
-        rd.forward(request, response);
-        return null;
+        return new SnapshotResult(null, "/edit.jsp");
     }
 
-    protected String doUpdate(HttpServletRequest request,
-                               HttpServletResponse response,
-                               WFSSnapshot snapshot)
+    SnapshotResult doUpdate(HttpServletRequest request,
+                            HttpServletResponse response,
+                            WFSSnapshot snapshot)
         throws ServletException, IOException
     {
         if (snapshot == null) {
-            return "No such snapshot " + request.getParameter("snapshot");
+            return new SnapshotResult("No such snapshot " + request.getParameter("snapshot"),
+                                      "/edit.jsp");
         }
 
         String name = request.getParameter("name");
@@ -154,14 +174,10 @@ public class SnapshotManagerServlet extends HttpServlet
         if (!name.equals(snapshot.getName())) {
             // change the name
             String error = validName(name, snapshot);
-
-            System.out.println("Setting name to: " + name + " error: " + error);
-
             if (error != null) {
-                return error;
+                return new SnapshotResult(error, "/edit.jsp");
             }
 
-            
             snapshot.setName(name);
         }
 
@@ -172,18 +188,166 @@ public class SnapshotManagerServlet extends HttpServlet
         return null;
     }
 
-    protected String doRemove(HttpServletRequest request,
-                              HttpServletResponse response,
-                              WFSSnapshot snapshot)
+    SnapshotResult doRemove(HttpServletRequest request,
+                            HttpServletResponse response,
+                            WFSSnapshot snapshot)
         throws ServletException, IOException
     {
         if (snapshot == null) {
-            return "No such snapshot " + request.getParameter("snapshot");
+            return new SnapshotResult("No such snapshot " + request.getParameter("snapshot"),
+                                      null);
         }
 
         WFSManager.getWFSManager().removeWFSSnapshot(snapshot.getName());
+        return null;
+    }
+
+    SnapshotResult doSnapshot(HttpServletRequest request,
+                              HttpServletResponse response)
+        throws ServletException, IOException
+    {
+        // get the name from the request
+        String name = request.getParameter("name");
+        if (name == null) {
+            // use a default name based on the current data
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            name = df.format(new Date());
+        }
+
+        // find out whether we can stop the server
+        boolean stop = false;
+        String stopStr = request.getParameter("stop");
+        if (stopStr != null) {
+            stop = Boolean.parseBoolean(stopStr);
+        }
+
+        DarkstarRunner runner = getRunner();
+        if (runner == null) {
+            return new SnapshotResult("No Darkstar servers available", null);
+        }
+
+        // TODO: deal with multiple runners
+        if (runner.getStatus() != Status.NOT_RUNNING) {
+            if (stop) {
+                // stop the runner, and wait for it to stop
+                runner.stop();
+                StatusWaiter waiter = new StatusWaiter(runner);
+                try {
+                    waiter.waitFor(Status.NOT_RUNNING);
+                } catch (InterruptedException ie) {
+                    // ignore
+                }
+            } else {
+                // forward to the confim page
+                request.setAttribute("prompt", "The Darkstar server must " + 
+                    "be stopped to perform this action");
+                request.setAttribute("url", "?action=snapshot&stop=true");
+                return new SnapshotResult(null, "/confirm.jsp");
+            }
+        }
+
+        try {
+            runner.createSnapshot(name);
+        } catch (RunnerException re) {
+            throw new ServletException(re);
+        }
 
         return null;
+    }
+
+    SnapshotResult doCurrentWorld(HttpServletRequest request,
+                                  HttpServletResponse response)
+        throws ServletException, IOException
+    {
+        String worldName = request.getParameter("world");
+        if (worldName == null) {
+            return new SnapshotResult("No world name specified", null);
+        }
+
+        DarkstarRunner runner = getRunner();
+        if (runner == null) {
+            return new SnapshotResult("No Darkstar runner found", null);
+        }
+
+        if (worldName.equalsIgnoreCase(EMPTY_WORLD.getName())) {
+            runner.setWFSName(null);
+            return null;
+        }
+
+        // find the root
+        WFSRoot root = WFSManager.getWFSManager().getWFSRoot(worldName);
+        if (root == null) {
+            return new SnapshotResult("No root named " + worldName, null);
+        }
+
+        runner.setWFSName(root.getRootPath());
+        return null;
+    }
+
+    SnapshotResult doCurrentSnapshot(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     WFSSnapshot snapshot)
+        throws ServletException, IOException
+    {
+        if (snapshot == null) {
+            return new SnapshotResult("Snapshot not found", null);
+        }
+
+        DarkstarRunner runner = getRunner();
+        if (runner == null) {
+            return new SnapshotResult("No Darkstar runner found", null);
+        }
+        
+        runner.setWFSName(snapshot.getRootPath());
+        return null;
+    }
+
+    /**
+     * Get the current WFS snapshot
+     * @return the current snapshot
+     */
+    protected WFSRoot getCurrentRoot(List<WFSRoot> roots,
+                                         List<WFSSnapshot> snapshots)
+    {
+        DarkstarRunner dr = getRunner();
+        if (dr == null) {
+            return null;
+        }
+
+        if (dr.getWFSName() == null) {
+            return EMPTY_WORLD;
+        }
+
+        for (WFSRoot root : roots) {
+            if (root.getRootPath().equals(dr.getWFSName())) {
+                return root;
+            }
+        }
+
+        for (WFSRoot root : snapshots) {
+            if (root.getRootPath().equals(dr.getWFSName())) {
+                return root;
+            }
+        }
+
+        // not found
+        return null;
+    }
+
+    /**
+     * Get a Darkstar runner.  For now, this returns the first valid
+     * runner.
+     * XXX TODO: Deal with multiple runners XXX
+     * @return the runner, or null if no Darkstar runner exists
+     */
+    protected DarkstarRunner getRunner() {
+        Collection<DarkstarRunner> runners =
+                RunManager.getInstance().getAll(DarkstarRunner.class);
+        if (runners.isEmpty()) {
+            return null;
+        }
+
+        return runners.iterator().next();
     }
 
     /**
@@ -248,5 +412,48 @@ public class SnapshotManagerServlet extends HttpServlet
     public void contextDestroyed(ServletContextEvent sce) {
         // unregister
         AdminRegistration.unregister(reg, sce.getServletContext());
+    }
+
+    class SnapshotResult {
+        private String error;
+        private String redirect;
+
+        SnapshotResult(String error, String redirect) {
+            this.error = error;
+            this.redirect = redirect;
+        }
+
+        boolean hasError() {
+            return error != null;
+        }
+
+        String getError() {
+            return error;
+        }
+
+        boolean hasRedirect() {
+            return redirect != null;
+        }
+
+        String getRedirect() {
+            return redirect;
+        }
+    }
+
+    static class EmptyWorld extends WFSRoot {
+        @Override
+        public String getName() {
+            return "Empty World";
+        }
+
+        @Override
+        public String getRootPath() {
+            return "none";
+        }
+
+        @Override
+        public WFS getWfs() {
+            return null;
+        }
     }
 }
