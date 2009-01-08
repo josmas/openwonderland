@@ -178,18 +178,19 @@ public class SimpleAvatarControls extends ProcessorComponent {
         synchronized(events) {
             updateRotations = false;
         
+            int onmask = MouseEvent.BUTTON3_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK;
             for (Event e : events) {
                 if (e instanceof MouseButtonEvent3D) {
                     MouseButtonEvent3D mbe = (MouseButtonEvent3D)e;
                     MouseEvent awt = (MouseEvent) mbe.getAwtEvent();
-                    if (awt.getID()== MouseEvent.MOUSE_PRESSED && (awt.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {
+                    if (awt.getID()== MouseEvent.MOUSE_PRESSED && (awt.getModifiersEx() & onmask)==onmask ) {
                         lastMouseX = awt.getX();
                         lastMouseY = awt.getY();
                     }
                 } else if (e instanceof MouseDraggedEvent3D) {
                     MouseEvent3D me = (MouseEvent3D)e;
                     MouseEvent awtMe = (MouseEvent)me.getAwtEvent();
-                    if (awtMe.getID() == MouseEvent.MOUSE_DRAGGED && (awtMe.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {
+                    if (awtMe.getID() == MouseEvent.MOUSE_DRAGGED && (awtMe.getModifiersEx() & onmask)==onmask ) {
                         processRotations(me);
                         updateRotations = true;
                     }
