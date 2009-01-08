@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ActivatedEvent;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
+import javax.media.opengl.GLContext;
 
 
 /**
@@ -226,6 +228,22 @@ public class ContextMenu implements ActionListener {
         }
     }
 
+    // We need to call this method reflectively because it isn't available in Java 5
+    // BTW: we don't support Java 5 on Linux, so this is okay.
+    private static boolean isLinux = System.getProperty("os.name").equals("Linux");
+    private static Method isAWTLockHeldByCurrentThreadMethod;
+    static {
+        if (isLinux) {
+            try {
+                Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
+                isAWTLockHeldByCurrentThreadMethod =
+                    awtToolkitClass.getMethod("isAWTLockHeldByCurrentThread");
+            } catch (ClassNotFoundException ex) {
+            } catch (NoSuchMethodException ex) {
+            }
+        }
+    }
+
 
     /**
      * Inner class that listeners for context and selection events
@@ -243,13 +261,39 @@ public class ContextMenu implements ActionListener {
         
         @Override
         public void commitEvent(Event event) {
-            if (event instanceof ActivatedEvent || event instanceof SelectionEvent) {
-                hideContextMenu();
+            // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
+            // In order to avoid deadlock with any threads which are already holding the AWT lock and which
+            // want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
+            // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
+            // the AWT lock afterward.
+            GLContext glContext = null;
+            if (isAWTLockHeldByCurrentThreadMethod != null) {
+                try {
+                    Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
+                    if (ret.booleanValue()) {
+                        glContext = GLContext.getCurrent();
+                        glContext.release();
+                    }
+                } catch (Exception ex) {}
             }
-            else if (event instanceof ContextEvent) {
-                // Show the context menu
-                ContextEvent ce = (ContextEvent)event;
-                showContextMenu(ce.getMouseEvent(), ce.getEntityList());
+
+            // Go ahead and either close the context menu or show the context
+            // menu. We reacquire the lock afterwards
+            try {
+                if (event instanceof ActivatedEvent || event instanceof SelectionEvent) {
+                    hideContextMenu();
+                }
+                else if (event instanceof ContextEvent) {
+                    // Show the context menu
+                    ContextEvent ce = (ContextEvent) event;
+                    showContextMenu(ce.getMouseEvent(), ce.getEntityList());
+                }
+            }
+            finally {
+                // Linux-specific workaround: Reacquire the lock if necessary.
+                if (glContext != null) {
+                    glContext.makeCurrent();
+                }
             }
         }
     }
