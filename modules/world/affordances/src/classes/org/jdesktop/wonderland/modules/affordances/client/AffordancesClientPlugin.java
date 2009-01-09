@@ -55,10 +55,10 @@ public class AffordancesClientPlugin implements ClientPlugin {
         public void entityContextPerformed(ContextMenuEvent event) {
             // Fetch the Entity associated with the event. If there is none,
             // then ignore the event quietly.
-            Entity entity = event.getEntityList().get(0);
-            if (entity == null) {
+            if (event.getEntityList() == null && event.getEntityList().size() == 0) {
                 return;
             }
+            Entity entity = event.getEntityList().get(0);
 
             // Fetch the cell associated with the entity. If null, then ignore
             // quietly.
@@ -67,11 +67,12 @@ public class AffordancesClientPlugin implements ClientPlugin {
                 return;
             }
 
-            // Otherwise, attach a translate affordance to the cell
+            // Otherwise, attach a translate affordance to the cell. If we can
+            // then also listen for the Esc key to dismiss the affordance.
             TranslateAffordance affordance = TranslateAffordance.addToCell(cell);
-
-            // Register a listener for the Esc key to dismiss the affordance
-            InputManager.inputManager().addGlobalEventListener(new KeyListener(affordance));
+            if (affordance != null) {
+                InputManager.inputManager().addGlobalEventListener(new KeyListener(affordance));
+            }
         }
     }
 
