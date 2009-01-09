@@ -23,7 +23,6 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
-import org.jdesktop.wonderland.client.scenemanager.SceneManagerPolicy;
 
 /**
  * Implements a simple selection policy based upon the JME input mechanism.
@@ -97,7 +96,8 @@ public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
         // Entity.
         if (event instanceof MouseButtonEvent3D) {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-            return mbe.isPressed() == true && mbe.getButton() == ButtonId.BUTTON3;
+            return mbe.isPressed() == true && mbe.getButton() == ButtonId.BUTTON3 &&
+                    mbe.getAwtEvent().isShiftDown() == false;
         }
         return false;
     }
