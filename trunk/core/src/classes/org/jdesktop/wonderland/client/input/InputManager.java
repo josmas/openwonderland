@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.input;
 
+import com.jme.math.Ray;
 import java.awt.Canvas;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
@@ -558,4 +559,15 @@ public abstract class InputManager
      * FOR APP BASE ONLY.
      */
     public static class WindowSwingMarker extends EntityComponent {}
+
+    /**
+     * Calculate a pick ray from the current eye position into the given
+     * point in screen coordinates.
+     */
+    public Ray pickRayWorld (int x, int y) {
+	if (inputPicker == null) {
+	    return null;
+	}
+	return inputPicker.calcPickRayWorld(x, y);
+    }
 }

@@ -21,10 +21,10 @@ import com.jme.bounding.BoundingBox;
 import com.jme.image.Image;
 import com.jme.image.Texture;
 import com.jme.math.Matrix4f;
+import com.jme.math.Ray;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import java.awt.Button;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -44,14 +44,13 @@ import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.EntityComponent;
-import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseWheelEvent3D;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A view onto a window which exists in the 3D world.
@@ -488,14 +487,16 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	public abstract void updateTexture ();
 
 	/**
-	 * Transform the given 3D point in local coordinates into the corresponding point
+	 * Transform the given 3D point in world coordinates into the corresponding point
 	 * in the texel space of the geometry. The given point must be in the plane of the window.
+	 * <br><br>
+	 * Note: works when called with both a vector or a point.
 	 * @param point The point to transform.
 	 * @param clamp If true return the last position if the argument point is null or the resulting
 	 * position is outside of the geometry's rectangle. Otherwise, return null if these conditions hold.
 	 * @return the 2D position of the pixel space the window's image.
 	 */
-	public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp) {
+	public Point calcWorldPositionInPixelCoordinates (Vector3f point, boolean clamp) {
 	    if (point == null) {
 		if (clamp) {
 		    return lastPosition;
@@ -575,6 +576,109 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	 * Returns the texture state.
 	 */
 	public abstract TextureState getTextureState ();
+
+	/**
+	 * Given a point in the pixel space of the Wonderland canvas calculates 
+	 * the texel coordinates of the point on the geometry where a
+	 * ray starting from the current eye position intersects the geometry.
+	 * 
+	 * Note on subclassing: 
+	 *
+	 * If the geometry is nonplanar it is recommended that the subclass 
+	 * implement this method by performing a pick. If this pick misses the
+	 * subclass will need to decide how to handle the miss. One possible way to 
+	 * handle this is to assume that there is a planar "halo" surrounding the 
+	 * the window with which the ray can be intersected.
+	 */
+	protected Point calcIntersectionPixelOfEyeRay (int x, int y) {
+
+	    // Calculate the ray
+	    Ray rayWorld = InputManager3D.getInputManager().pickRayWorld(x, y);
+
+	    // Calculate an arbitrary point on the plane (in this case, the top left corner)
+	    Vector3f topLeftLocal = new Vector3f( -width/2f, height/2f, 0f);
+	    Matrix4f local2World = getLocalToWorldMatrix(null); 
+	    Vector3f topLeftWorld = local2World.mult(topLeftLocal, new Vector3f()); 
+	    
+	    // Calculate the plane normal
+	    Vector3f planeNormalWorld = getPlaneNormalWorld();
+
+	    // Now find the intersection of the ray with the plane
+	    Vector3f intPointWorld = calcPlanarIntersection(rayWorld, topLeftWorld, planeNormalWorld);
+	    if (intPointWorld == null) {
+		return null;
+	    }
+
+	    // TODO: opt: we can optimize the following by reusing some of the intermediate
+	    // results from the previous steps
+	    Point pt = calcWorldPositionInPixelCoordinates (intPointWorld, false);
+	    return pt;
+	}
+
+	/**
+	 * Returns the plane normal of the window in world coordinates.
+	 */
+	protected Vector3f getPlaneNormalWorld () {
+	    // Find two vectors on the plane and take the cross product and then normalize
+	    
+	    Vector3f topLeftLocal = new Vector3f( -width/2f, height/2f, 0f);
+	    Vector3f topRightLocal = new Vector3f( width/2f, height/2f, 0f);
+	    Vector3f bottomLeftLocal = new Vector3f( -width/2f, -height/2f, 0f);
+	    Vector3f bottomRightLocal = new Vector3f( width/2f, -height/2f, 0f);
+	    logger.fine("topLeftLocal = " + topLeftLocal);
+	    logger.fine("topRightLocal = " + topRightLocal);
+	    logger.fine("bottomLeftLocal = " + bottomLeftLocal);
+	    logger.fine("bottomRightLocal = " + bottomRightLocal);
+	    Matrix4f local2World = getLocalToWorldMatrix(null); // TODO: prealloc
+	    Vector3f topLeftWorld = local2World.mult(topLeftLocal, new Vector3f()); // TODO:prealloc
+	    Vector3f topRightWorld = local2World.mult(topRightLocal, new Vector3f()); // TODO:prealloc
+	    Vector3f bottomLeftWorld = local2World.mult(bottomLeftLocal, new Vector3f()); // TODO:prealloc
+	    Vector3f bottomRightWorld = local2World.mult(bottomRightLocal, new Vector3f()); // TODO:prealloc
+
+	    Vector3f leftVec = bottomLeftWorld.subtract(topLeftWorld);
+	    Vector3f topVec = topRightWorld.subtract(topLeftWorld);
+	    return leftVec.cross(topVec).normalize();
+	}
+
+	/**
+	 * Calculates the point in world coordinates where the given ray
+	 * intersects the "world plane" of this geometry. All inputs are 
+	 * in world coordinates. Returns null if the ray doesn't intersect the plane.
+	 *
+	 * @param ray The ray.
+	 * @param planePoint A point on the plane.
+	 * @param planeNormal The plane normal vector.
+	 */
+	protected Vector3f calcPlanarIntersection (Ray ray, 
+				  Vector3f planePoint, Vector3f planeNormal) {
+
+	    // Uses the following formula:
+	    //
+	    // t = (planeNormal dot (planePointWorld – rayStart)) / (planeNormal dot rayVectorWorld)
+	    //
+	    // Then use the parameter t in the line equation P = P0 + t * rayDirection to calculate
+	    // the intersection point P.
+	    //
+	    // Source: http://www.thepolygoners.com/tutorials/lineplane/lineplane.html
+
+	    // First calculate planeNormal dot rayDirection
+	    float denominator = planeNormal.dot(ray.getDirection());
+	    if (denominator == 0f) {
+		// No intersection
+		return null;
+	    }
+
+	    // Now calculate the numerator 
+	    Vector3f vecTmp = planePoint.subtract(ray.getOrigin(), new Vector3f());
+	    float numerator = planeNormal.dot(vecTmp);
+
+	    // Now calculate t
+	    float t = numerator / denominator;
+
+	    // Now plug t into the ray equation P = P0 + t * rayDirection
+	    Vector3f p = ray.getDirection().mult(t).add(ray.getOrigin());
+	    return p;
+	}							  
     }
 
     /** 
@@ -719,7 +823,15 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      */
     public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp) {
 	if (geometryObj == null) return null;
-	return geometryObj.calcPositionInPixelCoordinates(point, clamp);
+	return geometryObj.calcWorldPositionInPixelCoordinates(point, clamp);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Point calcIntersectionPixelOfEyeRay (int x, int y) {
+	if (geometryObj == null) return null;
+	return geometryObj.calcIntersectionPixelOfEyeRay(x, y);
     }
 
     /**
@@ -785,9 +897,9 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 	Point point;
 	if (me3d.getID() == MouseEvent.MOUSE_DRAGGED) {
 	    MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) me3d;
-	    point = geometryObj.calcPositionInPixelCoordinates(de3d.getHitIntersectionPointWorld(), true);
+	    point = geometryObj.calcWorldPositionInPixelCoordinates(de3d.getHitIntersectionPointWorld(), true);
 	} else {
-	    point = geometryObj.calcPositionInPixelCoordinates(me3d.getIntersectionPointWorld(), false);
+	    point = geometryObj.calcWorldPositionInPixelCoordinates(me3d.getIntersectionPointWorld(), false);
 	}
 	if (point == null) {
             // Event was outside our panel so do nothing

@@ -32,6 +32,7 @@ import com.jme.math.Vector3f;
 import java.awt.Canvas;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
@@ -42,7 +43,6 @@ import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingMarker;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 
@@ -296,5 +296,15 @@ public class WindowSwing extends WindowGraphics2D {
      */
     public boolean getInputEnabled () {
 	return inputEnabled;
+    }
+
+    public Point calcWorldPositionInPixelCoordinates (Point2D src, MouseEvent event, 
+						      Vector3f intersectionPointWorld,
+						      Point lastPressPointScreen) { 
+	if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
+	    return viewWorld.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
+	} else {
+	    return calcWorldPositionInPixelCoordinates(intersectionPointWorld, true);
+	}
     }
 }

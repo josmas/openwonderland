@@ -28,6 +28,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DViewWorld;
 
+// TODO: delete
+import java.awt.event.MouseEvent;
+
 /**
  * A view onto a window which exists in the 3D world.
  *
@@ -168,6 +171,13 @@ public class Window2DViewNull extends Window2DView implements Window2DViewWorld 
      * {@inheritDoc}
      */
     public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp) {
+	return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Point calcIntersectionPixelOfEyeRay (int x, int y) {
 	return null;
     }
 

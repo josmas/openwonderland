@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import com.jme.math.Vector3f;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 
@@ -102,6 +103,13 @@ public interface Window2DViewWorld {
      * @return the 2D position of the pixel space the window's image.
      */
     public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp);
+
+    /**
+     * Given a point in the pixel space of the Wonderland canvas calculates 
+     * the texel coordinates of the point on the geometry  where a
+     * ray starting from the current eye position intersects the geometry.
+     */
+    public Point calcIntersectionPixelOfEyeRay (int x, int y);
 
     /**
      * Add an event listener to this view.
