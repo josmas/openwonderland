@@ -59,7 +59,6 @@ public class AffordanceTestCellMO extends CellMO {
         this.shape = shape;
         this.materialJME = materialJME;
 
-        addComponent(new ChannelComponentMO(this));
         addComponent(new MovableComponentMO(this));
     }
     

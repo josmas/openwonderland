@@ -19,9 +19,7 @@ package org.jdesktop.wonderland.modules.simplewhiteboard.server;
 
 import com.jme.math.Vector2f;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
-import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -36,9 +34,9 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoun
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellConfig;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
@@ -47,33 +45,28 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
  *
  * @author nsimpson,deronj
  */
-
 @ExperimentalAPI
 public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
 
     private static final Logger logger = Logger.getLogger(WhiteboardCellMO.class.getName());
-    
     // The messages list contains the current state of the whiteboard.
     // It's updated every time a client makes a change to the whiteboard
     // so that when new clients join, they receive the current state
     private static LinkedList<WhiteboardCompoundCellMessage> messages;
     private static WhiteboardCompoundCellMessage lastMessage;
-    
     /** The communications component used to broadcast to all clients */
     private ManagedReference<WhiteboardComponentMO> commComponentRef = null;
-
     /** The preferred width (from the WFS file) */
     private int preferredWidth;
-
     /** The preferred height (from the WFS file) */
     private int preferredHeight;
 
     /** Default constructor, used when the cell is created via WFS */
     public WhiteboardCellMO() {
         super();
-        addComponent(new ChannelComponentMO(this));
-	WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
-        commComponentRef = AppContext.getDataManager().createReference(commComponent); 
+        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
+        commComponentRef = AppContext.getDataManager().createReference(commComponent);
         addComponent(commComponent);
         messages = new LinkedList<WhiteboardCompoundCellMessage>();
     }
@@ -89,18 +82,18 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
     /** 
      * {@inheritDoc}
      */
-    public AppTypeMO getAppType () {
-	return new WhiteboardAppTypeMO();
+    public AppTypeMO getAppType() {
+        return new WhiteboardAppTypeMO();
     }
 
     /** 
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
-	WhiteboardCellConfig config = new WhiteboardCellConfig(pixelScale);
-	config.setPreferredWidth(preferredWidth);
-	config.setPreferredHeight(preferredHeight);
+    protected CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+        WhiteboardCellConfig config = new WhiteboardCellConfig(pixelScale);
+        config.setPreferredWidth(preferredWidth);
+        config.setPreferredHeight(preferredHeight);
         return config;
     }
 
@@ -109,12 +102,12 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      */
     @Override
     public void setupCell(BasicCellSetup setupData) {
-	super.setupCell(setupData);
+        super.setupCell(setupData);
 
-	WhiteboardCellSetup setup = (WhiteboardCellSetup) setupData;
-	preferredWidth = setup.getPreferredWidth();
-	preferredHeight = setup.getPreferredHeight();
-	pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
+        WhiteboardCellSetup setup = (WhiteboardCellSetup) setupData;
+        preferredWidth = setup.getPreferredWidth();
+        preferredHeight = setup.getPreferredHeight();
+        pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
     }
 
     /**
@@ -138,25 +131,25 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * @param commComponent The communications component that received the message.
      */
     public void receivedMessage(WonderlandClientSender clientSender, WonderlandClientID clientID, CellMessage message) {
-        WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
+        WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage) message;
         logger.fine("received whiteboard message: " + cmsg);
 
-	WhiteboardComponentMO commComponent = commComponentRef.getForUpdate();
+        WhiteboardComponentMO commComponent = commComponentRef.getForUpdate();
 
         if (cmsg.getAction() == Action.REQUEST_SYNC) {
             logger.fine("sending " + messages.size() + " whiteboard sync messages");
             Iterator<WhiteboardCompoundCellMessage> iter = messages.iterator();
-            
+
             while (iter.hasNext()) {
                 WhiteboardCompoundCellMessage msg = iter.next();
-		clientSender.send(clientID, msg);
+                clientSender.send(clientID, msg);
             }
         } else {
 
-	    // Create the copy of the message to be broadcast to clients
-            WhiteboardCompoundCellMessage msg = new WhiteboardCompoundCellMessage(cmsg.getClientID(), 
-										  cmsg.getCellID(),
-										  cmsg.getAction());
+            // Create the copy of the message to be broadcast to clients
+            WhiteboardCompoundCellMessage msg = new WhiteboardCompoundCellMessage(cmsg.getClientID(),
+                    cmsg.getCellID(),
+                    cmsg.getAction());
             switch (cmsg.getAction()) {
                 case SET_TOOL:
                     // tool
@@ -178,7 +171,7 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
                     msg.setCommand(cmsg.getCommand());
                     break;
             }
-            
+
             // record the message in setup data (move events are not recorded)
             if (cmsg.getAction() == Action.EXECUTE_COMMAND) {
                 if (cmsg.getCommand() == Command.ERASE) {
@@ -189,19 +182,19 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
             } else {
                 if (cmsg.getAction() != Action.MOVE_TO) {
                     if ((lastMessage != null) &&
-			lastMessage.getAction() == Action.MOVE_TO) {
+                            lastMessage.getAction() == Action.MOVE_TO) {
                         messages.add(lastMessage);
                     }
 
-		    // Must guarantee that the original sender doesn't ignore this when it is played back during a sync
-		    cmsg.setClientID(null);
+                    // Must guarantee that the original sender doesn't ignore this when it is played back during a sync
+                    cmsg.setClientID(null);
 
                     messages.add(cmsg);
                 }
             }
             lastMessage = cmsg;
 
-	    // Broadcast message to all clients (including the original sender of the message).
+            // Broadcast message to all clients (including the original sender of the message).
             commComponent.sendAllClients(clientID, msg);
         }
     }

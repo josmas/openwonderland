@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import java.util.HashMap;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.ClientConnection.Status;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -32,27 +30,12 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  * @author paulby
  */
 @ExperimentalAPI
-public class ChannelComponent extends CellComponent {
-    
-    private HashMap<Class, ComponentMessageReceiver> messageReceivers = new HashMap();
-    
-    private CellChannelConnection connection;
+public abstract class ChannelComponent extends CellComponent {
     
     public ChannelComponent(Cell cell) {
         super(cell);
-        setCellChannelConnection(cell.getCellCache().getCellChannelConnection());
     }
 
-
-    /**
-     * Notification of the CellChannelConnection to use when sending
-     * data to the server for this cell.  This method will be called 
-     * automatically at cell creation time.
-     */
-    public void setCellChannelConnection(CellChannelConnection connection) {
-        this.connection = connection;
-    }
-    
     /**
      * Register a receiver for a specific message class. Only a single receiver
      * is allowed for each message class, calling this method to add a duplicate
@@ -61,19 +44,13 @@ public class ChannelComponent extends CellComponent {
      * @param msgClass
      * @param receiver
      */
-    public void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver) {
-        Object old = messageReceivers.put(msgClass, receiver);
-        if (old!=null)
-            throw new IllegalStateException("Duplicate Message class added "+msgClass);
-    }
+    public abstract void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver);
     
     /**
      * Remove the message receiver listening on the specifed message class
      * @param msgClass
      */
-    public void removeMessageReceiver(Class<? extends CellMessage> msgClass) {
-        messageReceivers.remove(msgClass);
-    }
+    public abstract void removeMessageReceiver(Class<? extends CellMessage> msgClass);
     
     /**
      * Dispatch messages to any receivers registered for the particular message class
@@ -81,36 +58,25 @@ public class ChannelComponent extends CellComponent {
      * @param session
      * @param message
      */
-    public void messageReceived(CellMessage message ) {
-//        System.out.println("Receved "+message);
-        ComponentMessageReceiver recvRef = messageReceivers.get(message.getClass());
-        if (recvRef==null) {
-            Logger.getAnonymousLogger().warning("No listener for message "+message.getClass()+"  from cell "+cell.getClass().getName());
-           
-            return;
-        }
-        
-        recvRef.messageReceived(message);
-    }
+    abstract void messageReceived(CellMessage message );
     
-    public Status getStatus() {
-        return connection.getStatus();
-    }
+    public abstract Status getStatus();
     
-    public void send(CellMessage message, ResponseListener listener) {
-        if (message.getCellID() == null) {
-            message.setCellID(cell.getCellID());
-        }
-        connection.send(message, listener);
-    }
+    public abstract void send(CellMessage message, ResponseListener listener);
     
-    public void send(CellMessage message) {
-        if (message.getCellID() == null) {
-            message.setCellID(cell.getCellID());
-        }
-        connection.send(message);
-    }
+    public abstract void send(CellMessage message);
     
+    /**
+     * Return the class used to reference this component. Usually this will return
+     * the class of the component, but in some cases, such as the ChannelComponent
+     * subclasses of ChannelComponent will return their parents class
+     * @return
+     */
+    @Override
+    protected Class getLookupClass() {
+        return ChannelComponent.class;
+    }
+
     // TODO various send methods required, cell to server, cell to cell, cell to channel
     // Not sure these need to be defined in this interface, implementors should have
     // the choice of which send messages to implement and expose (if any) in a cell.

@@ -373,6 +373,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
                 localBounds = new BoundingSphere(1f, new Vector3f());
             }
 
+            createChannelComponent();
             addToUniverse(UniverseManagerFactory.getUniverseManager());
         } else {
             removeFromUniverse(UniverseManagerFactory.getUniverseManager());
@@ -388,6 +389,25 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
             CellMO child = ref.get();
             child.setLive(live);
+        }
+    }
+
+    /**
+     * Create the channel component for this cell. All cells have a channel component, but by
+     * default only root cells actually open a channel. Child cells of a root will use
+     * the roots channel. This is hidden from the user as they always access the common
+     * ChannelComponentMO api
+     */
+    private void createChannelComponent() {
+        if (getComponent(ChannelComponentMO.class)!=null)
+            return;
+
+        if (parentRef==null) {
+            // Root node
+            addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        } else {
+            // Not a root node
+            addComponent(new ChannelComponentRefMO(this), ChannelComponentMO.class);
         }
     }
 
@@ -497,12 +517,25 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
     
     /**
      * Get the cellconfig for this cell. Subclasses should overload to
-     * return their specific setup object.
+     * return their specific setup object. The cellConfig is the object sent
+     * to each client to create and initialize the clients instance of this cell.
      */
     protected CellConfig getCellConfig(WonderlandClientID clientID,
-                                       ClientCapabilities capabilities)
-    {
-        return null;
+                                       ClientCapabilities capabilities) {
+        CellConfig ret = new CellConfig();
+        populateCellConfig(ret);
+        return ret;
+    }
+
+    protected void populateCellConfig(CellConfig config) {
+        System.err.println("CellConfig for "+cellID);
+        Iterable<ManagedReference<CellComponentMO>> compReferences = components.values();
+        for(ManagedReference<CellComponentMO> ref : compReferences) {
+            String clientClass = ref.get().getClientClass();
+            System.err.println(clientClass);
+            if (clientClass!=null)
+                config.addClientComponentClasses(clientClass);
+        }
     }
     
     /**

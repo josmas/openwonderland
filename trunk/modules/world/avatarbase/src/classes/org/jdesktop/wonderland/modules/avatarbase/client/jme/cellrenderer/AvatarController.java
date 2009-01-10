@@ -62,8 +62,8 @@ public class AvatarController extends NinjaController {
         }
     }
 
-    void selectForInput() {
-        selectedForInput = true;
+    void selectForInput(boolean selected) {
+        selectedForInput = selected;
     }
 
     void cellTransformUpdate(CellTransform transform) {

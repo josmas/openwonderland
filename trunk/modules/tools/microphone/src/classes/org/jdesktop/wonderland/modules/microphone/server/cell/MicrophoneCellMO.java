@@ -78,6 +78,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -87,50 +88,48 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
 
     private static final Logger logger =
-        Logger.getLogger(MicrophoneCellMO.class.getName());
-     
-    private String modelFileName;    
-    
+            Logger.getLogger(MicrophoneCellMO.class.getName());
+    private String modelFileName;
     private boolean initialized = false;
 
     public MicrophoneCellMO() {
-	if (initialized == false) {
-	    addComponent(new ChannelComponentMO(this));
-	}
+        if (initialized == false) {
+            addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        }
     }
-    
-    public MicrophoneCellMO(Vector3f center, float size) {
-        super(new BoundingBox(new Vector3f(), size, size, size), 
-	    new CellTransform(null, center));
 
-	if (initialized == false) {
-	    addComponent(new ChannelComponentMO(this));
-	}
+    public MicrophoneCellMO(Vector3f center, float size) {
+        super(new BoundingBox(new Vector3f(), size, size, size),
+                new CellTransform(null, center));
+
+        if (initialized == false) {
+            addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        }
     }
 
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
+            ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.microphone.client.cell.MicrophoneCell";
     }
 
     @Override
     public CellConfig getCellConfig(WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
+            ClientCapabilities capabilities) {
 
         MicrophoneCellConfig config = new MicrophoneCellConfig();
 
-	config.addClientComponentClasses(new String[] {
-              "org.jdesktop.wonderland.client.cell.ChannelComponent"
-        });
+        config.addClientComponentClasses(new String[]{
+                    "org.jdesktop.wonderland.client.cell.ChannelComponent"
+                });
 
-	if (initialized == false) {
-	    initialized = true;
-	    new MicrophoneMessageHandler(this, config.getName());
-	}
+        if (initialized == false) {
+            initialized = true;
+            new MicrophoneMessageHandler(this, config.getName());
+        }
 
-	return config;
+        return config;
     }
 
     @Override
@@ -144,7 +143,7 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
         setupCell(setup);
     }
 
-     /**
+    /**
      * Return a new BasicCellSetup Java bean class that represents the current
      * state of the cell.
      *
@@ -169,7 +168,6 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
             setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
         }
 
-	return setup;
+        return setup;
     }
-
 }

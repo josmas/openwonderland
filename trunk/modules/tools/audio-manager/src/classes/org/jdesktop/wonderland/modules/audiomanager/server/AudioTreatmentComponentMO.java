@@ -17,15 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.scene.shape.Quad;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.Task;
-import com.sun.sgs.app.TaskManager;
 
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -33,24 +27,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
-import org.jdesktop.wonderland.server.TimeManager;
-import org.jdesktop.wonderland.server.WonderlandContext;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -67,12 +52,9 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentCompone
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
 
 import com.sun.voip.client.connector.CallStatus;
-import com.sun.voip.client.connector.CallStatusListener;
 
-import com.sun.voip.CallParticipant;
 
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
-import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
@@ -86,21 +68,18 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentComponentMO.class.getName());
-
     private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
-
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
-    
     private String groupId;
     private String[] treatments;
     private double x;
     private double y;
     private double z;
-
     private static String serverURL;
 
+
     static {
-	serverURL = System.getProperty("wonderland.web.server.url");
+        serverURL = System.getProperty("wonderland.web.server.url");
     }
 
     /**
@@ -110,164 +89,166 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
      */
     public AudioTreatmentComponentMO(CellMO cell) {
         super(cell);
-        
-        ChannelComponentMO channelComponent = (ChannelComponentMO) 
-	    cell.getComponent(ChannelComponentMO.class);
+
+        ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
 
         if (channelComponent == null) {
             logger.warning("Cell does not have a ChannelComponent");
-	    return;
-	}
+            return;
+        }
 
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
-                
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
+
         channelComponent.addMessageReceiver(AudioTreatmentMessage.class, new ComponentMessageReceiverImpl(this));
     }
-    
+
     @Override
     public void setupCellComponent(CellComponentSetup setup) {
-	AudioTreatmentComponentSetup accs = (AudioTreatmentComponentSetup) setup;
+        AudioTreatmentComponentSetup accs = (AudioTreatmentComponentSetup) setup;
 
-	treatments = accs.getTreatments();
+        treatments = accs.getTreatments();
 
-	groupId = accs.getGroupId();
+        groupId = accs.getGroupId();
     }
 
     @Override
     public CellComponentSetup getCellComponentSetup(CellComponentSetup setup) {
-       if (setup == null) {
-           setup = new AudioTreatmentComponentSetup();
-       }
+        if (setup == null) {
+            setup = new AudioTreatmentComponentSetup();
+        }
 
-       ((AudioTreatmentComponentSetup) setup).setGroupId(groupId);
-       ((AudioTreatmentComponentSetup) setup).treatments = treatments;
+        ((AudioTreatmentComponentSetup) setup).setGroupId(groupId);
+        ((AudioTreatmentComponentSetup) setup).treatments = treatments;
 
-       return setup;
+        return setup;
     }
 
     @Override
     public void setLive(boolean live) {
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	TreatmentGroup group = vm.createTreatmentGroup(groupId);
+        TreatmentGroup group = vm.createTreatmentGroup(groupId);
 
-	for (int i = 0; i < treatments.length; i++) {
-	    TreatmentSetup setup = new TreatmentSetup();
+        for (int i = 0; i < treatments.length; i++) {
+            TreatmentSetup setup = new TreatmentSetup();
 
-	    String treatment = treatments[i];
+            String treatment = treatments[i];
 
-	    logger.fine("Processing " + treatment);
+            logger.fine("Processing " + treatment);
 
-	    String treatmentId = treatment;
+            String treatmentId = treatment;
 
-	    if (treatment.startsWith("wls://")) {
-		/*
-		 * We need to create a URL from wls:<module>/path
-		 */
-		treatment = treatment.substring(6);  // skip past wls://
+            if (treatment.startsWith("wls://")) {
+                /*
+                 * We need to create a URL from wls:<module>/path
+                 */
+                treatment = treatment.substring(6);  // skip past wls://
 
-		int ix = treatment.indexOf("/");
+                int ix = treatment.indexOf("/");
 
-		if (ix < 0) {
-		    logger.warning("Bad treatment:  " + treatments[i]);
-		    continue;
-		}
-		
-		String moduleName = treatment.substring(0, ix);
-		
-		String path = treatment.substring(ix + 1);
+                if (ix < 0) {
+                    logger.warning("Bad treatment:  " + treatments[i]);
+                    continue;
+                }
 
-		logger.fine("Module:  " + moduleName + " treatment " + treatment);
+                String moduleName = treatment.substring(0, ix);
 
-		treatmentId = treatment;
+                String path = treatment.substring(ix + 1);
 
-		URL url;
+                logger.fine("Module:  " + moduleName + " treatment " + treatment);
 
-		try {
-		    url = new URL(new URL(serverURL), 
-		        ASSET_PREFIX + moduleName + "/asset/get/audio/" + path);
+                treatmentId = treatment;
 
-		    treatment = url.toString();
-		    logger.fine("Treatment: " + treatment);
-		} catch (MalformedURLException e) {
-		    logger.warning("bad url:  " + e.getMessage());
-		    continue;
-		}
+                URL url;
 
-		ModuleChecksums mc = fetchAssetChecksums(serverURL, moduleName, 
-		    "audio");
+                try {
+                    url = new URL(new URL(serverURL),
+                            ASSET_PREFIX + moduleName + "/asset/get/audio/" + path);
 
-		if (mc == null) {
-		    System.out.println("ModuleChecksums is null");
-		} else {
-	            Map<String, Checksum> checksums = mc.getChecksums();
+                    treatment = url.toString();
+                    logger.fine("Treatment: " + treatment);
+                } catch (MalformedURLException e) {
+                    logger.warning("bad url:  " + e.getMessage());
+                    continue;
+                }
 
-	            Iterator<String> it = checksums.keySet().iterator();
+                ModuleChecksums mc = fetchAssetChecksums(serverURL, moduleName,
+                        "audio");
 
-		    if (it.hasNext() == false) {
-			System.out.println("There are no checksums!");
-		    } else {
-	                while (it.hasNext()) {
-			    String s = it.next();
-		            logger.fine("Checksum:  " + s + ":" + checksums.get(s).getChecksum());
-	                }
-		    }
-		}
-	    }
+                if (mc == null) {
+                    System.out.println("ModuleChecksums is null");
+                } else {
+                    Map<String, Checksum> checksums = mc.getChecksums();
 
-	    setup.treatment = treatment;
+                    Iterator<String> it = checksums.keySet().iterator();
 
-	    if (setup.treatment == null || setup.treatment.length() == 0) {
-		logger.warning("Invalid treatment '" + setup.treatment + "'");
-		continue;
-	    }
+                    if (it.hasNext() == false) {
+                        System.out.println("There are no checksums!");
+                    } else {
+                        while (it.hasNext()) {
+                            String s = it.next();
+                            logger.fine("Checksum:  " + s + ":" + checksums.get(s).getChecksum());
+                        }
+                    }
+                }
+            }
 
-	    Vector3f location = cellRef.get().getLocalTransform(null).getTranslation(null);
+            setup.treatment = treatment;
 
-	    setup.x = location.getX();
-	    setup.y = location.getY();
-	    setup.z = location.getZ();
+            if (setup.treatment == null || setup.treatment.length() == 0) {
+                logger.warning("Invalid treatment '" + setup.treatment + "'");
+                continue;
+            }
 
-	    logger.info("Starting treatment " + setup.treatment 
-		+ " at (" + setup.x + ":" + setup.y + ":" + setup.z + ")");
+            Vector3f location = cellRef.get().getLocalTransform(null).getTranslation(null);
 
-	    try {
-	        group.addTreatment(vm.createTreatment(treatmentId, setup));
-	    } catch (IOException e) {
-	        logger.warning("Unable to create treatment " + setup.treatment
-		    + e.getMessage());
-    	        return;
-	    }
-	}
+            setup.x = location.getX();
+            setup.y = location.getY();
+            setup.z = location.getZ();
+
+            logger.info("Starting treatment " + setup.treatment + " at (" + setup.x + ":" + setup.y + ":" + setup.z + ")");
+
+            try {
+                group.addTreatment(vm.createTreatment(treatmentId, setup));
+            } catch (IOException e) {
+                logger.warning("Unable to create treatment " + setup.treatment + e.getMessage());
+                return;
+            }
+        }
     }
-    
+
+    @Override
+    protected String getClientClass() {
+        return "org.jdesktop.wonderland.modules.audiomanager.client.AudioTreatmentComponent";
+    }
+
     private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
 
         private ManagedReference<AudioTreatmentComponentMO> compRef;
-        
+
         public ComponentMessageReceiverImpl(AudioTreatmentComponentMO comp) {
             compRef = AppContext.getDataManager().createReference(comp);
         }
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
-		CellMessage message) {
+                CellMessage message) {
 
             AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
 
-	    logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());    
+            logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
         }
     }
 
     public void callStatusChanged(CallStatus callStatus) {
-	String callId = callStatus.getCallId();
+        String callId = callStatus.getCallId();
 
-	switch (callStatus.getCode()) {
-	case CallStatus.ESTABLISHED:
-	    break;
+        switch (callStatus.getCode()) {
+            case CallStatus.ESTABLISHED:
+                break;
 
-	case CallStatus.TREATMENTDONE:
-	    break;
-	}
+            case CallStatus.TREATMENTDONE:
+                break;
+        }
 
     }
 
@@ -283,12 +264,12 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
      */
     public static ModuleChecksums fetchAssetChecksums(String serverURL,
             String moduleName, String assetType) {
-        
+
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             String uriPart = moduleName + "/checksums/get/" + assetType;
             URL url = new URL(new URL(serverURL), ASSET_PREFIX + uriPart);
-	    logger.fine("fetchAssetChecksums:  " + url.toString());
+            logger.fine("fetchAssetChecksums:  " + url.toString());
             return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception e) {
             /* Log an error and return null */

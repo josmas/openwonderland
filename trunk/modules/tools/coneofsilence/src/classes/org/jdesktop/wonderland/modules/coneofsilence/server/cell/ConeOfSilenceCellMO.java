@@ -78,6 +78,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -94,14 +95,14 @@ public class ConeOfSilenceCellMO extends CellMO implements BeanSetupMO {
     private boolean haveMessageHandler = false;
 
     public ConeOfSilenceCellMO() {
-	addComponent(new ChannelComponentMO(this));
+	addComponent(new ChannelComponentImplMO(this));
     }
     
     public ConeOfSilenceCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), 
 	    new CellTransform(null, center));
 
-	addComponent(new ChannelComponentMO(this));
+	addComponent(new ChannelComponentImplMO(this));
     }
 
     @Override

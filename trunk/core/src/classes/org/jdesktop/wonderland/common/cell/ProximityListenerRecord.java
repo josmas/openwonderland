@@ -34,6 +34,11 @@ public class ProximityListenerRecord {
     private BoundingVolume currentlyIn = null;
     private int currentlyInIndex = -1;
 
+    // For serialization support on server
+    public ProximityListenerRecord() {
+
+    }
+
     public ProximityListenerRecord(ProximityListenerWrapper proximityListener, BoundingVolume[] localBounds) {
         this.proximityListener = proximityListener;
         setProximityBounds(localBounds);

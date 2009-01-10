@@ -36,8 +36,11 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import imi.character.ninja.NinjaContext;
 import imi.character.ninja.NinjaContext.TriggerNames;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarInputSelector;
 
@@ -50,15 +53,81 @@ import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarInputSelector;
 public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, AvatarActionTrigger {
 
     private AvatarCharacter avatarCharacter=null;
+    private AvatarCharacter simpleAvatar = null;
+    private AvatarCharacter currentAvatar = null;
     private boolean selectedForInput = false;
+
+    private AvatarRendererChangeRequestEvent.AvatarQuality quality = AvatarRendererChangeRequestEvent.AvatarQuality.High;
+
+    private Entity rootEntity;
+    private CharacterMotionListener characterMotionListener;
+    private GameContextListener gameContextListener;
 
     public AvatarImiJME(Cell cell) {
         super(cell);
         assert(cell!=null);
+        final Cell c = cell;
+
+        characterMotionListener = new CharacterMotionListener() {
+                public void transformUpdate(Vector3f translation, PMatrix rotation) {
+                    ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation), -1, false, null);
+                }
+            };
+
+        // TODO this info will be sent to the other clients to animate the avatar
+        gameContextListener = new GameContextListener() {
+                public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation) {
+                   ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, null);
+                }
+
+            };
+
+        ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
+            private Class[] consumeClasses = new Class[] { AvatarRendererChangeRequestEvent.class };
+
+            @Override
+            public Class[] eventClassesToConsume () {
+                return consumeClasses;
+            }
+
+            @Override
+            public void computeEvent(Event evtIn) {
+                System.err.println("GOT EVENT "+evtIn);
+                boolean sel = selectedForInput;
+                if (sel)
+                    selectForInput(false);
+
+                AvatarRendererChangeRequestEvent evt  = (AvatarRendererChangeRequestEvent) evtIn;
+                rootEntity.removeEntity(currentAvatar);
+                switch(evt.getQuality()) {
+                    case High :
+                        currentAvatar = avatarCharacter;
+                        break;
+                    case Medium :
+                        currentAvatar = simpleAvatar;
+                        break;
+                    case Low :
+                        currentAvatar = simpleAvatar;
+                        break;
+                }
+
+                PMatrix origin = new PMatrix();
+                CellTransform transform = getCell().getLocalTransform();
+                origin.setTranslation(transform.getTranslation(null));
+                origin.setRotation(transform.getRotation(null));
+                currentAvatar.getModelInst().getTransform().getLocalMatrix(true).set(origin);
+
+                if (sel)
+                    selectForInput(sel);
+
+                rootEntity.addEntity(currentAvatar);
+            }
+        });
     }
 
     @Override
     protected Entity createEntity() {
+        rootEntity = new Entity("AvatarRoot");
         Entity ret = createDemoEntities(ClientContextJME.getWorldManager());
 
         RenderComponent rc = (RenderComponent) ret.getComponent(RenderComponent.class);
@@ -66,6 +135,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             addDefaultComponents(ret, rc.getSceneRoot());
         else
             logger.warning("NO RenderComponent for Avatar");
+
+//        rootEntity.addEntity(ret);
+//
+//        return rootEntity;
 
         return ret;
     }
@@ -95,6 +168,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         // TODO this will change to take the config
         avatarCharacter = new AvatarCharacter(attributes, wm);
         avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(origin);
+
+        simpleAvatar = new SimpleAvatarCharacter(new SimpleAvatarAttributes(cell), wm);
+        simpleAvatar.getModelInst().getTransform().getLocalMatrix(true).set(origin);
         
 //        try {
 //            // Now load the config
@@ -112,7 +188,21 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
 //        wm.removeEntity(avatarCharacter);
 
-        return avatarCharacter;
+        switch(quality) {
+            case High :
+                currentAvatar = avatarCharacter;
+                break;
+            case Medium :
+                currentAvatar = simpleAvatar;
+                break;
+            case Low :
+                currentAvatar = simpleAvatar;
+                break;
+            default :
+                throw new RuntimeException("Unknown avatar quality");
+        }
+
+        return currentAvatar;
     }
 
     @Override
@@ -132,30 +222,24 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     public void selectForInput(boolean selected) {
         WorldManager wm = ClientContextJME.getWorldManager();
-        ((NinjaContext)avatarCharacter.getContext()).getSteering().setEnable(false);
+        ((NinjaContext)currentAvatar.getContext()).getSteering().setEnable(false);
         NinjaControlScheme control = (NinjaControlScheme)((JSceneEventProcessor)wm.getUserData(JSceneEventProcessor.class)).setDefault(new NinjaControlScheme(avatarCharacter));
-        avatarCharacter.selectForInput();
-        control.getNinjaTeam().add(avatarCharacter);
-        ((AvatarController)avatarCharacter.getController()).selectForInput();
+        currentAvatar.selectForInput();
+        control.getNinjaTeam().add(currentAvatar);
+        ((AvatarController)currentAvatar.getController()).selectForInput(selected);
         selectedForInput = true;
 
-        // Listen for avatar movement and update the cell
-        avatarCharacter.getController().addCharacterMotionListener(new CharacterMotionListener() {
+        if (selected) {
+            // Listen for avatar movement and update the cell
+            currentAvatar.getController().addCharacterMotionListener(characterMotionListener);
 
-            public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                ((MovableAvatarComponent)cell.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation), -1, false, null);
-            }
-        });
-
-        // Listen for game context changes
-        // TODO this info will be sent to the other clients to animate the avatar
-        avatarCharacter.getContext().addGameContextListener(new GameContextListener() {
-
-            public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation) {
-                ((MovableAvatarComponent)cell.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, null);
-            }
-
-        });
+            // Listen for game context changes
+            // TODO this info will be sent to the other clients to animate the avatar
+            currentAvatar.getContext().addGameContextListener(gameContextListener);
+        } else {
+            currentAvatar.getController().removeCharacterMotionListener(characterMotionListener);
+            currentAvatar.getContext().removeGameContextListener(gameContextListener);
+        }
 
     }
 

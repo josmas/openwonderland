@@ -19,7 +19,6 @@
  */
 package org.jdesktop.wonderland.modules.orb.server.cell;
 
-import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
@@ -35,28 +34,16 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
 
 import com.sun.voip.CallParticipant;
 import com.sun.voip.client.connector.CallStatus;
 
-import java.io.IOException;
 import java.lang.String;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
@@ -68,19 +55,16 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellConfig;
 
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
-import org.jdesktop.wonderland.server.comms.CommsManager;
-import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
-import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -96,7 +80,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 
     public OrbCellMO() {
 	if (orbMessageHandlerRef == null) {
-	    addComponent(new ChannelComponentMO(this));
+	    addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
 	    //addComponent(new MovableComponentMO(this));
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
@@ -111,7 +95,7 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	logger.fine("Orb center " + center + " size " + size);
 
 	if (orbMessageHandlerRef == null) {
-	    addComponent(new ChannelComponentMO(this));
+	    addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
 
             orbMessageHandlerRef = AppContext.getDataManager().createReference(
 		new OrbMessageHandler(this, callID, simulateCalls));

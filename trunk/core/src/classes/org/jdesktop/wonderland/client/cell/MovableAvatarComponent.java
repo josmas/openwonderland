@@ -82,6 +82,11 @@ public class MovableAvatarComponent extends MovableComponent {
     }
 
     @Override
+    protected Class getLookupClass() {
+        return MovableComponent.class;
+    }
+
+    @Override
     protected void serverMoveRequest(MovableMessage msg) {
         super.serverMoveRequest(msg);
 

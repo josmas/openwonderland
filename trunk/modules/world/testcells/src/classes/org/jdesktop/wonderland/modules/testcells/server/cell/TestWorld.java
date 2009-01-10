@@ -23,6 +23,7 @@ import com.jme.renderer.ColorRGBA;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
+import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig.Shape;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.ServerPlugin;
@@ -43,6 +44,14 @@ public class TestWorld implements ServerPlugin {
             WonderlandContext.getCellManager().insertCellInWorld(new MouseSpinCellMO(new Vector3f(-8, 0, 2), 1));
 
 //            WonderlandContext.getCellManager().insertCellInWorld(new SingingTeapotCellMO(new Vector3f(-8, 0, 7), 1, new MaterialJME(ColorRGBA.green, null, null, null, 0.5f)));
+
+//            SimpleShapeCellMO s1 = new SimpleShapeCellMO(new Vector3f(5,0,5), 1f, Shape.SPHERE);
+//            SimpleShapeCellMO s2 = new SimpleShapeCellMO(new Vector3f(0,3,0), 1f, Shape.SPHERE);
+//
+//            s2.addChild(new DragTestMO(new Vector3f(2,0,0), 1));
+//            s1.addChild(s2);
+//
+//            WonderlandContext.getCellManager().insertCellInWorld(s1);
             
             WonderlandContext.getCellManager().insertCellInWorld(new DragTestMO(new Vector3f(8, 0, 2), 1));
 

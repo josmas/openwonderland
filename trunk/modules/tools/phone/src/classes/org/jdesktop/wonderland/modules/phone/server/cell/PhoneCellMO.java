@@ -19,9 +19,6 @@
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
-import org.jdesktop.wonderland.modules.phone.common.CallListing;
-import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
-
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
@@ -35,30 +32,16 @@ import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
 
 import com.sun.voip.CallParticipant;
 import com.sun.voip.client.connector.CallStatus;
 
-import java.io.IOException;
 import java.lang.String;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
@@ -78,6 +61,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -87,12 +71,9 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 public class PhoneCellMO extends CellMO implements BeanSetupMO {
 
     private static final Logger logger =
-        Logger.getLogger(PhoneCellMO.class.getName());
-     
-    private String modelFileName;    
-    
+            Logger.getLogger(PhoneCellMO.class.getName());
+    private String modelFileName;
     private final static double PRIVATE_DAMPING_COEFFICIENT = 0.5;
-    
     private boolean locked;
     private boolean simulateCalls;
     private String phoneNumber;
@@ -100,68 +81,66 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
     private String phoneLocation;
     private double zeroVolumeRadius;
     private double fullVolumeRadius;
-
     private boolean keepUnlocked = true;
-
     private int callNumber = 0;
 
     public PhoneCellMO() {
-	addComponent(new ChannelComponentMO(this));
+        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
 
-	new PhoneMessageHandler(this);
+        new PhoneMessageHandler(this);
     }
-    
+
     public PhoneCellMO(Vector3f center, float size) {
-        super(new BoundingBox(new Vector3f(), size, size, size), 
-	    new CellTransform(null, center));
+        super(new BoundingBox(new Vector3f(), size, size, size),
+                new CellTransform(null, center));
 
-	addComponent(new ChannelComponentMO(this));
+        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
 
-	new PhoneMessageHandler(this);
+        new PhoneMessageHandler(this);
     }
 
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
+            ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.phone.client.cell.PhoneCell";
     }
 
     @Override
     public CellConfig getCellConfig(WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
+            ClientCapabilities capabilities) {
 
         PhoneCellConfig config = new PhoneCellConfig();
 
-	config.setLocked(locked);
-	config.setSimulateCalls(simulateCalls);
-	config.setPhoneNumber(phoneNumber);
-	config.setPassword(password);
-	config.setPhoneLocation(phoneLocation);
-	config.setZeroVolumeRadius(zeroVolumeRadius);
-	config.setFullVolumeRadius(fullVolumeRadius);
+        config.setLocked(locked);
+        config.setSimulateCalls(simulateCalls);
+        config.setPhoneNumber(phoneNumber);
+        config.setPassword(password);
+        config.setPhoneLocation(phoneLocation);
+        config.setZeroVolumeRadius(zeroVolumeRadius);
+        config.setFullVolumeRadius(fullVolumeRadius);
 
         //CellConfig ret = super.getCellConfig(clientSession, capabilities);
 
-	config.addClientComponentClasses(new String[] {
-              "org.jdesktop.wonderland.client.cell.ChannelComponent"
-        });
+        config.addClientComponentClasses(new String[]{
+                    "org.jdesktop.wonderland.client.cell.ChannelComponent"
+                });
 
-	return config;
+        return config;
     }
 
     @Override
     public void setupCell(BasicCellSetup setup) {
         super.setupCell(setup);
 
-	PhoneCellSetup pcs = (PhoneCellSetup) setup;
+        PhoneCellSetup pcs = (PhoneCellSetup) setup;
 
-	locked = pcs.getLocked();
-	simulateCalls = pcs.getSimulateCalls();
-	phoneNumber = pcs.getPhoneNumber();
-	password = pcs.getPassword();
-	phoneLocation = pcs.getPhoneLocation();
-	zeroVolumeRadius = pcs.getZeroVolumeRadius();
+        locked = pcs.getLocked();
+        simulateCalls = pcs.getSimulateCalls();
+        phoneNumber = pcs.getPhoneNumber();
+        password = pcs.getPassword();
+        phoneLocation = pcs.getPhoneLocation();
+        zeroVolumeRadius = pcs.getZeroVolumeRadius();
     }
 
     @Override
@@ -170,7 +149,7 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
         setupCell(setup);
     }
 
-     /**
+    /**
      * Return a new BasicCellSetup Java bean class that represents the current
      * state of the cell.
      *
@@ -195,61 +174,60 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
             setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
         }
 
-	return setup;
+        return setup;
     }
 
     public boolean getLocked() {
-	return locked;
+        return locked;
     }
 
     public void setLocked(boolean locked) {
-	this.locked = locked;
+        this.locked = locked;
     }
 
     public boolean getSimulateCalls() {
-	return simulateCalls;
+        return simulateCalls;
     }
 
     public void setSimulateCalls(boolean simulateCalls) {
-	this.simulateCalls = simulateCalls;
+        this.simulateCalls = simulateCalls;
     }
 
     public String getPhoneNumber() {
-	return phoneNumber;
+        return phoneNumber;
     }
 
     public String getPassword() {
-	return password;
+        return password;
     }
 
     public String getPhoneLocation() {
-	return phoneLocation;
+        return phoneLocation;
     }
 
     public double getZeroVolumeRadius() {
-	return zeroVolumeRadius;
+        return zeroVolumeRadius;
     }
 
     public double getFullVolumeRadius() {
-	return fullVolumeRadius;
+        return fullVolumeRadius;
     }
 
     public boolean getKeepUnlocked() {
-	return keepUnlocked;
+        return keepUnlocked;
     }
 
     public void setKeepUnlocked(boolean keepUnlocked) {
-	this.keepUnlocked = keepUnlocked;
+        this.keepUnlocked = keepUnlocked;
     }
-	
+
     protected void addParentCell(ManagedReference parent) {
-	IncomingCallHandler incomingCallHandler = IncomingCallHandler.getInstance();
+        IncomingCallHandler incomingCallHandler = IncomingCallHandler.getInstance();
 
-        //vector3f translation = new Vector3f();                
-        //getOriginWorld().get(translation);                
+    //vector3f translation = new Vector3f();
+    //getOriginWorld().get(translation);
 
-	//incomingCallHandler.addPhone(getCellID(), translation, phoneNumber,
-	//    phoneLocation, zeroVolumeRadius, fullVolumeRadius);
+    //incomingCallHandler.addPhone(getCellID(), translation, phoneNumber,
+    //    phoneLocation, zeroVolumeRadius, fullVolumeRadius);
     }
-
 }

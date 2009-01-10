@@ -71,7 +71,9 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
 
     @Override
     public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation);
+        CellConfig ret = new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation);
+        populateCellConfig(ret);
+        return ret;
     }
 
     @Override

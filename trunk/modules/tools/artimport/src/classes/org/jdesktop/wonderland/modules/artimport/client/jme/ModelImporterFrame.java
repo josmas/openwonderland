@@ -709,6 +709,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         geometryStatsB.setText("Geometry Stats...");
         geometryStatsB.setToolTipText("Show the geometry statistics");
+        geometryStatsB.setEnabled(false);
         geometryStatsB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 geometryStatsBActionPerformed(evt);
@@ -893,24 +894,24 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         translationXTF.setEnabled(enabled);
         translationYTF.setEnabled(enabled);
         translationZTF.setEnabled(enabled);
-//        rotationXTF.setEnabled(enabled);
-//        rotationYTF.setEnabled(enabled);
-//        rotationZTF.setEnabled(enabled);
+        rotationXTF.setEnabled(enabled);
+        rotationYTF.setEnabled(enabled);
+        rotationZTF.setEnabled(enabled);
         
         if (enabled) {
             ((SpinnerNumberModel)translationXTF.getModel()).addChangeListener(translationChangeListener);
             ((SpinnerNumberModel)translationYTF.getModel()).addChangeListener(translationChangeListener);
             ((SpinnerNumberModel)translationZTF.getModel()).addChangeListener(translationChangeListener);
-//            ((SpinnerNumberModel)rotationXTF.getModel()).addChangeListener(rotationChangeListener);
-//            ((SpinnerNumberModel)rotationYTF.getModel()).addChangeListener(rotationChangeListener);
-//            ((SpinnerNumberModel)rotationZTF.getModel()).addChangeListener(rotationChangeListener);
+            ((SpinnerNumberModel)rotationXTF.getModel()).addChangeListener(rotationChangeListener);
+            ((SpinnerNumberModel)rotationYTF.getModel()).addChangeListener(rotationChangeListener);
+            ((SpinnerNumberModel)rotationZTF.getModel()).addChangeListener(rotationChangeListener);
         } else {
             ((SpinnerNumberModel)translationXTF.getModel()).removeChangeListener(translationChangeListener);
             ((SpinnerNumberModel)translationYTF.getModel()).removeChangeListener(translationChangeListener);
             ((SpinnerNumberModel)translationZTF.getModel()).removeChangeListener(translationChangeListener);
-//            ((SpinnerNumberModel)rotationXTF.getModel()).removeChangeListener(rotationChangeListener);
-//            ((SpinnerNumberModel)rotationYTF.getModel()).removeChangeListener(rotationChangeListener);
-//            ((SpinnerNumberModel)rotationZTF.getModel()).removeChangeListener(rotationChangeListener);           
+            ((SpinnerNumberModel)rotationXTF.getModel()).removeChangeListener(rotationChangeListener);
+            ((SpinnerNumberModel)rotationYTF.getModel()).removeChangeListener(rotationChangeListener);
+            ((SpinnerNumberModel)rotationZTF.getModel()).removeChangeListener(rotationChangeListener);           
         }
     }
     
@@ -920,43 +921,36 @@ public class ModelImporterFrame extends javax.swing.JFrame {
      * appear in the dialog.
      */
     private void calcModelBounds( Node bg ) {
+        System.err.println("Model Node "+bg);
+
         if (bg==null) {
             return;
         }
+
+        System.err.println("Model Bounds "+bg.getWorldBound());
         
-//        BoundingVolume bounds = bg.getBounds();
-//        if (bounds instanceof BoundingSphere) {
-//            BoundingSphere sphere = (BoundingSphere)bounds;
-//            Vector3f center = new Vector3f();
-//            sphere.getCenter(center);
-//            boundsCenterXTF.setText(Double.toString(center.x));
-//            boundsCenterYTF.setText(Double.toString(center.y));
-//            boundsCenterZTF.setText(Double.toString(center.z));
-//            boundsSizeXTF.setText(Double.toString(sphere.getRadius()));
-//       } else if (bounds instanceof BoundingBox) {
-//            BoundingBox box = (BoundingBox)bounds;
-//            Vector3f upper = new Vector3f();
-//            Vector3f lower = new Vector3f();
-//            box.getUpper(upper);
-//            box.getLower(lower);
-//            Vector3f center = new Vector3f(upper);
-//            center.x -= lower.x/2;
-//            center.y -= lower.y/2;
-//            center.z -= lower.z/2;
-//            boundsCenterXTF.setText(Double.toString(center.x));
-//            boundsCenterYTF.setText(Double.toString(center.y));
-//            boundsCenterZTF.setText(Double.toString(center.z));
-//            
-//            Vector3f size = new Vector3f(upper);
-//            size.x -= lower.x;
-//            size.y -= lower.y;
-//            size.z -= lower.z;
-//            
-//            double max = Math.max(size.x, size.y);
-//            max = Math.max(max, size.z);
-//            boundsSizeXTF.setText(Double.toString(max));
-//        }
-        System.err.println("CalcBounds not implemented");
+        BoundingVolume bounds = bg.getWorldBound();
+        if (bounds instanceof BoundingSphere) {
+            BoundingSphere sphere = (BoundingSphere)bounds;
+            Vector3f center = new Vector3f();
+            sphere.getCenter(center);
+            boundsCenterXTF.setText(Double.toString(center.x));
+            boundsCenterYTF.setText(Double.toString(center.y));
+            boundsCenterZTF.setText(Double.toString(center.z));
+            boundsSizeXTF.setText(Double.toString(sphere.getRadius()));
+       } else if (bounds instanceof BoundingBox) {
+            BoundingBox box = (BoundingBox)bounds;
+            Vector3f center = new Vector3f();
+            box.getCenter();
+            boundsCenterXTF.setText(Double.toString(center.x));
+            boundsCenterYTF.setText(Double.toString(center.y));
+            boundsCenterZTF.setText(Double.toString(center.z));
+            
+            
+            double max = Math.max(box.xExtent, box.yExtent);
+            max = Math.max(max, box.xExtent);
+            boundsSizeXTF.setText(Double.toString(max));
+        } 
     }
     
     /**

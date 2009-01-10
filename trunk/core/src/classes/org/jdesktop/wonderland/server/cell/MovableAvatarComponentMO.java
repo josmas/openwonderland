@@ -52,5 +52,20 @@ public class MovableAvatarComponentMO extends MovableComponentMO {
             channelComponent.sendAll(clientID, MovableAvatarMessage.newMovedMessage(cell.getCellID(), transform, aMsg.getTrigger(), aMsg.isPressed()));
         }
     }
-    
+
+    @Override
+    protected String getClientClass() {
+        return "org.jdesktop.wonderland.client.cell.MovableAvatarComponent";
+    }
+
+    /**
+     * Return the class used to reference this component. Usually this will return
+     * the class of the component, but in some cases, such as the ChannelComponentMO
+     * subclasses of ChannelComponentMO will return their parents class
+     * @return
+     */
+    @Override
+    protected Class getLookupClass() {
+        return MovableComponentMO.class;
+    }
 }

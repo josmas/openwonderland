@@ -19,13 +19,13 @@ package org.jdesktop.wonderland.modules.testcells.server.cell;
 
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 import org.jdesktop.wonderland.modules.testcells.common.cell.setup.SingingTeapotCellSetup;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -47,7 +47,7 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO implements BeanSetupM
     public SingingTeapotCellMO(Vector3f center, float size, MaterialJME materialJME) {
         super(center, size, SimpleShapeConfig.Shape.BOX.TEAPOT, 1f, materialJME);
 
-	addComponent(new ChannelComponentMO(this));
+//	addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
     }
     
     @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {

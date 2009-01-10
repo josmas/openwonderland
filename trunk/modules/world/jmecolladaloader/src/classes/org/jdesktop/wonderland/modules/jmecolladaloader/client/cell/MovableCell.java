@@ -29,14 +29,9 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * @deprecated
  */
 public class MovableCell extends JmeColladaCell {
-//    private CellChannelConnection cellChannelConnection;
-    
-//    private ArrayList<CellMoveListener> serverMoveListeners = null;
     
     public MovableCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-//        addComponent(new ChannelComponent(this));
-//        addComponent(new MovableComponent(this));
     }
 
     /**
