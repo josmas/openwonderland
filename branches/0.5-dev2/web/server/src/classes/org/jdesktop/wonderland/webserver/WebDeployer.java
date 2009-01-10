@@ -116,9 +116,10 @@ public class WebDeployer implements ModuleDeployerSPI {
             }
             Properties props = new Properties();
             props.put(ParameterNames.CONTEXT_ROOT, contextRoot);
-                    
+
+            JarInputStream jin = null;
             try {
-                JarInputStream jin = new JarInputStream(new FileInputStream(war));
+                jin = new JarInputStream(new FileInputStream(war));
                 File f = RunUtil.extractZip(jin, extractDir);
                 App app = RunAppServer.getAppServer().deploy(f, props);
                 
@@ -127,8 +128,19 @@ public class WebDeployer implements ModuleDeployerSPI {
                     record.setApp(app);
                     deployed.add(record);
                 }
+
+                jin.close();
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Unable to deploy " + war, ioe);
+            } finally {
+                // make sure to close the stream
+                if (jin != null) {
+                    try {
+                        jin.close();
+                    } catch (IOException ioe) {
+                        logger.log(Level.WARNING, "Error closing stream", ioe);
+                    }
+                }
             }
         }
     }
