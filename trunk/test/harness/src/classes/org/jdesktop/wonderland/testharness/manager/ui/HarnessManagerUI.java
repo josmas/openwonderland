@@ -39,11 +39,23 @@ public class HarnessManagerUI extends javax.swing.JFrame {
     private ObjectInputStream in;
 
     /** Creates new form HarnessManagerUI */
-    public HarnessManagerUI() {
+    public HarnessManagerUI(String args[]) {
+
         initComponents();
+        String masterHostname;
+
+        if (args.length>1) {
+            System.err.println("Usage: HarnessManagerUI <master hostname>");
+            System.exit(1);
+        }
+
+        if (args.length==1)
+            masterHostname = args[0];
+        else
+            masterHostname = "localhost";
         
         try {
-            Socket s = new Socket("localhost", MasterMain.MANAGER_PORT);
+            Socket s = new Socket(masterHostname, MasterMain.MANAGER_PORT);
             out = new ObjectOutputStream(s.getOutputStream());
             in = new ObjectInputStream(s.getInputStream());
 
@@ -152,10 +164,10 @@ private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     /**
     * @param args the command line arguments
     */
-    public static void main(String args[]) {
+    public static void main(final String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new HarnessManagerUI().setVisible(true);
+                new HarnessManagerUI(args).setVisible(true);
             }
         });
     }

@@ -25,6 +25,7 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -63,6 +64,7 @@ import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import sun.misc.Service;
 
 /**
@@ -110,7 +112,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                                               SERVER_PORT_DEFAULT);
         String userName   = props.getProperty(USER_NAME_PROP,
                                               USER_NAME_DEFAULT);
-        
+        WonderlandConfigUtil.setUsername(userName);
         
         initComponents();
         
@@ -129,14 +131,6 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         // setup a classloader with the module jars
         loader = setupClassLoader();
         
-        // load any client plugins from that class loader
-        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
-                                                      loader);
-        while (it.hasNext()) {
-            ClientPlugin plugin = it.next(); 
-            plugin.initialize();
-        }
-        
         // create a session
         session = new CellClientSession(server, loader) {
             @Override
@@ -146,6 +140,14 @@ public class CellBoundsViewer extends javax.swing.JFrame {
             }
         };
         
+        // load any client plugins from that class loader
+        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
+                                                      loader);
+        while (it.hasNext()) {
+            ClientPlugin plugin = it.next();
+            plugin.initialize(session);
+        }
+
         boundsPanel.setSession(session);
         
         localAvatar = session.getLocalAvatar();
@@ -368,14 +370,19 @@ public class CellBoundsViewer extends javax.swing.JFrame {
         private void drawCell(Cell cell, Graphics2D g) {
             if (cell instanceof RootCell)
                 return;
-            
-            drawBounds(cell.getWorldBounds(), g);
-            
-            Vector3f cellPos = cell.getLocalToWorldTransform().getTranslation(null);
+
+            if (cell instanceof ViewCell) {
+                drawBounds(cell.getWorldBounds(), g, true, Color.RED);
+            } else {
+                drawBounds(cell.getWorldBounds(), g, false, Color.BLACK);
+            }
+
+            Vector3f cellPos = cell.getWorldTransform().getTranslation(null);
             g.drawString(cell.getName(), cellPos.x*scale, cellPos.z*scale);
         }
         
-        private void drawBounds(BoundingVolume bounds, Graphics2D g) {
+        private void drawBounds(BoundingVolume bounds, Graphics2D g, boolean fill, Color color) {
+            Color current = g.getColor();
             if (bounds instanceof BoundingBox) {
                 BoundingBox box = (BoundingBox)bounds;
                 center = box.getCenter(center);
@@ -383,11 +390,20 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 
                 if (extent.x==Float.POSITIVE_INFINITY)
                     return;
-                
-                g.drawRect((int)((center.x-extent.x)*scale), 
-                           (int)((center.z-extent.z)*scale), 
-                           (int)((extent.x*2)*scale), 
-                           (int)((extent.z*2)*scale));
+
+                g.setColor(color);
+                if (fill) {
+                   g.fillRect((int)((center.x-extent.x)*scale),
+                               (int)((center.z-extent.z)*scale),
+                               (int)((extent.x*2)*scale),
+                               (int)((extent.z*2)*scale));
+                } else {
+                    g.drawRect((int)((center.x-extent.x)*scale),
+                               (int)((center.z-extent.z)*scale),
+                               (int)((extent.x*2)*scale),
+                               (int)((extent.z*2)*scale));
+                }
+                g.setColor(current);
             } else if (bounds instanceof BoundingSphere) {
                 BoundingSphere sphere = (BoundingSphere)bounds;
                 center = sphere.getCenter(center);
@@ -395,11 +411,21 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 
                 if (radius==Float.POSITIVE_INFINITY)
                     return;
-                
-                g.drawOval((int)((center.x-radius)*scale), 
-                           (int)((center.z-radius)*scale), 
-                           (int)((radius*2)*scale), 
-                           (int)((radius*2)*scale));
+
+                g.setColor(color);
+                if (fill) {
+                    g.fillOval((int)((center.x-radius)*scale),
+                               (int)((center.z-radius)*scale),
+                               (int)((radius*2)*scale),
+                               (int)((radius*2)*scale));
+
+                } else {
+                    g.drawOval((int)((center.x-radius)*scale),
+                               (int)((center.z-radius)*scale),
+                               (int)((radius*2)*scale),
+                               (int)((radius*2)*scale));
+                }
+                g.setColor(current);
             } else {
                 logger.warning("Unsupported bounds type "+bounds);
             }
@@ -482,7 +508,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
          *************************************************/
 
         public void cellMoved(CellTransform transform, CellMoveSource source) {
-//            System.out.println("Cell moved "+cell.getLocalToVWorld().getTranslation(null)+"  "+cell);
+            System.out.println("Cell moved "+transform.getTranslation(null)+"  "+source);
             repaint();
         }
 
