@@ -213,7 +213,9 @@ public class ModuleManager {
                 info.putAttibutes(attributes);
                 File infoFile = module.getFile(Module.MODULE_INFO);
                 try {
-                    info.encode(new FileWriter(infoFile));
+                    FileWriter writer = new FileWriter(infoFile);
+                    info.encode(writer);
+                    writer.close();
                 } catch (Exception ex) {
                     logger.log(Level.WARNING, "[MODULES] INSTALL Failed to update module.xml", ex);
                 }
