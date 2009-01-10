@@ -139,7 +139,7 @@ public class PendingManager {
         } catch (IOException excp) {
             /* Log an error and continue */
             logger.log(Level.WARNING, "[MODULES] PENDING Failed to remove " +
-                    file.getAbsolutePath());
+                    file.getAbsolutePath(), excp);
         }
         this.pendingModules.remove(moduleName);
     }
