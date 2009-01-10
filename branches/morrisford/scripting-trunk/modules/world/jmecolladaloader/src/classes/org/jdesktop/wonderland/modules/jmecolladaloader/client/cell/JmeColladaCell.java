@@ -23,7 +23,9 @@ import com.jme.scene.Node;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.EntityComponent;
+import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.JMECollisionSystem;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -54,6 +56,7 @@ public class JmeColladaCell extends Cell {
     private Node node = null;
     private CellRenderer renderer = null;
     private CellID cellID;
+    private WorldManager wm = null;
     
     public JmeColladaCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -108,6 +111,16 @@ public class JmeColladaCell extends Cell {
                 this.renderer = new JmeColladaRenderer(this, node);
                 break;                
             }
+        wm = ClientContextJME.getWorldManager();
+        wm.getRenderManager().setFrameRateListener(new FrameRateListener()
+            {
+            public void currentFramerate(float frames) 
+                {
+                scriptComp.setFrameRate(frames);
+                System.out.println("Listen frame ****************************   " + frames);
+                }
+            
+            }, 100);
         
         MouseEventListener myListener = new MouseEventListener();
         myListener.addToEntity(((CellRendererJME)this.renderer).getEntity());
@@ -191,8 +204,11 @@ public class JmeColladaCell extends Cell {
                 return;
                 }
 //            renderer.updateShape();
+            Vector3f coorW = mbe.getIntersectionPointWorld();
+            System.out.println("World = " + coorW);
+            
             System.out.println("Before executeScript - this = " + this);
-            scriptComp.executeScript("mouse", node, scriptClump, scriptExt, scriptType, scriptURL);
+            scriptComp.executeScript("mouse", node, scriptClump, scriptExt, scriptType, scriptURL, coorW);
            }
         }
 

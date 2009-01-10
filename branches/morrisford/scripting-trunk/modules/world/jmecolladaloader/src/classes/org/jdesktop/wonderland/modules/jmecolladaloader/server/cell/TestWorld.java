@@ -89,8 +89,8 @@ public class TestWorld implements ServerPlugin {
             Task t = new TestTask(c3, c2);
 
             WonderlandContext.getCellManager().insertCellInWorld(
-                    new JmeColladaCellMO(new Vector3f(-80,0,-80), 15,
-                            "wla://jmecolladaloader/TestV-395k/models/TestV.dae",
+                    new JmeColladaCellMO(new Vector3f(0,0,0), 1000,
+                            "wla://jmecolladaloader/TestV2-725k/models/TestV2.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
                             "http://172.16.126.134:8800/test/compiled_models",
@@ -98,6 +98,16 @@ public class TestWorld implements ServerPlugin {
                             "js",
                             "javascript"));
 /*
+            WonderlandContext.getCellManager().insertCellInWorld(
+                    new JmeColladaCellMO(new Vector3f(-1000,0,-1000), 1000,
+                            "wla://jmecolladaloader/TestV2-725k/models/TestV2.dae",
+                            null,
+                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f}),
+                            "http://172.16.126.134:8800/test/compiled_models",
+                            "Heffernan",
+                            "js",
+                            "javascript"));
+
             WonderlandContext.getCellManager().insertCellInWorld(
                     new JmeColladaCellMO(new Vector3f(-250,0,-250), 1000,
                             "wla://jmecolladaloader/BigPaving500/models/BigPaving500.dae",
@@ -117,7 +127,7 @@ public class TestWorld implements ServerPlugin {
                             "Heffernan",
                             "js",
                             "javascript"));
-*/
+
             WonderlandContext.getCellManager().insertCellInWorld(
                     new JmeColladaCellMO(new Vector3f(20,0,20), 15,
                             "wla://jmecolladaloader/Heffernan-meter11/models/Heffernan-meter11.dae",
@@ -177,7 +187,7 @@ public class TestWorld implements ServerPlugin {
                             "Heffernan",
                             "js",
                             "javascript"));
-
+*/
 
             AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
 
