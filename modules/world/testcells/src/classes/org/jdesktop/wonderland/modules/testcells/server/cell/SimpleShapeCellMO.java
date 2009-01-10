@@ -74,7 +74,9 @@ public class SimpleShapeCellMO extends CellMO {
 
     @Override
     public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return new SimpleShapeConfig(shape, mass, materialJME);
+        CellConfig ret = new SimpleShapeConfig(shape, mass, materialJME);
+        super.populateCellConfig(ret);
+        return ret;
     }
 
     @Override

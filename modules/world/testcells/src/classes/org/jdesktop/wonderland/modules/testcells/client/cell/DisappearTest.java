@@ -54,9 +54,6 @@ public class DisappearTest extends SimpleShapeCell {
 
     public DisappearTest(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponent(this));
-        addComponent(new MovableComponent(this));
-        movableComp = getComponent(MovableComponent.class);
     }
     
     @Override
@@ -80,6 +77,7 @@ public class DisappearTest extends SimpleShapeCell {
 	switch(status) {
 
 	case ACTIVE:
+        movableComp = getComponent(MovableComponent.class);
 	    dragListener.addToEntity(cellRenderer.getEntity());
 	    disappearListener.addToEntity(cellRenderer.getEntity());
 	    disappearListener.addToEntity(cellRenderer.getSecondaryEntity());

@@ -575,18 +575,20 @@ public class Cell {
      * @param configData the configuration data for the cell
      */
     public void configure(CellConfig configData) {
-                
+
+        System.err.println("configure cell "+getCellID()+"  "+getClass());
         // Install the CellComponents
         for(String compClassname : configData.getClientComponentClasses()) {
             try {
                 Class compClazz = Class.forName(compClassname);
                 if (!components.containsKey(compClazz)) {
-                    logger.fine("Installing component "+compClassname);
+                    logger.warning("Installing component "+compClassname);
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
-                    addComponent(constructor.newInstance(this));
+                    CellComponent comp = constructor.newInstance(this);
+                    addComponent(comp, comp.getLookupClass());
                 }
             } catch (InstantiationException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "Instantiation exception for class "+compClassname+"  in cell "+getClass().getName(), ex);
             } catch (IllegalAccessException ex) {
                 logger.log(Level.SEVERE, null, ex);
             } catch (IllegalArgumentException ex) {

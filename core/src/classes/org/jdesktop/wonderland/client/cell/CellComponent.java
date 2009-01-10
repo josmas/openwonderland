@@ -41,4 +41,14 @@ public class CellComponent {
     public void setStatus(CellStatus status) {
         this.status = status;
     }
+    
+    /**
+     * Return the class used to reference this component. Usually this will return
+     * the class of the component, but in some cases, such as the ChannelComponentMO
+     * subclasses of ChannelComponentMO will return their parents class
+     * @return
+     */
+    protected Class getLookupClass() {
+        return getClass();
+    }
 }

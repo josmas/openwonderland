@@ -42,8 +42,6 @@ public class AffordanceTestCell extends Cell {
      */
     public AffordanceTestCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponent(this));
-        addComponent(new MovableComponent(this));
     }
     
     @Override

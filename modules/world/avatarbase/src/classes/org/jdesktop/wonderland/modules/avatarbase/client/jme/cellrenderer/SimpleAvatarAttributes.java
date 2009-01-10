@@ -28,10 +28,10 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  *
  * @author paulby
  */
-public class SimpleAvatarAttributes extends CharacterAttributes {
+public class SimpleAvatarAttributes extends AvatarAttributes { //CharacterAttributes {
 
     public SimpleAvatarAttributes(Cell cell) {
-        super(cell.getName());
+        super(cell);
         // Animations are setup in the super class
 
         WonderlandSession session = cell.getCellCache().getSession();

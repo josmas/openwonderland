@@ -67,11 +67,6 @@ public class AvatarPlugin implements ClientPlugin {
                 }
                 
 
-                JMenu animationMenu = new JMenu("Avatar Actions");
-
-
-                JmeClientMain.getFrame().addToEditMenu(animationMenu);
-
                 JMenuItem avatarControlFrameMI = new JMenuItem("Avatar Controls");
                 avatarControlFrameMI.addActionListener(new ActionListener() {
 

@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
  *
  * @author paulby
  */
-public class CellComponentMO implements ManagedObject, Serializable {
+public abstract class CellComponentMO implements ManagedObject, Serializable {
     protected ManagedReference<CellMO> cellRef;
     protected CellID cellID;
     
@@ -61,5 +61,23 @@ public class CellComponentMO implements ManagedObject, Serializable {
     public CellComponentSetup getCellComponentSetup(CellComponentSetup setup) {
         // Do nothing by default
         return setup;
+    }
+
+    /**
+     * If this component has a client side component then return the fully
+     * qualified name of the client class. If there is no client portion to this
+     * component, return null.
+     * @return
+     */
+    protected abstract String getClientClass();
+
+    /**
+     * Return the class used to reference this component. Usually this will return
+     * the class of the component, but in some cases, such as the ChannelComponentMO
+     * subclasses of ChannelComponentMO will return their parents class
+     * @return
+     */
+    protected Class getLookupClass() {
+        return getClass();
     }
 }

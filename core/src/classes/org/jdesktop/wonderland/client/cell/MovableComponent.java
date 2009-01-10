@@ -41,28 +41,29 @@ public class MovableComponent extends CellComponent {
     
     protected static Logger logger = Logger.getLogger(MovableComponent.class.getName());
     protected ArrayList<CellMoveListener> serverMoveListeners = null;
-    protected ChannelComponent channelComp;
+    protected ChannelComponent channelComp=null;
     
     public enum CellMoveSource { LOCAL, REMOTE }; // Do we need BOTH as well ?
     
-    protected ChannelComponent.ComponentMessageReceiver msgReceiver;
+    protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
     
     public MovableComponent(Cell cell) {
         super(cell);
-        channelComp = cell.getComponent(ChannelComponent.class);
     }
     
     
     @Override
     public void setStatus(CellStatus status) {
+        System.err.println("MOVABLECOMP setStatus"+status);
          switch(status) {
             case DISK :
-                if (msgReceiver!=null) {
+                if (msgReceiver!=null && channelComp!=null) {
                     channelComp.removeMessageReceiver(getMessageClass());
                     msgReceiver = null;
                 }
                 break;
              case BOUNDS : {
+                 channelComp = cell.getComponent(ChannelComponent.class);
                  if (msgReceiver==null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
@@ -76,7 +77,8 @@ public class MovableComponent extends CellComponent {
                                 serverMoveRequest((MovableMessage)message);
                             }
                         }
-                    };                    
+                    };
+                    System.err.println("**** Adding message receiver "+getMessageClass()+"  to "+channelComp.getClass().getName());
                     channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
                  }
              }

@@ -93,7 +93,6 @@ public class AvatarCharacter extends NinjaAvatar {
 
     public void setAnimation(String str) {
         PunchState punch = (PunchState) getContext().getState(PunchState.class);
-        punch.setAnimationSetBoolean(false);
 
         punch.setAnimationName(str);
     }

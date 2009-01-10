@@ -69,24 +69,29 @@ public class TestWorld implements ServerPlugin {
             WonderlandContext.getCellManager().insertCellInWorld(c2);
             WonderlandContext.getCellManager().insertCellInWorld(c3);
 
-            WonderlandContext.getCellManager().insertCellInWorld(
-                    new JmeColladaCellMO(new Vector3f(0,0,0), 15,
-                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
-                            null,
-                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
+//            WonderlandContext.getCellManager().insertCellInWorld(
+//                    new JmeColladaCellMO(new Vector3f(0,0,0), 15,
+//                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
+//                            null,
+//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
+//
+//            WonderlandContext.getCellManager().insertCellInWorld(
+//                    new JmeColladaCellMO(new Vector3f(15,0,0), 15,
+//                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
+//                            null,
+//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
+//
+//            WonderlandContext.getCellManager().insertCellInWorld(
+//                    new JmeColladaCellMO(new Vector3f(0,0,10), 15,
+//                            "wla://jmecolladaloader/OutsideFloor10x10/models/OutsideFloor10x10.dae",
+//                            null,
+//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 
-            WonderlandContext.getCellManager().insertCellInWorld(
-                    new JmeColladaCellMO(new Vector3f(15,0,0), 15,
-                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
-                            null,
-                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
-
-            WonderlandContext.getCellManager().insertCellInWorld(
-                    new JmeColladaCellMO(new Vector3f(0,0,10), 15,
-                            "wla://jmecolladaloader/OutsideFloor10x10/models/OutsideFloor10x10.dae",
-                            null,
-                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
-
+//            WonderlandContext.getCellManager().insertCellInWorld(
+//                    new JmeColladaCellMO(new Vector3f(0,0,10), 500,
+//                            "wla://jmecolladaloader/TestV-395k/models/TestV.dae",
+//                            null,
+//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
             Task t = new TestTask(c3, c2);
 
             AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
@@ -118,7 +123,7 @@ public class TestWorld implements ServerPlugin {
                 dir = -dir;
             }
             cellRef.get().getComponent(MovableComponentMO.class).moveRequest(null, new CellTransform(null, pos));
-            cell2Ref.get().getComponent(MovableComponentMO.class).moveRequest(null, new CellTransform(null, pos2));
+//            cell2Ref.get().getComponent(MovableComponentMO.class).moveRequest(null, new CellTransform(null, pos2));
         }
     }
 }

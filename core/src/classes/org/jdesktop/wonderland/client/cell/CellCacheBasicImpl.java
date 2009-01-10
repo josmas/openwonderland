@@ -122,7 +122,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             return null;
         }
 
-        logger.fine("creating cell "+className+" "+cellId);
+        logger.warning("creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
             return null;     // Instantiation failed, error has already been logged
@@ -150,6 +150,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
         if (setup!=null)
             cell.configure(setup);
+        else
+            logger.warning("Cell has null setup "+className+"  "+cell);
 
         // Force the cell to create the JME renderer entity
         createCellRenderer(cell);
@@ -270,7 +272,12 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
         public void run() {
-            cell.setStatus(cellStatus);
+            try {
+                cell.setStatus(cellStatus);
+            } catch(Exception e) {
+                // Report the exception, otherwise it will get swallowed
+                logger.log(Level.WARNING, "Exception thrown in Cell.setStatus "+e.getLocalizedMessage(), e);
+            }
         }
 
     }

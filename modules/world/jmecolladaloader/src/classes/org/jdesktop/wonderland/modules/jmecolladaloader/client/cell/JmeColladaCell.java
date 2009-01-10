@@ -55,7 +55,7 @@ public class JmeColladaCell extends Cell {
         this.modelURI = colladaConfig.getModelURI();
         this.geometryRotation = colladaConfig.getGeometryRotation();
         this.geometryTranslation = colladaConfig.getGeometryTranslation();
-        logger.warning("[CELL] COLLADA CELL " + this.modelURI);
+        logger.info("[CELL] JME COLLADA CELL " + this.modelURI);
     }
     
     @Override

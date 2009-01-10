@@ -42,6 +42,7 @@ public class ClientContextJME extends ClientContext {
         worldManager = new WorldManager("Wonderland");
         InputManager3D.getInputManager(); // worldManager must be instantiated first
         SceneManager.getSceneManager();
+        System.setProperty("BafCacheDir", "file://"+getUserDirectory().getAbsolutePath());
     }
 
     /**

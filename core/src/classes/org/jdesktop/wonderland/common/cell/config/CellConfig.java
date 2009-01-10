@@ -28,8 +28,8 @@ import java.util.ArrayList;
  */
 public class CellConfig implements Serializable {
     
-    private ArrayList<String> clientComponentClasses = null;
-    
+    private ArrayList<String> clientComponentClasses = new ArrayList();
+
     /**
      * Returns the class names of all the client CellComponents which should
      * be added to the cell at config time
@@ -48,12 +48,18 @@ public class CellConfig implements Serializable {
      * @param cellComponenClasses the array of class names for client CellComponents
      */
     public void addClientComponentClasses(String[] cellComponenClasses) {
-        if (cellComponenClasses.length>0 && clientComponentClasses==null)
-            clientComponentClasses = new ArrayList();
-        
         if (cellComponenClasses!=null) {        
             for(String s : cellComponenClasses)
                 clientComponentClasses.add(s);
         }
     }
+
+    /**
+     * Add a client component class to the set of components
+     * @param clientClass
+     */
+    public void addClientComponentClasses(String clientClass) {
+        clientComponentClasses.add(clientClass);
+    }
+
 }

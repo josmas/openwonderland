@@ -40,96 +40,96 @@ import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.DragTes
  * @author deronj
  */
 public class DragTest extends SimpleShapeCell {
-    
-    MyDragListener dragListener = new MyDragListener();
-    private MovableComponent movableComp;
-    private DragTestRenderer cellRenderer;
 
+    MyDragListener dragListener = new MyDragListener();
+    private MovableComponent movableComp=null;
+    private DragTestRenderer cellRenderer;
     static Node sceneRoot;
     Entity smallCubeEntity;
 
     public DragTest(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponent(this));
-        addComponent(new MovableComponent(this));
-        movableComp = getComponent(MovableComponent.class);
     }
-    
+
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        switch(rendererType) {
-	case RENDERER_2D :
-	    // No 2D Renderer yet
-	    return null;
-	case RENDERER_JME :
-	    cellRenderer = new DragTestRenderer(this);
-	    break;                
+        switch (rendererType) {
+            case RENDERER_2D:
+                // No 2D Renderer yet
+                return null;
+            case RENDERER_JME:
+                cellRenderer = new DragTestRenderer(this);
+                break;
         }
 
         return cellRenderer;
     }
-    
+
     @Override
-    public boolean setStatus (CellStatus status) {
-	boolean ret = super.setStatus(status);
+    public boolean setStatus(CellStatus status) {
+        boolean ret = super.setStatus(status);
 
-	switch(status) {
+        switch (status) {
 
-	case ACTIVE:
-        if (cellRenderer!=null) // May be null if this is a 2D renderer
-            dragListener.addToEntity(cellRenderer.getEntity());
-	    break;
+            case ACTIVE:
+                movableComp = getComponent(MovableComponent.class);
+                if (cellRenderer != null) { // May be null if this is a 2D renderer
+                    dragListener.addToEntity(cellRenderer.getEntity());
+                }
+                break;
 
-        case DISK:
-        if (cellRenderer!=null) // May be null if this is a 2D renderer
-            dragListener.removeFromEntity(cellRenderer.getEntity());
-	}
+            case DISK:
+                if (cellRenderer != null) { // May be null if this is a 2D renderer
+                    dragListener.removeFromEntity(cellRenderer.getEntity());
+                }
+        }
 
-	return ret;
+        return ret;
     }
 
     private class MyDragListener extends EventClassListener {
 
-	// The intersection point on the entity over which the button was pressed, in world coordinates.
-	Vector3f dragStartWorld;
+        // The intersection point on the entity over which the button was pressed, in world coordinates.
+        Vector3f dragStartWorld;
 
-	// The screen coordinates of the button press event.
-	Point dragStartScreen;
+        // The screen coordinates of the button press event.
+        Point dragStartScreen;
+        Vector3f translationOnPress = null;
 
-	Vector3f translationOnPress = null;
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{MouseEvent3D.class};
+        }
 
-	public Class[] eventClassesToConsume () {
-	    return new Class[] { MouseEvent3D.class };
-	}
+        @Override
+        public void commitEvent(Event event) {
 
-	public void commitEvent (Event event) {
+            CellTransform transform = getLocalTransform();
 
-	    CellTransform transform = getLocalTransform();
+            if (event instanceof MouseButtonEvent3D) {
+                MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
+                if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                    MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
+                    dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
+                    dragStartWorld = buttonEvent.getIntersectionPointWorld();
+                    translationOnPress = transform.getTranslation(null);
+                }
+                return;
+            }
 
-	    if (event instanceof MouseButtonEvent3D) {
-		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
-		if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
-		    MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
-		    dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
-		    dragStartWorld = buttonEvent.getIntersectionPointWorld();
-		    translationOnPress = transform.getTranslation(null);
-		}
-		return;
-	    } 
-	    
 
-	    if (!(event instanceof MouseDraggedEvent3D)) {
-		return;
-	    }
+            if (!(event instanceof MouseDraggedEvent3D)) {
+                return;
+            }
 
-	    MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) event;
-	    Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen, 
-							       new Vector3f());
+            MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) event;
+            Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
+                    new Vector3f());
 
-	    // Now add the drag vector the node translation and move the cell.
-	    Vector3f newTranslation = translationOnPress.add(dragVector);
-	    transform.setTranslation(newTranslation);
-	    movableComp.localMoveRequest(transform);
-	}
+            // Now add the drag vector the node translation and move the cell.
+            Vector3f newTranslation = translationOnPress.add(dragVector);
+            transform.setTranslation(newTranslation);
+            movableComp.localMoveRequest(transform);
+        }
     }
 }

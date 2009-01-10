@@ -113,7 +113,7 @@ public class CellChannelConnection extends BaseConnection {
         
         ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
         if (channelComp==null) {
-            logger.severe("Attempting to deliver message to cell that does not implement ChannelCell");
+            logger.severe("Attempting to deliver message to cell that does not have a ChannelComponent "+cell.getCellID());
 //            throw new RuntimeException("Illegal message target");
             return;
         }

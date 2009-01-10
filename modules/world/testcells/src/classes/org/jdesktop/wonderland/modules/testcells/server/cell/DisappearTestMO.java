@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeC
  * Simple test for cell dragging.
  *
  * @author paulby
+ * @deprecated
  */
 @ExperimentalAPI
 public class DisappearTestMO extends SimpleShapeCellMO {
@@ -44,7 +45,7 @@ public class DisappearTestMO extends SimpleShapeCellMO {
 
     public DisappearTestMO (Vector3f center, float size) {
         super(center, size);
-        addComponent(new ChannelComponentMO(this));
+        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
         addComponent(new MovableComponentMO(this));
     }
     
