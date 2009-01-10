@@ -338,6 +338,8 @@ public abstract class InputPicker {
 		// interface we cannot do any further propagation of the event to parents or unders.
 		logger.fine("Hit windowswing");
 		generateSwingEnterExitEvents(entity);
+		// HACK: see doc for this method
+		cleanupGrab(awtMouseEvent);
 		if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null &&
 		    idx < hitPickInfo.size()) {
 		    return new InputManager.PickEventReturn(entity, pickDetails, hitPickInfo.get(idx));
@@ -750,7 +752,7 @@ public abstract class InputPicker {
     /** 
      * Calculates the ray to use for picking, based on the given screen coordinates.
      */
-    private Ray calcPickRayWorld (int x, int y) {
+    Ray calcPickRayWorld (int x, int y) {
 
 	// Get the world space coordinates of the eye position
 	Camera camera = cameraComp.getCamera();
@@ -767,7 +769,7 @@ public abstract class InputPicker {
 
 	// Compute the diff and create the ray
 	eventPointWorld.subtract(eyePosWorld, directionWorld);
-	return new Ray(eyePosWorld, directionWorld);
+	return new Ray(eyePosWorld, directionWorld.normalize());
     }
 
     /**
@@ -1045,6 +1047,53 @@ public abstract class InputPicker {
 	int button = awtEvent.getButton();
 	MouseEvent me = new MouseEvent(dummyButton, id, when, modifiers, x, y, 0, false, button);
 	return (MouseEnterExitEvent3D) createWonderlandEvent(me);
+    }
+
+    /**
+     * HACK: This is called on a WindowSwing hit. If embedded swing is going to activate a grab
+     * on this event then we must clean up any grabbing which the picker performed by deactivating
+     * the grab. The proper way to handle this situation is to avoid activating the grab in first
+     * place but this would greatly complicate the picker code. So we choose to take the more
+     * expedient route and just "back out" the grab. The test case is as follows:
+     *
+     * 1. Perform a mouse press inside a WindowSwing.
+     * 2. Move the cursor outside and then hit an avatar movement key.
+     *
+     * Unless we clean up the grab the key press will do nothing.
+     */
+    private void cleanupGrab (MouseEvent e) {
+	if (grabIsActive && !isMouseGrab(e) && e.getID() != MouseEvent.MOUSE_CLICKED) {
+	    grabIsActive = false;
+	    grabPickInfo = null;
+	}
+    }
+
+    //copied from Scenario EmbeddedSwing EmbeddedEventQueue.isMouseGrab
+    /* This method effectively returns whether or not a mouse button was down
+     * just BEFORE the event happened.  A better method name might be
+     * wasAMouseButtonDownBeforeThisEvent().
+     */
+    private static boolean isMouseGrab(MouseEvent e) {
+        int modifiers = e.getModifiersEx();
+        
+        if(e.getID() == MouseEvent.MOUSE_PRESSED 
+                || e.getID() == MouseEvent.MOUSE_RELEASED) {
+            switch (e.getButton()) {
+            case MouseEvent.BUTTON1:
+                modifiers ^= InputEvent.BUTTON1_DOWN_MASK;
+                break;
+            case MouseEvent.BUTTON2:
+                modifiers ^= InputEvent.BUTTON2_DOWN_MASK;
+                break;
+            case MouseEvent.BUTTON3:
+                modifiers ^= InputEvent.BUTTON3_DOWN_MASK;
+                break;
+            }
+        }
+        /* modifiers now as just before event */ 
+        return ((modifiers & (InputEvent.BUTTON1_DOWN_MASK
+                              | InputEvent.BUTTON2_DOWN_MASK
+                              | InputEvent.BUTTON3_DOWN_MASK)) != 0);
     }
 }
 

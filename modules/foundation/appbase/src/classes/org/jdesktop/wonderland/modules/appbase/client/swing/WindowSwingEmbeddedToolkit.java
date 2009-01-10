@@ -56,6 +56,8 @@ class WindowSwingEmbeddedToolkit
 
     private static final WindowSwingEmbeddedToolkit embeddedToolkit = new WindowSwingEmbeddedToolkit();
 
+    private Point lastPressPointScreen;
+
     public static WindowSwingEmbeddedToolkit getWindowSwingEmbeddedToolkit() {
         return embeddedToolkit;
     }
@@ -76,6 +78,7 @@ class WindowSwingEmbeddedToolkit
 	Point canvasPoint = SwingUtilities.convertPoint(frame, framePoint, canvas);
 	e.translatePoint(canvasPoint.x - framePoint.x, canvasPoint.y - framePoint.y);
 
+	// TODO: someday: I don't think we need to do this anymore for drag events. But it doesn't hurt.
 	InputManager.PickEventReturn ret = InputManager.inputManager().pickMouseEventSwing(e);
 	if (ret == null || ret.entity == null || ret.destPickDetails == null) {
 	    logger.fine("WindowSwing miss");
@@ -90,17 +93,13 @@ class WindowSwingEmbeddedToolkit
 	final WindowSwing windowSwing = ((WindowSwing.WindowSwingReference)comp).getWindowSwing();
 	assert windowSwing != null;
 
-	final Vector3f intersectionPointWorld;
-	if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
-	    if (ret.hitPickDetails != null) {
-		intersectionPointWorld = ret.hitPickDetails.getPosition();
-	    } else {
-		intersectionPointWorld = null;
-	    }
-	} else {
-	    intersectionPointWorld = ret.destPickDetails.getPosition();
-	}
+	// TODO: someday: I don't think we need to set this anymore for drag events. But it doesn't hurt.
+	final Vector3f intersectionPointWorld = ret.destPickDetails.getPosition();
 	logger.fine("intersectionPointWorld = " + intersectionPointWorld);
+
+	if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+	    lastPressPointScreen = new Point(e.getX(), e.getY());
+	}
 
         final EmbeddedPeer targetEmbeddedPeer = windowSwing.getEmbeddedPeer();
         CoordinateHandler coordinateHandler = new CoordinateHandler() {
@@ -109,9 +108,13 @@ class WindowSwingEmbeddedToolkit
                 return targetEmbeddedPeer;
             }
 
-            public Point2D transform(Point2D src, Point2D dst) {
-		Point pt = windowSwing.calcWorldPositionInPixelCoordinates(intersectionPointWorld, true);
-		logger.fine("pt = " + pt);
+	    public Point2D transform(Point2D src, Point2D dst, MouseEvent event) {
+
+		logger.fine("src = " + src);
+		logger.fine("event = " + event);
+
+		Point pt = windowSwing.calcWorldPositionInPixelCoordinates(src, event, 
+			       intersectionPointWorld, lastPressPointScreen);
 
 		if (dst == null) {
 		    dst = new Point2D.Double();
