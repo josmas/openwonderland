@@ -67,6 +67,8 @@ public class ScriptingComponent extends CellComponent
     private int animation = 0;
     public String testName = "morrisford";
     public int testInt = 99;
+    private Vector3f worldCoor = null;
+    private float frameRate = 0;
     
     public ScriptingComponent(Cell cell) 
 	{
@@ -117,7 +119,15 @@ public class ScriptingComponent extends CellComponent
         {
         return stateBoolean[which];
         }
+    public void getFrameRate()
+        {
+        stateFloat[3] = frameRate;
+        }
     
+    public void setFrameRate(float frames)
+        {
+        frameRate = frames;
+        }
     
     public String getName()
     {
@@ -129,7 +139,7 @@ public class ScriptingComponent extends CellComponent
     testName = theName;    
     }
     
-    public void executeScript(String scriptName, Node node, String Clump, String Ext, String Type, String URL)
+    public void executeScript(String scriptName, Node node, String Clump, String Ext, String Type, String URL, Vector3f coorW)
        {
        System.out.println("Start of executeScript - this = " + this);
        localNode = node;
@@ -137,6 +147,7 @@ public class ScriptingComponent extends CellComponent
        scriptExt = Ext;
        scriptType = Type;
        scriptURL = URL;
+       worldCoor = coorW;
        
        stateString[0] = "Morris - state string 0";
        
@@ -205,6 +216,13 @@ public class ScriptingComponent extends CellComponent
         return thePath;
         }
     
+    private String buildScriptPath2(String theScript)
+        {
+        System.out.println("cell name = " + scriptClump);                        
+        String thePath = scriptURL + "/scripts/" + scriptClump + "/" + theScript;
+        return thePath;
+        }
+    
     public void getInitialPosition()
         {
         Vector3f v3f = localNode.getLocalTranslation();
@@ -213,6 +231,18 @@ public class ScriptingComponent extends CellComponent
         stateFloat[2] = v3f.z;
         }
 
+    public void getWorldCoor()
+        {
+        stateFloat[0] = worldCoor.x;
+        stateFloat[1] = worldCoor.y;
+        stateFloat[2] = worldCoor.z;
+        }
+   
+    public void getFPS()
+        {
+        
+        }
+    
     public void setTranslation(float x, float y, float z)
         {
 //        System.out.println("In setTranslation - node = " + node);
@@ -307,11 +337,23 @@ public class ScriptingComponent extends CellComponent
             System.out.println("Sleep exception");
             }
        }
+    
+    public void mySleep(Float milliseconds)
+        {
+        try
+            {
+            Thread.sleep(milliseconds.intValue());
+            }
+        catch(Exception e)
+            {
+            System.out.println("Sleep exception");
+            }
+       }
     public ArrayList buildAnimation(String animationName) 
         {
         String line;
         aniList = new ArrayList();
-        String thePath = buildScriptPath(animationName);
+        String thePath = buildScriptPath2(animationName);
         System.out.println("Load animation -> " + thePath);
         try
             {
@@ -329,9 +371,11 @@ public class ScriptingComponent extends CellComponent
                 ani.yAxis = new Float(result[4]).floatValue();
                 ani.zAxis = new Float(result[5]).floatValue();
                 ani.rot = new Float(result[6]).floatValue();
-                
-                ani.rest = new String(result[7]);
+                ani.delay = new Float(result[7]).floatValue();
+                ani.rest = new String(result[8]);
                 aniList.add(ani);
+                System.out.println("Ani step -> " + ani.xLoc + "," + ani.yLoc + "," + ani.zLoc + "," + 
+                        ani.xAxis + "," + ani.yAxis + "," + ani.zAxis + "," + ani.rot + "," + ani.delay + "," + ani.rest);
                 }
             }
         catch(Exception e)
@@ -348,13 +392,13 @@ public class ScriptingComponent extends CellComponent
             {
             System.out.println("Expired");
             if(aniFrame < aniLast || animation == 0)
-                executeScript("timer", localNode, scriptClump, scriptExt, scriptType, scriptURL);
+                executeScript("timer", localNode, scriptClump, scriptExt, scriptType, scriptURL, worldCoor);
             }
         }
     
-    public void startTimer(int timeValue, int Animation)
+    public void startTimer(int timeValue)
         {
-        animation = Animation;
+//        animation = Animation;
         System.out.println("Start timer");
         Timer timer = new Timer();
         timer.schedule(new expired(), timeValue);
@@ -369,28 +413,45 @@ public class ScriptingComponent extends CellComponent
         public  float   xAxis;
         public  float   yAxis;
         public  float   zAxis;
+        public  float     delay;
         public  String  rest;
         }
 
     public int playAnimationFrame()
         {
-        System.out.println("Print frame " + aniFrame + " of " + aniLast);
-        doTransform(((Animation)aniList.get(aniFrame)).xLoc,
-                ((Animation)aniList.get(aniFrame)).yLoc,
-                ((Animation)aniList.get(aniFrame)).zLoc,
-                ((Animation)aniList.get(aniFrame)).xAxis,
+        System.out.println("Print frame " + aniFrame + " of " + aniLast + " rest = " + ((Animation)aniList.get(aniFrame)).rest);
+        if(((Animation)aniList.get(aniFrame)).rest.equals("r"))
+            {
+// set rotation - absolute
+            setRotation(((Animation)aniList.get(aniFrame)).xAxis,
                 ((Animation)aniList.get(aniFrame)).yAxis,
                 ((Animation)aniList.get(aniFrame)).zAxis,
                 ((Animation)aniList.get(aniFrame)).rot);
-
-        if(((Animation)aniList.get(aniFrame)).rest.equals("r"))
-            {
-            restoreRest();
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("n"))
             {
 // Send the current transform off to the server to let other clients know that the script wants them to know where we are
             doNotify();
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("m"))
+            {
+// move object - relative move           
+            moveObject(((Animation)aniList.get(aniFrame)).xLoc,
+                ((Animation)aniList.get(aniFrame)).yLoc,
+                ((Animation)aniList.get(aniFrame)).zLoc);
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("t"))
+            {
+            System.out.println("Play animation - setTranslation");
+//translate object - absolute move            
+            setTranslation(((Animation)aniList.get(aniFrame)).xLoc,
+                ((Animation)aniList.get(aniFrame)).yLoc,
+                ((Animation)aniList.get(aniFrame)).zLoc);
+            }
+        if(((Animation)aniList.get(aniFrame)).delay > 0)
+            {
+            System.out.println("Plan animation - enter delay");
+            mySleep(((Animation)aniList.get(aniFrame)).delay);
             }
         aniFrame++;
         if(aniFrame >= aniLast)
