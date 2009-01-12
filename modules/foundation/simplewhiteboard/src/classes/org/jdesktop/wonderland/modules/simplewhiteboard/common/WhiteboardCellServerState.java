@@ -26,12 +26,12 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The WFS setup class for WhiteboardCellMO.
+ * The WFS server state class for WhiteboardCellMO.
  * 
  * @author deronj
  */
 @XmlRootElement(name="simplewhiteboard-cell")
-public class WhiteboardCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
+public class WhiteboardCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
     
     /** The user's preferred width of the whiteboard window. */
     @XmlElement(name="preferredWidth")
@@ -50,7 +50,7 @@ public class WhiteboardCellSetup extends CellServerState implements Serializable
     public float pixelScaleY = 0.01f;
     
     /** Default constructor */
-    public WhiteboardCellSetup() {}
+    public WhiteboardCellServerState() {}
     
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardCellMO";
@@ -91,11 +91,11 @@ public class WhiteboardCellSetup extends CellServerState implements Serializable
     /**
      * Returns a string representation of this class.
      *
-     * @return The setup information as a string.
+     * @return The server state information as a string.
      */
     @Override
     public String toString() {
-        return super.toString() + " [WhiteboardCellSetup]: " +
+        return super.toString() + " [WhiteboardCellServerState]: " +
 	    "preferredWidth=" + preferredWidth + "," +
 	    "preferredHeight=" + preferredHeight + "," +
 	    "pixelScaleX=" + pixelScaleX + "," +

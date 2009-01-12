@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 
 /**
@@ -35,9 +35,9 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.
  */
 
 @ExperimentalAPI
-public class WhiteboardCellConfig extends App2DCellConfig {
+public class WhiteboardCellClientState extends App2DCellClientState {
 
-    private static final Logger logger = Logger.getLogger(WhiteboardCellConfig.class.getName());
+    private static final Logger logger = Logger.getLogger(WhiteboardCellClientState.class.getName());
     
     private static final int DEFAULT_WIDTH = 640;
     private static final int DEFAULT_HEIGHT = 480;
@@ -50,11 +50,11 @@ public class WhiteboardCellConfig extends App2DCellConfig {
     private int preferredHeight = DEFAULT_HEIGHT;
     private String checksum;
     
-    public WhiteboardCellConfig () {
+    public WhiteboardCellClientState () {
         this(null);
     }
     
-    public WhiteboardCellConfig (Vector2f pixelScale) {
+    public WhiteboardCellClientState (Vector2f pixelScale) {
 	super(pixelScale);
     }
     
@@ -105,62 +105,4 @@ public class WhiteboardCellConfig extends App2DCellConfig {
     public int getPreferredHeight() {
         return preferredHeight;
     }
-    
-    /**
-     * Add a message
-     * @param msg the message to add
-     */
-    /* TODO: delete: I don't think this is used
-    public void addMessage(WhiteboardCompoundCellMessage msg) {
-        int cellID = (int)msg.getCellID().hashCode();
-        int action = msg.getAction().ordinal();
-        LinkedList<Point> positions = msg.getPositions();
-        
-        int newPositions = positions.size();
-        
-        if ((index + newPositions) > actions.length) {
-            // need to grow action array
-            double delta = (index + newPositions) - actions.length;
-            int factor = (int)Math.ceil(delta/GROWTH_DELTA);
-            delta = factor * GROWTH_DELTA;
-            int dims[] = { (int)(actions.length + delta), 4 };
-            int[][] newactions = (int[][])Array.newInstance(int.class, dims);
-            System.arraycopy(actions, 0, newactions, 0, actions.length);
-            actions = newactions;
-        }
-        
-        Iterator<Point> iter = positions.iterator();
-        while (iter.hasNext()) {
-            Point point = (Point)iter.next();
-            actions[index][0] = cellID;
-            actions[index][1] = action;
-            actions[index][2] = (int)point.getX();
-            actions[index][3] = (int)point.getY();
-            index++;
-        }
-        logger.info("whiteboard contains " + index + " actions");
-    }
-    */
-    
-    /**
-     * Get the list of messages
-     */
-    /* TODO: delete: I don't think this is used
-    public LinkedList<WhiteboardCompoundCellMessage> getMessages() {
-        LinkedList<WhiteboardCompoundCellMessage> list = new LinkedList<WhiteboardCompoundCellMessage>();
-        
-        if (actions.length > 0) {
-            for (int i = 0;i < actions.length;i++) {
-                WhiteboardCompoundCellMessage msg = new WhiteboardCompoundCellMessage(clientID, 
-										      new CellID(actions[i][0]));
-                msg.setAction(Action.values()[actions[i][1]]);
-                msg.setPosition(new Point(actions[i][2], actions[i][3]));
-                
-                list.addLast(msg);
-            }
-        }
-        
-        return list;
-    }
-    */
 }
