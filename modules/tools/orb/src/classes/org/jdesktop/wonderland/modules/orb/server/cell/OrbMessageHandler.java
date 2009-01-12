@@ -64,7 +64,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;

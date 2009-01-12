@@ -23,13 +23,13 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellConfig;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
@@ -156,7 +156,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellClientState getCellClientState (WonderlandClientID clientID, ClientCapabilities capabilities) {
 	if (config == null) {
 	    config = new AppConventionalCellConfig(masterHost, appName, pixelScale, connectionInfo);
 	    if (userLaunched) {
@@ -177,8 +177,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setupCell(BasicCellSetup setupData) {
-	super.setupCell(setupData);
+    public void setServerState(CellServerState setupData) {
+	super.setServerState(setupData);
 
 	AppConventionalCellSetup setup = (AppConventionalCellSetup) setupData;
 
@@ -201,18 +201,18 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 
     /**
-     * Return a new BasicCellSetup Java bean class that represents the current
+     * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      * 
      * @return a JavaBean representing the current state
      */
-    public BasicCellSetup getCellMOSetup() {
+    public CellServerState getCellMOSetup() {
 
         /* Create a new BasicCellState and populate its members */
         AppConventionalCellSetup setup = new AppConventionalCellSetup();

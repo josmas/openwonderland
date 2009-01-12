@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.affordances.client.cell;
 
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.affordances.client.jme.cellrenderer.AffordanceTestCellRenderer;
 import org.jdesktop.wonderland.modules.affordances.common.cell.config.AffordanceTestCellConfig;
@@ -45,8 +45,8 @@ public class AffordanceTestCell extends Cell {
     }
     
     @Override
-    public void configure(CellConfig configData) {
-        super.configure(configData);
+    public void setClientState(CellClientState configData) {
+        super.setClientState(configData);
         AffordanceTestCellConfig c = (AffordanceTestCellConfig) configData;
         this.shape = c.getShape();
         this.materialJME = c.getMaterialJME();

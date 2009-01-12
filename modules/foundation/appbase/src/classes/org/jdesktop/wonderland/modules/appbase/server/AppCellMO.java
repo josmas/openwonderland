@@ -21,12 +21,12 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.common.AppCellConfig;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
@@ -65,7 +65,7 @@ public abstract class AppCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellClientState getCellClientState (WonderlandClientID clientID, ClientCapabilities capabilities) {
         return new AppCellConfig();
     }
 
@@ -73,15 +73,15 @@ public abstract class AppCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setupCell(BasicCellSetup setupData) {
-        super.setupCell(setupData);
+    public void setServerState(CellServerState setupData) {
+        super.setServerState(setupData);
     }
 
     /** 
      * {@inheritDoc}
      */
     @Override
-    public void reconfigureCell (BasicCellSetup setup) {
-        setupCell(setup);
+    public void reconfigureCell (CellServerState setup) {
+        setServerState(setup);
     }
 }

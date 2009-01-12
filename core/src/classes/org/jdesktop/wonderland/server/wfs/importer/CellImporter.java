@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -193,7 +193,7 @@ public class CellImporter {
              * Download and parse the cell configuration information. Create a
              * new cell based upon the information.
              */
-            BasicCellSetup setup = CellImporterUtils.getWFSCell(root, relativePath, child.name);
+            CellServerState setup = CellImporterUtils.getWFSCell(root, relativePath, child.name);
             if (setup == null) {
                 logger.info("WFSLoader: unable to read cell setup info " + relativePath + "/" + child.name);
                 continue;
@@ -222,7 +222,7 @@ public class CellImporter {
                 
             /* Call the cell's setup method */
             try {
-                ((BeanSetupMO)cellMO).setupCell(setup);
+                ((BeanSetupMO)cellMO).setServerState(setup);
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
                         cellMO.getName() + " of type " +

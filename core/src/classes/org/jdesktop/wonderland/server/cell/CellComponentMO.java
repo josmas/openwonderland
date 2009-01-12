@@ -22,7 +22,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 /**
  *
@@ -46,7 +46,7 @@ public abstract class CellComponentMO implements ManagedObject, Serializable {
      * 
      * @param setup the properties to setup with
      */
-    public void setupCellComponent(CellComponentSetup setup) {
+    public void setupCellComponent(CellComponentServerState setup) {
         // Do nothing by default
     }
 
@@ -58,7 +58,7 @@ public abstract class CellComponentMO implements ManagedObject, Serializable {
      * @param setup The setup object, if null, creates one.
      * @return The current setup information
      */
-    public CellComponentSetup getCellComponentSetup(CellComponentSetup setup) {
+    public CellComponentServerState getCellComponentSetup(CellComponentServerState setup) {
         // Do nothing by default
         return setup;
     }

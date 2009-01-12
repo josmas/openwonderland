@@ -15,33 +15,27 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config;
+package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.cell.config.*;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * The CalladaCellConfig class represents the information communicated
- * between the client and Darkstar server for collada model cells.
+ * The StaticModelCellConfig class represents the information communicated
+ * between the client and Darkstar server for static model cells.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class JmeColladaCellConfig extends CellConfig {
+public class StaticModelCellConfig extends CellClientState {
     /* The unique URL that describes the model data */
     private String modelURI = null;
-    private Vector3f geometryTranslation;
-    private Quaternion geometryRotation;
     
     /** Default constructor */
-    public JmeColladaCellConfig() {
+    public StaticModelCellConfig() {
     }
     
     /** Constructor, takes the model URI */
-    public JmeColladaCellConfig(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
+    public StaticModelCellConfig(String modelURI) {
         this.modelURI = modelURI;
-        this.geometryRotation = geometryRotation;
-        this.geometryTranslation = geometryTranslation;
     }
     
     /**
@@ -60,13 +54,5 @@ public class JmeColladaCellConfig extends CellConfig {
      */
     public void setModelURI(String modelURI) {
         this.modelURI = modelURI;
-    }
-
-    public Vector3f getGeometryTranslation() {
-        return geometryTranslation;
-    }
-
-    public Quaternion getGeometryRotation() {
-        return geometryRotation;
     }
 }

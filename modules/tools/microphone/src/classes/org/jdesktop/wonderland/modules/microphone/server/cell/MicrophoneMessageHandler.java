@@ -74,8 +74,8 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 import org.jdesktop.wonderland.server.UserManager;
 

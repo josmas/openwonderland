@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.common.wfs.WorldRootList;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 
 /**
@@ -59,7 +59,7 @@ public class CellImporterUtils {
      * argument must never begin with a "/". For a cell in the root path, use
      * an empty string for the relative path argument
      */
-    public static BasicCellSetup getWFSCell(String root, String relativePath, String name) {
+    public static CellServerState getWFSCell(String root, String relativePath, String name) {
         /*
          * Try to open up a connection the Jersey RESTful resource and parse
          * the stream. Upon error return null.
@@ -75,7 +75,7 @@ public class CellImporterUtils {
             
             /* Read in and parse the cell setup information */
             InputStreamReader isr = new InputStreamReader(url.openStream());
-            return BasicCellSetup.decode(isr, null, getServerFromURL(url));
+            return CellServerState.decode(isr, null, getServerFromURL(url));
         } catch (java.lang.Exception excp) {
             System.out.println(excp.toString());
             return null;

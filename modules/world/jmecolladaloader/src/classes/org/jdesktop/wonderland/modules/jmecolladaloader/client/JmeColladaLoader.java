@@ -42,10 +42,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Origin;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Rotation;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Scaling;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Scaling;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
 
 /**
  *
@@ -115,7 +115,7 @@ class JmeColladaLoader implements ModelLoader {
             if (modelFiles.size() > 1) {
                 logger.warning("Multiple models not supported during deploy");
             }
-            JMEColladaCellSetup setup = new JMEColladaCellSetup();
+            JMEColladaCellServerState setup = new JMEColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/art/"+modelFiles.get(0));
             setup.setOrigin(new Origin(rootNode.getLocalTranslation()));
             setup.setRotation(new Rotation(rootNode.getLocalRotation()));

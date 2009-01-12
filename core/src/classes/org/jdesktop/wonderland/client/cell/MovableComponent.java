@@ -54,7 +54,6 @@ public class MovableComponent extends CellComponent {
     
     @Override
     public void setStatus(CellStatus status) {
-        System.err.println("MOVABLECOMP setStatus"+status);
          switch(status) {
             case DISK :
                 if (msgReceiver!=null && channelComp!=null) {
@@ -78,7 +77,6 @@ public class MovableComponent extends CellComponent {
                             }
                         }
                     };
-                    System.err.println("**** Adding message receiver "+getMessageClass()+"  to "+channelComp.getClass().getName());
                     channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
                  }
              }

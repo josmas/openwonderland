@@ -63,7 +63,7 @@ import org.jdesktop.wonderland.client.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.config.WonderlandConfigUtil;
 import sun.misc.Service;
 
@@ -436,7 +436,7 @@ public class CellBoundsViewer extends javax.swing.JFrame {
                 BoundingVolume localBounds, 
                 CellID parentCellID, 
                 CellTransform cellTransform, 
-                CellConfig setup,
+                CellClientState setup,
                 String cellName) {
             System.out.println("LOAD CELL "+cellID);
             Cell ret = cacheImpl.loadCell(cellID, 

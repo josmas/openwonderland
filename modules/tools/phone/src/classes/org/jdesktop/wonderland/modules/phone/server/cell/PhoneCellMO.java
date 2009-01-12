@@ -44,9 +44,9 @@ import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellConfig;
@@ -107,7 +107,7 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID,
+    public CellClientState getCellClientState(WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
         PhoneCellConfig config = new PhoneCellConfig();
@@ -120,7 +120,7 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
         config.setZeroVolumeRadius(zeroVolumeRadius);
         config.setFullVolumeRadius(fullVolumeRadius);
 
-        //CellConfig ret = super.getCellConfig(clientSession, capabilities);
+        //CellClientState ret = super.getCellClientState(clientSession, capabilities);
 
         config.addClientComponentClasses(new String[]{
                     "org.jdesktop.wonderland.client.cell.ChannelComponent"
@@ -130,8 +130,8 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
 
         PhoneCellSetup pcs = (PhoneCellSetup) setup;
 
@@ -144,18 +144,18 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 
     /**
-     * Return a new BasicCellSetup Java bean class that represents the current
+     * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      *
      * @return a JavaBean representing the current state
      */
-    public BasicCellSetup getCellMOSetup() {
+    public CellServerState getCellMOSetup() {
         /* Create a new BasicCellState and populate its members */
         PhoneCellSetup setup = new PhoneCellSetup();
 

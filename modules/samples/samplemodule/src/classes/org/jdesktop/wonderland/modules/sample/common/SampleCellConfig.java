@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.sample.common;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
  * The SampleCellConfig class represents the information communicated
@@ -25,7 +25,7 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
  *
  * @author jkaplan
  */
-public class SampleCellConfig extends CellConfig {
+public class SampleCellConfig extends CellClientState {
     /** Default constructor */
     public SampleCellConfig() {
     }

@@ -25,8 +25,8 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
  * The OrbCellSetup class is the cell that renders an orb cell in
@@ -35,8 +35,8 @@ import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
  * @author jprovino
  */
 @XmlRootElement(name="orb-cell")
-public class OrbCellSetup extends BasicCellSetup 
-        implements Serializable, CellSetupSPI {
+public class OrbCellSetup extends CellServerState
+        implements Serializable, CellServerStateSPI {
 
     /** Default constructor */
     public OrbCellSetup() {

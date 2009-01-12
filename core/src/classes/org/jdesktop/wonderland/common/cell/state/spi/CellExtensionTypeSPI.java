@@ -16,9 +16,9 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.common.cell.setup.spi;
+package org.jdesktop.wonderland.common.cell.state.spi;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
  * The CellExtensionTypeSPI service provider interface is for classes that
@@ -39,5 +39,5 @@ public interface CellExtensionTypeSPI {
      * Returns an instance of a setup class given the file extension and an
      * opaque URI of the media
      */
-    public BasicCellSetup getCellSetup(String extension, String uri);
+    public CellServerState getCellSetup(String extension, String uri);
 }

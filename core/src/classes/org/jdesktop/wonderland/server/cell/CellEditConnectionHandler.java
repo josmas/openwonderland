@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage.EditType;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -86,7 +86,7 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             // The create message contains a setup class of the cell setup
             // information. Simply parse this stream, which will result in a
             // setup class of the property type.
-            BasicCellSetup setup = ((CellCreateMessage)editMessage).getCellSetup();
+            CellServerState setup = ((CellCreateMessage)editMessage).getCellSetup();
             
             // Fetch the server-side cell class name and create the cell
             String className = setup.getServerClassName();
@@ -103,7 +103,7 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             /* Call the cell's setup method */
             try {
                 logger.warning("[EDIT] Setting up cell");
-                ((BeanSetupMO) cellMO).setupCell(setup);
+                ((BeanSetupMO) cellMO).setServerState(setup);
                 logger.warning("[EDIT] Inserting cell int world");
                 WonderlandContext.getCellManager().insertCellInWorld(cellMO);
             } catch (ClassCastException cce) {

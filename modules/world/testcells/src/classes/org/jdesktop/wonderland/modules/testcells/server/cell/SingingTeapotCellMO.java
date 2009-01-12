@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.testcells.server.cell;
 
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
@@ -55,22 +55,22 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO implements BeanSetupM
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
     }
 
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 
     @Override
-    public BasicCellSetup getCellSetup(BasicCellSetup setup) {
+    public CellServerState getCellServerState(CellServerState setup) {
         if (setup == null) {
             setup = new SingingTeapotCellSetup();
         }
 
-        return super.getCellSetup(setup);
+        return super.getCellServerState(setup);
     }
 }

@@ -16,11 +16,11 @@
  * $State$
  */
 
-package org.jdesktop.wonderland.common.cell.setup;
+package org.jdesktop.wonderland.common.cell.state;
 
 import java.util.Iterator;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.setup.spi.CellExtensionTypeSPI;
+import org.jdesktop.wonderland.common.cell.state.spi.CellExtensionTypeSPI;
 import sun.misc.Service;
 
 /**
@@ -42,7 +42,7 @@ public class CellExtensionTypeFactory {
      * @param uri The full uri of the asset
      * @return A new setup class for the cell that renders the asset
      */
-    public static BasicCellSetup getCellSetup(String extension, String uri) {
+    public static CellServerState getCellSetup(String extension, String uri) {
         CellExtensionTypeSPI spi = getExtensionTypeProvider(extension);
         return spi.getCellSetup(extension, uri);
     }

@@ -26,10 +26,10 @@ import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -70,21 +70,21 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        CellConfig ret = new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation);
-        populateCellConfig(ret);
+    public CellClientState getCellClientState(WonderlandClientID clientID, ClientCapabilities capabilities) {
+        CellClientState ret = new JmeColladaCellClientState(this.modelURI, geometryTranslation, geometryRotation);
+        populateCellClientState(ret);
         return ret;
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
-        this.modelURI = ((JMEColladaCellSetup)setup).getModel();
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
+        this.modelURI = ((JMEColladaCellServerState)setup).getModel();
     }
 
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 }

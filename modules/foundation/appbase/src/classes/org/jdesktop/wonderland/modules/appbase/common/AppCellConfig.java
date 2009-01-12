@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.appbase.common;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -29,5 +29,5 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class AppCellConfig extends CellConfig {
+public class AppCellConfig extends CellClientState {
 }

@@ -25,9 +25,9 @@ import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
@@ -90,7 +90,7 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellClientState getCellClientState(WonderlandClientID clientID, ClientCapabilities capabilities) {
         WhiteboardCellConfig config = new WhiteboardCellConfig(pixelScale);
         config.setPreferredWidth(preferredWidth);
         config.setPreferredHeight(preferredHeight);
@@ -101,8 +101,8 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    public void setupCell(BasicCellSetup setupData) {
-        super.setupCell(setupData);
+    public void setServerState(CellServerState setupData) {
+        super.setServerState(setupData);
 
         WhiteboardCellSetup setup = (WhiteboardCellSetup) setupData;
         preferredWidth = setup.getPreferredWidth();
@@ -114,9 +114,9 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 
     /**

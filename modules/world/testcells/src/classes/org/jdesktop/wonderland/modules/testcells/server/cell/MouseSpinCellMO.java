@@ -21,7 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -56,14 +56,14 @@ public class MouseSpinCellMO extends SimpleShapeCellMO{
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
     }
 
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 
 }

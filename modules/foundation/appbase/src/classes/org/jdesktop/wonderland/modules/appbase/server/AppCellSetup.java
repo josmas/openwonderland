@@ -22,7 +22,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
  * The WFS setup class for AppCellMO.
@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
  * @author deronj
  */
 @XmlRootElement(name="app-cell")
-public class AppCellSetup extends BasicCellSetup implements Serializable {
+public class AppCellSetup extends CellServerState implements Serializable {
     
     /** Default constructor */
     public AppCellSetup() {}

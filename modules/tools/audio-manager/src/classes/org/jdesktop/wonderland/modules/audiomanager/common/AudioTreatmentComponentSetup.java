@@ -17,14 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
-import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 import java.io.Serializable;
 
@@ -33,7 +33,7 @@ import java.io.Serializable;
  * @author jprovino
  */
 @XmlRootElement(name="audio-treatment-component")
-public class AudioTreatmentComponentSetup extends CellComponentSetup implements Serializable, CellSetupSPI {
+public class AudioTreatmentComponentSetup extends CellComponentServerState implements Serializable, CellServerStateSPI {
 
     @XmlElements({
 	@XmlElement(name="treatment")

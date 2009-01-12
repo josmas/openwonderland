@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.jme.artimport;
 import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
  * Interface for Model loader code. Provides support for inital import of the 
@@ -68,13 +68,13 @@ public interface ModelLoader {
 //            this.assetURL = assetURL;
 //        }
         
-        private BasicCellSetup setup;
+        private CellServerState setup;
         
-        public BasicCellSetup getCellSetup() {
+        public CellServerState getCellSetup() {
             return setup;
         }
         
-        public void setCellSetup(BasicCellSetup setup) {
+        public void setCellSetup(CellServerState setup) {
             this.setup = setup;
         }
     }
