@@ -194,6 +194,7 @@ public class ServerSessionManager {
         LoginManager.addSession(session, this);
 
         // log in to the session
+        logger.warning("LOGIN TO SESSION");
         session.login(loginControl.getLoginParameters());
 
         // the session was created successfully.  Add it to our list of
@@ -212,6 +213,7 @@ public class ServerSessionManager {
         fireSessionCreated(session);
 
         // returnh the session
+        logger.warning("RETURN");
         return session;
     }
 

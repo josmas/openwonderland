@@ -18,12 +18,6 @@
                 builddir="${build.dir}">
             <client>
                 <clientjar name="testcells-client" basedir="${build.classes.dir}">
-<!--
-                    <service type="org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI">
-                        <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.setup.JMEColladaCellSetup"/>
-                        <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.setup.StaticModelCellSetup"/>
-                    </service> 
--->
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar>
