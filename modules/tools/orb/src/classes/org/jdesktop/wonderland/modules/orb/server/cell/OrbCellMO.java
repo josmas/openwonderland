@@ -18,44 +18,19 @@
 package org.jdesktop.wonderland.modules.orb.server.cell;
 
 
-import com.sun.mpk20.voicelib.app.AudioGroup;
-import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.Call;
-import com.sun.mpk20.voicelib.app.CallSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
-import com.sun.mpk20.voicelib.app.Player;
-import com.sun.mpk20.voicelib.app.PlayerSetup;
-import com.sun.mpk20.voicelib.app.VoiceManager;
-import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
-
-import com.sun.voip.CallParticipant;
-import com.sun.voip.client.connector.CallStatus;
-
-import java.lang.String;
 import java.util.logging.Logger;
-
-
-
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-
 import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
 import org.jdesktop.wonderland.modules.orb.common.OrbCellConfig;
-
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-
 import com.jme.bounding.BoundingBox;
-
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -109,12 +84,7 @@ public class OrbCellMO extends CellMO {
         if (cellClientState == null) {
             cellClientState = new OrbCellConfig();
         }
-
-        cellClientState.addClientComponentClasses(new String[] {
-              "org.jdesktop.wonderland.client.cell.ChannelComponent"
-        });
-
-	return super.getCellClientState(cellClientState, clientID, capabilities);
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
@@ -136,6 +106,6 @@ public class OrbCellMO extends CellMO {
         if (cellServerState == null) {
             cellServerState = new OrbCellSetup();
         }
-	return super.getCellServerState(cellServerState);
+        return super.getCellServerState(cellServerState);
     }
 }

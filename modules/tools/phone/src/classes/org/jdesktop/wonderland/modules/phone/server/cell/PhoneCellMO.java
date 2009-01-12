@@ -17,43 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
-import com.sun.mpk20.voicelib.app.AudioGroup;
-import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.Call;
-import com.sun.mpk20.voicelib.app.CallSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
-import com.sun.mpk20.voicelib.app.Player;
-import com.sun.mpk20.voicelib.app.PlayerSetup;
-import com.sun.mpk20.voicelib.app.VoiceManager;
-import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
-
 import com.sun.sgs.app.ManagedReference;
-
-import com.sun.voip.CallParticipant;
 import com.sun.voip.client.connector.CallStatus;
-
-import java.lang.String;
 import java.util.logging.Logger;
-
-
-
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellConfig;
-
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-
 import com.jme.bounding.BoundingBox;
-
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -105,9 +80,8 @@ public class PhoneCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-          cellClientState = new PhoneCellConfig();
+            cellClientState = new PhoneCellConfig();
         }
-
         ((PhoneCellConfig)cellClientState).setLocked(locked);
         ((PhoneCellConfig)cellClientState).setSimulateCalls(simulateCalls);
         ((PhoneCellConfig)cellClientState).setPhoneNumber(phoneNumber);
@@ -115,10 +89,6 @@ public class PhoneCellMO extends CellMO {
         ((PhoneCellConfig)cellClientState).setPhoneLocation(phoneLocation);
         ((PhoneCellConfig)cellClientState).setZeroVolumeRadius(zeroVolumeRadius);
         ((PhoneCellConfig)cellClientState).setFullVolumeRadius(fullVolumeRadius);
-
-        cellClientState.addClientComponentClasses(new String[]{
-                    "org.jdesktop.wonderland.client.cell.ChannelComponent"
-                });
 
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }

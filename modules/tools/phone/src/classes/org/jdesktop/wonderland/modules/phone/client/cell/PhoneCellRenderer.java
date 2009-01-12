@@ -17,12 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
-import com.jme.animation.SpatialTransformer;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.light.PointLight;
-import com.jme.light.SimpleLightNode;
-import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
