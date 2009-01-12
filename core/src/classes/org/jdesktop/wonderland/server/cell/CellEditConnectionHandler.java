@@ -40,7 +40,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
  * Handles CellEditMessages sent by the Wonderland client
@@ -103,7 +102,7 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             /* Call the cell's setup method */
             try {
                 logger.warning("[EDIT] Setting up cell");
-                ((BeanSetupMO) cellMO).setServerState(setup);
+                cellMO.setCellServerState(setup);
                 logger.warning("[EDIT] Inserting cell int world");
                 WonderlandContext.getCellManager().insertCellInWorld(cellMO);
             } catch (ClassCastException cce) {

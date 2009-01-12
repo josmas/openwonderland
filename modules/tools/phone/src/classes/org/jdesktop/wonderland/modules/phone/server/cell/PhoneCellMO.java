@@ -52,11 +52,7 @@ import org.jdesktop.wonderland.modules.phone.common.PhoneCellConfig;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
-import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
-
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
@@ -66,7 +62,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * A server cell that provides conference phone functionality
  * @author jprovino
  */
-public class PhoneCellMO extends CellMO implements BeanSetupMO {
+public class PhoneCellMO extends CellMO {
 
     private static final Logger logger =
             Logger.getLogger(PhoneCellMO.class.getName());
@@ -128,8 +124,8 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public void setServerState(CellServerState setup) {
-        super.setServerState(setup);
+    public void setCellServerState(CellServerState setup) {
+        super.setCellServerState(setup);
 
         PhoneCellSetup pcs = (PhoneCellSetup) setup;
 

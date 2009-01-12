@@ -96,8 +96,6 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
-
 import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
 
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
@@ -537,7 +535,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	setup.setOrigin(new Origin(center));
 
 	try {
-            ((BeanSetupMO)orbCellMO).setServerState(setup);
+            ((CellMO)orbCellMO).setCellServerState(setup);
         } catch (ClassCastException e) {
             logger.warning("Error setting up new cell " +
                 orbCellMO.getName() + " of type " +

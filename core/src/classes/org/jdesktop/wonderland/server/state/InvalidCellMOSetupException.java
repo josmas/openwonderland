@@ -15,13 +15,15 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.server.setup;
+package org.jdesktop.wonderland.server.state;
 
 /**
  * The InvalidWFSCellException is thrown if an invalid WFS cell file is loaded.
  * Processing continues after this exception, ignoring the error.
  * <p>
  * @author jslott
+ * @deprecated
+ * TODO delete me
  */
 public class InvalidCellMOSetupException extends Exception {
     

@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 
@@ -221,7 +220,7 @@ public class CellImporter {
                 
             /* Call the cell's setup method */
             try {
-                ((BeanSetupMO)cellMO).setServerState(setup);
+                cellMO.setCellServerState(setup);
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
                         cellMO.getName() + " of type " +
