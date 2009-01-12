@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellConfig;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
@@ -47,8 +47,8 @@ public class WhiteboardCell extends App2DCell {
     private static final Logger logger = Logger.getLogger(WhiteboardCell.class.getName());
     /** The (singleton) window created by the whiteboard app */
     private WhiteboardWindow whiteboardWin;
-    /** The cell config message received from the server cell */
-    private WhiteboardCellConfig config;
+    /** The cell client state message received from the server cell */
+    private WhiteboardCellClientState clientState;
     /** The communications component used to communicate with the server */
     private WhiteboardComponent commComponent;
 
@@ -75,14 +75,15 @@ public class WhiteboardCell extends App2DCell {
     /**
      * Initialize the whiteboard with parameters from the server.
      *
-     * @param configData the config data to initialize the cell with
+     * @param clientState the client state to initialize the cell with
      */
     @Override
-    public void setClientState(CellClientState configData) {
+    public void setClientState(CellClientState state) {
 
-        config = (WhiteboardCellConfig) configData;
-        setApp(new WhiteboardApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
-                config.getPixelScale(), commComponent));
+        clientState = (WhiteboardCellClientState) state;
+        setApp(new WhiteboardApp(getAppType(), clientState.getPreferredWidth(), 
+				 clientState.getPreferredHeight(), clientState.getPixelScale(), 
+				 commComponent));
 
         // Associate the app with this cell (must be done before making it visible)
         app.setCell(this);
