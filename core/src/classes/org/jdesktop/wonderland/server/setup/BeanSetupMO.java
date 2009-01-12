@@ -40,13 +40,6 @@ public interface BeanSetupMO {
     public void setServerState(CellServerState serverState);
     
     /**
-     * Called when the properties of a cell have changed.
-     * 
-     * @param setup a Java bean with updated properties
-     */
-    public void reconfigureCell(CellServerState serverState);
-    
-    /**
      * Returns the setup information currently configured on the cell. If the
      * setup argument is non-null, fill in that object and return it. If the
      * setup argument is null, create a new setup object.

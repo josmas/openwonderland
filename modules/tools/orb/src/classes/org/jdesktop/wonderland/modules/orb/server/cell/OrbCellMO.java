@@ -108,16 +108,18 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellClientState getCellClientState(WonderlandClientID clientID,
+    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID,
 	    ClientCapabilities capabilities) {
 
-        OrbCellConfig config = new OrbCellConfig();
+        if (cellClientState == null) {
+            cellClientState = new OrbCellConfig();
+        }
 
-        config.addClientComponentClasses(new String[] {
+        cellClientState.addClientComponentClasses(new String[] {
               "org.jdesktop.wonderland.client.cell.ChannelComponent"
         });
 
-	return config;
+	return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
@@ -127,38 +129,18 @@ public class OrbCellMO extends CellMO implements BeanSetupMO {
 	OrbCellSetup pcs = (OrbCellSetup) setup;
     }
 
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
-    }
-
-     /**
+    /**
      * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      *
      * @return a JavaBean representing the current state
      */
-    public CellServerState getCellMOSetup() {
+    @Override
+    public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
-        OrbCellSetup setup = new OrbCellSetup();
-
-        /* Set the bounds of the cell */
-        BoundingVolume bounds = this.getLocalBounds();
-
-        if (bounds != null) {
-            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
+        if (cellServerState == null) {
+            cellServerState = new OrbCellSetup();
         }
-
-        /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform(null);
-        if (transform != null) {
-            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
-            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
-            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
-        }
-
-	return setup;
+	return super.getCellServerState(cellServerState);
     }
-
 }

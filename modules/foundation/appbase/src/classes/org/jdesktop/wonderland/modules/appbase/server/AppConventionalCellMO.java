@@ -156,7 +156,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState (WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
 	if (config == null) {
 	    config = new AppConventionalCellConfig(masterHost, appName, pixelScale, connectionInfo);
 	    if (userLaunched) {
@@ -198,42 +198,23 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
-    }
-
-    /**
      * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      * 
      * @return a JavaBean representing the current state
      */
-    public CellServerState getCellMOSetup() {
+    @Override
+    public CellServerState getCellServerState(CellServerState cellServerState) {
 
         /* Create a new BasicCellState and populate its members */
-        AppConventionalCellSetup setup = new AppConventionalCellSetup();
-	setup.setMasterHost(this.masterHost);
-	setup.setAppName(this.appName);
-	setup.setCommand(this.command);
-	setup.setPixelScale(this.pixelScale);
+        if (cellServerState == null) {
+            cellServerState = new AppConventionalCellSetup();
+        }
+	((AppConventionalCellSetup)cellServerState).setMasterHost(this.masterHost);
+	((AppConventionalCellSetup)cellServerState).setAppName(this.appName);
+	((AppConventionalCellSetup)cellServerState).setCommand(this.command);
+	((AppConventionalCellSetup)cellServerState).setPixelScale(this.pixelScale);
         
-        /* Set the bounds of the cell */
-        BoundingVolume bounds = this.getLocalBounds();
-        if (bounds != null) {
-            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
-        }
-
-        /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform(null);
-        if (transform != null) {
-            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
-            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
-            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
-        }
-        return setup;
+        return super.getCellServerState(cellServerState);
     }
 }

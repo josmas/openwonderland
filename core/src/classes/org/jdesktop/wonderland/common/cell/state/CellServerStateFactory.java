@@ -46,7 +46,7 @@ import sun.misc.Service;
 public class CellServerStateFactory {
     /* A list of core cell setup class names, currently only for components */
     private static String[] coreSetup = {
-        "org.jdesktop.wonderland.common.cell.setup.CellComponentSetup",
+        "org.jdesktop.wonderland.common.cell.state.CellComponentServerState",
         "org.jdesktop.wonderland.common.AssetURI",
     };
     

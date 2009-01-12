@@ -70,21 +70,16 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellClientState getCellClientState(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        CellClientState ret = new JmeColladaCellClientState(this.modelURI, geometryTranslation, geometryRotation);
-        populateCellClientState(ret);
-        return ret;
+    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (cellClientState == null) {
+          cellClientState = new JmeColladaCellClientState(this.modelURI, geometryTranslation, geometryRotation);
+        }
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
         this.modelURI = ((JMEColladaCellServerState)setup).getModel();
-    }
-
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
     }
 }

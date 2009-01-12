@@ -90,11 +90,14 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        WhiteboardCellConfig config = new WhiteboardCellConfig(pixelScale);
-        config.setPreferredWidth(preferredWidth);
-        config.setPreferredHeight(preferredHeight);
-        return config;
+    protected CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        // If the cellClientState is null, create one
+        if (cellClientState == null) {
+            cellClientState = new WhiteboardCellConfig(pixelScale);
+        }
+        ((WhiteboardCellConfig)cellClientState).setPreferredWidth(preferredWidth);
+        ((WhiteboardCellConfig)cellClientState).setPreferredHeight(preferredHeight);
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     /**
@@ -108,15 +111,6 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
         preferredWidth = setup.getPreferredWidth();
         preferredHeight = setup.getPreferredHeight();
         pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
     }
 
     /**

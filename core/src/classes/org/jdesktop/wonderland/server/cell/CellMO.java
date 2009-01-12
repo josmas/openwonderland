@@ -474,7 +474,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(clientID, capabilities),
-                getCellClientState(clientID, capabilities));
+                getCellClientState(null, clientID, capabilities));
     }
     
     /**
@@ -490,7 +490,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
                                                ClientCapabilities capabilities) {
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(clientID, capabilities),
-                getCellClientState(clientID, capabilities));
+                getCellClientState(null, clientID, capabilities));
         
     }
     
@@ -516,23 +516,33 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
                                                      ClientCapabilities capabilities);
     
     /**
-     * Get the cellconfig for this cell. Subclasses should overload to
-     * return their specific setup object. The cellConfig is the object sent
-     * to each client to create and initialize the clients instance of this cell.
+     * Returns the client-side state of the cell. If the cellClientState argument
+     * is null, then the method should create an appropriate class, otherwise,
+     * the method should just fill in details in the class. Returns the client-
+     * side state class
+     *
+     * @param cellClientState If null, create a new object
+     * @param clientID The unique ID of the client
+     * @param capabilities The client capabilities
      */
-    protected CellClientState getCellClientState(WonderlandClientID clientID,
-                                       ClientCapabilities capabilities) {
-        CellClientState ret = new CellClientState();
-        populateCellClientState(ret);
-        return ret;
+    protected CellClientState getCellClientState(CellClientState cellClientState,
+            WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+
+        // If the given cellClientState is null, create a new one
+        if (cellClientState == null) {
+            cellClientState = new CellClientState();
+        }
+        populateCellClientState(cellClientState);
+        return cellClientState;
     }
 
-    protected void populateCellClientState(CellClientState config) {
-        System.err.println("CellConfig for "+cellID);
+    private void populateCellClientState(CellClientState config) {
+        logger.warning("[CELL] CLIENT CLASSES FOR COMPONENTS " + cellID);
         Iterable<ManagedReference<CellComponentMO>> compReferences = components.values();
         for(ManagedReference<CellComponentMO> ref : compReferences) {
             String clientClass = ref.get().getClientClass();
-            System.err.println(clientClass);
+            logger.warning("[CELL] COMPONENT CLIENT CLASS " + clientClass);
             if (clientClass!=null)
                 config.addClientComponentClasses(clientClass);
         }
@@ -570,17 +580,6 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
                 logger.log(Level.SEVERE, null, ex);
             }
         }
-    }
-    
-    /**
-     * Reconfigure the cell with the given properties.  This just
-     * calls <code>setServerState()</code>.
-     * @param setup the properties to setup with
-     */
-    public void reconfigureCell(CellServerState setup) {
-        // just call setServerState, since there is nothing to do differently
-        // if this is a change
-        setServerState(setup);
     }
 
     /**

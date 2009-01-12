@@ -70,11 +70,13 @@ public class JEditorTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState (WonderlandClientID clientID, ClientCapabilities capabilities) {
-	JEditorTestCellConfig config = new JEditorTestCellConfig(pixelScale);
-	config.setPreferredWidth(preferredWidth);
-	config.setPreferredHeight(preferredHeight);
-        return config;
+    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (cellClientState == null) {
+            cellClientState = new JEditorTestCellConfig(pixelScale);
+        }
+        ((JEditorTestCellConfig)cellClientState).setPreferredWidth(preferredWidth);
+        ((JEditorTestCellConfig)cellClientState).setPreferredHeight(preferredHeight);
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     /**
@@ -88,14 +90,5 @@ public class JEditorTestCellMO extends App2DCellMO implements BeanSetupMO {
 	preferredWidth = setup.getPreferredWidth();
 	preferredHeight = setup.getPreferredHeight();
 	pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
     }
 }

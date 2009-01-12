@@ -51,18 +51,15 @@ public class SampleCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellClientState getCellClientState(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return new SampleCellConfig();
+    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (cellClientState == null) {
+          cellClientState = new SampleCellConfig();
+        }
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
     public void setServerState(CellServerState serverState) {
         super.setServerState(serverState);
-    }
-
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
     }
 }
