@@ -113,32 +113,28 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellClientState getCellClientState(WonderlandClientID clientID,
+    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-        MicrophoneCellConfig config = new MicrophoneCellConfig();
+        if (cellClientState == null) {
+            cellClientState = new MicrophoneCellConfig();
+        }
 
-        config.addClientComponentClasses(new String[]{
+        cellClientState.addClientComponentClasses(new String[]{
                     "org.jdesktop.wonderland.client.cell.ChannelComponent"
                 });
 
         if (initialized == false) {
             initialized = true;
-            new MicrophoneMessageHandler(this, config.getName());
+            new MicrophoneMessageHandler(this, ((MicrophoneCellConfig)cellClientState).getName());
         }
 
-        return config;
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
-    }
-
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
     }
 
     /**
@@ -147,25 +143,12 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
      *
      * @return a JavaBean representing the current state
      */
-    public CellServerState getCellMOSetup() {
+    @Override
+    public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
-        MicrophoneCellSetup setup = new MicrophoneCellSetup();
-
-        /* Set the bounds of the cell */
-        BoundingVolume bounds = getLocalBounds();
-
-        if (bounds != null) {
-            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
+        if (cellServerState == null) {
+            cellServerState = new MicrophoneCellSetup();
         }
-
-        /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform(null);
-        if (transform != null) {
-            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
-            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
-            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
-        }
-
-        return setup;
+        return super.getCellServerState(cellServerState);
     }
 }

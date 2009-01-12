@@ -73,20 +73,15 @@ public class SimpleShapeCellMO extends CellMO {
     }
 
     @Override
-    public CellClientState getCellClientState(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        CellClientState ret = new SimpleShapeConfig(shape, mass, materialJME);
-        super.populateCellClientState(ret);
-        return ret;
+    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (cellClientState == null) {
+            cellClientState = new SimpleShapeConfig(shape, mass, materialJME);
+        }
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
-    }
-
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
     }
 }

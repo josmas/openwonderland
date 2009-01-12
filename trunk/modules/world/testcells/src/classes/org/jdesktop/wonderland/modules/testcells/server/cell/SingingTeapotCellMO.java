@@ -60,17 +60,10 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO implements BeanSetupM
     }
 
     @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
-    }
-
-    @Override
     public CellServerState getCellServerState(CellServerState setup) {
         if (setup == null) {
             setup = new SingingTeapotCellSetup();
         }
-
         return super.getCellServerState(setup);
     }
 }

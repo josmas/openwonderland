@@ -105,26 +105,26 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellClientState getCellClientState(WonderlandClientID clientID,
+    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-        PhoneCellConfig config = new PhoneCellConfig();
+        if (cellClientState == null) {
+          cellClientState = new PhoneCellConfig();
+        }
 
-        config.setLocked(locked);
-        config.setSimulateCalls(simulateCalls);
-        config.setPhoneNumber(phoneNumber);
-        config.setPassword(password);
-        config.setPhoneLocation(phoneLocation);
-        config.setZeroVolumeRadius(zeroVolumeRadius);
-        config.setFullVolumeRadius(fullVolumeRadius);
+        ((PhoneCellConfig)cellClientState).setLocked(locked);
+        ((PhoneCellConfig)cellClientState).setSimulateCalls(simulateCalls);
+        ((PhoneCellConfig)cellClientState).setPhoneNumber(phoneNumber);
+        ((PhoneCellConfig)cellClientState).setPassword(password);
+        ((PhoneCellConfig)cellClientState).setPhoneLocation(phoneLocation);
+        ((PhoneCellConfig)cellClientState).setZeroVolumeRadius(zeroVolumeRadius);
+        ((PhoneCellConfig)cellClientState).setFullVolumeRadius(fullVolumeRadius);
 
-        //CellClientState ret = super.getCellClientState(clientSession, capabilities);
-
-        config.addClientComponentClasses(new String[]{
+        cellClientState.addClientComponentClasses(new String[]{
                     "org.jdesktop.wonderland.client.cell.ChannelComponent"
                 });
 
-        return config;
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
@@ -141,38 +141,19 @@ public class PhoneCellMO extends CellMO implements BeanSetupMO {
         zeroVolumeRadius = pcs.getZeroVolumeRadius();
     }
 
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
-    }
-
     /**
      * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      *
      * @return a JavaBean representing the current state
      */
-    public CellServerState getCellMOSetup() {
+    @Override
+    public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
-        PhoneCellSetup setup = new PhoneCellSetup();
-
-        /* Set the bounds of the cell */
-        BoundingVolume bounds = getLocalBounds();
-
-        if (bounds != null) {
-            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
+        if (cellServerState == null) {
+            cellServerState= new PhoneCellSetup();
         }
-
-        /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform(null);
-        if (transform != null) {
-            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
-            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
-            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
-        }
-
-        return setup;
+        return super.getCellServerState(cellServerState);
     }
 
     public boolean getLocked() {

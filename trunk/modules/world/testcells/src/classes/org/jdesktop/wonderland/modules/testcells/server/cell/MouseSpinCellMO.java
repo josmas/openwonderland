@@ -59,11 +59,4 @@ public class MouseSpinCellMO extends SimpleShapeCellMO{
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
     }
-
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
-    }
-
 }

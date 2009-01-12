@@ -65,8 +65,12 @@ public abstract class AppCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState (WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return new AppCellConfig();
+    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        // If the given cellClient State is null, then create one
+        if (cellClientState == null) {
+            cellClientState = new AppCellConfig();
+        }
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     /** 
@@ -75,13 +79,5 @@ public abstract class AppCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState setupData) {
         super.setServerState(setupData);
-    }
-
-    /** 
-     * {@inheritDoc}
-     */
-    @Override
-    public void reconfigureCell (CellServerState setup) {
-        setServerState(setup);
     }
 }

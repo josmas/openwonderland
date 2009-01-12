@@ -111,16 +111,18 @@ public class ConeOfSilenceCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellClientState getCellClientState(WonderlandClientID clientID,
+    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID,
 	    ClientCapabilities capabilities) {
 
-        ConeOfSilenceCellConfig config = new ConeOfSilenceCellConfig();
+        if (cellClientState == null) {
+            cellClientState = new ConeOfSilenceCellConfig();
+        }
 
-	config.addClientComponentClasses(new String[] {
+	cellClientState.addClientComponentClasses(new String[] {
               "org.jdesktop.wonderland.client.cell.ChannelComponent"
         });
 
-	return config;
+	return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
@@ -135,39 +137,18 @@ public class ConeOfSilenceCellMO extends CellMO implements BeanSetupMO {
 	}
     }
 
-    @Override
-    public void reconfigureCell(CellServerState setup) {
-        super.reconfigureCell(setup);
-        setServerState(setup);
-    }
-
      /**
      * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      *
      * @return a JavaBean representing the current state
      */
-    public CellServerState getCellMOSetup() {
+    @Override
+    public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
-        ConeOfSilenceCellSetup setup = new ConeOfSilenceCellSetup();
-
-        /* Set the bounds of the cell */
-        BoundingVolume bounds = getLocalBounds();
-
-        if (bounds != null) {
-            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
+        if (cellServerState == null) {
+            cellServerState = new ConeOfSilenceCellSetup();
         }
-
-        /* Set the origin, scale, and rotation of the cell */
-        CellTransform transform = this.getLocalTransform(null);
-
-        if (transform != null) {
-            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
-	    setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
-            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
-        }
-
-	return setup;
+        return super.getCellServerState(cellServerState);
     }
-
 }
