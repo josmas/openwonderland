@@ -26,11 +26,11 @@ import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
-import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
  * The PhoneCellSetup class is the cell that renders a phone cell in
@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.common.cell.config.CellConfig;
  * 
  * @author jkaplan
  */
-public class PhoneCellConfig extends CellConfig {
+public class PhoneCellConfig extends CellClientState {
 
     private boolean locked;
     private boolean simulateCalls;

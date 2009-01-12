@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
 *
@@ -60,7 +60,7 @@ public class JmeCellCache extends CellCacheBasicImpl {
             BoundingVolume localBounds,
             CellID parentCellID,
             CellTransform cellTransform,
-            CellConfig setup,
+            CellClientState setup,
             String cellName) {
         Cell ret = super.loadCell(cellID,
                            className,

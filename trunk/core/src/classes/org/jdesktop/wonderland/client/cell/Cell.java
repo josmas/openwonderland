@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -574,7 +574,7 @@ public class Cell {
      * 
      * @param configData the configuration data for the cell
      */
-    public void configure(CellConfig configData) {
+    public void setClientState(CellClientState configData) {
 
         System.err.println("configure cell "+getCellID()+"  "+getClass());
         // Install the CellComponents

@@ -22,8 +22,8 @@ import com.sun.sgs.app.ClientSession;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestCellConfig;
 import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
@@ -70,7 +70,7 @@ public class SwingMenuTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellClientState getCellClientState (WonderlandClientID clientID, ClientCapabilities capabilities) {
 	SwingMenuTestCellConfig config = new SwingMenuTestCellConfig(pixelScale);
 	config.setPreferredWidth(preferredWidth);
 	config.setPreferredHeight(preferredHeight);
@@ -81,8 +81,8 @@ public class SwingMenuTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    public void setupCell(BasicCellSetup setupData) {
-	super.setupCell(setupData);
+    public void setServerState(CellServerState setupData) {
+	super.setServerState(setupData);
 
 	SwingMenuTestCellSetup setup = (SwingMenuTestCellSetup) setupData;
 	preferredWidth = setup.getPreferredWidth();
@@ -94,8 +94,8 @@ public class SwingMenuTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 }

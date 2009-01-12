@@ -431,7 +431,7 @@ public class CellExportService extends AbstractService {
             out = CellExporterUtils.getCellDescriptor(root, parentPath, cell);
 
             // if the output is null, it means the cell doesn't implement
-            // the getCellSetup() method.  That's fine, just ignore any
+            // the getCellServerState() method.  That's fine, just ignore any
             // children
             if (out != null) {
                 // finally, get the list of all the cell's children

@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.sample.client;
 
 import org.jdesktop.wonderland.client.cell.registry.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellSetup;
 
 /**
@@ -34,11 +34,13 @@ public class SampleCellFactory implements CellFactory {
         return new String[] {};
     }
 
-    public <T extends BasicCellSetup> T getDefaultCellSetup() {
+
+    public <T extends CellServerState> T getDefaultCellSetup() {
         return (T)new SampleCellSetup();
     }
 
     public CellPaletteInfo getCellPaletteInfo() {
         return new SampleCellPaletteInfo();
     }
+
 }

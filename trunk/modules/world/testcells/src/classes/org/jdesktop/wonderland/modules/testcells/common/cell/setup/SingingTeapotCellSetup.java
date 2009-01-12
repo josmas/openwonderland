@@ -20,15 +20,15 @@ package org.jdesktop.wonderland.modules.testcells.common.cell.setup;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
  *
  * @author jordanslott
  */
 @XmlRootElement(name="singing-teapot-cell")
-public class SingingTeapotCellSetup extends BasicCellSetup implements Serializable, CellSetupSPI {
+public class SingingTeapotCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
 
     /** Default constructor */
     public SingingTeapotCellSetup() {

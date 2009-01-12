@@ -42,8 +42,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Origin;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
 
 /**
  * A palette of cell types available to create in the world.
@@ -153,7 +153,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // From the selected value, find the proper means to create the object
     String cellDisplayName = (String) cellList.getSelectedValue();
     CellFactory factory = getCellFactory(cellDisplayName);
-    BasicCellSetup setup = factory.getDefaultCellSetup();
+    CellServerState setup = factory.getDefaultCellSetup();
     
     // Choose a random origin for now
     Vector3f origin = new Vector3f(new Random().nextInt(10) - 5,

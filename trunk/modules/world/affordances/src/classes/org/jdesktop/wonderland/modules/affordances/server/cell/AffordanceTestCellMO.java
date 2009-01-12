@@ -20,11 +20,11 @@ package org.jdesktop.wonderland.modules.affordances.server.cell;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.affordances.common.cell.config.AffordanceTestCellConfig;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -68,18 +68,18 @@ public class AffordanceTestCellMO extends CellMO {
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    public CellClientState getCellClientState(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return new AffordanceTestCellConfig(shape, materialJME);
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
     }
 
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 }

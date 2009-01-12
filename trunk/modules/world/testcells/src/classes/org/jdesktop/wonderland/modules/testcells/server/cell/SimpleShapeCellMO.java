@@ -21,11 +21,11 @@ import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -73,20 +73,20 @@ public class SimpleShapeCellMO extends CellMO {
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        CellConfig ret = new SimpleShapeConfig(shape, mass, materialJME);
-        super.populateCellConfig(ret);
+    public CellClientState getCellClientState(WonderlandClientID clientID, ClientCapabilities capabilities) {
+        CellClientState ret = new SimpleShapeConfig(shape, mass, materialJME);
+        super.populateCellClientState(ret);
         return ret;
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
     }
 
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 }

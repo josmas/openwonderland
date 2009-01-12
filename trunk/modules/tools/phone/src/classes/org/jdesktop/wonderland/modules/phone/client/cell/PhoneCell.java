@@ -43,7 +43,7 @@ import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellConfig;
 
@@ -108,8 +108,8 @@ public class PhoneCell extends Cell implements CellStatusChangeListener {
      * @param setupData
      */
     @Override
-    public void configure(CellConfig setupData) {
-	super.configure(setupData);
+    public void setClientState(CellClientState setupData) {
+	super.setClientState(setupData);
 
 	PhoneCellConfig config = (PhoneCellConfig) setupData;
 

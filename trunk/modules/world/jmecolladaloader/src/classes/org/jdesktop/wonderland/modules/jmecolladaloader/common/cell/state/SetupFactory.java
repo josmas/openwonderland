@@ -15,10 +15,10 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup;
+package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.spi.CellExtensionTypeSPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellExtensionTypeSPI;
 
 /**
  *
@@ -30,8 +30,8 @@ public class SetupFactory implements CellExtensionTypeSPI {
         return new String[] {"dae"};
     }
 
-    public BasicCellSetup getCellSetup(String extension, String uri) {
-        JMEColladaCellSetup ret = new JMEColladaCellSetup();
+    public CellServerState getCellSetup(String extension, String uri) {
+        JMEColladaCellServerState ret = new JMEColladaCellServerState();
         ret.setModel(uri);
         return ret;
     }

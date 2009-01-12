@@ -22,7 +22,7 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -63,7 +63,7 @@ public abstract class App2DCell extends AppCell {
      * {@inheritDoc}
      */
     @Override
-    public void configure(CellConfig configData) {
+    public void setClientState(CellClientState configData) {
 	App2DCellConfig appConfigData = (App2DCellConfig) configData;
 	pixelScale = appConfigData.getPixelScale();
     }

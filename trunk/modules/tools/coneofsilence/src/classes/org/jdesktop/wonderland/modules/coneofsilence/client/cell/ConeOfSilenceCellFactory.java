@@ -21,8 +21,8 @@ package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Rotation;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellSetup;
 
 import com.jme.math.Vector3f;
@@ -38,7 +38,7 @@ public class ConeOfSilenceCellFactory implements CellFactory {
         return new String[] {};
     }
 
-    public <T extends BasicCellSetup> T getDefaultCellSetup() {
+    public <T extends CellServerState> T getDefaultCellSetup() {
         // Create a setup with some default values
         ConeOfSilenceCellSetup setup = new ConeOfSilenceCellSetup();
         setup.setName("COS");

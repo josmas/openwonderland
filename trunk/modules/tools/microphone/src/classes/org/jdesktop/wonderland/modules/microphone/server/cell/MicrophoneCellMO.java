@@ -51,19 +51,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellConfig;
@@ -115,7 +115,7 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public CellConfig getCellConfig(WonderlandClientID clientID,
+    public CellClientState getCellClientState(WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
         MicrophoneCellConfig config = new MicrophoneCellConfig();
@@ -133,23 +133,23 @@ public class MicrophoneCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
     }
 
     @Override
-    public void reconfigureCell(BasicCellSetup setup) {
+    public void reconfigureCell(CellServerState setup) {
         super.reconfigureCell(setup);
-        setupCell(setup);
+        setServerState(setup);
     }
 
     /**
-     * Return a new BasicCellSetup Java bean class that represents the current
+     * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      *
      * @return a JavaBean representing the current state
      */
-    public BasicCellSetup getCellMOSetup() {
+    public CellServerState getCellMOSetup() {
         /* Create a new BasicCellState and populate its members */
         MicrophoneCellSetup setup = new MicrophoneCellSetup();
 

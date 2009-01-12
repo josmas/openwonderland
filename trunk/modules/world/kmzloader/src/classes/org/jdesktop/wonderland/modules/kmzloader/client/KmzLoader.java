@@ -48,10 +48,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Origin;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Rotation;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Scaling;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Scaling;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
@@ -207,7 +207,7 @@ class KmzLoader implements ModelLoader {
 
             // XXX There should not be a direct reference to another module
             // from here.
-            JMEColladaCellSetup setup = new JMEColladaCellSetup();
+            JMEColladaCellServerState setup = new JMEColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
             setup.setOrigin(new Origin(rootNode.getLocalTranslation()));
             setup.setRotation(new Rotation(rootNode.getLocalRotation()));

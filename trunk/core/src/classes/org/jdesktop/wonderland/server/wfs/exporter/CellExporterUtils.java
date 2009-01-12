@@ -27,7 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellDescriptor;
 import org.jdesktop.wonderland.common.wfs.CellPath;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
@@ -70,7 +70,7 @@ public class CellExporterUtils {
         // cell. If the cell does not return a valid setup object, then simply
         // ignore the cell (and its children).
         String cellName = cellMO.getName();
-        BasicCellSetup setup = cellMO.getCellSetup(null);
+        CellServerState setup = cellMO.getCellServerState(null);
         if (setup == null) {
             return null;
         }

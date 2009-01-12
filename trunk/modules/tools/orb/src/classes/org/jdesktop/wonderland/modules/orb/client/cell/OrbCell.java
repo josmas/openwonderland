@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 import org.jdesktop.wonderland.modules.orb.common.OrbCellConfig;
 
@@ -92,8 +92,8 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
      * @param setupData
      */
     @Override
-    public void configure(CellConfig setupData) {
-	super.configure(setupData);
+    public void setClientState(CellClientState setupData) {
+	super.setClientState(setupData);
 
 	logger.fine("ORB is configured");
 	OrbCellConfig config = (OrbCellConfig) setupData;

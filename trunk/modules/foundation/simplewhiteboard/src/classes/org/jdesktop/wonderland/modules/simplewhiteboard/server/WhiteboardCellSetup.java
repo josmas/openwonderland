@@ -23,8 +23,8 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
  * The WFS setup class for WhiteboardCellMO.
@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
  * @author deronj
  */
 @XmlRootElement(name="simplewhiteboard-cell")
-public class WhiteboardCellSetup extends BasicCellSetup implements Serializable, CellSetupSPI {
+public class WhiteboardCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
     
     /** The user's preferred width of the whiteboard window. */
     @XmlElement(name="preferredWidth")

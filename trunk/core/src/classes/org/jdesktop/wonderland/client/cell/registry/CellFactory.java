@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.client.cell.registry;
 
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
  * A CellFactory class is responsible for generating the necessary information
@@ -47,7 +47,7 @@ public interface CellFactory {
      * 
      * @return A cell setup class with default values
      */
-    public <T extends BasicCellSetup> T getDefaultCellSetup();
+    public <T extends CellServerState> T getDefaultCellSetup();
     
     /**
      * Returns the information necessary to display the cell in the world

@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageList;
@@ -178,7 +178,7 @@ public class CellCacheConnection extends BaseConnection {
                                BoundingVolume localBounds,
                                CellID parentCellID,
                                CellTransform cellTransform,
-                               CellConfig setup,
+                               CellClientState setup,
                                String cellName);
         /**
          * Unload the cell. This removes the cell from memory but will leave

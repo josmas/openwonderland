@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -103,7 +103,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
     }
 
     @Override
-    public void setupCellComponent(CellComponentSetup setup) {
+    public void setupCellComponent(CellComponentServerState setup) {
         AudioTreatmentComponentSetup accs = (AudioTreatmentComponentSetup) setup;
 
         treatments = accs.getTreatments();
@@ -112,7 +112,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
     }
 
     @Override
-    public CellComponentSetup getCellComponentSetup(CellComponentSetup setup) {
+    public CellComponentServerState getCellComponentSetup(CellComponentServerState setup) {
         if (setup == null) {
             setup = new AudioTreatmentComponentSetup();
         }

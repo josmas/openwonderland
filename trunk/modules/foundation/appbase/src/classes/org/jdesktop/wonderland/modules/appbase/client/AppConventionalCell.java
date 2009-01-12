@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellConfig;
 import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -65,8 +65,8 @@ public abstract class AppConventionalCell extends App2DCell {
      * {@inheritDoc}
      */
     @Override
-    public void configure (CellConfig configData) {
-	super.configure(configData);
+    public void setClientState (CellClientState configData) {
+	super.setClientState(configData);
 
 	AppConventionalCellConfig config = (AppConventionalCellConfig) configData;
 	masterHost = config.getMasterHost();

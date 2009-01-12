@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.jeditortest.client;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
 import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellConfig;
@@ -66,7 +66,7 @@ public class JEditorTestCell extends App2DCell {
      *
      * @param configData the config data to initialize the cell with
      */
-    public void configure (CellConfig configData) {
+    public void setClientState (CellClientState configData) {
 
         config = (JEditorTestCellConfig)configData;
         setApp(new JEditorTestApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),

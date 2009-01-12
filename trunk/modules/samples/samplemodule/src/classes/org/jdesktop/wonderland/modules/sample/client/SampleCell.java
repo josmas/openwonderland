@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
  * Client-side cell for rendering JME content
@@ -43,8 +43,8 @@ public class SampleCell extends Cell {
      * @param setupData
      */
     @Override
-    public void configure(CellConfig configData) {
-        super.configure(configData);
+    public void setClientState(CellClientState configData) {
+        super.setClientState(configData);
     }
     
     @Override

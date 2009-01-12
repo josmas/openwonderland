@@ -41,10 +41,10 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 import org.jdesktop.wonderland.server.setup.BeanSetupMO;
@@ -474,7 +474,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(clientID, capabilities),
-                getCellConfig(clientID, capabilities));
+                getCellClientState(clientID, capabilities));
     }
     
     /**
@@ -490,7 +490,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
                                                ClientCapabilities capabilities) {
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(clientID, capabilities),
-                getCellConfig(clientID, capabilities));
+                getCellClientState(clientID, capabilities));
         
     }
     
@@ -520,14 +520,14 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * return their specific setup object. The cellConfig is the object sent
      * to each client to create and initialize the clients instance of this cell.
      */
-    protected CellConfig getCellConfig(WonderlandClientID clientID,
+    protected CellClientState getCellClientState(WonderlandClientID clientID,
                                        ClientCapabilities capabilities) {
-        CellConfig ret = new CellConfig();
-        populateCellConfig(ret);
+        CellClientState ret = new CellClientState();
+        populateCellClientState(ret);
         return ret;
     }
 
-    protected void populateCellConfig(CellConfig config) {
+    protected void populateCellClientState(CellClientState config) {
         System.err.println("CellConfig for "+cellID);
         Iterable<ManagedReference<CellComponentMO>> compReferences = components.values();
         for(ManagedReference<CellComponentMO> ref : compReferences) {
@@ -551,14 +551,14 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * Set up the cell from the given properties
      * @param setup the properties to setup with
      */
-    public void setupCell(BasicCellSetup setup) {
+    public void setServerState(CellServerState setup) {
         // Set up the transform (origin, rotation, scaling) and cell bounds
         setLocalTransform(BasicCellSetupHelper.getCellTransform(setup));
         setLocalBounds(BasicCellSetupHelper.getCellBounds(setup));
         
         // For all components in the setup class, create the component classes
         // and setup them up and add to the cell.
-        for (CellComponentSetup compSetup : setup.getCellComponentSetups()) {
+        for (CellComponentServerState compSetup : setup.getCellComponentSetups()) {
             String className = compSetup.getServerComponentClassName();
             try {
                 Class clazz = Class.forName(className);
@@ -574,13 +574,13 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
     
     /**
      * Reconfigure the cell with the given properties.  This just
-     * calls <code>setupCell()</code>.
+     * calls <code>setServerState()</code>.
      * @param setup the properties to setup with
      */
-    public void reconfigureCell(BasicCellSetup setup) {
-        // just call setupCell, since there is nothing to do differently
+    public void reconfigureCell(CellServerState setup) {
+        // just call setServerState, since there is nothing to do differently
         // if this is a change
-        setupCell(setup);
+        setServerState(setup);
     }
 
     /**
@@ -591,7 +591,7 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * @param setup The setup object, if null, creates one.
      * @return The current setup information
      */
-    public BasicCellSetup getCellSetup(BasicCellSetup setup) {
+    public CellServerState getCellServerState(CellServerState setup) {
         // In the case of CellMO, if the 'setup' parameter is null, it means
         // it was not created by the super class. In which case, this class
         // should just return null
@@ -606,15 +606,15 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         setup.setScaling(BasicCellSetupHelper.getSetupScaling(localTransform));
 
         // add setups for each component
-        List<CellComponentSetup> setups = new LinkedList<CellComponentSetup>();
+        List<CellComponentServerState> setups = new LinkedList<CellComponentServerState>();
         for (ManagedReference<CellComponentMO> componentRef : components.values()) {
             CellComponentMO component = componentRef.get();
-            CellComponentSetup compSetup = component.getCellComponentSetup(null);
+            CellComponentServerState compSetup = component.getCellComponentSetup(null);
             if (compSetup != null) {
                 setups.add(compSetup);
             }
         }
-        setup.setCellComponentSetups(setups.toArray(new CellComponentSetup[0]));
+        setup.setCellComponentSetups(setups.toArray(new CellComponentServerState[0]));
 
         return setup;
     }

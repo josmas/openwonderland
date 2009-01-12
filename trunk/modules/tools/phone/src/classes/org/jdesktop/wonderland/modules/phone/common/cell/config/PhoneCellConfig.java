@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.phone.common.cell.config;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 import org.jdesktop.wonderland.modules.phone.common.cell.config.PhoneCellConfig;
 
@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.modules.phone.common.cell.config.PhoneCellConfig;
  *
  * @author jkaplan
  */
-public class PhoneCellConfig extends CellConfig {
+public class PhoneCellConfig extends CellClientState {
     /** Default constructor */
     public PhoneCellConfig() {
     }

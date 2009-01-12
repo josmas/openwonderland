@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.testcells.common.cell.config;
 
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 
 /**
@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
  *
  * @author paulby
  */
-public class SimpleShapeConfig extends CellConfig {
+public class SimpleShapeConfig extends CellClientState {
     public enum Shape { BOX, CONE, CYLINDER, SPHERE, TEAPOT };
 
     private Shape shape;
