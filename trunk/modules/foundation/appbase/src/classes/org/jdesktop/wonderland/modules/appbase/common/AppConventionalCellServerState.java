@@ -25,12 +25,12 @@ import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
- * The WFS setup class for AppConventionalCellMO.
+ * The WFS server state class for AppConventionalCellMO.
  * 
  * @author deronj
  */
 @XmlRootElement(name="app-conventional-cell")
-public class AppConventionalCellSetup extends CellServerState implements Serializable {
+public class AppConventionalCellServerState extends CellServerState implements Serializable {
     
     /** The master host. */
     @XmlElement(name="masterHost")
@@ -49,7 +49,7 @@ public class AppConventionalCellSetup extends CellServerState implements Seriali
     public Vector2f pixelScale = null;
 
     /** Default constructor */
-    public AppConventionalCellSetup() {}
+    public AppConventionalCellServerState() {}
     
     /**
      * Returns the master host.
@@ -131,11 +131,11 @@ public class AppConventionalCellSetup extends CellServerState implements Seriali
     /**
      * Returns a string representation of this class.
      *
-     * @return The setup information as a string.
+     * @return The server state information as a string.
      */
     @Override
     public String toString() {
-        return super.toString() + " [AppConventionalCellSetup]: " +
+        return super.toString() + " [AppConventionalCellServerState]: " +
 	    "masterHost = " + masterHost +
 	    "appName = " + appName +
 	    "command = " + command +

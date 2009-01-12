@@ -24,15 +24,15 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
- * The WFS setup class for AppCellMO.
+ * The WFS server state class for AppCellMO.
  * 
  * @author deronj
  */
 @XmlRootElement(name="app-cell")
-public class AppCellSetup extends CellServerState implements Serializable {
+public class AppCellServerState extends CellServerState implements Serializable {
     
     /** Default constructor */
-    public AppCellSetup() {}
+    public AppCellServerState() {}
     
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.appbase.server.AppCellMO";
@@ -41,10 +41,10 @@ public class AppCellSetup extends CellServerState implements Serializable {
     /**
      * Returns a string representation of this class.
      *
-     * @return The setup information as a string.
+     * @return The server state information as a string.
      */
     @Override
     public String toString() {
-        return super.toString() + " [AppCellSetup]";
+        return super.toString() + " [AppCellServerState]";
     }
 }

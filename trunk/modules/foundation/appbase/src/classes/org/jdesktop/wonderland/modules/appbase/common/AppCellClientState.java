@@ -21,7 +21,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * The cell config info sent by the server to the client for an app.base app cell.
+ * The cell client state info sent by the server to the client for an app.base app cell.
  * Note: there is nothing currently defined in this class because there is no 
  * client-only information that all types of apps share.
  *
@@ -29,5 +29,5 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class AppCellConfig extends CellClientState {
+public class AppCellClientState extends CellClientState {
 }
