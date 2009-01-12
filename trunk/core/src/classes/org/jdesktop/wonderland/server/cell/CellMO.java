@@ -46,8 +46,7 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
+import org.jdesktop.wonderland.server.state.BasicCellServerStateHelper;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 
@@ -57,7 +56,7 @@ import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
  * @author paulby
  */
 @ExperimentalAPI
-public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO {
+public abstract class CellMO implements ManagedObject, Serializable {
 
     private ManagedReference<CellMO> parentRef=null;
     private ArrayList<ManagedReference<CellMO>> childCellRefs = null;
@@ -538,11 +537,11 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
     }
 
     private void populateCellClientState(CellClientState config) {
-        logger.warning("[CELL] CLIENT CLASSES FOR COMPONENTS " + cellID);
+        logger.fine("[CELL] CLIENT CLASSES FOR COMPONENTS " + cellID);
         Iterable<ManagedReference<CellComponentMO>> compReferences = components.values();
         for(ManagedReference<CellComponentMO> ref : compReferences) {
             String clientClass = ref.get().getClientClass();
-            logger.warning("[CELL] COMPONENT CLIENT CLASS " + clientClass);
+            logger.fine("[CELL] COMPONENT CLIENT CLASS " + clientClass);
             if (clientClass!=null)
                 config.addClientComponentClasses(clientClass);
         }
@@ -561,10 +560,10 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
      * Set up the cell from the given properties
      * @param setup the properties to setup with
      */
-    public void setServerState(CellServerState setup) {
+    public void setCellServerState(CellServerState setup) {
         // Set up the transform (origin, rotation, scaling) and cell bounds
-        setLocalTransform(BasicCellSetupHelper.getCellTransform(setup));
-        setLocalBounds(BasicCellSetupHelper.getCellBounds(setup));
+        setLocalTransform(BasicCellServerStateHelper.getCellTransform(setup));
+        setLocalBounds(BasicCellServerStateHelper.getCellBounds(setup));
         
         // For all components in the setup class, create the component classes
         // and setup them up and add to the cell.
@@ -599,10 +598,10 @@ public abstract class CellMO implements ManagedObject, Serializable, BeanSetupMO
         }
         
         // Fill in the details about the origin, rotation, and scaling
-        setup.setBounds(BasicCellSetupHelper.getSetupBounds(localBounds));
-        setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(localTransform));
-        setup.setRotation(BasicCellSetupHelper.getSetupRotation(localTransform));
-        setup.setScaling(BasicCellSetupHelper.getSetupScaling(localTransform));
+        setup.setBounds(BasicCellServerStateHelper.getSetupBounds(localBounds));
+        setup.setOrigin(BasicCellServerStateHelper.getSetupOrigin(localTransform));
+        setup.setRotation(BasicCellServerStateHelper.getSetupRotation(localTransform));
+        setup.setScaling(BasicCellServerStateHelper.getSetupScaling(localTransform));
 
         // add setups for each component
         List<CellComponentServerState> setups = new LinkedList<CellComponentServerState>();

@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.server.setup;
+package org.jdesktop.wonderland.server.state;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState.Scaling;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- * The BasicCellSetupHelper class implements a collection of utility routines
+ * The BasicCellServerStateHelper class implements a collection of utility routines
  * that help convert between JMonkeyEngine (JME) types for the cell bounds and
  * tranform and the representations of these quantities using basic Java types
  * in the CellServerState class.
@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author jkaplan
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class BasicCellSetupHelper {
+public class BasicCellServerStateHelper {
    
     /**
      * Returns the bounds of a cell as a BoundingVolume object, given the cell's

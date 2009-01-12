@@ -59,7 +59,7 @@ public class StaticModelCellMO extends CellMO {
     }
 
     @Override
-    public void setServerState(CellServerState setup) {
-        super.setServerState(setup);
+    public void setCellServerState(CellServerState setup) {
+        super.setCellServerState(setup);
     }
 }

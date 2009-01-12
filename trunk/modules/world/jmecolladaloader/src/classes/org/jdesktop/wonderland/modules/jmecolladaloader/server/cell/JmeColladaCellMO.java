@@ -22,7 +22,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -31,8 +30,6 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeCol
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 
 /**
@@ -40,7 +37,7 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
  * @author paulby
  */
 @ExperimentalAPI
-public class JmeColladaCellMO extends CellMO implements BeanSetupMO { 
+public class JmeColladaCellMO extends CellMO { 
     
     /* The unique model URI */
     private String modelURI = null;
@@ -78,8 +75,8 @@ public class JmeColladaCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public void setServerState(CellServerState setup) {
-        super.setServerState(setup);
+    public void setCellServerState(CellServerState setup) {
+        super.setCellServerState(setup);
         this.modelURI = ((JMEColladaCellServerState)setup).getModel();
     }
 }

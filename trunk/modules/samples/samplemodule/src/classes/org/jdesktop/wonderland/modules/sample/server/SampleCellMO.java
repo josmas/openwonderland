@@ -27,7 +27,6 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 
 /**
@@ -35,7 +34,7 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
  * @author jkaplan
  */
 @ExperimentalAPI
-public class SampleCellMO extends CellMO implements BeanSetupMO { 
+public class SampleCellMO extends CellMO { 
     	
     /** Default constructor, used when cell is created via WFS */
     public SampleCellMO() {
@@ -59,7 +58,7 @@ public class SampleCellMO extends CellMO implements BeanSetupMO {
     }
 
     @Override
-    public void setServerState(CellServerState serverState) {
-        super.setServerState(serverState);
+    public void setCellServerState(CellServerState serverState) {
+        super.setCellServerState(serverState);
     }
 }

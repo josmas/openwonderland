@@ -28,7 +28,7 @@ import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
+import org.jdesktop.wonderland.server.state.BasicCellServerStateHelper;
 
 
 /**
@@ -77,7 +77,7 @@ public abstract class AppCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setServerState(CellServerState setupData) {
-        super.setServerState(setupData);
+    public void setCellServerState(CellServerState setupData) {
+        super.setCellServerState(setupData);
     }
 }

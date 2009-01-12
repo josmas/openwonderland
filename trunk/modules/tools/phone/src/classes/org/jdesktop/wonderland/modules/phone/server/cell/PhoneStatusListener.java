@@ -99,8 +99,6 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
-
 import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
 
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;

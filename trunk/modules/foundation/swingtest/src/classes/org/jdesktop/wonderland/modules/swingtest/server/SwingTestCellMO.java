@@ -18,18 +18,14 @@
 package org.jdesktop.wonderland.modules.swingtest.server;
 
 import com.jme.math.Vector2f;
-import com.sun.sgs.app.ClientSession;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellConfig;
-import org.jdesktop.wonderland.modules.swingtest.common.SwingTestTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
  * A server cell associated with a Swing test.
@@ -38,7 +34,7 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
  */
 
 @ExperimentalAPI
-public class SwingTestCellMO extends App2DCellMO implements BeanSetupMO {
+public class SwingTestCellMO extends App2DCellMO {
 
     /** The preferred width (from the WFS file) */
     private int preferredWidth;
@@ -83,8 +79,8 @@ public class SwingTestCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    public void setServerState(CellServerState setupData) {
-	super.setServerState(setupData);
+    public void setCellServerState(CellServerState setupData) {
+	super.setCellServerState(setupData);
 
 	SwingTestCellSetup setup = (SwingTestCellSetup) setupData;
 	preferredWidth = setup.getPreferredWidth();

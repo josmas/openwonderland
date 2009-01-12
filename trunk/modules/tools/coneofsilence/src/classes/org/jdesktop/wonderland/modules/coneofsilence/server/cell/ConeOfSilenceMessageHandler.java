@@ -82,8 +82,6 @@ import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
-
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellSetup;
 
 import org.jdesktop.wonderland.modules.coneofsilence.common.messages.ConeOfSilenceEnterCellMessage;

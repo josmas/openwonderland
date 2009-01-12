@@ -38,7 +38,6 @@ import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
  * A server cell associated with a whiteboard
@@ -46,7 +45,7 @@ import org.jdesktop.wonderland.server.setup.BeanSetupMO;
  * @author nsimpson,deronj
  */
 @ExperimentalAPI
-public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
+public class WhiteboardCellMO extends App2DCellMO {
 
     private static final Logger logger = Logger.getLogger(WhiteboardCellMO.class.getName());
     // The messages list contains the current state of the whiteboard.
@@ -104,8 +103,8 @@ public class WhiteboardCellMO extends App2DCellMO implements BeanSetupMO {
      * {@inheritDoc}
      */
     @Override
-    public void setServerState(CellServerState setupData) {
-        super.setServerState(setupData);
+    public void setCellServerState(CellServerState setupData) {
+        super.setCellServerState(setupData);
 
         WhiteboardCellSetup setup = (WhiteboardCellSetup) setupData;
         preferredWidth = setup.getPreferredWidth();
