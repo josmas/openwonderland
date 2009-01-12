@@ -17,14 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
-import org.jdesktop.wonderland.client.cell.Cell;
-
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
-
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 /**

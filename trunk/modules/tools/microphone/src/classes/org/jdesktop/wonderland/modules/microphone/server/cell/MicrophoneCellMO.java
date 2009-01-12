@@ -17,61 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup;
-
-import com.sun.mpk20.voicelib.app.AudioGroup;
-import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.Call;
-import com.sun.mpk20.voicelib.app.CallSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
-import com.sun.mpk20.voicelib.app.Player;
-import com.sun.mpk20.voicelib.app.PlayerSetup;
-import com.sun.mpk20.voicelib.app.VoiceManager;
-import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
-
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ManagedReference;
-
-import com.sun.voip.CallParticipant;
-import com.sun.voip.client.connector.CallStatus;
-
-import java.io.IOException;
-import java.lang.String;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
-
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellConfig;
-
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingVolume;
-
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -117,13 +72,9 @@ public class MicrophoneCellMO extends CellMO {
             cellClientState = new MicrophoneCellConfig();
         }
 
-        cellClientState.addClientComponentClasses(new String[]{
-                    "org.jdesktop.wonderland.client.cell.ChannelComponent"
-                });
-
         if (initialized == false) {
             initialized = true;
-            new MicrophoneMessageHandler(this, ((MicrophoneCellConfig)cellClientState).getName());
+            new MicrophoneMessageHandler(this, ((MicrophoneCellConfig) cellClientState).getName());
         }
 
         return super.getCellClientState(cellClientState, clientID, capabilities);
