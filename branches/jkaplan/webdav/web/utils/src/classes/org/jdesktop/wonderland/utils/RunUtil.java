@@ -261,7 +261,7 @@ public class RunUtil {
      * @param size the size of the file
      * @throws IOException if there is an error reading or writing
      */
-    protected static void copyFile(FileChannel in, FileChannel out)
+    public static void copyFile(FileChannel in, FileChannel out)
         throws IOException
     {
         long position = 0;

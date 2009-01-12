@@ -23,7 +23,7 @@
         <c:set var="snapshot" value="${requestScope['snapshot']}"/>
         <form action="SnapshotManager" method="post">
             <input type="hidden" name="action" value="update"/>
-            <input type="hidden" name="snapshot" value="${snapshot.name}"/>
+            <input type="hidden" name="root" value="snapshots/${snapshot.name}"/>
 
             <table>
                 <tr>

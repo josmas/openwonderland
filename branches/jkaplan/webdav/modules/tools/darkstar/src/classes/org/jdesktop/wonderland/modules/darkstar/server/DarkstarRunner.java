@@ -38,6 +38,8 @@ import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
@@ -68,8 +70,14 @@ public class DarkstarRunner extends BaseRunner {
     private static final String CHECKSUM_URL =
                                   "darkstar/darkstarserver/services/checksums";
 
-    /** the file to save WFS URLs in */
-    private static final String WFS_URL_FILE = "curwfsurl";
+    /** the files to save WFS URLs in */
+    private static final String SELECTED_WFS_FILE = "selectedwfs";
+    private static final String LAST_WFS_FILE = "lastwfs";
+    private static final String COLDSTART_FILE = ".coldstart";
+
+    /** the name of the default world, if the file doesn't exist */
+    private static final String DEFAULT_WORLD_PROP = "wonderland.sgs.wfs.default";
+    private static final String DEFAULT_WORLD = "worlds/celltest-wfs";
 
     /** the property to check for persistence options */
     private static final String PERSISTENCE_TYPE_PROP = "wonderland.sgs.persistence";
@@ -137,9 +145,14 @@ public class DarkstarRunner extends BaseRunner {
         // record the webserver URL
         webserverURL = props.getProperty("wonderland.web.server.url");
 
-        // attempt to restore the WFS URL
+        // attempt to restore the WFS URL or use the default name
         try {
-            wfsName = restoreWFSName();
+            File wfsFile = new File(getRunDir(), SELECTED_WFS_FILE);
+            if (wfsFile.exists()) {
+                wfsName = restoreWFSName(SELECTED_WFS_FILE);
+            } else {
+                wfsName = System.getProperty(DEFAULT_WORLD_PROP, DEFAULT_WORLD);
+            }
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error reading WFS file", ioe);
         }
@@ -333,6 +346,18 @@ public class DarkstarRunner extends BaseRunner {
     }
 
     /**
+     * Force a coldstart
+     */
+    public void forceColdstart() {
+        File coldstartFile = new File(getRunDir(), COLDSTART_FILE);
+        try {
+            coldstartFile.createNewFile();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error creating " + coldstartFile, ioe);
+        }
+    }
+
+    /**
      * Check whether we need to force a cold start.  Right now, this just
      * checks the global persistence type, and if the WFS URL has changed since
      * the last time we ran.
@@ -346,16 +371,21 @@ public class DarkstarRunner extends BaseRunner {
             return true;
         }
 
+        // see if a coldstart file exists
+        File coldstartFile = new File(getRunDir(), COLDSTART_FILE);
+        if (coldstartFile.exists()) {
+            // remove the file, since we are doing a coldstart now
+            coldstartFile.delete();
+            return true;
+        }
+
         // see if the WFS URL has changed since the last time we ran
         String oldWFSName = null;
         try {
-            oldWFSName = restoreWFSName();
+            oldWFSName = restoreWFSName(LAST_WFS_FILE);
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error restoring WFS URL", ioe);
         }
-
-        System.out.println("[Coldstart] oldWFSName:  " + oldWFSName +
-                           " curWFSName: " + currentWFSName);
 
         if (oldWFSName == null) {
             return (currentWFSName != null);
@@ -420,25 +450,37 @@ public class DarkstarRunner extends BaseRunner {
      */
     public void setWFSName(String wfsName) {
         this.wfsName = wfsName;
+
+        try {
+            saveWFSName(wfsName, SELECTED_WFS_FILE);
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error saving WFS name", ioe);
+        }
     }
 
     /**
      * Save the current WFS name to disk
-     * @param name the name to save
+     * @param wfsName the name to save
+     * @param fileName the file name to save to
      */
-    protected void saveWFSName(String wfsName) throws IOException {
-        File wfsFile = new File(getRunDir(), WFS_URL_FILE);
+    protected void saveWFSName(String wfsName, String fileName) throws IOException {
+        File wfsFile = new File(getRunDir(), fileName);
         PrintWriter out = new PrintWriter(new FileWriter(wfsFile));
-        out.println(wfsName);
+       
+        if (wfsName != null) {
+            out.println(wfsName);
+        }
+
         out.close();
     }
 
     /**
-     * Restore the current WFS URL from disk
+     * Restore a WFS URL from disk
+     * @param fileName the file name to read from
      * @return the current URL, or null if no URL is set
      */
-    protected String restoreWFSName() throws IOException {
-        File wfsFile = new File(getRunDir(), WFS_URL_FILE);
+    protected String restoreWFSName(String fileName) throws IOException {
+        File wfsFile = new File(getRunDir(), fileName);
         if (!wfsFile.exists()) {
             return null;
         }
@@ -589,7 +631,7 @@ public class DarkstarRunner extends BaseRunner {
     protected void darkstarStarted() {
         // save the current WFS URL
         try {
-            saveWFSName(currentWFSName);
+            saveWFSName(currentWFSName, LAST_WFS_FILE);
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error saving WFS URL", ioe);
         }
@@ -616,11 +658,19 @@ public class DarkstarRunner extends BaseRunner {
         @Override
         protected void handleLine(String line) {
             // see if this is a Darkstar startup message
-            if (line.contains(DARKSTAR_STARTUP)) {
+            if (isStartupLine(line)) {
                 runner.darkstarStarted();
             }
             
             super.handleLine(line);
+        }
+
+        /**
+         * Determine when we have started up
+         * @return true if startup is complete, or false if not
+         */
+        protected boolean isStartupLine(String line) {
+            return line.contains(DARKSTAR_STARTUP);
         }
     }
 
@@ -679,13 +729,43 @@ public class DarkstarRunner extends BaseRunner {
         protected ProcessOutputReader createOutputReader(InputStream in,
                                                          Logger out)
         {
-            return new DarkstarOutputReader(in, out, this);
+            return new SnapshotOutputReader(in, out, this);
         }
 
         public void darkstarStarted() {
             // once the startup is complete, the snapshot has been written
             // and we can exit
             this.stop();
+        }
+
+        class SnapshotOutputReader extends DarkstarOutputReader {
+            private Pattern success = Pattern.compile("Exported \\d+ cells.");
+            private Pattern failure = Pattern.compile("Error creating snapshot");
+
+            protected SnapshotOutputReader(InputStream in, Logger out,
+                                           DarkstarStartup runner)
+            {
+                super (in, out, runner);
+            }
+
+            @Override
+            protected boolean isStartupLine(String line) {
+                System.out.println("Is startup line? " + line);
+
+                Matcher m = success.matcher(line);
+                if (m.find()) {
+                    System.out.println("Matched success");
+                    return true;
+                }
+
+                m = failure.matcher(line);
+                if (m.matches()) {
+                    System.out.println("Matched failure");
+                    return true;
+                }
+
+                return false;
+            }
         }
     }
 

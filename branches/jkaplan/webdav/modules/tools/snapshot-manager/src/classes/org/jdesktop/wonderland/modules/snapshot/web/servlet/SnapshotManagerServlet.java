@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -50,6 +52,9 @@ import org.jdesktop.wonderland.web.wfs.WFSRoot;
 public class SnapshotManagerServlet extends HttpServlet
     implements ServletContextListener
 {
+    private static final Logger logger =
+            Logger.getLogger(SnapshotManagerServlet.class.getName());
+
     // the empty world
     private static final EmptyWorld EMPTY_WORLD = new EmptyWorld();
 
@@ -74,10 +79,10 @@ public class SnapshotManagerServlet extends HttpServlet
             action = "view";
         }
 
-        String snapshotName = request.getParameter("snapshot");
+        WFSRoot root = getRoot(request);
         WFSSnapshot snapshot = null;
-        if (snapshotName != null) {
-            snapshot = m.getWFSSnapshot(snapshotName);
+        if (root instanceof WFSSnapshot) {
+            snapshot = (WFSSnapshot) root;
         }
 
         SnapshotResult result = null;
@@ -89,14 +94,19 @@ public class SnapshotManagerServlet extends HttpServlet
             result = doRemove(request, response, snapshot);
         } else if (action.equalsIgnoreCase("snapshot")) {
             result = doSnapshot(request, response);
-        } else if (action.equalsIgnoreCase("currentworld")) {
-            result = doCurrentWorld(request, response);
-        } else if (action.equalsIgnoreCase("currentsnapshot")) {
-            result = doCurrentSnapshot(request, response, snapshot);
+        } else if (action.equalsIgnoreCase("current")) {
+            result = doCurrent(request, response, root);
+        } else if (action.equalsIgnoreCase("restore")) {
+            result = doRestore(request, response, root);
         }
 
         if (result != null) {
+            // make the error visible
             request.setAttribute("error", result.getError());
+            if (result.hasError()) {
+                logger.warning("Error processing action " + action + ": " +
+                               result.getError());
+            }
 
             // redirect to the requested page
             if (result.hasRedirect()) {
@@ -143,7 +153,8 @@ public class SnapshotManagerServlet extends HttpServlet
         throws ServletException, IOException
     {
         if (snapshot == null) {
-            return new SnapshotResult("No such snapshot " + request.getParameter("snapshot"),
+            return new SnapshotResult("No such snapshot " + 
+                                      request.getParameter("root"),
                                       null);
         }
         request.setAttribute("snapshot", snapshot);
@@ -157,7 +168,8 @@ public class SnapshotManagerServlet extends HttpServlet
         throws ServletException, IOException
     {
         if (snapshot == null) {
-            return new SnapshotResult("No such snapshot " + request.getParameter("snapshot"),
+            return new SnapshotResult("No such snapshot " + 
+                                      request.getParameter("root"),
                                       "/edit.jsp");
         }
 
@@ -194,7 +206,8 @@ public class SnapshotManagerServlet extends HttpServlet
         throws ServletException, IOException
     {
         if (snapshot == null) {
-            return new SnapshotResult("No such snapshot " + request.getParameter("snapshot"),
+            return new SnapshotResult("No such snapshot " + 
+                                      request.getParameter("root"),
                                       null);
         }
 
@@ -214,36 +227,12 @@ public class SnapshotManagerServlet extends HttpServlet
             name = df.format(new Date());
         }
 
-        // find out whether we can stop the server
-        boolean stop = false;
-        String stopStr = request.getParameter("stop");
-        if (stopStr != null) {
-            stop = Boolean.parseBoolean(stopStr);
-        }
-
         DarkstarRunner runner = getRunner();
-        if (runner == null) {
-            return new SnapshotResult("No Darkstar servers available", null);
-        }
 
-        // TODO: deal with multiple runners
-        if (runner.getStatus() != Status.NOT_RUNNING) {
-            if (stop) {
-                // stop the runner, and wait for it to stop
-                runner.stop();
-                StatusWaiter waiter = new StatusWaiter(runner);
-                try {
-                    waiter.waitFor(Status.NOT_RUNNING);
-                } catch (InterruptedException ie) {
-                    // ignore
-                }
-            } else {
-                // forward to the confim page
-                request.setAttribute("prompt", "The Darkstar server must " + 
-                    "be stopped to perform this action");
-                request.setAttribute("url", "?action=snapshot&stop=true");
-                return new SnapshotResult(null, "/confirm.jsp");
-            }
+        // make sure the runner is stopped
+        SnapshotResult res = requestRestart(request, runner, "snapshot");
+        if (res != null) {
+            return res;
         }
 
         try {
@@ -252,54 +241,183 @@ public class SnapshotManagerServlet extends HttpServlet
             throw new ServletException(re);
         }
 
+        completeRestart(request, runner);
         return null;
     }
 
-    SnapshotResult doCurrentWorld(HttpServletRequest request,
-                                  HttpServletResponse response)
+    SnapshotResult doCurrent(HttpServletRequest request,
+                             HttpServletResponse response,
+                             WFSRoot root)
         throws ServletException, IOException
     {
-        String worldName = request.getParameter("world");
-        if (worldName == null) {
-            return new SnapshotResult("No world name specified", null);
-        }
-
         DarkstarRunner runner = getRunner();
-        if (runner == null) {
-            return new SnapshotResult("No Darkstar runner found", null);
+
+        // make sure the runner is stopped
+        SnapshotResult res = requestRestart(request, runner, "current&root=" +
+                                            getRootName(root));
+        if (res != null) {
+            return res;
         }
 
-        if (worldName.equalsIgnoreCase(EMPTY_WORLD.getName())) {
-            runner.setWFSName(null);
+        // set the name
+        runner.setWFSName(root.getRootPath());
+
+        // finsh restarting
+        completeRestart(request, runner);
+        return null;
+    }
+
+    SnapshotResult doRestore(HttpServletRequest request,
+                             HttpServletResponse response,
+                             WFSRoot root)
+        throws ServletException, IOException
+    {
+        DarkstarRunner runner = getRunner();
+
+        // make sure the runner is stopped
+        SnapshotResult res = requestRestart(request, runner, "restore&root=" +
+                                            getRootName(root));
+        if (res != null) {
+            return res;
+        }
+
+        // set the name
+        runner.setWFSName(root.getRootPath());
+        runner.forceColdstart();
+
+        // complete the restart
+        completeRestart(request, runner);
+        return null;
+    }
+
+    /**
+     * Request that the given runner be stopped.
+     * @param request the http request
+     * @param runner the runner to stop
+     * @param action the current action
+     * @return null if the runner is stopped, or a SnapshotResult to go
+     * to if the runner is not stopped
+     */
+    SnapshotResult requestRestart(HttpServletRequest request,
+                                  DarkstarRunner runner,
+                                  String action)
+        throws IOException, ServletException
+    {
+        // make sure the runner exists
+        if (runner == null) {
+            return new SnapshotResult("No Darkstar servers available", null);
+        }
+
+        // find out whether we can stop the server
+        boolean restart = false;
+        String restartStr = request.getParameter("restart");
+        if (restartStr != null) {
+            restart = Boolean.parseBoolean(restartStr);
+        }
+
+        if (runner.getStatus() != Status.NOT_RUNNING) {
+            if (restart) {
+                try {
+                    // stop the runner, and wait for it to stop
+                    StatusWaiter sw = RunManager.getInstance().stop(runner, true);
+                    sw.waitFor();
+                } catch (RunnerException re) {
+                    logger.log(Level.WARNING, "Error stopping " + runner, re);
+                    return new SnapshotResult("Error stopping runner", null);
+                } catch (InterruptedException ie) {
+                    // just ignore?
+                    logger.log(Level.WARNING, "Status wait interrupted", ie);
+                }
+            } else {
+                // forward to the confim page
+                request.setAttribute("prompt", "The Darkstar server must " +
+                    "be restarted to perform this action");
+                request.setAttribute("url", "?action=" + action + "&restart=true");
+                return new SnapshotResult(null, "/confirm.jsp");
+            }
+        }
+
+        // everything is OK
+        return null;
+    }
+
+    /**
+     * Complete a previous restart request
+     * @param request the request
+     * @param runner the runner to restart
+     */
+    protected void completeRestart(HttpServletRequest request,
+                                   DarkstarRunner runner)
+        throws IOException, ServletException
+    {
+        // make sure the runner exists
+        if (runner == null) {
+            return;
+        }
+
+        // find out whether we can stop the server
+        boolean restart = false;
+        String restartStr = request.getParameter("restart");
+        if (restartStr != null) {
+            restart = Boolean.parseBoolean(restartStr);
+        }
+
+        // start back up
+        if (runner.getStatus() == Status.NOT_RUNNING) {
+            if (restart) {
+                // start the runner, don't wait for it though
+                try {
+                    RunManager.getInstance().start(runner, false);
+                } catch (RunnerException re) {
+                    throw new ServletException(re);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get a WFS root from the request
+     * @param request the request to get the root from
+     */
+    protected WFSRoot getRoot(HttpServletRequest request) {
+        WFSRoot root = null;
+
+        String rootName = request.getParameter("root");
+        if (rootName == null) {
             return null;
         }
 
-        // find the root
-        WFSRoot root = WFSManager.getWFSManager().getWFSRoot(worldName);
-        if (root == null) {
-            return new SnapshotResult("No root named " + worldName, null);
+        // decide if it is a world or a snapshot
+        if (rootName.startsWith(WFSRoot.WORLDS_DIR)) {
+            String worldName = rootName.substring(WFSRoot.WORLDS_DIR.length() + 1);
+            if (worldName.equals(EMPTY_WORLD.getName())) {
+                return EMPTY_WORLD;
+            }
+            
+            root = WFSManager.getWFSManager().getWFSRoot(worldName);
+        } else if (rootName.startsWith(WFSSnapshot.SNAPSHOTS_DIR)) {
+            String snapshotName = rootName.substring(WFSSnapshot.SNAPSHOTS_DIR.length() + 1);
+            root = WFSManager.getWFSManager().getWFSSnapshot(snapshotName);
         }
 
-        runner.setWFSName(root.getRootPath());
-        return null;
+        if (root == null) {
+            logger.warning("Unable to find root: " + rootName);
+        }
+
+        return root;
     }
 
-    SnapshotResult doCurrentSnapshot(HttpServletRequest request,
-                                     HttpServletResponse response,
-                                     WFSSnapshot snapshot)
-        throws ServletException, IOException
-    {
-        if (snapshot == null) {
-            return new SnapshotResult("Snapshot not found", null);
+    /**
+     * Get the name of a root
+     * @param root the root to get the name of
+     * @return the root name
+     */
+    protected String getRootName(WFSRoot root) {
+        if (root instanceof WFSSnapshot) {
+            return WFSSnapshot.SNAPSHOTS_DIR + "/" + root.getName();
+        } else {
+            return WFSRoot.WORLDS_DIR + "/" + root.getName();
         }
-
-        DarkstarRunner runner = getRunner();
-        if (runner == null) {
-            return new SnapshotResult("No Darkstar runner found", null);
-        }
-        
-        runner.setWFSName(snapshot.getRootPath());
-        return null;
     }
 
     /**
@@ -307,12 +425,14 @@ public class SnapshotManagerServlet extends HttpServlet
      * @return the current snapshot
      */
     protected WFSRoot getCurrentRoot(List<WFSRoot> roots,
-                                         List<WFSSnapshot> snapshots)
+                                     List<WFSSnapshot> snapshots)
     {
         DarkstarRunner dr = getRunner();
         if (dr == null) {
             return null;
         }
+
+        System.out.println("Get current root: " + dr.getWFSName());
 
         if (dr.getWFSName() == null) {
             return EMPTY_WORLD;

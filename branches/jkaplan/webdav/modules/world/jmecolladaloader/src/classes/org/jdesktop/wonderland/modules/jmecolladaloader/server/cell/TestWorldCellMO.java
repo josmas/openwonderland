@@ -1,8 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
-
 package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
 
 import com.jme.bounding.BoundingBox;
@@ -15,30 +27,34 @@ import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
-import org.jdesktop.wonderland.server.ServerPlugin;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+
 
 /**
- *
+ * Test Cell for use until WFS is integrated, this will be removed.
+ * 
  * @author paulby
  */
-public class TestWorld implements ServerPlugin {
-
-    public TestWorld() {
+@ExperimentalAPI
+public class TestWorldCellMO extends CellMO {
+    
+    /** Default constructor, used when cell is created via WFS */
+    public TestWorldCellMO() {
+        this(new Vector3f(), 50);
     }
 
-    public void initialize() {
-//        if (true)
-//            return;
-        
+    public TestWorldCellMO(Vector3f center, float size) {
+        super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
+
         try {
-
             BoundingBox bounds = new BoundingBox(new Vector3f(), 1, 1, 1);
-
             MovableCellMO c2 = new MovableCellMO(bounds,
                     new CellTransform(null, new Vector3f(10, 5, 10)));
             c2.setName("c2");
@@ -55,45 +71,58 @@ public class TestWorld implements ServerPlugin {
             c4.setName("c4");
 
             c3.addChild(c4);
-            
-            float cellSize = 20;
-            int xMax = 30;
-            int zMax = 3;
-            
+
+//            float cellSize = 20;
+//            int xMax = 30;
+//            int zMax = 3;
+//
 //            for(int x=0; x<cellSize*xMax; x+=cellSize) {
 //                for(int z=0; z<cellSize*zMax; z+=cellSize) {
-//                    WonderlandContext.getCellManager().insertCellInWorld(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
+//                    addChild(new StaticModelCellMO(new Vector3f(x,0,z), cellSize/2f));
 //                }
 //            }
 
-            WonderlandContext.getCellManager().insertCellInWorld(c2);
-            WonderlandContext.getCellManager().insertCellInWorld(c3);
+            addChild(c2);
+            addChild(c3);
 
-            WonderlandContext.getCellManager().insertCellInWorld(
-                    new JmeColladaCellMO(new Vector3f(0,0,0), 15,
+            addChild(new JmeColladaCellMO(new Vector3f(0,0,0), 15,
                             "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 
-            WonderlandContext.getCellManager().insertCellInWorld(
-                    new JmeColladaCellMO(new Vector3f(15,0,0), 15,
+            addChild(new JmeColladaCellMO(new Vector3f(15,0,0), 15,
                             "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 
-            WonderlandContext.getCellManager().insertCellInWorld(
-                    new JmeColladaCellMO(new Vector3f(0,0,10), 15,
+            addChild(new JmeColladaCellMO(new Vector3f(0,0,10), 15,
                             "wla://jmecolladaloader/OutsideFloor10x10/models/OutsideFloor10x10.dae",
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 
             Task t = new TestTask(c3, c2);
-
             AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
-
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    @Override
+    protected String getClientCellClassName(WonderlandClientID clientID,
+                                            ClientCapabilities capabilities)
+    {
+        return "org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.TestWorldCell";
+    }
+
+    @Override
+    public void setupCell(BasicCellSetup setup) {
+        super.setupCell(setup);
+    }
+
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
     }
 
     static class TestTask implements Task, Serializable {

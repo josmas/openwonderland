@@ -93,7 +93,7 @@ public class CellExporter implements Serializable, SnapshotCreationListener,
             }
         }
         
-        logger.info("Exported " + successCount + " cells.  " + errorCount + 
+        logger.warning("Exported " + successCount + " cells.  " + errorCount +
                     " errors detected.");
     }
 }

@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.server.wfs.importer;
 
-import org.jdesktop.wonderland.common.wfs.WorldRootList;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.net.MalformedURLException;
@@ -209,7 +208,12 @@ public class CellImporter {
                 logger.warning("Unable to load cell MO: " + className);
                 continue;
             }
-                
+
+            /* Set the cell name */
+            cellMO.setName(child.name);
+
+            /** XXX TODO: add an import details cell component XXX */
+
             /* Call the cell's setup method */
             try {
                 ((BeanSetupMO)cellMO).setupCell(setup);

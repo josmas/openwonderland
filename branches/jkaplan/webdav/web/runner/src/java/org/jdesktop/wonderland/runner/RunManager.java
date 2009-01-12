@@ -325,11 +325,13 @@ public class RunManager {
         // find a properties file from the current deployment plan
         DeploymentPlan dp = DeploymentManager.getInstance().getPlan();
         DeploymentEntry de = dp.getEntry(runner.getName());
-        if (de != null && !de.getRunProps().isEmpty()) {
-            return de.getRunProps();
-        } else {
-            return runner.getDefaultProperties();
+
+        Properties props = runner.getDefaultProperties();
+        if (de != null) {
+            props.putAll(de.getRunProps());
         }
+
+        return props;
     }
 
     /**
