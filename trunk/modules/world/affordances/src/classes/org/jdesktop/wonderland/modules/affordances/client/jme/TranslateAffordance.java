@@ -55,6 +55,12 @@ public class TranslateAffordance extends Affordance {
     private Node rootNode;
     private MovableComponent movableComp;
 
+    /* The length scaling factor for each arrow */
+    private static final float LENGTH_SCALE = 1.25f;
+
+    /* The width scaling factor for each arrow */
+    private static final float WIDTH_SCALE = 0.1f;
+
     /** An enumeration of the axis along which to effect the drag motion */
     public enum TranslateAxis {
         X_AXIS, Y_AXIS, Z_AXIS
@@ -74,24 +80,32 @@ public class TranslateAffordance extends Affordance {
         RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
         this.addComponent(RenderComponent.class, rc);
 
-        // Figure out the bounds of the cell and create an arrow to be just
-        // a bit larger than that
-        BoundingVolume bounds = cell.getLocalBounds();
+        // Figure out the bounds of the root entity of the cell and create an
+        // arrow to be just a bit larger than that
+        CellRendererJME cellRC = (CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME);
+        RenderComponent entityRC = (RenderComponent)cellRC.getEntity().getComponent(RenderComponent.class);
+        Node sceneRoot = entityRC.getSceneRoot();
+        BoundingVolume bounds = sceneRoot.getWorldBound();
         float xExtent = 0, yExtent = 0, zExtent = 0;
         if (bounds instanceof BoundingSphere) {
-            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius;
+            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius * LENGTH_SCALE;
         }
         else if (bounds instanceof BoundingBox) {
-            xExtent = ((BoundingBox)bounds).xExtent;
-            yExtent = ((BoundingBox)bounds).yExtent;
-            zExtent = ((BoundingBox)bounds).zExtent;
+            xExtent = ((BoundingBox)bounds).xExtent * LENGTH_SCALE;
+            yExtent = ((BoundingBox)bounds).yExtent * LENGTH_SCALE;
+            zExtent = ((BoundingBox)bounds).zExtent * LENGTH_SCALE;
         }
-        
+
+        // Set the width of the arrow to be a proportion of the length of the
+        // arrows. Use the maximum length of the three axes to determine the
+        // width
+        float width = Math.max(Math.max(xExtent, yExtent), zExtent) * WIDTH_SCALE;
+
         // Create a red arrow in the +x direction. We arrow we get back is
         // pointed in the +y direction, so we rotate around the -z axis to
         // orient the arrow properly.
         Entity xEntity = new Entity("Entity X");
-        Node xNode = createArrow("Arrow X", xExtent * 1.1f, 0.05f, ColorRGBA.red);
+        Node xNode = createArrow("Arrow X", xExtent, width, ColorRGBA.red);
         Quaternion xRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(0, 0, -1));
         xNode.setLocalRotation(xRotation);
         addSubEntity(xEntity, xNode);
@@ -100,7 +114,7 @@ public class TranslateAffordance extends Affordance {
         // Create a green arrow in the +y direction. We arrow we get back is
         // pointed in the +y direction.
         Entity yEntity = new Entity("Entity Y");
-        Node yNode = createArrow("Arrow Y", yExtent * 1.1f, 0.05f, ColorRGBA.green);
+        Node yNode = createArrow("Arrow Y", yExtent, width, ColorRGBA.green);
         addSubEntity(yEntity, yNode);
         addDragListener(yEntity, yNode, TranslateAxis.Y_AXIS);
 
@@ -108,7 +122,7 @@ public class TranslateAffordance extends Affordance {
         // pointed in the +y direction, so we rotate around the +x axis to
         // orient the arrow properly.
         Entity zEntity = new Entity("Entity Z");
-        Node zNode = createArrow("Arrow Z", zExtent * 1.1f, 0.05f, ColorRGBA.blue);
+        Node zNode = createArrow("Arrow Z", zExtent, width, ColorRGBA.blue);
         Quaternion zRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(1, 0, 0));
         zNode.setLocalRotation(zRotation);
         addSubEntity(zEntity, zNode);
