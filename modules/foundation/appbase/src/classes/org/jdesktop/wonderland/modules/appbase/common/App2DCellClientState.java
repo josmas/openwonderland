@@ -18,17 +18,17 @@
 package org.jdesktop.wonderland.modules.appbase.common;
 
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.modules.appbase.common.AppCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.AppCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * The cell config information used by generic 2D apps.
+ * The cell client state information used by generic 2D apps.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class App2DCellConfig extends AppCellConfig {
+public class App2DCellClientState extends AppCellClientState {
 
     /** The default pixel scale for both X and Y */
     public static final float DEFAULT_PIXEL_SCALE = 0.01f;
@@ -40,28 +40,28 @@ public class App2DCellConfig extends AppCellConfig {
     private float pixelScale[] = { DEFAULT_PIXEL_SCALE, DEFAULT_PIXEL_SCALE };
 
     /**
-     * Create a new instance of App2DCellConfig with the default pixel scale.
+     * Create a new instance of App2DCellClientState with the default pixel scale.
      */
-    public App2DCellConfig () {
+    public App2DCellClientState () {
 	this(new Vector2f(DEFAULT_PIXEL_SCALE, DEFAULT_PIXEL_SCALE));
     }
 
     /**
-     * Create a new instance of App2DCellConfig.
+     * Create a new instance of App2DCellClientState.
      *
      * @param pixelScale The pixel scale to use.
      */
-    public App2DCellConfig (Vector2f pixelScale) {
+    public App2DCellClientState (Vector2f pixelScale) {
 	setPixelScale(pixelScale);
     }
 
     /**
-     * Create a new instance of App2DCellConfig.
+     * Create a new instance of App2DCellClientState.
      *
      * @param pixelScaleX The X pixel scale to use.
      * @param pixelScaleY The Y pixel scale to use.
      */
-    public App2DCellConfig (float pixelScaleX, float pixelScaleY) {
+    public App2DCellClientState (float pixelScaleX, float pixelScaleY) {
 	setPixelScale(pixelScaleX, pixelScaleY);
     }
 

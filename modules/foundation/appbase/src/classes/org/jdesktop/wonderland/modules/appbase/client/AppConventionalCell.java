@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -65,23 +65,23 @@ public abstract class AppConventionalCell extends App2DCell {
      * {@inheritDoc}
      */
     @Override
-    public void setClientState (CellClientState configData) {
-	super.setClientState(configData);
+    public void setClientState (CellClientState clientState) {
+	super.setClientState(clientState);
 
-	AppConventionalCellConfig config = (AppConventionalCellConfig) configData;
-	masterHost = config.getMasterHost();
-	appName = config.getAppName();
-	pixelScale = config.getPixelScale();
-	connectionInfo = config.getConnectionInfo();
+	AppConventionalCellClientState state = (AppConventionalCellClientState) clientState;
+	masterHost = state.getMasterHost();
+	appName = state.getAppName();
+	pixelScale = state.getPixelScale();
+	connectionInfo = state.getConnectionInfo();
 
 	if (masterHost.equals(NetworkAddress.getDefaultHostAddress())) {
 
 	    // App Master case
-    	    boolean bestView = config.isBestView();
+    	    boolean bestView = state.isBestView();
 
 	    // Master User launch case: See if app has already been executed on this host 
-	    if (config.isUserLaunched()) {
-		UUID appId = config.getAppId();
+	    if (state.isUserLaunched()) {
+		UUID appId = state.getAppId();
 		App appToAttach = AppConventional.findDisembodiedApp(appId);
 		if (appToAttach == null) {
 		    logger.severe("Cannot find master app to attach to cell");
@@ -98,7 +98,7 @@ public abstract class AppConventionalCell extends App2DCell {
 	    } else {
 
 		// World launch case: execute the app now. 
-		startMaster(config.getCommand(), false);
+		startMaster(state.getCommand(), false);
 	    }
 
 	} else {
