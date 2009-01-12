@@ -27,8 +27,6 @@
     <property name="wonderland.client.config.dir" value="$$wonderland.client.config.dir"/>
     <property name="wonderland.protocol.handler.pkgs" value="org.jdesktop.wonderland.client.protocols"/>
     <property name="wonderland.version" value="%VERSION%"/>
-
-    <property name="avatar.detail" value="high"/>
   </resources>
 
   <resources os="Windows">
