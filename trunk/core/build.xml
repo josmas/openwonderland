@@ -53,6 +53,8 @@
     <target name="run" depends="jar" description="Run the Wonderland client">
         <mkdir dir="log"/>
 
+        <copy overwrite="false" file="run-client.properties.example" tofile="run-client.properties"/>
+
         <!-- softphone jar location, set by the SoftphoneInstaller during webstart startup -->
         <property name="softphone.jar.location" location="${current.dir}/ext/softphone/softphone.jar"/>
 
