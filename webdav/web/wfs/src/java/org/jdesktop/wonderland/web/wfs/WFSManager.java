@@ -347,7 +347,7 @@ public class WFSManager {
      * Returns the base directory for all WFS information, or null if the
      * property is not set.
      */
-    private String getBaseWFSDirectory() {
+    public static String getBaseWFSDirectory() {
         return SystemPropertyUtil.getProperty(WFS_ROOT_PROPERTY);
     }
     

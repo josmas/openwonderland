@@ -35,10 +35,10 @@
                     <td class="installed">
                         <c:choose>
                             <c:when test="${currentroot == root}">
-                                Current
+                                Current <a href="?action=restore&root=worlds/${root.name}">restore</a>
                             </c:when>
                             <c:otherwise>
-                                <a href="?action=currentworld&world=${root.name}">make current</a>
+                                <a href="?action=current&root=worlds/${root.name}">make current</a>
                             </c:otherwise>
                         </c:choose>
                     </td>
@@ -63,14 +63,14 @@
                     <td class="installed">
                         <c:choose>
                             <c:when test="${currentroot == snapshot}">
-                                Current
+                                Current <a href="?action=restore&root=snapshots/${snapshot.name}">restore</a>
                             </c:when>
                             <c:otherwise>
-                                <a href="?action=currentsnapshot&snapshot=${snapshot.name}">make current</a>
+                                <a href="?action=current&root=snapshots/${snapshot.name}">make current</a>
                             </c:otherwise>
                         </c:choose>
-                        <a href="?action=edit&snapshot=${snapshot.name}">edit</a>
-                        <a href="?action=remove&snapshot=${snapshot.name}">remove</a>
+                        <a href="?action=edit&root=snapshots/${snapshot.name}">edit</a>
+                        <a href="?action=remove&root=snapshots/${snapshot.name}">remove</a>
                     </td>
                 </tr>
             </c:forEach>
