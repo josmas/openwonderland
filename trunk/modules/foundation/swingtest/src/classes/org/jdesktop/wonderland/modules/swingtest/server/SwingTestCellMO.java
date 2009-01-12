@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellConfig;
+import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellClientState;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -68,10 +68,10 @@ public class SwingTestCellMO extends App2DCellMO {
     @Override
     protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
-            cellClientState = new SwingTestCellConfig(pixelScale);
+            cellClientState = new SwingTestCellClientState(pixelScale);
         }
-        ((SwingTestCellConfig)cellClientState).setPreferredWidth(preferredWidth);
-        ((SwingTestCellConfig)cellClientState).setPreferredHeight(preferredHeight);
+        ((SwingTestCellClientState)cellClientState).setPreferredWidth(preferredWidth);
+        ((SwingTestCellClientState)cellClientState).setPreferredHeight(preferredHeight);
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
@@ -79,12 +79,12 @@ public class SwingTestCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState setupData) {
-	super.setCellServerState(setupData);
+    public void setCellServerState(CellServerState state) {
+	super.setCellServerState(state);
 
-	SwingTestCellSetup setup = (SwingTestCellSetup) setupData;
-	preferredWidth = setup.getPreferredWidth();
-	preferredHeight = setup.getPreferredHeight();
-	pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
+	SwingTestCellServerState serverState = (SwingTestCellServerState) state;
+	preferredWidth = serverState.getPreferredWidth();
+	preferredHeight = serverState.getPreferredHeight();
+	pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
     }
 }

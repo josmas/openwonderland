@@ -25,18 +25,18 @@ import java.util.logging.Logger;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
 
 /**
- * Container for Swing test client cell configuration data.
+ * Container for Swing test client cell client state data.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class SwingTestCellConfig extends App2DCellConfig {
+public class SwingTestCellClientState extends App2DCellClientState {
 
-    private static final Logger logger = Logger.getLogger(SwingTestCellConfig.class.getName());
+    private static final Logger logger = Logger.getLogger(SwingTestCellClientState.class.getName());
     
     private static final int DEFAULT_WIDTH = 640;
     private static final int DEFAULT_HEIGHT = 480;
@@ -44,11 +44,11 @@ public class SwingTestCellConfig extends App2DCellConfig {
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     
-    public SwingTestCellConfig () {
+    public SwingTestCellClientState () {
         this(null);
     }
     
-    public SwingTestCellConfig (Vector2f pixelScale) {
+    public SwingTestCellClientState (Vector2f pixelScale) {
 	super(pixelScale);
     }
     

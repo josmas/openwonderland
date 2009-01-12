@@ -26,12 +26,12 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The WFS setup class for SwingTestCellMO.
+ * The WFS server state class for SwingTestCellMO.
  * 
  * @author deronj
  */
 @XmlRootElement(name="swingtest-cell")
-public class SwingTestCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
+public class SwingTestCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
     
     /** The user's preferred width of the Swing test window. */
     @XmlElement(name="preferredWidth")
@@ -51,7 +51,7 @@ public class SwingTestCellSetup extends CellServerState implements Serializable,
     public float pixelScaleY = 0.01f;
     
     /** Default constructor */
-    public SwingTestCellSetup() {}
+    public SwingTestCellServerState() {}
     
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.swingtest.server.SwingTestCellMO";
@@ -92,11 +92,11 @@ public class SwingTestCellSetup extends CellServerState implements Serializable,
     /**
      * Returns a string representation of this class.
      *
-     * @return The setup information as a string.
+     * @return The server state information as a string.
      */
     @Override
     public String toString() {
-        return super.toString() + " [SwingTestCellSetup]: " +
+        return super.toString() + " [SwingTestCellServerState]: " +
 	    "preferredWidth=" + preferredWidth + "," +
 	    "preferredHeight=" + preferredHeight + "," +
 	    "pixelScaleX=" + pixelScaleX + "," +
