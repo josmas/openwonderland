@@ -23,9 +23,9 @@
            <client>
                 <clientjar name="jmecolladaloader-client" basedir="${build.classes.dir}">
                     <clientplugin provider="org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoaderFactory"/>
-                    <service type="org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI">
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup"/>
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.StaticModelCellSetup"/>
+                    <service type="org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI">
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState"/>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.StaticModelCellServerState"/>
                     </service> 
 
                     <include name="${module.src}/client/**"/>
@@ -40,10 +40,10 @@
                         <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.client.LoaderFactory"/>
                     </cellsetup>-->
                     <cellextensiontype>
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.SetupFactory"/>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.SetupFactory"/>
                     </cellextensiontype>
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>

@@ -596,7 +596,7 @@ public class ModuleTask extends Jar {
     
     public static class CellSetup extends Service {
         public CellSetup() {
-            setType("org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI");
+            setType("org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI");
         }
     }
  
