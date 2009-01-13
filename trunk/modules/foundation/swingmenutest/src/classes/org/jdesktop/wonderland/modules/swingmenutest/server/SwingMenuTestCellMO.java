@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestCellConfig;
+import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestCellClientState;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -68,10 +68,10 @@ public class SwingMenuTestCellMO extends App2DCellMO {
     @Override
     protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
-            cellClientState = new SwingMenuTestCellConfig(pixelScale);
+            cellClientState = new SwingMenuTestCellClientState(pixelScale);
         }
-        ((SwingMenuTestCellConfig)cellClientState).setPreferredWidth(preferredWidth);
-        ((SwingMenuTestCellConfig)cellClientState).setPreferredHeight(preferredHeight);
+        ((SwingMenuTestCellClientState)cellClientState).setPreferredWidth(preferredWidth);
+        ((SwingMenuTestCellClientState)cellClientState).setPreferredHeight(preferredHeight);
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
@@ -79,12 +79,12 @@ public class SwingMenuTestCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState setupData) {
-	super.setCellServerState(setupData);
+    public void setCellServerState(CellServerState serverState) {
+	super.setCellServerState(serverState);
 
-	SwingMenuTestCellSetup setup = (SwingMenuTestCellSetup) setupData;
-	preferredWidth = setup.getPreferredWidth();
-	preferredHeight = setup.getPreferredHeight();
-	pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
+	SwingMenuTestCellServerState state = (SwingMenuTestCellServerState) serverState;
+	preferredWidth = state.getPreferredWidth();
+	preferredHeight = state.getPreferredHeight();
+	pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
     }
 }
