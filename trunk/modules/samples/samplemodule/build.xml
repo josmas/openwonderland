@@ -35,7 +35,7 @@
             <server>
                 <serverjar name="sample-server" basedir="${build.classes.dir}">
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.sample.common.SampleCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.sample.common.SampleCellServerState"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>

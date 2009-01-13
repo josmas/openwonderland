@@ -15,26 +15,29 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.sample.client;
+package org.jdesktop.wonderland.modules.sample.common;
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.net.URL;
-import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * The palette information for the sample cell.
- * 
- * @author Jordan Slott <jslott@dev.java.net>
+ * The SampleCellConfig class represents the information communicated
+ * between the client and Darkstar server for the sample model.
+ *
+ * @author jkaplan
  */
-public class SampleCellPaletteInfo implements CellPaletteInfo {
+public class SampleCellClientState extends CellClientState {
+    /* Arbitrary state info -- not really used anywhere */
+    private String info = null;
 
-    public String getDisplayName() {
-        return "Sample Cell";
+    /** Default constructor */
+    public SampleCellClientState() {
     }
 
-    public Image getPreviewImage() {
-        URL url = SampleCellPaletteInfo.class.getResource("resources/sample_preview.jpg");
-        return Toolkit.getDefaultToolkit().createImage(url);
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
     }
 }
