@@ -15,14 +15,18 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.testcells.server.cell;
+package org.jdesktop.wonderland.modules.affordances.server.cell;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.testcells.common.cell.setup.TestWorldCellServerState;
+import org.jdesktop.wonderland.modules.affordances.common.cell.config.AffordanceTestCellConfig;
+import org.jdesktop.wonderland.modules.affordances.common.cell.state.TestWorldCellServerState;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -32,7 +36,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author paulby
  */
 @ExperimentalAPI
-public class TestWorldCellMO extends SimpleShapeCellMO{
+public class TestWorldCellMO extends CellMO {
     
     /** Default constructor, used when cell is created via WFS */
     public TestWorldCellMO() {
@@ -40,18 +44,15 @@ public class TestWorldCellMO extends SimpleShapeCellMO{
     }
 
     public TestWorldCellMO(Vector3f center, float size) {
-        super(center, size);
+        super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
 
         try {
-            //addChild(new SimpleShapeCellMO(new Vector3f(7, 0, 5), 1));
-            addChild(new MouseSpinCellMO(new Vector3f(-8, 0, 2), 1));
-            //addChild(new SingingTeapotCellMO(new Vector3f(-8, 0, 7), 1, new MaterialJME(ColorRGBA.green, null, null, null, 0.5f)));
-            addChild(new DragTestMO(new Vector3f(8, 0, 2), 1));
-            //addChild(new DisappearTestMO(new Vector3f(16, 0, 2), 1));
-            //addChild(new SimpleShapeCellMO(new Vector3f(0, 2, -5), 1, SimpleShapeConfig.Shape.SPHERE));
-            //addChild(new SimpleShapeCellMO(new Vector3f(0, 2, 5), 1, SimpleShapeConfig.Shape.CONE));
-            //addChild(new SimpleShapeCellMO(new Vector3f(5, 2, 0), 1, SimpleShapeConfig.Shape.CYLINDER));
-            //addChild(new MirrorCellMO(new Vector3f(0, 0, 0), 20));
+            addChild(new AffordanceTestCellMO(new Vector3f(0, 2, -12), 1,
+                                              AffordanceTestCellConfig.Shape.SPHERE));
+            addChild(new AffordanceTestCellMO(new Vector3f(0, 2, -10), 2,
+                                              AffordanceTestCellConfig.Shape.CONE));
+            addChild(new AffordanceTestCellMO(new Vector3f(5, 2, -5), 3,
+                                              AffordanceTestCellConfig.Shape.CYLINDER));
         } catch (Exception ex) {
             // do nothing
             logger.log(Level.WARNING, "Error creating cell", ex);
@@ -62,7 +63,7 @@ public class TestWorldCellMO extends SimpleShapeCellMO{
     protected String getClientCellClassName(WonderlandClientID clientID,
                                             ClientCapabilities capabilities)
     {
-        return "org.jdesktop.wonderland.modules.testcells.client.cell.TestWorldCell";
+        return "org.jdesktop.wonderland.modules.affordances.client.cell.TestWorldCell";
     }
 
     @Override
