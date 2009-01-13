@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  * 
  * @author jkaplan
  */
-public class PhoneCellConfig extends CellClientState {
+public class PhoneCellClientState extends CellClientState {
 
     private boolean locked;
     private boolean simulateCalls;
@@ -48,7 +48,7 @@ public class PhoneCellConfig extends CellClientState {
     private double fullVolumeRadius;
 
     /** Default constructor */
-    public PhoneCellConfig() {
+    public PhoneCellClientState() {
     }
     
     public boolean getLocked() {

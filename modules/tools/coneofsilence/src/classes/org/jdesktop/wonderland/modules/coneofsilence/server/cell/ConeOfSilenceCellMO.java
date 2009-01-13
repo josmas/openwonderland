@@ -18,16 +18,23 @@
 package org.jdesktop.wonderland.modules.coneofsilence.server.cell;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellSetup;
-import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
+
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+
+import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
+import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellClientState;
+
 import org.jdesktop.wonderland.server.cell.CellMO;
+
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -41,17 +48,22 @@ public class ConeOfSilenceCellMO extends CellMO {
      
     private String modelFileName;    
     
-    private boolean haveMessageHandler = false;
+    private String name;
 
     public ConeOfSilenceCellMO() {
-	addComponent(new ChannelComponentImplMO(this));
     }
     
     public ConeOfSilenceCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), 
 	    new CellTransform(null, center));
+    }
 
-	addComponent(new ChannelComponentImplMO(this));
+    public void setLive(boolean live) {
+	if (live == false) {
+	    return;
+	}
+
+	new ConeOfSilenceMessageHandler(this, name);
     }
 
     @Override
@@ -66,21 +78,19 @@ public class ConeOfSilenceCellMO extends CellMO {
 	    ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new ConeOfSilenceCellConfig();
+            cellClientState = new ConeOfSilenceCellClientState();
         }
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setCellServerState(CellServerState cellServerState) {
+        super.setCellServerState(cellServerState);
 
-        ConeOfSilenceCellSetup css = (ConeOfSilenceCellSetup) setup;
+	ConeOfSilenceCellServerState coneOfSilenceCellServerState = 
+	    (ConeOfSilenceCellServerState) cellServerState;
 
-        if (haveMessageHandler == false) {
-            haveMessageHandler = true;
-            new ConeOfSilenceMessageHandler(this, css.getName());
-        }
+	name = coneOfSilenceCellServerState.getName();
     }
 
     /**
@@ -93,8 +103,9 @@ public class ConeOfSilenceCellMO extends CellMO {
     public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new ConeOfSilenceCellSetup();
+            cellServerState = new ConeOfSilenceCellServerState();
         }
         return super.getCellServerState(cellServerState);
     }
+
 }
