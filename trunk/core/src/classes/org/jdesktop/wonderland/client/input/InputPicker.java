@@ -109,8 +109,8 @@ public abstract class InputPicker {
     // Coordinate of last button press event
     private int buttonLastX, buttonLastY;
 
-    // The pick info of the last time a button was released.
-    private PickInfo lastButtonReleasedPickInfo;
+    // The pick info of the last time a button was pressed.
+    private PickInfo lastButtonPressedPickInfo;
     
     // The pick info of the mouse button press event which started a grab
     private PickInfo grabPickInfo;
@@ -536,7 +536,7 @@ public abstract class InputPicker {
 	// force the clicked event to go to the same destination as the
 	// pressed event
 	if (e.getID() == MouseEvent.MOUSE_CLICKED) {
-	    return new DetermineDestPickInfoReturn(lastButtonReleasedPickInfo, lastButtonReleasedPickInfo);
+	    return new DetermineDestPickInfoReturn(lastButtonPressedPickInfo, lastButtonPressedPickInfo);
 	}
 
 	// First perform the pick (the pick details in the info are ordered
@@ -609,8 +609,8 @@ public abstract class InputPicker {
 	    grabPickInfo = null;
 	}
 
-	if (e.getID() == MouseEvent.MOUSE_RELEASED) {
-	    lastButtonReleasedPickInfo = destPickInfo;
+	if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+	    lastButtonPressedPickInfo = destPickInfo;
 	}
 
 	logger.fine("Picked awt event = " + e);
