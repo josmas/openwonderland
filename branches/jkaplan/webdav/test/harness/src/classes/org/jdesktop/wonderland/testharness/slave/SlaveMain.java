@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.testharness.slave;
 
@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -39,12 +41,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.comms.LoginFailureException;
-import org.jdesktop.wonderland.common.LogControl;
 import org.jdesktop.wonderland.testharness.common.LoginRequest;
 import org.jdesktop.wonderland.testharness.common.LogoutRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
-import org.jdesktop.wonderland.testharness.slave.client3D.Client3DSim;
 
 /**
  *
@@ -63,9 +62,9 @@ public class SlaveMain {
             new HashMap<String, RequestProcessor>();
     private boolean done = false;
     
-    static {
-        new LogControl(SlaveMain.class, "/org/jdesktop/wonderland/testharness/slave/resources/logging.properties");
-    }
+//    static {
+//        new LogControl(SlaveMain.class, "/org/jdesktop/wonderland/testharness/slave/resources/logging.properties");
+//    }
     
     public SlaveMain(String[] args) {
         

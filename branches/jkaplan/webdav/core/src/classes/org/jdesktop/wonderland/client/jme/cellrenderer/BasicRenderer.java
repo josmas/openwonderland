@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
@@ -93,6 +93,15 @@ public abstract class BasicRenderer implements CellRendererJME {
         this.cell = cell;
     }
 
+
+    /**
+     * Return the cell that contains this component
+     * @return
+     */
+    public Cell getCell() {
+        return cell;
+    }
+
     public void setStatus(CellStatus status) {
         switch(status) {
             case ACTIVE :
@@ -130,6 +139,25 @@ public abstract class BasicRenderer implements CellRendererJME {
                 break;
         }
 
+    }
+
+    /**
+     * Convenience method which attaches the child entity to the specified
+     * parent AND sets the attachpoint of the childs RenderComponent to the
+     * scene root of the parents RenderComponent
+     * 
+     * @param parentEntity
+     * @param child
+     */
+    public static void entityAddChild(Entity parentEntity, Entity child) {
+        if (parentEntity!=null && child!=null) {
+            RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+            RenderComponent thisRendComp = (RenderComponent)child.getComponent(RenderComponent.class);
+            if (parentRendComp!=null && parentRendComp.getSceneRoot()!=null && thisRendComp!=null) {
+                thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
+            }
+            parentEntity.addEntity(child);
+        }
     }
 
     /**

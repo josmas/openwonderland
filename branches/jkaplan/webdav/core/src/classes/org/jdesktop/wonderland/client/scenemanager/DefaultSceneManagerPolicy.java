@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.client.scenemanager;
 
 import org.jdesktop.wonderland.client.input.Event;
@@ -23,7 +22,6 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
-import org.jdesktop.wonderland.client.scenemanager.SceneManagerPolicy;
 
 /**
  * Implements a simple selection policy based upon the JME input mechanism.
@@ -97,7 +95,8 @@ public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
         // Entity.
         if (event instanceof MouseButtonEvent3D) {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-            return mbe.isPressed() == true && mbe.getButton() == ButtonId.BUTTON3;
+            return mbe.isPressed() == true && mbe.getButton() == ButtonId.BUTTON3 &&
+                    mbe.getAwtEvent().isShiftDown() == false;
         }
         return false;
     }

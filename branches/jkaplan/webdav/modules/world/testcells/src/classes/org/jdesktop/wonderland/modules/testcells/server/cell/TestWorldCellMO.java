@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.testcells.server.cell;
 
 import com.jme.math.Vector3f;
 import java.util.logging.Level;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -57,18 +56,12 @@ public class TestWorldCellMO extends SimpleShapeCellMO{
         }
     }
     
-    @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
+    @Override
+    protected String getClientCellClassName(WonderlandClientID clientID,
+                                            ClientCapabilities capabilities)
+    {
         return "org.jdesktop.wonderland.modules.testcells.client.cell.TestWorldCell";
     }
 
-    @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
-    }
-
-    @Override
-    public void reconfigureCell(BasicCellSetup setup) {
-        super.reconfigureCell(setup);
-        setupCell(setup);
-    }
+  
 }

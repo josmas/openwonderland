@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.client.scenemanager;
 
 import java.awt.event.MouseEvent;
@@ -125,7 +124,7 @@ public class SceneManager {
      * <p>
      * @return Single instance of this class.
      */
-    public static final SceneManager getSelectionManager() {
+    public static final SceneManager getSceneManager() {
         return SelectionManagerHolder.manager;
     }
     
@@ -274,7 +273,7 @@ public class SceneManager {
      * 
      * @return The Cell associated with the currently selected Entity
      */
-    public Cell getCellForEntity(Entity entity) {
+    public static Cell getCellForEntity(Entity entity) {
        Cell ret = null;
         while(ret==null && entity!=null) {
             CellRefComponent ref = (CellRefComponent) entity.getComponent(CellRefComponent.class);
@@ -378,7 +377,7 @@ public class SceneManager {
                 logger.warning("SELECTION: ACTIVATED EVENT " + se.getEntityList().get(0));
             }
             else if (event instanceof SelectionEvent) {
-                List<Entity> selected = SceneManager.getSelectionManager().getSelectedEntities();
+                List<Entity> selected = SceneManager.getSceneManager().getSelectedEntities();
                 ListIterator<Entity> it = selected.listIterator();
                 Logger.getLogger(MySelectionListener.class.getName()).warning("SELECTION: SELECTION EVENT " + selected.size());
                 while (it.hasNext() == true) {

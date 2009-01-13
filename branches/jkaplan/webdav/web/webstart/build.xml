@@ -10,15 +10,15 @@
     <import file="${current.dir}/build-tools/build-scripts/webstart-package.xml"/>
     
     <target name="build" depends="-web-build-init">
-      <wl-compile>
-        <compile-classes>
+      <wl-compile-client>
+        <client-compile-classes>
           <include name="org/jdesktop/wonderland/webstart/**"/>
-        </compile-classes>
-        <compile-classpath>
+        </client-compile-classes>
+        <client-compile-classpath>
           <pathelement path="${web.classpath}"/>
           <pathelement path="${core.dir}/build/lib/wonderland-client.jar"/>
-        </compile-classpath>
-      </wl-compile>
+        </client-compile-classpath>
+      </wl-compile-client>
     </target>
     
     <target name="jar" depends="build">

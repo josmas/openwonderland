@@ -26,7 +26,7 @@
                 <serverjar name="testcells-server" basedir="${build.classes.dir}">
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.setup.SingingTeapotCellSetup"/>
-                        <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.setup.TestWorldCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.setup.TestWorldCellServerState"/>
                     </cellsetup>
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>

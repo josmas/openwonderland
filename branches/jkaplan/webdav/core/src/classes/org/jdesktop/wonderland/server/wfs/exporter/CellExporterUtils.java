@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.server.wfs.exporter;
 
 import java.io.IOException;
@@ -27,7 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellDescriptor;
 import org.jdesktop.wonderland.common.wfs.CellPath;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
@@ -75,7 +74,7 @@ public class CellExporterUtils {
         // cell. If the cell does not return a valid setup object, then simply
         // ignore the cell (and its children).
         String cellName = cellMO.getName();
-        BasicCellSetup setup = cellMO.getCellSetup(null);
+        CellServerState setup = cellMO.getCellServerState(null);
         if (setup == null) {
             return null;
         }

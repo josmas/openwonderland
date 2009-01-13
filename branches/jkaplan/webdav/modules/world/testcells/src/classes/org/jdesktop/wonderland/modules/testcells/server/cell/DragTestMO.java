@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.testcells.server.cell;
 
@@ -21,11 +21,11 @@ import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -45,7 +45,6 @@ public class DragTestMO extends SimpleShapeCellMO {
 
     public DragTestMO (Vector3f center, float size) {
         super(center, size);
-        addComponent(new ChannelComponentMO(this));
         addComponent(new MovableComponentMO(this));
     }
     
@@ -55,13 +54,7 @@ public class DragTestMO extends SimpleShapeCellMO {
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
-    }
-
-    @Override
-    public void reconfigureCell(BasicCellSetup setup) {
-        super.reconfigureCell(setup);
-        setupCell(setup);
+    public void setCellServerState(CellServerState setup) {
+        super.setCellServerState(setup);
     }
 }

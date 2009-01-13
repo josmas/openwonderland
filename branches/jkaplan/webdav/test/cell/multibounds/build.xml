@@ -32,7 +32,7 @@
         <ant antfile="${core.build-lib.dir}/build.xml" inheritall="false" target="package"/>
     </target>
 
-    <target name="run-bounds" depends="-test-jar-client">
+    <target name="run-viewer" depends="-test-jar-client">
         <mkdir dir="log"/>
         
         <!-- override to change the properties file -->

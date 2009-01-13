@@ -32,11 +32,11 @@
             <server>
                 <serverjar name="jmecolladaloader-server" basedir="${build.classes.dir}">
                     <cellextensiontype>
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.SetupFactory"/>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.SetupFactory"/>
                     </cellextensiontype>
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup"/>
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.TestWorldCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState"/>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.TestWorldCellServerState"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>

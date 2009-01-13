@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.client.swing;
 
@@ -32,6 +32,7 @@ import com.jme.math.Vector3f;
 import java.awt.Canvas;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
@@ -42,7 +43,6 @@ import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingMarker;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 
@@ -296,5 +296,15 @@ public class WindowSwing extends WindowGraphics2D {
      */
     public boolean getInputEnabled () {
 	return inputEnabled;
+    }
+
+    public Point calcWorldPositionInPixelCoordinates (Point2D src, MouseEvent event, 
+						      Vector3f intersectionPointWorld,
+						      Point lastPressPointScreen) { 
+	if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
+	    return viewWorld.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
+	} else {
+	    return calcWorldPositionInPixelCoordinates(intersectionPointWorld, true);
+	}
     }
 }

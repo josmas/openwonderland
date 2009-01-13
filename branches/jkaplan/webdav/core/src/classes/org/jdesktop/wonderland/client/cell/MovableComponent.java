@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,12 +11,13 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
@@ -40,15 +41,14 @@ public class MovableComponent extends CellComponent {
     
     protected static Logger logger = Logger.getLogger(MovableComponent.class.getName());
     protected ArrayList<CellMoveListener> serverMoveListeners = null;
-    protected ChannelComponent channelComp;
+    protected ChannelComponent channelComp=null;
     
     public enum CellMoveSource { LOCAL, REMOTE }; // Do we need BOTH as well ?
     
-    protected ChannelComponent.ComponentMessageReceiver msgReceiver;
+    protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
     
     public MovableComponent(Cell cell) {
         super(cell);
-        channelComp = cell.getComponent(ChannelComponent.class);
     }
     
     
@@ -56,22 +56,27 @@ public class MovableComponent extends CellComponent {
     public void setStatus(CellStatus status) {
          switch(status) {
             case DISK :
-                if (msgReceiver!=null) {
+                if (msgReceiver!=null && channelComp!=null) {
                     channelComp.removeMessageReceiver(getMessageClass());
                     msgReceiver = null;
                 }
                 break;
              case BOUNDS : {
+                 channelComp = cell.getComponent(ChannelComponent.class);
                  if (msgReceiver==null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
                         public void messageReceived(CellMessage message) {
                             // Ignore messages from this client, TODO move this up into addMessageReciever with an option to turn off the test
-                            if (message.getSenderID()!=cell.getCellCache().getSession().getID()) {
+                            BigInteger senderID = message.getSenderID();
+                            if (senderID == null) {
+                                senderID = BigInteger.ZERO;
+                            }
+                            if (!senderID.equals(cell.getCellCache().getSession().getID())) {
                                 serverMoveRequest((MovableMessage)message);
                             }
                         }
-                    };                    
+                    };
                     channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
                  }
              }

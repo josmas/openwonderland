@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,15 +11,15 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.palette.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.ClientPlugin;
@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  */
 public class PaletteClientPlugin implements ClientPlugin {
     /* The single instances of the cell palette dialog */
-    private CellPalette cellPaletteFrame = new CellPalette();
+    private WeakReference<CellPalette> cellPaletteFrameRef = null;
     
     public void initialize(ServerSessionManager loginInfo) {
         // Add the Palette menu and the Cell submenu and dialog that lets users
@@ -42,6 +42,13 @@ public class PaletteClientPlugin implements ClientPlugin {
         JMenuItem item = new JMenuItem("Cell Palette");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                CellPalette cellPaletteFrame;
+                if (cellPaletteFrameRef==null || cellPaletteFrameRef.get()==null) {
+                    cellPaletteFrame = new CellPalette();
+                    cellPaletteFrameRef = new WeakReference(cellPaletteFrame);
+                } else
+                    cellPaletteFrame = cellPaletteFrameRef.get();
+                
                 if (cellPaletteFrame.isVisible() == false) {
                     cellPaletteFrame.setVisible(true);
                 }

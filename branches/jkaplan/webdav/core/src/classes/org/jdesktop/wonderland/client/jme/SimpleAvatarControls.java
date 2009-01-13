@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.jme;
 
@@ -178,18 +178,19 @@ public class SimpleAvatarControls extends ProcessorComponent {
         synchronized(events) {
             updateRotations = false;
         
+            int onmask = MouseEvent.BUTTON3_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK;
             for (Event e : events) {
                 if (e instanceof MouseButtonEvent3D) {
                     MouseButtonEvent3D mbe = (MouseButtonEvent3D)e;
                     MouseEvent awt = (MouseEvent) mbe.getAwtEvent();
-                    if (awt.getID()== MouseEvent.MOUSE_PRESSED && (awt.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {
+                    if (awt.getID()== MouseEvent.MOUSE_PRESSED && (awt.getModifiersEx() & onmask)==onmask ) {
                         lastMouseX = awt.getX();
                         lastMouseY = awt.getY();
                     }
                 } else if (e instanceof MouseDraggedEvent3D) {
                     MouseEvent3D me = (MouseEvent3D)e;
                     MouseEvent awtMe = (MouseEvent)me.getAwtEvent();
-                    if (awtMe.getID() == MouseEvent.MOUSE_DRAGGED && (awtMe.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK)!=0 ) {
+                    if (awtMe.getID() == MouseEvent.MOUSE_DRAGGED && (awtMe.getModifiersEx() & onmask)==onmask ) {
                         processRotations(me);
                         updateRotations = true;
                     }

@@ -1,10 +1,18 @@
 sgs.server=http://localhost:8080/
-auth.username=username
-auth.fullname=Users Name
+
+# Set the username and fullname defaults in the login dialog
+#auth.username=username
+#auth.fullname=Users Name
+
+# The level of detail of the avatar
 avatar.detail=low
 
-wonderland.client.fps = 30   # Desired frame rate for client
+# Desired frame rate for client
+wonderland.client.fps = 30   
+
+# Control the size of the client window. The form should be WIDTHxHEIGHT (ie 640x480) or fullscreen
+wonderland.client.windowSize = 1024x768
 
 # Set the user directory for the client, useful for running multiple clients on one machine
-#wonderland.user.dir=/Users/paulby/.wltest
+#wonderland.user.dir=/tmp/.wltest
 

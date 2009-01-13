@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.server.wfs.importer;
 
 import com.sun.sgs.app.AppContext;
@@ -27,12 +26,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 
@@ -182,7 +180,7 @@ public class CellImporter {
              * Download and parse the cell configuration information. Create a
              * new cell based upon the information.
              */
-            BasicCellSetup setup = CellImporterUtils.getWFSCell(root, relativePath, child.name);
+            CellServerState setup = CellImporterUtils.getWFSCell(root, relativePath, child.name);
             if (setup == null) {
                 logger.info("WFSLoader: unable to read cell setup info " + relativePath + "/" + child.name);
                 continue;
@@ -216,7 +214,7 @@ public class CellImporter {
 
             /* Call the cell's setup method */
             try {
-                ((BeanSetupMO)cellMO).setupCell(setup);
+                cellMO.setCellServerState(setup);
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
                         cellMO.getName() + " of type " +

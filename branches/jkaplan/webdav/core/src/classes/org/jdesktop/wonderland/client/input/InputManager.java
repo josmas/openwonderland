@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,12 +11,13 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.input;
 
+import com.jme.math.Ray;
 import java.awt.Canvas;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
@@ -558,4 +559,15 @@ public abstract class InputManager
      * FOR APP BASE ONLY.
      */
     public static class WindowSwingMarker extends EntityComponent {}
+
+    /**
+     * Calculate a pick ray from the current eye position into the given
+     * point in screen coordinates.
+     */
+    public Ray pickRayWorld (int x, int y) {
+	if (inputPicker == null) {
+	    return null;
+	}
+	return inputPicker.calcPickRayWorld(x, y);
+    }
 }

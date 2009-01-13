@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.simplewhiteboard.server;
 
 import com.jme.math.Vector2f;
@@ -23,8 +22,8 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
  * The WFS setup class for WhiteboardCellMO.
@@ -32,7 +31,7 @@ import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
  * @author deronj
  */
 @XmlRootElement(name="simplewhiteboard-cell")
-public class WhiteboardCellSetup extends BasicCellSetup implements Serializable, CellSetupSPI {
+public class WhiteboardCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
     
     /** The user's preferred width of the whiteboard window. */
     @XmlElement(name="preferredWidth")

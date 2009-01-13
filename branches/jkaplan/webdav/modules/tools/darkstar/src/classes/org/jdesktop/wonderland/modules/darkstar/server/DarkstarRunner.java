@@ -750,17 +750,13 @@ public class DarkstarRunner extends BaseRunner {
 
             @Override
             protected boolean isStartupLine(String line) {
-                System.out.println("Is startup line? " + line);
-
                 Matcher m = success.matcher(line);
                 if (m.find()) {
-                    System.out.println("Matched success");
                     return true;
                 }
 
                 m = failure.matcher(line);
                 if (m.matches()) {
-                    System.out.println("Matched failure");
                     return true;
                 }
 
