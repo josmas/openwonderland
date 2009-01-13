@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,19 +11,19 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.cell.view;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -37,20 +37,35 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 @ExperimentalAPI
 public class ViewCell extends Cell {
     
-    private MovableAvatarComponent movableComp;
+    private MovableAvatarComponent movableComp=null;
 
     public ViewCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponent(this));
-        addComponent(new MovableAvatarComponent(this), MovableComponent.class);
-        movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
     }
-    
+
+    @Override
+    public boolean setStatus(CellStatus status) {
+        boolean changed = super.setStatus(status);
+        if (changed) {
+            switch(status) {
+                case BOUNDS :
+                    movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
+                    break;
+                case DISK :
+                    movableComp = null;
+                    break;
+            }
+        }
+
+        return changed;
+    }
+
     /**
      * Convenience method, simply calls moveableComponent.localMoveRequest
      * @param transform
      */
     public void localMoveRequest(CellTransform transform) {
-        movableComp.localMoveRequest(transform, -1, false, null);
+        if (movableComp!=null)
+            movableComp.localMoveRequest(transform, -1, false, null);
     }
 }

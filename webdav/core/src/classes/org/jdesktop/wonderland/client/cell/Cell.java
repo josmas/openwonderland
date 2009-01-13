@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.client.cell;
 
@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -574,19 +574,21 @@ public class Cell {
      * 
      * @param configData the configuration data for the cell
      */
-    public void configure(CellConfig configData) {
-                
+    public void setClientState(CellClientState configData) {
+
+        System.err.println("configure cell "+getCellID()+"  "+getClass());
         // Install the CellComponents
         for(String compClassname : configData.getClientComponentClasses()) {
             try {
                 Class compClazz = Class.forName(compClassname);
                 if (!components.containsKey(compClazz)) {
-                    logger.fine("Installing component "+compClassname);
+                    logger.warning("Installing component "+compClassname);
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
-                    addComponent(constructor.newInstance(this));
+                    CellComponent comp = constructor.newInstance(this);
+                    addComponent(comp, comp.getLookupClass());
                 }
             } catch (InstantiationException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "Instantiation exception for class "+compClassname+"  in cell "+getClass().getName(), ex);
             } catch (IllegalAccessException ex) {
                 logger.log(Level.SEVERE, null, ex);
             } catch (IllegalArgumentException ex) {

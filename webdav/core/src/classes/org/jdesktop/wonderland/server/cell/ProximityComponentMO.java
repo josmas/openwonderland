@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,15 +11,16 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,6 +64,7 @@ import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 public class ProximityComponentMO extends CellComponentMO {
 
     private HashMap<ProximityListenerSrv, ServerProximityListenerRecord> proximityListeners = null;
+    private HashMap<ManagedReference<ProximityListenerSrv>, ServerProximityListenerRecord> proximityListenersRef = null;
     private boolean isLive = false;
     
     /**
@@ -82,11 +84,19 @@ public class ProximityComponentMO extends CellComponentMO {
     
     
     public void addProximityListener(ProximityListenerSrv listener, BoundingVolume[] localBounds) {
-        if (proximityListeners==null)
-            proximityListeners = new HashMap();
 
         ServerProximityListenerRecord rec = new ServerProximityListenerRecord(new ServerProximityListenerWrapper(cellID, listener), localBounds);
-        proximityListeners.put(listener, rec);
+        if (listener instanceof ManagedObject) {
+            if (proximityListenersRef==null)
+                proximityListenersRef = new HashMap();
+                proximityListenersRef.put(AppContext.getDataManager().createReference(listener), rec);
+
+        } else {
+            if (proximityListeners==null)
+                proximityListeners = new HashMap();
+                proximityListeners.put(listener, rec);
+        }
+
 
         if (isLive) {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
@@ -103,17 +113,32 @@ public class ProximityComponentMO extends CellComponentMO {
         if (isLive) {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
             CellMO cell = cellRef.get();
-            for(ServerProximityListenerRecord rec : proximityListeners.values()) {
-                rec.setLive(isLive, cell, mgr);
-            }
+            if (proximityListeners!=null)
+                for(ServerProximityListenerRecord rec : proximityListeners.values()) {
+                    rec.setLive(isLive, cell, mgr);
+                }
+            if (proximityListenersRef!=null)
+                for(ServerProximityListenerRecord rec : proximityListenersRef.values()) {
+                    rec.setLive(isLive, cell, mgr);
+                }
         } else {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
             CellMO cell = cellRef.get();
-            for(ServerProximityListenerRecord rec : proximityListeners.values()) {
-                rec.setLive(isLive, cell, mgr);
-            }
+            if (proximityListeners!=null)
+                for(ServerProximityListenerRecord rec : proximityListeners.values()) {
+                    rec.setLive(isLive, cell, mgr);
+                }
+            if (proximityListenersRef!=null)
+                for(ServerProximityListenerRecord rec : proximityListenersRef.values()) {
+                    rec.setLive(isLive, cell, mgr);
+                }
          }
 
+    }
+
+    @Override
+    protected String getClientClass() {
+        return "org.jdesktop.wonderland.client.cell.ProximityComponent";
     }
 
 }

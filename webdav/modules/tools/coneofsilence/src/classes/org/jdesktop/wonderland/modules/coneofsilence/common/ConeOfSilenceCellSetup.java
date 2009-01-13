@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,11 +11,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.coneofsilence.common;
 
 import java.util.ArrayList;
@@ -25,8 +24,8 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
-import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
  * The ConeOfSilenceCellSetup class is the cell that renders a coneofsilence cell in
@@ -35,8 +34,8 @@ import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
  * @author jprovino
  */
 @XmlRootElement(name="ConeOfSilence-cell")
-public class ConeOfSilenceCellSetup extends BasicCellSetup 
-        implements Serializable, CellSetupSPI {
+public class ConeOfSilenceCellSetup extends CellServerState
+        implements Serializable, CellServerStateSPI {
 
     @XmlElement(name="name")
     private String name;

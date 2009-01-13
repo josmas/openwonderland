@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.server;
 
@@ -21,14 +21,14 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.common.AppCellConfig;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
+import org.jdesktop.wonderland.server.state.BasicCellServerStateHelper;
 
 
 /**
@@ -65,23 +65,19 @@ public abstract class AppCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return new AppCellConfig();
+    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        // If the given cellClient State is null, then create one
+        if (cellClientState == null) {
+            cellClientState = new AppCellConfig();
+        }
+        return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     /** 
      * {@inheritDoc}
      */
     @Override
-    public void setupCell(BasicCellSetup setupData) {
-        super.setupCell(setupData);
-    }
-
-    /** 
-     * {@inheritDoc}
-     */
-    @Override
-    public void reconfigureCell (BasicCellSetup setup) {
-        setupCell(setup);
+    public void setCellServerState(CellServerState setupData) {
+        super.setCellServerState(setupData);
     }
 }

@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,32 +11,36 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
-
 package org.jdesktop.wonderland.client.contextmenu;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-import javax.swing.JButton;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ActivatedEvent;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
+import javax.media.opengl.GLContext;
 
 
 /**
@@ -55,6 +59,8 @@ public class ContextMenu implements ActionListener {
     /* The popup menu to attach in various locations */
     private JFrame contextMenu = null;
 
+    /* The panel into which context menu items are placed */
+    private JPanel contextPanel = null;
     /*
      * An ordered list of Entities associated with the context action, in the
      * order that they were selected. If the list is null, nothing is selected
@@ -69,11 +75,15 @@ public class ContextMenu implements ActionListener {
         contextMenu = new JFrame();
         contextMenu.setResizable(false);
         contextMenu.setUndecorated(true);
-        contextMenu.getContentPane().setLayout(new GridLayout());
-        
+        contextMenu.getContentPane().setLayout(new GridLayout(1, 1));
+        contextMenu.getContentPane().setBackground(Color.LIGHT_GRAY);
+        contextPanel = new JPanel();
+        contextMenu.getContentPane().add(contextPanel);
+        contextPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        contextPanel.setLayout(new GridLayout());
+
         // Register a global listener for context and selection events
-        InputManager inputManager = InputManager.inputManager();
-        inputManager.addGlobalEventListener(new ContextSelectionListener());
+        SceneManager.getSceneManager().addSceneListener(new ContextSelectionListener());
         
 //        addContextMenuItem("Edit", new ContextMenuListener() {
 //            public void entityContextPerformed(ContextMenuEvent event) {
@@ -109,12 +119,19 @@ public class ContextMenu implements ActionListener {
      */
     public void addContextMenuItem(String name, ContextMenuListener listener) {
         // Create a new popup menu entry for this
-        JButton item = new JButton(name);
-        item.addActionListener(this);
-        item.setActionCommand(name);
-        int numChildren = contextMenu.getContentPane().getComponentCount();
-        contextMenu.getContentPane().setLayout(new GridLayout(numChildren + 1, 1));
-        contextMenu.getContentPane().add(item);
+//        JButton item = new JButton(name);
+//        item.addActionListener(this);
+//        item.setActionCommand(name);
+
+        JLabel item = new JLabel(name);
+        item.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+        item.addMouseListener(new LabelListener(name));
+
+        int numChildren = contextPanel.getComponentCount();
+        contextPanel.setLayout(new GridLayout(numChildren + 1, 1));
+        contextPanel.add(item);
         contextMenu.pack();
         
         // Add an entry to the map of listeners for each menu item, if not null
@@ -135,7 +152,6 @@ public class ContextMenu implements ActionListener {
         }
 
         // Make the popup menu visible in the new location
-        Logger.getLogger(ContextMenu.class.getName()).warning("FRAME VISIBLE");
         popupEntityList = entityList;
         Component component = event.getComponent();
         Point parentPoint = new Point(component.getLocationOnScreen());
@@ -143,6 +159,53 @@ public class ContextMenu implements ActionListener {
         contextMenu.setVisible(true);
         contextMenu.toFront();
         contextMenu.setLocation(parentPoint);
+    }
+
+    /**
+     * Listeners for clicks on any contxt menu element
+     */
+    class LabelListener extends MouseAdapter {
+
+        /* The original text of the string */
+        public String text = null;
+
+        /** Constructor, takes the index of the element */
+        public LabelListener(String text) {
+            this.text = text;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            // Fetch the listener for this menu item and deliver the event
+            JLabel label = (JLabel)e.getSource();
+            label.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+            ContextMenuListener listener = listenerMap.get(text);
+            hideContextMenu();
+            if (listener != null) {
+                ContextMenuEvent event = new ContextMenuEvent(text, popupEntityList);
+                listener.entityContextPerformed(event);
+            }
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            JLabel label = (JLabel)e.getSource();
+            label.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.BLACK),
+                    BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+            contextMenu.pack();
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            JLabel label = (JLabel) e.getSource();
+            label.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                    BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+            contextMenu.pack();
+        }
     }
 
     /**
@@ -163,7 +226,24 @@ public class ContextMenu implements ActionListener {
             listener.entityContextPerformed(event);
         }
     }
-    
+
+    // We need to call this method reflectively because it isn't available in Java 5
+    // BTW: we don't support Java 5 on Linux, so this is okay.
+    private static boolean isLinux = System.getProperty("os.name").equals("Linux");
+    private static Method isAWTLockHeldByCurrentThreadMethod;
+    static {
+        if (isLinux) {
+            try {
+                Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
+                isAWTLockHeldByCurrentThreadMethod =
+                    awtToolkitClass.getMethod("isAWTLockHeldByCurrentThread");
+            } catch (ClassNotFoundException ex) {
+            } catch (NoSuchMethodException ex) {
+            }
+        }
+    }
+
+
     /**
      * Inner class that listeners for context and selection events
      */
@@ -180,14 +260,39 @@ public class ContextMenu implements ActionListener {
         
         @Override
         public void commitEvent(Event event) {
-            if (event instanceof ActivatedEvent || event instanceof SelectionEvent) {
-                hideContextMenu();
+            // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
+            // In order to avoid deadlock with any threads which are already holding the AWT lock and which
+            // want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
+            // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
+            // the AWT lock afterward.
+            GLContext glContext = null;
+            if (isAWTLockHeldByCurrentThreadMethod != null) {
+                try {
+                    Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
+                    if (ret.booleanValue()) {
+                        glContext = GLContext.getCurrent();
+                        glContext.release();
+                    }
+                } catch (Exception ex) {}
             }
-            else if (event instanceof ContextEvent) {
-                // Show the context menu
-                ContextEvent ce = (ContextEvent)event;
-                Logger.getLogger(ContextMenu.class.getName()).warning("mouse event " + ce.getMouseEvent().getComponent());
-                showContextMenu(ce.getMouseEvent(), popupEntityList);
+
+            // Go ahead and either close the context menu or show the context
+            // menu. We reacquire the lock afterwards
+            try {
+                if (event instanceof ActivatedEvent || event instanceof SelectionEvent) {
+                    hideContextMenu();
+                }
+                else if (event instanceof ContextEvent) {
+                    // Show the context menu
+                    ContextEvent ce = (ContextEvent) event;
+                    showContextMenu(ce.getMouseEvent(), ce.getEntityList());
+                }
+            }
+            finally {
+                // Linux-specific workaround: Reacquire the lock if necessary.
+                if (glContext != null) {
+                    glContext.makeCurrent();
+                }
             }
         }
     }

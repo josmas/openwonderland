@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,15 +11,15 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.cell;
 
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
  * The properties of the cell for a particular combination of session
@@ -32,11 +32,11 @@ public class CellSessionProperties implements Serializable {
 
     private ViewCellCacheRevalidationListener viewCacheOperation;
     private String clientCellClassName;
-    private CellConfig clientCellSetup;
+    private CellClientState clientCellSetup;
     
     public CellSessionProperties(ViewCellCacheRevalidationListener viewCacheOperation,
             String clientCellClassName,
-            CellConfig clientCellSetup) {
+            CellClientState clientCellSetup) {
         this.viewCacheOperation = viewCacheOperation;
         this.clientCellClassName = clientCellClassName;
         this.clientCellSetup = clientCellSetup;
@@ -63,7 +63,7 @@ public class CellSessionProperties implements Serializable {
      * Return the setup data that will be sent to the client for this session
      * @return
      */
-    public CellConfig getClientCellSetup() {
+    public CellClientState getClientCellSetup() {
         return clientCellSetup;
     }
     

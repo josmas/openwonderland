@@ -1,8 +1,7 @@
-
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -12,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.testharness.manager.ui;
 
@@ -39,11 +38,23 @@ public class HarnessManagerUI extends javax.swing.JFrame {
     private ObjectInputStream in;
 
     /** Creates new form HarnessManagerUI */
-    public HarnessManagerUI() {
+    public HarnessManagerUI(String args[]) {
+
         initComponents();
+        String masterHostname;
+
+        if (args.length>1) {
+            System.err.println("Usage: HarnessManagerUI <master hostname>");
+            System.exit(1);
+        }
+
+        if (args.length==1)
+            masterHostname = args[0];
+        else
+            masterHostname = "localhost";
         
         try {
-            Socket s = new Socket("localhost", MasterMain.MANAGER_PORT);
+            Socket s = new Socket(masterHostname, MasterMain.MANAGER_PORT);
             out = new ObjectOutputStream(s.getOutputStream());
             in = new ObjectInputStream(s.getInputStream());
 
@@ -152,10 +163,10 @@ private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     /**
     * @param args the command line arguments
     */
-    public static void main(String args[]) {
+    public static void main(final String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new HarnessManagerUI().setVisible(true);
+                new HarnessManagerUI(args).setVisible(true);
             }
         });
     }

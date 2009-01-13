@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.modules.simplewhiteboard.server;
 
@@ -39,7 +39,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class WhiteboardComponentMO extends CellComponentMO {
 
@@ -51,30 +50,36 @@ public class WhiteboardComponentMO extends CellComponentMO {
      * @param cell The cell to which this component belongs.
      * @throws IllegalStateException If the cell does not already have a ChannelComponent IllegalStateException will be thrown.
      */
-    public WhiteboardComponentMO (WhiteboardCellMO cell) {
+    public WhiteboardComponentMO(WhiteboardCellMO cell) {
         super(cell);
 
         ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
-        if (channelComponent==null)
+        if (channelComponent == null) {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
-                
-        channelComponent.addMessageReceiver(WhiteboardCompoundCellMessage.class, 
-					    new ComponentMessageReceiverImpl(this, cellRef));
+        }
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
+
+        channelComponent.addMessageReceiver(WhiteboardCompoundCellMessage.class,
+                new ComponentMessageReceiverImpl(this, cellRef));
     }
-    
+
     /**
      * Broadcast the given message to all clients.
      * @param sourceID the originator of this message, or null if it originated
      * with the server
      * @param message The message to broadcast.
      */
-    public void sendAllClients (WonderlandClientID clientID, WhiteboardCompoundCellMessage message) {
+    public void sendAllClients(WonderlandClientID clientID, WhiteboardCompoundCellMessage message) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent = channelComponentRef.getForUpdate();
-	channelComponent.sendAll(clientID, message);
+        channelComponent.sendAll(clientID, message);
     }
-    
+
+    @Override
+    protected String getClientClass() {
+        return "org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardComponent";
+    }
+
     /**
      * Receiver for for whiteboard messages.
      * Note: inner classes of managed objects must be non-static.
@@ -82,17 +87,17 @@ public class WhiteboardComponentMO extends CellComponentMO {
     private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
 
         private ManagedReference<WhiteboardComponentMO> compRef;
-	private ManagedReference<CellMO> cellRef;
-        
-        public ComponentMessageReceiverImpl (WhiteboardComponentMO comp,  ManagedReference<CellMO> cellRef) {
+        private ManagedReference<CellMO> cellRef;
+
+        public ComponentMessageReceiverImpl(WhiteboardComponentMO comp, ManagedReference<CellMO> cellRef) {
             compRef = AppContext.getDataManager().createReference(comp);
-	    this.cellRef = cellRef;
+            this.cellRef = cellRef;
         }
 
-        public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-	    WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
-	    CellMO cell = cellRef.get();
-	    ((WhiteboardCellMO)cell).receivedMessage(sender, clientID, cmsg);
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage) message;
+            CellMO cell = cellRef.get();
+            ((WhiteboardCellMO) cell).receivedMessage(sender, clientID, cmsg);
         }
     }
 }

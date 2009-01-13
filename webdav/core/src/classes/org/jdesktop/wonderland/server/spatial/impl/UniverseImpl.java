@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
  */
 package org.jdesktop.wonderland.server.spatial.impl;
 
@@ -40,7 +40,6 @@ public class UniverseImpl implements Universe {
 
     private SpaceManager spaceManager = new SpaceManagerGridImpl();
     private final HashMap<CellID, SpatialCell> cells = new HashMap();
-    private TaskScheduler taskScheduler;
     private static UniverseImpl universe;
     private TransactionProxy transactionProxy;
     private DataService dataService;
@@ -49,7 +48,6 @@ public class UniverseImpl implements Universe {
     private static final Logger logger = Logger.getLogger(UniverseImpl.class.getName());
 
     public UniverseImpl(ComponentRegistry componentRegistry, TransactionProxy transactionProxy) {
-//        this.taskScheduler = taskScheduler;
         this.transactionProxy = transactionProxy;
         this.dataService = transactionProxy.getService(DataService.class);
         this.transactionScheduler = componentRegistry.getComponent(TransactionScheduler.class);
@@ -71,10 +69,6 @@ public class UniverseImpl implements Universe {
     public DataService getDataService() {
         return dataService;
     }
-
-//    public void scheduleTask(KernelRunnable task, Identity identity) {
-//        taskScheduler.scheduleTask(task, identity);
-//    }
 
     public void scheduleTransaction(KernelRunnable transaction, Identity identity) {
         transactionScheduler.scheduleTask(transaction, identity);

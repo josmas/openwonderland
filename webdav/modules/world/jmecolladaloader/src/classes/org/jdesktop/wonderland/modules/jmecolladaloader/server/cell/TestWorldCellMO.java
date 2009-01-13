@@ -30,7 +30,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.TestWorldCellServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
@@ -115,14 +116,12 @@ public class TestWorldCellMO extends CellMO {
     }
 
     @Override
-    public void setupCell(BasicCellSetup setup) {
-        super.setupCell(setup);
-    }
+    public CellServerState getCellServerState(CellServerState setup) {
+        if (setup == null) {
+            setup = new TestWorldCellServerState();
+        }
 
-    @Override
-    public void reconfigureCell(BasicCellSetup setup) {
-        super.reconfigureCell(setup);
-        setupCell(setup);
+        return super.getCellServerState(setup);
     }
 
     static class TestTask implements Task, Serializable {
