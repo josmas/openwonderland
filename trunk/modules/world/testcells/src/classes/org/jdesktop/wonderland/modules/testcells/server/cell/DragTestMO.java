@@ -26,7 +26,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -54,7 +53,7 @@ public class DragTestMO extends SimpleShapeCellMO {
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setCellServerState(CellServerState serverState) {
+        super.setCellServerState(serverState);
     }
 }
