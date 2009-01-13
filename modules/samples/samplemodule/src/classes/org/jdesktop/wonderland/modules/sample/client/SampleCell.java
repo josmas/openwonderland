@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
 
 /**
  * Client-side cell for rendering JME content
@@ -30,7 +31,9 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  * @author jkaplan
  */
 public class SampleCell extends Cell {
-    
+    /* Arbitrary cell info -- not really used anywhere */
+    private String info = null;
+
     public SampleCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
@@ -40,26 +43,19 @@ public class SampleCell extends Cell {
      * major configuration change. The cell will already be attached to it's parent
      * before the initial call of this method
      * 
-     * @param setupData
+     * @param clientState
      */
     @Override
-    public void setClientState(CellClientState configData) {
-        super.setClientState(configData);
+    public void setClientState(CellClientState clientState) {
+        info = ((SampleCellClientState)clientState).getInfo();
+        super.setClientState(clientState);
     }
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        CellRenderer ret = null;
-        switch(rendererType) {
-            case RENDERER_JME:
-                ret = new SampleRenderer(this);
-                break;
-                
-            default:
-                throw new IllegalStateException("Cell does not support " +
-                                                rendererType);
+        if (rendererType == RendererType.RENDERER_JME) {
+            return new SampleRenderer(this);
         }
-        
-        return ret;
+        return super.createCellRenderer(rendererType);
     }
 }

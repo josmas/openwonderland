@@ -19,12 +19,11 @@ package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.CellFactory;
-import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
-
 import com.jme.math.Vector3f;
+import java.awt.Image;
 
 /**
  * The cell factory for the sample cell.
@@ -37,23 +36,36 @@ public class ConeOfSilenceCellFactory implements CellFactory {
         return new String[] {};
     }
 
-    public <T extends CellServerState> T getDefaultCellSetup() {
+    public <T extends CellServerState> T getDefaultCellServerState() {
         // Create a setup with some default values
         ConeOfSilenceCellServerState cellServerState = new ConeOfSilenceCellServerState();
         cellServerState.setName("COS");
         cellServerState.setFullVolumeRadius(2.0);
 
-	Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
-	/*
-	 * Try rotating 45 degrees to see what that does.
-	 */
-	cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
+        Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
+        /*
+         * Try rotating 45 degrees to see what that does.
+         */
+        cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
 
         Logger.getLogger(ConeOfSilenceCellFactory.class.getName()).warning("COS!!!!");
-        return (T)cellServerState;
+        return (T) cellServerState;
     }
 
-    public CellPaletteInfo getCellPaletteInfo() {
-        return new ConeOfSilenceCellPaletteInfo();
+    public String getDisplayName() {
+        return "Cone Of Silence";
+    }
+
+    public Image getPreviewImage() {
+//        try {
+////        URL url = ConeOfSilenceCellPaletteInfo.class.getResource("resources/sample_preview.jpg");
+////        Logger.getLogger(ConeOfSilenceCellPaletteInfo.class.getName()).warning("INFO " + url.toString());
+//            URL url = new URL("file:///Users/jordanslott/Desktop/sample_preview.jpg");
+//            return Toolkit.getDefaultToolkit().createImage(url);
+//        } catch (MalformedURLException ex) {
+//            Logger.getLogger(ConeOfSilenceCellPaletteInfo.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return null;
+        return null;
     }
 }
