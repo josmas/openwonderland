@@ -69,7 +69,7 @@ public class MicrophoneMessageHandler implements ProximityListener {
 
 	channelComp = microphoneCell.getComponent(ChannelComponent.class);
 
-	logger.fine("Channel comp is " + channelComp);
+	System.out.println("Channel comp is " + channelComp);
 
         ChannelComponent.ComponentMessageReceiver msgReceiver =
 	    new ChannelComponent.ComponentMessageReceiver() {

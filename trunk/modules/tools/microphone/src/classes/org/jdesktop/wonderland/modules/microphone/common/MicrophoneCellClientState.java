@@ -50,6 +50,15 @@ public class MicrophoneCellClientState extends CellClientState {
     public MicrophoneCellClientState() {
     }
     
+    public MicrophoneCellClientState(String name, double fullVolumeRadius,
+	    double activeRadius, String activeRadiusType) {
+
+	this.name = name;
+	this.fullVolumeRadius = fullVolumeRadius;
+	this.activeRadius = activeRadius;
+	this. activeRadiusType = activeRadiusType;
+    }
+
     public void setName(String name) {
         this.name = name;
     }

@@ -47,6 +47,11 @@ public class ConeOfSilenceCellServerState extends CellServerState
     public ConeOfSilenceCellServerState() {
     }
     
+    public ConeOfSilenceCellServerState(String name, double fullVolumeRadius) {
+        this.name = name;
+        this.fullVolumeRadius = fullVolumeRadius;
+    }
+
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO";
     }

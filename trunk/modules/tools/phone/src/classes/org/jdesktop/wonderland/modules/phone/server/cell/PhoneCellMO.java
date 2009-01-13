@@ -46,6 +46,7 @@ public class PhoneCellMO extends CellMO {
             Logger.getLogger(PhoneCellMO.class.getName());
     private String modelFileName;
     private final static double PRIVATE_DAMPING_COEFFICIENT = 0.5;
+
     private boolean locked;
     private boolean simulateCalls;
     private String phoneNumber;

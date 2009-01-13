@@ -50,6 +50,8 @@ public class ConeOfSilenceCellMO extends CellMO {
     
     private String name;
 
+    private double fullVolumeRadius;
+
     public ConeOfSilenceCellMO() {
     }
     
@@ -78,7 +80,7 @@ public class ConeOfSilenceCellMO extends CellMO {
 	    ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new ConeOfSilenceCellClientState();
+            cellClientState = new ConeOfSilenceCellClientState(name, fullVolumeRadius);
         }
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
@@ -91,6 +93,7 @@ public class ConeOfSilenceCellMO extends CellMO {
 	    (ConeOfSilenceCellServerState) cellServerState;
 
 	name = coneOfSilenceCellServerState.getName();
+	fullVolumeRadius = coneOfSilenceCellServerState.getFullVolumeRadius();
     }
 
     /**
@@ -103,7 +106,7 @@ public class ConeOfSilenceCellMO extends CellMO {
     public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new ConeOfSilenceCellServerState();
+            cellServerState = new ConeOfSilenceCellServerState(name, fullVolumeRadius);
         }
         return super.getCellServerState(cellServerState);
     }
