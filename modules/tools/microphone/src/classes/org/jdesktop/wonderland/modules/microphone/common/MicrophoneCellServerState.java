@@ -53,6 +53,15 @@ public class MicrophoneCellServerState extends CellServerState
     public MicrophoneCellServerState() {
     }
     
+    public MicrophoneCellServerState(String name, double fullVolumeRadius,
+	    double activeRadius, String activeRadiusType) {
+
+	this.name = name;
+	this.fullVolumeRadius = fullVolumeRadius;
+	this.activeRadius = activeRadius;
+	this.activeRadiusType = activeRadiusType;
+    }
+
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneCellMO";
     }

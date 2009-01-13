@@ -47,6 +47,11 @@ public class ConeOfSilenceCellClientState extends CellClientState {
     public ConeOfSilenceCellClientState() {
     }
     
+    public ConeOfSilenceCellClientState(String name, double fullVolumeRadius) {
+	this.name = name;
+	this.fullVolumeRadius = fullVolumeRadius;
+    }
+
     public void setName(String name) {
 	this.name = name;
     }

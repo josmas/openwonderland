@@ -52,6 +52,11 @@ public class MicrophoneCellMO extends CellMO {
 
     private String name;
 
+    private double fullVolumeRadius;
+
+    private double activeRadius;
+    private String activeRadiusType;
+
     public MicrophoneCellMO() {
     }
 
@@ -61,6 +66,8 @@ public class MicrophoneCellMO extends CellMO {
     }
 
     public void setLive(boolean live) {
+	System.out.println("MICROPHONE LIVE " + live);
+
 	if (live == false) {
 	    return;
  	}
@@ -80,17 +87,23 @@ public class MicrophoneCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new MicrophoneCellClientState();
+            cellClientState = new MicrophoneCellClientState(name, fullVolumeRadius,
+                activeRadius, activeRadiusType);
         }
-
-	name = ((MicrophoneCellClientState)cellClientState).getName();
 
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setCellServerState(CellServerState cellServerState) {
+        super.setCellServerState(cellServerState);
+
+	MicrophoneCellServerState microphoneCellServerState = (MicrophoneCellServerState) cellServerState;
+
+	name = microphoneCellServerState.getName();
+	fullVolumeRadius = microphoneCellServerState.getFullVolumeRadius();
+	activeRadius = microphoneCellServerState.getActiveRadius();
+	activeRadiusType = microphoneCellServerState.getActiveRadiusType();
     }
 
     /**
@@ -103,8 +116,11 @@ public class MicrophoneCellMO extends CellMO {
     public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new MicrophoneCellServerState();
+            cellServerState = new MicrophoneCellServerState(name, fullVolumeRadius,
+		activeRadius, activeRadiusType);
         }
+
         return super.getCellServerState(cellServerState);
     }
+
 }
