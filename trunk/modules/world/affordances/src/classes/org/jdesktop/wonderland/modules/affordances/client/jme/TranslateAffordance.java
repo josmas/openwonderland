@@ -29,12 +29,15 @@ import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -129,10 +132,11 @@ public class TranslateAffordance extends Affordance {
     }
     
     public static TranslateAffordance addToCell(Cell cell) {
+        Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
+
         // First check to see if the cell has the moveable component. If not,
         // then do not add the affordance
         if (cell.getComponent(MovableComponent.class) == null) {
-            Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
             logger.warning("[AFFORDANCE] Cell " + cell.getName() + " does not " +
                     "have the moveable component.");
             return null;
