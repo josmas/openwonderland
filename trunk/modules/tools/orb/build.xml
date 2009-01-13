@@ -41,7 +41,7 @@
 
                 <serverjar name="orb-server" basedir="${build.classes.dir}">
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.orb.common.OrbCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.orb.common.OrbCellServerState"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>

@@ -18,20 +18,23 @@
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
 import com.sun.sgs.app.ManagedReference;
-import com.sun.voip.client.connector.CallStatus;
+
 import java.util.logging.Logger;
+
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
-import org.jdesktop.wonderland.modules.phone.common.PhoneCellConfig;
+
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+
+import org.jdesktop.wonderland.modules.phone.common.PhoneCellClientState;
+import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
 
 /**
  * A server cell that provides conference phone functionality
@@ -54,16 +57,19 @@ public class PhoneCellMO extends CellMO {
     private int callNumber = 0;
 
     public PhoneCellMO() {
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
-
-        new PhoneMessageHandler(this);
     }
 
     public PhoneCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size),
-                new CellTransform(null, center));
+	    new CellTransform(null, center));
+    }
 
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+    public void setLive(boolean live) {
+	System.out.println("Phone set live! " + live);
+
+	if (live == false) {
+	    return;
+	}
 
         new PhoneMessageHandler(this);
     }
@@ -80,31 +86,32 @@ public class PhoneCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new PhoneCellConfig();
+	    cellClientState = new PhoneCellClientState();
         }
-        ((PhoneCellConfig)cellClientState).setLocked(locked);
-        ((PhoneCellConfig)cellClientState).setSimulateCalls(simulateCalls);
-        ((PhoneCellConfig)cellClientState).setPhoneNumber(phoneNumber);
-        ((PhoneCellConfig)cellClientState).setPassword(password);
-        ((PhoneCellConfig)cellClientState).setPhoneLocation(phoneLocation);
-        ((PhoneCellConfig)cellClientState).setZeroVolumeRadius(zeroVolumeRadius);
-        ((PhoneCellConfig)cellClientState).setFullVolumeRadius(fullVolumeRadius);
+
+        ((PhoneCellClientState)cellClientState).setLocked(locked);
+        ((PhoneCellClientState)cellClientState).setSimulateCalls(simulateCalls);
+        ((PhoneCellClientState)cellClientState).setPhoneNumber(phoneNumber);
+        ((PhoneCellClientState)cellClientState).setPassword(password);
+        ((PhoneCellClientState)cellClientState).setPhoneLocation(phoneLocation);
+        ((PhoneCellClientState)cellClientState).setZeroVolumeRadius(zeroVolumeRadius);
+        ((PhoneCellClientState)cellClientState).setFullVolumeRadius(fullVolumeRadius);
 
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setCellServerState(CellServerState cellServerState) {
+        super.setCellServerState(cellServerState);
 
-        PhoneCellSetup pcs = (PhoneCellSetup) setup;
+        PhoneCellServerState phoneCellServerState = (PhoneCellServerState) cellServerState;
 
-        locked = pcs.getLocked();
-        simulateCalls = pcs.getSimulateCalls();
-        phoneNumber = pcs.getPhoneNumber();
-        password = pcs.getPassword();
-        phoneLocation = pcs.getPhoneLocation();
-        zeroVolumeRadius = pcs.getZeroVolumeRadius();
+        locked = phoneCellServerState.getLocked();
+        simulateCalls = phoneCellServerState.getSimulateCalls();
+        phoneNumber = phoneCellServerState.getPhoneNumber();
+        password = phoneCellServerState.getPassword();
+        phoneLocation = phoneCellServerState.getPhoneLocation();
+        zeroVolumeRadius = phoneCellServerState.getZeroVolumeRadius();
     }
 
     /**
@@ -117,7 +124,7 @@ public class PhoneCellMO extends CellMO {
     public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState= new PhoneCellSetup();
+            cellServerState= new PhoneCellServerState();
         }
         return super.getCellServerState(cellServerState);
     }

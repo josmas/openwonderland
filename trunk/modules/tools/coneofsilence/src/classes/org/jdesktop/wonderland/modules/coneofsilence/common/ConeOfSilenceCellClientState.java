@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.orb.common;
+package org.jdesktop.wonderland.modules.coneofsilence.common;
 
 
 import java.util.ArrayList;
@@ -32,15 +32,35 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * The OrbCellSetup class is the cell that renders an orb cell in
+ * The ConeOfSilenceCellSetup class is the cell that renders a coneofsilence cell in
  * world.
  * 
- * @author jprovino
+ * @author jkaplan
  */
-public class OrbCellConfig extends CellClientState {
+public class ConeOfSilenceCellClientState extends CellClientState {
+
+    private String name;
+
+    private double fullVolumeRadius;
 
     /** Default constructor */
-    public OrbCellConfig() {
+    public ConeOfSilenceCellClientState() {
     }
     
+    public void setName(String name) {
+	this.name = name;
+    }
+
+    public String getName() {
+	return name;
+    }
+
+    public void setFullVolumeRadius(double fullVolumeRadius) {
+	this.fullVolumeRadius = fullVolumeRadius;
+    }
+
+    public double getFullVolumeRadius() {
+	return fullVolumeRadius;
+    }
+
 }

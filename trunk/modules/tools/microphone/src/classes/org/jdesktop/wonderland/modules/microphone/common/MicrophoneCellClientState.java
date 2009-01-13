@@ -17,51 +17,43 @@
  */
 package org.jdesktop.wonderland.modules.microphone.common;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlElement;
+
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
  * The MicrophoneCellSetup class is the cell that renders a microphone cell in
  * world.
  * 
- * @author jprovino
+ * @author jkaplan
  */
-@XmlRootElement(name="microphone-cell")
-public class MicrophoneCellSetup extends CellServerState
-        implements Serializable, CellServerStateSPI {
+public class MicrophoneCellClientState extends CellClientState {
 
-    @XmlElement(name="name")
     private String name;
 
-    @XmlElement(name="fullVolumeRadius")
     private double fullVolumeRadius;
 
-    @XmlElement(name="activeRadius")
     private double activeRadius;
-    
-    @XmlElement(name="activeRadiusType")
     private String activeRadiusType;
 
     /** Default constructor */
-    public MicrophoneCellSetup() {
+    public MicrophoneCellClientState() {
     }
     
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneCellMO";
-    }
-
     public void setName(String name) {
         this.name = name;
     }
 
-    @XmlTransient
     public String getName() {
         return name;
     }
@@ -70,7 +62,6 @@ public class MicrophoneCellSetup extends CellServerState
         this.fullVolumeRadius = fullVolumeRadius;
     }
 
-    @XmlTransient
     public double getFullVolumeRadius() {
         return fullVolumeRadius;
     }
@@ -79,7 +70,6 @@ public class MicrophoneCellSetup extends CellServerState
 	this.activeRadius = activeRadius;
     }
 
-    @XmlTransient
     public double getActiveRadius() {
 	return activeRadius;
     }
@@ -88,7 +78,6 @@ public class MicrophoneCellSetup extends CellServerState
 	this.activeRadiusType = activeRadiusType;
     }
 
-    @XmlTransient
     public String getActiveRadiusType() {
 	return activeRadiusType;
     }

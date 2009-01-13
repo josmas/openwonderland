@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.coneofsilence.common;
+package org.jdesktop.wonderland.modules.microphone.common;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,13 +28,13 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The ConeOfSilenceCellSetup class is the cell that renders a coneofsilence cell in
+ * The MicrophoneCellServerState class is the cell that renders a microphone cell in
  * world.
  * 
  * @author jprovino
  */
-@XmlRootElement(name="ConeOfSilence-cell")
-public class ConeOfSilenceCellSetup extends CellServerState
+@XmlRootElement(name="microphone-cell")
+public class MicrophoneCellServerState extends CellServerState
         implements Serializable, CellServerStateSPI {
 
     @XmlElement(name="name")
@@ -43,30 +43,54 @@ public class ConeOfSilenceCellSetup extends CellServerState
     @XmlElement(name="fullVolumeRadius")
     private double fullVolumeRadius;
 
+    @XmlElement(name="activeRadius")
+    private double activeRadius;
+    
+    @XmlElement(name="activeRadiusType")
+    private String activeRadiusType;
+
     /** Default constructor */
-    public ConeOfSilenceCellSetup() {
+    public MicrophoneCellServerState() {
     }
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO";
+        return "org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneCellMO";
     }
 
     public void setName(String name) {
-	this.name = name;
+        this.name = name;
     }
 
-    @XmlTransient    
+    @XmlTransient
     public String getName() {
-	return name;
+        return name;
     }
 
     public void setFullVolumeRadius(double fullVolumeRadius) {
-	this.fullVolumeRadius = fullVolumeRadius;
+        this.fullVolumeRadius = fullVolumeRadius;
     }
 
     @XmlTransient
     public double getFullVolumeRadius() {
-	return fullVolumeRadius;
+        return fullVolumeRadius;
+    }
+
+    public void setActiveRadius(double activeRadius) {
+	this.activeRadius = activeRadius;
+    }
+
+    @XmlTransient
+    public double getActiveRadius() {
+	return activeRadius;
+    }
+
+    public void setActiveRadiusType(String activeRadiusType) {
+	this.activeRadiusType = activeRadiusType;
+    }
+
+    @XmlTransient
+    public String getActiveRadiusType() {
+	return activeRadiusType;
     }
 
 }

@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.orb.common;
+package org.jdesktop.wonderland.modules.coneofsilence.common;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,21 +28,45 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The OrbCellSetup class is the cell that renders an orb cell in
+ * The ConeOfSilenceCellServerState class is the cell that renders a coneofsilence cell in
  * world.
  * 
  * @author jprovino
  */
-@XmlRootElement(name="orb-cell")
-public class OrbCellSetup extends CellServerState
+@XmlRootElement(name="ConeOfSilence-cell")
+public class ConeOfSilenceCellServerState extends CellServerState
         implements Serializable, CellServerStateSPI {
 
+    @XmlElement(name="name")
+    private String name;
+
+    @XmlElement(name="fullVolumeRadius")
+    private double fullVolumeRadius;
+
     /** Default constructor */
-    public OrbCellSetup() {
+    public ConeOfSilenceCellServerState() {
     }
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
+        return "org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO";
+    }
+
+    public void setName(String name) {
+	this.name = name;
+    }
+
+    @XmlTransient    
+    public String getName() {
+	return name;
+    }
+
+    public void setFullVolumeRadius(double fullVolumeRadius) {
+	this.fullVolumeRadius = fullVolumeRadius;
+    }
+
+    @XmlTransient
+    public double getFullVolumeRadius() {
+	return fullVolumeRadius;
     }
 
 }

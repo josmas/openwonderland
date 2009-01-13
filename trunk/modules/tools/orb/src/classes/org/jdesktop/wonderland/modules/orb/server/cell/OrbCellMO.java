@@ -17,23 +17,30 @@
  */
 package org.jdesktop.wonderland.modules.orb.server.cell;
 
-
-
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+
 import java.util.logging.Logger;
+
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
-import org.jdesktop.wonderland.modules.orb.common.OrbCellConfig;
+
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+
 import com.jme.bounding.BoundingBox;
+
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+
+import org.jdesktop.wonderland.modules.orb.common.OrbCellClientState;
+import org.jdesktop.wonderland.modules.orb.common.OrbCellServerState;
 
 /**
  * A server cell that provides Orb functionality
@@ -46,28 +53,32 @@ public class OrbCellMO extends CellMO {
      
     private ManagedReference<OrbMessageHandler> orbMessageHandlerRef;
 
-    public OrbCellMO() {
-	if (orbMessageHandlerRef == null) {
-	    addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
-	    //addComponent(new MovableComponentMO(this));
+    private String callID;
 
-            orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, null, false));
-	}
+    private boolean simulateCalls;
+
+    public OrbCellMO() {
     }
     
     public OrbCellMO(Vector3f center, float size, String callID, boolean simulateCalls) {
         super(new BoundingBox(new Vector3f(), size, size, size), 
 	    new CellTransform(null, center));
 
+	this.callID = callID;
+	this.simulateCalls = simulateCalls;
+
 	logger.fine("Orb center " + center + " size " + size);
+    }
 
-	if (orbMessageHandlerRef == null) {
-	    addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
-
-            orbMessageHandlerRef = AppContext.getDataManager().createReference(
-		new OrbMessageHandler(this, callID, simulateCalls));
+    public void setLive(boolean live) {
+	if (live == false) {
+	    return;
 	}
+
+	//addComponent(new MovableComponentMO(this));
+
+        orbMessageHandlerRef = AppContext.getDataManager().createReference(
+	    new OrbMessageHandler(this, callID, simulateCalls));
     }
 
     @Override
@@ -82,16 +93,16 @@ public class OrbCellMO extends CellMO {
 	    ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new OrbCellConfig();
+            cellClientState = new OrbCellClientState();
         }
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setCellServerState(CellServerState cellServerState) {
+        super.setCellServerState(cellServerState);
 
-	OrbCellSetup pcs = (OrbCellSetup) setup;
+	OrbCellServerState orbCellServerState = (OrbCellServerState) cellServerState;
     }
 
     /**
@@ -104,7 +115,7 @@ public class OrbCellMO extends CellMO {
     public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new OrbCellSetup();
+            cellServerState = new OrbCellServerState();
         }
         return super.getCellServerState(cellServerState);
     }

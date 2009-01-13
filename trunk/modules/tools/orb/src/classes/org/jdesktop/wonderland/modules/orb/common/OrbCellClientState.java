@@ -15,20 +15,32 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.phone.common.cell.config;
+package org.jdesktop.wonderland.modules.orb.common;
+
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import java.io.Serializable;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
-import org.jdesktop.wonderland.modules.phone.common.cell.config.PhoneCellConfig;
-
 /**
- * The PhoneCellConfig class represents the information communicated
- * between the client and Darkstar server for the phone.
- *
- * @author jkaplan
+ * The OrbCellSetup class is the cell that renders an orb cell in
+ * world.
+ * 
+ * @author jprovino
  */
-public class PhoneCellConfig extends CellClientState {
+public class OrbCellClientState extends CellClientState {
+
     /** Default constructor */
-    public PhoneCellConfig() {
+    public OrbCellClientState() {
     }
+    
 }

@@ -34,7 +34,6 @@ public class PhonePasswordDialog extends JDialog {
     private CellID phoneCellID;  
     private ChannelComponent channelComp;
     
-
     public PhonePasswordDialog(JDialog parent, CellID phoneCellID, ChannelComponent channelComp) {
         super(parent, false);
 

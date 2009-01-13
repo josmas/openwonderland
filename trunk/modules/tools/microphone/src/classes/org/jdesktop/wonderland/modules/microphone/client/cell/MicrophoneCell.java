@@ -23,18 +23,11 @@ import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -42,10 +35,10 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellConfig;
-
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
 
 /**
  *
@@ -86,10 +79,10 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
      * @param setupData
      */
     @Override
-    public void setClientState(CellClientState setupData) {
-	super.setClientState(setupData);
+    public void setClientState(CellClientState cellClientState) {
+	super.setClientState(cellClientState);
 
-	MicrophoneCellConfig config = (MicrophoneCellConfig) setupData;
+	MicrophoneCellClientState microphoneCellClientState = (MicrophoneCellClientState) cellClientState;
     }
 
     public WonderlandSession getSession() {

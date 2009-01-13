@@ -42,7 +42,7 @@
 
                 <serverjar name="microphone-server" basedir="${build.classes.dir}">
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>
