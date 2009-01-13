@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.swingmenutest.server;
+package org.jdesktop.wonderland.modules.jeditortest.server;
 
 import com.jme.math.Vector2f;
 import java.io.Serializable;
@@ -26,34 +26,35 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The WFS setup class for SwingMenuTestCellMO.
+ * The WFS server state class for JEditorTestCellMO.
  * 
  * @author deronj
  */
-@XmlRootElement(name="swingmenutest-cell")
-public class SwingMenuTestCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
+@XmlRootElement(name="jeditortest-cell")
+public class JEditorTestCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
     
-    /** The user's preferred width of the Swing test window. */
+    /** The user's preferred width of the JEditor test window. */
     @XmlElement(name="preferredWidth")
-    public int preferredWidth = 500;
+    public int preferredWidth = 300;
     
-    /** The user's preferred height of the Swing test window. */
+    /** The user's preferred height of the JEditor test window. */
     @XmlElement(name="preferredHeight")
-    public int preferredHeight = 100;
+
+    public int preferredHeight = 300;
     
-    /** The X pixel scale of the Swing test window. */
+    /** The X pixel scale of the JEditor test window. */
     @XmlElement(name="pixelScaleX")
     public float pixelScaleX = 0.01f;
 
-    /** The Y pixel scale of the Swing test window. */
+    /** The Y pixel scale of the JEditor test window. */
     @XmlElement(name="pixelScaleY")
     public float pixelScaleY = 0.01f;
     
     /** Default constructor */
-    public SwingMenuTestCellSetup() {}
+    public JEditorTestCellServerState() {}
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.swingmenutest.server.SwingMenuTestCellMO";
+        return "org.jdesktop.wonderland.modules.jeditortest.server.JEditorTestCellMO";
     }
 
     @XmlTransient public int getPreferredWidth () {
@@ -91,11 +92,11 @@ public class SwingMenuTestCellSetup extends CellServerState implements Serializa
     /**
      * Returns a string representation of this class.
      *
-     * @return The setup information as a string.
+     * @return The server state information as a string.
      */
     @Override
     public String toString() {
-        return super.toString() + " [SwingMenuTestCellSetup]: " +
+        return super.toString() + " [JEditorTestCellServerState]: " +
 	    "preferredWidth=" + preferredWidth + "," +
 	    "preferredHeight=" + preferredHeight + "," +
 	    "pixelScaleX=" + pixelScaleX + "," +

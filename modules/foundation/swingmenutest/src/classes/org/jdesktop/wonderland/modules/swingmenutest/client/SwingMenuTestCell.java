@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
-import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestCellConfig;
+import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -41,8 +41,8 @@ public class SwingMenuTestCell extends App2DCell {
     /** The (singleton) window created by the Swing test app */
     private SwingMenuTestWindow window;
 
-    /** The cell config message received from the server cell */
-    private SwingMenuTestCellConfig config;
+    /** The cell client state message received from the server cell */
+    private SwingMenuTestCellClientState clientState;
     
     /**
      * Create an instance of SwingMenuTestCell.
@@ -64,13 +64,14 @@ public class SwingMenuTestCell extends App2DCell {
     /**
      * Initialize the cell with parameters from the server.
      *
-     * @param configData the config data to initialize the cell with
+     * @param state the client state data to initialize the cell with
      */
-    public void setClientState (CellClientState configData) {
+    public void setClientState (CellClientState state) {
 
-        config = (SwingMenuTestCellConfig)configData;
-        setApp(new SwingMenuTestApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
-				config.getPixelScale()));
+        clientState = (SwingMenuTestCellClientState)state;
+        setApp(new SwingMenuTestApp(getAppType(), clientState.getPreferredWidth(), 
+				    clientState.getPreferredHeight(),
+				    clientState.getPixelScale()));
 
 	// Associate the app with this cell (must be done before making it visible)
 	app.setCell(this);

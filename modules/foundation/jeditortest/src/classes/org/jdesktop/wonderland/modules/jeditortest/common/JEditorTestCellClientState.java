@@ -25,18 +25,18 @@ import java.util.logging.Logger;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
 
 /**
- * Container for JEditor test client cell configuration data.
+ * Container for JEditor test cell client state.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class JEditorTestCellConfig extends App2DCellConfig {
+public class JEditorTestCellClientState extends App2DCellClientState {
 
-    private static final Logger logger = Logger.getLogger(JEditorTestCellConfig.class.getName());
+    private static final Logger logger = Logger.getLogger(JEditorTestCellClientState.class.getName());
     
     private static final int DEFAULT_WIDTH = 640;
     private static final int DEFAULT_HEIGHT = 480;
@@ -44,11 +44,11 @@ public class JEditorTestCellConfig extends App2DCellConfig {
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     
-    public JEditorTestCellConfig () {
+    public JEditorTestCellClientState () {
         this(null);
     }
     
-    public JEditorTestCellConfig (Vector2f pixelScale) {
+    public JEditorTestCellClientState (Vector2f pixelScale) {
 	super(pixelScale);
     }
     
