@@ -58,7 +58,7 @@ public abstract class CellComponentMO implements ManagedObject, Serializable {
      * @param setup The setup object, if null, creates one.
      * @return The current setup information
      */
-    public CellComponentServerState getCellComponentSetup(CellComponentServerState setup) {
+    public CellComponentServerState getServerState(CellComponentServerState setup) {
         // Do nothing by default
         return setup;
     }

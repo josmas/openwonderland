@@ -66,21 +66,21 @@ public class SwingTestCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellClientState getClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
             cellClientState = new SwingTestCellClientState(pixelScale);
         }
         ((SwingTestCellClientState)cellClientState).setPreferredWidth(preferredWidth);
         ((SwingTestCellClientState)cellClientState).setPreferredHeight(preferredHeight);
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState state) {
-	super.setCellServerState(state);
+    public void setServerState(CellServerState state) {
+	super.setServerState(state);
 
 	SwingTestCellServerState serverState = (SwingTestCellServerState) state;
 	preferredWidth = serverState.getPreferredWidth();

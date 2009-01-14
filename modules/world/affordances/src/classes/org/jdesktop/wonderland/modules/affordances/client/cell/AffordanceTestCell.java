@@ -45,8 +45,8 @@ public class AffordanceTestCell extends Cell {
     }
     
     @Override
-    public void setCellClientState(CellClientState configData) {
-        super.setCellClientState(configData);
+    public void setClientState(CellClientState configData) {
+        super.setClientState(configData);
         AffordanceTestCellConfig c = (AffordanceTestCellConfig) configData;
         this.shape = c.getShape();
         this.materialJME = c.getMaterialJME();

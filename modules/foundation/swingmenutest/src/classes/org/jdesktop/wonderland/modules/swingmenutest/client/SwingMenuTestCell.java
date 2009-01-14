@@ -66,7 +66,7 @@ public class SwingMenuTestCell extends App2DCell {
      *
      * @param state the client state data to initialize the cell with
      */
-    public void setCellClientState (CellClientState state) {
+    public void setClientState (CellClientState state) {
 
         clientState = (SwingMenuTestCellClientState)state;
         setApp(new SwingMenuTestApp(getAppType(), clientState.getPreferredWidth(), 

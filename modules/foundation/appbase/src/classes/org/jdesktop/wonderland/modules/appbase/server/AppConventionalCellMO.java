@@ -41,14 +41,14 @@ import org.jdesktop.wonderland.server.state.BasicCellServerStateHelper;
  * 1. World-launched App
  * <br><br>
  * When WFS launches the app it uses the default constructor and
- * calls <code>setCellServerState</code> to transfer the information from the wlc file
+ * calls <code>setServerState</code> to transfer the information from the wlc file
  * into the cell. 
  * <br><br>
- * In this case the wlc <code>setCellServerState</code> must specify:
+ * In this case the wlc <code>setServerState</code> must specify:
  * <ol>
  * + command: The command to execute. This must not be a non-empty string.         
  * </ol>
- * The wlc <code>setCellServerState</code> can optionally specify:
+ * The wlc <code>setServerState</code> can optionally specify:
  * <ol>
  * + <code>appName</code>: The name of the application (Default: "NoName").
  * </ol>
@@ -156,7 +156,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellClientState getClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
 	if (clientState == null) {
 	    clientState = new AppConventionalCellClientState(masterHost, appName, pixelScale, connectionInfo);
 	    if (userLaunched) {
@@ -177,8 +177,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState serverState) {
-	super.setCellServerState(serverState);
+    public void setServerState(CellServerState serverState) {
+	super.setServerState(serverState);
 
 	AppConventionalCellServerState state = (AppConventionalCellServerState) serverState;
 
@@ -204,7 +204,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * @return a JavaBean representing the current state
      */
     @Override
-    public CellServerState getCellServerState(CellServerState cellServerState) {
+    public CellServerState getServerState(CellServerState cellServerState) {
 
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
@@ -215,6 +215,6 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 	((AppConventionalCellServerState)cellServerState).setCommand(this.command);
 	((AppConventionalCellServerState)cellServerState).setPixelScale(this.pixelScale);
         
-        return super.getCellServerState(cellServerState);
+        return super.getServerState(cellServerState);
     }
 }

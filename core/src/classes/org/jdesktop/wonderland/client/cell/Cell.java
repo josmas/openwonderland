@@ -574,7 +574,7 @@ public class Cell {
      * 
      * @param configData the configuration data for the cell
      */
-    public void setCellClientState(CellClientState configData) {
+    public void setClientState(CellClientState configData) {
 
 //        System.err.println("configure cell "+getCellID()+"  "+getClass());
         // Install the CellComponents

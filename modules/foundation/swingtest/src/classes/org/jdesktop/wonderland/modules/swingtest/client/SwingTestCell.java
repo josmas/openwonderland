@@ -66,7 +66,7 @@ public class SwingTestCell extends App2DCell {
      *
      * @param state the client state with which initialize the cell.
      */
-    public void setCellClientState (CellClientState state) {
+    public void setClientState (CellClientState state) {
 
         clientState = (SwingTestCellClientState) state;
         setApp(new SwingTestApp(getAppType(), clientState.getPreferredWidth(), 

@@ -334,7 +334,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
     /**
      * Notify the client that the contents of the cell have changed
      *
-     * REPLACED BY setCellServerState
+     * REPLACED BY setServerState
      *
      */
 //    public void contentChanged() {
@@ -476,7 +476,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(clientID, capabilities),
-                getCellClientState(null, clientID, capabilities));
+                getClientState(null, clientID, capabilities));
     }
     
     /**
@@ -492,7 +492,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                                                ClientCapabilities capabilities) {
         return new CellSessionProperties(getViewCellCacheRevalidationListener(), 
                 getClientCellClassName(clientID, capabilities),
-                getCellClientState(null, clientID, capabilities));
+                getClientState(null, clientID, capabilities));
         
     }
     
@@ -527,7 +527,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param clientID The unique ID of the client
      * @param capabilities The client capabilities
      */
-    protected CellClientState getCellClientState(CellClientState cellClientState,
+    protected CellClientState getClientState(CellClientState cellClientState,
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
@@ -563,7 +563,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * Set up the cell from the given properties
      * @param setup the properties to setup with
      */
-    public void setCellServerState(CellServerState setup) {
+    public void setServerState(CellServerState setup) {
         // Set up the transform (origin, rotation, scaling) and cell bounds
         setLocalTransform(BasicCellServerStateHelper.getCellTransform(setup));
         setLocalBounds(BasicCellServerStateHelper.getCellBounds(setup));
@@ -592,7 +592,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param setup The setup object, if null, creates one.
      * @return The current setup information
      */
-    public CellServerState getCellServerState(CellServerState setup) {
+    public CellServerState getServerState(CellServerState setup) {
         // In the case of CellMO, if the 'setup' parameter is null, it means
         // it was not created by the super class. In which case, this class
         // should just return null
@@ -610,7 +610,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         List<CellComponentServerState> setups = new LinkedList<CellComponentServerState>();
         for (ManagedReference<CellComponentMO> componentRef : components.values()) {
             CellComponentMO component = componentRef.get();
-            CellComponentServerState compSetup = component.getCellComponentSetup(null);
+            CellComponentServerState compSetup = component.getServerState(null);
             if (compSetup != null) {
                 setups.add(compSetup);
             }

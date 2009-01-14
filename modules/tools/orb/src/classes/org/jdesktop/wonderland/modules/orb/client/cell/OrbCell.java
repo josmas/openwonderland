@@ -94,8 +94,8 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
      * @param setupData
      */
     @Override
-    public void setCellClientState(CellClientState cellClientState) {
-	super.setCellClientState(cellClientState);
+    public void setClientState(CellClientState cellClientState) {
+	super.setClientState(cellClientState);
 
 	logger.fine("ORB is configured");
 	OrbCellClientState orbCellClientState = (OrbCellClientState) cellClientState;

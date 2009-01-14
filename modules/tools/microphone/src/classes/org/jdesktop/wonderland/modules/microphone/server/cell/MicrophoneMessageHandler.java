@@ -131,7 +131,7 @@ public class MicrophoneMessageHandler implements Serializable, ComponentMessageR
 	String callId = msg.getCellID().toString();
 
 	MicrophoneCellServerState cellServerState = (MicrophoneCellServerState) 
-	    microphoneCellMORef.get().getCellServerState(null);
+	    microphoneCellMORef.get().getServerState(null);
 
 	logger.warning(callId + " entered microphone " + name);
 

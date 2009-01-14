@@ -57,26 +57,26 @@ public class SampleCellMO extends CellMO {
     }
 
     @Override
-    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
           cellClientState = new SampleCellClientState();
         }
         ((SampleCellClientState)cellClientState).setInfo(info);
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState serverState) {
+    public void setServerState(CellServerState serverState) {
         info = ((SampleCellServerState)serverState).getInfo();
-        super.setCellServerState(serverState);
+        super.setServerState(serverState);
     }
 
     @Override
-    public CellServerState getCellServerState(CellServerState cellServerState) {
+    public CellServerState getServerState(CellServerState cellServerState) {
         if (cellServerState == null) {
             cellServerState = new SampleCellServerState();
         }
         ((SampleCellServerState)cellServerState).setInfo(info);
-        return super.getCellServerState(cellServerState);
+        return super.getServerState(cellServerState);
     }
 }

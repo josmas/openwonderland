@@ -46,9 +46,9 @@ public class SampleCell extends Cell {
      * @param clientState
      */
     @Override
-    public void setCellClientState(CellClientState clientState) {
+    public void setClientState(CellClientState clientState) {
         info = ((SampleCellClientState)clientState).getInfo();
-        super.setCellClientState(clientState);
+        super.setClientState(clientState);
     }
     
     @Override

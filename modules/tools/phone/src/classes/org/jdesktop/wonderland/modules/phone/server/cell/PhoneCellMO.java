@@ -93,7 +93,7 @@ public class PhoneCellMO extends CellMO {
     }
 
     @Override
-    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID,
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
@@ -108,12 +108,12 @@ public class PhoneCellMO extends CellMO {
         ((PhoneCellClientState)cellClientState).setZeroVolumeRadius(zeroVolumeRadius);
         ((PhoneCellClientState)cellClientState).setFullVolumeRadius(fullVolumeRadius);
 
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState cellServerState) {
-        super.setCellServerState(cellServerState);
+    public void setServerState(CellServerState cellServerState) {
+        super.setServerState(cellServerState);
 
         PhoneCellServerState phoneCellServerState = (PhoneCellServerState) cellServerState;
 
@@ -132,12 +132,12 @@ public class PhoneCellMO extends CellMO {
      * @return a JavaBean representing the current state
      */
     @Override
-    public CellServerState getCellServerState(CellServerState cellServerState) {
+    public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
             cellServerState= new PhoneCellServerState();
         }
-        return super.getCellServerState(cellServerState);
+        return super.getServerState(cellServerState);
     }
 
     public boolean getLocked() {

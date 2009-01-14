@@ -88,18 +88,18 @@ public class ConeOfSilenceCellMO extends CellMO {
     }
 
     @Override
-    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID,
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
 	    ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
             cellClientState = new ConeOfSilenceCellClientState(name, fullVolumeRadius);
         }
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState cellServerState) {
-        super.setCellServerState(cellServerState);
+    public void setServerState(CellServerState cellServerState) {
+        super.setServerState(cellServerState);
 
 	ConeOfSilenceCellServerState coneOfSilenceCellServerState = 
 	    (ConeOfSilenceCellServerState) cellServerState;
@@ -115,12 +115,12 @@ public class ConeOfSilenceCellMO extends CellMO {
      * @return a JavaBean representing the current state
      */
     @Override
-    public CellServerState getCellServerState(CellServerState cellServerState) {
+    public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
             cellServerState = new ConeOfSilenceCellServerState(name, fullVolumeRadius);
         }
-        return super.getCellServerState(cellServerState);
+        return super.getServerState(cellServerState);
     }
 
 }
