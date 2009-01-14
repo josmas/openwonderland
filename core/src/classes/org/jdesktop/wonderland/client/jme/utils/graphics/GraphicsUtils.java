@@ -432,6 +432,7 @@ public class GraphicsUtils {
      */
     public static void printSpatial (Spatial spatial) {
 	System.err.println("spatial = " + spatial);
+	System.err.println("spatial class = " + spatial.getClass().getName());
 	if (spatial == null) return;
 	if (spatial instanceof TriMesh) {
 	    printGeometry((TriMesh)spatial, true);
@@ -456,6 +457,19 @@ public class GraphicsUtils {
 	    System.err.println("renderQueueMode = " + spatial.getRenderQueueMode());
 	    System.err.println("worldBound = " + spatial.getWorldBound());
 	    System.err.println("zOrder = " + spatial.getZOrder());
+
+	    if (spatial instanceof Node) {
+		List<Spatial> children = ((Node)spatial).getChildren();
+		int i = 0;
+		if (children == null) {
+		    System.err.println("\nNo children\n");
+		} else {
+		    for (Spatial child : children) {
+			System.err.println("\nChild " + i);
+			printSpatial(child);
+		    }
+		}
+	    }
 	}
 
 	System.err.println("Spatial render states = ");
