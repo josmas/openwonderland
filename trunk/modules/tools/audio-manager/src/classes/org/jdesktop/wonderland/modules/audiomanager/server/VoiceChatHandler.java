@@ -637,7 +637,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    Vector3f location = localToWorldTransform.getTranslation(null);
 	
-	    System.out.println(player + " x " + location.getX()
+	    logger.fine(player + " x " + location.getX()
 		+ " y " + location.getY() + " z " + location.getZ()
 		+ " angle " + angle);
 
