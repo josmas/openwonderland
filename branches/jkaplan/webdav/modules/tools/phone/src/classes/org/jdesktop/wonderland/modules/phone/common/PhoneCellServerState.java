@@ -28,13 +28,13 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The PhoneCellSetup class is the cell that renders a phone cell in
+ * The PhoneCellServerState class is the cell that renders a phone cell in
  * world.
  * 
  * @author jprovino
  */
 @XmlRootElement(name="phone-cell")
-public class PhoneCellSetup extends CellServerState
+public class PhoneCellServerState extends CellServerState
         implements Serializable, CellServerStateSPI {
 
     @XmlElement(name="locked")
@@ -59,7 +59,7 @@ public class PhoneCellSetup extends CellServerState
     private double fullVolumeRadius;
 
     /** Default constructor */
-    public PhoneCellSetup() {
+    public PhoneCellServerState() {
     }
     
     public String getServerClassName() {

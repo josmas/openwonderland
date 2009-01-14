@@ -15,31 +15,29 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.cell.registry;
+package org.jdesktop.wonderland.modules.sample.common;
 
-import java.awt.Image;
-
-
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * The CellPaletteInfo class provides information necessary to list the cell
- * type in the world assembly palette of cell types.
- * 
- * @author Jordan Slott <jslott@dev.java.net>
+ * The SampleCellConfig class represents the information communicated
+ * between the client and Darkstar server for the sample model.
+ *
+ * @author jkaplan
  */
-public interface CellPaletteInfo {
+public class SampleCellClientState extends CellClientState {
+    /* Arbitrary state info -- not really used anywhere */
+    private String info = null;
 
-    /**
-     * Returns the human-readable display name of the cell type.
-     * 
-     * @return The name of the cell type
-     */
-    public String getDisplayName();
-    
-    /**
-     * Returns an image preview of the cell type.
-     * 
-     * @return An image of the cell type
-     */
-    public Image getPreviewImage();
+    /** Default constructor */
+    public SampleCellClientState() {
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
+    }
 }

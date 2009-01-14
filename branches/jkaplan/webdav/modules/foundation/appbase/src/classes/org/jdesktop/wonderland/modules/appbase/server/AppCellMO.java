@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.server;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.appbase.common.AppCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.AppCellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -68,7 +68,7 @@ public abstract class AppCellMO extends CellMO {
     protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         // If the given cellClient State is null, then create one
         if (cellClientState == null) {
-            cellClientState = new AppCellConfig();
+            cellClientState = new AppCellClientState();
         }
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
@@ -77,7 +77,7 @@ public abstract class AppCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState setupData) {
-        super.setCellServerState(setupData);
+    public void setCellServerState(CellServerState serverState) {
+        super.setCellServerState(serverState);
     }
 }

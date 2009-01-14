@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.microphone.common;
+package org.jdesktop.wonderland.modules.coneofsilence.common;
 
 
 import java.util.ArrayList;
@@ -32,54 +32,40 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * The MicrophoneCellSetup class is the cell that renders a microphone cell in
+ * The ConeOfSilenceCellSetup class is the cell that renders a coneofsilence cell in
  * world.
  * 
  * @author jkaplan
  */
-public class MicrophoneCellConfig extends CellClientState {
+public class ConeOfSilenceCellClientState extends CellClientState {
 
     private String name;
 
     private double fullVolumeRadius;
 
-    private double activeRadius;
-    private String activeRadiusType;
-
     /** Default constructor */
-    public MicrophoneCellConfig() {
+    public ConeOfSilenceCellClientState() {
     }
     
+    public ConeOfSilenceCellClientState(String name, double fullVolumeRadius) {
+	this.name = name;
+	this.fullVolumeRadius = fullVolumeRadius;
+    }
+
     public void setName(String name) {
-        this.name = name;
+	this.name = name;
     }
 
     public String getName() {
-        return name;
+	return name;
     }
 
     public void setFullVolumeRadius(double fullVolumeRadius) {
-        this.fullVolumeRadius = fullVolumeRadius;
+	this.fullVolumeRadius = fullVolumeRadius;
     }
 
     public double getFullVolumeRadius() {
-        return fullVolumeRadius;
-    }
-
-    public void setActiveRadius(double activeRadius) {
-	this.activeRadius = activeRadius;
-    }
-
-    public double getActiveRadius() {
-	return activeRadius;
-    }
-
-    public void setActiveRadiusType(String activeRadiusType) {
-	this.activeRadiusType = activeRadiusType;
-    }
-
-    public String getActiveRadiusType() {
-	return activeRadiusType;
+	return fullVolumeRadius;
     }
 
 }

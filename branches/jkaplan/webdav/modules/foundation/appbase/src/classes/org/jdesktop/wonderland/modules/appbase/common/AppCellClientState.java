@@ -15,26 +15,19 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.sample.client;
+package org.jdesktop.wonderland.modules.appbase.common;
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.net.URL;
-import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * The palette information for the sample cell.
- * 
- * @author Jordan Slott <jslott@dev.java.net>
+ * The cell client state info sent by the server to the client for an app.base app cell.
+ * Note: there is nothing currently defined in this class because there is no 
+ * client-only information that all types of apps share.
+ *
+ * @author deronj
  */
-public class SampleCellPaletteInfo implements CellPaletteInfo {
 
-    public String getDisplayName() {
-        return "Sample Cell";
-    }
-
-    public Image getPreviewImage() {
-        URL url = SampleCellPaletteInfo.class.getResource("resources/sample_preview.jpg");
-        return Toolkit.getDefaultToolkit().createImage(url);
-    }
+@ExperimentalAPI
+public class AppCellClientState extends CellClientState {
 }

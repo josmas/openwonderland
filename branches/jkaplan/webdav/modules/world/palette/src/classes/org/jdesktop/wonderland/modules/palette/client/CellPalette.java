@@ -152,7 +152,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // From the selected value, find the proper means to create the object
     String cellDisplayName = (String) cellList.getSelectedValue();
     CellFactory factory = getCellFactory(cellDisplayName);
-    CellServerState setup = factory.getDefaultCellSetup();
+    CellServerState setup = factory.getDefaultCellServerState();
     
     // Choose a random origin for now
     Vector3f origin = new Vector3f(new Random().nextInt(10) - 5,
@@ -182,9 +182,11 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         while (it.hasNext() == true) {
             CellFactory cellFactory = it.next();
             try {
-                String name = cellFactory.getCellPaletteInfo().getDisplayName();
-                listNames.add(name);
-                cellFactoryMap.put(name, cellFactory);
+                String name = cellFactory.getDisplayName();
+                if (name != null) {
+                    listNames.add(name);
+                    cellFactoryMap.put(name, cellFactory);
+                }
             } catch (java.lang.Exception excp) {
                 // Just ignore, but log a message
                 Logger logger = Logger.getLogger(CellPalette.class.getName());
@@ -207,7 +209,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         while (it.hasNext() == true) {
             CellFactory cellFactory = it.next();
             try {
-                String cellName = cellFactory.getCellPaletteInfo().getDisplayName();
+                String cellName = cellFactory.getDisplayName();
                 if (cellName.equals(name) == true) {
                     return cellFactory;
                 }
@@ -244,7 +246,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         if (selectedName != null) {
             CellFactory cellFactory = cellFactoryMap.get(selectedName);
             if (cellFactory != null) {
-                Image image = cellFactory.getCellPaletteInfo().getPreviewImage();
+                Image image = cellFactory.getPreviewImage();
                 if (image != null) {
                     ImageIcon icon = new ImageIcon(image);
                     previewLabel.setIcon(icon);

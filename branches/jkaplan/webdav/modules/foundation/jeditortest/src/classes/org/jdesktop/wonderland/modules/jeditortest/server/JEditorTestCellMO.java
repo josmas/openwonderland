@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellConfig;
+import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellClientState;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -68,10 +68,10 @@ public class JEditorTestCellMO extends App2DCellMO {
     @Override
     protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
-            cellClientState = new JEditorTestCellConfig(pixelScale);
+            cellClientState = new JEditorTestCellClientState(pixelScale);
         }
-        ((JEditorTestCellConfig)cellClientState).setPreferredWidth(preferredWidth);
-        ((JEditorTestCellConfig)cellClientState).setPreferredHeight(preferredHeight);
+        ((JEditorTestCellClientState)cellClientState).setPreferredWidth(preferredWidth);
+        ((JEditorTestCellClientState)cellClientState).setPreferredHeight(preferredHeight);
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
@@ -79,12 +79,12 @@ public class JEditorTestCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState setupData) {
-	super.setCellServerState(setupData);
+    public void setCellServerState(CellServerState serverState) {
+	super.setCellServerState(serverState);
 
-	JEditorTestCellSetup setup = (JEditorTestCellSetup) setupData;
-	preferredWidth = setup.getPreferredWidth();
-	preferredHeight = setup.getPreferredHeight();
-	pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
+	JEditorTestCellServerState state = (JEditorTestCellServerState) serverState;
+	preferredWidth = state.getPreferredWidth();
+	preferredHeight = state.getPreferredHeight();
+	pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
     }
 }

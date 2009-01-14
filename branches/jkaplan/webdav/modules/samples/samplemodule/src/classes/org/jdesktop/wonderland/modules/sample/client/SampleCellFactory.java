@@ -17,10 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.sample.client;
 
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import org.jdesktop.wonderland.client.cell.registry.CellFactory;
-import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.sample.common.SampleCellSetup;
+import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 
 /**
  * The cell factory for the sample cell.
@@ -33,13 +35,16 @@ public class SampleCellFactory implements CellFactory {
         return new String[] {};
     }
 
-
-    public <T extends CellServerState> T getDefaultCellSetup() {
-        return (T)new SampleCellSetup();
+    public <T extends CellServerState> T getDefaultCellServerState() {
+        return (T)new SampleCellServerState();
     }
 
-    public CellPaletteInfo getCellPaletteInfo() {
-        return new SampleCellPaletteInfo();
+    public String getDisplayName() {
+        return "Sample Cell";
     }
 
+    public Image getPreviewImage() {
+        URL url = SampleCellFactory.class.getResource("resources/sample_preview.jpg");
+        return Toolkit.getDefaultToolkit().createImage(url);
+    }
 }

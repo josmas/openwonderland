@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/Users/jkaplan/proj/wl-latest/modules/world/affordances/build.xml</file>
+        <file>file:/Users/jkaplan/proj/wl-latest/modules/world/affordances/src/classes/org/jdesktop/wonderland/modules/affordances/client/cell/TestWorldCell.java</file>
+        <file>file:/Users/jkaplan/proj/wl-latest/modules/world/affordances/src/classes/org/jdesktop/wonderland/modules/affordances/common/cell/config/AffordanceTestCellConfig.java</file>
+        <file>file:/Users/jkaplan/proj/wl-latest/modules/world/affordances/src/classes/org/jdesktop/wonderland/modules/affordances/common/cell/state/TestWorldCellServerState.java</file>
+        <file>file:/Users/jkaplan/proj/wl-latest/modules/world/affordances/src/classes/org/jdesktop/wonderland/modules/affordances/server/cell/AffordanceTestCellMO.java</file>
+        <file>file:/Users/jkaplan/proj/wl-latest/modules/world/affordances/src/classes/org/jdesktop/wonderland/modules/affordances/server/cell/TestWorldCellMO.java</file>
+        <file>file:/Users/jkaplan/proj/wl-latest/modules/world/affordances/wfs/celltest-wfs/affordances-testworld-wlc.xml</file>
+    </open-files>
 </project-private>

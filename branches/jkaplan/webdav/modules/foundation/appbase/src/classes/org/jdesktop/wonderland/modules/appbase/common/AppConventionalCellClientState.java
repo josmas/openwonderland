@@ -20,18 +20,18 @@ package org.jdesktop.wonderland.modules.appbase.common;
 import java.util.UUID;
 import com.jme.math.Vector2f;
 import java.io.Serializable;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * Container for 2D conventional app cell data. The server gives this to the client
+ * Container for 2D conventional app client state. The server gives this to the client
  * in order to initialize the client cell.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class AppConventionalCellConfig extends App2DCellConfig {
+public class AppConventionalCellClientState extends App2DCellClientState {
 
     /** Whether the app has been launched by the world or user */
     private boolean userLaunched;
@@ -63,22 +63,22 @@ public class AppConventionalCellConfig extends App2DCellConfig {
     private Serializable connectionInfo;
 
     /** 
-     * Create a new instance of AppConventionalCellConfig with default state.
+     * Create a new instance of AppConventionalCellClientState with default state.
      */
-    public AppConventionalCellConfig () {
+    public AppConventionalCellClientState () {
 	this(null, null, null, null);
     }
 
     /** 
-     * Create a new instance of AppConventionalCellConfig.
+     * Create a new instance of AppConventionalCellClientState.
      *
      * @param masterHost The master host on which the app master will run.
      * @param appName The name of the application.
      * @param pixelScale The number of world units per pixel in the cell local X and Y directions.
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master and slave.
      */
-    public AppConventionalCellConfig (String masterHost, String appName, Vector2f pixelScale, 
-				      Serializable connectionInfo) {
+    public AppConventionalCellClientState (String masterHost, String appName, Vector2f pixelScale, 
+					   Serializable connectionInfo) {
 	super(pixelScale);
 	this.masterHost = masterHost;
 	this.appName = appName;
