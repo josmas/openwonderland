@@ -65,8 +65,8 @@ public class PhoneCellMO extends CellMO {
 	    new CellTransform(null, center));
     }
 
-    public void setLive(boolean live) {
-	System.out.println("Phone set live! " + live);
+    protected void setLive(boolean live) {
+	super.setLive(live);
 
 	if (live == false) {
 	    return;

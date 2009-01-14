@@ -70,7 +70,9 @@ public class OrbCellMO extends CellMO {
 	logger.fine("Orb center " + center + " size " + size);
     }
 
-    public void setLive(boolean live) {
+    protected void setLive(boolean live) {
+	super.setLive(live);
+
 	if (live == false) {
 	    return;
 	}
