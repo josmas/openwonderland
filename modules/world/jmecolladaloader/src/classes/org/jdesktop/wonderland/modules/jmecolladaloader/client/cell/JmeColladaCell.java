@@ -49,8 +49,8 @@ public class JmeColladaCell extends Cell {
      * @param config the cell config object
      */
     @Override
-    public void setClientState(CellClientState config) {
-        super.setClientState(config);
+    public void setCellClientState(CellClientState config) {
+        super.setCellClientState(config);
         JmeColladaCellClientState colladaConfig = (org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellClientState)config;
         this.modelURI = colladaConfig.getModelURI();
         this.geometryRotation = colladaConfig.getGeometryRotation();

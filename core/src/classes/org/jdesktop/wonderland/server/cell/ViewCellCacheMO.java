@@ -303,7 +303,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 //            cellRef.setCellSessionProperties(prop);
                     
             logger.fine("Sending NEW CELL to Client: " + cell.getCellID().toString()+"  "+cell.getClass().getName());
-            sendMessage(newCreateCellMessage(cell, capabilities));
+            sendMessage(newCreateCellMessage(cell, prop));
         }
     }
     
@@ -531,7 +531,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Return a new Create cell message
      */
-    public static CellHierarchyMessage newCreateCellMessage(CellMO cell, ClientCapabilities capabilities) {
+    public static CellHierarchyMessage newCreateCellMessage(CellMO cell, CellSessionProperties properties) {
         CellID parent=null;
         
         CellMO p = cell.getParent();
@@ -540,12 +540,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         }
         
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CELL,
-            cell.getClientCellClassName(null,capabilities),
+            properties.getClientCellClassName(),
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
             cell.getLocalTransform(null),
-            cell.getCellClientState(null, null, capabilities),
+            properties.getClientCellSetup(),
             cell.getName()
             
             
@@ -555,7 +555,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Return a new LoadLocalAvatar cell message
      */
-    public static CellHierarchyMessage newLoadLocalAvatarMessage(CellMO cell, ClientCapabilities capabilities) {
+    public static CellHierarchyMessage newLoadLocalAvatarMessage(CellMO cell, CellSessionProperties properties) {
         CellID parent=null;
         
         CellMO p = cell.getParent();
@@ -564,12 +564,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         }
         
         return new CellHierarchyMessage(CellHierarchyMessage.ActionType.LOAD_CLIENT_AVATAR,
-            cell.getClientCellClassName(null,capabilities),
+            properties.getClientCellClassName(),
             cell.getLocalBounds(),
             cell.getCellID(),
             parent,
             cell.getLocalTransform(null),
-            cell.getCellClientState(null, null, capabilities),
+            properties.getClientCellSetup(),
             cell.getName()
             
             

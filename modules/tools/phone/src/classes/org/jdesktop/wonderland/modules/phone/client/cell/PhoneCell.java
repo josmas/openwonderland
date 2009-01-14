@@ -106,8 +106,8 @@ public class PhoneCell extends Cell implements CellStatusChangeListener {
      * @param setupData
      */
     @Override
-    public void setClientState(CellClientState cellClientState) {
-	super.setClientState(cellClientState);
+    public void setCellClientState(CellClientState cellClientState) {
+	super.setCellClientState(cellClientState);
 
 	PhoneCellClientState phoneCellClientState = (PhoneCellClientState) cellClientState;
 

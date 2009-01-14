@@ -301,8 +301,9 @@ public class AvatarTestPanel extends javax.swing.JPanel {
         if (avatarCharacter!=null) {
             avatarCharacter.setAnimation((String) actionCB.getSelectedItem());
 
-            // TODO trigger a single cycle of this animation
+            // Calling start and then stop will cause a single loop of the animation to play
             avatarCharacter.triggerActionStart(TriggerNames.Punch);
+            avatarCharacter.triggerActionStop(TriggerNames.Punch);
         }
 }//GEN-LAST:event_runActionBActionPerformed
 

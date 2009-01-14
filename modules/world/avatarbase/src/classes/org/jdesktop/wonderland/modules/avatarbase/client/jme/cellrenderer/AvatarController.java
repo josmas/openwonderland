@@ -61,10 +61,20 @@ public class AvatarController extends NinjaController {
         }
     }
 
+    /**
+     * Select this avatar for input. Avatars that are not selected for input
+     * have their transform set via the cellTransformUpdate method.
+     * @param selected
+     */
     void selectForInput(boolean selected) {
         selectedForInput = selected;
     }
 
+    /**
+     * Set the transform for avatars that are not selected for input
+     * 
+     * @param transform
+     */
     void cellTransformUpdate(CellTransform transform) {
         this.transform = transform;
     }
