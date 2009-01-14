@@ -195,6 +195,7 @@ class ViewCache {
      * Update the set of spaces which intersect with this caches world bounds
      */
     private void revalidateSpaces() {
+        System.err.println("***** REVAL *****");
         viewCell.acquireRootReadLock();
 
         try {
@@ -499,10 +500,10 @@ class ViewCache {
             else
                 cacheMO.generateUnloadMessagesService(cells);
             
-            StringBuffer buf = new StringBuffer();
-            for(CellDescription c : cells)
-                buf.append(c.getCellID()+", ");
-//            logger.info("--------> DS UpdateTask "+viewCell.getCellID()+"  loading "+loadCells+"  "+cells.size()+"  "+buf.toString());
+//            StringBuffer buf = new StringBuffer();
+//            for(CellDescription c : cells)
+//                buf.append(c.getCellID()+", ");
+//            logger.warning("--------> DS UpdateTask "+viewCell.getCellID()+"  loading "+loadCells+"  "+cells.size()+"  "+buf.toString());
             
         }
 

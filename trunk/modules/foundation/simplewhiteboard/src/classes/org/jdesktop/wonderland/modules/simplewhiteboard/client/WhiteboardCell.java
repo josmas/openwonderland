@@ -78,7 +78,7 @@ public class WhiteboardCell extends App2DCell {
      * @param clientState the client state to initialize the cell with
      */
     @Override
-    public void setClientState(CellClientState state) {
+    public void setCellClientState(CellClientState state) {
 
         clientState = (WhiteboardCellClientState) state;
         setApp(new WhiteboardApp(getAppType(), clientState.getPreferredWidth(), 

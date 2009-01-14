@@ -20,8 +20,8 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 import imi.character.CharacterAttributes;
 import imi.character.ninja.NinjaAvatar;
 import imi.character.ninja.NinjaContext.TriggerNames;
-import imi.character.ninja.PunchState;
 import imi.character.statemachine.GameContext;
+//import imi.character.statemachine.corestates.ActionState;
 import java.awt.event.KeyEvent;
 import org.jdesktop.mtgame.WorldManager;
 
@@ -92,9 +92,9 @@ public class AvatarCharacter extends NinjaAvatar {
     }
 
     public void setAnimation(String str) {
-        PunchState punch = (PunchState) getContext().getState(PunchState.class);
-
-        punch.setAnimationName(str);
+//        ActionState action = (ActionState) getContext().getState(ActionState.class);
+//
+//        action.setAnimationName(str);
     }
 
 

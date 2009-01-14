@@ -21,7 +21,6 @@ import imi.character.CharacterAttributes;
 import imi.character.ninja.Ninja;
 import imi.character.ninja.NinjaAvatar;
 import imi.character.ninja.NinjaContext.TriggerNames;
-import imi.character.ninja.PunchState;
 import imi.character.statemachine.GameContext;
 import java.awt.event.KeyEvent;
 import org.jdesktop.mtgame.WorldManager;
@@ -93,10 +92,11 @@ public class SimpleAvatarCharacter extends AvatarCharacter {
     }
 
     public void setAnimation(String str) {
-        PunchState punch = (PunchState) getContext().getState(PunchState.class);
-        punch.setAnimationSetBoolean(false);
-
-        punch.setAnimationName(str);
+//        PunchState punch = (PunchState) getContext().getState(PunchState.class);
+//        punch.setAnimationSetBoolean(false);
+//
+//        punch.setAnimationName(str);
+        throw new RuntimeException("Not implemetned");
     }
 
 

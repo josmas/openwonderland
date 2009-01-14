@@ -574,15 +574,15 @@ public class Cell {
      * 
      * @param configData the configuration data for the cell
      */
-    public void setClientState(CellClientState configData) {
+    public void setCellClientState(CellClientState configData) {
 
-        System.err.println("configure cell "+getCellID()+"  "+getClass());
+//        System.err.println("configure cell "+getCellID()+"  "+getClass());
         // Install the CellComponents
         for(String compClassname : configData.getClientComponentClasses()) {
             try {
                 Class compClazz = Class.forName(compClassname);
                 if (!components.containsKey(compClazz)) {
-                    logger.warning("Installing component "+compClassname);
+//                    logger.warning("Installing component "+compClassname);
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
                     CellComponent comp = constructor.newInstance(this);
                     addComponent(comp, comp.getLookupClass());
