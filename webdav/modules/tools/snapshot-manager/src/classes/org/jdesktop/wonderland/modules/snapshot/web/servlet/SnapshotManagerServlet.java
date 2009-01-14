@@ -223,7 +223,7 @@ public class SnapshotManagerServlet extends HttpServlet
         String name = request.getParameter("name");
         if (name == null) {
             // use a default name based on the current data
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SS");
             name = df.format(new Date());
         }
 

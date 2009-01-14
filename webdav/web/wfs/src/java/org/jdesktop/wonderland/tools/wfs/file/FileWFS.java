@@ -22,6 +22,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLDecoder;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.tools.wfs.InvalidWFSException;
 import org.jdesktop.wonderland.tools.wfs.WFS;
@@ -69,7 +70,7 @@ public class FileWFS extends WFS {
         }
         
         /* Attempt to open the URI, throwing a FileNotFoundException if bad */
-        this.root = new File(uri);
+        this.root = new File(URLDecoder.decode(path, "UTF-8"));
         
         /*
          * Make sure the File name conforms to the '<name>-wfs' format. If not,
@@ -81,7 +82,7 @@ public class FileWFS extends WFS {
 
         /* Check to see if it exists and it is a directory */
         if (create == false && (this.root.exists() == false || this.root.isDirectory() == false)) {
-            throw new InvalidWFSException("WFS URI is not a directory: " + uri.toString());
+            throw new InvalidWFSException("WFS URI is not a directory: " + root.getCanonicalPath());
         }
         else if (create == true && this.root.exists() == true) {
             /* If we wish to create it, but it already exists */
@@ -90,7 +91,7 @@ public class FileWFS extends WFS {
         else if (create == true) {
             /* Then create it! */
             if (this.root.mkdirs() == false) {
-                throw new IOException("Unable to create WFS: " + uri.toString());
+                throw new IOException("Unable to create WFS: " + root.getCanonicalPath());
             }
         }
         
