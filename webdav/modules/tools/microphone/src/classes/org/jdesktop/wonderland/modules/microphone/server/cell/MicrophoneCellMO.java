@@ -65,8 +65,8 @@ public class MicrophoneCellMO extends CellMO {
 	    new CellTransform(null, center));
     }
 
-    public void setLive(boolean live) {
-	System.out.println("MICROPHONE LIVE " + live);
+    protected void setLive(boolean live) {
+	super.setLive(live);
 
 	if (live == false) {
 	    return;
