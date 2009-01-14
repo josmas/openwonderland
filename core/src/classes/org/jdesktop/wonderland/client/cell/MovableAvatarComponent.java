@@ -17,9 +17,13 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
+import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableAvatarMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 
@@ -30,6 +34,8 @@ import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
  * @author paulby
  */
 public class MovableAvatarComponent extends MovableComponent {
+    private int trigger;
+    private boolean pressed;
 
     public MovableAvatarComponent(Cell cell) {
         super(cell);
@@ -49,31 +55,29 @@ public class MovableAvatarComponent extends MovableComponent {
 
 
     public void localMoveRequest(CellTransform transform,
-                                 final int trigger,
-                                 final boolean pressed,
-                                 final CellMoveModifiedListener listener) {
+                                 int trigger,
+                                 boolean pressed,
+                                 CellMoveModifiedListener listener) {
 
-        // make sure we are connected to the server
-        if (channelComp == null ||
-                channelComp.getStatus() != ClientConnection.Status.CONNECTED) {
-            logger.warning("Cell channel not connected when moving cell " +
-                           cell.getCellID());
-            return;
+        synchronized(this) {
+            this.trigger = trigger;
+            this.pressed = pressed;
+            super.localMoveRequest(transform, null);
         }
+    }
 
-        // TODO throttle sends, we should only send so many times a second.
-        if (listener!=null) {
-            throw new RuntimeException("NOT IMPLEMENTED");
-        } else {
-            channelComp.send(
-                MovableAvatarMessage.newMoveRequestMessage(cell.getCellID(),
+    @Override
+    protected CellMessage createMoveRequestMessage(CellTransform transform) {
+        return MovableAvatarMessage.newMoveRequestMessage(cell.getCellID(),
                                                     transform.getTranslation(null),
                                                     transform.getRotation(null),
                                                     trigger,
-                                                    pressed));
-        }
+                                                    pressed);
+    }
 
-        applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.LOCAL);
+    @Override
+    protected ResponseListener createMoveResponseListener(final CellMoveModifiedListener listener) {
+        throw new RuntimeException("Not supported");
     }
 
     @Override
@@ -98,5 +102,6 @@ public class MovableAvatarComponent extends MovableComponent {
             ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed());
         }
     }
+
 
 }
