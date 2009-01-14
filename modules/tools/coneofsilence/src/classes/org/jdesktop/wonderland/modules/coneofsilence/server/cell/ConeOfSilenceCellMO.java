@@ -60,7 +60,9 @@ public class ConeOfSilenceCellMO extends CellMO {
 	    new CellTransform(null, center));
     }
 
-    public void setLive(boolean live) {
+    protected void setLive(boolean live) {
+	super.setLive(live);
+
 	if (live == false) {
 	    return;
 	}

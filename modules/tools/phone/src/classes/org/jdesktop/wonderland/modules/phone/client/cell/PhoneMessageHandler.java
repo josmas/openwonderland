@@ -95,7 +95,7 @@ public class PhoneMessageHandler {
 
 	channelComp = phoneCell.getComponent(ChannelComponent.class);
 
-	logger.fine("Channel comp is " + channelComp);
+	System.out.println("Phone Channel comp is " + channelComp);
 
         ChannelComponent.ComponentMessageReceiver msgReceiver =
 	    new ChannelComponent.ComponentMessageReceiver() {
