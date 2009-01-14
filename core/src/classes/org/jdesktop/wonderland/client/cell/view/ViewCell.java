@@ -11,19 +11,19 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.cell.view;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -37,35 +37,20 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 @ExperimentalAPI
 public class ViewCell extends Cell {
     
-    private MovableAvatarComponent movableComp=null;
+    private MovableAvatarComponent movableComp;
 
     public ViewCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        addComponent(new ChannelComponent(this));
+        addComponent(new MovableAvatarComponent(this), MovableComponent.class);
+        movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
     }
-
-    @Override
-    public boolean setStatus(CellStatus status) {
-        boolean changed = super.setStatus(status);
-        if (changed) {
-            switch(status) {
-                case BOUNDS :
-                    movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
-                    break;
-                case DISK :
-                    movableComp = null;
-                    break;
-            }
-        }
-
-        return changed;
-    }
-
+    
     /**
      * Convenience method, simply calls moveableComponent.localMoveRequest
      * @param transform
      */
     public void localMoveRequest(CellTransform transform) {
-        if (movableComp!=null)
-            movableComp.localMoveRequest(transform, -1, false, null);
+        movableComp.localMoveRequest(transform, -1, false, null);
     }
 }

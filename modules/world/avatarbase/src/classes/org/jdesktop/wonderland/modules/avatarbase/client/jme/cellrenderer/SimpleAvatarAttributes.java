@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
@@ -28,10 +28,10 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  *
  * @author paulby
  */
-public class SimpleAvatarAttributes extends AvatarAttributes { //CharacterAttributes {
+public class SimpleAvatarAttributes extends CharacterAttributes {
 
     public SimpleAvatarAttributes(Cell cell) {
-        super(cell);
+        super(cell.getName());
         // Animations are setup in the super class
 
         WonderlandSession session = cell.getCellCache().getSession();

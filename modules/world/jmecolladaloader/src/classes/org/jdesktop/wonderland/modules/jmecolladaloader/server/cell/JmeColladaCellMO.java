@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
@@ -22,14 +22,17 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellClientState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.setup.JMEColladaCellSetup;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 
 /**
@@ -37,7 +40,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author paulby
  */
 @ExperimentalAPI
-public class JmeColladaCellMO extends CellMO { 
+public class JmeColladaCellMO extends CellMO implements BeanSetupMO { 
     
     /* The unique model URI */
     private String modelURI = null;
@@ -67,16 +70,19 @@ public class JmeColladaCellMO extends CellMO {
     }
 
     @Override
-    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-        if (cellClientState == null) {
-          cellClientState = new JmeColladaCellClientState(this.modelURI, geometryTranslation, geometryRotation);
-        }
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+    public CellConfig getCellConfig(WonderlandClientID clientID, ClientCapabilities capabilities) {
+        return new JmeColladaCellConfig(this.modelURI, geometryTranslation, geometryRotation);
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
-        this.modelURI = ((JMEColladaCellServerState)setup).getModel();
+    public void setupCell(BasicCellSetup setup) {
+        super.setupCell(setup);
+        this.modelURI = ((JMEColladaCellSetup)setup).getModel();
+    }
+
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
     }
 }

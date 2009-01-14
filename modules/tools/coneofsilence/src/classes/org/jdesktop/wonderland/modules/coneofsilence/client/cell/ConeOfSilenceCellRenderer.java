@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
@@ -105,7 +105,7 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
         node.setRenderState(wiState);
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
-	logger.warning("Cone Created");
+	logger.fine("Cone Created");
         return node;
     }
 

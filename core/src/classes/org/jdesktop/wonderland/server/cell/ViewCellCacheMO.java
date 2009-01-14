@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.server.cell;
@@ -545,7 +545,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getCellID(),
             parent,
             cell.getLocalTransform(null),
-            cell.getCellClientState(null, null, capabilities),
+            cell.getCellConfig(null, capabilities),
             cell.getName()
             
             
@@ -569,7 +569,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cell.getCellID(),
             parent,
             cell.getLocalTransform(null),
-            cell.getCellClientState(null, null, capabilities),
+            cell.getCellConfig(null, capabilities),
             cell.getName()
             
             
@@ -631,7 +631,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cellMO.getCellID(),
             parentID,
             cellMO.getLocalTransform(null),
-            cellMO.getCellClientState(null, null, capabilities),
+            cellMO.getCellConfig(null, capabilities),
             cellMO.getName()
             
             );

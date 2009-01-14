@@ -11,15 +11,15 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.affordances.client.jme.cellrenderer.AffordanceTestCellRenderer;
 import org.jdesktop.wonderland.modules.affordances.common.cell.config.AffordanceTestCellConfig;
@@ -42,11 +42,13 @@ public class AffordanceTestCell extends Cell {
      */
     public AffordanceTestCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        addComponent(new ChannelComponent(this));
+        addComponent(new MovableComponent(this));
     }
     
     @Override
-    public void setClientState(CellClientState configData) {
-        super.setClientState(configData);
+    public void configure(CellConfig configData) {
+        super.configure(configData);
         AffordanceTestCellConfig c = (AffordanceTestCellConfig) configData;
         this.shape = c.getShape();
         this.materialJME = c.getMaterialJME();

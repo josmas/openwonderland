@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.ant;
@@ -596,7 +596,7 @@ public class ModuleTask extends Jar {
     
     public static class CellSetup extends Service {
         public CellSetup() {
-            setType("org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI");
+            setType("org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI");
         }
     }
  

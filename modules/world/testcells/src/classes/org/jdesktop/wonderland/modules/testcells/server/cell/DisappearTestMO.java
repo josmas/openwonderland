@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.testcells.server.cell;
@@ -21,18 +21,18 @@ import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 
 
 /**
  * Simple test for cell dragging.
  *
  * @author paulby
- * @deprecated
  */
 @ExperimentalAPI
 public class DisappearTestMO extends SimpleShapeCellMO {
@@ -44,7 +44,7 @@ public class DisappearTestMO extends SimpleShapeCellMO {
 
     public DisappearTestMO (Vector3f center, float size) {
         super(center, size);
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        addComponent(new ChannelComponentMO(this));
         addComponent(new MovableComponentMO(this));
     }
     
@@ -54,7 +54,13 @@ public class DisappearTestMO extends SimpleShapeCellMO {
     }
 
     @Override
-    public void setCellServerState(CellServerState serverState) {
-        super.setCellServerState(serverState);
+    public void setupCell(BasicCellSetup setup) {
+        super.setupCell(setup);
+    }
+
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
     }
 }

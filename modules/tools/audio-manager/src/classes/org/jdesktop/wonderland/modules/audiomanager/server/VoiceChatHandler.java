@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
@@ -637,10 +637,14 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    Vector3f location = localToWorldTransform.getTranslation(null);
 	
-	    System.out.println(player + " x " + location.getX()
+	    logger.fine(player + " x " + location.getX()
 		+ " y " + location.getY() + " z " + location.getZ()
 		+ " angle " + angle);
 
+	    /*
+	     * The x coordinate increases to the left so we correct
+	     * for that here.
+	     */
 	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
 	}
     }

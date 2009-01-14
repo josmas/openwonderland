@@ -11,13 +11,13 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.affordances.common.cell.config;
 
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 
 /**
@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
  *
  * @author paulby
  */
-public class AffordanceTestCellConfig extends CellClientState {
+public class AffordanceTestCellConfig extends CellConfig {
     public enum Shape { BOX, CONE, CYLINDER, SPHERE, TEAPOT };
 
     private Shape shape;

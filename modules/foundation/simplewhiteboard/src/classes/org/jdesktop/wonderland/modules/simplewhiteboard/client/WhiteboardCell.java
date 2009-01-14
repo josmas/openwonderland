@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.simplewhiteboard.client;
@@ -24,15 +24,15 @@ import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponentImpl;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellClientState;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellConfig;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTypeName;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -40,15 +40,19 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author nsimpson,deronj
  */
+
 @ExperimentalAPI
 public class WhiteboardCell extends App2DCell {
-
+    
     /** The logger used by this class */
     private static final Logger logger = Logger.getLogger(WhiteboardCell.class.getName());
+    
     /** The (singleton) window created by the whiteboard app */
     private WhiteboardWindow whiteboardWin;
-    /** The cell client state message received from the server cell */
-    private WhiteboardCellClientState clientState;
+
+    /** The cell config message received from the server cell */
+    private WhiteboardCellConfig config;
+    
     /** The communications component used to communicate with the server */
     private WhiteboardComponent commComponent;
 
@@ -58,46 +62,44 @@ public class WhiteboardCell extends App2DCell {
      * @param cellID The ID of the cell.
      * @param cellCache the cell cache which instantiated, and owns, this cell.
      */
-    public WhiteboardCell(CellID cellID, CellCache cellCache) {
+    public WhiteboardCell (CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponentImpl(this), ChannelComponent.class);
-        commComponent = new WhiteboardComponent(this);
+        addComponent(new ChannelComponent(this));
+	commComponent = new WhiteboardComponent(this);
         addComponent(commComponent);
     }
-
+    
     /** 
      * {@inheritDoc}
      */
-    public AppType getAppType() {
-        return new WhiteboardAppType();
+    public AppType getAppType () {
+	return new WhiteboardAppType();
     }
 
     /**
      * Initialize the whiteboard with parameters from the server.
      *
-     * @param clientState the client state to initialize the cell with
+     * @param configData the config data to initialize the cell with
      */
-    @Override
-    public void setClientState(CellClientState state) {
+    public void configure (CellConfig configData) {
 
-        clientState = (WhiteboardCellClientState) state;
-        setApp(new WhiteboardApp(getAppType(), clientState.getPreferredWidth(), 
-				 clientState.getPreferredHeight(), clientState.getPixelScale(), 
-				 commComponent));
+        config = (WhiteboardCellConfig)configData;
+        setApp(new WhiteboardApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
+				 config.getPixelScale(), commComponent));
 
-        // Associate the app with this cell (must be done before making it visible)
-        app.setCell(this);
+	// Associate the app with this cell (must be done before making it visible)
+	app.setCell(this);
 
-        // Get the window the app created
-        whiteboardWin = ((WhiteboardApp) app).getWindow();
+	// Get the window the app created
+	whiteboardWin = ((WhiteboardApp)app).getWindow();
 
-        // Make the app window visible
-        ((WhiteboardApp) app).setVisible(true);
+	// Make the app window visible
+	((WhiteboardApp)app).setVisible(true);
 
-    // Note: we used to force a sync here. But in the new implementation we will
-    // perform the sync when the cell status becomes BOUNDS.
+	// Note: we used to force a sync here. But in the new implementation we will
+	// perform the sync when the cell status becomes BOUNDS.
     }
-
+    
     /**
      * Process the actions in a compound message
      *
@@ -115,7 +117,7 @@ public class WhiteboardCell extends App2DCell {
             case DRAG_TO:
                 LinkedList<Point> positions = msg.getPositions();
                 Iterator<Point> iter = positions.iterator();
-
+                
                 while (iter.hasNext()) {
                     Point position = iter.next();
                     if (msg.getAction() == Action.MOVE_TO) {
@@ -135,7 +137,7 @@ public class WhiteboardCell extends App2DCell {
     /**
      * Returns the client ID of this cell's session.
      */
-    BigInteger getClientID() {
-        return getCellCache().getSession().getID();
+    BigInteger getClientID () {
+	return getCellCache().getSession().getID();
     }
 }

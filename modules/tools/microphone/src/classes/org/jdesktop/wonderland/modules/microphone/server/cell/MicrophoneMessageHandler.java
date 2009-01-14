@@ -11,26 +11,38 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
 import com.sun.sgs.app.ManagedReference;
 
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup;
 
 import org.jdesktop.wonderland.modules.microphone.common.messages.MicrophoneEnterCellMessage;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
+import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.CallSetup;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedObject;
+
+import com.sun.voip.CallParticipant;
+import com.sun.voip.client.connector.CallStatus;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
@@ -41,9 +53,15 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageRe
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
+
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.lang.String;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,14 +73,18 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 import org.jdesktop.wonderland.server.UserManager;
 
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
+
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
+
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup;
 
 import org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneCellMO;
 
@@ -126,8 +148,8 @@ public class MicrophoneMessageHandler implements Serializable, ComponentMessageR
 	 */
 	String callId = msg.getCellID().toString();
 
-	MicrophoneCellServerState cellServerState = (MicrophoneCellServerState) 
-	    microphoneCellMORef.get().getCellServerState(null);
+	MicrophoneCellSetup setup = (MicrophoneCellSetup) 
+	    microphoneCellMORef.get().getCellMOSetup();
 
 	logger.warning(callId + " entered microphone " + name);
 

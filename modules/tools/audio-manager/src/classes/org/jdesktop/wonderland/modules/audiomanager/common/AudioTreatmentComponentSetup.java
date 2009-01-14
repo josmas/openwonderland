@@ -11,20 +11,20 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.setup.spi.CellSetupSPI;
 
 import java.io.Serializable;
 
@@ -33,7 +33,7 @@ import java.io.Serializable;
  * @author jprovino
  */
 @XmlRootElement(name="audio-treatment-component")
-public class AudioTreatmentComponentSetup extends CellComponentServerState implements Serializable, CellServerStateSPI {
+public class AudioTreatmentComponentSetup extends CellComponentSetup implements Serializable, CellSetupSPI {
 
     @XmlElements({
 	@XmlElement(name="treatment")

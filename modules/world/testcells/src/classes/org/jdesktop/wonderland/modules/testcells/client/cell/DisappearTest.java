@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.testcells.client.cell;
@@ -54,6 +54,9 @@ public class DisappearTest extends SimpleShapeCell {
 
     public DisappearTest(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        addComponent(new ChannelComponent(this));
+        addComponent(new MovableComponent(this));
+        movableComp = getComponent(MovableComponent.class);
     }
     
     @Override
@@ -77,7 +80,6 @@ public class DisappearTest extends SimpleShapeCell {
 	switch(status) {
 
 	case ACTIVE:
-        movableComp = getComponent(MovableComponent.class);
 	    dragListener.addToEntity(cellRenderer.getEntity());
 	    disappearListener.addToEntity(cellRenderer.getEntity());
 	    disappearListener.addToEntity(cellRenderer.getSecondaryEntity());

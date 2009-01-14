@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.affordances.client.jme.cellrenderer;
@@ -29,6 +29,7 @@ import com.jme.scene.shape.Sphere;
 import com.jme.scene.shape.Teapot;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
+import java.util.logging.Level;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;

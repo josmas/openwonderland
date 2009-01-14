@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
@@ -42,10 +42,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Scaling;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
 
 /**
  *
@@ -63,16 +59,14 @@ class JmeColladaLoader implements ModelLoader {
     private File origFile;
     
     private ArrayList<String> modelFiles = new ArrayList();
-
-    private Node rootNode = null;
-
+    
     /**
      * Load a SketchUP KMZ file and return the graph root
      * @param file
      * @return
      */
     public Node importModel(File file) throws IOException {
-        rootNode = null;
+        Node ret = null;
         origFile = file;
         
 //        ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile);
@@ -86,51 +80,57 @@ class JmeColladaLoader implements ModelLoader {
         BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
         
         ColladaImporter.load(in, file.getName());
-        rootNode = ColladaImporter.getModel();
+        ret = ColladaImporter.getModel();
 
         ColladaImporter.cleanUp();
         
         ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
-        return rootNode;
+        return ret;
     }
     
 
     
     public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException {
-        try {
-            String modelName = origFile.getName();
-            ZipFile zipFile = new ZipFile(origFile);
-            
-            // TODO replace getName with getModuleName(moduleRootDir)
-            String moduleName = moduleRootDir.getName();
-
-            String targetDirName = moduleRootDir.getAbsolutePath()+File.separator+"art"+ File.separator + modelName;
-            File targetDir = new File(targetDirName);
-            targetDir.mkdir();
-
-            deployTextures(zipFile, targetDir);
-            deployModels(zipFile, targetDir);
-
-            if (modelFiles.size() > 1) {
-                logger.warning("Multiple models not supported during deploy");
-            }
-            JMEColladaCellServerState setup = new JMEColladaCellServerState();
-            setup.setModel("wla://"+moduleName+"/art/"+modelFiles.get(0));
-            setup.setOrigin(new Origin(rootNode.getLocalTranslation()));
-            setup.setRotation(new Rotation(rootNode.getLocalRotation()));
-            setup.setScaling(new Scaling(rootNode.getLocalScale()));
-
-            ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
-            deploymentInfo.setCellSetup(setup);
-            return deploymentInfo;            
-        } catch (ZipException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw new IOException("Zip error");
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw ex;
-        }        
+//        try {
+//            String modelName = origFile.getName();
+//            ZipFile zipFile = new ZipFile(origFile);
+//            
+//            // TODO replace getName with getModuleName(moduleRootDir)
+//            String moduleName = moduleRootDir.getName();
+//
+//            String targetDirName = moduleRootDir.getAbsolutePath()+File.separator+"art"+ File.separator + modelName;
+//            File targetDir = new File(targetDirName);
+//            targetDir.mkdir();
+//
+//            deployTextures(zipFile, targetDir);
+//            deployModels(zipFile, targetDir);
+//
+//            if (modelFiles.size() > 1) {
+//                logger.warning("Multiple models not supported during deploy");
+//            }
+//            ColladaCellSetup setup = new ColladaCellSetup();
+//            setup.setModel("wlm://"+moduleName+"/art/"+modelFiles.get(0));
+//            
+//            File wfsFile = new File(targetDirName+File.separator+"test.wfs");
+//            Writer w = new FileWriter(wfsFile);
+//            try {
+//                setup.encode(w, getClass().getClassLoader());
+//            } catch (JAXBException ex) {
+//                logger.log(Level.SEVERE, null, ex);
+//            }
+//            w.close();
+//            
+//        } catch (ZipException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//            throw new IOException("Zip error");
+//        } catch (IOException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//            throw ex;
+//        }
+//        
+//
+        return null;
     }
     
     /**

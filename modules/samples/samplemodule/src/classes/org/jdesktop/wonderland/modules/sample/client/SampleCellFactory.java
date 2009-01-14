@@ -11,18 +11,16 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.sample.client;
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.net.URL;
 import org.jdesktop.wonderland.client.cell.registry.CellFactory;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
+import org.jdesktop.wonderland.client.cell.registry.CellPaletteInfo;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.modules.sample.common.SampleCellSetup;
 
 /**
  * The cell factory for the sample cell.
@@ -35,16 +33,11 @@ public class SampleCellFactory implements CellFactory {
         return new String[] {};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState() {
-        return (T)new SampleCellServerState();
+    public <T extends BasicCellSetup> T getDefaultCellSetup() {
+        return (T)new SampleCellSetup();
     }
 
-    public String getDisplayName() {
-        return "Sample Cell";
-    }
-
-    public Image getPreviewImage() {
-        URL url = SampleCellFactory.class.getResource("resources/sample_preview.jpg");
-        return Toolkit.getDefaultToolkit().createImage(url);
+    public CellPaletteInfo getCellPaletteInfo() {
+        return new SampleCellPaletteInfo();
     }
 }

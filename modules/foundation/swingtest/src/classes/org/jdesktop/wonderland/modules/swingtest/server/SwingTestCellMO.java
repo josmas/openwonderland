@@ -11,21 +11,25 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.swingtest.server;
 
 import com.jme.math.Vector2f;
+import com.sun.sgs.app.ClientSession;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellConfig;
+import org.jdesktop.wonderland.modules.swingtest.common.SwingTestTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
  * A server cell associated with a Swing test.
@@ -34,7 +38,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  */
 
 @ExperimentalAPI
-public class SwingTestCellMO extends App2DCellMO {
+public class SwingTestCellMO extends App2DCellMO implements BeanSetupMO {
 
     /** The preferred width (from the WFS file) */
     private int preferredWidth;
@@ -66,25 +70,32 @@ public class SwingTestCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-        if (cellClientState == null) {
-            cellClientState = new SwingTestCellClientState(pixelScale);
-        }
-        ((SwingTestCellClientState)cellClientState).setPreferredWidth(preferredWidth);
-        ((SwingTestCellClientState)cellClientState).setPreferredHeight(preferredHeight);
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
+	SwingTestCellConfig config = new SwingTestCellConfig(pixelScale);
+	config.setPreferredWidth(preferredWidth);
+	config.setPreferredHeight(preferredHeight);
+        return config;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState state) {
-	super.setCellServerState(state);
+    public void setupCell(BasicCellSetup setupData) {
+	super.setupCell(setupData);
 
-	SwingTestCellServerState serverState = (SwingTestCellServerState) state;
-	preferredWidth = serverState.getPreferredWidth();
-	preferredHeight = serverState.getPreferredHeight();
-	pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
+	SwingTestCellSetup setup = (SwingTestCellSetup) setupData;
+	preferredWidth = setup.getPreferredWidth();
+	preferredHeight = setup.getPreferredHeight();
+	pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
     }
 }

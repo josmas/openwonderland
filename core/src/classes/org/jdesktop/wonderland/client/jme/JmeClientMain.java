@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.jme;
@@ -21,10 +21,6 @@ import java.awt.event.ActionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
 import imi.loaders.repository.Repository;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
@@ -70,12 +65,10 @@ public class JmeClientMain {
     private static final String PROPS_URL_PROP = "run.properties.file";
     private static final String CONFIG_DIR_PROP = "wonderland.client.config.dir";
     private static final String DESIRED_FPS_PROP = "wonderland.client.fps";
-    private static final String WINDOW_SIZE_PROP = "wonderland.client.windowSize";
 
     // default values
     private static final String SERVER_URL_DEFAULT = "http://localhost:8080";
     private static final String DESIRED_FPS_DEFAULT = "30";
-    private static final String WINDOW_SIZE_DEFAULT = "800x600";
 
     private int desiredFrameRate = Integer.parseInt(DESIRED_FPS_DEFAULT);
 
@@ -96,28 +89,6 @@ public class JmeClientMain {
         // load properties in a properties file
         URL propsURL = getPropsURL();
         loadProperties(propsURL);
-
-        String windowSize = System.getProperty(WINDOW_SIZE_PROP, WINDOW_SIZE_DEFAULT);
-        try {
-            if (windowSize.equalsIgnoreCase("fullscreen")) {
-                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-                GraphicsDevice[] gs = ge.getScreenDevices();
-                if (gs.length>1) {
-                    logger.warning("Fullscreen using size of first screen");
-                }
-                GraphicsConfiguration gc = gs[0].getDefaultConfiguration();
-                Rectangle size = gc.getBounds();
-                width = size.width;
-                height = size.height; // -50 hack for current swing decorations
-            } else {
-                String sizeWidth = windowSize.substring(0, windowSize.indexOf('x'));
-                String sizeHeight = windowSize.substring(windowSize.indexOf('x')+1);
-                width = Integer.parseInt(sizeWidth);
-                height = Integer.parseInt(sizeHeight);
-            }
-        } catch(Exception e) {
-            logger.warning(WINDOW_SIZE_PROP+" error, should be of the form 640x480 (or fullscreen), instead of the current "+windowSize);
-        }
 
         // make sure the server URL is set
         String serverURL = System.getProperty(SERVER_URL_PROP);
@@ -314,6 +285,7 @@ public class JmeClientMain {
      * Create all of the Swing windows - and the 3D window
      */
     private void createUI(WorldManager wm) {
+        ViewManager.initialize(width, height); // Initialize an onscreen view
         
         frame = new MainFrameImpl(wm, width, height);
         // center the frame
@@ -321,9 +293,6 @@ public class JmeClientMain {
 
         // show frame
         frame.getFrame().setVisible(true);
-
-        JPanel canvas3D = frame.getCanvas3DPanel();
-        ViewManager.initialize(canvas3D.getWidth(), canvas3D.getHeight()); // Initialize an onscreen view
 
         ViewManager.getViewManager().attachViewCanvas(frame.getCanvas3DPanel());
 

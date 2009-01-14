@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.palette.client;
@@ -41,8 +41,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Origin;
 
 /**
  * A palette of cell types available to create in the world.
@@ -152,7 +152,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // From the selected value, find the proper means to create the object
     String cellDisplayName = (String) cellList.getSelectedValue();
     CellFactory factory = getCellFactory(cellDisplayName);
-    CellServerState setup = factory.getDefaultCellServerState();
+    BasicCellSetup setup = factory.getDefaultCellSetup();
     
     // Choose a random origin for now
     Vector3f origin = new Vector3f(new Random().nextInt(10) - 5,
@@ -182,11 +182,9 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         while (it.hasNext() == true) {
             CellFactory cellFactory = it.next();
             try {
-                String name = cellFactory.getDisplayName();
-                if (name != null) {
-                    listNames.add(name);
-                    cellFactoryMap.put(name, cellFactory);
-                }
+                String name = cellFactory.getCellPaletteInfo().getDisplayName();
+                listNames.add(name);
+                cellFactoryMap.put(name, cellFactory);
             } catch (java.lang.Exception excp) {
                 // Just ignore, but log a message
                 Logger logger = Logger.getLogger(CellPalette.class.getName());
@@ -209,7 +207,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         while (it.hasNext() == true) {
             CellFactory cellFactory = it.next();
             try {
-                String cellName = cellFactory.getDisplayName();
+                String cellName = cellFactory.getCellPaletteInfo().getDisplayName();
                 if (cellName.equals(name) == true) {
                     return cellFactory;
                 }
@@ -246,7 +244,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         if (selectedName != null) {
             CellFactory cellFactory = cellFactoryMap.get(selectedName);
             if (cellFactory != null) {
-                Image image = cellFactory.getPreviewImage();
+                Image image = cellFactory.getCellPaletteInfo().getPreviewImage();
                 if (image != null) {
                     ImageIcon icon = new ImageIcon(image);
                     previewLabel.setIcon(icon);

@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
@@ -50,31 +50,29 @@ public class AudioTreatmentComponent extends CellComponent {
 
     public AudioTreatmentComponent(Cell cell) {
         super(cell);
+        channelComp = cell.getComponent(ChannelComponent.class);
     }
     
     @Override
     public void setStatus(CellStatus status) {
-	switch(status) {
-        case DISK:
-            if (msgReceiver!=null) {
-                channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
-                msgReceiver = null;
-            }
-            break;
+         switch(status) {
+            case DISK :
+                if (msgReceiver!=null) {
+                    channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
+                    msgReceiver = null;
+                }
+                break;
+             case BOUNDS : {
+                 if (msgReceiver==null) {
+                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
-	case BOUNDS:
-            if (msgReceiver==null) {
-                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-                    public void messageReceived(CellMessage message) {
-                        AudioTreatmentMessage msg = (AudioTreatmentMessage)message;
-                    }
-                };                    
-
-        	channelComp = cell.getComponent(ChannelComponent.class);
-                channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
-            }
-	    break;
-
+                        public void messageReceived(CellMessage message) {
+                            AudioTreatmentMessage msg = (AudioTreatmentMessage)message;
+                        }
+                    };                    
+                    channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
+                 }
+             }
         }
     }
     

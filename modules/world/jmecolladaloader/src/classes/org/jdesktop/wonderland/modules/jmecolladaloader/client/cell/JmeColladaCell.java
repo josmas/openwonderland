@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
@@ -22,8 +22,8 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig;
 
 /**
  * Client side cell for rendering JME content
@@ -49,13 +49,13 @@ public class JmeColladaCell extends Cell {
      * @param config the cell config object
      */
     @Override
-    public void setClientState(CellClientState config) {
-        super.setClientState(config);
-        JmeColladaCellClientState colladaConfig = (org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellClientState)config;
+    public void configure(CellConfig config) {
+        super.configure(config);
+        JmeColladaCellConfig colladaConfig = (org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.config.JmeColladaCellConfig)config;
         this.modelURI = colladaConfig.getModelURI();
         this.geometryRotation = colladaConfig.getGeometryRotation();
         this.geometryTranslation = colladaConfig.getGeometryTranslation();
-        logger.info("[CELL] JME COLLADA CELL " + this.modelURI);
+        logger.warning("[CELL] COLLADA CELL " + this.modelURI);
     }
     
     @Override

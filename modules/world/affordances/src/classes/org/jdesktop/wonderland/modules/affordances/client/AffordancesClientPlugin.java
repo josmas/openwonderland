@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.affordances.client;
@@ -31,8 +31,6 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.scenemanager.SceneManager;
-import org.jdesktop.wonderland.modules.affordances.client.jme.Affordance;
-import org.jdesktop.wonderland.modules.affordances.client.jme.RotateAffordance;
 import org.jdesktop.wonderland.modules.affordances.client.jme.TranslateAffordance;
 
 /**
@@ -45,7 +43,6 @@ public class AffordancesClientPlugin implements ClientPlugin {
     public void initialize(ServerSessionManager loginInfo) {
         ContextMenu contextMenu = ContextMenu.getContextMenu();
         contextMenu.addContextMenuItem("Move", new MoveContextListener());
-        contextMenu.addContextMenuItem("Rotate", new RotateContextListener());
     }
 
     /**
@@ -79,42 +76,12 @@ public class AffordancesClientPlugin implements ClientPlugin {
     }
 
     /**
-     * Inner class to handle when the "Rotate" item has been selected from the
-     * context menu
-     */
-    class RotateContextListener implements ContextMenuListener {
-
-        public void entityContextPerformed(ContextMenuEvent event) {
-            // Fetch the Entity associated with the event. If there is none,
-            // then ignore the event quietly.
-            Entity entity = event.getEntityList().get(0);
-            if (entity == null) {
-                return;
-            }
-
-            // Fetch the cell associated with the entity. If null, then ignore
-            // quietly.
-            Cell cell = SceneManager.getCellForEntity(entity);
-            if (cell == null) {
-                return;
-            }
-
-            // Otherwise, attach a translate affordance to the cell. if we
-            // can then also listen for the Esc key to dismiss the affordance
-            RotateAffordance affordance = RotateAffordance.addToCell(cell);
-            if (affordance != null) {
-                InputManager.inputManager().addGlobalEventListener(new KeyListener(affordance));
-            }
-        }
-    }
-
-    /**
      * Listens for key presses to display the affordance
      */
     class KeyListener extends EventClassListener {
-        private Affordance affordance;
+        private TranslateAffordance affordance;
 
-        public KeyListener(Affordance affordance) {
+        public KeyListener(TranslateAffordance affordance) {
             this.affordance = affordance;
         }
 

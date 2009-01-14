@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.cell;
@@ -40,15 +40,5 @@ public class CellComponent {
      */
     public void setStatus(CellStatus status) {
         this.status = status;
-    }
-    
-    /**
-     * Return the class used to reference this component. Usually this will return
-     * the class of the component, but in some cases, such as the ChannelComponentMO
-     * subclasses of ChannelComponentMO will return their parents class
-     * @return
-     */
-    protected Class getLookupClass() {
-        return getClass();
     }
 }

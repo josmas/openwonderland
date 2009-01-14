@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.cell;
@@ -41,14 +41,15 @@ public class MovableComponent extends CellComponent {
     
     protected static Logger logger = Logger.getLogger(MovableComponent.class.getName());
     protected ArrayList<CellMoveListener> serverMoveListeners = null;
-    protected ChannelComponent channelComp=null;
+    protected ChannelComponent channelComp;
     
     public enum CellMoveSource { LOCAL, REMOTE }; // Do we need BOTH as well ?
     
-    protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
+    protected ChannelComponent.ComponentMessageReceiver msgReceiver;
     
     public MovableComponent(Cell cell) {
         super(cell);
+        channelComp = cell.getComponent(ChannelComponent.class);
     }
     
     
@@ -56,13 +57,12 @@ public class MovableComponent extends CellComponent {
     public void setStatus(CellStatus status) {
          switch(status) {
             case DISK :
-                if (msgReceiver!=null && channelComp!=null) {
+                if (msgReceiver!=null) {
                     channelComp.removeMessageReceiver(getMessageClass());
                     msgReceiver = null;
                 }
                 break;
              case BOUNDS : {
-                 channelComp = cell.getComponent(ChannelComponent.class);
                  if (msgReceiver==null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
@@ -76,7 +76,7 @@ public class MovableComponent extends CellComponent {
                                 serverMoveRequest((MovableMessage)message);
                             }
                         }
-                    };
+                    };                    
                     channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
                  }
              }

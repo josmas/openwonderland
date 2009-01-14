@@ -11,21 +11,25 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.jeditortest.server;
 
 import com.jme.math.Vector2f;
+import com.sun.sgs.app.ClientSession;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellConfig;
+import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
 /**
  * A server cell associated with a JEditor test.
@@ -34,7 +38,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  */
 
 @ExperimentalAPI
-public class JEditorTestCellMO extends App2DCellMO {
+public class JEditorTestCellMO extends App2DCellMO implements BeanSetupMO {
 
     /** The preferred width (from the WFS file) */
     private int preferredWidth;
@@ -66,25 +70,32 @@ public class JEditorTestCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-        if (cellClientState == null) {
-            cellClientState = new JEditorTestCellClientState(pixelScale);
-        }
-        ((JEditorTestCellClientState)cellClientState).setPreferredWidth(preferredWidth);
-        ((JEditorTestCellClientState)cellClientState).setPreferredHeight(preferredHeight);
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
+	JEditorTestCellConfig config = new JEditorTestCellConfig(pixelScale);
+	config.setPreferredWidth(preferredWidth);
+	config.setPreferredHeight(preferredHeight);
+        return config;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState serverState) {
-	super.setCellServerState(serverState);
+    public void setupCell(BasicCellSetup setupData) {
+	super.setupCell(setupData);
 
-	JEditorTestCellServerState state = (JEditorTestCellServerState) serverState;
-	preferredWidth = state.getPreferredWidth();
-	preferredHeight = state.getPreferredHeight();
-	pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
+	JEditorTestCellSetup setup = (JEditorTestCellSetup) setupData;
+	preferredWidth = setup.getPreferredWidth();
+	preferredHeight = setup.getPreferredHeight();
+	pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
     }
 }

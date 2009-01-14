@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.server.wfs.importer;
@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.common.wfs.WorldRootList;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 
 /**
@@ -58,7 +58,7 @@ public class CellImporterUtils {
      * argument must never begin with a "/". For a cell in the root path, use
      * an empty string for the relative path argument
      */
-    public static CellServerState getWFSCell(String root, String relativePath, String name) {
+    public static BasicCellSetup getWFSCell(String root, String relativePath, String name) {
         /*
          * Try to open up a connection the Jersey RESTful resource and parse
          * the stream. Upon error return null.
@@ -74,7 +74,7 @@ public class CellImporterUtils {
             
             /* Read in and parse the cell setup information */
             InputStreamReader isr = new InputStreamReader(url.openStream());
-            return CellServerState.decode(isr, null, getServerFromURL(url));
+            return BasicCellSetup.decode(isr, null, getServerFromURL(url));
         } catch (java.lang.Exception excp) {
             System.out.println(excp.toString());
             return null;

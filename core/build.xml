@@ -53,8 +53,6 @@
     <target name="run" depends="jar" description="Run the Wonderland client">
         <mkdir dir="log"/>
 
-        <copy overwrite="false" file="run-client.properties.example" tofile="run-client.properties"/>
-
         <!-- softphone jar location, set by the SoftphoneInstaller during webstart startup -->
         <property name="softphone.jar.location" location="${current.dir}/ext/softphone/softphone.jar"/>
 
@@ -65,19 +63,14 @@
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
             <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
             <jvmarg value="-Xmx512m"/>
-            <jvmarg value="-ea"/>
-	    <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${softphone.jar.location}"/>
+	        <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${softphone.jar.location}"/>
             <jvmarg value="-Dwonderland.version=${wonderland.version}"/>
  
             <!--start debug-->
 	    <!-- 
-            --> 
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
-
-	    <!--
-	    <jvmarg value="-agentpath:/tmp/NBProfiler60438.link/deployed/jdk15/mac/libprofilerinterface.jnilib=/tmp/NBProfiler60438.link,5140"/>
-            -->
+            --> 
 	    <!--end debug-->
             
             <classpath>
@@ -97,7 +90,26 @@
 	    <!--start debug-->
 	    <!--
             <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
+            -->
+	    <!--end debug-->
+            
+            <classpath>
+		<pathelement path="${core-client.classpath}"/>
+	    </classpath>
+            
+	    <env key="${env.path.name}" path="${env.path.defvalue}"/>
+        </java>
+    </target>
+
+    <target name="run-moduleui" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.jme.artimport.ModuleManagerUI" fork="true">
+            <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
+            <jvmarg value="-Djava.protocol.handler.pkgs=org.jdesktop.wonderland.client.protocols"/>
+	    <!--start debug-->
+	    <!--
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
             -->
 	    <!--end debug-->
             

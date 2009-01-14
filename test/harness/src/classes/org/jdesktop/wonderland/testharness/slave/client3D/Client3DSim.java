@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.testharness.slave.client3D;
@@ -36,11 +36,9 @@ import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
@@ -54,6 +52,7 @@ import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
+import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.LoginUI;
 import org.jdesktop.wonderland.client.login.PluginFilter;
@@ -107,7 +106,6 @@ public class Client3DSim
         File userDir = new File(ClientContext.getUserDirectory("test"),
                                 username);
         ClientContext.setUserDirectory(userDir);
-        ClientContext.setRendererType(RendererType.NONE);
 
         // set up the login system to
 
@@ -155,9 +153,9 @@ public class Client3DSim
                     final LocalAvatar avatar = ccs.getLocalAvatar();
                     avatar.addViewCellConfiguredListener(new ViewCellConfiguredListener() {
                         public void viewConfigured(LocalAvatar localAvatar) {
-//                            MovableComponent mc =
-//                                    avatar.getViewCell().getComponent(MovableComponent.class);
-//                            mc.addServerCellMoveListener(messageTimer);
+                            MovableComponent mc =
+                                    avatar.getViewCell().getComponent(MovableComponent.class);
+                            mc.addServerCellMoveListener(messageTimer);
 
                             // start the simulator
                             userSim.start();
@@ -236,7 +234,7 @@ public class Client3DSim
         private LocalAvatar avatar;
         private boolean quit = false;
         private boolean walking = false;
-        private long sleepTime = 500; // Time between steps (in ms)
+        private long sleepTime = 200; // Time between steps (in ms)
         private int currentLoopCount = 0;
         private int desiredLoopCount;
         
@@ -289,7 +287,7 @@ public class Client3DSim
                     if (walking) {
                         currentLocation.addLocal(step);
                         avatar.localMoveRequest(currentLocation, orientation);    
-//                        messageTimer.messageSent(new CellTransform(orientation, currentLocation));
+                        messageTimer.messageSent(new CellTransform(orientation, currentLocation));
                     }
                     
                     try {

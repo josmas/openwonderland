@@ -11,18 +11,31 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
+import com.sun.sgs.app.ChannelManager;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.DataManager;
+import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -30,7 +43,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author paulby
  */
-public abstract class ChannelComponentMO extends CellComponentMO {
+public class ChannelComponentMO extends CellComponentMO {
 
     private WonderlandClientSender cellSender;
     private ManagedReference<Channel> cellChannelRef;
@@ -39,7 +52,48 @@ public abstract class ChannelComponentMO extends CellComponentMO {
     public ChannelComponentMO(CellMO cell) {
         super(cell);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void openChannel() {
+        CellMO cell = cellRef.get();
         
+        ChannelManager cm = AppContext.getChannelManager();
+        Channel cellChannel = cm.createChannel("Cell "+cell.getCellID().toString(), 
+                                               null,
+                                               Delivery.RELIABLE);
+        
+        DataManager dm = AppContext.getDataManager();
+        cellChannelRef = dm.createReference(cellChannel);
+        
+        // cache the sender for sending to cell clients.  This saves a
+        // Darkstar lookup for every cell we want to send to.
+        cellSender = WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
+        
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void closeChannel() {
+        DataManager dm = AppContext.getDataManager();
+        Channel channel = cellChannelRef.get();
+        dm.removeObject(channel);
+        
+        cellSender=null;
+        cellChannelRef = null;
+    }  
+    
+    @Override
+    protected void setLive(boolean live) {
+        AppContext.getDataManager().markForUpdate(this);
+        if (live)
+            openChannel();
+        else
+            closeChannel();
+    }
+    
     /**
      * Send message to all clients on this channel
      * @param senderID the id of the sender session, or null if this
@@ -47,19 +101,40 @@ public abstract class ChannelComponentMO extends CellComponentMO {
      * @param message
      *
      */
-    public abstract void sendAll(WonderlandClientID senderID, CellMessage message);
+    public void sendAll(WonderlandClientID senderID, CellMessage message) {
+        if (cellChannelRef==null) {
+            return;
+        }
+
+        if (senderID != null) {
+            message.setSenderID(senderID.getID());
+        }
+
+//        System.out.println("Sending data "+cellSender.getSessions().size());
+        cellSender.send(cellChannelRef.get(), message);
+    }
     
     /**
      * Add user to the cells channel, if there is no channel simply return
      * @param userID
      */
-    public abstract void addUserToCellChannel(WonderlandClientID clientID);
+    public void addUserToCellChannel(WonderlandClientID clientID) {
+        if (cellChannelRef == null)
+            return;
+            
+        cellChannelRef.getForUpdate().join(clientID.getSession());
+    }
     
     /**
      * Remove user from the cells channel
      * @param userID
      */
-    public abstract void removeUserFromCellChannel(WonderlandClientID clientID);
+    public void removeUserFromCellChannel(WonderlandClientID clientID) {
+        if (cellChannelRef == null)
+            return;
+            
+        cellChannelRef.getForUpdate().leave(clientID.getSession());
+    }
      
     /**
      * Register a receiver for a specific message class. Only a single receiver
@@ -69,20 +144,31 @@ public abstract class ChannelComponentMO extends CellComponentMO {
      * @param msgClass
      * @param receiver
      */
-    public abstract void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver);
-
-    public abstract void removeMessageReceiver(Class<? extends CellMessage> msgClass);
-    
-    @Override
-    protected Class getLookupClass() {
-        return ChannelComponentMO.class;
+    public void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver) {
+        Object old = messageReceivers.put(msgClass, AppContext.getDataManager().createReference(receiver));
+        if (old!=null)
+            throw new IllegalStateException("Duplicate Message class added "+msgClass);
     }
-
-    abstract void messageReceived(WonderlandClientSender sender,
+    
+    /**
+     * Dispatch messages to any receivers registered for the particular message class
+     * @param sender
+     * @param session
+     * @param message
+     */
+    public void messageReceived(WonderlandClientSender sender, 
                                 WonderlandClientID clientID,
-                                CellMessage message );
-
-
+                                CellMessage message ) {
+        
+        ManagedReference<ComponentMessageReceiver> recvRef = messageReceivers.get(message.getClass());
+        if (recvRef==null) {
+            Logger.getAnonymousLogger().warning("No listener for message "+message.getClass());
+            return;
+        }
+        
+        recvRef.get().messageReceived(sender, clientID, message);
+    }
+    
     static public interface ComponentMessageReceiver extends ManagedObject, Serializable {
         public void messageReceived(WonderlandClientSender sender, 
                                     WonderlandClientID clientID,

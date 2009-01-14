@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.phone.server.cell;
 import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
+import org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup;
 
 import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
@@ -40,6 +41,7 @@ import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
@@ -68,6 +70,11 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.lang.String;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,8 +86,9 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup.Origin;
 
 import org.jdesktop.wonderland.server.UserManager;
 
@@ -88,9 +96,11 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 
-import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 
-import org.jdesktop.wonderland.modules.orb.common.OrbCellServerState;
+import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
+
+import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
 
 import com.jme.bounding.BoundingVolume;
 
@@ -125,8 +135,6 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 
         ChannelComponentMO channelComponent = (ChannelComponentMO) 
 	    phoneCellMO.getComponent(ChannelComponentMO.class);
-
-	System.out.println("Phone channel component:  " + channelComponent);
 
         if (channelComponent == null) {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
@@ -305,7 +313,9 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 		    return;
 		}
 
+		logger.fine("About to create call");
 	    	externalPlayer = vm.createPlayer(externalCallID, playerSetup);
+		logger.fine("back from creating call");
 
 		externalCall.setPlayer(externalPlayer);
 
@@ -315,35 +325,19 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 
 		logger.fine("set external call");
 
-                if (listing.isPrivate()) {
-		    /*
-		     * Allow caller and callee to hear each other
-		     */
-		    AudioGroupSetup audioGroupSetup = new AudioGroupSetup();
-		    audioGroupSetup.spatializer = new FullVolumeSpatializer();
+		/*
+		 * Allow caller and callee to hear each other
+		 */
+		AudioGroupSetup audioGroupSetup = new AudioGroupSetup();
+		audioGroupSetup.spatializer = new FullVolumeSpatializer();
 
-		    audioGroup = vm.createAudioGroup(audioGroupId, audioGroupSetup);
-		    audioGroup.addPlayer(externalPlayer, 
-		        new AudioGroupPlayerInfo(true, 
-		        AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
-		    audioGroup.addPlayer(softphonePlayer, 
-		        new AudioGroupPlayerInfo(true, 
-		        AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
-		} else {
-		    AudioGroup defaultLivePlayerAudioGroup = 
-		        vm.getDefaultLivePlayerAudioGroup();
-
-		    defaultLivePlayerAudioGroup.addPlayer(externalPlayer, 
-		        new AudioGroupPlayerInfo(true, 
-		        AudioGroupPlayerInfo.ChatType.PUBLIC));
-
-		    AudioGroup defaultStationaryPlayerAudioGroup = 
-		        vm.getDefaultStationaryPlayerAudioGroup();
-
-		    defaultStationaryPlayerAudioGroup.addPlayer(externalPlayer, 
-		        new AudioGroupPlayerInfo(false, 
-		        AudioGroupPlayerInfo.ChatType.PUBLIC));
-		}
+		audioGroup = vm.createAudioGroup(audioGroupId, audioGroupSetup);
+		audioGroup.addPlayer(externalPlayer, 
+		    new AudioGroupPlayerInfo(true, 
+		    AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+		audioGroup.addPlayer(softphonePlayer, 
+		    new AudioGroupPlayerInfo(true, 
+		    AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
 
 		logger.fine("done with audio groups");
             }
@@ -524,7 +518,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 
 	center.setY((float)1.5);
 
-	System.out.println("phone bounding volume:  " + boundingVolume
+	logger.finer("phone bounding volume:  " + boundingVolume
 	    + " center " + center);
 
         String cellType = 
@@ -538,16 +532,17 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	    return;
 	}
 
-	OrbCellServerState orbCellServerState = new OrbCellServerState();
+	OrbCellSetup setup = new OrbCellSetup();
 
-	orbCellServerState.setOrigin(new Origin(center));
+	setup.setOrigin(new Origin(center));
 
 	try {
-            orbCellMO.setCellServerState(orbCellServerState);
+            ((BeanSetupMO)orbCellMO).setupCell(setup);
         } catch (ClassCastException e) {
             logger.warning("Error setting up new cell " +
                 orbCellMO.getName() + " of type " +
-                orbCellMO.getClass() + e.getMessage());
+                orbCellMO.getClass() + ", it does not implement " +
+                "BeanSetupMO. " + e.getMessage());
             return;
         }
 

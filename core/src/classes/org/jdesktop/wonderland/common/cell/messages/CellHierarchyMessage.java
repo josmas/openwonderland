@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.common.cell.messages;
@@ -21,7 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -39,7 +39,7 @@ public class CellHierarchyMessage extends Message {
     private BoundingVolume computedBounds;
     private String cellClassName;
     private CellTransform cellTransform;
-    private CellClientState setupData;
+    private CellConfig setupData;
     private String avatarID;
     private String cellName;
     
@@ -64,7 +64,7 @@ public class CellHierarchyMessage extends Message {
                                 CellID cellID, 
                                 CellID parentID,
                                 CellTransform cellTransform,
-                                CellClientState setupData,
+                                CellConfig setupData,
                                 String cellName) {
         this.msgType = msgType;
         this.cellClassName = cellClassName;
@@ -115,7 +115,7 @@ public class CellHierarchyMessage extends Message {
         return cellTransform;
     }
 
-    public CellClientState getSetupData() {
+    public CellConfig getSetupData() {
         return setupData;
     }
 

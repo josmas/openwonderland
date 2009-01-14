@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
@@ -38,11 +38,11 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+
+import org.jdesktop.wonderland.modules.orb.common.OrbCellConfig;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
-import org.jdesktop.wonderland.modules.orb.common.OrbCellClientState;
 
 /**
  *
@@ -91,11 +91,11 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
      * @param setupData
      */
     @Override
-    public void setClientState(CellClientState cellClientState) {
-	super.setClientState(cellClientState);
+    public void configure(CellConfig setupData) {
+	super.configure(setupData);
 
 	logger.fine("ORB is configured");
-	OrbCellClientState orbCellClientState = (OrbCellClientState) cellClientState;
+	OrbCellConfig config = (OrbCellConfig) setupData;
     }
 
     @Override

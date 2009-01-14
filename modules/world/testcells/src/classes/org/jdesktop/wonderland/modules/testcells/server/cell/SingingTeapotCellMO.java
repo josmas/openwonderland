@@ -11,21 +11,24 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.testcells.server.cell;
 
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
 import org.jdesktop.wonderland.modules.testcells.common.cell.setup.SingingTeapotCellSetup;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
 /**
  * Test Cell for use until WFS is integrated, this will be removed.
@@ -34,7 +37,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author paulby
  */
 @ExperimentalAPI
-public class SingingTeapotCellMO extends SimpleShapeCellMO {
+public class SingingTeapotCellMO extends SimpleShapeCellMO implements BeanSetupMO {
     
     /** Default constructor, used when cell is created via WFS */
     public SingingTeapotCellMO() {
@@ -44,7 +47,7 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO {
     public SingingTeapotCellMO(Vector3f center, float size, MaterialJME materialJME) {
         super(center, size, SimpleShapeConfig.Shape.BOX.TEAPOT, 1f, materialJME);
 
-//	addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+	addComponent(new ChannelComponentMO(this));
     }
     
     @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
@@ -52,15 +55,22 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO {
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setupCell(BasicCellSetup setup) {
+        super.setupCell(setup);
     }
 
     @Override
-    public CellServerState getCellServerState(CellServerState setup) {
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
+    }
+
+    @Override
+    public BasicCellSetup getCellSetup(BasicCellSetup setup) {
         if (setup == null) {
             setup = new SingingTeapotCellSetup();
         }
-        return super.getCellServerState(setup);
+
+        return super.getCellSetup(setup);
     }
 }

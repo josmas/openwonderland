@@ -11,15 +11,15 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.server.cell;
 
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * The properties of the cell for a particular combination of session
@@ -32,11 +32,11 @@ public class CellSessionProperties implements Serializable {
 
     private ViewCellCacheRevalidationListener viewCacheOperation;
     private String clientCellClassName;
-    private CellClientState clientCellSetup;
+    private CellConfig clientCellSetup;
     
     public CellSessionProperties(ViewCellCacheRevalidationListener viewCacheOperation,
             String clientCellClassName,
-            CellClientState clientCellSetup) {
+            CellConfig clientCellSetup) {
         this.viewCacheOperation = viewCacheOperation;
         this.clientCellClassName = clientCellClassName;
         this.clientCellSetup = clientCellSetup;
@@ -63,7 +63,7 @@ public class CellSessionProperties implements Serializable {
      * Return the setup data that will be sent to the client for this session
      * @return
      */
-    public CellClientState getClientCellSetup() {
+    public CellConfig getClientCellSetup() {
         return clientCellSetup;
     }
     

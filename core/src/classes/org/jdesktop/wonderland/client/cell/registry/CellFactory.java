@@ -11,14 +11,13 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.cell.registry;
 
-import java.awt.Image;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 /**
  * A CellFactory class is responsible for generating the necessary information
@@ -47,21 +46,13 @@ public interface CellFactory {
      * 
      * @return A cell setup class with default values
      */
-    public <T extends CellServerState> T getDefaultCellServerState();
+    public <T extends BasicCellSetup> T getDefaultCellSetup();
     
     /**
-     * Returns the human-readable display name of the cell type to display in
-     * the palette of cell types. If the cell type should not appear in the
-     * palette, this method should return null.
-     *
-     * @return The name of the cell type
+     * Returns the information necessary to display the cell in the world
+     * assembler palette.
+     * 
+     * @return A CellPaletteInfo class
      */
-    public String getDisplayName();
-
-    /**
-     * Returns an image preview of the cell type.
-     *
-     * @return An image of the cell type
-     */
-    public Image getPreviewImage();
+    public CellPaletteInfo getCellPaletteInfo();
 }

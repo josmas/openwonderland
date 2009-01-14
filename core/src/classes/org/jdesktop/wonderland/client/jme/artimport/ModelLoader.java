@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.jme.artimport;
@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.jme.artimport;
 import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 /**
  * Interface for Model loader code. Provides support for inital import of the 
@@ -68,13 +68,13 @@ public interface ModelLoader {
 //            this.assetURL = assetURL;
 //        }
         
-        private CellServerState setup;
+        private BasicCellSetup setup;
         
-        public CellServerState getCellSetup() {
+        public BasicCellSetup getCellSetup() {
             return setup;
         }
         
-        public void setCellSetup(CellServerState setup) {
+        public void setCellSetup(BasicCellSetup setup) {
             this.setup = setup;
         }
     }

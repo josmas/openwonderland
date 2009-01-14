@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
@@ -36,10 +36,18 @@ import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessag
 import org.jdesktop.wonderland.modules.phone.common.messages.PhoneControlMessage;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
+import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
+import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.CallSetup;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
@@ -51,6 +59,11 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -61,6 +74,11 @@ import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.lang.String;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,14 +90,18 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 
 import org.jdesktop.wonderland.server.UserManager;
 
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
+
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
+
+import org.jdesktop.wonderland.modules.orb.common.OrbCellSetup;
 
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
 
@@ -232,21 +254,19 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 	            }
 		}
 
-                if (listing.isPrivate()) {
-		    String audioGroupId = softphoneCallID + "_" 
-		        + listing.getPrivateClientName();
+		String audioGroupId = softphoneCallID + "_" 
+		    + listing.getPrivateClientName();
 
-		    AudioGroup audioGroup = vm.getAudioGroup(audioGroupId);
+		AudioGroup audioGroup = vm.getAudioGroup(audioGroupId);
 
-		    if (audioGroup != null) {
-		        if (softphoneCall.getPlayer() != null) {
-	        	    softphoneCall.getPlayer().attenuateOtherGroups(audioGroup, 
-			        AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
-		    	        AudioGroup.DEFAULT_LISTEN_ATTENUATION);
-		        }
-
-	                vm.removeAudioGroup(audioGroupId);
+		if (audioGroup != null) {
+		    if (softphoneCall.getPlayer() != null) {
+	        	softphoneCall.getPlayer().attenuateOtherGroups(audioGroup, 
+			    AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
+		    	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
 		    }
+
+	            vm.removeAudioGroup(audioGroupId);
 		}
             } else {
                 //   FakeVoiceHandler.getInstance().endCall(externalCallID);

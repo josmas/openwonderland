@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.client.gui.guinull;
@@ -27,9 +27,6 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DViewWorld;
-
-// TODO: delete
-import java.awt.event.MouseEvent;
 
 /**
  * A view onto a window which exists in the 3D world.
@@ -171,13 +168,6 @@ public class Window2DViewNull extends Window2DView implements Window2DViewWorld 
      * {@inheritDoc}
      */
     public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp) {
-	return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Point calcIntersectionPixelOfEyeRay (int x, int y) {
 	return null;
     }
 

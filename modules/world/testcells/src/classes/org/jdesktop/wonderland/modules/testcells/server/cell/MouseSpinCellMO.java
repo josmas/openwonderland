@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.testcells.server.cell;
@@ -21,7 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -56,7 +56,14 @@ public class MouseSpinCellMO extends SimpleShapeCellMO{
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setupCell(BasicCellSetup setup) {
+        super.setupCell(setup);
     }
+
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
+    }
+
 }

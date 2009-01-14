@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.cell;
@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * A basic implementation of core cell cache features. This is a convenience class
@@ -114,14 +114,14 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          BoundingVolume localBounds, 
                          CellID parentCellID, 
                          CellTransform cellTransform, 
-                         CellClientState setup,
+                         CellConfig setup,
                          String cellName) {
         if (cells.containsKey(cellId)) {
             logger.severe("Attempt to create cell that already exists "+cellId);
             return null;
         }
 
-        logger.warning("creating cell "+className+" "+cellId);
+        logger.fine("creating cell "+className+" "+cellId);
         Cell cell = instantiateCell(className, cellId);
         if (cell==null)
             return null;     // Instantiation failed, error has already been logged
@@ -148,9 +148,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
         if (setup!=null)
-            cell.setClientState(setup);
-        else
-            logger.warning("Cell has null setup "+className+"  "+cell);
+            cell.configure(setup);
 
         // Force the cell to create the JME renderer entity
         createCellRenderer(cell);
@@ -271,12 +269,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
         public void run() {
-            try {
-                cell.setStatus(cellStatus);
-            } catch(Exception e) {
-                // Report the exception, otherwise it will get swallowed
-                logger.log(Level.WARNING, "Exception thrown in Cell.setStatus "+e.getLocalizedMessage(), e);
-            }
+            cell.setStatus(cellStatus);
         }
 
     }

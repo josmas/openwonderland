@@ -25,6 +25,7 @@ import javax.swing.JFrame;
 
 /**
  *
+ * @author  Paul
  */
 public class TestPanel extends javax.swing.JPanel {
     

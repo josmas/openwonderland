@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.server.wfs.importer;
@@ -27,11 +27,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.setup.BeanSetupMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 
@@ -191,7 +192,7 @@ public class CellImporter {
              * Download and parse the cell configuration information. Create a
              * new cell based upon the information.
              */
-            CellServerState setup = CellImporterUtils.getWFSCell(root, relativePath, child.name);
+            BasicCellSetup setup = CellImporterUtils.getWFSCell(root, relativePath, child.name);
             if (setup == null) {
                 logger.info("WFSLoader: unable to read cell setup info " + relativePath + "/" + child.name);
                 continue;
@@ -220,7 +221,7 @@ public class CellImporter {
                 
             /* Call the cell's setup method */
             try {
-                cellMO.setCellServerState(setup);
+                ((BeanSetupMO)cellMO).setupCell(setup);
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
                         cellMO.getName() + " of type " +

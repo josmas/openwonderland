@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.server.cell;
@@ -22,13 +22,13 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.setup.CellComponentSetup;
 
 /**
  *
  * @author paulby
  */
-public abstract class CellComponentMO implements ManagedObject, Serializable {
+public class CellComponentMO implements ManagedObject, Serializable {
     protected ManagedReference<CellMO> cellRef;
     protected CellID cellID;
     
@@ -46,7 +46,7 @@ public abstract class CellComponentMO implements ManagedObject, Serializable {
      * 
      * @param setup the properties to setup with
      */
-    public void setupCellComponent(CellComponentServerState setup) {
+    public void setupCellComponent(CellComponentSetup setup) {
         // Do nothing by default
     }
 
@@ -58,26 +58,8 @@ public abstract class CellComponentMO implements ManagedObject, Serializable {
      * @param setup The setup object, if null, creates one.
      * @return The current setup information
      */
-    public CellComponentServerState getCellComponentSetup(CellComponentServerState setup) {
+    public CellComponentSetup getCellComponentSetup(CellComponentSetup setup) {
         // Do nothing by default
         return setup;
-    }
-
-    /**
-     * If this component has a client side component then return the fully
-     * qualified name of the client class. If there is no client portion to this
-     * component, return null.
-     * @return
-     */
-    protected abstract String getClientClass();
-
-    /**
-     * Return the class used to reference this component. Usually this will return
-     * the class of the component, but in some cases, such as the ChannelComponentMO
-     * subclasses of ChannelComponentMO will return their parents class
-     * @return
-     */
-    protected Class getLookupClass() {
-        return getClass();
     }
 }

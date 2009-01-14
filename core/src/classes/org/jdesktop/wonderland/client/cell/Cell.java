@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.cell;
@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -574,21 +574,19 @@ public class Cell {
      * 
      * @param configData the configuration data for the cell
      */
-    public void setClientState(CellClientState configData) {
-
-        System.err.println("configure cell "+getCellID()+"  "+getClass());
+    public void configure(CellConfig configData) {
+                
         // Install the CellComponents
         for(String compClassname : configData.getClientComponentClasses()) {
             try {
                 Class compClazz = Class.forName(compClassname);
                 if (!components.containsKey(compClazz)) {
-                    logger.warning("Installing component "+compClassname);
+                    logger.fine("Installing component "+compClassname);
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
-                    CellComponent comp = constructor.newInstance(this);
-                    addComponent(comp, comp.getLookupClass());
+                    addComponent(constructor.newInstance(this));
                 }
             } catch (InstantiationException ex) {
-                logger.log(Level.SEVERE, "Instantiation exception for class "+compClassname+"  in cell "+getClass().getName(), ex);
+                logger.log(Level.SEVERE, null, ex);
             } catch (IllegalAccessException ex) {
                 logger.log(Level.SEVERE, null, ex);
             } catch (IllegalArgumentException ex) {

@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.testharness.manager.ui;
@@ -38,23 +38,11 @@ public class HarnessManagerUI extends javax.swing.JFrame {
     private ObjectInputStream in;
 
     /** Creates new form HarnessManagerUI */
-    public HarnessManagerUI(String args[]) {
-
+    public HarnessManagerUI() {
         initComponents();
-        String masterHostname;
-
-        if (args.length>1) {
-            System.err.println("Usage: HarnessManagerUI <master hostname>");
-            System.exit(1);
-        }
-
-        if (args.length==1)
-            masterHostname = args[0];
-        else
-            masterHostname = "localhost";
         
         try {
-            Socket s = new Socket(masterHostname, MasterMain.MANAGER_PORT);
+            Socket s = new Socket("localhost", MasterMain.MANAGER_PORT);
             out = new ObjectOutputStream(s.getOutputStream());
             in = new ObjectInputStream(s.getInputStream());
 
@@ -163,10 +151,10 @@ private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     /**
     * @param args the command line arguments
     */
-    public static void main(final String args[]) {
+    public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new HarnessManagerUI(args).setVisible(true);
+                new HarnessManagerUI().setVisible(true);
             }
         });
     }

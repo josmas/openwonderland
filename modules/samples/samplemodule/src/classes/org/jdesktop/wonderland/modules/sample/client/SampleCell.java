@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.sample.client;
@@ -22,8 +22,7 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 
 /**
  * Client-side cell for rendering JME content
@@ -31,9 +30,7 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
  * @author jkaplan
  */
 public class SampleCell extends Cell {
-    /* Arbitrary cell info -- not really used anywhere */
-    private String info = null;
-
+    
     public SampleCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
@@ -43,19 +40,26 @@ public class SampleCell extends Cell {
      * major configuration change. The cell will already be attached to it's parent
      * before the initial call of this method
      * 
-     * @param clientState
+     * @param setupData
      */
     @Override
-    public void setClientState(CellClientState clientState) {
-        info = ((SampleCellClientState)clientState).getInfo();
-        super.setClientState(clientState);
+    public void configure(CellConfig configData) {
+        super.configure(configData);
     }
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        if (rendererType == RendererType.RENDERER_JME) {
-            return new SampleRenderer(this);
+        CellRenderer ret = null;
+        switch(rendererType) {
+            case RENDERER_JME:
+                ret = new SampleRenderer(this);
+                break;
+                
+            default:
+                throw new IllegalStateException("Cell does not support " +
+                                                rendererType);
         }
-        return super.createCellRenderer(rendererType);
+        
+        return ret;
     }
 }

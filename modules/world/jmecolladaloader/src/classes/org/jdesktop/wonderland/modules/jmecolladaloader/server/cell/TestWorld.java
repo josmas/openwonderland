@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.server.cell;
@@ -99,11 +99,6 @@ public class TestWorld implements ServerPlugin {
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 
-//            WonderlandContext.getCellManager().insertCellInWorld(
-//                    new JmeColladaCellMO(new Vector3f(0,0,10), 500,
-//                            "wla://jmecolladaloader/TestV-395k/models/TestV.dae",
-//                            null,
-//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
             Task t = new TestTask(c3, c2);
 
             AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
@@ -135,7 +130,7 @@ public class TestWorld implements ServerPlugin {
                 dir = -dir;
             }
             cellRef.get().getComponent(MovableComponentMO.class).moveRequest(null, new CellTransform(null, pos));
-//            cell2Ref.get().getComponent(MovableComponentMO.class).moveRequest(null, new CellTransform(null, pos2));
+            cell2Ref.get().getComponent(MovableComponentMO.class).moveRequest(null, new CellTransform(null, pos2));
         }
     }
 }

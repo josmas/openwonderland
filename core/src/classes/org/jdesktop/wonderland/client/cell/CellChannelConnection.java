@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.cell;
@@ -113,7 +113,7 @@ public class CellChannelConnection extends BaseConnection {
         
         ChannelComponent channelComp = cell.getComponent(ChannelComponent.class);
         if (channelComp==null) {
-            logger.severe("Attempting to deliver message to cell that does not have a ChannelComponent "+cell.getCellID());
+            logger.severe("Attempting to deliver message to cell that does not implement ChannelCell");
 //            throw new RuntimeException("Illegal message target");
             return;
         }

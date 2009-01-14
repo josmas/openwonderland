@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.server.cell.view;
@@ -38,7 +38,7 @@ public abstract class ViewCellMO extends CellMO {
     
     public ViewCellMO(BoundingVolume localBounds, CellTransform transform) {
         super(localBounds, transform);
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        addComponent(new ChannelComponentMO(this));
         addComponent(new MovableAvatarComponentMO(this), MovableComponentMO.class);
     }
     

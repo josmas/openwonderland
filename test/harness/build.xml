@@ -164,8 +164,6 @@
                 <path location="${build.classes.dir}"/>
 		<pathelement path="${core-client.classpath}"/>
             </classpath>    
-
-            <arg value="${harness.master.hostname}"/>
         </java>
     </target>
     

@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.jeditortest.client;
@@ -20,10 +20,10 @@ package org.jdesktop.wonderland.modules.jeditortest.client;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
-import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellClientState;
+import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellConfig;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -41,8 +41,8 @@ public class JEditorTestCell extends App2DCell {
     /** The (singleton) window created by the JEditor test app */
     private JEditorTestWindow window;
 
-    /** The cell client state message received from the server cell */
-    private JEditorTestCellClientState clientState;
+    /** The cell config message received from the server cell */
+    private JEditorTestCellConfig config;
     
     /**
      * Create an instance of JEditorTestCell.
@@ -66,12 +66,11 @@ public class JEditorTestCell extends App2DCell {
      *
      * @param configData the config data to initialize the cell with
      */
-    public void setClientState (CellClientState state) {
+    public void configure (CellConfig configData) {
 
-        clientState = (JEditorTestCellClientState) state;
-        setApp(new JEditorTestApp(getAppType(), clientState.getPreferredWidth(), 
-				  clientState.getPreferredHeight(),
-				  clientState.getPixelScale()));
+        config = (JEditorTestCellConfig)configData;
+        setApp(new JEditorTestApp(getAppType(), config.getPreferredWidth(), config.getPreferredHeight(),
+				config.getPixelScale()));
 
 	// Associate the app with this cell (must be done before making it visible)
 	app.setCell(this);

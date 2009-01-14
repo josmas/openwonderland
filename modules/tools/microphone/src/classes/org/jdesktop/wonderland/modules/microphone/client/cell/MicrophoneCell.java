@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.microphone.client.cell;
@@ -23,22 +23,29 @@ import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
+
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellConfig;
 
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
 
 /**
  *
@@ -79,10 +86,10 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
      * @param setupData
      */
     @Override
-    public void setClientState(CellClientState cellClientState) {
-	super.setClientState(cellClientState);
+    public void configure(CellConfig setupData) {
+	super.configure(setupData);
 
-	MicrophoneCellClientState microphoneCellClientState = (MicrophoneCellClientState) cellClientState;
+	MicrophoneCellConfig config = (MicrophoneCellConfig) setupData;
     }
 
     public WonderlandSession getSession() {

@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.common.cell;
@@ -33,11 +33,6 @@ public class ProximityListenerRecord {
     private BoundingVolume[] worldProxBounds;
     private BoundingVolume currentlyIn = null;
     private int currentlyInIndex = -1;
-
-    // For serialization support on server
-    public ProximityListenerRecord() {
-
-    }
 
     public ProximityListenerRecord(ProximityListenerWrapper proximityListener, BoundingVolume[] localBounds) {
         this.proximityListener = proximityListener;

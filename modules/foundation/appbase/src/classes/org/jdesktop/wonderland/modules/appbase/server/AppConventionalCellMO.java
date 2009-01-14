@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.appbase.server;
@@ -22,16 +22,16 @@ import java.util.UUID;
 import com.jme.bounding.BoundingVolume;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellClientState;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellConfig;
+import org.jdesktop.wonderland.common.cell.config.CellConfig;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.setup.BasicCellSetup;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.state.BasicCellServerStateHelper;
+import org.jdesktop.wonderland.server.setup.BasicCellSetupHelper;
 
 /**
  * The server-side cell for an 2D conventional application.
@@ -41,14 +41,14 @@ import org.jdesktop.wonderland.server.state.BasicCellServerStateHelper;
  * 1. World-launched App
  * <br><br>
  * When WFS launches the app it uses the default constructor and
- * calls <code>setCellServerState</code> to transfer the information from the wlc file
+ * calls <code>configCell</code> to transfer the information from the wlc file
  * into the cell. 
  * <br><br>
- * In this case the wlc <code>setCellServerState</code> must specify:
+ * In this case the wlc <code>cellConfig</code> must specify:
  * <ol>
  * + command: The command to execute. This must not be a non-empty string.         
  * </ol>
- * The wlc <code>setCellServerState</code> can optionally specify:
+ * The wlc <code>cellConfig</code> can optionally specify:
  * <ol>
  * + <code>appName</code>: The name of the application (Default: "NoName").
  * </ol>
@@ -103,8 +103,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      */
     protected String command;
 
-    /** Client state data */
-    private AppConventionalCellClientState clientState;
+    /** Server-to-client Config Data */
+    private AppConventionalCellConfig config;
 
     /** Default constructor, used when the cell is created via WFS */
     public AppConventionalCellMO() {
@@ -156,20 +156,20 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getCellClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-	if (clientState == null) {
-	    clientState = new AppConventionalCellClientState(masterHost, appName, pixelScale, connectionInfo);
+    protected CellConfig getCellConfig (WonderlandClientID clientID, ClientCapabilities capabilities) {
+	if (config == null) {
+	    config = new AppConventionalCellConfig(masterHost, appName, pixelScale, connectionInfo);
 	    if (userLaunched) {
-		clientState.setUserLaunched(true);
-		clientState.setAppId(appId);
-		clientState.setBestView(bestView);
-		clientState.setConnectionInfo(connectionInfo);
+		config.setUserLaunched(true);
+		config.setAppId(appId);
+		config.setBestView(bestView);
+		config.setConnectionInfo(connectionInfo);
 	    } else {
-		clientState.setUserLaunched(false);
-		clientState.setCommand(command);
+		config.setUserLaunched(false);
+		config.setCommand(command);
 	    }
 	}
-	return clientState;
+	return config;
     }
 
 
@@ -177,44 +177,63 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState serverState) {
-	super.setCellServerState(serverState);
+    public void setupCell(BasicCellSetup setupData) {
+	super.setupCell(setupData);
 
-	AppConventionalCellServerState state = (AppConventionalCellServerState) serverState;
+	AppConventionalCellSetup setup = (AppConventionalCellSetup) setupData;
 
 	// TODO: what should this be?
 	//masterHost = NetworkAddress.getDefaultHostAddress();
 	masterHost = "localHost";
 
-	appName = state.getAppName();
+	appName = setup.getAppName();
 
-	command = state.getCommand();
+	command = setup.getCommand();
 	if (command == null || command.length() <= 0) {
 	    // TODO: what is the proper way to signal this error which is non-fatal to the server?
 	    throw new RuntimeException("Invalid app cell command");
 	}
 
-	pixelScale = state.getPixelScale();
+	pixelScale = setup.getPixelScale();
     }
 
     /**
-     * Return a new CellServerState Java bean class that represents the current
+     * {@inheritDoc}
+     */
+    @Override
+    public void reconfigureCell(BasicCellSetup setup) {
+        super.reconfigureCell(setup);
+        setupCell(setup);
+    }
+
+    /**
+     * Return a new BasicCellSetup Java bean class that represents the current
      * state of the cell.
      * 
      * @return a JavaBean representing the current state
      */
-    @Override
-    public CellServerState getCellServerState(CellServerState cellServerState) {
+    public BasicCellSetup getCellMOSetup() {
 
         /* Create a new BasicCellState and populate its members */
-        if (cellServerState == null) {
-            cellServerState = new AppConventionalCellServerState();
-        }
-	((AppConventionalCellServerState)cellServerState).setMasterHost(this.masterHost);
-	((AppConventionalCellServerState)cellServerState).setAppName(this.appName);
-	((AppConventionalCellServerState)cellServerState).setCommand(this.command);
-	((AppConventionalCellServerState)cellServerState).setPixelScale(this.pixelScale);
+        AppConventionalCellSetup setup = new AppConventionalCellSetup();
+	setup.setMasterHost(this.masterHost);
+	setup.setAppName(this.appName);
+	setup.setCommand(this.command);
+	setup.setPixelScale(this.pixelScale);
         
-        return super.getCellServerState(cellServerState);
+        /* Set the bounds of the cell */
+        BoundingVolume bounds = this.getLocalBounds();
+        if (bounds != null) {
+            setup.setBounds(BasicCellSetupHelper.getSetupBounds(bounds));
+        }
+
+        /* Set the origin, scale, and rotation of the cell */
+        CellTransform transform = this.getLocalTransform(null);
+        if (transform != null) {
+            setup.setOrigin(BasicCellSetupHelper.getSetupOrigin(transform));
+            setup.setRotation(BasicCellSetupHelper.getSetupRotation(transform));
+            setup.setScaling(BasicCellSetupHelper.getSetupScaling(transform));
+        }
+        return setup;
     }
 }

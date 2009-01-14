@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
@@ -20,8 +20,6 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 import imi.character.CharacterEyes;
 import imi.character.ninja.NinjaContext.TriggerNames;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarRendererChangeRequestEvent.AvatarQuality;
 
 /**
  * A test to demonstrate triggering motion from other interfaces
@@ -192,6 +190,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
         jLabel3.setText("Render Quality");
 
         renderQuality.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "High", "Medium", "Low" }));
+        renderQuality.setEnabled(false);
         renderQuality.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renderQualityActionPerformed(evt);
@@ -309,13 +308,11 @@ public class AvatarTestPanel extends javax.swing.JPanel {
     private void renderQualityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderQualityActionPerformed
         switch(renderQuality.getSelectedIndex()) {
             case 0 :
-                ClientContext.getInputManager().postEvent(new AvatarRendererChangeRequestEvent(AvatarQuality.High));
+                
                 break;
             case 1:
-                ClientContext.getInputManager().postEvent(new AvatarRendererChangeRequestEvent(AvatarQuality.Medium));
                 break;
             case 2 :
-                ClientContext.getInputManager().postEvent(new AvatarRendererChangeRequestEvent(AvatarQuality.Low));
                 break;
             default :
                 Logger.getAnonymousLogger().severe("Unknown render quality");
