@@ -89,17 +89,6 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
      */
     public AudioTreatmentComponentMO(CellMO cell) {
         super(cell);
-
-        ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
-
-        if (channelComponent == null) {
-            logger.warning("Cell does not have a ChannelComponent");
-            return;
-        }
-
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
-
-        channelComponent.addMessageReceiver(AudioTreatmentMessage.class, new ComponentMessageReceiverImpl(this));
     }
 
     @Override
@@ -125,6 +114,22 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
 
     @Override
     public void setLive(boolean live) {
+	if (live == false) {
+	    return;
+	}
+
+        ChannelComponentMO channelComponent = (ChannelComponentMO) 
+	    cellRef.get().getComponent(ChannelComponentMO.class);
+
+        if (channelComponent == null) {
+            logger.warning("Cell does not have a ChannelComponent");
+            return;
+        }
+
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
+
+        channelComponent.addMessageReceiver(AudioTreatmentMessage.class, new ComponentMessageReceiverImpl(this));
+
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         TreatmentGroup group = vm.createTreatmentGroup(groupId);

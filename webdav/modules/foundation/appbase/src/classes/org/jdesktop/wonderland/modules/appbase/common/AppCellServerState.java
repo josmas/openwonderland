@@ -15,28 +15,36 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.sample.common;
+package org.jdesktop.wonderland.modules.appbase.server;
 
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The SampleCellSetup class is the cell that renders a sample cell in
- * world.
+ * The WFS server state class for AppCellMO.
  * 
- * @author jkaplan
+ * @author deronj
  */
-@XmlRootElement(name="sample")
-public class SampleCellSetup extends CellServerState
-        implements Serializable, CellServerStateSPI {
-
+@XmlRootElement(name="app-cell")
+public class AppCellServerState extends CellServerState implements Serializable {
+    
     /** Default constructor */
-    public SampleCellSetup() {
-    }
+    public AppCellServerState() {}
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.sample.server.SampleCellMO";
+        return "org.jdesktop.wonderland.modules.appbase.server.AppCellMO";
+    }
+    
+    /**
+     * Returns a string representation of this class.
+     *
+     * @return The server state information as a string.
+     */
+    @Override
+    public String toString() {
+        return super.toString() + " [AppCellServerState]";
     }
 }

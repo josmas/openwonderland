@@ -29,7 +29,6 @@ import com.jme.scene.shape.Sphere;
 import com.jme.scene.shape.Teapot;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
-import java.util.logging.Level;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;

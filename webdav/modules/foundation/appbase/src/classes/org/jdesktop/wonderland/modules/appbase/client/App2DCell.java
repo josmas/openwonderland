@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -29,8 +29,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * pixel scale for all app windows created in the cell. The pixel scale is a Vector2f. 
  * The x component specifies the size (in local cell coordinates) of the windows along 
  * the local cell X axis. The y component specifies the same along the local cell 
- * Y axis. The pixel scale is in the cell config data (which must be of type 
- * <code>App2DCellConfig</code>) sent by the server when it instantiates this cell.
+ * Y axis. The pixel scale is in the cell client data (which must be of type 
+ * <code>App2DCellClientState</code>) sent by the server when it instantiates this cell.
  *
  * @author deronj
  */ 
@@ -63,9 +63,9 @@ public abstract class App2DCell extends AppCell {
      * {@inheritDoc}
      */
     @Override
-    public void setClientState(CellClientState configData) {
-	App2DCellConfig appConfigData = (App2DCellConfig) configData;
-	pixelScale = appConfigData.getPixelScale();
+    public void setClientState(CellClientState clientState) {
+	App2DCellClientState appClientState = (App2DCellClientState) clientState;
+	pixelScale = appClientState.getPixelScale();
     }
 
     /**

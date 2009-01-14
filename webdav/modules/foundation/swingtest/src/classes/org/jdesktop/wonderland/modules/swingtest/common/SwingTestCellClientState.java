@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.jeditortest.common;
+package org.jdesktop.wonderland.modules.swingtest.common;
 
 import java.awt.Point;
 import java.lang.reflect.Array;
@@ -25,18 +25,18 @@ import java.util.logging.Logger;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
 
 /**
- * Container for JEditor test client cell configuration data.
+ * Container for Swing test client cell client state data.
  *
  * @author deronj
  */
 
 @ExperimentalAPI
-public class JEditorTestCellConfig extends App2DCellConfig {
+public class SwingTestCellClientState extends App2DCellClientState {
 
-    private static final Logger logger = Logger.getLogger(JEditorTestCellConfig.class.getName());
+    private static final Logger logger = Logger.getLogger(SwingTestCellClientState.class.getName());
     
     private static final int DEFAULT_WIDTH = 640;
     private static final int DEFAULT_HEIGHT = 480;
@@ -44,16 +44,16 @@ public class JEditorTestCellConfig extends App2DCellConfig {
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     
-    public JEditorTestCellConfig () {
+    public SwingTestCellClientState () {
         this(null);
     }
     
-    public JEditorTestCellConfig (Vector2f pixelScale) {
+    public SwingTestCellClientState (Vector2f pixelScale) {
 	super(pixelScale);
     }
     
     /*
-     * Set the preferred width of the JEditor test
+     * Set the preferred width of the Swing test
      * @param preferredWidth the preferred width in pixels
      */
     public void setPreferredWidth(int preferredWidth) {
@@ -61,7 +61,7 @@ public class JEditorTestCellConfig extends App2DCellConfig {
     }
     
     /*
-     * Get the preferred width of the JEditor test
+     * Get the preferred width of the Swing test
      * @return the preferred width, in pixels
      */
     public int getPreferredWidth() {
@@ -69,7 +69,7 @@ public class JEditorTestCellConfig extends App2DCellConfig {
     }
     
     /*
-     * Set the preferred height of the JEditor test
+     * Set the preferred height of the Swing test
      * @param preferredHeight the preferred height, in pixels
      */
     public void setPreferredHeight(int preferredHeight) {
@@ -77,7 +77,7 @@ public class JEditorTestCellConfig extends App2DCellConfig {
     }
     
     /*
-     * Get the preferred height of the JEditor test
+     * Get the preferred height of the Swing test
      * @return the preferred height, in pixels
      */
     public int getPreferredHeight() {

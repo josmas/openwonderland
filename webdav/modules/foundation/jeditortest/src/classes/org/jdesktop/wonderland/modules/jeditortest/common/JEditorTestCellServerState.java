@@ -26,12 +26,12 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The WFS setup class for JEditorTestCellMO.
+ * The WFS server state class for JEditorTestCellMO.
  * 
  * @author deronj
  */
 @XmlRootElement(name="jeditortest-cell")
-public class JEditorTestCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
+public class JEditorTestCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
     
     /** The user's preferred width of the JEditor test window. */
     @XmlElement(name="preferredWidth")
@@ -51,7 +51,7 @@ public class JEditorTestCellSetup extends CellServerState implements Serializabl
     public float pixelScaleY = 0.01f;
     
     /** Default constructor */
-    public JEditorTestCellSetup() {}
+    public JEditorTestCellServerState() {}
     
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.jeditortest.server.JEditorTestCellMO";
@@ -92,11 +92,11 @@ public class JEditorTestCellSetup extends CellServerState implements Serializabl
     /**
      * Returns a string representation of this class.
      *
-     * @return The setup information as a string.
+     * @return The server state information as a string.
      */
     @Override
     public String toString() {
-        return super.toString() + " [JEditorTestCellSetup]: " +
+        return super.toString() + " [JEditorTestCellServerState]: " +
 	    "preferredWidth=" + preferredWidth + "," +
 	    "preferredHeight=" + preferredHeight + "," +
 	    "pixelScaleX=" + pixelScaleX + "," +

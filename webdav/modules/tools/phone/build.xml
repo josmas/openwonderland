@@ -42,7 +42,7 @@
 
                 <serverjar name="phone-server" basedir="${build.classes.dir}">
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.phone.common.PhoneCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>

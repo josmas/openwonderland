@@ -15,36 +15,36 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server;
+package org.jdesktop.wonderland.modules.sample.common;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
- * The WFS setup class for AppCellMO.
- * 
- * @author deronj
+ * Represents the server-side configuration information for the sample cell.
+ * Has JAXB annotations so that it can be serialized to XML. Note that the
+ * "info" field is not really used anywhere, it is just an example of how
+ * to use the server state and JAXB annotations.
+ *
+ * @author jkaplan
  */
-@XmlRootElement(name="app-cell")
-public class AppCellSetup extends CellServerState implements Serializable {
-    
+@XmlRootElement(name="sample-cell")
+public class SampleCellServerState extends CellServerState implements CellServerStateSPI {
+    @XmlElement(name="info")
+    private String info = null;
+
     /** Default constructor */
-    public AppCellSetup() {}
-    
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.appbase.server.AppCellMO";
+    public SampleCellServerState() {
     }
-    
-    /**
-     * Returns a string representation of this class.
-     *
-     * @return The setup information as a string.
-     */
+
     @Override
-    public String toString() {
-        return super.toString() + " [AppCellSetup]";
+    public String getServerClassName() {
+        return "org.jdesktop.wonderland.modules.sample.server.SampleCellMO";
     }
+
+    @XmlTransient public String getInfo() { return this.info; }
+    public void setInfo(String info) { this.info = info; }
 }

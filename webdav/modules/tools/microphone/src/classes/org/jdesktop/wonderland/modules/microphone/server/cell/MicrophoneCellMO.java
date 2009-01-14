@@ -18,17 +18,25 @@
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellSetup;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellConfig;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.server.cell.CellMO;
+
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
+
 import com.jme.bounding.BoundingBox;
+
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -39,22 +47,32 @@ public class MicrophoneCellMO extends CellMO {
 
     private static final Logger logger =
             Logger.getLogger(MicrophoneCellMO.class.getName());
+
     private String modelFileName;
-    private boolean initialized = false;
+
+    private String name;
+
+    private double fullVolumeRadius;
+
+    private double activeRadius;
+    private String activeRadiusType;
 
     public MicrophoneCellMO() {
-        if (initialized == false) {
-            addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
-        }
     }
 
     public MicrophoneCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size),
-                new CellTransform(null, center));
+	    new CellTransform(null, center));
+    }
 
-        if (initialized == false) {
-            addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
-        }
+    public void setLive(boolean live) {
+	System.out.println("MICROPHONE LIVE " + live);
+
+	if (live == false) {
+	    return;
+ 	}
+
+	new MicrophoneMessageHandler(this, name);
     }
 
     @Override
@@ -69,20 +87,23 @@ public class MicrophoneCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new MicrophoneCellConfig();
-        }
-
-        if (initialized == false) {
-            initialized = true;
-            new MicrophoneMessageHandler(this, ((MicrophoneCellConfig) cellClientState).getName());
+            cellClientState = new MicrophoneCellClientState(name, fullVolumeRadius,
+                activeRadius, activeRadiusType);
         }
 
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setCellServerState(CellServerState cellServerState) {
+        super.setCellServerState(cellServerState);
+
+	MicrophoneCellServerState microphoneCellServerState = (MicrophoneCellServerState) cellServerState;
+
+	name = microphoneCellServerState.getName();
+	fullVolumeRadius = microphoneCellServerState.getFullVolumeRadius();
+	activeRadius = microphoneCellServerState.getActiveRadius();
+	activeRadiusType = microphoneCellServerState.getActiveRadiusType();
     }
 
     /**
@@ -95,8 +116,11 @@ public class MicrophoneCellMO extends CellMO {
     public CellServerState getCellServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new MicrophoneCellSetup();
+            cellServerState = new MicrophoneCellServerState(name, fullVolumeRadius,
+		activeRadius, activeRadiusType);
         }
+
         return super.getCellServerState(cellServerState);
     }
+
 }

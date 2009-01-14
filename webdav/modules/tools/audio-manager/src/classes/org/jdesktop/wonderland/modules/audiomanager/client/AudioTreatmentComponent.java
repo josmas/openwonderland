@@ -50,29 +50,31 @@ public class AudioTreatmentComponent extends CellComponent {
 
     public AudioTreatmentComponent(Cell cell) {
         super(cell);
-        channelComp = cell.getComponent(ChannelComponent.class);
     }
     
     @Override
     public void setStatus(CellStatus status) {
-         switch(status) {
-            case DISK :
-                if (msgReceiver!=null) {
-                    channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
-                    msgReceiver = null;
-                }
-                break;
-             case BOUNDS : {
-                 if (msgReceiver==null) {
-                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+	switch(status) {
+        case DISK:
+            if (msgReceiver!=null) {
+                channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
+                msgReceiver = null;
+            }
+            break;
 
-                        public void messageReceived(CellMessage message) {
-                            AudioTreatmentMessage msg = (AudioTreatmentMessage)message;
-                        }
-                    };                    
-                    channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
-                 }
-             }
+	case BOUNDS:
+            if (msgReceiver==null) {
+                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+                    public void messageReceived(CellMessage message) {
+                        AudioTreatmentMessage msg = (AudioTreatmentMessage)message;
+                    }
+                };                    
+
+        	channelComp = cell.getComponent(ChannelComponent.class);
+                channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
+            }
+	    break;
+
         }
     }
     

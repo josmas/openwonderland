@@ -17,30 +17,32 @@
  */
 package org.jdesktop.wonderland.modules.orb.common;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import java.io.Serializable;
-
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-
 /**
- * The OrbCellSetup class is the cell that renders an orb cell in
+ * The OrbCellServerState class is the cell that renders an orb cell in
  * world.
  * 
  * @author jprovino
  */
-public class OrbCellConfig extends CellClientState {
+@XmlRootElement(name="orb-cell")
+public class OrbCellServerState extends CellServerState
+        implements Serializable, CellServerStateSPI {
 
     /** Default constructor */
-    public OrbCellConfig() {
+    public OrbCellServerState() {
     }
     
+    public String getServerClassName() {
+        return "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
+    }
+
 }

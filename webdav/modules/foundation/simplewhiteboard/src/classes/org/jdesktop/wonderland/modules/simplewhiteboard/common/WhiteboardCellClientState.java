@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.swingtest.common;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common;
 
 import java.awt.Point;
 import java.lang.reflect.Array;
@@ -25,35 +25,57 @@ import java.util.logging.Logger;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellConfig;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 
 /**
- * Container for Swing test client cell configuration data.
+ * Container for whiteboard cell data
  *
- * @author deronj
+ * @author nsimpson,deronj
  */
 
 @ExperimentalAPI
-public class SwingTestCellConfig extends App2DCellConfig {
+public class WhiteboardCellClientState extends App2DCellClientState {
 
-    private static final Logger logger = Logger.getLogger(SwingTestCellConfig.class.getName());
+    private static final Logger logger = Logger.getLogger(WhiteboardCellClientState.class.getName());
     
     private static final int DEFAULT_WIDTH = 640;
     private static final int DEFAULT_HEIGHT = 480;
+    private static final int GROWTH_DELTA = 256;
     
+    private int dimensions[] = {0, 4};
+    private int actions[][] = (int[][])Array.newInstance(int.class, dimensions);
+    private int index = 0;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
+    private String checksum;
     
-    public SwingTestCellConfig () {
+    public WhiteboardCellClientState () {
         this(null);
     }
     
-    public SwingTestCellConfig (Vector2f pixelScale) {
+    public WhiteboardCellClientState (Vector2f pixelScale) {
 	super(pixelScale);
     }
     
     /*
-     * Set the preferred width of the Swing test
+     * Get the checksum for the whiteboard
+     * @return the checksum of the whiteboard
+     */
+    public String getChecksum() {
+        return checksum;
+    }
+    
+    /*
+     * Set the checksum of the whiteboard
+     * @param checksum the checksum of the whiteboard
+     */
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+    
+    /*
+     * Set the preferred width of the whiteboard
      * @param preferredWidth the preferred width in pixels
      */
     public void setPreferredWidth(int preferredWidth) {
@@ -61,7 +83,7 @@ public class SwingTestCellConfig extends App2DCellConfig {
     }
     
     /*
-     * Get the preferred width of the Swing test
+     * Get the preferred width of the whiteboard
      * @return the preferred width, in pixels
      */
     public int getPreferredWidth() {
@@ -69,7 +91,7 @@ public class SwingTestCellConfig extends App2DCellConfig {
     }
     
     /*
-     * Set the preferred height of the Swing test
+     * Set the preferred height of the whiteboard
      * @param preferredHeight the preferred height, in pixels
      */
     public void setPreferredHeight(int preferredHeight) {
@@ -77,7 +99,7 @@ public class SwingTestCellConfig extends App2DCellConfig {
     }
     
     /*
-     * Get the preferred height of the Swing test
+     * Get the preferred height of the whiteboard
      * @return the preferred height, in pixels
      */
     public int getPreferredHeight() {

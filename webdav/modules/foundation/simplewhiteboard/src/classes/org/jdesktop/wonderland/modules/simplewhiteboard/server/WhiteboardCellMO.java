@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellConfig;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
@@ -92,10 +92,10 @@ public class WhiteboardCellMO extends App2DCellMO {
     protected CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         // If the cellClientState is null, create one
         if (cellClientState == null) {
-            cellClientState = new WhiteboardCellConfig(pixelScale);
+            cellClientState = new WhiteboardCellClientState(pixelScale);
         }
-        ((WhiteboardCellConfig)cellClientState).setPreferredWidth(preferredWidth);
-        ((WhiteboardCellConfig)cellClientState).setPreferredHeight(preferredHeight);
+        ((WhiteboardCellClientState)cellClientState).setPreferredWidth(preferredWidth);
+        ((WhiteboardCellClientState)cellClientState).setPreferredHeight(preferredHeight);
         return super.getCellClientState(cellClientState, clientID, capabilities);
     }
 
@@ -103,13 +103,13 @@ public class WhiteboardCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setCellServerState(CellServerState setupData) {
-        super.setCellServerState(setupData);
+    public void setCellServerState(CellServerState serverState) {
+        super.setCellServerState(serverState);
 
-        WhiteboardCellSetup setup = (WhiteboardCellSetup) setupData;
-        preferredWidth = setup.getPreferredWidth();
-        preferredHeight = setup.getPreferredHeight();
-        pixelScale = new Vector2f(setup.getPixelScaleX(), setup.getPixelScaleY());
+        WhiteboardCellServerState state = (WhiteboardCellServerState) serverState;
+        preferredWidth = state.getPreferredWidth();
+        preferredHeight = state.getPreferredHeight();
+        pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
     }
 
     /**

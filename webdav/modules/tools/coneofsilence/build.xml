@@ -43,7 +43,7 @@
 
                 <serverjar name="coneofsilence-server" basedir="${build.classes.dir}">
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellSetup"/>
+                        <provider classname="org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>

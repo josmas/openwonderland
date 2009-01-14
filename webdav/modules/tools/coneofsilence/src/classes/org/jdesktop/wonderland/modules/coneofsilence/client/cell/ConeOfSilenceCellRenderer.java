@@ -105,7 +105,7 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
         node.setRenderState(wiState);
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
-	logger.fine("Cone Created");
+	logger.warning("Cone Created");
         return node;
     }
 
