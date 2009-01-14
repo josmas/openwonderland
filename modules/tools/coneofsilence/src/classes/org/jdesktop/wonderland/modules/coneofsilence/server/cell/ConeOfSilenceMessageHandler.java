@@ -85,16 +85,16 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 	coneOfSilenceCellMORef = AppContext.getDataManager().createReference(
 	        (ConeOfSilenceCellMO) CellManagerMO.getCell(coneOfSilenceCellMO.getCellID()));
 
-        ChannelComponentMO channelComponent = (ChannelComponentMO) 
+        ChannelComponentMO channelComponentMO = (ChannelComponentMO) 
 	    coneOfSilenceCellMO.getComponent(ChannelComponentMO.class);
 
-        if (channelComponent == null) {
+        if (channelComponentMO == null) {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
 	}
 
-        channelComponent.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, this);
+        channelComponentMO.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, this);
 
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
 
         ProximityComponentMO prox = new ProximityComponentMO(coneOfSilenceCellMO);
         BoundingVolume[] bounds = new BoundingVolume[1];
@@ -105,6 +105,10 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 
         //prox.addProximityListener(proximityListener, bounds );
         //coneOfSilenceCellMO.addComponent(prox);
+    }
+
+    public void done() {
+	channelComponentRef.get().removeMessageReceiver(ConeOfSilenceEnterCellMessage.class);
     }
 
     public void messageReceived(final WonderlandClientSender sender, 

@@ -39,6 +39,9 @@ import com.jme.math.Vector3f;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+
 /**
  * A server cell that provides conference microphone functionality
  * @author jprovino
@@ -57,6 +60,8 @@ public class MicrophoneCellMO extends CellMO {
     private double activeRadius;
     private String activeRadiusType;
 
+    private ManagedReference<MicrophoneMessageHandler> microphoneMessageHandlerRef;
+
     public MicrophoneCellMO() {
     }
 
@@ -69,10 +74,17 @@ public class MicrophoneCellMO extends CellMO {
 	super.setLive(live);
 
 	if (live == false) {
+	    if (microphoneMessageHandlerRef != null) {
+		MicrophoneMessageHandler microphoneMessageHandler = microphoneMessageHandlerRef.get();
+		microphoneMessageHandler.done();
+		AppContext.getDataManager().removeObject(microphoneMessageHandler);
+		microphoneMessageHandlerRef = null;
+	    }
 	    return;
  	}
 
-	new MicrophoneMessageHandler(this, name);
+	microphoneMessageHandlerRef = AppContext.getDataManager().createReference(
+	    new MicrophoneMessageHandler(this, name));
     }
 
     @Override

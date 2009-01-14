@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 import com.jme.bounding.BoundingBox;
 
@@ -74,10 +75,17 @@ public class OrbCellMO extends CellMO {
 	super.setLive(live);
 
 	if (live == false) {
+	    if (orbMessageHandlerRef != null) {
+		OrbMessageHandler orbMessageHandler = orbMessageHandlerRef.get();
+		orbMessageHandler.done();
+		AppContext.getDataManager().removeObject(orbMessageHandler);
+		orbMessageHandlerRef = null;
+	    }
+
 	    return;
 	}
 
-	//addComponent(new MovableComponentMO(this));
+	addComponent(new MovableComponentMO(this));
 
         orbMessageHandlerRef = AppContext.getDataManager().createReference(
 	    new OrbMessageHandler(this, callID, simulateCalls));

@@ -123,22 +123,30 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	
 	phoneStatusListenerRef =  AppContext.getDataManager().createReference(phoneStatusListener);
 
-        ChannelComponentMO channelComponent = (ChannelComponentMO) 
+        ChannelComponentMO channelComponentMO = (ChannelComponentMO) 
 	    phoneCellMO.getComponent(ChannelComponentMO.class);
 
-	System.out.println("Phone channel component:  " + channelComponent);
-
-        if (channelComponent == null) {
+        if (channelComponentMO == null) {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
 	}
 
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
 
-        channelComponent.addMessageReceiver(EndCallMessage.class, this);
-        channelComponent.addMessageReceiver(JoinCallMessage.class, this);
-        channelComponent.addMessageReceiver(LockUnlockMessage.class, this);
-        channelComponent.addMessageReceiver(PlaceCallMessage.class, this);
-        channelComponent.addMessageReceiver(PlayTreatmentMessage.class, this);
+        channelComponentMO.addMessageReceiver(EndCallMessage.class, this);
+        channelComponentMO.addMessageReceiver(JoinCallMessage.class, this);
+        channelComponentMO.addMessageReceiver(LockUnlockMessage.class, this);
+        channelComponentMO.addMessageReceiver(PlaceCallMessage.class, this);
+        channelComponentMO.addMessageReceiver(PlayTreatmentMessage.class, this);
+    }
+
+    public void done() {
+	ChannelComponentMO channelComponentMO = channelComponentRef.get();
+
+	channelComponentMO.removeMessageReceiver(EndCallMessage.class);
+	channelComponentMO.removeMessageReceiver(JoinCallMessage.class);
+	channelComponentMO.removeMessageReceiver(LockUnlockMessage.class);
+	channelComponentMO.removeMessageReceiver(PlaceCallMessage.class);
+	channelComponentMO.removeMessageReceiver(PlayTreatmentMessage.class);
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
