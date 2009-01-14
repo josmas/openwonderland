@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -51,6 +53,7 @@ import org.glassfish.embed.EmbeddedHttpListener;
 import org.glassfish.embed.EmbeddedVirtualServer;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
+import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModuleAttributes;
@@ -85,6 +88,10 @@ public class RunAppServer {
     public RunAppServer() throws IOException {
         // set up URL handlers for Wonderland types
         URL.setURLStreamHandlerFactory(new WonderlandURLStreamHandlerFactory()); 
+
+        // now load the properties
+        setupProperties();
+
         // check if we need to make any changes
         if (Boolean.parseBoolean(
                 System.getProperty(Constants.WEBSERVER_NEWVERSION_PROP)))
@@ -106,16 +113,72 @@ public class RunAppServer {
         getAppServer().setStarted(true);
 
         // redeploy any other modules, including web modules,
-        // that haven't yet been deployed
+        // that haven't yet been deployed.  This will also
+        // install all pending modules
         ModuleManager.getModuleManager().redeployAll();
-
-        // install any modules that weren't already installed
-        ModuleManager.getModuleManager().installAll();
 
         // now that all the modules are deployed, notify anyone waiting
         // for startup
         AppServerMonitor.getInstance().fireStartupComplete();
     }
+
+    /**
+     * Set up some important properties needed everywhere, like the hostname
+     * and webserver URL
+     */
+    private void setupProperties() {
+    // set the public hostname for this server based on a lookup
+        System.setProperty(Constants.WEBSERVER_HOST_PROP,
+                resolveAddress(System.getProperty(Constants.WEBSERVER_HOST_PROP)));
+
+        // set the web server URL based on the hostname and port
+        if (System.getProperty(Constants.WEBSERVER_URL_PROP) == null) {
+            System.setProperty(Constants.WEBSERVER_URL_PROP,
+                "http://" + System.getProperty(Constants.WEBSERVER_HOST_PROP).trim() +
+                ":" + System.getProperty(Constants.WEBSERVER_PORT_PROP).trim() + "/");
+        }
+    }
+
+    /**
+     * Resolve the host address property into a hostname.  The mechanics of
+     * this are mostly encapsulated in NetworkAddress
+     * @param prop the property value to base our lookup on (may be null)
+     * @return the public address we found
+     */
+    private static String resolveAddress(String prop) {
+        String hostAddress = null;
+
+        try {
+            hostAddress = NetworkAddress.getPrivateLocalAddress(prop).getHostAddress();
+
+            if (prop == null || prop.length() == 0) {
+                logger.info("Local address " + hostAddress +
+                            " was chosen from the list of interfaces");
+            } else {
+                logger.info("Local address " + hostAddress +
+                            " was determined by using " + prop);
+            }
+
+            return hostAddress;
+        } catch (UnknownHostException e) {
+            logger.log(Level.WARNING, "Unable to get Local address using " +
+                       prop, e);
+
+            try {
+                hostAddress = NetworkAddress.getPrivateLocalAddress().getHostAddress();
+                logger.info("chose private local address " + hostAddress +
+                            " from the list of interfaces: " + e.getMessage());
+            } catch (UnknownHostException ee) {
+                logger.log(Level.WARNING, "Unable to determine private " +
+                           "local address, using localhost", ee);
+
+                hostAddress = "localhost";
+            }
+        }
+
+        return hostAddress;
+    }
+
 
     private void deployWebApps() throws IOException {
         WonderlandAppServer as = getAppServer();
@@ -249,8 +312,7 @@ public class RunAppServer {
         // uninstall any modules on the uninstall list
         logger.warning("Uninstall: " + uninstall);
         mm.addToUninstall(uninstall);
-        mm.uninstallAll();
-
+        
         // install any modules on the install list
         String installList = "";
         for (TaggedModule tm : install) {

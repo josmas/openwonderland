@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 
 @XmlRootElement
-public class ServerDetails {
+public class ServerDetails implements Cloneable {
     private String serverURL;
     private AuthenticationInfo authInfo;
     private DarkstarServer[] darkstarServers;
@@ -157,6 +157,27 @@ public class ServerDetails {
      */
     public void encode(OutputStream os) throws JAXBException {
         ServerDetails.marshaller.marshal(this, os);
+    }
+
+    /**
+     * Copy this serverDetails object
+     * @return a copy
+     */
+    @Override
+    public ServerDetails clone() {
+        ServerDetails out = new ServerDetails();
+        out.setServerURL(getServerURL());
+        out.setAuthInfo(getAuthInfo().clone());
+
+        // copy servers array
+        DarkstarServer[] inServers = getDarkstarServers();
+        DarkstarServer[] outServers = new DarkstarServer[inServers.length];
+        for (int i = 0; i < inServers.length; i++) {
+            outServers[i] = inServers[i].clone();
+        }
+        out.setDarkstarServers(outServers);
+
+        return out;
     }
 
     /**

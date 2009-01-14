@@ -50,7 +50,7 @@ import org.jdesktop.wonderland.common.wfs.CellList.Cell;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Path(value="/{wfsname}/directory/{path:.*}")
+@Path(value="/{wfsname:.*}/directory/{path:.*}")
 public class WFSDirectoryResource {
     
     /**

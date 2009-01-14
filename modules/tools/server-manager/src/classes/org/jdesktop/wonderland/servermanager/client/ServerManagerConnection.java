@@ -24,6 +24,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
+import org.jdesktop.wonderland.client.comms.ClientConnection.Status;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.servermanager.common.PingRequestMessage;
@@ -69,6 +70,15 @@ public class ServerManagerConnection extends BaseConnection {
         
         for (PingListener pl : listeners) {
             pl.pingReceived(data);
+        }
+    }
+
+    @Override
+    protected synchronized void setStatus(Status status) {
+        super.setStatus(status);
+
+        if (status == Status.DISCONNECTED) {
+            stopTimer();
         }
     }
     

@@ -46,6 +46,11 @@ public class ActionResource {
     private static final Logger logger =
             Logger.getLogger(ActionResource.class.getName());
     
+    // delay on restart (in seconds)
+    private static final String RESTART_DELAY_PROP =
+            "wonderland.runner.restart.delay";
+    private static final String RESTART_DELAY_DEFAULT = "2";
+
     /**
      * Return a list of all runners currently running.
      * @return An XML encoding of the module's basic information
@@ -109,7 +114,15 @@ public class ActionResource {
             } else {
                 throw new RunnerException("Unkown action " + action);      
             } 
-            
+
+            // wait for a bit so that everything gets cleaned up
+            try {
+                Thread.sleep(getRestartDelay() * 1000);
+            } catch (InterruptedException ie) {
+                // oh well
+
+            }
+
             // wait for start or stop
             // now wait for all runners to stop
             for (StatusWaiter sw : waiters) {
@@ -127,5 +140,10 @@ public class ActionResource {
             ResponseBuilder rb = Response.status(Status.BAD_REQUEST);
             return rb.build();
         }
+    }
+
+    public static int getRestartDelay() {
+        return Integer.parseInt(System.getProperty(RESTART_DELAY_PROP,
+                                                   RESTART_DELAY_DEFAULT));
     }
 }

@@ -22,6 +22,7 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -39,12 +40,6 @@ import org.jdesktop.wonderland.utils.RunUtil;
  */
 public class WFSManager {
 
-    /* The location (beneath the wfs root) of the main wfs directories */
-    public static final String WORLD_DIRS = "worlds";
-    
-    /* The location (beneath the wfs root) of the wfs snapshot directories */
-    public static final String SNAPSHOT_DIRS = "snapshots";
-    
     /* The File objects to hold the root of the wfs and snapshot directories */
     private File wfsFile = null;
     private File snapshotFile = null;
@@ -52,12 +47,12 @@ public class WFSManager {
     /* The property storing the base directory for all wfs information */
     private static final String WFS_ROOT_PROPERTY = "wonderland.webserver.wfs.root";
     
-    /* A map of WFS worlds (given by name and WFS object) */
-    private Map<String, WFS> wfsRoots = new HashMap();
+    /* A map of WFS worlds (given by name and root object) */
+    private Map<String, WFSRoot> wfsRoots = new LinkedHashMap();
 
     /* A map of all snapshots of worlds (given by name and snapshot object) */
     // NEED TO MAKE MT SAFE XXXX
-    private Map<String, WFSSnapshot> wfsSnapshots = new HashMap();
+    private Map<String, WFSSnapshot> wfsSnapshots = new LinkedHashMap();
     
     /*
      * A map of all wfs, both worlds and snapshots of worlds, where the key
@@ -109,12 +104,12 @@ public class WFSManager {
      * Gets the WFS for the given name (without the '-wfs' extension) or null
      * if it does not exist.
      * 
-     * @param wfsName The unique name of the file system (without the '-wfs' extension)
+     * @param rootPath the path to the root of this WFS
      * @return The corresponding WFS
      */
-    public WFS getWFS(String wfsName) {
-        this.loadWFSs();
-        return this.wfsRoots.get(wfsName);
+    public WFS getWFS(String rootPath) {
+        loadWFSs();
+        return wfsMap.get(rootPath);
     }
     
     /**
@@ -126,7 +121,7 @@ public class WFSManager {
      * @return the WFS object
      */
     public WFS getWFS(WorldRoot worldRoot) {
-        return wfsMap.get(worldRoot.getRootPath());
+        return getWFS(worldRoot.getRootPath());
     }
     
     /**
@@ -134,9 +129,20 @@ public class WFSManager {
      * 
      * @return An array of WFS root names, or null if there are none
      */
-    public String[] getWFSRoots() {
-        this.loadWFSs();
-        return this.wfsRoots.keySet().toArray(new String[] {});
+    public List<WFSRoot> getWFSRoots() {
+        loadWFSs();
+        return new ArrayList<WFSRoot>(wfsRoots.values());
+    }
+
+    /**
+     * Get a particular wfs root by name
+     * @param name the name of the root
+     * @return a root with the given name, or null if no root exists
+     * with the given name
+     */
+    public WFSRoot getWFSRoot(String name) {
+        loadWFSs();
+        return wfsRoots.get(name);
     }
 
     /**
@@ -149,7 +155,9 @@ public class WFSManager {
 
     /**
      * Get a particular WFS snapshot by name
-     * @return the name of the snapshot
+     * @param name the name of the snapshot
+     * @return a snapshot with the given name, or null if no snapshot exists
+     * with the given name
      */
     public WFSSnapshot getWFSSnapshot(String name) {
         return wfsSnapshots.get(name);
@@ -172,9 +180,8 @@ public class WFSManager {
                 snapshot.setTimestamp(new Date());
 
                 // update our internal records
-                String path = getSnapshotPath(name, snapshot.getPath());
-                wfsSnapshots.put(name, snapshot);
-                wfsMap.put(path, snapshot.getWfs());
+                wfsSnapshots.put(snapshot.getName(), snapshot);
+                wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
             }
 
             return snapshot;
@@ -194,8 +201,7 @@ public class WFSManager {
             return;
         }
 
-        String path = getSnapshotPath(name, snapshot.getPath());
-        wfsMap.remove(path);
+        wfsMap.remove(snapshot.getRootPath());
 
         File snapshotDir = new File(snapshotFile, name);
         if (snapshotDir.exists()) {
@@ -208,38 +214,16 @@ public class WFSManager {
      * @param oldname the original name
      * @param newname the new name
      */
-    void renameSnapshot(String oldname, WFSSnapshot snapshot) {
+    void renameSnapshot(String oldname, String oldpath, WFSSnapshot snapshot) {
         // remove information about the old snapshot
-        String oldpath = getSnapshotPath(oldname, snapshot.getPath());
         wfsSnapshots.remove(oldname);
         wfsMap.remove(oldpath);
 
         // add the new information
-        String newpath = getSnapshotPath(snapshot.getName(), snapshot.getPath());
         wfsSnapshots.put(snapshot.getName(), snapshot);
-        wfsMap.put(newpath, snapshot.getWfs());
+        wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
     }
 
-    /**
-     * Get the path to a snapshot
-     * @param name the name of the snapshot
-     * @param path the snapshot path
-     */
-    private String getSnapshotPath(String name, String path) {
-        return SNAPSHOT_DIRS + File.separator + name + File.separator + path;
-    }
-
-    /**
-     * Takes a URL and returns the final name in the path (without the -wfs
-     * extension.
-     */
-    private String getWFSName(String root) {
-        if (root.endsWith(WFS.WFS_DIRECTORY_SUFFIX) == true) {
-            return root.substring(0, root.length() - WFS.WFS_DIRECTORY_SUFFIX.length());
-        }
-        return root;
-    }
-    
     /**
      * Loads in all of the Wonderland file systems specified in the roots. Adds
      * to the internal list.
@@ -248,14 +232,12 @@ public class WFSManager {
         /* Clear out the existing list */
         this.wfsRoots.clear();
         
-        for (String root : this.getWFSRootDirectories()) {
+        for (File rootDir : this.getWFSRootDirectories()) {
             try {
-                File file = new File(this.wfsFile, root);
-                WFS wfs = WFSFactory.open(file.toURL());
-                this.wfsRoots.put(this.getWFSName(root), wfs);
-                
-                String path = WORLD_DIRS + File.separator + root;
-                wfsMap.put(path, wfs);
+                WFSRoot root = WFSRoot.getInstance(rootDir);
+
+                wfsRoots.put(root.getName(), root);
+                wfsMap.put(root.getRootPath(), root.getWfs());
             } catch (java.lang.Exception excp) {
                 logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
             }
@@ -270,10 +252,9 @@ public class WFSManager {
         for (File root : this.getSnapshotDirectories()) {
             try {
                 WFSSnapshot snapshot = WFSSnapshot.getInstance(root);
-                String path = getSnapshotPath(root.getName(), snapshot.getPath());
                 
-                wfsSnapshots.put(root.getName(), snapshot);
-                wfsMap.put(path, snapshot.getWfs());
+                wfsSnapshots.put(snapshot.getName(), snapshot);
+                wfsMap.put(snapshot.getRootPath(), snapshot.getWfs());
             } catch (java.lang.Exception excp) {
                 logger.log(Level.WARNING, "[WFS] Unable to create WFS", excp);
             }
@@ -284,13 +265,13 @@ public class WFSManager {
      * Returns an array of URL object that represent the base directories for
      * each root WFS in the system.
      */
-    private String[] getWFSRootDirectories() {
+    private File[] getWFSRootDirectories() {
         /*
          * Search through the directory and get all of the files with a -wfs
          * extension. We check whether the directory is readable and whether
          * it is a valid WFS in the loadWFSs() method.
          */
-        String[] res = wfsFile.list(new FilenameFilter() {
+        File[] res = wfsFile.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.endsWith(WFS.WFS_DIRECTORY_SUFFIX);
             }
@@ -299,7 +280,7 @@ public class WFSManager {
         // return an empty array if the directory doesn't exist, otherwise
         // we get NullPointerExceptions
         if (res == null) {
-            res = new String[0];
+            res = new File[0];
         }
         
         return res;
@@ -334,8 +315,8 @@ public class WFSManager {
         }
         
         makeDirectory(baseDir);
-        this.wfsFile = makeDirectory(baseDir + File.separator + WORLD_DIRS);
-        this.snapshotFile = makeDirectory(baseDir + File.separator + SNAPSHOT_DIRS);
+        this.wfsFile = makeDirectory(baseDir + File.separator + WFSRoot.WORLDS_DIR);
+        this.snapshotFile = makeDirectory(baseDir + File.separator + WFSSnapshot.SNAPSHOTS_DIR);
     }
     
     /**
@@ -365,7 +346,7 @@ public class WFSManager {
      * Returns the base directory for all WFS information, or null if the
      * property is not set.
      */
-    private String getBaseWFSDirectory() {
+    public static String getBaseWFSDirectory() {
         return SystemPropertyUtil.getProperty(WFS_ROOT_PROPERTY);
     }
     

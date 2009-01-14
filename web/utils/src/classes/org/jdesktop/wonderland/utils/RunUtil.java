@@ -20,9 +20,11 @@ package org.jdesktop.wonderland.utils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -231,6 +233,13 @@ public class RunUtil {
             throws IOException
     {
         FileOutputStream os = new FileOutputStream(out);
+        if (in instanceof FileInputStream) {
+            // optimized path for two files
+            FileInputStream fis = (FileInputStream) in;
+            copyFile(fis.getChannel(), os.getChannel());
+            return out;
+        }
+
         BufferedOutputStream bos = new BufferedOutputStream(os);
         BufferedInputStream bis = new BufferedInputStream(in);
         
@@ -245,6 +254,24 @@ public class RunUtil {
         return out;
     }
     
+    /** 
+     * Optimized copy from one file to another
+     * @param in the input file channel
+     * @param out the output file channel
+     * @param size the size of the file
+     * @throws IOException if there is an error reading or writing
+     */
+    public static void copyFile(FileChannel in, FileChannel out)
+        throws IOException
+    {
+        long position = 0;
+        long read;
+
+        while ((read = in.transferTo(position, 16 * 1024, out)) > 0) {
+            position += read;
+        }
+    }
+
     /**
      * Delete a directory.  Dangerous!!
      */

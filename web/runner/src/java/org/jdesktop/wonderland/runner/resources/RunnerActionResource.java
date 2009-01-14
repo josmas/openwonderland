@@ -80,6 +80,13 @@ public class RunnerActionResource {
                     waiter.waitFor();
                 }
                 
+                // wait for a bit so that everything gets cleaned up
+                try {
+                    Thread.sleep(ActionResource.getRestartDelay() * 1000);
+                } catch (InterruptedException ie) {
+                    // oh well
+                }
+
                 // restart the runner
                 waiter = rm.start(r, wait);
             } else {

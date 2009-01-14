@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,14 +140,31 @@ public class ModuleManager {
      * Redeploys all installed modules. This method does not check whether
      * modules can or cannot be deployed, it assumes this method is called when
      * the system is in an appropriate state for deployment
+     * <p>
+     * Before redeploying, this method installs all pending modules. No modules
+     * are deployed until all the pending modules are installed.
      */
     public void redeployAll() {
+        // remove all modules pending for removal
+        uninstallAll();
+
+        // install all modules pending for install
+        installAll(false);
+
+        // deploy all modules
         Map<String, Module> modules = this.installedMananger.getModules();
-        Iterator<Map.Entry<String, Module>> it = modules.entrySet().iterator();
-        while (it.hasNext() == true) {
-            Map.Entry<String, Module> entry = it.next();
+
+        // calculate a valid deployment order
+        List<String> order = DeployManager.getDeploymentOrder(modules);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("[MODULES] Calculated deployment order: " + order.toString());
+        }
+
+        for (String name : order) {
+            Module module = modules.get(name);
+
             try {
-                this.deployManager.deploy(entry.getValue());
+                this.deployManager.deploy(module);
             } catch (DeployerException excp) {
                 /* Log a warning message and continue */
                 logger.log(Level.WARNING, "[MODULE] REDEPLOY FAILED FOR " +
@@ -265,6 +283,17 @@ public class ModuleManager {
      * is started and stopped.
      */
     public void installAll() {
+        installAll(true);
+    }
+
+    /**
+     * Installs all pending modules.  The value of the deploy boolean tells
+     * whether or not to deploy modules after they are installed.  This is
+     * used at startup so that all modules are deployed at the same time,
+     * after they are installed.
+     * @param deploy true to deploy modules, or false not to
+     */
+    protected void installAll(boolean deploy) {
         Map<String, Module> installed = new HashMap(this.installedMananger.getModules());
        
         /*
@@ -303,13 +332,16 @@ public class ModuleManager {
         }
         
         /*
-         * Go ahead and install the module and deploy
+         * Go ahead and install the module and deploy.  Make sure to do
+         * this in a valid deploy order
          */
-        Iterator<Map.Entry<String, Module>> it2 = passed.entrySet().iterator();
-        while (it2.hasNext() == true) {
-            Map.Entry<String, Module> entry = it2.next();
-            String moduleName = entry.getKey();
-            Module module = entry.getValue();
+        List<String> ordered = DeployManager.getDeploymentOrder(passed);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("[MODULES] Calculated deployment order: " + ordered.toString());
+        }
+        
+        for (String moduleName : ordered) {
+            Module module = passed.get(moduleName);
             
             /*
              * Check to see if the module is already installed. If we have
@@ -339,10 +371,12 @@ public class ModuleManager {
             this.pendingMananger.remove(moduleName);
             
             /* Deploy the module */
-            try {
-                this.deployManager.deploy(module);
-            } catch (DeployerException excp) {
-                logger.log(Level.WARNING, "[MODULES] INSTALL ALL Unable to deploy " + moduleName, excp);
+            if (deploy) {
+                try {
+                    this.deployManager.deploy(module);
+                } catch (DeployerException excp) {
+                    logger.log(Level.WARNING, "[MODULES] INSTALL ALL Unable to deploy " + moduleName, excp);
+                }
             }
         }
     }

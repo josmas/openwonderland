@@ -46,14 +46,19 @@ public class CellExporter implements Serializable, SnapshotCreationListener,
     /** Default Constructor */
     public CellExporter() {
     }
-    
-    public void export() {
+
+    /**
+     * Export all the cells in the current world to a snapshot with the given
+     * name.  Use null to create a snapshot with a default name
+     * @param name the name or null
+     */
+    public void export(String name) {
         // get the export service
         CellExportManager em = AppContext.getManager(CellExportManager.class);
 
         // first, create a new snapshot.  The rest of the export will happen
         // in the snapshotCreated() method of the listener
-        em.createSnapshot(this);
+        em.createSnapshot(name, this);
     }    
     
     public void snapshotCreated(WorldRoot worldRoot) {
@@ -87,7 +92,7 @@ public class CellExporter implements Serializable, SnapshotCreationListener,
             }
         }
         
-        logger.info("Exported " + successCount + " cells.  " + errorCount + 
+        logger.warning("Exported " + successCount + " cells.  " + errorCount +
                     " errors detected.");
     }
 }

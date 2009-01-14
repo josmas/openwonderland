@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author jkaplan
  */
 @XmlRootElement
-public class AuthenticationInfo {
+public class AuthenticationInfo implements Cloneable {
     public enum Type { NONE, WEB_SERVICE, WEB };
 
     private Type type;
@@ -84,5 +84,8 @@ public class AuthenticationInfo {
         this.type = type;
     }
 
-
+    @Override
+    public AuthenticationInfo clone() {
+        return new AuthenticationInfo(getType(), getAuthURL());
+    }
 }

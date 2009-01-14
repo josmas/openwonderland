@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.web.wfs.resources;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -26,6 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.common.wfs.WorldRootList;
+import org.jdesktop.wonderland.web.wfs.WFSRoot;
 
 
 /**
@@ -64,8 +67,12 @@ public class WFSRootsResource {
          * is null, then return a blank response.
          */
         WFSManager wfsm = WFSManager.getWFSManager();
-        String roots[] = wfsm.getWFSRoots();
-        WorldRootList wfsRoots = new WorldRootList(roots);
+        List<WFSRoot> rootList = wfsm.getWFSRoots();
+        List<String> rootNames = new ArrayList<String>(rootList.size());
+        for (WFSRoot root : rootList) {
+            rootNames.add(root.getRootPath());
+        }
+        WorldRootList wfsRoots = new WorldRootList(rootNames.toArray(new String[0]));
         
         /* Send the serialized cell names to the client */
         try {

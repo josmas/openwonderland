@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.webserver;
@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
@@ -32,6 +33,7 @@ import org.glassfish.embed.App;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
+import org.jdesktop.wonderland.utils.FileListUtil;
 import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
@@ -42,6 +44,9 @@ public class WebDeployer implements ModuleDeployerSPI {
     private static final Logger logger =
             Logger.getLogger(WebDeployer.class.getName());
     
+    private static final String DEPLOY_DIR = "webdeploy";
+    private static final String CHECKSUM_FILE = "webchecksums.list";
+
     /** list of deployed wars to avoid duplicate deploys */
     private static final List<DeployRecord> deployed =
             new ArrayList<DeployRecord>();
@@ -83,66 +88,113 @@ public class WebDeployer implements ModuleDeployerSPI {
      * @param part the web module part
      */
     public void deploy(String type, Module module, ModulePart part) {
-        File deployDir = RunUtil.createTempDir("webmodule", "deploy");
-        
-        for (File war : getWebApps(part.getFile())) {
-            
-            DeployRecord record = new DeployRecord(module.getName(), 
-                                                   war.getName());
-            
-            
-            // make sure the war isn't already deployed
-            boolean undeploy = false;
-            synchronized (deployed) {
-                if (deployed.contains(record)) {
-                    logger.warning("Duplicate deploy " + record + ", undeploying");
-                    undeploy = true;
-                }
-            }
-            if (undeploy) {
-                undeploy(module, war);
-            }
-            
-            logger.warning("Web deploy " + record);
-            File extractDir = new File(deployDir, war.getName());
-            
-            // create a context root for this app.  The context root is
-            // <module-name>/<war-name>, where <war-name> is the name of
-            // the .war file with ".war" taken off.
-            String contextRoot = module.getName() + "/" + war.getName();
-            if (contextRoot.endsWith(".war")) {
-                contextRoot = contextRoot.substring(0, 
-                                        contextRoot.length() - ".war".length());
-            }
-            Properties props = new Properties();
-            props.put(ParameterNames.CONTEXT_ROOT, contextRoot);
-
-            JarInputStream jin = null;
+        for (File war : getWebApps(part.getFile(), getFileSuffix())) {
             try {
-                jin = new JarInputStream(new FileInputStream(war));
-                File f = RunUtil.extractZip(jin, extractDir);
-                App app = RunAppServer.getAppServer().deploy(f, props);
-                
-                // record that the app is installed
-                synchronized (deployed) {
-                    record.setApp(app);
-                    deployed.add(record);
-                }
-
-                jin.close();
+                deployFile(module.getName(), war);
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Unable to deploy " + war, ioe);
-            } finally {
-                // make sure to close the stream
-                if (jin != null) {
-                    try {
-                        jin.close();
-                    } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error closing stream", ioe);
-                    }
-                }
             }
         }
+    }
+
+    protected void deployFile(String moduleName, File war)
+            throws IOException
+    {
+        File deployDir = new File(RunUtil.getRunDir(), DEPLOY_DIR);
+        deployDir.mkdir();
+        
+        // generate a checksum for the file
+        String checksum = FileListUtil.generateChecksum(new FileInputStream(war));
+        
+        // create a record for this file
+        DeployRecord record = new DeployRecord(moduleName, war.getName(),
+                                               checksum);
+
+        // find out if we already have a record for this application
+        DeployRecord existing = null;
+        synchronized (deployed) {
+            int idx = deployed.indexOf(record);
+            if (idx != -1) {
+                existing = deployed.get(idx);
+            }
+        }
+
+        // if we do have a record, see if the checksums match
+        if (existing != null && existing.checksumMatches(checksum)) {
+            // this version is already deployed.
+            return;
+        } else if (existing != null) {
+            // a different version of the same module is already deployed --
+            // undeploy it.
+            logger.warning("Duplicate deploy " + record + ", undeploying");
+            undeploy(existing);
+        }
+
+        // read the checksums in the deploy directory
+        File checksumFile = getChecksumFile(deployDir);
+        Map<String, String> checksums = FileListUtil.readChecksums(checksumFile);
+
+        // see if we already have written this version to disk
+        String checksumKey = moduleName + "-" + war.getName();
+        File extractDir = new File(deployDir, checksumKey);
+
+        // see if the checksum matches.  If it doesn't match, get rid of what
+        // is there and overwrite it with the new directory
+        String fileChecksum = checksums.get(checksumKey);
+        if (fileChecksum == null || !fileChecksum.equals(checksum)) {
+            // make sure the directory doesn't already exist.  If it does, remove it
+            if (extractDir.exists()) {
+                logger.warning("Directory " + extractDir + " already exists");
+                RunUtil.deleteDir(extractDir);
+            }
+
+            // extract the war file
+            doExtract(war, extractDir);
+        }
+
+        // update our record with the directory
+        record.setFile(extractDir);
+
+        // do the actual deploy
+        doDeploy(record);
+
+        // record that the app is installed
+        synchronized (deployed) {
+            deployed.add(record);
+        }
+
+        // update the checksums, and write them out
+        checksums.put(checksumKey, checksum);
+        FileListUtil.writeChecksums(checksums, checksumFile);
+    }
+
+    protected void doExtract(File war, File extractDir) throws IOException {
+        // extract the war into the directory
+        JarInputStream jin = new JarInputStream(new FileInputStream(war));
+	try {
+            RunUtil.extractZip(jin, extractDir);
+        } finally {
+            jin.close();
+        }
+    }
+
+    protected void doDeploy(DeployRecord record) throws IOException {
+        // create a context root for this app.  The context root is
+        // <module-name>/<war-name>, where <war-name> is the name of
+        // the .war file with ".war" taken off.
+        String contextRoot = record.getModuleName() + "/" +
+                             record.getWarName();
+        if (contextRoot.endsWith(".war")) {
+            contextRoot = contextRoot.substring(0,
+                                        contextRoot.length() - ".war".length());
+        }
+        Properties props = new Properties();
+        props.put(ParameterNames.CONTEXT_ROOT, contextRoot);
+
+        // finally, deploy the application to the web server
+        App app = RunAppServer.getAppServer().deploy(record.getFile(),
+                                                     props);
+        record.setApp(app);
     }
 
     /**
@@ -152,49 +204,85 @@ public class WebDeployer implements ModuleDeployerSPI {
      * @param part the web module part
      */
     public void undeploy(String type, Module module, ModulePart part) {
-        for (File war : getWebApps(part.getFile())) {
-            undeploy(module, war);
+        for (File war : getWebApps(part.getFile(), getFileSuffix())) {
+            DeployRecord record = new DeployRecord(module.getName(), war.getName());
+            undeploy(record);
         }
     }
     
     /**
      * Undeploy a war file from the given module
-     * @param module the module undeploy from
-     * @param war the war to undeploy
+     * @param record the module to undeploy
      */
-    protected void undeploy(Module module, File war) {
-        DeployRecord record = new DeployRecord(module.getName(), war.getName());
-
-        // remove the .war
+    protected void undeploy(DeployRecord record) {
+        // remove the record of this deployment
+        DeployRecord remove = null;
         synchronized (deployed) {
             int deployIdx = deployed.indexOf(record);
             if (deployIdx != -1) {
-                record = deployed.get(deployIdx);
+                remove = deployed.get(deployIdx);
                 deployed.remove(deployIdx);
-
-                logger.warning("Web undeploy " + record);
-            } else {
-                logger.warning("Not found on undeploy " + record);
             }
         }
 
-        // undeploy the app
-        if (record.getApp() != null) {
-            record.getApp().undeploy();
+        // make sure we found a record
+        if (remove == null) {
+            logger.fine("Not found on undeploy " + record);
+            return;
+        }
+
+        // do the actual undeploy
+        doUndeploy(remove);
+
+        // remove the files associated with this record
+        if (remove.getFile() != null) {
+            RunUtil.deleteDir(remove.getFile());
+        }
+
+        // read the checksums in the deploy directory
+        try {
+            File deployDir = new File(RunUtil.getRunDir(), DEPLOY_DIR);
+            File checksumFile = getChecksumFile(deployDir);
+            Map<String, String> checksums = FileListUtil.readChecksums(checksumFile);
+
+            // remove this checksum and write out the update
+            String checksumKey = record.getModuleName() + "-" + record.getWarName();
+            if (checksums.remove(checksumKey) != null) {
+                FileListUtil.writeChecksums(checksums, checksumFile);
+            }
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error updating checksums for " + record,
+                       ioe);
         }
     }
-    
+
+    protected void doUndeploy(DeployRecord remove) {
+        // undeploy the app
+        if (remove.getApp() != null) {
+            remove.getApp().undeploy();
+        }
+    }
+
+    /**
+     * Get the file suffix
+     * @return the file suffix
+     */
+    protected String getFileSuffix() {
+        return ".war";
+    }
+
     /**
      * Get the list of .wars in a directory
      * @param dir the directory to search
+     * @param suffix the file suffix to search for
      * @return a list of .war files in the directory, or an empty list
      * if there are no .wars in the directory
      */
-    protected File[] getWebApps(File dir) {
+    protected File[] getWebApps(File dir, final String suffix) {
         File[] wars = dir.listFiles(new FileFilter() {
             public boolean accept(File pathname) {
                 return !pathname.isDirectory() &&
-                        pathname.getName().endsWith(".war");
+                        pathname.getName().endsWith(suffix);
             }         
         });
         
@@ -204,26 +292,72 @@ public class WebDeployer implements ModuleDeployerSPI {
         
         return wars;
     }
+
+    protected File getChecksumFile(File deployDir) {
+        return new File(deployDir, CHECKSUM_FILE);
+    }
     
-    class DeployRecord {
+    protected class DeployRecord {
         private String moduleName;
         private String warName;
+        private String checksum;
+
+        // the file or on disk
+        private File file;
+
         // the deployed app
         private App app;
-        
+
         public DeployRecord(String moduleName, String warName) {
+            this (moduleName, warName, null);
+        }
+
+        public DeployRecord(String moduleName, String warName, String checksum)
+        {
             this.moduleName = moduleName;
             this.warName = warName;
+            this.checksum = checksum;
+        }
+
+        public String getModuleName() {
+            return moduleName;
+        }
+
+        public String getWarName() {
+            return warName;
+        }
+
+        public String getChecksum() {
+            return checksum;
+        }
+
+        public void setChecksum(String checksum) {
+            this.checksum = checksum;
+        }
+
+        public boolean checksumMatches(String checksum) {
+            return this.checksum.equals(checksum);
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public void setFile(File file) {
+            this.file = file;
+        }
+
+        public App getApp() {
+            return app;
         }
 
         public void setApp(App app) {
             this.app = app;
         }
-        
-        public App getApp() {
-            return app;
-        }
-        
+
+
+        // records are equal if they refer to the same module and war.
+        // to check the checksum, manually compare the two
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -233,10 +367,16 @@ public class WebDeployer implements ModuleDeployerSPI {
                 return false;
             }
             final DeployRecord other = (DeployRecord) obj;
-            if (this.moduleName != other.moduleName && (this.moduleName == null || !this.moduleName.equals(other.moduleName))) {
+            if (this.moduleName != other.moduleName &&
+                    (this.moduleName == null ||
+                    !this.moduleName.equals(other.moduleName)))
+            {
                 return false;
             }
-            if (this.warName != other.warName && (this.warName == null || !this.warName.equals(other.warName))) {
+            if (this.warName != other.warName &&
+                    (this.warName == null ||
+                    !this.warName.equals(other.warName)))
+            {
                 return false;
             }
             return true;

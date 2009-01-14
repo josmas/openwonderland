@@ -107,10 +107,11 @@ public class RunnerServlet extends HttpServlet {
             de = DeploymentManager.getInstance().getEntry(runner.getName());
         }
         
-        // if the deployment entry has no properties, use the defaults
-        if (de.getRunProps().isEmpty()) {
-            de.setRunProps(runner.getDefaultProperties());
-        }
+        // add in the default properties to the runner.  These will be removed
+        // before they are saved
+        Properties props = runner.getDefaultProperties();
+        props.putAll(de.getRunProps());
+        de.setRunProps(props);
         
         request.setAttribute("entry", de);
        
@@ -147,13 +148,17 @@ public class RunnerServlet extends HttpServlet {
         DeploymentManager dm = DeploymentManager.getInstance();
         DeploymentPlan dp = dm.getPlan();
         
-        // if the properties are the same as the default property set,
-        // remove all properties so we preserve the fact that these
-        // are defaults
-        if (de.getRunProps().equals(runner.getDefaultProperties())) {
-            de.getRunProps().clear();
+        // if any property is the same as the default property,
+        // remove it so it will change as the default changes
+        for (String propName : de.getRunProps().stringPropertyNames()) {
+            String runVal = de.getRunProps().getProperty(propName);
+            String defVal = runner.getDefaultProperties().getProperty(propName);
+
+            if (runVal.equals(defVal)) {
+                de.getRunProps().remove(propName);
+            }
         }
-        
+
         // replace the existing entry with the new one
         dp.removeEntry(de);
         dp.addEntry(de);
