@@ -69,7 +69,7 @@ public class WFSRoot {
      * @return the root path
      */
     public String getRootPath() {
-        return WORLDS_DIR + File.separator + getName();
+        return WORLDS_DIR + "/" + getName();
     }
     
     /**

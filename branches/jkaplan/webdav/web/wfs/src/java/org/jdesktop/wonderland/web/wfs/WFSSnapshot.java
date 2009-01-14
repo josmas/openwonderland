@@ -180,8 +180,7 @@ public class WFSSnapshot extends WFSRoot {
     @XmlTransient
     @Override
     public String getRootPath() {
-        return SNAPSHOTS_DIR + File.separator + getName() + 
-               File.separator + SNAPSHOT_WFS;
+        return SNAPSHOTS_DIR + "/" + getName() + "/" + SNAPSHOT_WFS;
     }
 
     /**
