@@ -90,16 +90,20 @@ public class MicrophoneMessageHandler implements Serializable, ComponentMessageR
 	microphoneCellMORef = AppContext.getDataManager().createReference(
 	        (MicrophoneCellMO) CellManagerMO.getCell(microphoneCellMO.getCellID()));
 
-        ChannelComponentMO channelComponent = (ChannelComponentMO) 
+        ChannelComponentMO channelComponentMO = (ChannelComponentMO) 
 	    microphoneCellMO.getComponent(ChannelComponentMO.class);
 
-        if (channelComponent == null) {
+        if (channelComponentMO == null) {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
 	}
 
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
 
-        channelComponent.addMessageReceiver(MicrophoneEnterCellMessage.class, this);
+        channelComponentMO.addMessageReceiver(MicrophoneEnterCellMessage.class, this);
+    }
+
+    public void done() {
+	channelComponentRef.get().removeMessageReceiver(MicrophoneEnterCellMessage.class);
     }
 
     public void messageReceived(final WonderlandClientSender sender, 

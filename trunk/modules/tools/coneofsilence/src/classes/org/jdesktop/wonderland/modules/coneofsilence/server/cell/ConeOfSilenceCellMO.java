@@ -37,6 +37,9 @@ import com.jme.math.Vector3f;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+
 /**
  * A server cell that provides conference coneofsilence functionality
  * @author jprovino
@@ -52,6 +55,8 @@ public class ConeOfSilenceCellMO extends CellMO {
 
     private double fullVolumeRadius;
 
+    private ManagedReference<ConeOfSilenceMessageHandler> coneOfSilenceMessageHandlerRef;
+
     public ConeOfSilenceCellMO() {
     }
     
@@ -64,10 +69,15 @@ public class ConeOfSilenceCellMO extends CellMO {
 	super.setLive(live);
 
 	if (live == false) {
+	    if (coneOfSilenceMessageHandlerRef != null) {
+		coneOfSilenceMessageHandlerRef.get().done();
+		coneOfSilenceMessageHandlerRef = null;
+	    }
 	    return;
 	}
 
-	new ConeOfSilenceMessageHandler(this, name);
+	coneOfSilenceMessageHandlerRef = AppContext.getDataManager().createReference(
+	    new ConeOfSilenceMessageHandler(this, name));
     }
 
     @Override

@@ -74,6 +74,9 @@ public class ConeOfSilenceCell extends Cell implements CellStatusChangeListener 
 
 	if (status.equals(CellStatus.ACTIVE) && coneOfSilenceMessageHandler == null) {
 	    coneOfSilenceMessageHandler = new ConeOfSilenceMessageHandler(this);
+	} else if (status.equals(CellStatus.DISK) && coneOfSilenceMessageHandler != null) {
+	    coneOfSilenceMessageHandler.done();
+	    coneOfSilenceMessageHandler = null;
 	}
     }
 

@@ -116,6 +116,17 @@ public class PhoneMessageHandler {
         channelComp.addMessageReceiver(PlaceCallResponseMessage.class, msgReceiver);
     }
 
+    public void done() {
+	channelComp.removeMessageReceiver(CallEndedResponseMessage.class);
+	channelComp.removeMessageReceiver(CallEstablishedResponseMessage.class);
+	channelComp.removeMessageReceiver(CallInvitedResponseMessage.class);
+	channelComp.removeMessageReceiver(EndCallResponseMessage.class);
+	channelComp.removeMessageReceiver(JoinCallResponseMessage.class);
+	channelComp.removeMessageReceiver(LockUnlockResponseMessage.class);
+	channelComp.removeMessageReceiver(PhoneResponseMessage.class);
+	channelComp.removeMessageReceiver(PlaceCallResponseMessage.class);
+    }
+
     public void phoneSelected() {
 	if (phoneForm == null) {
 	    boolean locked = phoneCell.getLocked();

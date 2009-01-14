@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
+import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 
 import java.util.logging.Logger;
@@ -57,6 +58,8 @@ public class PhoneCellMO extends CellMO {
     private boolean keepUnlocked = true;
     private int callNumber = 0;
 
+    private ManagedReference<PhoneMessageHandler> phoneMessageHandlerRef;
+
     public PhoneCellMO() {
     }
 
@@ -69,10 +72,17 @@ public class PhoneCellMO extends CellMO {
 	super.setLive(live);
 
 	if (live == false) {
+	    if (phoneMessageHandlerRef != null) {
+		PhoneMessageHandler phoneMessageHandler = phoneMessageHandlerRef.get();
+		phoneMessageHandler.done();
+		AppContext.getDataManager().removeObject(phoneMessageHandler);
+		phoneMessageHandlerRef = null;
+	    }
 	    return;
 	}
 
-        new PhoneMessageHandler(this);
+	phoneMessageHandlerRef = AppContext.getDataManager().createReference(
+            new PhoneMessageHandler(this));
     }
 
     @Override
