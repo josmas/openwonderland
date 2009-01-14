@@ -333,10 +333,13 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     /**
      * Notify the client that the contents of the cell have changed
+     *
+     * REPLACED BY setCellServerState
+     *
      */
-    public void contentChanged() {
-        logger.severe("CellMO.contentChanged NOT IMPLEMENTED");
-    }
+//    public void contentChanged() {
+//        logger.severe("CellMO.contentChanged NOT IMPLEMENTED");
+//    }
        
     /**
      * Return the cellID for this cell
@@ -360,7 +363,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * world root and are present in the world, non-live cells are not
      * @param live
      */
-    void setLive(boolean live) {
+    protected void setLive(boolean live) {
         if (this.live==live)
             return;
         
@@ -415,7 +418,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      */
     void addToUniverse(UniverseManager universe) {
         universe.createCell(this);
-        System.err.println("CREATING SPATIAL CELL " + getCellID().toString() + " " + this.getClass().getName());
+//        System.err.println("CREATING SPATIAL CELL " + getCellID().toString() + " " + this.getClass().getName());
 
         if (transformChangeListeners != null) {
             for (TransformChangeListenerSrv listener : transformChangeListeners) {
