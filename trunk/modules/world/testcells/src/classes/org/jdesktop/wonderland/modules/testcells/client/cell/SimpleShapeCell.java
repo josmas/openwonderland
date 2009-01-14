@@ -47,8 +47,8 @@ public class SimpleShapeCell extends Cell {
     }
     
     @Override
-    public void setCellClientState(CellClientState configData) {
-        super.setCellClientState(configData);
+    public void setClientState(CellClientState configData) {
+        super.setClientState(configData);
         SimpleShapeConfig c = (SimpleShapeConfig) configData;
         this.shape = c.getShape();
         this.mass = c.getMass();

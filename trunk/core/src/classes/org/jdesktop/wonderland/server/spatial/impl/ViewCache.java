@@ -195,7 +195,6 @@ class ViewCache {
      * Update the set of spaces which intersect with this caches world bounds
      */
     private void revalidateSpaces() {
-        System.err.println("***** REVAL *****");
         viewCell.acquireRootReadLock();
 
         try {

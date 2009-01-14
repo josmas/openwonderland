@@ -65,8 +65,8 @@ public abstract class AppConventionalCell extends App2DCell {
      * {@inheritDoc}
      */
     @Override
-    public void setCellClientState (CellClientState clientState) {
-	super.setCellClientState(clientState);
+    public void setClientState (CellClientState clientState) {
+	super.setClientState(clientState);
 
 	AppConventionalCellClientState state = (AppConventionalCellClientState) clientState;
 	masterHost = state.getMasterHost();

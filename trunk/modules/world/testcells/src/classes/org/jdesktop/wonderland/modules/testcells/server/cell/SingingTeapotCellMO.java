@@ -52,15 +52,15 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO {
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
     }
 
     @Override
-    public CellServerState getCellServerState(CellServerState setup) {
+    public CellServerState getServerState(CellServerState setup) {
         if (setup == null) {
             setup = new SingingTeapotCellSetup();
         }
-        return super.getCellServerState(setup);
+        return super.getServerState(setup);
     }
 }

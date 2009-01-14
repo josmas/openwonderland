@@ -88,8 +88,8 @@ public class ConeOfSilenceCell extends Cell implements CellStatusChangeListener 
      * @param setupData
      */
     @Override
-    public void setCellClientState(CellClientState cellClientState) {
-	super.setCellClientState(cellClientState);
+    public void setClientState(CellClientState cellClientState) {
+	super.setClientState(cellClientState);
 
 	ConeOfSilenceCellClientState coneOfSilenceCellClientState = (ConeOfSilenceCellClientState) cellClientState;
     }

@@ -82,8 +82,8 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
      * @param setupData
      */
     @Override
-    public void setCellClientState(CellClientState cellClientState) {
-	super.setCellClientState(cellClientState);
+    public void setClientState(CellClientState cellClientState) {
+	super.setClientState(cellClientState);
 
 	MicrophoneCellClientState microphoneCellClientState = (MicrophoneCellClientState) cellClientState;
     }

@@ -102,7 +102,7 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             /* Call the cell's setup method */
             try {
                 logger.warning("[EDIT] Setting up cell");
-                cellMO.setCellServerState(setup);
+                cellMO.setServerState(setup);
                 logger.warning("[EDIT] Inserting cell int world");
                 WonderlandContext.getCellManager().insertCellInWorld(cellMO);
             } catch (ClassCastException cce) {

@@ -148,7 +148,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         }
 
         if (setup!=null)
-            cell.setCellClientState(setup);
+            cell.setClientState(setup);
         else
             logger.warning("Cell has null setup "+className+"  "+cell);
 

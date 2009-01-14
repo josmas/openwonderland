@@ -551,7 +551,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	orbCellServerState.setOrigin(new Origin(center));
 
 	try {
-            orbCellMO.setCellServerState(orbCellServerState);
+            orbCellMO.setServerState(orbCellServerState);
         } catch (ClassCastException e) {
             logger.warning("Error setting up new cell " +
                 orbCellMO.getName() + " of type " +

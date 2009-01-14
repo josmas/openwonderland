@@ -66,7 +66,7 @@ public class JEditorTestCell extends App2DCell {
      *
      * @param configData the config data to initialize the cell with
      */
-    public void setCellClientState (CellClientState state) {
+    public void setClientState (CellClientState state) {
 
         clientState = (JEditorTestCellClientState) state;
         setApp(new JEditorTestApp(getAppType(), clientState.getPreferredWidth(), 

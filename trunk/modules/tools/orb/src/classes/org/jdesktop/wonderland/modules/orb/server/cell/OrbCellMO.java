@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.orb.server.cell;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedReference;
 
 import java.util.logging.Logger;
 
@@ -27,7 +25,6 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
@@ -50,69 +47,67 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellServerState;
 public class OrbCellMO extends CellMO {
 
     private static final Logger logger =
-        Logger.getLogger(OrbCellMO.class.getName());
-     
+            Logger.getLogger(OrbCellMO.class.getName());
     private ManagedReference<OrbMessageHandler> orbMessageHandlerRef;
-
     private String callID;
-
     private boolean simulateCalls;
 
     public OrbCellMO() {
     }
-    
+
     public OrbCellMO(Vector3f center, float size, String callID, boolean simulateCalls) {
-        super(new BoundingBox(new Vector3f(), size, size, size), 
-	    new CellTransform(null, center));
+        super(new BoundingBox(new Vector3f(), size, size, size),
+                new CellTransform(null, center));
 
-	this.callID = callID;
-	this.simulateCalls = simulateCalls;
+        this.callID = callID;
+        this.simulateCalls = simulateCalls;
 
-	logger.fine("Orb center " + center + " size " + size);
+        logger.fine("Orb center " + center + " size " + size);
     }
 
+    @Override
     protected void setLive(boolean live) {
-	super.setLive(live);
+        super.setLive(live);
 
-	if (live == false) {
-	    if (orbMessageHandlerRef != null) {
-		OrbMessageHandler orbMessageHandler = orbMessageHandlerRef.get();
-		orbMessageHandler.done();
-		AppContext.getDataManager().removeObject(orbMessageHandler);
-		orbMessageHandlerRef = null;
-	    }
+        if (live == false) {
+            if (orbMessageHandlerRef != null) {
+                OrbMessageHandler orbMessageHandler = orbMessageHandlerRef.get();
+                orbMessageHandler.done();
+                AppContext.getDataManager().removeObject(orbMessageHandler);
+                orbMessageHandlerRef = null;
+            }
 
-	    return;
-	}
+            return;
+        }
 
-	addComponent(new MovableComponentMO(this));
+        addComponent(new MovableComponentMO(this));
 
         orbMessageHandlerRef = AppContext.getDataManager().createReference(
-	    new OrbMessageHandler(this, callID, simulateCalls));
+                new OrbMessageHandler(this, callID, simulateCalls));
     }
 
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
+            ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.orb.client.cell.OrbCell";
     }
 
     @Override
-    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
             cellClientState = new OrbCellClientState();
         }
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState cellServerState) {
-        super.setCellServerState(cellServerState);
+    public void setServerState(CellServerState cellServerState) {
+        super.setServerState(cellServerState);
 
-	OrbCellServerState orbCellServerState = (OrbCellServerState) cellServerState;
+        OrbCellServerState orbCellServerState = (OrbCellServerState) cellServerState;
     }
 
     /**
@@ -122,11 +117,11 @@ public class OrbCellMO extends CellMO {
      * @return a JavaBean representing the current state
      */
     @Override
-    public CellServerState getCellServerState(CellServerState cellServerState) {
+    public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
             cellServerState = new OrbCellServerState();
         }
-        return super.getCellServerState(cellServerState);
+        return super.getServerState(cellServerState);
     }
 }

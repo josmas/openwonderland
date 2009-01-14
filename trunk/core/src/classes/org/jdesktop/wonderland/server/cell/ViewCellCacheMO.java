@@ -631,7 +631,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             cellMO.getCellID(),
             parentID,
             cellMO.getLocalTransform(null),
-            cellMO.getCellClientState(null, null, capabilities),
+            cellMO.getClientState(null, null, capabilities),
             cellMO.getName()
             
             );
