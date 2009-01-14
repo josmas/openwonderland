@@ -54,7 +54,7 @@ public class SimpleAvatarCharacter extends AvatarCharacter {
         m_keyBindings.put(KeyEvent.VK_DOWN,         TriggerNames.Move_Back.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_W,        TriggerNames.Move_Forward.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_S,        TriggerNames.Move_Back.ordinal());
-        m_keyBindings.put(KeyEvent.VK_CONTROL,      TriggerNames.Punch.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_CONTROL,      TriggerNames.Punch.ordinal());
         m_keyBindings.put(KeyEvent.VK_ENTER,        TriggerNames.ToggleSteering.ordinal());
 //            m_keyBindings.put(KeyEvent.VK_BACK_SPACE,   TriggerNames.PositionGoalPoint.ordinal());
 //            m_keyBindings.put(KeyEvent.VK_HOME,         TriggerNames.SelectNearestGoalPoint.ordinal());
