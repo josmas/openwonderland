@@ -38,6 +38,11 @@
             <fileset dir="${build.classes.dir}">
                 <exclude name="org/jdesktop/wonderland/web/resources/**"/>
             </fileset>
+            
+            <!-- package config files -->
+            <zipfileset dir="${javasrc.dir}">
+                <include name="META-INF/**"/>
+            </zipfileset>
         </jar>
     </target>
 

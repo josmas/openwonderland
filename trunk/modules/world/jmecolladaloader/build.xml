@@ -23,11 +23,7 @@
            <client>
                 <clientjar name="jmecolladaloader-client" basedir="${build.classes.dir}">
                     <clientplugin provider="org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoaderFactory"/>
-                    <service type="org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI">
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState"/>
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.StaticModelCellServerState"/>
-                    </service> 
-
+                    
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar>
@@ -35,22 +31,21 @@
                 
             <server>
                 <serverjar name="jmecolladaloader-server" basedir="${build.classes.dir}">
-                    <serverplugin provider="org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.TestWorld"/>
-                    <!--<cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.client.LoaderFactory"/>
-                    </cellsetup>-->
                     <cellextensiontype>
                         <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.SetupFactory"/>
                     </cellextensiontype>
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState"/>
+                        <provider classname="org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.TestWorldCellServerState"/>
                     </cellsetup>
                     
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
+
             <art dir="${current.dir}/art"/>
+            <part name="wfs" dir="${current.dir}/wfs"/>
         </module>
     </target>                                                       
                                            

@@ -18,18 +18,6 @@
             </fileset>
             <mapper type="flatten"/>
         </copy>
-        
-        <!-- copy runners into dist/runner -->
-        <mkdir dir="dist/runner"/>
-        <mkdir dir="dist/runner/deploy"/>
-        <mkdir dir="dist/runner/classes"/>
-        <copy todir="dist/runner">
-            <fileset dir=".">
-                <include name="**/dist/runner/**"/>
-            </fileset>
-            <mapper type="regexp" from="^.*?[\\/]dist[\\/]runner[\\/](.*)"
-                                  to="\1"/>
-        </copy>
     </target>
     
     <!-- clean all sub-projects -->

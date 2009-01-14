@@ -75,9 +75,7 @@ public class CreateWFSSnapshotResource {
         }
         
         // Form the root path of the wfs: "snapshots/<date>/world-wfs"
-        String rootPath = WFSManager.SNAPSHOT_DIRS + File.separator +
-                          name + File.separator + snapshot.getPath();
-        WorldRoot worldRoot = new WorldRoot(rootPath);
+        WorldRoot worldRoot = new WorldRoot(snapshot.getRootPath());
         
         // Formulate the response and return the world root object
         ResponseBuilder rb = Response.ok(worldRoot);

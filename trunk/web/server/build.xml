@@ -132,10 +132,6 @@
                 <include name="*.jar"/>
             </checksumfileset>
 
-            <!-- runner files -->
-            <checksumfileset dir="${core.dir}/dist" prefix="runner"/>
-            <checksumfileset dir="${top.dir}/modules/dist/runner/deploy" prefix="runner"/>
-
             <!-- include any generated META-INF.  These will be updated
                  below if they are out of date. -->
             <fileset dir="${build.dir}/jar"/>

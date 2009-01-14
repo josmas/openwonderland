@@ -144,7 +144,7 @@ public class CellManagerMO implements ManagedObject, Serializable {
     }
 
     public void saveWorld() {
-        new CellExporter().export();
+        new CellExporter().export(null);
     }
     
     /**

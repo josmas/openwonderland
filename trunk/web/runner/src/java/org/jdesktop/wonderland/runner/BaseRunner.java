@@ -19,12 +19,18 @@ package org.jdesktop.wonderland.runner;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.UnknownHostException;
+import java.io.Reader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -36,7 +42,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipInputStream;
-import org.jdesktop.wonderland.common.NetworkAddress;
+import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.common.modules.ModuleChecksums;
+import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jvnet.winp.WinProcess;
@@ -55,12 +63,22 @@ public abstract class BaseRunner implements Runner {
     /** property to set to print out verbose logs from ant */
     private static final String VERBOSE_PROP = "wonderland.runner.verbose";
 
+    /** the URL for listing available files */
+    private static final String CHECKSUM_URL =
+            "wonderland-web-runner/services/checksums";
+
     /** the name of this runner */
     private String name = "unknown";
-    
+
+    /** the base directory (where files and checksums are stored) */
+    private File baseDir;
+
     /** the directory to run in */
     private File runDir;
-    
+
+    /** the directory to store downloaded file in */
+    private File downloadDir;
+
     /** the process we started */
     private Process proc;
     
@@ -69,7 +87,10 @@ public abstract class BaseRunner implements Runner {
     private File logFile;
     private Logger logWriter;
     private Handler logFileHandler;
-    
+
+    /** the base URL to connect to */
+    private String serverURL;
+
     /** the current status */
     private Status status = Status.NOT_RUNNING;
     private final Object statusLock = new Object();
@@ -104,42 +125,6 @@ public abstract class BaseRunner implements Runner {
         this.name = name;
     }
     
-    protected String getPrivateLocalAddress() {
-        String s = System.getProperty("wonderland.private.local.address");
-
-	String hostAddress = null;
-
-	try {
-	    hostAddress = NetworkAddress.getPrivateLocalAddress(s).getHostAddress();
-
-	    if (s == null || s.length() == 0) {
-	        logger.info("private local address " + hostAddress 
-		    + " was chosen from the list of interfaces");
-	    } else {
-	        logger.info("private local address " + hostAddress 
-		    + " was determined by using " + s);
-	    }
-
-	    return hostAddress;
-	} catch (UnknownHostException e) {
-	    logger.warning("Unable to get private local address using " + s
-		+ " " + e.getMessage());
-	
-	    try {
-                hostAddress = NetworkAddress.getPrivateLocalAddress().getHostAddress();
-	        logger.info("chose private local address " + hostAddress 
-		        + " from the list of interfaces: " + e.getMessage());
-	    } catch (UnknownHostException ee) {
-                logger.log(Level.WARNING, "Unable to determine private local address, "
-		    + " using localhost:  " + e.getMessage());
-
-                hostAddress = "localhost";
-	    }
-	}
-
-	return hostAddress;
-    }
-
     /**
      * Configure the runner.  Curently parses the following properties:
      * <ul><li><code>runner.name</code> - the name to return in 
@@ -152,50 +137,9 @@ public abstract class BaseRunner implements Runner {
         if (props.containsKey("runner.name")) {
             setName(props.getProperty("runner.name"));
         }
-    }
 
-    /**
-     * Get the directory to install files in.
-     * @return the run directory
-     */
-    protected synchronized File getRunDir() {
-        if (runDir == null) {
-            runDir = new File(RunUtil.getRunDir(), getLogName());
-            runDir.mkdir();
-        }
-        
-        return runDir;
-    }
-        
-    /**
-     * Return the file names needed for this runner.  This method returns
-     * the filename of the Wonderland core setup file.  Runners can include
-     * this file if they wish, or return a different value.
-     * @return the core setup file
-     */
-    public Collection<String> getDeployFiles() {
-        Collection<String> out = new ArrayList<String>();
-        out.add("wonderland-setup-dist.zip");
-        
-        return out;
-    }
-    
-    /**
-     * Deploy files.  This just unzips the files into the run
-     * directory.
-     * @param filename the filename
-     * @param in the input file
-     * @throws IOException if there is an error reading the file
-     */
-    public void deploy(String filename, InputStream in) throws IOException {
-        RunUtil.extractZip(new ZipInputStream(in), getRunDir());
-    }
-
-    /**
-     * Clear the run directory
-     */
-    public void clear() {
-        RunUtil.deleteDir(getRunDir());
+        // the server URL should always be set in the system properties
+        serverURL = System.getProperty(Constants.WEBSERVER_URL_PROP);
     }
 
     /**
@@ -219,7 +163,15 @@ public abstract class BaseRunner implements Runner {
             throw new IllegalStateException("Can't start runner in " + 
                                             getStatus() + " state");
         }
-        
+
+        // update the run directory to make sure we have the latest of
+        // everything
+        try {
+            deployFiles(props);
+        } catch (IOException ioe) {
+            throw new RunnerException(ioe);
+        }
+
         // setup the logger.  First make sure that a new log will be
         // created.
         resetLogFile();
@@ -329,6 +281,225 @@ public abstract class BaseRunner implements Runner {
         }
     }
 
+    /**
+     * Return the file names needed for this runner.  This method returns
+     * the filename of the Wonderland core setup file.  Runners can include
+     * this file if they wish, or return a different value.
+     * @return the core setup file
+     */
+    protected Collection<String> getDeployFiles() {
+        Collection<String> out = new ArrayList<String>();
+        out.add("wonderland-setup-dist.zip");
+
+        return out;
+    }
+
+    /**
+     * Deploy files. This method gets the latest checksums for the runner
+     * zips, and then downloads, deploys and runs them if they are out of
+     * date.
+     * @param props the runtime properties
+     * @throws IOException if there is an error reading the files
+     */
+    protected void deployFiles(Properties props) throws IOException {
+        // first get the checksums from the current directory
+        RunnerChecksums checksums;
+
+        File checksumsFile = new File(getBaseDir(), "checksums.txt");
+        if (checksumsFile.exists()) {
+            try {
+                checksums = RunnerChecksums.decode(new FileReader(checksumsFile));
+            } catch (JAXBException je) {
+                IOException ioe = new IOException("Error reading " + checksumsFile);
+                ioe.initCause(je);
+                throw ioe;
+            }
+        } else {
+            // no checksums, just create an empty one
+            checksums = new RunnerChecksums();
+        }
+
+        // now figure out if there are changes
+        List<RunnerChecksum> addList = new LinkedList<RunnerChecksum>();
+        List<RunnerChecksum> removeList = new LinkedList<RunnerChecksum>();
+        if (checkForUpdates(checksums, addList, removeList)) {
+            // there are changes, apply them
+
+            // start by removing the run dir, since we want to revert back
+            // to a clean state
+            clearRunDir();
+
+            // now remove all files on the remove list
+            for (RunnerChecksum remove : removeList) {
+                File removeFile = getFile(remove);
+                if (removeFile.exists()) {
+                    removeFile.delete();
+                }
+
+                checksums.getChecksums().remove(remove.getPathName());
+            }
+
+            // then add all files on the add list
+            for (RunnerChecksum add : addList) {
+                File addFile = getFile(add);
+                RunUtil.writeToFile(add.getUrl().openStream(), addFile);
+
+                checksums.getChecksums().put(add.getPathName(), add);
+            }
+
+            // finally, go through and deploy all the files
+            for (File deploy : getDownloadDir().listFiles()) {
+                deployFile(deploy);
+            }
+
+            // write the updated checksums
+            try {
+                checksums.encode(new FileWriter(checksumsFile));
+            } catch (JAXBException je) {
+                IOException ioe = new IOException("Error writing " + checksumsFile);
+                ioe.initCause(je);
+                throw ioe;
+            }
+        }
+    }
+
+    /**
+     * Deploy the given file
+     * @param deploy the file to deploy
+     */
+    protected void deployFile(File deploy)
+        throws IOException
+    {
+        FileInputStream in = new FileInputStream(deploy);
+        RunUtil.extractZip(new ZipInputStream(in), getRunDir());
+    }
+
+    /**
+     * Clear the run directory
+     */
+    protected void clearRunDir() {
+        RunUtil.deleteDir(getRunDir());
+    }
+
+    /**
+     * Determine if the checksums are up-to-date for the runners
+     * @param checksums the current checksums
+     * @param updateList a list of files to download and update our version of
+     * @param removeList a list of files to remove
+     * @return true if there are changes, or false if not
+     */
+    protected boolean checkForUpdates(RunnerChecksums checksums,
+            List<RunnerChecksum> updateList, List<RunnerChecksum> removeList)
+        throws IOException
+    {
+        // get the checksums from the server
+        RunnerChecksums newChecksums = getServerChecksums();
+
+        // get a copy of all the existing keys to check what has changed
+        Set<String> toRemove = new HashSet(checksums.getChecksums().keySet());
+
+        // now compare checksums
+        for (String deployFile : getDeployFiles()) {
+            // remove from the list of files to remove
+            toRemove.remove(deployFile);
+
+            // get the old and new versions of the checksum
+            RunnerChecksum curcs = checksums.getChecksums().get(deployFile);
+            RunnerChecksum newcs = newChecksums.getChecksums().get(deployFile);
+
+            // make sure the file we want exists on the server
+            if (newcs == null) {
+                throw new IOException("Unable to find file " + deployFile +
+                                      " in checksums file");
+            }
+
+            // compare the checksum, to decide if it has changed
+            if (curcs == null || !curcs.equals(newcs)) {
+                updateList.add(newcs);
+            }
+        }
+
+        // now build the remove list from any files that we currently have
+        // checksums for, but weren't on the list of deploy files
+        for (String remove : toRemove) {
+            removeList.add(checksums.getChecksums().get(remove));
+        }
+
+        // determine if there is a change
+        return !updateList.isEmpty() || !removeList.isEmpty();
+    }
+
+    /**
+     * Get the updated list of checksums
+     */
+    protected RunnerChecksums getServerChecksums()
+        throws IOException
+    {
+        // read in the new checksums from the server
+        URL checksumURL = new URL(serverURL + CHECKSUM_URL);
+        try {
+            Reader in = new InputStreamReader(checksumURL.openStream());
+            return RunnerChecksums.decode(in);
+        } catch (JAXBException je) {
+            IOException ioe = new IOException("Error reading checksums from " +
+                                              checksumURL);
+            ioe.initCause(je);
+            throw ioe;
+        }
+    }
+
+    /**
+     * Translate a checksum into a file
+     * @param checksum the checksum file information
+     * @return a file for the given checksum
+     */
+    protected File getFile(RunnerChecksum checksum) {
+        String fixName = checksum.getPathName().replace('/', '-');
+        return new File(getDownloadDir(), fixName);
+    }
+
+    /**
+     * Get the directory to install files in.
+     * @return the run directory
+     */
+    protected synchronized File getRunDir() {
+        if (runDir == null) {
+            runDir = new File(getBaseDir(), "run");
+            runDir.mkdirs();
+        }
+
+        return runDir;
+    }
+
+    /**
+     * Get the directory to download files to.
+     * @return the download directory
+     */
+    protected synchronized File getDownloadDir() {
+        if (downloadDir == null) {
+            downloadDir = new File(getBaseDir(), "download");
+            downloadDir.mkdirs();
+        }
+
+        return downloadDir;
+    }
+
+    /**
+     * Get the directory base directory for this runner.
+     * @return the run directory
+     */
+    protected synchronized File getBaseDir() {
+        if (baseDir == null) {
+            baseDir = new File(RunUtil.getRunDir(), getLogName());
+            baseDir.mkdirs();
+        }
+
+        return baseDir;
+    }
+
+    /**
+     * Get the current status of this listener
+     */
     public Status getStatus() {
         synchronized (statusLock) {
             return status;
@@ -377,35 +548,11 @@ public abstract class BaseRunner implements Runner {
     }
     
     /**
-     * Get the process log file.  Don't create it if it is null.
-     * @return the log file, or null if it doesn't exist
+     * Get the process log file. 
+     * @return the log file, created if it doesn't exist
      */
     public File getLogFile() {
-        return getLogFile(false);
-    }
-    
-    /**
-     * Get the directory to keep log files in.  This is typically represented
-     * by the <code>wonderland.log.dir</code> property.  If this property is not
-     * specified, the "log" subdirectory of the run directory will be used.
-     * 
-     * @return the log directory
-     */
-    protected synchronized File getLogFile(boolean create) {
-        if (create && logDir == null) {
-            
-            // check a property
-            String logDirProp = SystemPropertyUtil.getProperty("wonderland.log.dir");
-            if (logDirProp != null) {
-                logDir = new File(logDirProp);
-            } else {
-                logDir = new File(RunUtil.getRunDir(), "log");
-            }
-            
-            logDir.mkdirs();
-        }
-        
-        if (create && logFile == null) {
+        if (logFile == null) {
             if (Boolean.parseBoolean(
                     SystemPropertyUtil.getProperty("wonderland.log.preserve"))) 
             {
@@ -414,17 +561,37 @@ public abstract class BaseRunner implements Runner {
                     String useName = getLogName() + 
                                      ((int) (Math.random() * 65536)) + 
                                      ".log"; 
-                    logFile = new File(logDir, useName);
+                    logFile = new File(getLogDir(), useName);
                 } while (logFile.exists());
             } else {
                 // reuse the name of the runner as the log file
-                logFile = new File(logDir, getLogName() + ".log");
+                logFile = new File(getLogDir(), getLogName() + ".log");
             }
         }
         
         return logFile;
     }
-   
+
+    /**
+     * Get the log directory
+     * @return the log directory
+     */
+    protected synchronized File getLogDir() {
+        if (logDir == null) {
+            // check a property
+            String logDirProp = SystemPropertyUtil.getProperty("wonderland.log.dir");
+            if (logDirProp != null) {
+                logDir = new File(logDirProp);
+            } else {
+                logDir = new File(RunUtil.getRunDir(), "log");
+            }
+
+            logDir.mkdirs();
+        }
+
+        return logDir;
+    }
+
     /**
      * Reset the log file
      */
@@ -457,7 +624,7 @@ public abstract class BaseRunner implements Runner {
      * @return the handler to use
      */
     protected Handler getLogFileHandler() throws IOException {
-        logFileHandler = new FileHandler(getLogFile(true).getCanonicalPath());
+        logFileHandler = new FileHandler(getLogFile().getCanonicalPath());
         logFileHandler.setLevel(Level.ALL);
         logFileHandler.setFormatter(new Formatter() {
             @Override

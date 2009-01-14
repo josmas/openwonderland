@@ -171,33 +171,11 @@
     <!-- package core -->
     <target name="-core-package" depends="-core-jar, -core-package-server"/>
 
-    <!-- deploy tasks.  This will only work after web has been built! -->
-    <target name="-core-deploy-ant-task">
-        <taskdef name="upload"
-                  classname="org.jdesktop.wonderland.runner.ant.UploadTask">
-            <classpath>
-                <pathelement location="${top.dir}/web/runner/dist/wonderland-runner-api.jar"/>
-                <pathelement location="${core.dir}/build/lib/wonderland-common.jar"/>
-                <pathelement path="${jaxb.classpath}"/>
-            </classpath>
-        </taskdef>
-        <taskdef name="runner"
-                 classname="org.jdesktop.wonderland.runner.ant.RunnerTask">
-            <classpath>
-                <pathelement location="${top.dir}/web/runner/dist/wonderland-runner-api.jar"/>
-                <pathelement location="${core.dir}/build/lib/wonderland-common.jar"/>
-                <pathelement path="${jaxb.classpath}"/>
-            </classpath>
-        </taskdef>
-    </target>
-
-    <target name="-core-deploy" depends="-core-deploy-ant-task">
-        <upload serverurl="${wonderland.web.url}">
-            <fileset dir="${core.dir}/dist">
-                <include name="*.zip"/>
-            </fileset>
-        </upload>
-        <runner action="restart" serverurl="${wonderland.web.url}"/>
+    <!-- deploy task.  This will only work after web and modules have been
+         built!
+    -->
+    <target name="-core-deploy">
+        <ant dir="${top.dir}/modules/tools/darkstar" target="deploy" inheritall="false"/>
     </target>
 
     <!-- clean -->

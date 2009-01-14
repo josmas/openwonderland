@@ -43,7 +43,7 @@ import org.jdesktop.wonderland.client.login.LoginUI;
 import org.jdesktop.wonderland.client.login.PluginFilter;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
-import org.jdesktop.wonderland.runner.darkstar.DarkstarRunner;
+import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.RunManager.RunnerListener;
 import org.jdesktop.wonderland.runner.Runner;

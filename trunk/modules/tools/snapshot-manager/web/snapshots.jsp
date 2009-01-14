@@ -20,15 +20,28 @@
     <body>
         <h3>Initial Worlds</h3>
 
+        <c:set var="currentRoot" value="${requestScope['currentroot']}"/>
+
         <table class="installed">
             <tr class="header">
                 <td class="installed"><b>World Name</b></td>
+                <td class="installed"><b>Path</b></td>
                 <td class="installed"><b>Actions</b></td>
             </tr>
             <c:forEach var="root" items="${requestScope['roots']}">
                 <tr class="installed_a">
-                    <td class="installed">${root}</td>
-                    <td class="installed"></td>
+                    <td class="installed">${root.name}</td>
+                    <td class="installed">${root.rootPath}</td>
+                    <td class="installed">
+                        <c:choose>
+                            <c:when test="${currentroot == root}">
+                                Current <a href="?action=restore&root=worlds/${root.name}">restore</a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="?action=current&root=worlds/${root.name}">make current</a>
+                            </c:otherwise>
+                        </c:choose>
+                    </td>
                 </tr>
             </c:forEach>
         </table>
@@ -47,10 +60,23 @@
                     <td class="installed">${snapshot.name}</td>
                     <td class="installed"><fmt:formatDate value="${snapshot.timestamp}" type="both"/></td>
                     <td class="installed">${snapshot.description}</td>
-                    <td class="installed"><a href="?action=edit&snapshot=${snapshot.name}">edit</a>
-                                          <a href="?action=remove&snapshot=${snapshot.name}">remove</a></td>
+                    <td class="installed">
+                        <c:choose>
+                            <c:when test="${currentroot == snapshot}">
+                                Current <a href="?action=restore&root=snapshots/${snapshot.name}">restore</a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="?action=current&root=snapshots/${snapshot.name}">make current</a>
+                            </c:otherwise>
+                        </c:choose>
+                        <a href="?action=edit&root=snapshots/${snapshot.name}">edit</a>
+                        <a href="?action=remove&root=snapshots/${snapshot.name}">remove</a>
+                    </td>
                 </tr>
             </c:forEach>
+            <tr>
+                <td colspan="4" align="right"><a href="?action=snapshot">Create snapshot</a></td>
+            </tr>
         </table>
     </body>
 </html>

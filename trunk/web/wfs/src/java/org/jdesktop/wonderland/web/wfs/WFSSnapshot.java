@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,24 +39,22 @@ import org.jdesktop.wonderland.tools.wfs.WFSFactory;
  * @author kaplanj
  */
 @XmlRootElement(name="wfs-snapshot")
-public class WFSSnapshot {
+public class WFSSnapshot extends WFSRoot {
     /**
      * The name of the WFS snapshot description file relative to the
      * snapshot root directory.
      */
     private static final String SNAPSHOT_DESC = "snapshot.xml";
 
-    /**
-     * The name of the WFS directory relative to the snapshot root directory
-     */
+    /** The name of the WFS directory relative to the snapshot root directory */
     public static final String SNAPSHOT_WFS = "world-wfs";
+
+    /* The location (beneath the wfs root) of the wfs snapshot directories */
+    public static final String SNAPSHOTS_DIR = "snapshots";
 
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
     private static Unmarshaller unmarshaller = null;
-
-    /** The top-level directory for this snapshot */
-    private File directory;
 
     /** The timestamp for this snapshot */
     private Date timestamp;
@@ -93,8 +89,9 @@ public class WFSSnapshot {
      * @return name the name of this snapshot
      */
     @XmlTransient
+    @Override
     public String getName() {
-        return getDirectory().getName();
+        return super.getName();
     }
 
     /**
@@ -106,6 +103,7 @@ public class WFSSnapshot {
     public void setName(String newName) throws IOException {
         // get the current name
         String oldName = getName();
+        String oldPath = getRootPath();
 
         File parent = getDirectory().getParentFile();
         File newDir = new File(parent, newName);
@@ -124,7 +122,7 @@ public class WFSSnapshot {
         setWfs(newDir);
 
         // notify the manager
-        WFSManager.getWFSManager().renameSnapshot(oldName, this);
+        WFSManager.getWFSManager().renameSnapshot(oldName, oldPath, this);
     }
 
     /**
@@ -170,25 +168,19 @@ public class WFSSnapshot {
      * @return the snapshot directory
      */
     @XmlTransient
+    @Override
     public File getDirectory() {
-        return directory;
+        return super.getDirectory();
     }
-
+ 
     /**
-     * Set the top-level directory for this snapshot. Only done when restoring.
-     * @param directory the directory of this snapshot
-     */
-    protected void setDirectory(File directory) {
-        this.directory = directory;
-    }
-
-    /**
-     * Get the path to the WFS relative to the root of this directory
-     * @return the path
+     * Get the full path to this snapshot from the root
+     * @return the root path
      */
     @XmlTransient
-    public String getPath() {
-        return SNAPSHOT_WFS;
+    @Override
+    public String getRootPath() {
+        return SNAPSHOTS_DIR + "/" + getName() + "/" + SNAPSHOT_WFS;
     }
 
     /**
@@ -232,29 +224,20 @@ public class WFSSnapshot {
      * @return the WFS object associated with this snapshot
      */
     @XmlTransient
+    @Override
     public WFS getWfs() {
-        return wfs;
+        return super.getWfs();
     }
 
     /**
      * Set the WFS associated with this snapshot.  Only done at restore time.
      * @param dir the base directory to read the WFS from
      */
+    @Override
     protected void setWfs(File dir) throws IOException {
         // decode the WFS if it exists
         File wfsDir = new File(dir, SNAPSHOT_WFS);
-        try {
-            if (wfsDir.exists()) {
-                wfs = WFSFactory.open(wfsDir.toURI().toURL());
-            } else {
-                wfs = WFSFactory.create(wfsDir.toURI().toURL());
-            }
-        } catch (Exception ex) {
-            IOException ioe = new IOException("Error reading WFS from " +
-                                              wfsDir);
-            ioe.initCause(ex);
-            throw ioe;
-        }
+        super.setWfs(wfsDir);
     }
 
     /**

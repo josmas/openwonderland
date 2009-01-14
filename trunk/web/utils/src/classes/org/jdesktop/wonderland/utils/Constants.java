@@ -31,8 +31,11 @@ public class Constants {
     /** the port to run the webserver on */
     public static final String WEBSERVER_PORT_PROP = "wonderland.webserver.port";
 
-    /** the webserver hostname */
+    /** the webserver public hostname */
     public static final String WEBSERVER_HOST_PROP = "wonderland.webserver.host";
+
+    /** the webserver private hostname */
+    public static final String WEBSERVER_HOST_PRIVATE_PROP = "wonderland.webserver.host.private";
 
     /** the full URL of the web server */
     public static final String WEBSERVER_URL_PROP  = "wonderland.web.server.url";

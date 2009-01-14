@@ -17,6 +17,7 @@
 
     <pathconvert property="module-client.classpath">
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${current.dir}/../darkstar/build/weblib/darkstar-runner.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         <path path="${web.classpath}"/>
     </pathconvert>
@@ -31,7 +32,9 @@
         <module name="servermanager" version="1" minorversion="1"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
-            
+
+            <requires name="darkstar" version="1"/>
+
             <part name="web">
                 <jar name="servermanager-web.war">
                     <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">

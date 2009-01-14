@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author jkaplan
  */
 @XmlRootElement
-public class DarkstarServer {
+public class DarkstarServer implements Cloneable {
     private String hostname;
     private int port;
 
@@ -77,5 +77,39 @@ public class DarkstarServer {
      */
     public void setPort(int port) {
         this.port = port;
+    }
+
+    @Override
+    public DarkstarServer clone() {
+        return new DarkstarServer(getHostname(), getPort());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DarkstarServer other = (DarkstarServer) obj;
+        if ((this.hostname == null) ?
+            (other.hostname != null) : !this.hostname.equals(other.hostname))
+        {
+            return false;
+        }
+        if (this.port != other.port) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash +
+                (this.hostname != null ? this.hostname.hashCode() : 0);
+        hash = 29 * hash + this.port;
+        return hash;
     }
 }

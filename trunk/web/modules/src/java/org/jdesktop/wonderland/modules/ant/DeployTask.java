@@ -64,7 +64,7 @@ public class DeployTask extends Task {
             ModuleUploader mu = new ModuleUploader(serverUrl);
             mu.upload(module);
         } catch (IOException ioe) {
-            throw new BuildException(ioe);
+            throw new BuildException("Error uploading to " + serverUrl, ioe);
         }
     } 
 }

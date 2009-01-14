@@ -17,13 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.service;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import sun.misc.Service;
@@ -37,7 +42,7 @@ import sun.misc.Service;
  */
 public class DeployManager {
     /* A set of deployer objects */
-    private HashSet<ModuleDeployerSPI> deployers = new HashSet();
+    private HashSet<ModuleDeployerSPI> deployers = new LinkedHashSet();
     
     /* The error logger */
     private Logger logger = Logger.getLogger(DeployManager.class.getName());
@@ -249,7 +254,97 @@ public class DeployManager {
         }
         return true;
     }
-    
+
+    /**
+     * Calculate a valid deploy order for a group of modules. A valid
+     * deploy order is one where for every module to be deployed,
+     * all of that module's dependecies have already been deployed before
+     * that module is deployed.  That way, at deploy time a module can
+     * be sure that any resource it needs are already deployed properly.
+     * <p>
+     * The result of this method only defines that all dependencies will
+     * be met before any module is listed. There are no other guarantees about
+     * the ordering of modules relative to each other.  Modules will not
+     * necessarily deploy in the same order from run to run.
+     * <p>
+     * Note this only compares module dependencies within the given map.
+     * If a module depends on a module that is not in the given map,
+     * it is assumed that the module has already been installed, so no special
+     * care needs to be taken.
+     * <p>
+     * @param modules a map containing module names and modules to
+     * deploy
+     * @return a list of module names in dependency order
+     * @throws IllegalArgumentException if a valid deployment order cannot
+     * be determined due to circular dependencies
+     */
+    public static List<String> getDeploymentOrder(Map<String, Module> modules) {
+        List<String> out = new ArrayList<String>();
+
+        // make a copy of the module map, so we don't remove things from
+        // the original
+        Map<String, Module> deploy = new HashMap<String, Module>(modules);
+
+        int changeCount;
+        do {
+            // reset the change count
+            changeCount = 0;
+
+            // go through each remaining module, to see if its dependencies
+            // are all met
+            Iterator<Map.Entry<String, Module>> i = deploy.entrySet().iterator();
+            while (i.hasNext()) {
+                Map.Entry<String, Module> e = i.next();
+                String name = e.getKey();
+                Module module = e.getValue();
+
+                // scan all the dependencies to see if they are met
+                boolean ready = true;
+                for (ModuleInfo info : module.getRequires().getRequires()) {
+                    // check if the dependency is still in the map
+                    // of modules to install.  If it is, it means we cannot
+                    // install this module yet.  If the dependency isn't in
+                    // the map, it's already installed or already on the list,
+                    // so we should be all set
+                    if (deploy.containsKey(info.getName())) {
+                        ready = false;
+                        break;
+                    }
+                }
+
+                // if all the dependecies are met, move this module out of
+                // the modules map, and into the install list
+                if (ready) {
+                    out.add(name);
+                    i.remove();
+                    changeCount++;
+                }
+            }
+
+        } while (changeCount > 0);
+
+        // at this point, all modules remaining in the modules map were
+        // examined, and all had unresolved dependencies.  If the map is
+        // empty, that is fine, it just means we are done.
+
+        // If the map is not empty, it means there were circular dependencies
+        // we could not resolve.  In that case, throw an exception with the
+        // remaining modules
+        if (!deploy.isEmpty()) {
+            String moduleList = "";
+            for (String name : deploy.keySet()) {
+                moduleList += name + ", ";
+            }
+
+            throw new IllegalArgumentException("Could not determine " +
+                    "module installation order.  The following modules had" +
+                    "unresolvable dependencies: " + moduleList);
+        }
+
+        return out;
+    }
+
+
     /**
      * Find and return all the classes that implement the ModuleDeployerSPI
      * inteface
@@ -258,7 +353,9 @@ public class DeployManager {
      */
     private Class[] getClasses() {
         Iterator<ModuleDeployerSPI> it = Service.providers(ModuleDeployerSPI.class);
-        Collection<Class> names = new HashSet<Class>();
+        
+        // use a linked hash set to preserve a static ordering
+        Collection<Class> names = new LinkedHashSet<Class>();
         while (it.hasNext() == true) {
             names.add(it.next().getClass());
         }

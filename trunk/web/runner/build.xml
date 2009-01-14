@@ -14,6 +14,7 @@
     <target name="-set-extra-classpath">
         <pathconvert property="web-extra.classpath">
             <path path="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+            <path path="${web.dir}/asset/dist/wonderland-asset-core.jar"/>
             <path path="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
             <path path="${core.dir}/build/lib/wonderland-common.jar"/>
             <path path="${core.dir}/ext/common/stun.jar"/>
@@ -36,15 +37,10 @@
         <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
             <fileset dir="${build.classes.dir}">
                 <include name="org/jdesktop/wonderland/runner/*.class"/>
-                <include name="org/jdesktop/wonderland/runner/darkstar/*.class"/>
                 <include name="org/jdesktop/wonderland/runner/ant/**"/>
             </fileset>
         </jar>
-    </target>
-
-    <target name="clean" depends="-web-clean"/>
-
-    <target name="package">
+        
         <jar jarfile="${dist.dir}/wonderland-runner-core.jar">
             <fileset dir="${build.classes.dir}">
                 <exclude name="org/jdesktop/wonderland/runner/servlet/**"/>
@@ -55,9 +51,8 @@
             <zipfileset dir="${javasrc.dir}">
                 <include name="META-INF/**"/>
             </zipfileset>
-            
-            <!-- package module distribution files -->
-            <zipfileset dir="../../modules/dist/runner/classes"/>
         </jar>
     </target>
+
+    <target name="clean" depends="-web-clean"/>
 </project>

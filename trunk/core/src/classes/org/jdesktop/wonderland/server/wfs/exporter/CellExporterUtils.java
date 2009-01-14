@@ -49,9 +49,14 @@ public class CellExporterUtils {
     /**
      * Creates a new snapshot, returns a WorldRoot object representing the
      * new WFS or null upon failure
+     * @param name the name of the snapshot to create, or null to use the
+     * default name
      */
-    public static WorldRoot createSnapshot() throws IOException, JAXBException {
-        URL url = new URL(getWebServerURL(), WFS_PREFIX + "create/snapshot");
+    public static WorldRoot createSnapshot(String name)
+            throws IOException, JAXBException
+    {
+        String query = (name == null) ? "" : "?name=" + name;
+        URL url = new URL(getWebServerURL(), WFS_PREFIX + "create/snapshot" + query);
         return WorldRoot.decode(new InputStreamReader(url.openStream()));
     }
 

@@ -6,7 +6,7 @@
 
 <DeploymentPlan>
     <entry>
-        <runnerClass>org.jdesktop.wonderland.runner.darkstar.DarkstarRunner</runnerClass>
+        <runnerClass>org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner</runnerClass>
         <runnerName>Darkstar Server</runnerName>
     </entry>
     <entry>

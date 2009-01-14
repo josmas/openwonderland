@@ -489,6 +489,19 @@ public class WonderlandSessionImpl implements WonderlandSession {
                 }
             }
         });
+
+        // if we disconnected, now would be a good time to tell all the
+        // connections that they too are disconnected.  Again, let's do
+        // this in a separate thread to be safe
+        if (status == WonderlandSession.Status.DISCONNECTED) {
+            notifier.submit(new Runnable() {
+                public void run() {
+                    for (ClientConnection connection : getConnections()) {
+                        connection.disconnected();
+                    }
+                }
+            });
+        }
     }
     
     /**

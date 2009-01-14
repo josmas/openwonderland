@@ -80,9 +80,8 @@ public class CellExportService extends AbstractService {
 
     // default property values
     private static final String EXPORT_ON_STARTUP_PROP = NAME + ".export.on.startup";
-    private static final boolean EXPORT_ON_STARTUP_DEFAULT = false;
 
-    private final boolean exportOnStartup;
+    private final String exportOnStartup;
 
     /** manages the context of the current transaction */
     private TransactionContextFactory<CellExportTransactionContext> ctxFactory;
@@ -103,8 +102,7 @@ public class CellExportService extends AbstractService {
         PropertiesWrapper wrappedProps = new PropertiesWrapper(props);
 
         // read property values
-        exportOnStartup = wrappedProps.getBooleanProperty(EXPORT_ON_STARTUP_PROP,
-                                                          EXPORT_ON_STARTUP_DEFAULT);
+        exportOnStartup = wrappedProps.getProperty(EXPORT_ON_STARTUP_PROP);
 
         // create the transaction context factory
         ctxFactory = new TransactionContextFactoryImpl(proxy);
@@ -139,7 +137,7 @@ public class CellExportService extends AbstractService {
         executor = Executors.newSingleThreadExecutor();
 
         // if the export on startup property is set, export now
-        if (exportOnStartup) {
+        if (exportOnStartup != null) {
             logger.log(Level.INFO, "CellExportService starting export");
 
             try {
@@ -150,7 +148,7 @@ public class CellExportService extends AbstractService {
 
                     public void run() throws Exception {
                         CellExporter ce = new CellExporter();
-                        ce.export();
+                        ce.export(exportOnStartup);
                     }
                 }, taskOwner);
             } catch (Exception ex) {
@@ -188,7 +186,7 @@ public class CellExportService extends AbstractService {
 	            " to current version:" + currentVersion);
     }
 
-    public void createSnapshot(SnapshotCreationListener listener) {
+    public void createSnapshot(String name, SnapshotCreationListener listener) {
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedSnapshotCreationWrapper(listener);
         }
@@ -200,7 +198,7 @@ public class CellExportService extends AbstractService {
         // now add the snapshot request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        CreateSnapshot cs = new CreateSnapshot(scl.getId());
+        CreateSnapshot cs = new CreateSnapshot(name, scl.getId());
         ctxFactory.joinTransaction().add(cs);
     }
 
@@ -235,9 +233,11 @@ public class CellExportService extends AbstractService {
      * creation listener identified by managed reference id.
      */
     private class CreateSnapshot implements Runnable {
+        private String name;
         private BigInteger listenerID;
 
-        public CreateSnapshot(BigInteger listenerID) {
+        public CreateSnapshot(String name, BigInteger listenerID) {
+            this.name = name;
             this.listenerID = listenerID;
         }
 
@@ -246,7 +246,7 @@ public class CellExportService extends AbstractService {
             Exception ex = null;
 
             try {
-                root = CellExporterUtils.createSnapshot();
+                root = CellExporterUtils.createSnapshot(name);
             } catch (Exception ex2) {
                 ex = ex2;
             }

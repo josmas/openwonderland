@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.login;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -93,7 +94,6 @@ public class ServerSessionManager {
         // load the server details
         try {
             URL detailsURL = new URL(new URL(serverURL), DETAILS_URL);
-            //this.details = ServerDetails.decode(new InputStreamReader(detailsURL.openStream()));
 
 	    URLConnection detailsURLConn = detailsURL.openConnection();
 	    detailsURLConn.setRequestProperty("Accept", "application/xml");
@@ -145,6 +145,36 @@ public class ServerSessionManager {
     public ServerDetails getDetails() {
         return details;
     }
+
+    /**
+     * Determine if this session manager is connected to the server.   This
+     * method will return true after the first call to create session, once
+     * login has completed and all plugins have been initialized.
+     * @return true if this session manager is connected to the server, or
+     * false if not
+     */
+    public boolean isConnected() {
+        if (loginControl == null) {
+            return false;
+        }
+
+        return loginControl.isAuthenticated();
+    }
+
+    /**
+     * Get the username this session is connected as.  Only valid after
+     * login has been requested.
+     * @return the username this session is logged in as, or null if this
+     * session is not connected
+     */
+    public String getUsername() {
+        if (loginControl == null) {
+            return null;
+        }
+
+        return loginControl.getUsername();
+    }
+
 
     /**
      * Create a new WonderlandSession using the default session creator
@@ -467,17 +497,23 @@ public class ServerSessionManager {
 
         /**
          * Get the LoginParameters to use when connecting to the Darkstar
-         * server.
-         * This method is only valid when isAuthenticated() returns true.
-         * @return the LoginParameters to use
+         * server. This method is valid starting after the server login
+         * has happened, but before any plugins have been initialized.
+         * @return the LoginParameters to use, or null if the parameters
+         * have not been set yet
          */
         public synchronized LoginParameters getLoginParameters() {
-            if (!isAuthenticated()) {
-                throw new IllegalStateException("Not authenticated");
-            }
-
             return params;
         }
+
+        /**
+         * Get the username that this user has connected as.  This should
+         * be a unique identifier for the user based on the authentication
+         * information they provided.  This method must return a value
+         * any time after <code>loginComplete()</code> has been called.
+         * @return the username the user has logged in as
+         */
+        public abstract String getUsername();
 
         /**
          * Indicate that the login attempt was successful, and pass in
@@ -535,6 +571,8 @@ public class ServerSessionManager {
     }
 
     public class NoAuthLoginControl extends LoginControl {
+        private String username;
+
         @Override
         public void requestLogin(LoginUI ui) {
             super.requestLogin(ui);
@@ -544,12 +582,18 @@ public class ServerSessionManager {
         public void authenticate(String username, String fullname)
             throws LoginFailureException
         {
+            this.username = username;
+
             // no other authentication to do, just do the Darkstar login
             // with all the data packed into the username
             String packed = formatUsername(username, fullname);
             loginComplete(new LoginParameters(packed, new char[0]));
         }
-        
+
+        public String getUsername() {
+            return username;
+        }
+
         /**
          * Combine values into a single username argument that can be
          * passed to the Darkstar server to populate our identity.
@@ -572,6 +616,10 @@ public class ServerSessionManager {
         public boolean authenticate(String username, char[] password) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        public String getUsername() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     public class WebURLLoginControl extends LoginControl {
@@ -589,6 +637,10 @@ public class ServerSessionManager {
         public void requestLogin(LoginUI ui) {
             super.requestLogin(ui);
             ui.requestLogin(this);
+        }
+
+        public String getUsername() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
