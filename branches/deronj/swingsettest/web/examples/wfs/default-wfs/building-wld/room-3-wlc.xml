@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<static-model>
+    <origin>
+        <x>0.0</x>
+        <y>0.0</y>
+        <z>5.0</z>
+    </origin>
+    <bounds>
+        <type>SPHERE</type>
+        <radius>3.0</radius>
+    </bounds>
+    <scale>
+        <x>0.5</x>
+        <y>0.5</y>
+        <z>0.5</z>
+    </scale>
+    <rotation>
+        <x>0.0</x>
+        <y>0.0</y>
+        <z>0.0</z>
+        <angle>0.0</angle>
+    </rotation>
+</static-model>

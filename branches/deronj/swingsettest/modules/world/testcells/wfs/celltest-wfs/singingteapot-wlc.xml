@@ -1,0 +1,14 @@
+<singing-teapot-cell>
+
+    <origin>
+	<x>-5</x>
+        <y>0.0</y>
+        <z>10</z>
+    </origin>
+
+    <audio-treatment-component>
+  	<treatment>wls://testcells/singing_teapot.au</treatment>
+	<groupId>singing_teapot</groupId>
+    </audio-treatment-component>
+
+</singing-teapot-cell>
