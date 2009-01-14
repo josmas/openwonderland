@@ -74,7 +74,7 @@ public class CellExporterUtils {
         // cell. If the cell does not return a valid setup object, then simply
         // ignore the cell (and its children).
         String cellName = cellMO.getName();
-        CellServerState setup = cellMO.getCellServerState(null);
+        CellServerState setup = cellMO.getServerState(null);
         if (setup == null) {
             return null;
         }
