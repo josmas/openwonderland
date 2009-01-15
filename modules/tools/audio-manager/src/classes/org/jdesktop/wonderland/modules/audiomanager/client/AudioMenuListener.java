@@ -24,6 +24,8 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
  */
 public interface AudioMenuListener {
 
+    public void mute(boolean isMuted);
+
     public void showSoftphone(boolean isVisible);
 
     public void testAudio();
