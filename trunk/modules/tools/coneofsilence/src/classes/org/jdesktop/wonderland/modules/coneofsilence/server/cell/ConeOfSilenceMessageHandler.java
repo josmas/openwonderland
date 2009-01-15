@@ -22,6 +22,7 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 
@@ -50,6 +51,7 @@ import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -60,6 +62,7 @@ import org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCe
 
 import com.jme.bounding.BoundingVolume;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 
 /**
@@ -82,6 +85,8 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
     public ConeOfSilenceMessageHandler(ConeOfSilenceCellMO coneOfSilenceCellMO, String name) {
 	this.name = name;
 
+	coneOfSilenceCellMO.addComponent(new MovableComponentMO(coneOfSilenceCellMO));
+
 	coneOfSilenceCellMORef = AppContext.getDataManager().createReference(
 	        (ConeOfSilenceCellMO) CellManagerMO.getCell(coneOfSilenceCellMO.getCellID()));
 
@@ -93,6 +98,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 	}
 
         channelComponentMO.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, this);
+        channelComponentMO.addMessageReceiver(MovableMessage.class, this);
 
         channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
 
@@ -103,8 +109,8 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 
         proximityListener = new MyProximityListener(name);
 
-        //prox.addProximityListener(proximityListener, bounds );
-        //coneOfSilenceCellMO.addComponent(prox);
+        prox.addProximityListener(proximityListener, bounds );
+        coneOfSilenceCellMO.addComponent(prox);
     }
 
     public void done() {
@@ -114,14 +120,33 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
     public void messageReceived(final WonderlandClientSender sender, 
 	    final WonderlandClientID clientID, final CellMessage message) {
 
-	ConeOfSilenceEnterCellMessage msg = (ConeOfSilenceEnterCellMessage) message;
+	if (message instanceof ConeOfSilenceEnterCellMessage) {
+	    ConeOfSilenceEnterCellMessage msg = (ConeOfSilenceEnterCellMessage) message;
 
-	logger.fine("Got message " + msg);
+	    if (true) {
+		System.out.println("Ignoring cone message().  Entered =" + msg.getEntered());
+		return;
+	    }
 
-	if (msg.getEntered()) {
-	    proximityListener.cellEntered(msg.getSoftphoneCallID());
+	    logger.fine("Got message " + msg);
+
+	    if (msg.getEntered()) {
+	        proximityListener.cellEntered(msg.getSoftphoneCallID());
+	    } else {
+	        proximityListener.cellExited(msg.getSoftphoneCallID());
+	    }
+	} else if (message instanceof MovableMessage) {
+	    MovableMessage movableMessage = (MovableMessage) message;
+
+	    Vector3f translation = movableMessage.getTranslation();
+
+	    Quaternion rotation = movableMessage.getRotation();
+
+	    System.out.println("Got movable message:  action "
+		+ movableMessage.getActionType() 
+		+ " translation " + translation + " rotation " + rotation);
 	} else {
-	    proximityListener.cellExited(msg.getSoftphoneCallID());
+	    logger.warning("Unknown message " + message);
 	}
     }
 
