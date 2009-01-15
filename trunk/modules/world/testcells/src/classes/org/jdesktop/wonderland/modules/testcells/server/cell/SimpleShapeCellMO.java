@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -83,5 +84,6 @@ public class SimpleShapeCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
+        this.shape = ((SimpleShapeCellServerState)setup).getShape();
     }
 }
