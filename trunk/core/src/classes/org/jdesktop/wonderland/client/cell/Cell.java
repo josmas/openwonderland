@@ -34,6 +34,9 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
@@ -580,7 +583,15 @@ public class Cell {
         // Install the CellComponents
         for(String compClassname : configData.getClientComponentClasses()) {
             try {
-                Class compClazz = Class.forName(compClassname);
+                // find the classloader associated with the server session
+                // manager that loaded this cell.  That classloader will
+                // have all the module classes
+                WonderlandSession session = getCellCache().getSession();
+                ServerSessionManager ssm = LoginManager.find(session);
+                ClassLoader cl = ssm.getClassloader();
+
+                // us the classloader we found to load the component class
+                Class compClazz = cl.loadClass(compClassname);
                 if (!components.containsKey(compClazz)) {
 //                    logger.warning("Installing component "+compClassname);
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
