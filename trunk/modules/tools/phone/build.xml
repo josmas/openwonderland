@@ -30,6 +30,9 @@
                 builddir="${build.lib.dir}">
             <client>
                 <clientjar name="phone-client" basedir="${build.classes.dir}">
+                    <cellfactory>
+                        <provider classname="org.jdesktop.wonderland.modules.phone.client.cell.PhoneCellFactory"/>
+                    </cellfactory>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>
