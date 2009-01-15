@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.ShapeRenderer;
-import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState;
 
 /**
  * Simple shape
@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeC
  */
 public class SimpleShapeCell extends Cell {
 
-    private SimpleShapeConfig.Shape shape;
+    private SimpleShapeCellClientState.Shape shape;
     private MaterialJME materialJME;
     private float mass;
 
@@ -49,7 +49,7 @@ public class SimpleShapeCell extends Cell {
     @Override
     public void setClientState(CellClientState configData) {
         super.setClientState(configData);
-        SimpleShapeConfig c = (SimpleShapeConfig) configData;
+        SimpleShapeCellClientState c = (SimpleShapeCellClientState) configData;
         this.shape = c.getShape();
         this.mass = c.getMass();
         this.materialJME = c.getMaterialJME();
@@ -71,7 +71,7 @@ public class SimpleShapeCell extends Cell {
         return ret;
     }
 
-    public SimpleShapeConfig.Shape getShape() {
+    public SimpleShapeCellClientState.Shape getShape() {
         return shape;
     }
 

@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.testcells.common.cell.config;
+package org.jdesktop.wonderland.modules.testcells.common.cell.state;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
  *
  * @author paulby
  */
-public class SimpleShapeConfig extends CellClientState {
+public class SimpleShapeCellClientState extends CellClientState {
     public enum Shape { BOX, CONE, CYLINDER, SPHERE, TEAPOT };
 
     private Shape shape;
@@ -37,15 +37,15 @@ public class SimpleShapeConfig extends CellClientState {
 
     private MaterialJME materialJME = null;
 
-    public SimpleShapeConfig(Shape shape) {
+    public SimpleShapeCellClientState(Shape shape) {
         this(shape, 0f);
     }
 
-    public SimpleShapeConfig(Shape shape, float mass) {
+    public SimpleShapeCellClientState(Shape shape, float mass) {
         this(shape, mass, null);
     }
 
-    public SimpleShapeConfig(Shape shape, float mass, MaterialJME material) {
+    public SimpleShapeCellClientState(Shape shape, float mass, MaterialJME material) {
         this.shape = shape;
         this.mass = mass;
         this.materialJME = material;
