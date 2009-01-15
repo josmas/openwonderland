@@ -317,6 +317,20 @@ public class ServerSessionManager {
     }
 
     /**
+     * Get the classloader this session uses to load plugins.  Only valid after
+     * login has been requested.
+     * @return the classloader this session uses, or null if this
+     * session is not connected
+     */
+    public ClassLoader getClassloader() {
+        if (loginControl == null) {
+            return null;
+        }
+
+        return loginControl.getClassLoader();
+    }
+
+    /**
      * Create a new LoginControl of the appropriate type
      * @param authInfo the authentication info
      * @return a new LoginControl for the given type

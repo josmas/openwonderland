@@ -17,11 +17,16 @@
  */
 package org.jdesktop.wonderland.client.cell.registry;
 
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import sun.misc.Service;
 
 /**
  * The cell registry manages the collection of cell types registered with the
@@ -35,11 +40,24 @@ import java.util.logging.Logger;
 public class CellRegistry {
 
     /* A set of all cell factories */
-    private Set<CellFactory> cellFactorySet;
+    private Set<CellFactorySPI> cellFactorySet;
     
     /* A map of cell factories and the extensions the support */
-    private Map<String, Set<CellFactory>> cellFactoryExtensionMap;
-    
+    private Map<String, Set<CellFactorySPI>> cellFactoryExtensionMap;
+
+    /* Initialize from the list of service providers in module JARs */
+    static {
+        /* Attempt to load the class names using the service providers */
+        // This needs to work with federation XXX
+        ServerSessionManager manager = LoginManager.getPrimary();
+        ClassLoader cl = manager.getClassloader();
+        Iterator<CellFactorySPI> it = Service.providers(CellFactorySPI.class, cl);
+        while (it.hasNext() == true) {
+            CellFactorySPI spi = it.next();
+            CellRegistry.getCellRegistry().registerCellFactory(spi);
+        }
+    }
+
     /** Default constructor */
     public CellRegistry() {
         cellFactoryExtensionMap = new HashMap();
@@ -71,16 +89,16 @@ public class CellRegistry {
      * 
      * @param factory The cell factory
      */
-    public void registerCellFactory(CellFactory factory) {
+    public void registerCellFactory(CellFactorySPI factory) {
         // For now, don't check if the factory already exists. We may need to
         // create an entry in cellFactoryExtensionMap for the extension type if it does
         // not yet exist.
         String[] extensions = factory.getExtensions();
         if (extensions != null) {
             for (String extension : extensions) {
-                Set<CellFactory> factories = cellFactoryExtensionMap.get(extension);
+                Set<CellFactorySPI> factories = cellFactoryExtensionMap.get(extension);
                 if (factories == null) {
-                    factories = new HashSet<CellFactory>();
+                    factories = new HashSet<CellFactorySPI>();
                     cellFactoryExtensionMap.put(extension, factories);
                 }
                 factories.add(factory);
@@ -97,7 +115,7 @@ public class CellRegistry {
      * 
      * @return A set of registered cell factories
      */
-    public Set<CellFactory> getAllCellFactories() {
+    public Set<CellFactorySPI> getAllCellFactories() {
         return new HashSet(cellFactorySet);
     }
     
@@ -108,7 +126,7 @@ public class CellRegistry {
      * @param extension File type extension (e.g. 'jpg', 'dae')
      * @return A set of CellFactory objects registered on the extension
      */
-    public Set<CellFactory> getCellFactoriesByExtension(String extension) {
+    public Set<CellFactorySPI> getCellFactoriesByExtension(String extension) {
         return cellFactoryExtensionMap.get(extension);
     }
 }

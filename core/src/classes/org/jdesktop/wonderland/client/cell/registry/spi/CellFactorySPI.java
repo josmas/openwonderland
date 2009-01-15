@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.client.cell.registry;
+package org.jdesktop.wonderland.client.cell.registry.spi;
 
 import java.awt.Image;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public interface CellFactory {
+public interface CellFactorySPI {
 
     /**
      * Returns an array of extension file types supported by this cell. The

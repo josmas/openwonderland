@@ -610,11 +610,21 @@ public class ModuleTask extends Jar {
         public void addConfiguredClientPlugin(ClientPlugin clientPlugin) {
             addConfiguredService(clientPlugin);
         }
+
+        public void addConfiguredCellFactory(CellFactory cellFactory) {
+            addConfiguredService(cellFactory);
+        }
     }
     
     public static class ClientPlugin extends Service {
         public ClientPlugin() {
             setType("org.jdesktop.wonderland.client.ClientPlugin");
+        }
+    }
+
+    public static class CellFactory extends Service {
+        public CellFactory() {
+            setType("org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI");
         }
     }
 }

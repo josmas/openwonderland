@@ -30,7 +30,9 @@
                 builddir="${build.lib.dir}">
             <client>
                 <clientjar name="coneofsilence-client" basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.coneofsilence.client.cell.ConeOfSilenceClientPlugin"/>
+                    <cellfactory>
+                        <provider classname="org.jdesktop.wonderland.modules.coneofsilence.client.cell.ConeOfSilenceCellFactory"/>
+                    </cellfactory>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>
