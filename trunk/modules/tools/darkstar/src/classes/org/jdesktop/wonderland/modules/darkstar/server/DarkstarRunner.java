@@ -146,7 +146,7 @@ public class DarkstarRunner extends BaseRunner {
 
         // attempt to restore the WFS URL or use the default name
         try {
-            File wfsFile = new File(getRunDir(), SELECTED_WFS_FILE);
+            File wfsFile = new File(getBaseDir(), SELECTED_WFS_FILE);
             if (wfsFile.exists()) {
                 wfsName = restoreWFSName(SELECTED_WFS_FILE);
             } else {
@@ -463,7 +463,7 @@ public class DarkstarRunner extends BaseRunner {
      * @param fileName the file name to save to
      */
     protected void saveWFSName(String wfsName, String fileName) throws IOException {
-        File wfsFile = new File(getRunDir(), fileName);
+        File wfsFile = new File(getBaseDir(), fileName);
         PrintWriter out = new PrintWriter(new FileWriter(wfsFile));
        
         if (wfsName != null) {
@@ -479,7 +479,7 @@ public class DarkstarRunner extends BaseRunner {
      * @return the current URL, or null if no URL is set
      */
     protected String restoreWFSName(String fileName) throws IOException {
-        File wfsFile = new File(getRunDir(), fileName);
+        File wfsFile = new File(getBaseDir(), fileName);
         if (!wfsFile.exists()) {
             return null;
         }
