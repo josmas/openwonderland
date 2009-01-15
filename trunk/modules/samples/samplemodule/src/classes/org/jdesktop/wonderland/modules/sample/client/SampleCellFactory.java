@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.sample.client;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
-import org.jdesktop.wonderland.client.cell.registry.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 
@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class SampleCellFactory implements CellFactory {
+public class SampleCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
         return new String[] {};

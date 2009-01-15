@@ -23,7 +23,9 @@
                     
             <client>
                 <clientjar name="sample-client" basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.sample.client.SampleClientPlugin"/>
+                    <cellfactory>
+                        <provider classname="org.jdesktop.wonderland.modules.sample.client.SampleCellFactory"/>
+                    </cellfactory>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                     <fileset dir="${current.dir}/src/classes">
