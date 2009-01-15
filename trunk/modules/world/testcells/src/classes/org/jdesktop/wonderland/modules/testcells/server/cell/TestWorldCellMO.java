@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.testcells.common.cell.setup.TestWorldCellServerState;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.TestWorldCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 

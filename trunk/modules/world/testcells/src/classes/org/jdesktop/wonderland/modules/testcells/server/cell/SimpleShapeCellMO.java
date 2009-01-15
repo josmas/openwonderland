@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
-import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class SimpleShapeCellMO extends CellMO {
     
-    private SimpleShapeConfig.Shape shape;
+    private SimpleShapeCellClientState.Shape shape;
     private float mass;
     private MaterialJME materialJME = null;
     
@@ -49,18 +49,18 @@ public class SimpleShapeCellMO extends CellMO {
     }
 
     public SimpleShapeCellMO(Vector3f center, float size) {
-        this(center, size, SimpleShapeConfig.Shape.BOX);
+        this(center, size, SimpleShapeCellClientState.Shape.BOX);
     }
 
-    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape) {
+    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeCellClientState.Shape shape) {
         this(center, size, shape, 0f);
     }
     
-    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape, float mass) {
+    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeCellClientState.Shape shape, float mass) {
         this(center, size, shape, mass, null);
     }
 
-    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeConfig.Shape shape, float mass, MaterialJME materialJME) {
+    public SimpleShapeCellMO(Vector3f center, float size, SimpleShapeCellClientState.Shape shape, float mass, MaterialJME materialJME) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
         this.shape = shape;
         this.mass = mass;
@@ -75,7 +75,7 @@ public class SimpleShapeCellMO extends CellMO {
     @Override
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
-            cellClientState = new SimpleShapeConfig(shape, mass, materialJME);
+            cellClientState = new SimpleShapeCellClientState(shape, mass, materialJME);
         }
         return super.getClientState(cellClientState, clientID, capabilities);
     }

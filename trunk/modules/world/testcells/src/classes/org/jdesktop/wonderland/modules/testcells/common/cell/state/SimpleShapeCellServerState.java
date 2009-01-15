@@ -15,26 +15,53 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.testcells.common.cell.setup;
+package org.jdesktop.wonderland.modules.testcells.common.cell.state;
+
 
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState.Shape;
 
 /**
- *
- * @author jordanslott
+ * ServerState for the SimpleShapeCell
+ * 
+ * @author paulby
  */
-@XmlRootElement(name="singing-teapot-cell")
-public class SingingTeapotCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
+@XmlRootElement(name="SimpleShape-cell")
+public class SimpleShapeCellServerState extends CellServerState
+        implements Serializable, CellServerStateSPI {
+
+    @XmlElement(name="shape")
+    private Shape shape;
 
     /** Default constructor */
-    public SingingTeapotCellSetup() {
+    public SimpleShapeCellServerState() {
     }
     
-    @Override
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.testcells.server.cell.SingingTeapotCellMO";
+    public SimpleShapeCellServerState(Shape shape) {
+        this.shape = shape;
     }
+
+    public String getServerClassName() {
+        return "org.jdesktop.wonderland.modules.testcells.server.cell.SimpleShapeCellMO";
+    }
+
+    /**
+     * @return the shape
+     */
+    public Shape getShape() {
+        return shape;
+    }
+
+    /**
+     * @param shape the shape to set
+     */
+    public void setShape(Shape shape) {
+        this.shape = shape;
+    }
+
+
 }

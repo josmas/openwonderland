@@ -18,6 +18,9 @@
                 builddir="${build.dir}">
             <client>
                 <clientjar name="testcells-client" basedir="${build.classes.dir}">
+                    <cellfactory>
+                        <provider classname="org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCellFactory"/>
+                    </cellfactory>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar>
@@ -25,8 +28,8 @@
             <server>
                 <serverjar name="testcells-server" basedir="${build.classes.dir}">
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.setup.SingingTeapotCellSetup"/>
-                        <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.setup.TestWorldCellServerState"/>
+                        <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.state.SingingTeapotCellServerState"/>
+                        <provider classname="org.jdesktop.wonderland.modules.testcells.common.cell.state.TestWorldCellServerState"/>
                     </cellsetup>
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
