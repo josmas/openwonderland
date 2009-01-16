@@ -105,8 +105,8 @@ public class CellTransform implements Serializable {
      * @param ret
      */
     public Vector3f transform(Vector3f ret) {
-        ret = rotation.mult(ret);
-        ret = scale.mult(ret);
+        rotation.multLocal(ret);
+        scale.multLocal(ret);
         ret.addLocal(translation);
         
         return ret;
