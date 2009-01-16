@@ -52,6 +52,7 @@
                              
 		    <cellsetup>
 			<provider classname="org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentSetup"/> 
+			<provider classname="org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentSetup"/> 
 		    </cellsetup>
 
                     <include name="${module.src}/server/**"/>

@@ -109,7 +109,7 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 
         proximityListener = new MyProximityListener(name);
 
-        prox.addProximityListener(proximityListener, bounds );
+        prox.addProximityListener(proximityListener, bounds);
         coneOfSilenceCellMO.addComponent(prox);
     }
 

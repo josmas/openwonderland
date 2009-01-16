@@ -55,21 +55,15 @@ public class MyProximityListener implements ProximityListenerSrv {
     }
 
     public void viewEnterExit(boolean entered, CellID cellID, 
-	CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
-
-    // TODO:  Use this after Paul adds the arugment
-    //public void viewEnterExit(boolean entered, CellID cellID, 
-    //	CellID avatarCellID, BoundingVolume proximityVolume, 
-    //	int proximityIndex) {
+    	CellID viewCellID, BoundingVolume proximityVolume, 
+    	int proximityIndex) {
 
 	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID);
 
 	if (entered) {
-	    cellEntered(cellID);
-	    //cellEntered(avatarCellID);
+	    cellEntered(viewCellID);
 	} else {
-	    cellExited(cellID);
-	    //cellExited(avatarCellID);
+	    cellExited(viewCellID);
 	}
     }
 

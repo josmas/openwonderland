@@ -96,15 +96,13 @@ public class ConeOfSilenceMessageHandler implements ProximityListener {
 
         //channelComp.addMessageReceiver(ConeOfSilenceResponseMessage.class, msgReceiver);
 
-	ProximityComponent comp = new ProximityComponent(coneOfSilenceCell);
+	ProximityComponent comp = coneOfSilenceCell.getComponent(ProximityComponent.class);
 
 	BoundingVolume[] boundingVolume = new BoundingVolume[1];
 
 	boundingVolume[0] = coneOfSilenceCell.getLocalBounds();
 
 	comp.addProximityListener(this, boundingVolume);
-
-	coneOfSilenceCell.addComponent(comp);
     }
 
     public void done() {
@@ -123,11 +121,11 @@ public class ConeOfSilenceMessageHandler implements ProximityListener {
    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
 	    int proximityIndex) {
 
-	logger.info("cellID " + cell.getCellID() + " viewCellID " + viewCellID + " entered = " + entered);
+	System.out.println("cellID " + cell.getCellID() + " viewCellID " + viewCellID + " entered = " + entered);
 
-	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+	//SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	channelComp.send(new ConeOfSilenceEnterCellMessage(cell.getCellID(), viewCellID, sc.getCallID(), entered));
+	//channelComp.send(new ConeOfSilenceEnterCellMessage(cell.getCellID(), viewCellID, sc.getCallID(), entered));
    }
 
 }

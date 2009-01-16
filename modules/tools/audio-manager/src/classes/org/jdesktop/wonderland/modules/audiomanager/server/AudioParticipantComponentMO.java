@@ -1,0 +1,126 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
+ */
+package org.jdesktop.wonderland.modules.audiomanager.server;
+
+import java.util.logging.Logger;
+
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+
+import org.jdesktop.wonderland.common.cell.CellTransform;
+
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentSetup;
+
+import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.Player;
+
+import com.jme.math.Vector3f;
+
+/**
+ *
+ * @author jprovino
+ */
+public class AudioParticipantComponentMO extends CellComponentMO {
+
+    private static final Logger logger =
+            Logger.getLogger(AudioParticipantComponentMO.class.getName());
+
+    private MyTransformChangeListener myTransformChangeListener;
+
+    /**
+     * Create a AudioParticipantComponent for the given cell. 
+     * @param cell
+     */
+    public AudioParticipantComponentMO(CellMO cell) {
+        super(cell);
+    }
+
+    @Override
+    public void setupCellComponent(CellComponentServerState setup) {
+        AudioParticipantComponentSetup apcs = (AudioParticipantComponentSetup) setup;
+    }
+
+    @Override
+    public CellComponentServerState getServerState(CellComponentServerState setup) {
+        if (setup == null) {
+            setup = new AudioParticipantComponentSetup();
+        }
+
+        return setup;
+    }
+
+    @Override
+    public void setLive(boolean live) {
+	System.out.println("AudioParticipantComponet setLive " + live);
+
+	if (live == false) {
+	    if (myTransformChangeListener != null) {
+	        cellRef.get().removeTransformChangeListener(myTransformChangeListener);
+		myTransformChangeListener = null;
+	    }
+	    return;
+	}
+
+	myTransformChangeListener = new MyTransformChangeListener();
+
+	cellRef.get().addTransformChangeListener(myTransformChangeListener);
+    }
+
+    @Override
+    protected String getClientClass() {
+        return "org.jdesktop.wonderland.modules.audiomanager.client.AudioParticipantComponent";
+    }
+
+    static class MyTransformChangeListener implements TransformChangeListenerSrv {
+        public void transformChanged(ManagedReference<CellMO> cellMORef, 
+	        final CellTransform localTransform, final CellTransform localToWorldTransform) {
+
+	    String clientId = cellMORef.get().getCellID().toString();
+
+	    logger.fine("localTransform " + localTransform + " world " 
+	        + localToWorldTransform);
+
+	    Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
+
+	    if (player == null) {
+	        logger.warning("got transformChanged, but can't find player for " + clientId);
+	    } else {
+	        float[] angles = new float[3];
+
+	        localToWorldTransform.getRotation(null).toAngles(angles);
+
+	        double angle = Math.toDegrees(angles[1]) % 360 + 90;
+
+	        Vector3f location = localToWorldTransform.getTranslation(null);
+	
+	        System.out.println(player + " x " + location.getX()
+		    + " y " + location.getY() + " z " + location.getZ()
+		    + " angle " + angle);
+
+	        player.moved(location.getX(), location.getY(), location.getZ(), angle);
+	    }
+        }
+    }
+
+}
