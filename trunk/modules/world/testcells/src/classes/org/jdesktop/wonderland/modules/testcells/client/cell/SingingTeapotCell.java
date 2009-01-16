@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.modules.testcells.client.timingframework.Rotation
 import org.jdesktop.wonderland.modules.testcells.client.timingframework.TranslationAnimationProcessor;
 import org.jdesktop.wonderland.modules.testcells.client.timingframework.util.Mouse3DTrigger;
 import org.jdesktop.wonderland.modules.testcells.client.timingframework.util.Mouse3DTriggerEvent;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState.Shape;
 
 /**
  * Test for mouse over spin
@@ -46,6 +47,7 @@ public class SingingTeapotCell extends SimpleShapeCell {
     
     public SingingTeapotCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        shape = Shape.TEAPOT;
     }
     
     @Override

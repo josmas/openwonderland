@@ -32,8 +32,8 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCe
  */
 public class SimpleShapeCell extends Cell {
 
-    private SimpleShapeCellClientState.Shape shape;
-    private MaterialJME materialJME;
+    protected SimpleShapeCellClientState.Shape shape;
+    protected MaterialJME materialJME;
     private float mass;
 
     /**

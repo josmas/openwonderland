@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class SimpleShapeCellMO extends CellMO {
     
-    private SimpleShapeCellClientState.Shape shape;
+    protected SimpleShapeCellClientState.Shape shape;
     private float mass;
     private MaterialJME materialJME = null;
     
@@ -85,5 +85,14 @@ public class SimpleShapeCellMO extends CellMO {
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
         this.shape = ((SimpleShapeCellServerState)setup).getShape();
+    }
+
+    @Override
+    public CellServerState getServerState(CellServerState state) {
+        if (state==null) {
+            state = new SimpleShapeCellServerState();
+        }
+        ((SimpleShapeCellServerState)state).setShape(shape);
+        return state;
     }
 }

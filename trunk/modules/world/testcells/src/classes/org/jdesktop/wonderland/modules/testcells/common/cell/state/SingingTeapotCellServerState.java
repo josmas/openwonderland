@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.testcells.common.cell.state;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
@@ -27,7 +26,7 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author jordanslott
  */
 @XmlRootElement(name="singing-teapot-cell")
-public class SingingTeapotCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
+public class SingingTeapotCellServerState extends SimpleShapeCellServerState implements Serializable, CellServerStateSPI {
 
     /** Default constructor */
     public SingingTeapotCellServerState() {
