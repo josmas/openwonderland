@@ -47,49 +47,46 @@ import com.sun.sgs.app.ManagedReference;
 public class ConeOfSilenceCellMO extends CellMO {
 
     private static final Logger logger =
-        Logger.getLogger(ConeOfSilenceCellMO.class.getName());
-     
-    private String modelFileName;    
-    
+            Logger.getLogger(ConeOfSilenceCellMO.class.getName());
+    private String modelFileName;
     private String name;
-
-    private double fullVolumeRadius;
-
+    private float fullVolumeRadius;
     private ManagedReference<ConeOfSilenceMessageHandler> coneOfSilenceMessageHandlerRef;
 
     public ConeOfSilenceCellMO() {
     }
-    
+
     public ConeOfSilenceCellMO(Vector3f center, float size) {
-        super(new BoundingBox(new Vector3f(), size, size, size), 
-	    new CellTransform(null, center));
+        super(new BoundingBox(new Vector3f(), size, size, size),
+                new CellTransform(null, center));
     }
 
+    @Override
     protected void setLive(boolean live) {
-	super.setLive(live);
+        super.setLive(live);
 
-	if (live == false) {
-	    if (coneOfSilenceMessageHandlerRef != null) {
-		coneOfSilenceMessageHandlerRef.get().done();
-		coneOfSilenceMessageHandlerRef = null;
-	    }
-	    return;
-	}
+        if (live == false) {
+            if (coneOfSilenceMessageHandlerRef != null) {
+                coneOfSilenceMessageHandlerRef.get().done();
+                coneOfSilenceMessageHandlerRef = null;
+            }
+            return;
+        }
 
-	coneOfSilenceMessageHandlerRef = AppContext.getDataManager().createReference(
-	    new ConeOfSilenceMessageHandler(this, name));
+        coneOfSilenceMessageHandlerRef = AppContext.getDataManager().createReference(
+                new ConeOfSilenceMessageHandler(this, name));
     }
 
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
+            ClientCapabilities capabilities) {
 
         return "org.jdesktop.wonderland.modules.coneofsilence.client.cell.ConeOfSilenceCell";
     }
 
     @Override
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
+            ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
             cellClientState = new ConeOfSilenceCellClientState(name, fullVolumeRadius);
@@ -101,11 +98,15 @@ public class ConeOfSilenceCellMO extends CellMO {
     public void setServerState(CellServerState cellServerState) {
         super.setServerState(cellServerState);
 
-	ConeOfSilenceCellServerState coneOfSilenceCellServerState = 
-	    (ConeOfSilenceCellServerState) cellServerState;
+        ConeOfSilenceCellServerState coneOfSilenceCellServerState =
+                (ConeOfSilenceCellServerState) cellServerState;
 
-	name = coneOfSilenceCellServerState.getName();
-	fullVolumeRadius = coneOfSilenceCellServerState.getFullVolumeRadius();
+        name = coneOfSilenceCellServerState.getName();
+        fullVolumeRadius = coneOfSilenceCellServerState.getFullVolumeRadius();
+    }
+
+    float getFullVolumeRadius() {
+        return fullVolumeRadius;
     }
 
     /**
@@ -122,5 +123,4 @@ public class ConeOfSilenceCellMO extends CellMO {
         }
         return super.getServerState(cellServerState);
     }
-
 }

@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 
 //import org.jdesktop.wonderland.avatarorb.client.cell.AvatarOrbCell;
-
 import com.sun.sgs.client.ClientChannel;
 
 import java.awt.event.MouseEvent;
@@ -73,59 +72,57 @@ public class ConeOfSilenceMessageHandler implements ProximityListener {
 
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceMessageHandler.class.getName());
-
     private ConeOfSilenceCell coneOfSilenceCell;
-
     private ChannelComponent channelComp;
 
     public ConeOfSilenceMessageHandler(ConeOfSilenceCell coneOfSilenceCell) {
-	this.coneOfSilenceCell = coneOfSilenceCell;
+        this.coneOfSilenceCell = coneOfSilenceCell;
 
-	channelComp = coneOfSilenceCell.getComponent(ChannelComponent.class);
+        channelComp = coneOfSilenceCell.getComponent(ChannelComponent.class);
 
-	logger.fine("Channel comp is " + channelComp);
+        logger.fine("Channel comp is " + channelComp);
 
         ChannelComponent.ComponentMessageReceiver msgReceiver =
-	    new ChannelComponent.ComponentMessageReceiver() {
-                public void messageReceived(CellMessage message) {
-                    //ConeOfSilenceResponseMessage msg = (ConeOfSilenceResponseMessage)message;
+                new ChannelComponent.ComponentMessageReceiver() {
 
-		    //processMessage((ConeOfSilenceResponseMessage) message);
-                }
-            };
+                    public void messageReceived(CellMessage message) {
+                        //ConeOfSilenceResponseMessage msg = (ConeOfSilenceResponseMessage)message;
+
+                        //processMessage((ConeOfSilenceResponseMessage) message);
+                    }
+                };
 
         //channelComp.addMessageReceiver(ConeOfSilenceResponseMessage.class, msgReceiver);
 
-	ProximityComponent comp = coneOfSilenceCell.getComponent(ProximityComponent.class);
-
-	BoundingVolume[] boundingVolume = new BoundingVolume[1];
-
-	boundingVolume[0] = coneOfSilenceCell.getLocalBounds();
-
-	comp.addProximityListener(this, boundingVolume);
+//        ProximityComponent comp = coneOfSilenceCell.getComponent(ProximityComponent.class);
+//
+//        BoundingVolume[] boundingVolume = new BoundingVolume[1];
+//
+//        boundingVolume[0] = coneOfSilenceCell.getLocalBounds();
+//
+//        comp.addProximityListener(this, boundingVolume);
     }
 
     public void done() {
-	//channelComp.removeMessageReceiver(ConeOfSilenceResponseMessage.class);
+        //channelComp.removeMessageReceiver(ConeOfSilenceResponseMessage.class);
     }
 
     public void processMessage(final Message message) {
-    //public void processMessage(final ConeOfSilenceResponseMessage message) {
-	//if (message instanceof CallEndedResponseMessage) {
+        //public void processMessage(final ConeOfSilenceResponseMessage message) {
+        //if (message instanceof CallEndedResponseMessage) {
     }
-    
+
     public void leftChannel(ClientChannel arg0) {
         // ignore
     }
-    
-   public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
-	    int proximityIndex) {
 
-	System.out.println("cellID " + cell.getCellID() + " viewCellID " + viewCellID + " entered = " + entered);
+    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
+            int proximityIndex) {
 
-	//SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+        System.out.println("cellID " + cell.getCellID() + " viewCellID " + viewCellID + " entered = " + entered);
 
-	//channelComp.send(new ConeOfSilenceEnterCellMessage(cell.getCellID(), viewCellID, sc.getCallID(), entered));
-   }
+    //SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
+    //channelComp.send(new ConeOfSilenceEnterCellMessage(cell.getCellID(), viewCellID, sc.getCallID(), entered));
+    }
 }

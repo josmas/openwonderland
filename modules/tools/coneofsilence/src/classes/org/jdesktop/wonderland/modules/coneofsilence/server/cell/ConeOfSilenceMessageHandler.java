@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.coneofsilence.server.cell;
 
+import com.jme.bounding.BoundingSphere;
 import com.sun.sgs.app.ManagedReference;
 
 import com.sun.sgs.app.AppContext;
@@ -72,82 +73,75 @@ import com.jme.math.Vector3f;
 public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessageReceiver {
 
     private static final Logger logger =
-        Logger.getLogger(ConeOfSilenceMessageHandler.class.getName());
-     
+            Logger.getLogger(ConeOfSilenceMessageHandler.class.getName());
     private ManagedReference<ConeOfSilenceCellMO> coneOfSilenceCellMORef;
-
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
-
     private String name;
-
-    private MyProximityListener proximityListener;
+    private ManagedReference<MyProximityListener> proximityListenerRef;
 
     public ConeOfSilenceMessageHandler(ConeOfSilenceCellMO coneOfSilenceCellMO, String name) {
-	this.name = name;
+        this.name = name;
 
-	coneOfSilenceCellMO.addComponent(new MovableComponentMO(coneOfSilenceCellMO));
+        coneOfSilenceCellMO.addComponent(new MovableComponentMO(coneOfSilenceCellMO));
 
-	coneOfSilenceCellMORef = AppContext.getDataManager().createReference(
-	        (ConeOfSilenceCellMO) CellManagerMO.getCell(coneOfSilenceCellMO.getCellID()));
+        coneOfSilenceCellMORef = AppContext.getDataManager().createReference(
+                (ConeOfSilenceCellMO) CellManagerMO.getCell(coneOfSilenceCellMO.getCellID()));
 
-        ChannelComponentMO channelComponentMO = (ChannelComponentMO) 
-	    coneOfSilenceCellMO.getComponent(ChannelComponentMO.class);
+        ChannelComponentMO channelComponentMO = (ChannelComponentMO) coneOfSilenceCellMO.getComponent(ChannelComponentMO.class);
 
         if (channelComponentMO == null) {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
-	}
+        }
 
         channelComponentMO.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, this);
-        channelComponentMO.addMessageReceiver(MovableMessage.class, this);
+//        channelComponentMO.addMessageReceiver(MovableMessage.class, this);
 
         channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
 
         ProximityComponentMO prox = new ProximityComponentMO(coneOfSilenceCellMO);
         BoundingVolume[] bounds = new BoundingVolume[1];
 
-	bounds[0] = coneOfSilenceCellMO.getLocalBounds();
+        bounds[0] = new BoundingSphere(coneOfSilenceCellMO.getFullVolumeRadius(), new Vector3f());
 
-        proximityListener = new MyProximityListener(name);
+        MyProximityListener proximityListener = new MyProximityListener(name);
 
         prox.addProximityListener(proximityListener, bounds);
+        proximityListenerRef = AppContext.getDataManager().createReference(proximityListener);
         coneOfSilenceCellMO.addComponent(prox);
     }
 
     public void done() {
-	channelComponentRef.get().removeMessageReceiver(ConeOfSilenceEnterCellMessage.class);
+        channelComponentRef.get().removeMessageReceiver(ConeOfSilenceEnterCellMessage.class);
     }
 
-    public void messageReceived(final WonderlandClientSender sender, 
-	    final WonderlandClientID clientID, final CellMessage message) {
+    public void messageReceived(final WonderlandClientSender sender,
+            final WonderlandClientID clientID, final CellMessage message) {
 
-	if (message instanceof ConeOfSilenceEnterCellMessage) {
-	    ConeOfSilenceEnterCellMessage msg = (ConeOfSilenceEnterCellMessage) message;
-
-	    if (true) {
-		System.out.println("Ignoring cone message().  Entered =" + msg.getEntered());
-		return;
-	    }
-
-	    logger.fine("Got message " + msg);
-
-	    if (msg.getEntered()) {
-	        proximityListener.cellEntered(msg.getSoftphoneCallID());
-	    } else {
-	        proximityListener.cellExited(msg.getSoftphoneCallID());
-	    }
-	} else if (message instanceof MovableMessage) {
-	    MovableMessage movableMessage = (MovableMessage) message;
-
-	    Vector3f translation = movableMessage.getTranslation();
-
-	    Quaternion rotation = movableMessage.getRotation();
-
-	    System.out.println("Got movable message:  action "
-		+ movableMessage.getActionType() 
-		+ " translation " + translation + " rotation " + rotation);
-	} else {
-	    logger.warning("Unknown message " + message);
-	}
+//        if (message instanceof ConeOfSilenceEnterCellMessage) {
+//            ConeOfSilenceEnterCellMessage msg = (ConeOfSilenceEnterCellMessage) message;
+//
+//            if (true) {
+//                System.out.println("Ignoring cone message().  Entered =" + msg.getEntered());
+//                return;
+//            }
+//
+//            logger.fine("Got message " + msg);
+//
+//            if (msg.getEntered()) {
+//                proximityListener.cellEntered(msg.getSoftphoneCallID());
+//            } else {
+//                proximityListener.cellExited(msg.getSoftphoneCallID());
+//            }
+//        } else if (message instanceof MovableMessage) {
+//            MovableMessage movableMessage = (MovableMessage) message;
+//
+//            Vector3f translation = movableMessage.getTranslation();
+//
+//            Quaternion rotation = movableMessage.getRotation();
+//
+//            System.out.println("Got movable message:  action " + movableMessage.getActionType() + " translation " + translation + " rotation " + rotation);
+//        } else {
+//            logger.warning("Unknown message " + message);
+//        }
     }
-
 }

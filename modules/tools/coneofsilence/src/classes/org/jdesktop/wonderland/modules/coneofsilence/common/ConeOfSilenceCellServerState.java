@@ -33,21 +33,20 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * 
  * @author jprovino
  */
-@XmlRootElement(name="ConeOfSilence-cell")
+@XmlRootElement(name = "ConeOfSilence-cell")
 public class ConeOfSilenceCellServerState extends CellServerState
         implements Serializable, CellServerStateSPI {
 
-    @XmlElement(name="name")
+    @XmlElement(name = "name")
     private String name;
-
-    @XmlElement(name="fullVolumeRadius")
-    private double fullVolumeRadius;
+    @XmlElement(name = "fullVolumeRadius")
+    private float fullVolumeRadius;
 
     /** Default constructor */
     public ConeOfSilenceCellServerState() {
     }
-    
-    public ConeOfSilenceCellServerState(String name, double fullVolumeRadius) {
+
+    public ConeOfSilenceCellServerState(String name, float fullVolumeRadius) {
         this.name = name;
         this.fullVolumeRadius = fullVolumeRadius;
     }
@@ -57,21 +56,20 @@ public class ConeOfSilenceCellServerState extends CellServerState
     }
 
     public void setName(String name) {
-	this.name = name;
-    }
-
-    @XmlTransient    
-    public String getName() {
-	return name;
-    }
-
-    public void setFullVolumeRadius(double fullVolumeRadius) {
-	this.fullVolumeRadius = fullVolumeRadius;
+        this.name = name;
     }
 
     @XmlTransient
-    public double getFullVolumeRadius() {
-	return fullVolumeRadius;
+    public String getName() {
+        return name;
     }
 
+    public void setFullVolumeRadius(float fullVolumeRadius) {
+        this.fullVolumeRadius = fullVolumeRadius;
+    }
+
+    @XmlTransient
+    public float getFullVolumeRadius() {
+        return fullVolumeRadius;
+    }
 }
