@@ -21,7 +21,11 @@ import com.jme.scene.Node;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JMECollisionSystem;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
@@ -31,16 +35,39 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
  */
 public abstract class Affordance extends Entity {
 
+    protected Node rootNode;
+    protected MovableComponent movableComp;
     protected Cell cell = null;
     
     /** Constructor, takes the cell */
     public Affordance(String name, Cell cell) {
         super(name);
         this.cell = cell;
+
+        // Create the root node of the cell and the render component to attach
+        // to the Entity with the node
+        rootNode = new Node();
+        movableComp = cell.getComponent(MovableComponent.class);
+        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+        this.addComponent(RenderComponent.class, rc);
+
+        // Add a cell ref component to the entity. This will let us associated
+        // the entity with the cell and make it easy to detect when we click
+        // off of the cell
+        CellRefComponent refComponent = new CellRefComponent(cell);
+        this.addComponent(CellRefComponent.class, refComponent);
     }
 
     /**
-     * Removes the affordance from the cell
+     * Sets the size of the affordance as a floating point value. Generally,
+     * a size of 1.0 means the same size as the Cell geometry.
+     *
+     * @param size The size of the affordances.
+     */
+    public abstract void setSize(float size);
+
+    /**
+     * Removes the affordance from the cell.
      */
     public abstract void remove();
 
@@ -51,5 +78,21 @@ public abstract class Affordance extends Entity {
 
         CollisionComponent cc = collisionSystem.createCollisionComponent(node);
         entity.addComponent(CollisionComponent.class, cc);
+    }
+
+    /**
+     * Adds an Entity with its root node to the scene graph, using the super-
+     * class Entity as the parent
+     */
+    protected void addSubEntity(Entity subEntity, Node subNode) {
+        // Create the render component that associates the node with the Entity
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        RenderComponent thisRC = rm.createRenderComponent(subNode);
+        subEntity.addComponent(RenderComponent.class, thisRC);
+
+        // Add this Entity to the parent Entity
+        RenderComponent parentRC = (RenderComponent)this.getComponent(RenderComponent.class);
+        thisRC.setAttachPoint(parentRC.getSceneRoot());
+        this.addEntity(subEntity);
     }
 }
