@@ -19,9 +19,11 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.kernel.KernelRunnable;
+import com.sun.sgs.service.DataService;
 import java.io.Serializable;
+import java.math.BigInteger;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.server.spatial.UniverseKernelRunnable;
 import org.jdesktop.wonderland.server.spatial.UniverseService;
 
 /**
@@ -30,14 +32,15 @@ import org.jdesktop.wonderland.server.spatial.UniverseService;
  * 
  * @author paulby
  */
-class ProximityNotifierTask implements KernelRunnable, Serializable {
+class ProximityNotifierTask implements UniverseKernelRunnable, Serializable {
 
-    private ManagedReference<ProximityListenerSrv> listenerRef;
+    private BigInteger listenerRefID;
     private boolean enter;
     private BoundingVolume proximityVolume;
     private int proximityIndex;
     private CellID viewCellID;
     private CellID cellID;
+    private DataService dataService;
     
     ProximityNotifierTask(ManagedReference<ProximityListenerSrv> listenerRef,
                                 boolean enter,
@@ -45,7 +48,7 @@ class ProximityNotifierTask implements KernelRunnable, Serializable {
                                   int proximityIndex,
                                   CellID cellID,
                                   CellID viewCellID) {
-        this.listenerRef = listenerRef;
+        this.listenerRefID = listenerRef.getId();
         this.enter = enter;
         this.proximityVolume = proximityVolume;
         this.proximityIndex = proximityIndex;
@@ -54,11 +57,15 @@ class ProximityNotifierTask implements KernelRunnable, Serializable {
     }
     
     public void run() throws Exception {
-        listenerRef.get().viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
+        ((ProximityListenerSrv)dataService.createReferenceForId(listenerRefID).get()).viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
     }
 
     public String getBaseTaskType() {
         return UniverseService.class.getName()+"_ProximityNotifierTask";
+    }
+
+    public void setDataService(DataService mgr) {
+        this.dataService = mgr;
     }
 
 }

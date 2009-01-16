@@ -98,12 +98,9 @@ public class ProximityComponentMO extends CellComponentMO {
         }
 
 
-        if (isLive) {
-            UniverseManager mgr = AppContext.getManager(UniverseManager.class);
-            CellMO cell = cellRef.get();
-            mgr.addTransformChangeListener(cell, rec);
-            mgr.addViewUpdateListener(cell, rec);
-        }
+        UniverseManager mgr = AppContext.getManager(UniverseManager.class);
+        CellMO cell = cellRef.get();
+        rec.setLive(isLive, cell, mgr);
     }
     
     @Override
@@ -138,7 +135,8 @@ public class ProximityComponentMO extends CellComponentMO {
 
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.client.cell.ProximityComponent";
+        return null;
+//        return "org.jdesktop.wonderland.client.cell.ProximityComponent";
     }
 
 }

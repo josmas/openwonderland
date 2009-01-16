@@ -163,28 +163,32 @@ public class UniverseImpl implements Universe {
     public void addTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener) {
         synchronized(cells) {
             SpatialCellImpl cell = (SpatialCellImpl) cells.get(cellID);
-            cell.addTransformChangeListener(listener);
+            if (cell!=null)
+                cell.addTransformChangeListener(listener);
         }
     }
 
     public void removeTransformChangeListener(CellID cellID, TransformChangeListenerSrv listener) {
         synchronized(cells) {
             SpatialCellImpl cell = (SpatialCellImpl) cells.get(cellID);
-            cell.removeTransformChangeListener(listener);
+            if (cell!=null)
+                cell.removeTransformChangeListener(listener);
         }
     }
 
     public void addViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener) {
         synchronized(cells) {
             SpatialCell cell = cells.get(cellID);
-            cell.addViewUpdateListener(viewUpdateListener);
+            if (cell!=null)
+                cell.addViewUpdateListener(viewUpdateListener);
         }
     }
 
     public void removeViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener) {
         synchronized(cells) {
             SpatialCell cell = cells.get(cellID);
-            cell.removeViewUpdateListener(viewUpdateListener);
+            if (cell!=null)
+                cell.removeViewUpdateListener(viewUpdateListener);
         }
     }
 

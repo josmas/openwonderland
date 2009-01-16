@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 import org.jdesktop.wonderland.common.cell.ProximityListenerRecord.ProximityListenerWrapper;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
+import org.jdesktop.wonderland.server.spatial.UniverseService;
 import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 
@@ -58,6 +59,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
     void setLive(boolean isLive, final CellMO cell, UniverseManager mgr) {
         if (isLive) {
             ServerProximityListenerWrapper rec = (ServerProximityListenerWrapper) proximityListener;
+            rec.setUniverseManager(mgr);
             mgr.addTransformChangeListener(cell, this);
             mgr.addViewUpdateListener(cell, this);
 
@@ -79,6 +81,7 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         private ProximityListenerSrv listener;
         private ManagedReference<ProximityListenerSrv> listenerRef = null;
         private CellID cellID;
+        private UniverseManager universeManager = null;
 
         public ServerProximityListenerWrapper(CellID cell, ProximityListenerSrv listener) {
             if (listener instanceof ManagedObject) {
@@ -93,14 +96,23 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             return cellID;
         }
 
+        /**
+         * Set the universe manager, which will be used to invoke the listener
+         * callback in a transaction if necessary
+         * 
+         * @param universeManager
+         */
+        void setUniverseManager(UniverseManager universeManager) {
+            this.universeManager = universeManager;
+        }
+
         public void viewEnterExit(boolean enter,
                                   BoundingVolume proximityVolume,
                                   int proximityIndex,
                                   CellID viewCellID) {
             if (listenerRef!=null) {
-                throw new RuntimeException("Not implemented yet");
-//                ProximityNotifierTask tsk = new ProximityNotifierTask(listenerRef, enter, proximityVolume, proximityIndex, cellID, viewCellID);
-//                AppContext.getManager(TransactionScheduler.class).runTask(tsk, arg1);
+                ProximityNotifierTask tsk = new ProximityNotifierTask(listenerRef, enter, proximityVolume, proximityIndex, cellID, viewCellID);
+                universeManager.scheduleTask(tsk);
             } else {
                 listener.viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
             }

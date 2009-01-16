@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.spatial;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.kernel.KernelRunnable;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
@@ -78,11 +79,12 @@ public interface UniverseManager {
      */
     public void removeViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
 
-    // Don't expose this until we have a good test case
     /**
-     * Schedule a runnable to execute when the transaction commits. This
+     * Schedule a runnable to execute when the current transaction commits. This
      * is useful if you need to interact with other changes in the UniverseManager
      * that are pending on the completion of the current transaction.
      */
-//    public void schedule(Runnable runnable);
+//    public void scheduleOnTransaction(Runnable runnable);
+
+    public void scheduleTask(UniverseKernelRunnable task);
 }
