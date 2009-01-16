@@ -144,9 +144,6 @@ public class ViewManager {
             avatarControls = new AvatarControls();
             ClientContextJME.getWorldManager().addUserData(JSceneEventProcessor.class, avatarControls);
         }
-
-        // Add the avatar repository
-        ClientContextJME.getWorldManager().addUserData(Repository.class, new Repository(ClientContextJME.getWorldManager()));
     }
 
     Canvas getCanvas() {
