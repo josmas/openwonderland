@@ -45,6 +45,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.common.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.JarURI;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import sun.misc.Service;
 
 /**
@@ -322,7 +323,7 @@ public class ServerSessionManager {
      * @return the classloader this session uses, or null if this
      * session is not connected
      */
-    public ClassLoader getClassloader() {
+    public ScannedClassLoader getClassloader() {
         if (loginControl == null) {
             return null;
         }
@@ -399,14 +400,15 @@ public class ServerSessionManager {
      * @param serverURL the URL of the server to connect to
      * @return the classloader setup with this server's URLs
      */
-    private ClassLoader setupClassLoader(String serverURL) {
+    private ScannedClassLoader setupClassLoader(String serverURL) {
         // TODO: use the serverURL
         ModulePluginList list = ModuleUtils.fetchPluginJars(serverURL);
         List<URL> urls = new ArrayList<URL>();
-        if (list==null) {
+        if (list == null) {
             logger.warning("Unable to configure classlaoder, falling back to " +
                            "system classloader");
-            return getClass().getClassLoader();
+            return new ScannedClassLoader(new URL[0], 
+                                          getClass().getClassLoader());
         }
 
         for (JarURI uri : list.getJarURIs()) {
@@ -422,8 +424,8 @@ public class ServerSessionManager {
            }
         }
 
-        return new URLClassLoader(urls.toArray(new URL[0]),
-                                  getClass().getClassLoader());
+        return new ScannedClassLoader(urls.toArray(new URL[0]),
+                                      getClass().getClassLoader());
     }
 
     /**
@@ -458,7 +460,7 @@ public class ServerSessionManager {
         private boolean success = false;
 
         private LoginParameters params;
-        private ClassLoader classLoader;
+        private ScannedClassLoader classLoader;
 
         /**
          * Get the server URL for this login control object
@@ -501,7 +503,7 @@ public class ServerSessionManager {
          * This method is only valid when isAuthenticated() returns true.
          * @return the classloader to use
          */
-        public synchronized ClassLoader getClassLoader() {
+        public synchronized ScannedClassLoader getClassLoader() {
             if (!isAuthenticated()) {
                 throw new IllegalStateException("Not authenticated");
             }
