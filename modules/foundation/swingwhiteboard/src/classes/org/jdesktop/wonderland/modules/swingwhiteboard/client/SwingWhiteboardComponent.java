@@ -69,7 +69,6 @@ public class SwingWhiteboardComponent extends CellComponent {
      */
     @Override
     public void setStatus (CellStatus status) {
-	System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>> SWB component setStatus, status = " + status);
          switch(status) {
 
              case ACTIVE: {
@@ -79,7 +78,6 @@ public class SwingWhiteboardComponent extends CellComponent {
 		     throw new IllegalStateException("Cell does not have a ChannelComponent");
 		 }
 		 bufferedSender = new BufferedCompoundMessageSender(channelComp);
-		 System.err.println(">>>>>>>>>>>>> bufferedSender = " + bufferedSender);
 
                  if (msgReceiver==null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
@@ -114,7 +112,6 @@ public class SwingWhiteboardComponent extends CellComponent {
                 }
 		channelComp = null;
 		bufferedSender = null;
-		System.err.println(">>>>>>>>>>>>> bufferedSender = " + null);
                 break;
         }
     }
