@@ -41,10 +41,10 @@ public class CellTransform implements Serializable {
      */
     public CellTransform(Quaternion rotate, Vector3f translate, Vector3f scale) {
         this(rotate, translate);
-        this.scale = scale;
-        if (this.scale == null) {
+        if (scale == null) {
             this.scale = new Vector3f(1,1,1);
-        }
+        } else
+            this.scale = scale.clone();
     }
     
     /**
@@ -54,13 +54,17 @@ public class CellTransform implements Serializable {
      * @param translation
      */
     public CellTransform(Quaternion rotate, Vector3f translation) {
-        this.rotation = rotate;
-        this.translation = translation;
         
-        if (this.rotation==null)
+        if (rotate==null)
             this.rotation = new Quaternion();
-        if (this.translation==null)
+        else
+            this.rotation = rotate.clone();
+
+        if (translation==null)
             this.translation = new Vector3f();
+        else
+            this.translation = translation.clone();
+
     }
 
     private CellTransform(CellTransform orig) {
