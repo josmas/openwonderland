@@ -66,8 +66,6 @@ public class ConeOfSilenceCell extends Cell implements CellStatusChangeListener 
     }
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
-	System.out.println("got status " + status + " for cell " + cell.getCellID());
-
         if (cell.getCellID() != getCellID()) {
             return;
         }
