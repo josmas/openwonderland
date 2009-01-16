@@ -24,8 +24,8 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellServerState;
 
 /**
  * The WFS server state class for ButtonBoxTestMO.
@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  */
 @XmlRootElement(name="buttonboxtest1-cell")
 public class ButtonBoxTest1ServerState 
-    extends CellServerState 
+    extends SimpleShapeCellServerState 
     implements Serializable, CellServerStateSPI 
 {
     
