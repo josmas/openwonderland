@@ -158,6 +158,10 @@ public class AudioManagerClient extends BaseConnection implements
         SoftphoneControlImpl.getInstance().logAudioProblem();
     }
 
+    public void mute(boolean isMuted) {
+	SoftphoneControlImpl.getInstance().mute(isMuted);
+    }
+
     public void voiceChat() {
 	new VoiceChatDialog(this, session, cellID);
     }

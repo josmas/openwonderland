@@ -80,7 +80,10 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
         if (status.equals(CellStatus.ACTIVE) && orbMessageHandler == null) {
 	    logger.fine("Creating orb Message handler for " + cell.getCellID());
             orbMessageHandler = new OrbMessageHandler(this);
-        }
+        } else if (status.equals(CellStatus.DISK) && orbMessageHandler != null) {
+	    orbMessageHandler.done();
+	    orbMessageHandler = null;
+	}
     }
 
     /**

@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
 import org.jdesktop.wonderland.modules.swingsettest.common.SwingSetTestCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
  * Client cell for the swing test.
@@ -67,19 +68,44 @@ public class SwingSetTestCell extends App2DCell {
      * @param state the client state data to initialize the cell with
      */
     public void setClientState (CellClientState state) {
-
+	super.setClientState(state);
         clientState = (SwingSetTestCellClientState) state;
-        setApp(new SwingSetTestApp(getAppType(), clientState.getPreferredWidth(), 
-				   clientState.getPreferredHeight(),
-				   clientState.getPixelScale()));
 
-	// Associate the app with this cell (must be done before making it visible)
-	app.setCell(this);
+    }
 
-	// Get the window the app created
-	window = ((SwingSetTestApp)app).getWindow();
+    /**
+     * This is called when the status of the cell changes.
+     */
+    @Override
+    public boolean setStatus(CellStatus status) {
+        boolean ret = super.setStatus(status);
 
-	// Make the app window visible
-	((SwingSetTestApp)app).setVisible(true);
+        switch (status) {
+
+	    // The cell is now visible
+            case ACTIVE:
+
+		setApp(new SwingSetTestApp(getAppType(), clientState.getPreferredWidth(), 
+					   clientState.getPreferredHeight(),
+					   clientState.getPixelScale()));
+
+		// Associate the app with this cell (must be done before making it visible)
+		app.setCell(this);
+
+		// Get the window the app created
+		window = ((SwingSetTestApp)app).getWindow();
+
+		// Make the app window visible
+		((SwingSetTestApp)app).setVisible(true);
+		break;
+
+	    // The cell is no longer visible
+            case DISK:
+		((SwingSetTestApp)app).setVisible(true);
+		window = null;
+		break;
+	}
+
+        return ret;
     }
 }

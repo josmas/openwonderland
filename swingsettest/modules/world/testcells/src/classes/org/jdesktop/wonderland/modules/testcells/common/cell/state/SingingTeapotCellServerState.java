@@ -11,11 +11,11 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath"
- * exception as provided by Sun in the License file that accompanied
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.testcells.common.cell.setup;
+package org.jdesktop.wonderland.modules.testcells.common.cell.state;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -26,16 +26,15 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  *
  * @author jordanslott
  */
-@XmlRootElement(name="testcells-testworld")
-public class TestWorldCellServerState extends CellServerState
-        implements Serializable, CellServerStateSPI
-{
+@XmlRootElement(name="singing-teapot-cell")
+public class SingingTeapotCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
+
     /** Default constructor */
-    public TestWorldCellServerState() {
+    public SingingTeapotCellServerState() {
     }
     
     @Override
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.testcells.server.cell.TestWorldCellMO";
+        return "org.jdesktop.wonderland.modules.testcells.server.cell.SingingTeapotCellMO";
     }
 }

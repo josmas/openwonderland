@@ -95,6 +95,9 @@ public class PhoneCell extends Cell implements CellStatusChangeListener {
 
 	if (status.equals(CellStatus.ACTIVE) && phoneMessageHandler == null) {
 	    phoneMessageHandler = new PhoneMessageHandler(this);
+	} else if (status.equals(CellStatus.DISK) && phoneMessageHandler != null) {
+	    phoneMessageHandler.done();
+	    phoneMessageHandler = null;
 	}
     }
 

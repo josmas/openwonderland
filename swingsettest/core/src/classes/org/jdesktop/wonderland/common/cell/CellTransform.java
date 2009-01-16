@@ -43,7 +43,7 @@ public class CellTransform implements Serializable {
         this(rotate, translate);
         this.scale = scale;
         if (this.scale == null) {
-            this.scale = new Vector3f();
+            this.scale = new Vector3f(1,1,1);
         }
     }
     
@@ -101,7 +101,9 @@ public class CellTransform implements Serializable {
      * @param ret
      */
     public Vector3f transform(Vector3f ret) {
-        ret.multLocal(translation);
+        ret = rotation.mult(ret);
+        ret = scale.mult(ret);
+        ret.addLocal(translation);
         
         return ret;
     }
@@ -115,6 +117,7 @@ public class CellTransform implements Serializable {
      */
     public CellTransform mul(CellTransform t1) {
         rotation.multLocal(t1.rotation);
+        scale.multLocal(t1.scale);
 //        System.out.print(translation +"  + "+t1.translation);
         translation.addLocal(t1.translation);
 //        System.out.println(" = "+translation);
@@ -130,6 +133,7 @@ public class CellTransform implements Serializable {
      */
     public CellTransform sub(CellTransform t1) {
         rotation.subtract(t1.rotation);
+        scale.subtract(t1.scale);
         translation.subtract(t1.translation);
         return this;
     }

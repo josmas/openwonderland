@@ -51,15 +51,15 @@ public class StaticModelCellMO extends CellMO {
     }
 
     @Override
-    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
             cellClientState = new StaticModelCellConfig();
         }
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState setup) {
-        super.setCellServerState(setup);
+    public void setServerState(CellServerState setup) {
+        super.setServerState(setup);
     }
 }

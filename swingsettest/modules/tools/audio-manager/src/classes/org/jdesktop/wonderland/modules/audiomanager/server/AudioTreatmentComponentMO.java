@@ -101,7 +101,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
     }
 
     @Override
-    public CellComponentServerState getCellComponentSetup(CellComponentServerState setup) {
+    public CellComponentServerState getServerState(CellComponentServerState setup) {
         if (setup == null) {
             setup = new AudioTreatmentComponentSetup();
         }

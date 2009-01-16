@@ -85,6 +85,13 @@ public class OrbMessageHandler {
         channelComp.addMessageReceiver(OrbSetVolumeMessage.class, msgReceiver);
     }
 
+    public void done() {
+	channelComp.removeMessageReceiver(OrbStartCallMessage.class);
+	channelComp.removeMessageReceiver(OrbEndCallMessage.class);
+	channelComp.removeMessageReceiver(OrbMuteCallMessage.class);
+	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
+    }
+
     public void processMessage(final Message message) {
 	logger.finest("process message " + message);
 

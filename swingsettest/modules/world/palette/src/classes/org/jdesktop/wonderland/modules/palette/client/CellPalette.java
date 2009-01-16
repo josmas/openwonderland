@@ -35,7 +35,7 @@ import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
-import org.jdesktop.wonderland.client.cell.registry.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -51,7 +51,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
  */
 public class CellPalette extends javax.swing.JFrame implements ListSelectionListener {
     /* A map of cell display names and their cell factories */
-    private Map<String, CellFactory> cellFactoryMap = new HashMap();
+    private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
     
     /** Creates new form CellPalette */
     public CellPalette() {
@@ -151,7 +151,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
 
     // From the selected value, find the proper means to create the object
     String cellDisplayName = (String) cellList.getSelectedValue();
-    CellFactory factory = getCellFactory(cellDisplayName);
+    CellFactorySPI factory = getCellFactory(cellDisplayName);
     CellServerState setup = factory.getDefaultCellServerState();
     
     // Choose a random origin for now
@@ -175,12 +175,12 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         // Fetch the registry of cells and for each, get the palette info and
         // populate the list.
         CellRegistry registry = CellRegistry.getCellRegistry();
-        Set<CellFactory> cellFactories = registry.getAllCellFactories();
+        Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
         List<String> listNames = new LinkedList();
-        Iterator<CellFactory> it = cellFactories.iterator();
+        Iterator<CellFactorySPI> it = cellFactories.iterator();
         int i = 0;
         while (it.hasNext() == true) {
-            CellFactory cellFactory = it.next();
+            CellFactorySPI cellFactory = it.next();
             try {
                 String name = cellFactory.getDisplayName();
                 if (name != null) {
@@ -201,13 +201,13 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     /**
      * Returns the cell factory given its display name
      */
-    private CellFactory getCellFactory(String name) {
+    private CellFactorySPI getCellFactory(String name) {
         CellRegistry registry = CellRegistry.getCellRegistry();
-        Set<CellFactory> cellFactories = registry.getAllCellFactories();
-        Iterator<CellFactory> it = cellFactories.iterator();
+        Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
+        Iterator<CellFactorySPI> it = cellFactories.iterator();
         int i = 0;
         while (it.hasNext() == true) {
-            CellFactory cellFactory = it.next();
+            CellFactorySPI cellFactory = it.next();
             try {
                 String cellName = cellFactory.getDisplayName();
                 if (cellName.equals(name) == true) {
@@ -244,7 +244,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         String selectedName = (String)cellList.getSelectedValue();
         Logger logger = Logger.getLogger(CellPalette.class.getName());
         if (selectedName != null) {
-            CellFactory cellFactory = cellFactoryMap.get(selectedName);
+            CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
             if (cellFactory != null) {
                 Image image = cellFactory.getPreviewImage();
                 if (image != null) {

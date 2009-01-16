@@ -116,12 +116,12 @@ public class TestWorldCellMO extends CellMO {
     }
 
     @Override
-    public CellServerState getCellServerState(CellServerState setup) {
+    public CellServerState getServerState(CellServerState setup) {
         if (setup == null) {
             setup = new TestWorldCellServerState();
         }
 
-        return super.getCellServerState(setup);
+        return super.getServerState(setup);
     }
 
     static class TestTask implements Task, Serializable {

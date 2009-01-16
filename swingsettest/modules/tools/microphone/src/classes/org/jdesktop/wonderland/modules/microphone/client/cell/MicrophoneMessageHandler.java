@@ -93,6 +93,10 @@ public class MicrophoneMessageHandler implements ProximityListener {
         microphoneCell.addComponent(comp);
     }
 
+    public void done() {
+	//channelComp.removeMessageReceiver(MicrophoneResponseMessage.class);
+    }
+
     public void processMessage(final Message message) {
     //public void processMessage(final MicrophoneResponseMessage message) {
 	//if (message instanceof CallEndedResponseMessage) {

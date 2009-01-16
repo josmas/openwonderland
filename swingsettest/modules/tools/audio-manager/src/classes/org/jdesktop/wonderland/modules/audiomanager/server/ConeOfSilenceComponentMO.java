@@ -96,7 +96,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     }
 
     @Override
-    public CellComponentServerState getCellComponentSetup(CellComponentServerState setup) {
+    public CellComponentServerState getServerState(CellComponentServerState setup) {
         if (setup == null) {
             setup = new ConeOfSilenceComponentSetup();
         }

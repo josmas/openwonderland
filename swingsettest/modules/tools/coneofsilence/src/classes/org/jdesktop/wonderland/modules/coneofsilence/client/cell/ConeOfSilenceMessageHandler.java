@@ -94,7 +94,7 @@ public class ConeOfSilenceMessageHandler implements ProximityListener {
                 }
             };
 
-        //channelComp.addMessageReceiver(CallEndedResponseMessage.class, msgReceiver);
+        //channelComp.addMessageReceiver(ConeOfSilenceResponseMessage.class, msgReceiver);
 
 	ProximityComponent comp = new ProximityComponent(coneOfSilenceCell);
 
@@ -105,6 +105,10 @@ public class ConeOfSilenceMessageHandler implements ProximityListener {
 	comp.addProximityListener(this, boundingVolume);
 
 	coneOfSilenceCell.addComponent(comp);
+    }
+
+    public void done() {
+	//channelComp.removeMessageReceiver(ConeOfSilenceResponseMessage.class);
     }
 
     public void processMessage(final Message message) {
