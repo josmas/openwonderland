@@ -30,9 +30,9 @@
                 builddir="${build.lib.dir}">
             <client>
                 <clientjar name="microphone-client" basedir="${build.classes.dir}">
-                    <cellfactory>
+                    <!--cellfactory>
                         <provider classname="org.jdesktop.wonderland.modules.microphone.client.cell.MicrophoneCellFactory"/>
-                    </cellfactory>
+                    </cellfactory-->
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>

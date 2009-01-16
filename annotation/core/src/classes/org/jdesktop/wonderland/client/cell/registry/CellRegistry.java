@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell.registry;
 
+import java.util.logging.Level;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,8 +25,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import sun.misc.Service;
 
 /**
@@ -50,11 +53,29 @@ public class CellRegistry {
         /* Attempt to load the class names using the service providers */
         // This needs to work with federation XXX
         ServerSessionManager manager = LoginManager.getPrimary();
-        ClassLoader cl = manager.getClassloader();
+        
+        // first look through registered services
+        ScannedClassLoader cl = manager.getClassloader();
         Iterator<CellFactorySPI> it = Service.providers(CellFactorySPI.class, cl);
         while (it.hasNext() == true) {
             CellFactorySPI spi = it.next();
             CellRegistry.getCellRegistry().registerCellFactory(spi);
+        }
+
+        // now search annotations
+        Set<String> annotated = cl.getClasses(CellFactory.class);
+        for (String className : annotated) {
+            try {
+                Class clazz = cl.loadClass(className);
+                CellFactorySPI spi = (CellFactorySPI) clazz.newInstance();
+                CellRegistry.getCellRegistry().registerCellFactory(spi);
+            } catch (InstantiationException ex) {
+                Logger.getLogger(CellRegistry.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(CellRegistry.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(CellRegistry.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
