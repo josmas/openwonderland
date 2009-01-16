@@ -23,8 +23,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponentImpl;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
@@ -34,6 +32,8 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoun
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.omg.PortableInterceptor.ACTIVE;
 
 /**
  * Client Cell for a whiteboard shared application.
@@ -60,9 +60,6 @@ public class WhiteboardCell extends App2DCell {
      */
     public WhiteboardCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        addComponent(new ChannelComponentImpl(this), ChannelComponent.class);
-        commComponent = new WhiteboardComponent(this);
-        addComponent(commComponent);
     }
 
     /** 
@@ -79,23 +76,46 @@ public class WhiteboardCell extends App2DCell {
      */
     @Override
     public void setClientState(CellClientState state) {
-
+	super.setClientState(state);
         clientState = (WhiteboardCellClientState) state;
-        setApp(new WhiteboardApp(getAppType(), clientState.getPreferredWidth(), 
-				 clientState.getPreferredHeight(), clientState.getPixelScale(), 
-				 commComponent));
+    }
+    /**
+     * This is called when the status of the cell changes.
+     */
+    @Override
+    public boolean setStatus(CellStatus status) {
+        boolean ret = super.setStatus(status);
 
-        // Associate the app with this cell (must be done before making it visible)
-        app.setCell(this);
+        switch (status) {
 
-        // Get the window the app created
-        whiteboardWin = ((WhiteboardApp) app).getWindow();
+	    // The cell is now visible
+            case ACTIVE:
 
-        // Make the app window visible
-        ((WhiteboardApp) app).setVisible(true);
+		commComponent = getComponent(WhiteboardComponent.class);
+		setApp(new WhiteboardApp(getAppType(), clientState.getPreferredWidth(), 
+					 clientState.getPreferredHeight(), clientState.getPixelScale(), 
+					 commComponent));
 
-    // Note: we used to force a sync here. But in the new implementation we will
-    // perform the sync when the cell status becomes BOUNDS.
+		// Associate the app with this cell (must be done before making it visible)
+		app.setCell(this);
+
+		// Get the window the app created
+		whiteboardWin = ((WhiteboardApp) app).getWindow();
+
+		// Make the app window visible
+		((WhiteboardApp) app).setVisible(true);
+		break;
+
+	    // The cell is no longer visible
+            case DISK:
+		((WhiteboardApp) app).setVisible(false);
+		removeComponent(WhiteboardComponent.class);
+		commComponent = null;
+		whiteboardWin = null;
+                break;
+        }
+
+        return ret;
     }
 
     /**

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
 import java.math.BigInteger;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -57,13 +58,9 @@ public class WhiteboardComponent extends CellComponent {
      * @param cell The cell to which this component belongs.
      * @throws IllegalStateException If the cell does not already have a ChannelComponent IllegalStateException will be thrown.
      */
-    public WhiteboardComponent (WhiteboardCell cell) {
+    public WhiteboardComponent (Cell cell) {
         super(cell);
-	this.cell = cell;
-        channelComp = cell.getComponent(ChannelComponent.class);
-        if (channelComp == null)
-            throw new IllegalStateException("Cell does not have a ChannelComponent");
-	bufferedSender = new BufferedCompoundMessageSender(channelComp);
+	this.cell = (WhiteboardCell) cell;
     }
     
     /**
@@ -73,13 +70,15 @@ public class WhiteboardComponent extends CellComponent {
     @Override
     public void setStatus (CellStatus status) {
          switch(status) {
-            case DISK :
-                if (msgReceiver!=null) {
-                    channelComp.removeMessageReceiver(WhiteboardCompoundCellMessage.class);
-                    msgReceiver = null;
-                }
-                break;
-             case BOUNDS : {
+
+             case ACTIVE : {
+
+		 channelComp = cell.getComponent(ChannelComponent.class);
+		 if (channelComp == null) {
+		     throw new IllegalStateException("Cell does not have a ChannelComponent");
+		 }
+		 bufferedSender = new BufferedCompoundMessageSender(channelComp);
+
                  if (msgReceiver==null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                         public void messageReceived(CellMessage message) {
@@ -103,7 +102,17 @@ public class WhiteboardComponent extends CellComponent {
 		 sync();
 
 		 logger.severe("********* Whiteboard cell initialization complete, cellID = " + cell.getCellID());
+		 break;
              }
+
+            case DISK :
+                if (msgReceiver!=null) {
+                    channelComp.removeMessageReceiver(WhiteboardCompoundCellMessage.class);
+                    msgReceiver = null;
+                }
+		channelComp = null;
+		bufferedSender = null;
+                break;
         }
     }
     
