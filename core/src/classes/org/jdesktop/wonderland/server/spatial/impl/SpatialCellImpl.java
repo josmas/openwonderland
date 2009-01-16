@@ -214,8 +214,27 @@ public class SpatialCellImpl implements SpatialCell {
      * TODO Implement
      * @param listener
      */
-    public void removeViewUpdateListener(ViewUpdateListener listener) {
-        throw new RuntimeException("Not Implemented");
+    public void removeViewUpdateListener(ViewUpdateListener viewUpdateListener) {
+        if (viewUpdateListeners==null)
+            return;
+
+        synchronized(viewUpdateListeners) {
+            viewUpdateListeners.remove(viewUpdateListener);
+        }
+
+        if (rootNode!=null) {
+            // Only root cells track caches
+
+            // Add the listener to all the view caches
+            acquireRootReadLock();
+            HashMap<ViewCache, HashSet<Space>> rootViewCaches = ((SpatialCellImpl)getRoot()).viewCache;
+            if (rootViewCaches!=null) {
+                for(ViewCache cache : rootViewCaches.keySet()) {
+                    cache.removeViewUpdateListener(cellID, viewUpdateListener);
+                }
+            }
+            releaseRootReadLock();
+        }
     }
 
     Iterator<ViewUpdateListener> getViewUpdateListeners() {

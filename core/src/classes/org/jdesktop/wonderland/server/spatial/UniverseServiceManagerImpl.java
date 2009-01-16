@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.spatial;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.kernel.KernelRunnable;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
@@ -96,7 +97,11 @@ public class UniverseServiceManagerImpl implements UniverseManager {
         service.removeViewUpdateListener(cell, viewUpdateListener);
     }
 
-    public void schedule(Runnable runnable) {
-        service.schedule(runnable);
+    public void scheduleOnTransaction(Runnable runnable) {
+        service.scheduleOnTransaction(runnable);
+    }
+
+    public void scheduleTask(UniverseKernelRunnable task) {
+        service.scheduleTask(task);
     }
 }

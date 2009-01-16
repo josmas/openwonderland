@@ -388,9 +388,19 @@ public class UniverseService extends AbstractService implements UniverseManager 
         });
     }
 
-    public void schedule(Runnable runnable) {
+    public void scheduleOnTransaction(Runnable runnable) {
         scheduleChange(runnable);
     }
+
+    public void scheduleTask(UniverseKernelRunnable task) {
+        try {
+            task.setDataService(dataService);
+            transactionScheduler.runTask(task, taskOwner);
+        } catch (Exception ex) {
+            Logger.getLogger(UniverseService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     /**
      * A change to apply to the cell.  This change will be applied when
      * the current transaction commits.  The run() method of subclasses

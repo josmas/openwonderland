@@ -681,7 +681,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
         ManagedReference<CellComponentMO> previous = components.put(componentClass, 
                 AppContext.getDataManager().createReference(component));
         if (previous!=null)
-            throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
+            throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName());
+        if (live)
+            component.setLive(live);
     }
     
     
