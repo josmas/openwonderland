@@ -38,112 +38,109 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.app.ManagedObject;
 
 /**
  * A server cell that provides conference coneofsilence functionality
  * @author jprovino
  */
-public class MyProximityListener implements ProximityListenerSrv {
+public class MyProximityListener implements ProximityListenerSrv, ManagedObject {
 
     private static final Logger logger =
-        Logger.getLogger(ConeOfSilenceMessageHandler.class.getName());
-
+            Logger.getLogger(ConeOfSilenceMessageHandler.class.getName());
     String name;
 
     public MyProximityListener(String name) {
         this.name = name;
     }
 
-    public void viewEnterExit(boolean entered, CellID cellID, 
-    	CellID viewCellID, BoundingVolume proximityVolume, 
-    	int proximityIndex) {
+    public void viewEnterExit(boolean entered, CellID cellID,
+            CellID viewCellID, BoundingVolume proximityVolume,
+            int proximityIndex) {
 
-	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID);
+        System.out.println("viewEnterExit:  " + entered + " cellID " + cellID);
 
-	if (entered) {
-	    cellEntered(viewCellID);
-	} else {
-	    cellExited(viewCellID);
-	}
+        if (entered) {
+            cellEntered(viewCellID);
+        } else {
+            cellExited(viewCellID);
+        }
     }
 
     private void cellEntered(CellID softphoneCellID) {
-	cellEntered(softphoneCellID.toString());
+        cellEntered(softphoneCellID.toString());
     }
 
     public void cellEntered(String callId) {
-	/*
-	 * The avatar has entered the ConeOfSilence cell.
-	 * Set the public and incoming spatializers for the avatar to be 
-	 * the zero volume spatializer.
-	 * Set a private spatializer for the given fullVolume radius
-	 * for all the other avatars in the cell.
-	 * For each avatar already in the cell, set a private spatializer
-	 * for this avatar.
-	 */
-	logger.info(callId + " entered cone " + name + " avatar cell ID "
-	    + callId);
+        /*
+         * The avatar has entered the ConeOfSilence cell.
+         * Set the public and incoming spatializers for the avatar to be
+         * the zero volume spatializer.
+         * Set a private spatializer for the given fullVolume radius
+         * for all the other avatars in the cell.
+         * For each avatar already in the cell, set a private spatializer
+         * for this avatar.
+         */
+        logger.info(callId + " entered cone " + name + " avatar cell ID " + callId);
 
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-	
-	Player player = vm.getPlayer(callId);
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	if (player == null) {
-	    logger.warning("Can't find player for " + callId);
-	    return;
-	}
+        Player player = vm.getPlayer(callId);
 
-	AudioGroup audioGroup = vm.getAudioGroup(name);
+        if (player == null) {
+            logger.warning("Can't find player for " + callId);
+            return;
+        }
 
-	if (audioGroup == null) {
-	    AudioGroupSetup ags = new AudioGroupSetup();
+        AudioGroup audioGroup = vm.getAudioGroup(name);
 
-	    ags.spatializer = new FullVolumeSpatializer();
+        if (audioGroup == null) {
+            AudioGroupSetup ags = new AudioGroupSetup();
 
-	    ags.spatializer.setAttenuator(
-		DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+            ags.spatializer = new FullVolumeSpatializer();
 
-	    audioGroup = vm.createAudioGroup(name, ags);
-	}
+            ags.spatializer.setAttenuator(
+                    DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
 
-	audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true, 
-	    AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+            audioGroup = vm.createAudioGroup(name, ags);
+        }
 
-	player.attenuateOtherGroups(audioGroup, 0, 0);
+        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
+                AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+
+        player.attenuateOtherGroups(audioGroup, 0, 0);
     }
 
     private void cellExited(CellID softphoneCellID) {
-	cellExited(softphoneCellID.toString());
+        cellExited(softphoneCellID.toString());
     }
 
     public void cellExited(String callId) {
-	logger.info(callId + " exited cone " + name + " avatar cell ID "
-	    + callId);
+        logger.info(callId + " exited cone " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         AudioGroup audioGroup = vm.getAudioGroup(name);
 
         if (audioGroup == null) {
-	    logger.warning("Not a member of audio group " + name);
-	    return;
-	}
+            logger.warning("Not a member of audio group " + name);
+            return;
+        }
 
-	Player player = vm.getPlayer(callId);
+        Player player = vm.getPlayer(callId);
 
-	if (player == null) {
-	    logger.warning("Can't find player for " + callId);
-	    return;
-	}
+        if (player == null) {
+            logger.warning("Can't find player for " + callId);
+            return;
+        }
 
-	audioGroup.removePlayer(player);
+        audioGroup.removePlayer(player);
 
-	if (audioGroup.getPlayers().size() == 0) {
-	    vm.removeAudioGroup(name);
-	}
+        if (audioGroup.getPlayers().size() == 0) {
+            vm.removeAudioGroup(name);
+        }
 
-	player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
-	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+        player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
+                AudioGroup.DEFAULT_LISTEN_ATTENUATION);
     }
-
 }
