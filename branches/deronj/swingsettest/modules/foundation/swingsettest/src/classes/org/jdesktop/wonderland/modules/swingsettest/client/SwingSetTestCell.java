@@ -70,7 +70,6 @@ public class SwingSetTestCell extends App2DCell {
     public void setClientState (CellClientState state) {
 	super.setClientState(state);
         clientState = (SwingSetTestCellClientState) state;
-
     }
 
     /**
@@ -101,7 +100,7 @@ public class SwingSetTestCell extends App2DCell {
 
 	    // The cell is no longer visible
             case DISK:
-		((SwingSetTestApp)app).setVisible(true);
+		((SwingSetTestApp)app).setVisible(false);
 		window = null;
 		break;
 	}
