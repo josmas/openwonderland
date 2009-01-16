@@ -285,7 +285,9 @@ of the cell.
 	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Size changed");
 	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> oldSize = " + oldSize);
 	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> newSize = " + newSize);
-	    windowSwing.setSize(newSize.width, newSize.height);
+	    if (windowSwing != null) {
+		windowSwing.setSize(newSize.width, newSize.height);
+	    }
         }
 
 	private void paintOnWindow (final WindowSwing window,
