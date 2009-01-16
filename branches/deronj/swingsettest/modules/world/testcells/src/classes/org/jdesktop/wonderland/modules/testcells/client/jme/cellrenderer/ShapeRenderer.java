@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell;
-import org.jdesktop.wonderland.modules.testcells.common.cell.config.SimpleShapeConfig;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState;
 
 /**
  * Render basic jme shapes

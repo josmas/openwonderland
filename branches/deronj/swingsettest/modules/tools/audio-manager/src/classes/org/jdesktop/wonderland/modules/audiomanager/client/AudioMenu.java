@@ -56,6 +56,7 @@ public class AudioMenu extends javax.swing.JPanel {
     private void initComponents() {
 
         audioMenu = new javax.swing.JMenu();
+        muteCheckBox = new javax.swing.JCheckBoxMenuItem();
         softphoneMenuItem = new javax.swing.JCheckBoxMenuItem();
         testAudioMenuItem = new javax.swing.JMenuItem();
         reconnectSoftphoneMenuItem = new javax.swing.JMenuItem();
@@ -69,6 +70,14 @@ public class AudioMenu extends javax.swing.JPanel {
                 audioMenuActionPerformed(evt);
             }
         });
+
+        muteCheckBox.setText("Mute");
+        muteCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                muteCheckBoxActionPerformed(evt);
+            }
+        });
+        audioMenu.add(muteCheckBox);
 
         softphoneMenuItem.setText("Softphone");
         softphoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -116,7 +125,6 @@ public class AudioMenu extends javax.swing.JPanel {
                 voiceChatMenuItemActionPerformed(evt);
             }
         });
-
         audioMenu.add(voiceChatMenuItem);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -171,10 +179,17 @@ public class AudioMenu extends javax.swing.JPanel {
         // TODO add your handling code here:
 }//GEN-LAST:event_audioMenuActionPerformed
 
+private void muteCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muteCheckBoxActionPerformed
+        if (audioMenuListener != null) {
+            audioMenuListener.mute(muteCheckBox.isSelected());
+        }
+}//GEN-LAST:event_muteCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu audioMenu;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
+    private javax.swing.JCheckBoxMenuItem muteCheckBox;
     private javax.swing.JMenuItem reconnectSoftphoneMenuItem;
     private javax.swing.JCheckBoxMenuItem softphoneMenuItem;
     private javax.swing.JMenuItem testAudioMenuItem;

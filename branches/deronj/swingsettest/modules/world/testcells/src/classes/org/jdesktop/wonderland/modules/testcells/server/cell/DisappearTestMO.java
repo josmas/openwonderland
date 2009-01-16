@@ -54,7 +54,7 @@ public class DisappearTestMO extends SimpleShapeCellMO {
     }
 
     @Override
-    public void setCellServerState(CellServerState serverState) {
-        super.setCellServerState(serverState);
+    public void setServerState(CellServerState serverState) {
+        super.setServerState(serverState);
     }
 }

@@ -25,9 +25,9 @@ import org.jdesktop.wonderland.modules.affordances.client.jme.cellrenderer.Affor
 import org.jdesktop.wonderland.modules.affordances.common.cell.config.AffordanceTestCellConfig;
 
 /**
- * Simple shape
+ * A test cell for affordances.
  * 
- * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class AffordanceTestCell extends Cell {
 
@@ -38,7 +38,6 @@ public class AffordanceTestCell extends Cell {
      * Mass of zero will result in a static rigid body, non zero will be dynamic
      * @param cellID
      * @param cellCache
-     * @param mass
      */
     public AffordanceTestCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -55,17 +54,10 @@ public class AffordanceTestCell extends Cell {
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        CellRenderer ret = null;
-        switch(rendererType) {
-            case RENDERER_2D :
-                // No 2D Renderer yet
-                break;
-            case RENDERER_JME :
-                ret= new AffordanceTestCellRenderer(this);
-                break;                
+        if (rendererType == RendererType.RENDERER_JME) {
+            return new AffordanceTestCellRenderer(this);
         }
-        
-        return ret;
+        return super.createCellRenderer(rendererType);
     }
 
     public AffordanceTestCellConfig.Shape getShape() {

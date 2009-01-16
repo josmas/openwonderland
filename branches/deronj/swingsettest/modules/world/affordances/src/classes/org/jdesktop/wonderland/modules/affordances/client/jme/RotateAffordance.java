@@ -24,16 +24,20 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.GeometricUpdateListener;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.shape.Tube;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
+import com.jme.scene.state.ZBufferState;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
@@ -52,8 +56,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class RotateAffordance extends Affordance {
-    private Node rootNode;
-    private MovableComponent movableComp;
 
     /** An enumeration of the axis along which to effect the rotate motion */
     public enum RotateAxis {
@@ -61,62 +63,76 @@ public class RotateAffordance extends Affordance {
     }
 
     /* The scaling of the outer radius of the tube */
-    private static final float RADIUS_SCALE = 2f;
+    private static final float RADIUS_SCALE = 1.5f;
 
     /* The inner radius offset */
-    private static final float RADIUS_WIDTH = 0.2f;
+    private static final float RADIUS_WIDTH = 0.05f;
 
     /* The thickness of tube */
-    private static final float THICKNESS_SCALE = 0.02f;
+    private static final float THICKNESS_SCALE = 0.1f;
+
+    /* The nodes representing the discs for each axis */
+    private Node xNode = null, yNode = null, zNode = null;
+
+    private static ZBufferState zbuf = null;
+    static {
+        zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+    }
+
+    /* Listener for changes in the translation of the cell */
+    private GeometricUpdateListener updateListener = null;
 
     private RotateAffordance(Cell cell) {
         super("Rotate", cell);
         
-        // Create the root node of the cell and the render component to attach
-        // to the Entity with the node
-        rootNode = new Node();
-        movableComp = cell.getComponent(MovableComponent.class);
-        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-        this.addComponent(RenderComponent.class, rc);
-
         // Figure out the bounds of the root entity of the cell and create a
         // tube to be just a bit larger than that
-        CellRendererJME cellRC = (CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME);
-        RenderComponent entityRC = (RenderComponent)cellRC.getEntity().getComponent(RenderComponent.class);
-        Node sceneRoot = entityRC.getSceneRoot();
-        BoundingVolume bounds = sceneRoot.getWorldBound();
+        CellRendererJME renderer = (CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME);
+        RenderComponent cellRC = (RenderComponent)renderer.getEntity().getComponent(RenderComponent.class);
+        BoundingVolume bounds = cellRC.getSceneRoot().getWorldBound();
         float outerRadius = 0.0f, innerRadius = 0.0f;
         if (bounds instanceof BoundingSphere) {
-            outerRadius = ((BoundingSphere)bounds).radius * RADIUS_SCALE;
+            outerRadius = ((BoundingSphere)bounds).radius;
             innerRadius = outerRadius - RADIUS_WIDTH;
         }
         else if (bounds instanceof BoundingBox) {
             float xExtent = ((BoundingBox)bounds).xExtent;
             float yExtent = ((BoundingBox)bounds).yExtent;
             float zExtent = ((BoundingBox)bounds).zExtent;
-            outerRadius = Math.max(Math.max(xExtent, yExtent), zExtent) * RADIUS_SCALE;
+            outerRadius = Math.max(Math.max(xExtent, yExtent), zExtent);
             innerRadius = outerRadius - RADIUS_WIDTH;
         }
 
         // Set the width of the arrow to be a proportion of the length of the
         // arrows. Use the maximum length of the three axes to determine the
         // width
-        float width = outerRadius * THICKNESS_SCALE;
+        float width = THICKNESS_SCALE;
+
+        // Fetch the world translation for the root node of the cell and set
+        // the translation for this entity root node
+        Vector3f translation = cellRC.getSceneRoot().getWorldTranslation();
+        rootNode.setLocalTranslation(translation);
 
         // Create a tube to rotate about the X axis. The tube is drawn in the
         // X-Z plane, so we must rotate 90 degrees about the +z axis so that the
         // axis of rotation is about +x axis.
         Entity xEntity = new Entity("Tube X");
-        Node xNode = createTube("Tube X", outerRadius, innerRadius, width, ColorRGBA.red);
+        xNode = createTube("Tube X", outerRadius, innerRadius, width, ColorRGBA.red);
         Quaternion xQ = new Quaternion().fromAngleAxis(1.5707f, new Vector3f(0, 0, 1));
         xNode.setLocalRotation(xQ);
+        xNode.setLocalScale(new Vector3f(RADIUS_SCALE, 1.0f, RADIUS_SCALE));
+        xNode.setRenderState(zbuf);
         addSubEntity(xEntity, xNode);
         addRotateListener(xEntity, xNode, RotateAxis.X_AXIS);
 
         // Create a tube to rotate about the Y axis. The tube is drawn in the
         // X-Z plane already.
         Entity yEntity = new Entity("Tube Y");
-        Node yNode = createTube("Tube Y", outerRadius, innerRadius, width, ColorRGBA.green);
+        yNode = createTube("Tube Y", outerRadius, innerRadius, width, ColorRGBA.green);
+        yNode.setLocalScale(new Vector3f(RADIUS_SCALE, 1.0f, RADIUS_SCALE));
+        yNode.setRenderState(zbuf);
         addSubEntity(yEntity, yNode);
         addRotateListener(yEntity, yNode, RotateAxis.Y_AXIS);
 
@@ -124,17 +140,58 @@ public class RotateAffordance extends Affordance {
         // X-Z plane, so we must rotate 90 degrees about the +x axis so that the
         // axis of rotation is about +z axis.
         Entity zEntity = new Entity("Tube Z");
-        Node zNode = createTube("Tube Z", outerRadius, innerRadius, width, ColorRGBA.blue);
+        zNode = createTube("Tube Z", outerRadius, innerRadius, width, ColorRGBA.blue);
         Quaternion zQ = new Quaternion().fromAngleAxis(1.5707f, new Vector3f(1, 0, 0));
         zNode.setLocalRotation(zQ);
+        zNode.setLocalScale(new Vector3f(RADIUS_SCALE, 1.0f, RADIUS_SCALE));
+        zNode.setRenderState(zbuf);
         addSubEntity(zEntity, zNode);
         addRotateListener(zEntity, zNode, RotateAxis.Z_AXIS);
+
+        // Listen for changes to the cell's translation and apply the same
+        // update to the root node of the affordances
+        final Node[] nodeArray = new Node[1];
+        nodeArray[0] = rootNode;
+        cellRC.getSceneRoot().addGeometricUpdateListener(updateListener = new GeometricUpdateListener() {
+            public void geometricDataChanged(Spatial arg0) {
+                // For the rotate affordance we need to move it whenever the
+                // cell is moved, but also need to rotate it when the cell
+                // rotation changes too.
+                Vector3f translation = arg0.getWorldTranslation();
+                nodeArray[0].setLocalTranslation(translation);
+
+                Quaternion rotation = arg0.getLocalRotation();
+                Quaternion affordanceRotation = nodeArray[0].getLocalRotation();
+//                affordanceRotation = affordanceRotation.mult(rotation);
+                nodeArray[0].setLocalRotation(rotation);
+                ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
+            }
+        });
+    }
+
+    public void setSize(float size) {
+        // In order to set the size of the arrows, we just set the scaling. Note
+        // that we set the scaling along the (x, z) axis since disks are drawn
+        // in the x-z plane
+        xNode.setLocalScale(new Vector3f(size, 1.0f, size));
+        yNode.setLocalScale(new Vector3f(size, 1.0f, size));
+        zNode.setLocalScale(new Vector3f(size, 1.0f, size));
+        ClientContextJME.getWorldManager().addToUpdateList(xNode);
+        ClientContextJME.getWorldManager().addToUpdateList(yNode);
+        ClientContextJME.getWorldManager().addToUpdateList(zNode);
     }
 
     public void remove() {
-        CellRendererJME r = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        Entity entity = r.getEntity();
-        entity.removeEntity(this);
+        // Remove the Entity from the scene graph. We also want to unregister
+        // the listener from the cell's node. We need to do this in a special
+        // update thread
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                ClientContextJME.getWorldManager().removeEntity(RotateAffordance.this);
+                CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                RenderComponent cellRC = (RenderComponent) renderer.getEntity().getComponent(RenderComponent.class);
+                cellRC.getSceneRoot().removeGeometricUpdateListener(updateListener);
+            }}, null);
     }
     
     public static RotateAffordance addToCell(Cell cell) {
@@ -147,16 +204,15 @@ public class RotateAffordance extends Affordance {
             return null;
         }
 
-        RotateAffordance rotateAffordance = new RotateAffordance(cell);
-        CellRendererJME r = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        Entity parentEntity = r.getEntity();
-        RenderComponent thisRC = (RenderComponent)rotateAffordance.getComponent(RenderComponent.class);
-        RenderComponent parentRC = (RenderComponent)parentEntity.getComponent(RenderComponent.class);
-        thisRC.setAttachPoint(parentRC.getSceneRoot());
-        parentEntity.addEntity(rotateAffordance);
-        ClientContextJME.getWorldManager().addToUpdateList(rotateAffordance.rootNode);
+        // Create the rotate affordance entity and add it to the scene graph
+        RotateAffordance affordance = new RotateAffordance(cell);
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                ClientContextJME.getWorldManager().addEntity((Entity)arg0);
+                ClientContextJME.getWorldManager().addToUpdateList(((RotateAffordance)arg0).rootNode);
+            }}, affordance);
 
-        return rotateAffordance;
+        return affordance;
     }
 
     /**
@@ -166,22 +222,6 @@ public class RotateAffordance extends Affordance {
     private void addRotateListener(Entity entity, Node node, RotateAxis direction) {
         makeEntityPickable(entity, node);
         new RotationDragListener(direction).addToEntity(entity);
-    }
-
-    /**
-     * Adds an Entity with its root node to the scene graph, using the super-
-     * class Entity as the parent
-     */
-    private void addSubEntity(Entity subEntity, Node subNode) {
-        // Create the render component that associates the node with the Entity
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        RenderComponent thisRC = rm.createRenderComponent(subNode);
-        subEntity.addComponent(RenderComponent.class, thisRC);
-
-        // Add this Entity to the parent Entity
-        RenderComponent parentRC = (RenderComponent)this.getComponent(RenderComponent.class);
-        thisRC.setAttachPoint(parentRC.getSceneRoot());
-        this.addEntity(subEntity);
     }
     
    /**

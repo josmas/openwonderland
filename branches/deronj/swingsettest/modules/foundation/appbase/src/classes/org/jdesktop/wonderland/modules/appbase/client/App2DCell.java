@@ -64,6 +64,7 @@ public abstract class App2DCell extends AppCell {
      */
     @Override
     public void setClientState(CellClientState clientState) {
+	super.setClientState(clientState);
 	App2DCellClientState appClientState = (App2DCellClientState) clientState;
 	pixelScale = appClientState.getPixelScale();
     }

@@ -102,19 +102,28 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
 
         orbStatusListenerRef =  AppContext.getDataManager().createReference(orbStatusListener);
 
-        ChannelComponentMO channelComponent = (ChannelComponentMO)
+        ChannelComponentMO channelComponentMO = (ChannelComponentMO)
             orbCellMO.getComponent(ChannelComponentMO.class);
 
-        if (channelComponent == null) {
+        if (channelComponentMO == null) {
             throw new IllegalStateException("Cell does not have a ChannelComponent");
         }
 
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
+        channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
 
-        channelComponent.addMessageReceiver(OrbStartCallMessage.class, this);
-        channelComponent.addMessageReceiver(OrbEndCallMessage.class, this);
-        channelComponent.addMessageReceiver(OrbMuteCallMessage.class, this);
-        channelComponent.addMessageReceiver(OrbSetVolumeMessage.class, this);
+        channelComponentMO.addMessageReceiver(OrbStartCallMessage.class, this);
+        channelComponentMO.addMessageReceiver(OrbEndCallMessage.class, this);
+        channelComponentMO.addMessageReceiver(OrbMuteCallMessage.class, this);
+        channelComponentMO.addMessageReceiver(OrbSetVolumeMessage.class, this);
+    }
+
+    public void done() {
+	ChannelComponentMO channelComponentMO = channelComponentRef.get();
+
+	channelComponentMO.removeMessageReceiver(OrbStartCallMessage.class);
+	channelComponentMO.removeMessageReceiver(OrbEndCallMessage.class);
+	channelComponentMO.removeMessageReceiver(OrbMuteCallMessage.class);
+	channelComponentMO.removeMessageReceiver(OrbSetVolumeMessage.class);
     }
 
     public void messageReceived(WonderlandClientSender sender, 

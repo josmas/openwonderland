@@ -15,26 +15,32 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.testcells.common.cell.setup;
+package org.jdesktop.wonderland.modules.affordances.client.event;
 
-import java.io.Serializable;
-import javax.xml.bind.annotation.XmlRootElement;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.client.input.Event;
 
 /**
+ * Event that indicates that affordances should remove themselves from the
+ * Cell.
  *
- * @author jordanslott
+ * @author Jordan Slott <jslott@dev.java.net>
  */
-@XmlRootElement(name="singing-teapot-cell")
-public class SingingTeapotCellSetup extends CellServerState implements Serializable, CellServerStateSPI {
+public class AffordanceRemoveEvent extends Event {
 
     /** Default constructor */
-    public SingingTeapotCellSetup() {
+    public AffordanceRemoveEvent() {
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * <br>
+     * If event is null, a new event of this class is created and returned.
+     */
     @Override
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.testcells.server.cell.SingingTeapotCellMO";
+    public Event clone (Event event) {
+        if (event == null) {
+            event = new AffordanceRemoveEvent();
+        }
+        return super.clone(event);
     }
 }

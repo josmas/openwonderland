@@ -23,21 +23,22 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.GeometricUpdateListener;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.shape.Arrow;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
+import com.jme.scene.state.ZBufferState;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -54,19 +55,30 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class TranslateAffordance extends Affordance {
-    private Node rootNode;
-    private MovableComponent movableComp;
 
     /* The length scaling factor for each arrow */
-    private static final float LENGTH_SCALE = 1.25f;
+    private static final float LENGTH_SCALE = 1.5f;
 
     /* The width scaling factor for each arrow */
-    private static final float WIDTH_SCALE = 0.1f;
+    private static final float WIDTH_SCALE = 0.10f;
 
     /** An enumeration of the axis along which to effect the drag motion */
     public enum TranslateAxis {
         X_AXIS, Y_AXIS, Z_AXIS
     }
+
+    /* The nodes representing the double-edged arrows for each axis */
+    private Node xNode = null, yNode = null, zNode = null;
+
+    private static ZBufferState zbuf = null;
+    static {
+        zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+    }
+
+    /* Listener for changes in the translation of the cell */
+    private GeometricUpdateListener updateListener = null;
 
     /**
      * Private constructor, use the addToCell() method instead.
@@ -75,48 +87,49 @@ public class TranslateAffordance extends Affordance {
     private TranslateAffordance(Cell cell) {
         super("Translate", cell);
 
-        // Create the root node of the cell and the render component to attach
-        // to the Entity with the node
-        rootNode = new Node();
-        movableComp = cell.getComponent(MovableComponent.class);
-        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-        this.addComponent(RenderComponent.class, rc);
-
         // Figure out the bounds of the root entity of the cell and create an
         // arrow to be just a bit larger than that
-        CellRendererJME cellRC = (CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME);
-        RenderComponent entityRC = (RenderComponent)cellRC.getEntity().getComponent(RenderComponent.class);
-        Node sceneRoot = entityRC.getSceneRoot();
-        BoundingVolume bounds = sceneRoot.getWorldBound();
-        float xExtent = 0, yExtent = 0, zExtent = 0;
+        CellRendererJME renderer = (CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME);
+        RenderComponent cellRC = (RenderComponent)renderer.getEntity().getComponent(RenderComponent.class);
+        BoundingVolume bounds = cellRC.getSceneRoot().getWorldBound();
+        float xExtent = 0.0f, yExtent = 0.0f, zExtent = 0.0f;
         if (bounds instanceof BoundingSphere) {
-            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius * LENGTH_SCALE;
+            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius;
         }
         else if (bounds instanceof BoundingBox) {
-            xExtent = ((BoundingBox)bounds).xExtent * LENGTH_SCALE;
-            yExtent = ((BoundingBox)bounds).yExtent * LENGTH_SCALE;
-            zExtent = ((BoundingBox)bounds).zExtent * LENGTH_SCALE;
+            xExtent = ((BoundingBox)bounds).xExtent;
+            yExtent = ((BoundingBox)bounds).yExtent;
+            zExtent = ((BoundingBox)bounds).zExtent;
         }
 
         // Set the width of the arrow to be a proportion of the length of the
         // arrows. Use the maximum length of the three axes to determine the
         // width
-        float width = Math.max(Math.max(xExtent, yExtent), zExtent) * WIDTH_SCALE;
+        float width = /*Math.max(Math.max(xExtent, yExtent), zExtent) **/ WIDTH_SCALE;
 
+        // Fetch the world translation for the root node of the cell and set
+        // the translation for this entity root node
+        Vector3f translation = cellRC.getSceneRoot().getWorldTranslation();
+        rootNode.setLocalTranslation(translation);
+        
         // Create a red arrow in the +x direction. We arrow we get back is
         // pointed in the +y direction, so we rotate around the -z axis to
         // orient the arrow properly.
         Entity xEntity = new Entity("Entity X");
-        Node xNode = createArrow("Arrow X", xExtent, width, ColorRGBA.red);
+        xNode = createArrow("Arrow X", xExtent, width, ColorRGBA.red);
         Quaternion xRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(0, 0, -1));
         xNode.setLocalRotation(xRotation);
+        xNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
+        xNode.setRenderState(zbuf);
         addSubEntity(xEntity, xNode);
         addDragListener(xEntity, xNode, TranslateAxis.X_AXIS);
 
         // Create a green arrow in the +y direction. We arrow we get back is
         // pointed in the +y direction.
         Entity yEntity = new Entity("Entity Y");
-        Node yNode = createArrow("Arrow Y", yExtent, width, ColorRGBA.green);
+        yNode = createArrow("Arrow Y", yExtent, width, ColorRGBA.green);
+        yNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
+        yNode.setRenderState(zbuf);
         addSubEntity(yEntity, yNode);
         addDragListener(yEntity, yNode, TranslateAxis.Y_AXIS);
 
@@ -124,11 +137,25 @@ public class TranslateAffordance extends Affordance {
         // pointed in the +y direction, so we rotate around the +x axis to
         // orient the arrow properly.
         Entity zEntity = new Entity("Entity Z");
-        Node zNode = createArrow("Arrow Z", zExtent, width, ColorRGBA.blue);
+        zNode = createArrow("Arrow Z", zExtent, width, ColorRGBA.blue);
         Quaternion zRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(1, 0, 0));
         zNode.setLocalRotation(zRotation);
+        zNode.setRenderState(zbuf);
+        zNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
         addSubEntity(zEntity, zNode);
         addDragListener(zEntity, zNode, TranslateAxis.Z_AXIS);
+
+        // Listen for changes to the cell's translation and apply the same
+        // update to the root node of the affordances
+        final Node[] nodeArray = new Node[1];
+        nodeArray[0] = rootNode;
+        cellRC.getSceneRoot().addGeometricUpdateListener(updateListener = new GeometricUpdateListener() {
+            public void geometricDataChanged(Spatial arg0) {
+                Vector3f translation = arg0.getWorldTranslation();
+                nodeArray[0].setLocalTranslation(translation);
+                ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
+            }
+        });
     }
     
     public static TranslateAffordance addToCell(Cell cell) {
@@ -142,25 +169,44 @@ public class TranslateAffordance extends Affordance {
             return null;
         }
 
-        TranslateAffordance translateAffordance = new TranslateAffordance(cell);
-        CellRendererJME r = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        Entity parentEntity = r.getEntity();
-        RenderComponent thisRC = (RenderComponent)translateAffordance.getComponent(RenderComponent.class);
-        RenderComponent parentRC = (RenderComponent)parentEntity.getComponent(RenderComponent.class);
-        thisRC.setAttachPoint(parentRC.getSceneRoot());
-        parentEntity.addEntity(translateAffordance);
-        ClientContextJME.getWorldManager().addToUpdateList(translateAffordance.rootNode);
+        // Create the translate affordance entity and add it to the scene graph.
+        // Since we are updating the scene graph, we need to put this in a
+        // special update thread.
+        TranslateAffordance affordance = new TranslateAffordance(cell);
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                ClientContextJME.getWorldManager().addEntity((Entity)arg0);
+                ClientContextJME.getWorldManager().addToUpdateList(((TranslateAffordance)arg0).rootNode);
+            }}, affordance);
+        return affordance;
+    }
 
-        return translateAffordance;
+    public void setSize(float size) {
+        // In order to set the size of the arrows, we just set the scaling. Note
+        // that we set the scaling along the +y axis since all arrows are
+        // created facing that direction.
+        xNode.setLocalScale(new Vector3f(1.0f, size, 1.0f));
+        yNode.setLocalScale(new Vector3f(1.0f, size, 1.0f));
+        zNode.setLocalScale(new Vector3f(1.0f, size, 1.0f));
+        ClientContextJME.getWorldManager().addToUpdateList(xNode);
+        ClientContextJME.getWorldManager().addToUpdateList(yNode);
+        ClientContextJME.getWorldManager().addToUpdateList(zNode);
     }
 
     /**
      * Removes the affordance from the cell
      */
     public void remove() {
-        CellRendererJME r = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        Entity entity = r.getEntity();
-        entity.removeEntity(this);
+        // Remove the Entity from the scene graph. We also want to unregister
+        // the listener from the cell's node. We need to do this in a special
+        // update thread
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                ClientContextJME.getWorldManager().removeEntity(TranslateAffordance.this);
+                CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                RenderComponent cellRC = (RenderComponent) renderer.getEntity().getComponent(RenderComponent.class);
+                cellRC.getSceneRoot().removeGeometricUpdateListener(updateListener);
+            }}, null);
     }
 
     /**
@@ -169,28 +215,14 @@ public class TranslateAffordance extends Affordance {
      */
     private void addDragListener(Entity entity, Node node, TranslateAxis direction) {
         makeEntityPickable(entity, node);
-        new TranslateDragListener(direction).addToEntity(entity);
-    }
-
-    /**
-     * Adds an Entity with its root node to the scene graph, using the super-
-     * class Entity as the parent
-     */
-    private void addSubEntity(Entity subEntity, Node subNode) {
-        // Create the render component that associates the node with the Entity
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        RenderComponent thisRC = rm.createRenderComponent(subNode);
-        subEntity.addComponent(RenderComponent.class, thisRC);
-
-        // Add this Entity to the parent Entity
-        RenderComponent parentRC = (RenderComponent)this.getComponent(RenderComponent.class);
-        thisRC.setAttachPoint(parentRC.getSceneRoot());
-        this.addEntity(subEntity);
+        TranslateDragListener l = new TranslateDragListener(direction);
+        l.addToEntity(entity);
     }
 
     /**
      * Creates a double-ended arrow, given its half-length, thickness and color.
-     * Returns a Node representing the new geometry.
+     * Returns a Node representing the new geometry. Fills in the affordance
+     * arrow object with each jME arrow object.
      */
     private Node createArrow(String name, float length, float width, ColorRGBA color) {
 

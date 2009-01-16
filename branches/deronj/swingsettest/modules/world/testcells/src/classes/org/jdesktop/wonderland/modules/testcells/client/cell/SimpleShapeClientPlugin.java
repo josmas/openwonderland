@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
+package org.jdesktop.wonderland.modules.testcells.client.cell;
 
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
@@ -26,10 +26,10 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class ConeOfSilenceClientPlugin implements ClientPlugin {
+public class SimpleShapeClientPlugin implements ClientPlugin {
 
     public void initialize(ServerSessionManager loginInfo) {
-        CellRegistry.getCellRegistry().registerCellFactory(new ConeOfSilenceCellFactory());
+        CellRegistry.getCellRegistry().registerCellFactory(new SimpleShapeCellFactory());
     }
 
 }

@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.registry.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
@@ -30,7 +30,7 @@ import java.awt.Image;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class ConeOfSilenceCellFactory implements CellFactory {
+public class ConeOfSilenceCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
         return new String[] {};

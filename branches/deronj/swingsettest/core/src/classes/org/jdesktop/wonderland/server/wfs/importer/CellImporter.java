@@ -214,7 +214,7 @@ public class CellImporter {
 
             /* Call the cell's setup method */
             try {
-                cellMO.setCellServerState(setup);
+                cellMO.setServerState(setup);
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
                         cellMO.getName() + " of type " +

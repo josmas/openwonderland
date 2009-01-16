@@ -39,6 +39,9 @@ import com.jme.math.Vector3f;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+
 /**
  * A server cell that provides conference microphone functionality
  * @author jprovino
@@ -57,6 +60,8 @@ public class MicrophoneCellMO extends CellMO {
     private double activeRadius;
     private String activeRadiusType;
 
+    private ManagedReference<MicrophoneMessageHandler> microphoneMessageHandlerRef;
+
     public MicrophoneCellMO() {
     }
 
@@ -69,10 +74,17 @@ public class MicrophoneCellMO extends CellMO {
 	super.setLive(live);
 
 	if (live == false) {
+	    if (microphoneMessageHandlerRef != null) {
+		MicrophoneMessageHandler microphoneMessageHandler = microphoneMessageHandlerRef.get();
+		microphoneMessageHandler.done();
+		AppContext.getDataManager().removeObject(microphoneMessageHandler);
+		microphoneMessageHandlerRef = null;
+	    }
 	    return;
  	}
 
-	new MicrophoneMessageHandler(this, name);
+	microphoneMessageHandlerRef = AppContext.getDataManager().createReference(
+	    new MicrophoneMessageHandler(this, name));
     }
 
     @Override
@@ -83,7 +95,7 @@ public class MicrophoneCellMO extends CellMO {
     }
 
     @Override
-    public CellClientState getCellClientState(CellClientState cellClientState, WonderlandClientID clientID,
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
@@ -91,12 +103,12 @@ public class MicrophoneCellMO extends CellMO {
                 activeRadius, activeRadiusType);
         }
 
-        return super.getCellClientState(cellClientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
-    public void setCellServerState(CellServerState cellServerState) {
-        super.setCellServerState(cellServerState);
+    public void setServerState(CellServerState cellServerState) {
+        super.setServerState(cellServerState);
 
 	MicrophoneCellServerState microphoneCellServerState = (MicrophoneCellServerState) cellServerState;
 
@@ -113,14 +125,14 @@ public class MicrophoneCellMO extends CellMO {
      * @return a JavaBean representing the current state
      */
     @Override
-    public CellServerState getCellServerState(CellServerState cellServerState) {
+    public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
             cellServerState = new MicrophoneCellServerState(name, fullVolumeRadius,
 		activeRadius, activeRadiusType);
         }
 
-        return super.getCellServerState(cellServerState);
+        return super.getServerState(cellServerState);
     }
 
 }

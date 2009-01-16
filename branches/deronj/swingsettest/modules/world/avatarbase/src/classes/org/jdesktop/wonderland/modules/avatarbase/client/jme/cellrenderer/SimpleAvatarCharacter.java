@@ -21,7 +21,6 @@ import imi.character.CharacterAttributes;
 import imi.character.ninja.Ninja;
 import imi.character.ninja.NinjaAvatar;
 import imi.character.ninja.NinjaContext.TriggerNames;
-import imi.character.ninja.PunchState;
 import imi.character.statemachine.GameContext;
 import java.awt.event.KeyEvent;
 import org.jdesktop.mtgame.WorldManager;
@@ -55,7 +54,7 @@ public class SimpleAvatarCharacter extends AvatarCharacter {
         m_keyBindings.put(KeyEvent.VK_DOWN,         TriggerNames.Move_Back.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_W,        TriggerNames.Move_Forward.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_S,        TriggerNames.Move_Back.ordinal());
-        m_keyBindings.put(KeyEvent.VK_CONTROL,      TriggerNames.Punch.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_CONTROL,      TriggerNames.Punch.ordinal());
         m_keyBindings.put(KeyEvent.VK_ENTER,        TriggerNames.ToggleSteering.ordinal());
 //            m_keyBindings.put(KeyEvent.VK_BACK_SPACE,   TriggerNames.PositionGoalPoint.ordinal());
 //            m_keyBindings.put(KeyEvent.VK_HOME,         TriggerNames.SelectNearestGoalPoint.ordinal());
@@ -93,10 +92,11 @@ public class SimpleAvatarCharacter extends AvatarCharacter {
     }
 
     public void setAnimation(String str) {
-        PunchState punch = (PunchState) getContext().getState(PunchState.class);
-        punch.setAnimationSetBoolean(false);
-
-        punch.setAnimationName(str);
+//        PunchState punch = (PunchState) getContext().getState(PunchState.class);
+//        punch.setAnimationSetBoolean(false);
+//
+//        punch.setAnimationName(str);
+        throw new RuntimeException("Not implemetned");
     }
 
 

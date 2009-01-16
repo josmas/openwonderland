@@ -121,11 +121,12 @@ public class MovableComponent extends CellComponent {
 
         // TODO throttle sends, we should only send so many times a second.
         if (listener!=null) {
+            logger.warning("MovableComponnet messages with response listener are not throttled yet !");
             channelComp.send(
                 createMoveRequestMessage(transform),
                 createMoveResponseListener(listener));
         } else {
-            channelComp.send(createMoveRequestMessage(transform));
+            throttle.send(createMoveRequestMessage(transform));
         }
 
         applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.LOCAL);
