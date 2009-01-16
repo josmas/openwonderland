@@ -43,7 +43,6 @@ public class MouseSpinCellMO extends SimpleShapeCellMO{
 
     public MouseSpinCellMO(Vector3f center, float size) {
         super(center, size);
-        System.err.println("**** MOUSE SPIN CELL");
 
         ProximityComponentMO prox = new ProximityComponentMO(this);
         BoundingVolume[] bounds = new BoundingVolume[] { new BoundingSphere(2f, new Vector3f()) };

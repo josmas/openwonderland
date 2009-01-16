@@ -23,8 +23,9 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState;
-import org.jdesktop.wonderland.modules.testcells.common.cell.state.SingingTeapotCellServerState;
+import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState.Shape;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -42,9 +43,7 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO {
     }
 
     public SingingTeapotCellMO(Vector3f center, float size, MaterialJME materialJME) {
-        super(center, size, SimpleShapeCellClientState.Shape.BOX.TEAPOT, 1f, materialJME);
-
-//	addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        super(center, size, SimpleShapeCellClientState.Shape.TEAPOT, 1f, materialJME);
     }
     
     @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
@@ -54,13 +53,7 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO {
     @Override
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
+        this.shape = Shape.TEAPOT;
     }
 
-    @Override
-    public CellServerState getServerState(CellServerState setup) {
-        if (setup == null) {
-            setup = new SingingTeapotCellServerState();
-        }
-        return super.getServerState(setup);
-    }
 }

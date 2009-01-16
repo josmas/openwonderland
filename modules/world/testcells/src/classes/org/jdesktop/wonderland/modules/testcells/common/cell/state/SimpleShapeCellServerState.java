@@ -27,14 +27,15 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCe
 
 /**
  * ServerState for the SimpleShapeCell
- * 
+ *
+ * TODO add support for color etc
+ *
  * @author paulby
  */
 @XmlRootElement(name="SimpleShape-cell")
 public class SimpleShapeCellServerState extends CellServerState
         implements Serializable, CellServerStateSPI {
 
-    @XmlElement(name="shape")
     private Shape shape;
 
     /** Default constructor */
@@ -52,6 +53,7 @@ public class SimpleShapeCellServerState extends CellServerState
     /**
      * @return the shape
      */
+    @XmlElement(name="shape")
     public Shape getShape() {
         return shape;
     }
