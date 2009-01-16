@@ -95,7 +95,12 @@
                     <ide-action name="debug"/>
                 </context-menu>
             </view>
-            <subprojects/>
+            <subprojects>
+                <project>../modules/world/jmecolladaloader</project>
+                <project>../modules/world/avatarbase</project>
+                <project>../modules/world/affordances</project>
+                <project>../modules/world/testcells</project>
+            </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
