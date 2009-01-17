@@ -73,10 +73,13 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         translateToggleButton = new javax.swing.JToggleButton();
         rotateToggleButton = new javax.swing.JToggleButton();
         scaleToggleButton = new javax.swing.JToggleButton();
+        slidePanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
         sizeSlider = new javax.swing.JSlider();
+        jLabel2 = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
-        setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
+        setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 0));
 
         translateToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/translate_icon.png"))); // NOI18N
         translateToggleButton.setBorderPainted(false);
@@ -117,16 +120,27 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         scaleToggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/scale_icon_selected.png"))); // NOI18N
         add(scaleToggleButton);
 
+        slidePanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel1.setText("1x");
+        jLabel1.setIconTextGap(0);
+        slidePanel.add(jLabel1);
+
         sizeSlider.setMajorTickSpacing(100);
         sizeSlider.setMaximum(400);
-        sizeSlider.setPaintLabels(true);
         sizeSlider.setPaintTicks(true);
         sizeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 sizeSliderStateChanged(evt);
             }
         });
-        add(sizeSlider);
+        slidePanel.add(sizeSlider);
+
+        jLabel2.setText("5x");
+        slidePanel.add(jLabel2);
+
+        add(slidePanel);
     }// </editor-fold>//GEN-END:initComponents
 
     /**
@@ -291,9 +305,12 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JToggleButton rotateToggleButton;
     private javax.swing.JToggleButton scaleToggleButton;
     private javax.swing.JSlider sizeSlider;
+    private javax.swing.JPanel slidePanel;
     private javax.swing.JToggleButton translateToggleButton;
     // End of variables declaration//GEN-END:variables
 
