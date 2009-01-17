@@ -16,7 +16,10 @@
        
     <target name="build" depends="-module-init, -module-compile-server,
                                                 -module-compile-client"/>
-    <target name="dist" depends="build">
+    <target name="dist" >
+    <!-- DISABLED -->
+    </target>
+    <target name="dist_off" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="buttonboxtest1" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
