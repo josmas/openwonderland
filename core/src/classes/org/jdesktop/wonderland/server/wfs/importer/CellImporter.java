@@ -218,8 +218,7 @@ public class CellImporter {
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
                         cellMO.getName() + " of type " +
-                        cellMO.getClass() + ", it does not implement " +
-                        "BeanSetupMO.", cce);
+                        cellMO.getClass(), cce);
                 continue;
             }
             
