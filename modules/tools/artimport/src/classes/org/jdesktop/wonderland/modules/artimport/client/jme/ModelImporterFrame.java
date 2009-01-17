@@ -22,10 +22,14 @@ import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+import com.jme.image.Texture;
 import com.jme.math.Matrix3f;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.Geometry;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
+import com.jme.scene.state.TextureState;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -55,6 +59,8 @@ import javax.swing.table.DefaultTableModel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 
 /**
  *
@@ -340,14 +346,25 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             model.removeRow(0);
         
         final String texturePath = texturePrefixTF.getText();
+        final HashSet<String> textureSet = new HashSet();
         
-//        for(ImageComponent2DURL ic : ModelCompiler.getImageComponents(bg)) {
-//            model.addRow(new Object[] {new String(ic.getImageName()), 
-//                                       texturePath, 
-//                                       new String(ic.getImageName()) });           
-//        }
-        System.err.println("populateTExtureList not implemented");
-        
+        TreeScan.findNode(bg, Geometry.class, new ProcessNodeInterface() {
+
+            public boolean processNode(Spatial node) {
+                TextureState ts = (TextureState)node.getRenderState(TextureState.RS_TEXTURE);
+                if (ts==null)
+                    return true;
+
+                Texture t = ts.getTexture();
+                String tFile = t.getImageLocation();
+                if (textureSet.add(tFile))
+                    model.addRow(new Object[] {new String(tFile),
+                                               "not implemented",
+                                               "not implemented" });
+
+                return true;
+            }
+        }, false, true);
     }
     
 
