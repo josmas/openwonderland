@@ -8,6 +8,7 @@
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.buttonboxtest1"/>
     <property name="module.jarname" value="buttonboxtest1"/>
     
+    <property name="module-common.classpath" value="${current.dir}/../../world/testcells/build/server/testcells-server.jar"/>
     <property name="module-client.classpath" value="${current.dir}/../../world/testcells/build/client/testcells-client.jar"/>
     <property name="module-server.classpath" value="${current.dir}/../../world/testcells/build/server/testcells-server.jar"/>
 
@@ -16,10 +17,7 @@
        
     <target name="build" depends="-module-init, -module-compile-server,
                                                 -module-compile-client"/>
-    <target name="dist" >
-    <!-- DISABLED -->
-    </target>
-    <target name="dist_off" depends="build">
+    <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="buttonboxtest1" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
