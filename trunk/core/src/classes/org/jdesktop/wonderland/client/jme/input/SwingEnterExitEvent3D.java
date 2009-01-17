@@ -36,8 +36,6 @@ public class SwingEnterExitEvent3D extends Event {
     }
     /** Whether this event is an enter or an exit. */
     private boolean isEntered;
-    /** The entity entered or exitted. */
-    private Entity entity;
 
     /** Default constructor (for cloning) */
     protected SwingEnterExitEvent3D() {
