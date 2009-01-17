@@ -86,7 +86,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
  * @author deronj
  */
 
-// TODO: generate 3D enter/exit events for canvas enter exit
+// TODO: low: InputPicker doesn't deal with multiple cameras properly.
 
 @ExperimentalAPI
 public abstract class InputManager 
