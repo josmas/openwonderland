@@ -18,7 +18,8 @@
 package org.jdesktop.wonderland.common.cell.state;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The CellClientState class is the base class of all state information
@@ -28,7 +29,7 @@ import java.util.ArrayList;
  */
 public class CellClientState implements Serializable {
     
-    private ArrayList<String> clientComponentClasses = new ArrayList();
+    private Map<String, CellComponentClientState> clientComponentClasses = new HashMap();
 
     /**
      * Returns the class names of all the client CellComponents which should
@@ -39,9 +40,23 @@ public class CellClientState implements Serializable {
     public String[] getClientComponentClasses() {
         if (clientComponentClasses==null)
             return new String[0];
-        return clientComponentClasses.toArray(new String[clientComponentClasses.size()]);
+        return clientComponentClasses.keySet().toArray(new String[clientComponentClasses.size()]);
     }
-    
+
+    /**
+     * Returns the client state for the given cell component class name, or null
+     * if the class name is not present
+     *
+     * @param className The name of the client component class
+     * @return The cell component client state object, or null
+     */
+    public CellComponentClientState getCellComponentClientState(String className) {
+        if (clientComponentClasses == null) {
+            return null;
+        }
+        return clientComponentClasses.get(className);
+    }
+
     /**
      * Set the CellComponent class names that will be installed in the client
      * cell
@@ -50,16 +65,17 @@ public class CellClientState implements Serializable {
     public void addClientComponentClasses(String[] cellComponenClasses) {
         if (cellComponenClasses!=null) {        
             for(String s : cellComponenClasses)
-                clientComponentClasses.add(s);
+                clientComponentClasses.put(s, null);
         }
     }
 
     /**
      * Add a client component class to the set of components
-     * @param clientClass
+     *
+     * @param clientClass The name of the client component class
+     * @param clientState The client component state
      */
-    public void addClientComponentClasses(String clientClass) {
-        clientComponentClasses.add(clientClass);
+    public void addClientComponentClasses(String clientClass, CellComponentClientState clientState) {
+        clientComponentClasses.put(clientClass, clientState);
     }
-
 }

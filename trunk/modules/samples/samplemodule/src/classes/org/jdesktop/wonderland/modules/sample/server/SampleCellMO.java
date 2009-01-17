@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -43,14 +44,26 @@ public class SampleCellMO extends CellMO {
 
     /** Default constructor, used when cell is created via WFS */
     public SampleCellMO() {
-        addComponent(new MovableComponentMO(this));
     }
 
     public SampleCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
-        addComponent(new MovableComponentMO(this));
     }
-    
+
+    @Override
+    protected void setLive(boolean live) {
+        if (live == true) {
+            addComponent(new MovableComponentMO(this));
+            SampleCellComponentMO component = new SampleCellComponentMO(this);
+            SampleCellComponentServerState state = new SampleCellComponentServerState();
+            state.setInfo("My component info");
+            component.setServerState(state);
+            addComponent(component);
+        }
+        super.setLive(live);
+    }
+
+
     @Override 
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.sample.client.SampleCell";

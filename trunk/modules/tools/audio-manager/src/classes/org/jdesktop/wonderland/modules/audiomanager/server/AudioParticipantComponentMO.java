@@ -57,7 +57,7 @@ public class AudioParticipantComponentMO extends CellComponentMO {
     }
 
     @Override
-    public void setupCellComponent(CellComponentServerState setup) {
+    public void setServerState(CellComponentServerState setup) {
         AudioParticipantComponentSetup apcs = (AudioParticipantComponentSetup) setup;
     }
 
