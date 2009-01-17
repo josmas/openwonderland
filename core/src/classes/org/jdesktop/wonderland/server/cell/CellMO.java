@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -535,18 +536,23 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (cellClientState == null) {
             cellClientState = new CellClientState();
         }
-        populateCellClientState(cellClientState);
+        populateCellClientState(cellClientState, clientID, capabilities);
         return cellClientState;
     }
 
-    private void populateCellClientState(CellClientState config) {
+    private void populateCellClientState(CellClientState config,
+            WonderlandClientID clientID, ClientCapabilities capabilities) {
+
         logger.fine("[CELL] CLIENT CLASSES FOR COMPONENTS " + cellID);
         Iterable<ManagedReference<CellComponentMO>> compReferences = components.values();
         for(ManagedReference<CellComponentMO> ref : compReferences) {
-            String clientClass = ref.get().getClientClass();
+            CellComponentMO componentMO = ref.get();
+            String clientClass = componentMO.getClientClass();
             logger.fine("[CELL] COMPONENT CLIENT CLASS " + clientClass);
-            if (clientClass!=null)
-                config.addClientComponentClasses(clientClass);
+            if (clientClass != null) {
+                CellComponentClientState clientState = componentMO.getClientState(null, clientID, capabilities);
+                config.addClientComponentClasses(clientClass, clientState);
+            }
         }
     }
     
@@ -576,7 +582,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 Class clazz = Class.forName(className);
                 Constructor<CellComponentMO> constructor = clazz.getConstructor(CellMO.class);
                 CellComponentMO comp = constructor.newInstance(this);
-                comp.setupCellComponent(compSetup);
+                comp.setServerState(compSetup);
                 this.addComponent(comp);
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, null, ex);

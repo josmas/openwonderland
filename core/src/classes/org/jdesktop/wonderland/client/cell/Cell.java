@@ -33,11 +33,11 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
-import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -594,8 +594,17 @@ public class Cell {
                 Class compClazz = cl.loadClass(compClassname);
                 if (!components.containsKey(compClazz)) {
 //                    logger.warning("Installing component "+compClassname);
+
+                    // Create a new cell component based upon the class name
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
                     CellComponent comp = constructor.newInstance(this);
+
+                    // Fetch the client state object based upon the class name.
+                    // If non-null, then tell the component about it
+                    CellComponentClientState clientState = configData.getCellComponentClientState(compClassname);
+                    if (clientState != null) {
+                        comp.setClientState(clientState);
+                    }
                     addComponent(comp, comp.getLookupClass());
                 }
             } catch (InstantiationException ex) {

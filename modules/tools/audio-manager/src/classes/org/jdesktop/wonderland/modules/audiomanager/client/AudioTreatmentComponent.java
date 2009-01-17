@@ -18,18 +18,15 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.util.ArrayList;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.comms.ClientConnection;
-import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
 
 /**
@@ -92,6 +89,12 @@ public class AudioTreatmentComponent extends CellComponent {
      */
     public void removeAudioTreatmentDoneListener(AudioTreatmentDoneListener listener) {
         listeners.remove(listener);
+    }
+
+    @Override
+    public void setClientState(CellComponentClientState clientState) {
+      // TODO: set own client state?
+      super.setClientState(clientState);
     }
     
     /**

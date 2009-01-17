@@ -17,48 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
-import com.jme.scene.shape.Quad;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.Task;
-import com.sun.sgs.app.TaskManager;
-
-import java.io.InputStreamReader;
-import java.io.IOException;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
-
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
-
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentSetup;
-
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterCellMessage;
-
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -91,7 +63,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     }
     
     @Override
-    public void setupCellComponent(CellComponentServerState setup) {
+    public void setServerState(CellComponentServerState setup) {
 	ConeOfSilenceComponentSetup cs = (ConeOfSilenceComponentSetup) setup;
     }
 
@@ -103,6 +75,16 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
         return setup;
     }
+
+    @Override
+    public CellComponentClientState getClientState(
+            CellComponentClientState state,
+            WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+        
+        return super.getClientState(state, clientID, capabilities);
+    }
+
 
     @Override
     public void setLive(boolean live) {

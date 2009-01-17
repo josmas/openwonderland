@@ -58,6 +58,8 @@ import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -92,7 +94,7 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
     }
 
     @Override
-    public void setupCellComponent(CellComponentServerState setup) {
+    public void setServerState(CellComponentServerState setup) {
         AudioTreatmentComponentSetup accs = (AudioTreatmentComponentSetup) setup;
 
         treatments = accs.getTreatments();
@@ -110,6 +112,16 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
         ((AudioTreatmentComponentSetup) setup).treatments = treatments;
 
         return setup;
+    }
+
+    @Override
+    public CellComponentClientState getClientState(
+            CellComponentClientState clientState,
+            WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+
+       // TODO: Create own client state object?
+       return clientState;
     }
 
     @Override

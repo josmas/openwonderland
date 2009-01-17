@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.cell;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 /**
  * CellComponents provide dynamic extensions to the Cell infrastructure. 
@@ -41,7 +42,16 @@ public class CellComponent {
     public void setStatus(CellStatus status) {
         this.status = status;
     }
-    
+
+    /**
+     * Sets the client state of the cell components.
+     *
+     * @param clientState The client state of the cell component
+     */
+    public void setClientState(CellComponentClientState clientState) {
+        // Do nothing
+    }
+
     /**
      * Return the class used to reference this component. Usually this will return
      * the class of the component, but in some cases, such as the ChannelComponentMO

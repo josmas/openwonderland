@@ -22,7 +22,10 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  *
@@ -42,25 +45,46 @@ public abstract class CellComponentMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Set up the cell component from the given properties
+     * Sets the server state for the cell component
      * 
-     * @param setup the properties to setup with
+     * @param state the properties to setup with
      */
-    public void setupCellComponent(CellComponentServerState setup) {
+    public void setServerState(CellComponentServerState state) {
         // Do nothing by default
     }
 
     /**
-     * Returns the setup information currently configured in the component. If
-     * the setup argument is non-null, fill in that object and return it. If the
-     * setup argument is null, create a new setup object.
+     * Returns the server state information currently configured in the
+     * component. If the state argument is non-null, fill in that object and
+     * return it. If the state argument is null, create a new state object.
      *
-     * @param setup The setup object, if null, creates one.
-     * @return The current setup information
+     * @param state The state object, if null, creates one.
+     * @return The current server state information
      */
-    public CellComponentServerState getServerState(CellComponentServerState setup) {
+    public CellComponentServerState getServerState(CellComponentServerState state) {
         // Do nothing by default
-        return setup;
+        return state;
+    }
+
+    /**
+     * Returns the client-side state of the cell component . If the state argument
+     * is null, then the method should create an appropriate class, otherwise,
+     * the method should just fill in details in the class. Returns the client-
+     * side state class
+     *
+     * @param state If null, create a new object
+     * @param clientID The unique ID of the client
+     * @param capabilities The client capabilities
+     */
+    public CellComponentClientState getClientState(CellComponentClientState state,
+            WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+
+        // If the given cellClientState is null, create a new one
+        if (state == null) {
+            state = new CellComponentClientState();
+        }
+        return state;
     }
 
     /**

@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterCellMessage;
@@ -93,6 +94,11 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
             }
 	    break;
         }
+    }
+
+    @Override
+    public void setClientState(CellComponentClientState clientState) {
+        super.setClientState(clientState);
     }
     
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
