@@ -145,7 +145,7 @@ public class AppConventionalCellCreateMessage extends AppConventionalMessage {
      * Returns the pixel scale.
      */
     public Vector2f getPixelScale () {
-	return pixelScale;
+	return new Vector2f(pixelScale);
     }
 
     /**

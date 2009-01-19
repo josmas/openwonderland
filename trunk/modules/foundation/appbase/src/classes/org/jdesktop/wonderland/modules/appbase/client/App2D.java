@@ -71,7 +71,7 @@ public abstract class App2D extends App {
      * Returns the pixel scale 
      */
     public Vector2f getPixelScale () {
-	return pixelScale;
+	return new Vector2f(pixelScale);
     }
 
     /**

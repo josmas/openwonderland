@@ -87,7 +87,9 @@ public abstract class MouseEvent3D extends InputEvent3D {
      */
     public Entity getEntity() {
         if (entity == null) {
-            entity = InputPicker.pickDetailsToEntity(pickDetails);
+	    if (pickDetails != null) {
+		entity = pickDetails.getEntity();
+	    }
         }
         return entity;
     }
@@ -138,7 +140,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
         if (pickDetails == null) {
             return null;
         } else {
-            return pickDetails.getPosition();
+	    return new Vector3f(pickDetails.getPosition());
         }
     }
 

@@ -93,7 +93,8 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
      * Returns the actually entity hit by the event.
      */
     public Entity getHitEntity () {
-	return InputPicker.pickDetailsToEntity(hitPickDetails);
+	if (hitPickDetails == null) return null;
+	return hitPickDetails.getEntity();
     }
 
     /**

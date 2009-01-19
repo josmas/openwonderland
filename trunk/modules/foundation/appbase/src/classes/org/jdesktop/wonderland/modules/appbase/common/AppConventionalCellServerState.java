@@ -111,7 +111,7 @@ public class AppConventionalCellServerState extends CellServerState implements S
      * @return The pixel scale.
      */
     @XmlTransient public Vector2f getPixelScale () {
-        return pixelScale;
+        return new Vector2f(pixelScale);
     }
     
     /**
@@ -121,7 +121,7 @@ public class AppConventionalCellServerState extends CellServerState implements S
      * @param pixelScale The pixel scale.
      */
     public void setPixelScale (Vector2f pixelScale) {
-        this.pixelScale = pixelScale;
+        this.pixelScale = new Vector2f(pixelScale);
     }
     
     public String getServerClassName() {

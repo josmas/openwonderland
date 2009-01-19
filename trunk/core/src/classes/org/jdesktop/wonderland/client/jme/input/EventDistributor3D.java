@@ -73,11 +73,11 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
         logger.fine("Distributor: destPickInfo = " + destPickInfo);
         /*
         if (destPickInfo != null && destPickInfo.size() > 0 && destPickInfo.get(0) != null) {
-        logger.fine("entity = " + InputPicker.pickDetailsToEntity(destPickInfo.get(0)));
+	    logger.fine("entity = " + destPickInfo.get(0).getEntity();
         }
         logger.fine("Distributor: hitPickInfo = " + hitPickInfo);
         if (hitPickInfo != null && hitPickInfo.size() > 0 && hitPickInfo.get(0) != null) {
-        logger.fine("entity = " + InputPicker.pickDetailsToEntity(hitPickInfo.get(0)));
+	    logger.fine("entity = " + hitPickInfo.get(0).getEntity());
         }
          */
         // Track the last mouse pick info for focus-follows-mouse keyboard focus policy
@@ -126,7 +126,10 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
                     }
                 }
             }
-            Entity entity = InputPicker.pickDetailsToEntity(pickDetails);
+	    Entity entity = null;
+	    if (pickDetails != null) {
+		entity = pickDetails.getEntity();
+	    }
             if (entity == null) {
                 idx++;
                 if (idx >= destPickInfo.size()) {
