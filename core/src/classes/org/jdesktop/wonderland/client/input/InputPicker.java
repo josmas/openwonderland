@@ -289,7 +289,7 @@ public abstract class InputPicker {
 	logger.fine("Picker: pickDetails = " + pickDetails);
 	int idx = 0;
 	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
-	    Entity entity = pickDetailsToEntity(pickDetails);
+	    Entity entity = pickDetails.getEntity();
 	    logger.fine("Picker: entity = " + entity);
 	    if (entity == null) {
 		// Search next depth level for entities willing to consume this event
@@ -325,7 +325,8 @@ public abstract class InputPicker {
 			logger.finest("Listener = " + listener);
 			logger.finest("Event = " + distribEvent);
 			consumesEvent |= listener.consumesEvent(distribEvent);
-			propagatesToUnder |= listener.propagatesToUnder(distribEvent);
+			// TODO: someday: decommit for now
+			//propagatesToUnder |= listener.propagatesToUnder(distribEvent);
 			logger.finest("consumesEvent = " + consumesEvent);
 		    }
 		}
@@ -558,7 +559,7 @@ public abstract class InputPicker {
 	for (int i = 0; i < n; i++) {
 	    PickDetails pd = hitPickInfo.get(i);
 	    System.err.println("pd[" + i + "] = " + pd);
-	    Entity pickEntity = pickDetailsToEntity(pd);
+	    Entity pickEntity = pd.getEntity();
 	    System.err.println("entity[" + i + "] = " + pickEntity);
 	}
 	*/
@@ -637,7 +638,7 @@ public abstract class InputPicker {
     }
 
     private static void logPickDetailsEntity (PickDetails pickDetails) {
-	Entity entity = pickDetailsToEntity(pickDetails);
+	Entity entity = pickDetails.getEntity();
 	logger.fine("pickDetails Entity = " + entity);
     }
 
@@ -836,14 +837,6 @@ public abstract class InputPicker {
 	return pgModifiers;
     }
 
-    public static Entity pickDetailsToEntity (PickDetails pickDetails) {
-        if (pickDetails==null)
-            return null;
-	CollisionComponent cc = pickDetails.getCollisionComponent();
-	if (cc == null) return null;
-	return cc.getEntity();
-    }
-
     /**
      * Converts a 2D AWT event into a Wonderland event.
      */
@@ -937,7 +930,8 @@ public abstract class InputPicker {
 	PickDetails pickDetails = pickInfo.get(0);
 	int idx = 0;
 	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
-	    Entity entity = pickDetailsToEntity(pickDetails);
+	    Entity entity = pickDetails.getEntity();
+	    /*
 	    if (pickDetails != null) {
 		CollisionComponent cc = pickDetails.getCollisionComponent();
 		logger.finest("pd cc = " + cc);
@@ -945,6 +939,7 @@ public abstract class InputPicker {
 		    logger.finest("cc entity = " + cc.getEntity());
 		}
 	    }
+	    */
 
 	    if (entity == null) {
 		idx++;
@@ -973,7 +968,8 @@ public abstract class InputPicker {
 			    EventDistributor.createEventForEntity(enterEventProto, entity);
 			distribEvent.setPickDetails(pickDetails);
 			distribEvent.setPickInfo(pickInfo);
-			propagatesToUnder |= listener.propagatesToUnder(distribEvent);
+			// TODO: someday: decommit for now
+			//propagatesToUnder |= listener.propagatesToUnder(distribEvent);
 		    }
 		}
 		if (propagatesToUnder) {

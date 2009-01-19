@@ -61,6 +61,6 @@ public abstract class App2DCellMO extends AppCellMO {
      */
     public App2DCellMO (BoundingVolume bounds, CellTransform transform, Vector2f pixelScale){
         super(bounds, transform);
-	this.pixelScale = pixelScale;
+	this.pixelScale = new Vector2f(pixelScale);
     }
 }

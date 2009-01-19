@@ -72,7 +72,7 @@ public class App2DCellClientState extends AppCellClientState {
      */
     public void setPixelScale (Vector2f pixelScale) {
 	if (pixelScale == null) {
-	    pixelScale = new Vector2f(DEFAULT_PIXEL_SCALE, DEFAULT_PIXEL_SCALE);
+	    this.pixelScale = new float[] { DEFAULT_PIXEL_SCALE, DEFAULT_PIXEL_SCALE};
 	} else {
 	    this.pixelScale = new float[] {pixelScale.x, pixelScale.y};
 	}

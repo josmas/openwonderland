@@ -120,7 +120,7 @@ public abstract class Window2D extends Window {
 	this.width = width;
 	this.height = height;
 	this.topLevel = topLevel;
-	this.pixelScale = pixelScale;
+	this.pixelScale = new Vector2f(pixelScale);
 
 	// By default every window has a primary world view, which is 
 	// visible when the window is visible
@@ -169,7 +169,7 @@ public abstract class Window2D extends Window {
      */
     // TODO: should this apply to the other views?
     public void setXYTranslation (Vector2f trans) {
-	xyTranslation = trans;
+	xyTranslation = new Vector2f(trans);
 	viewWorld.setTranslation(new Vector3f(xyTranslation.x, xyTranslation.y, depth));
 	update(Window2DView.CHANGED_TRANSFORM);
     }
@@ -310,7 +310,7 @@ public abstract class Window2D extends Window {
      * Returns the  The size of the window pixels 
      */
     public Vector2f getPixelScale () {
-	return pixelScale;
+	return new Vector2f(pixelScale);
     }
 
     /**
@@ -788,7 +788,7 @@ public abstract class Window2D extends Window {
      * Returns the spatial displacement specified by the user.
      */
     public Vector3f getUserDisplacement () {
-	return userDisplacement;
+	return new Vector3f(userDisplacement);
     }
 
     /**

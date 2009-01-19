@@ -34,13 +34,10 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * 2. <code>propagatesToParent</code>: The listener should return true if the parent of the event entity should be
  * given a chance to receive the given event.
  * <br><br>
- * 3. <code>propagatesToUnder</code>: The listener should return true if the entity immediately 
- * underneath the event's entity (in eye space) should be given a chance to receive the event.
- * <br><br>
- * 4. <code>computeEvent</code>: Called if the previous call to consumesEvent returned true. This
+ * 3. <code>computeEvent</code>: Called if the previous call to consumesEvent returned true. This
  * method should determine how to change the world based on the event.
  * <br><br>
- * 5. <code>commitEvent</code>: Called if computeEvent was previously called. This method should
+ * 4. <code>commitEvent</code>: Called if computeEvent was previously called. This method should
  * apply to the world the changes which were determined by <code>computeEvent</code>.
  * <br><br>
  * Note: <code>commitEvent</code> is called in the mtgame render loop thread and therefore should be
@@ -55,8 +52,8 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * given event before any event listeners are tried for subsequent events.
  * <br><br>
  * If an entity which has no attached listeners receives an event that entity will be treated as
- * if it has an enabled listener whose <code>consumesEvent</code> method returns true, whose 
- * <code>propagatesToParent</code> method returns true and whose <code>propagatesToUnder</code> method returns false.
+ * if it has an enabled listener whose <code>consumesEvent</code> method returns true and whose 
+ * <code>propagatesToParent</code> method returns true.
  * <br><br>
  * <code>computeEvent</code> should propagate information to <code>commitEvent</code> by storing
  * data in instance data members of the event listener. The system makes the guaranteed that 
@@ -109,15 +106,6 @@ public interface EventListener  {
      * @param event The event in question.
      */
     public boolean propagatesToParent (Event event);
-
-    /**
-     * Returns whether the event should also be propagated to the next underlying object (in eye space) for 
-     * possible delivery. Computations in this method should be kept reasonably short as they occur in
-     * AWT Event Dispatch thread. This method is only called for entity-attached event listeners.
-     *
-     * @param event The event in question.
-     */
-    public boolean propagatesToUnder (Event event);
 
     /**
      * The implementation of this method should determine how to change the world based on the given event.
