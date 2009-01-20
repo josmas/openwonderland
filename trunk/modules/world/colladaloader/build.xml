@@ -30,7 +30,7 @@
                 
             <server>
                 <serverjar name="colladaloader-server" basedir="${build.classes.dir}">
-                    <serverplugin provider="org.jdesktop.wonderland.modules.colladaloader.server.cell.TestWorld"/>
+                    <!--<serverplugin provider="org.jdesktop.wonderland.modules.colladaloader.server.cell.TestWorld"/>-->
                     <cellsetup>
                         <provider classname="org.jdesktop.wonderland.modules.colladaloader.common.cell.state.ColladaCellServerState"/>
                     </cellsetup>
