@@ -22,6 +22,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
 /**
@@ -35,7 +36,7 @@ public class ColladaCellServerState extends CellServerState implements Serializa
     
     /* The URI of the static model file */
     @XmlElement(name="model")
-    public String model = null;
+    public AssetURI model = null;
     
     /** Default constructor */
     public ColladaCellServerState() {
@@ -46,7 +47,8 @@ public class ColladaCellServerState extends CellServerState implements Serializa
      * 
      * @return The model URI specification
      */
-    @XmlTransient public String getModel() {
+    @XmlTransient
+    public AssetURI getModel() {
         return this.model;
     }
     
@@ -56,7 +58,7 @@ public class ColladaCellServerState extends CellServerState implements Serializa
      * 
      * @param model The model URI
      */
-    public void setModel(String model) {
+    public void setModel(AssetURI model) {
         this.model = model;
     }
     
