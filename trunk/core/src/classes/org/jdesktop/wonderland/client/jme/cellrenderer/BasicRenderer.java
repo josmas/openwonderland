@@ -245,7 +245,7 @@ public abstract class BasicRenderer implements CellRendererJME {
 //        if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
 //            cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
 //        } else {
-//            logger.warning("Unsuppoerted CollisionSystem "+collisionSystem);
+//            logger.warning("Unsupported CollisionSystem "+collisionSystem);
 //        }
 //
 //        return cc;
@@ -256,7 +256,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         if (collisionSystem instanceof JMECollisionSystem) {
             cc = ((JMECollisionSystem)collisionSystem).createCollisionComponent(rootNode);
         } else {
-            logger.warning("Unsuppoerted CollisionSystem "+collisionSystem);
+            logger.warning("Unsupported CollisionSystem "+collisionSystem);
         }
 
         return cc;
@@ -268,7 +268,7 @@ public abstract class BasicRenderer implements CellRendererJME {
             pc.setMass(getMass());
             return pc;
         } else {
-            logger.warning("Unsuppoerted PhysicsSystem "+physicsSystem);
+            logger.warning("Unsupported PhysicsSystem "+physicsSystem);
         }
 
         return null;
