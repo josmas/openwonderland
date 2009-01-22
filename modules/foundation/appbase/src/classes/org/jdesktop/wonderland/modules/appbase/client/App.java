@@ -61,14 +61,6 @@ public class App {
     protected AppCell cell;
 
     /**
-     * Initialize the App Base subsystem.
-     * @throws ConnectionFailureException if the intialization failed.
-     */
-    static public void initialize () throws ConnectionFailureException {
-	AppConventional.initializeConnection();
-    }
-
-    /**
      * Create a new instance of App.
      *
      * @param appType The type of app to create.
