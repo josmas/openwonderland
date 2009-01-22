@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.colladaloader.server.cell;
 
+import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
@@ -71,9 +74,10 @@ public class ColladaCellMO extends CellMO {
 
     @Override
     public CellClientState getClientState(CellClientState state, WonderlandClientID clientID, ClientCapabilities capabilities) {
-        if (state!=null)
+        if (state != null) {
             logger.severe("ColladaCellMO does not support being overloaded in this version");
-        CellClientState ret = new ColladaCellClientState(this.modelURI.getServerURL(), geometryTranslation, geometryRotation);
+        }
+        CellClientState ret = new ColladaCellClientState(this.modelURI.toExternalForm(), geometryTranslation, geometryRotation);
         super.getClientState(ret, clientID, capabilities);
         return ret;
     }
