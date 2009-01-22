@@ -48,7 +48,7 @@ public class WonderlandServerIdentity implements Identity, Serializable {
      * @return the unique name of this identity
      */
     public String getName() {
-        return getIdentity().getName();
+        return getIdentity().getUsername();
     }
 
     public void notifyLoggedIn() {

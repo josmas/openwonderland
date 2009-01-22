@@ -26,6 +26,12 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+
+import org.jdesktop.wonderland.common.cell.view.ViewCellClientState;
+
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+
 /**
  * ViewCell defines the view into the virtual world for a specific window
  * on a client. A client may have many ViewCells instanstantiated, however
@@ -37,6 +43,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 @ExperimentalAPI
 public class ViewCell extends Cell {
     
+    private WonderlandIdentity identity;
+
     private MovableAvatarComponent movableComp=null;
 
     public ViewCell(CellID cellID, CellCache cellCache) {
@@ -59,6 +67,18 @@ public class ViewCell extends Cell {
 
         return changed;
     }
+
+    @Override
+    public void setClientState(CellClientState cellClientState) {
+        super.setClientState(cellClientState);
+
+	identity = ((ViewCellClientState) cellClientState).getIdentity();
+    }
+
+    public WonderlandIdentity getIdentity() {
+	return identity;
+    }
+
 
     /**
      * Convenience method, simply calls moveableComponent.localMoveRequest
