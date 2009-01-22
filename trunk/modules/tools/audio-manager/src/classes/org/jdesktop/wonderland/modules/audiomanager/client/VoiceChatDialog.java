@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
@@ -165,8 +166,9 @@ public class VoiceChatDialog extends javax.swing.JFrame {
         publicRadioButton = new javax.swing.JRadioButton();
         leaveButton = new javax.swing.JButton();
         busyButton = new javax.swing.JButton();
+        usersButton = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         setTitle("Call Dialog");
         setName("Form"); // NOI18N
 
@@ -248,6 +250,14 @@ public class VoiceChatDialog extends javax.swing.JFrame {
             }
         });
 
+        usersButton.setText("Show Users");
+        usersButton.setName("usersButton"); // NOI18N
+        usersButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                usersButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -270,20 +280,23 @@ public class VoiceChatDialog extends javax.swing.JFrame {
                             .add(org.jdesktop.layout.GroupLayout.LEADING, chatGroupText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(secretRadioButton)
-                        .add(18, 18, 18)
-                        .add(privateRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(publicRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 69, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(layout.createSequentialGroup()
+                                .add(secretRadioButton)
+                                .add(18, 18, 18)
+                                .add(privateRadioButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(publicRadioButton))
+                            .add(layout.createSequentialGroup()
+                                .add(usersButton)
+                                .add(105, 105, 105)
+                                .add(busyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 73, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 29, Short.MAX_VALUE)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(leaveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(joinButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))))
                 .add(57, 57, 57))
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(busyButton)
-                .addContainerGap(379, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -310,8 +323,9 @@ public class VoiceChatDialog extends javax.swing.JFrame {
                     .add(joinButton))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(busyButton)
-                    .add(leaveButton))
+                    .add(leaveButton)
+                    .add(usersButton)
+                    .add(busyButton))
                 .addContainerGap(27, Short.MAX_VALUE))
         );
 
@@ -405,6 +419,10 @@ private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     busyButton.setEnabled(false);
 }//GEN-LAST:event_busyButtonActionPerformed
 
+private void usersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usersButtonActionPerformed
+    session.send(client, new GetUserListMessage());
+}//GEN-LAST:event_usersButtonActionPerformed
+
     private void stopFlasher() {
 	if (flasher != null) {
 	    flasher.done();
@@ -491,6 +509,7 @@ private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JRadioButton publicRadioButton;
     private javax.swing.JRadioButton secretRadioButton;
     private javax.swing.JLabel statusLabel;
+    private javax.swing.JButton usersButton;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -37,17 +37,15 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 
 import org.jdesktop.wonderland.common.modules.Checksum;
 import org.jdesktop.wonderland.common.modules.ModuleChecksums;
 
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentSetup;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
 
@@ -64,17 +62,20 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  *
  * @author jprovino
  */
-public class AudioTreatmentComponentMO extends CellComponentMO implements ManagedCallStatusListener {
+public class AudioTreatmentComponentMO extends AudioParticipantComponentMO implements 
+	ManagedCallStatusListener {
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentComponentMO.class.getName());
+
     private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
-    private ManagedReference<ChannelComponentMO> channelComponentRef = null;
+
     private String groupId;
     private String[] treatments;
     private double x;
@@ -92,29 +93,29 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
      * have a ChannelComponent otherwise this method will throw an IllegalStateException
      * @param cell
      */
-    public AudioTreatmentComponentMO(CellMO cell) {
-        super(cell);
+    public AudioTreatmentComponentMO(CellMO cellMO) {
+        super(cellMO);
     }
 
     @Override
-    public void setServerState(CellComponentServerState setup) {
-        AudioTreatmentComponentSetup accs = (AudioTreatmentComponentSetup) setup;
+    public void setServerState(CellComponentServerState serverState) {
+        AudioTreatmentComponentServerState state = (AudioTreatmentComponentServerState) serverState;
 
-        treatments = accs.getTreatments();
+        treatments = state.getTreatments();
 
-        groupId = accs.getGroupId();
+        groupId = state.getGroupId();
     }
 
     @Override
-    public CellComponentServerState getServerState(CellComponentServerState setup) {
-        if (setup == null) {
-            setup = new AudioTreatmentComponentSetup();
+    public CellComponentServerState getServerState(CellComponentServerState serverState) {
+        if (serverState == null) {
+            serverState = new AudioTreatmentComponentServerState();
         }
 
-        ((AudioTreatmentComponentSetup) setup).setGroupId(groupId);
-        ((AudioTreatmentComponentSetup) setup).treatments = treatments;
+        ((AudioTreatmentComponentServerState) serverState).setGroupId(groupId);
+        ((AudioTreatmentComponentServerState) serverState).treatments = treatments;
 
-        return setup;
+        return serverState;
     }
 
     @Override
@@ -129,21 +130,17 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
 
     @Override
     public void setLive(boolean live) {
+	super.setLive(live);
+
 	if (live == false) {
 	    return;
 	}
 
-        ChannelComponentMO channelComponent = (ChannelComponentMO) 
+	ChannelComponentMO channelComponent = (ChannelComponentMO) 
 	    cellRef.get().getComponent(ChannelComponentMO.class);
 
-        if (channelComponent == null) {
-            logger.warning("Cell does not have a ChannelComponent");
-            return;
-        }
-
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
-
-        channelComponent.addMessageReceiver(AudioTreatmentMessage.class, new ComponentMessageReceiverImpl(this));
+        channelComponent.addMessageReceiver(AudioTreatmentMessage.class,
+	    new ComponentMessageReceiverImpl(cellRef, this));
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -237,16 +234,29 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
         }
     }
 
+
     @Override
     protected String getClientClass() {
         return "org.jdesktop.wonderland.modules.audiomanager.client.AudioTreatmentComponent";
     }
 
-    private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
+    public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
+	    CellMessage message) {
+
+	AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
+
+	logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
+    }
+
+    private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
 
         private ManagedReference<AudioTreatmentComponentMO> compRef;
 
-        public ComponentMessageReceiverImpl(AudioTreatmentComponentMO comp) {
+        public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
+		AudioTreatmentComponentMO comp) {
+
+	    super(cellRef.get());
+
             compRef = AppContext.getDataManager().createReference(comp);
         }
 
@@ -258,10 +268,6 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
             logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
         }
 
-        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            //TODO: consider making a subclass of AbstractComponentMessageReceiver
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 
     public void callStatusChanged(CallStatus callStatus) {

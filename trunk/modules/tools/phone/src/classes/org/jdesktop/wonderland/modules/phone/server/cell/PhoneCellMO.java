@@ -129,13 +129,19 @@ public class PhoneCellMO extends CellMO {
      * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      *
-     * @return a JavaBean representing the current state
+     * @return CellServerState representing the current state
      */
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState= new PhoneCellServerState();
+            cellServerState = new PhoneCellServerState();
+	    ((PhoneCellServerState) cellServerState).setLocked(locked);
+	    ((PhoneCellServerState) cellServerState).setSimulateCalls(simulateCalls);
+	    ((PhoneCellServerState) cellServerState).setPhoneNumber(phoneNumber);
+	    ((PhoneCellServerState) cellServerState).setPassword(password);
+	    ((PhoneCellServerState) cellServerState).setPhoneLocation(phoneLocation);
+	    ((PhoneCellServerState) cellServerState).setZeroVolumeRadius(zeroVolumeRadius);
         }
         return super.getServerState(cellServerState);
     }

@@ -95,19 +95,16 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
     private static final Logger logger =
         Logger.getLogger(PhoneStatusListener.class.getName());
      
-    ManagedReference<PhoneCellMO> phoneCellMORef;
-
     private ConcurrentHashMap<String, WonderlandClientID> senderMap =
         new ConcurrentHashMap();
 
     private ConcurrentHashMap<String, CallListing> callListingMap = 
 	new ConcurrentHashMap(); 
 
-    public PhoneStatusListener(ManagedReference<PhoneCellMO> phoneCellMORef) {
-	this.phoneCellMORef = phoneCellMORef;
+    private CellID cellID;
 
-	phoneCellMORef = AppContext.getDataManager().createReference(
-	        (PhoneCellMO) CellManagerMO.getCell(phoneCellMORef.get().getCellID()));
+    public PhoneStatusListener(PhoneCellMO phoneCellMO) {
+        cellID = phoneCellMO.getCellID();
     }
 
     public void mapCall(String externalCallID, WonderlandClientID clientID, 
@@ -174,7 +171,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
             }
             
             CallInvitedResponseMessage invitedResponse = 
-		new CallInvitedResponseMessage(phoneCellMORef.get().getCellID(), listing, true);
+		new CallInvitedResponseMessage(cellID, listing, true);
 
             sender.send(clientID, invitedResponse);
             break;
@@ -192,7 +189,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
             }
 
             CallEstablishedResponseMessage EstablishedResponse = 
-		new CallEstablishedResponseMessage(phoneCellMORef.get().getCellID(), listing, true);
+		new CallEstablishedResponseMessage(cellID, listing, true);
 
 	    logger.fine("Sending ESTABLISHED RESPONSE");
             sender.send(clientID, EstablishedResponse);
@@ -255,7 +252,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 	    senderMap.remove(externalCallID);
 	    callListingMap.remove(externalCallID);
 
-            CallEndedResponseMessage endedResponse = new CallEndedResponseMessage(phoneCellMORef.get().getCellID(),
+            CallEndedResponseMessage endedResponse = new CallEndedResponseMessage(cellID,
 		listing, true, status.getOption("Reason"));
 
             sender.send(clientID, endedResponse);

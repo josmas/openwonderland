@@ -39,8 +39,6 @@ public class ConeOfSilenceCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState() {
         // Create a setup with some default values
         ConeOfSilenceCellServerState cellServerState = new ConeOfSilenceCellServerState();
-        cellServerState.setName("COS");
-        cellServerState.setFullVolumeRadius(5f);
 
         Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
         /*

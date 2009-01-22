@@ -24,15 +24,21 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentSetup;
+import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterCellMessage;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+
+import com.jme.math.Vector3f;
 
 /**
  *
@@ -45,9 +51,10 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
     private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
 
-    private ManagedReference<ChannelComponentMO> channelComponentRef = null;
-    
     private static String serverURL;
+
+    private String name;
+    private float fullVolumeRadius;
 
     static {
 	serverURL = System.getProperty("wonderland.web.server.url");
@@ -63,17 +70,20 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     }
     
     @Override
-    public void setServerState(CellComponentServerState setup) {
-	ConeOfSilenceComponentSetup cs = (ConeOfSilenceComponentSetup) setup;
+    public void setServerState(CellComponentServerState serverState) {
+	ConeOfSilenceComponentServerState cs = (ConeOfSilenceComponentServerState) serverState;
+
+	name = cs.getName();
+	fullVolumeRadius = cs.getFullVolumeRadius();
     }
 
     @Override
-    public CellComponentServerState getServerState(CellComponentServerState setup) {
-        if (setup == null) {
-            setup = new ConeOfSilenceComponentSetup();
+    public CellComponentServerState getServerState(CellComponentServerState serverState) {
+        if (serverState == null) {
+            serverState = new ConeOfSilenceComponentServerState(name, fullVolumeRadius);
         }
 
-        return setup;
+        return serverState;
     }
 
     @Override
@@ -82,7 +92,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
         
-        return super.getClientState(state, clientID, capabilities);
+	// TODO: Create own client state object?
+        return state;
     }
 
 
@@ -90,18 +101,24 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     public void setLive(boolean live) {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	CellMO cellMO = cellRef.get();
+
         ChannelComponentMO channelComponent = (ChannelComponentMO) 
-	    cellRef.get().getComponent(ChannelComponentMO.class);
+	    cellMO.getComponent(ChannelComponentMO.class);
 
-        if (channelComponent == null) {
-            logger.warning("Cell does not have a ChannelComponent");
-	    return;
+	if (live) {
+	    ProximityComponentMO prox = new ProximityComponentMO(cellMO);
+	    BoundingVolume[] bounds = new BoundingVolume[1];
+
+	    bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
+
+	    ConeOfSilenceProximityListener proximityListener = new ConeOfSilenceProximityListener(name);
+
+	    prox.addProximityListener(proximityListener, bounds);
+	    cellMO.addComponent(prox);
+	} else {
+	    // XXX Do I need to remove the component?
 	}
-
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
-                
-        channelComponent.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, 
-	    new ComponentMessageReceiverImpl(this));
     }
     
     @Override
@@ -109,11 +126,15 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         return "org.jdesktop.wonderland.modules.audiomanager.client.ConeOfSilenceComponent";
     }
 
-    private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
+    private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
 
         private ManagedReference<ConeOfSilenceComponentMO> compRef;
         
-        public ComponentMessageReceiverImpl(ConeOfSilenceComponentMO comp) {
+        public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellMORef,
+		ConeOfSilenceComponentMO comp) {
+
+	    super(cellMORef.get());
+
             compRef = AppContext.getDataManager().createReference(comp);
         }
 
@@ -125,10 +146,6 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 	    System.out.println("Got ConeOfSilenceMessage");
         }
 
-        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            //TODO: consider making a subclass of AbstractComponentMessageReceiver
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 
 }

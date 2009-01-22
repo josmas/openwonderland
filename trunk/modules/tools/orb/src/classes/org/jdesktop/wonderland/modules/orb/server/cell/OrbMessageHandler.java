@@ -50,8 +50,8 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 
@@ -70,7 +70,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * A server cell that provides Orb functionality
  * @author jprovino
  */
-public class OrbMessageHandler implements Serializable, ComponentMessageReceiver {
+public class OrbMessageHandler extends AbstractComponentMessageReceiver
+	implements Serializable {
 
     private static final Logger logger =
         Logger.getLogger(OrbCellMO.class.getName());
@@ -79,38 +80,26 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
 
     private boolean simulateCalls;
 
-    private ManagedReference<OrbCellMO> orbCellMORef;
-
-    private ManagedReference<ChannelComponentMO> channelComponentRef = null;
-
     private ManagedReference<OrbStatusListener> orbStatusListenerRef;
 
     public OrbMessageHandler(OrbCellMO orbCellMO, String callID, boolean simulateCalls) {
+	super(orbCellMO);
+
 	this.callID = callID;
 	this.simulateCalls = simulateCalls;
 
 	logger.info("Call id is " + callID + " simulateCalls " + simulateCalls);
 
-        orbCellMORef = AppContext.getDataManager().createReference(
-                (OrbCellMO) CellManagerMO.getCell(orbCellMO.getCellID()));
+        OrbStatusListener orbStatusListener = new OrbStatusListener(orbCellMO);
 
-        OrbStatusListener orbStatusListener = new OrbStatusListener(orbCellMORef);
+        orbStatusListenerRef =  AppContext.getDataManager().createReference(orbStatusListener);
 
 	WonderlandClientSender sender =  
 	    WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
 
 	orbStatusListener.addCallStatusListener(callID);
 
-        orbStatusListenerRef =  AppContext.getDataManager().createReference(orbStatusListener);
-
-        ChannelComponentMO channelComponentMO = (ChannelComponentMO)
-            orbCellMO.getComponent(ChannelComponentMO.class);
-
-        if (channelComponentMO == null) {
-            throw new IllegalStateException("Cell does not have a ChannelComponent");
-        }
-
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
+        ChannelComponentMO channelComponentMO = getChannelComponent();
 
         channelComponentMO.addMessageReceiver(OrbStartCallMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbEndCallMessage.class, this);
@@ -119,7 +108,7 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
     }
 
     public void done() {
-	ChannelComponentMO channelComponentMO = channelComponentRef.get();
+	ChannelComponentMO channelComponentMO = getChannelComponent();
 
 	channelComponentMO.removeMessageReceiver(OrbStartCallMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbEndCallMessage.class);
@@ -202,9 +191,4 @@ public class OrbMessageHandler implements Serializable, ComponentMessageReceiver
 	
     }
 
-    public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-        //TODO: consider making a subclass of AbstractComponentMessageReceiver
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-   
 }

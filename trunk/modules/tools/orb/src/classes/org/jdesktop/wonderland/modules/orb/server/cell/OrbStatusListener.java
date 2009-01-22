@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.orb.server.cell;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ManagedReference;
 
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
@@ -32,13 +31,14 @@ import com.sun.voip.client.connector.CallStatus;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
+
+import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
-
-import org.jdesktop.wonderland.server.comms.CommsManager;
 
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 
@@ -53,14 +53,10 @@ public class OrbStatusListener implements ManagedCallStatusListener,
     private static final Logger logger =
         Logger.getLogger(OrbStatusListener.class.getName());
 
-    private ManagedReference<OrbCellMO> orbCellMORef;
-
     private CellID cellID;
 
-    public OrbStatusListener(ManagedReference<OrbCellMO> orbCellMORef) {
-        this.orbCellMORef = orbCellMORef;
-
-	cellID = orbCellMORef.get().getCellID();
+    public OrbStatusListener(OrbCellMO orbCellMO) {
+	cellID = orbCellMO.getCellID();
     }
 
     private boolean muteMessageSpoken;
@@ -127,13 +123,14 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    break;
 
         case CallStatus.ENDED: 
-	    WonderlandContext.getCellManager().removeCellFromWorld(orbCellMORef.get());
+	    endCall(callID);
 	    break;
 	}
     }
 
     public void endCall(String callID) {
-	WonderlandContext.getCellManager().removeCellFromWorld(orbCellMORef.get());
+	CellManagerMO.getCellManager().removeCellFromWorld(
+	    CellManagerMO.getCellManager().getCell(cellID));
     }
  	
     private boolean starPressed;

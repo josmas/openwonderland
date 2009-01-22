@@ -55,12 +55,8 @@ public class ConeOfSilenceCell extends Cell implements CellStatusChangeListener 
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceCell.class.getName());
 
-    private ConeOfSilenceMessageHandler coneOfSilenceMessageHandler;
-
     public ConeOfSilenceCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-
-	logger.warning("CREATED NEW CONEOFSILENCE CELL " + cellID);
 
 	CellManager.getCellManager().addCellStatusChangeListener(this);
     }
@@ -69,13 +65,6 @@ public class ConeOfSilenceCell extends Cell implements CellStatusChangeListener 
         if (cell.getCellID() != getCellID()) {
             return;
         }
-
-	if (status.equals(CellStatus.ACTIVE) && coneOfSilenceMessageHandler == null) {
-	    coneOfSilenceMessageHandler = new ConeOfSilenceMessageHandler(this);
-	} else if (status.equals(CellStatus.DISK) && coneOfSilenceMessageHandler != null) {
-	    coneOfSilenceMessageHandler.done();
-	    coneOfSilenceMessageHandler = null;
-	}
     }
 
     /**
