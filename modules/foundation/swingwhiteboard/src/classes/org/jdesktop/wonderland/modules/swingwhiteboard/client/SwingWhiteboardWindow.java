@@ -35,10 +35,6 @@ import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardAction;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCellMessage;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCommand.Command;
 
-// TODO
-import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
-
-
 /**
  *
  * The window for the whiteboard.
@@ -51,12 +47,8 @@ public class SwingWhiteboardWindow extends WindowSwing {
     private SwingWhiteboardComponent commComponent;
     private WhiteboardCellMessage msg;
 
-    private JPanel drawingPanel;
-    private Color penColor = Color.BLACK;
+    SwingWhiteboardDrawingPanel drawingPanel;
     private int penX,  penY;
-
-    DrawingSurfaceBufferedImage surface;
-
 
     /**
      * Create a new instance of SwingWhiteboardWindow.
@@ -75,8 +67,6 @@ public class SwingWhiteboardWindow extends WindowSwing {
         this.commComponent = commComponent;
 
         setTitle("Swing Whiteboard Window");
-
-	surface = new DrawingSurfaceBufferedImage(width, height);
 
         SwingWhiteboardPanel panel = new SwingWhiteboardPanel(this);
         JmeClientMain.getFrame().getCanvas3DPanel().add(panel);
@@ -99,8 +89,7 @@ public class SwingWhiteboardWindow extends WindowSwing {
      * Called from the GUI to set the pen color.
      */
     public void setPenColor(Color color) {
-        System.err.println("Pen color = " + color);
-        penColor = color;
+	drawingPanel.setPenColor(color);
 
         // Notify other clients
         msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
@@ -112,25 +101,9 @@ public class SwingWhiteboardWindow extends WindowSwing {
      * Called from the GUI to erase the drawin panel.
      */
     public void erase() {
-        System.err.println("erase");
 
-	/**/
-        Graphics2D gswing = (Graphics2D) drawingPanel.getGraphics();
-        gswing.setBackground(Color.WHITE);
-        gswing.clearRect(0, 0, drawingPanel.getWidth(), drawingPanel.getHeight());
-	//	drawingPanel.repaint();
-	/**/
-
-
-	final DrawingSurfaceBufferedImage.DirtyTrackingGraphics g = 
-			(DrawingSurfaceBufferedImage.DirtyTrackingGraphics) surface.getGraphics();
-	g.executeAtomic(new Runnable () {
-	    public void run () {
-		g.setBackground(Color.WHITE);
-		g.clearRect(0, 0, surface.getWidth(), surface.getHeight());
-		g.addDirtyRectangle(0, 0, surface.getWidth(), surface.getHeight());
-	    }
-	});
+	drawingPanel.setEraseAction();
+	drawingPanel.repaint();
 
         // Notify other clients
         msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
@@ -156,34 +129,10 @@ public class SwingWhiteboardWindow extends WindowSwing {
      */
     void drag(Point loc) {
 
-	/**/
-        Graphics2D gswing = (Graphics2D) drawingPanel.getGraphics();
-        gswing.setColor(penColor);
-        gswing.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        gswing.drawLine(penX, penY, loc.x, loc.y);
+	drawingPanel.setDrawLineAction(penX, penY, loc.x, loc.y);
+	drawingPanel.repaint();
         penX = loc.x;
         penY = loc.y;
-	//	drawingPanel.repaint();
-	/**/
-
-	final DrawingSurfaceBufferedImage.DirtyTrackingGraphics g = 
-			(DrawingSurfaceBufferedImage.DirtyTrackingGraphics) surface.getGraphics();
-
-	final Point loc2 = loc;
-
-	g.executeAtomic(new Runnable () {
-	    public void run () {
-		g.setColor(penColor);
-		g.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-		g.drawLine(penX, penY, loc2.x, loc2.y);
-		penX = loc2.x;
-		penY = loc2.y;
-		// TODO: must damage everything
-		System.err.println("Add dirty rect, wh = " +
-				   surface.getWidth() + ", " + surface.getHeight());
-		g.addDirtyRectangle(0, 0, surface.getWidth(), surface.getHeight());
-	    }
-	});
 
         // notify other clients
         WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
