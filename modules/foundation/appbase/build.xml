@@ -23,6 +23,7 @@
             <client dir="${current.dir}/lib">
                 <clientjar name="appbase-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar>
             </client> 
