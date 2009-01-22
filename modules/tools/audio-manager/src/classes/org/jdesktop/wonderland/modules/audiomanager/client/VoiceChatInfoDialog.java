@@ -66,7 +66,7 @@ public class VoiceChatInfoDialog extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         chatInfoText = new javax.swing.JTextArea();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
 
         chatInfoText.setColumns(20);
         chatInfoText.setRows(5);

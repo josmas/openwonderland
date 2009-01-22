@@ -48,10 +48,6 @@ public class ConeOfSilenceCellMO extends CellMO {
 
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceCellMO.class.getName());
-    private String modelFileName;
-    private String name;
-    private float fullVolumeRadius;
-    private ManagedReference<ConeOfSilenceMessageHandler> coneOfSilenceMessageHandlerRef;
 
     public ConeOfSilenceCellMO() {
     }
@@ -66,15 +62,8 @@ public class ConeOfSilenceCellMO extends CellMO {
         super.setLive(live);
 
         if (live == false) {
-            if (coneOfSilenceMessageHandlerRef != null) {
-                coneOfSilenceMessageHandlerRef.get().done();
-                coneOfSilenceMessageHandlerRef = null;
-            }
             return;
         }
-
-        coneOfSilenceMessageHandlerRef = AppContext.getDataManager().createReference(
-                new ConeOfSilenceMessageHandler(this, name));
     }
 
     @Override
@@ -89,8 +78,9 @@ public class ConeOfSilenceCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new ConeOfSilenceCellClientState(name, fullVolumeRadius);
+            cellClientState = new ConeOfSilenceCellClientState();
         }
+
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -100,27 +90,21 @@ public class ConeOfSilenceCellMO extends CellMO {
 
         ConeOfSilenceCellServerState coneOfSilenceCellServerState =
                 (ConeOfSilenceCellServerState) cellServerState;
-
-        name = coneOfSilenceCellServerState.getName();
-        fullVolumeRadius = coneOfSilenceCellServerState.getFullVolumeRadius();
-    }
-
-    float getFullVolumeRadius() {
-        return fullVolumeRadius;
     }
 
     /**
      * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      *
-     * @return a JavaBean representing the current state
+     * @return CellServerState representing the current state
      */
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new ConeOfSilenceCellServerState(name, fullVolumeRadius);
+            cellServerState = new ConeOfSilenceCellServerState();
         }
         return super.getServerState(cellServerState);
     }
+
 }

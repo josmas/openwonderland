@@ -37,39 +37,11 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 public class ConeOfSilenceCellServerState extends CellServerState
         implements Serializable, CellServerStateSPI {
 
-    @XmlElement(name = "name")
-    private String name;
-    @XmlElement(name = "fullVolumeRadius")
-    private float fullVolumeRadius;
-
-    /** Default constructor */
     public ConeOfSilenceCellServerState() {
-    }
-
-    public ConeOfSilenceCellServerState(String name, float fullVolumeRadius) {
-        this.name = name;
-        this.fullVolumeRadius = fullVolumeRadius;
     }
 
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO";
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @XmlTransient
-    public String getName() {
-        return name;
-    }
-
-    public void setFullVolumeRadius(float fullVolumeRadius) {
-        this.fullVolumeRadius = fullVolumeRadius;
-    }
-
-    @XmlTransient
-    public float getFullVolumeRadius() {
-        return fullVolumeRadius;
-    }
 }

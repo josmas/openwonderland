@@ -29,11 +29,11 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 import java.io.Serializable;
 
 /**
- * The component setup
+ * The component server state
  * @author jprovino
  */
 @XmlRootElement(name="audio-treatment-component")
-public class AudioTreatmentComponentSetup extends CellComponentServerState implements Serializable, CellServerStateSPI {
+public class AudioTreatmentComponentServerState extends CellComponentServerState implements Serializable, CellServerStateSPI {
 
     @XmlElements({
 	@XmlElement(name="treatment")
@@ -61,7 +61,7 @@ public class AudioTreatmentComponentSetup extends CellComponentServerState imple
     @XmlElement(name="upperRightZ")
     public double upperRightZ;
 
-    public AudioTreatmentComponentSetup() {
+    public AudioTreatmentComponentServerState() {
     }
 
     @XmlTransient

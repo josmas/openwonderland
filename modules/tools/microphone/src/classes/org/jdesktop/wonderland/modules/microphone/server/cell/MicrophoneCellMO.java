@@ -122,7 +122,7 @@ public class MicrophoneCellMO extends CellMO {
      * Return a new CellServerState Java bean class that represents the current
      * state of the cell.
      *
-     * @return a JavaBean representing the current state
+     * @return a CellServerState representing the current state
      */
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {

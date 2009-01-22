@@ -39,33 +39,8 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  */
 public class ConeOfSilenceCellClientState extends CellClientState {
 
-    private String name;
-
-    private double fullVolumeRadius;
-
     /** Default constructor */
     public ConeOfSilenceCellClientState() {
     }
     
-    public ConeOfSilenceCellClientState(String name, double fullVolumeRadius) {
-	this.name = name;
-	this.fullVolumeRadius = fullVolumeRadius;
-    }
-
-    public void setName(String name) {
-	this.name = name;
-    }
-
-    public String getName() {
-	return name;
-    }
-
-    public void setFullVolumeRadius(double fullVolumeRadius) {
-	this.fullVolumeRadius = fullVolumeRadius;
-    }
-
-    public double getFullVolumeRadius() {
-	return fullVolumeRadius;
-    }
-
 }

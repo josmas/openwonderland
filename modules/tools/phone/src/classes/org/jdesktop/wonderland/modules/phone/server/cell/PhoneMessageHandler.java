@@ -56,10 +56,8 @@ import com.sun.voip.client.connector.CallStatus;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.server.WonderlandContext;
-
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -103,35 +101,24 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * A server cell that provides conference phone functionality
  * @author jprovino
  */
-public class PhoneMessageHandler implements Serializable, ComponentMessageReceiver {
+public class PhoneMessageHandler extends AbstractComponentMessageReceiver
+	implements Serializable {
 
     private static final Logger logger =
         Logger.getLogger(PhoneMessageHandler.class.getName());
      
-    private ManagedReference<PhoneCellMO> phoneCellMORef;
-
-    private ManagedReference<ChannelComponentMO> channelComponentRef = null;
-
     private ManagedReference<PhoneStatusListener> phoneStatusListenerRef;
 
     private int callNumber = 0;
 
     public PhoneMessageHandler(PhoneCellMO phoneCellMO) {
-	phoneCellMORef = AppContext.getDataManager().createReference(
-	        (PhoneCellMO) CellManagerMO.getCell(phoneCellMO.getCellID()));
+	super(phoneCellMO);
 
-	PhoneStatusListener phoneStatusListener = new PhoneStatusListener(phoneCellMORef);
+	PhoneStatusListener phoneStatusListener = new PhoneStatusListener(phoneCellMO);
 	
 	phoneStatusListenerRef =  AppContext.getDataManager().createReference(phoneStatusListener);
 
-        ChannelComponentMO channelComponentMO = (ChannelComponentMO) 
-	    phoneCellMO.getComponent(ChannelComponentMO.class);
-
-        if (channelComponentMO == null) {
-            throw new IllegalStateException("Cell does not have a ChannelComponent");
-	}
-
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
+        ChannelComponentMO channelComponentMO = getChannelComponent();
 
         channelComponentMO.addMessageReceiver(EndCallMessage.class, this);
         channelComponentMO.addMessageReceiver(JoinCallMessage.class, this);
@@ -141,7 +128,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
     }
 
     public void done() {
-	ChannelComponentMO channelComponentMO = channelComponentRef.get();
+	ChannelComponentMO channelComponentMO = getChannelComponent();
 
 	channelComponentMO.removeMessageReceiver(EndCallMessage.class);
 	channelComponentMO.removeMessageReceiver(JoinCallMessage.class);
@@ -157,25 +144,27 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 
 	logger.fine("got message " + msg);
 
+	PhoneCellMO phoneCellMO = (PhoneCellMO) getCell();
+
 	if (message instanceof LockUnlockMessage) {
 	    LockUnlockMessage m = (LockUnlockMessage) message;
 
 	    boolean successful = true;
 
 	    if (m.getPassword() != null) {
-		successful = m.getPassword().equals(phoneCellMORef.get().getPassword());
+		successful = m.getPassword().equals(phoneCellMO.getPassword());
 	    }
 
 	    if (successful) {
-		phoneCellMORef.get().setLocked(!phoneCellMORef.get().getLocked());
-	        phoneCellMORef.get().setKeepUnlocked(m.keepUnlocked());
+		phoneCellMO.setLocked(!phoneCellMO.getLocked());
+	        phoneCellMO.setKeepUnlocked(m.keepUnlocked());
 	    }
 
-	    logger.fine("locked " + phoneCellMORef.get().getLocked() + " successful " 
+	    logger.fine("locked " + phoneCellMO.getLocked() + " successful " 
 		+ successful + " pw " + m.getPassword());
 
             LockUnlockResponseMessage response = 
-		new LockUnlockResponseMessage(phoneCellMORef.get().getCellID(), phoneCellMORef.get().getLocked(), successful);
+		new LockUnlockResponseMessage(phoneCellMO.getCellID(), phoneCellMO.getLocked(), successful);
 
 	    sender.send(response);
 	    return;
@@ -400,7 +389,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	     * to signal success.
 	     */
             sender.send(clientID, new PlaceCallResponseMessage(
-		phoneCellMORef.get().getCellID(), listing, true));
+		phoneCellMO.getCellID(), listing, true));
 
 	    logger.fine("back from notifying user");
 	    return;
@@ -443,7 +432,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
               
             //Inform the PhoneCells that the call has been joined successfully
             sender.send(clientID, new JoinCallResponseMessage(
-		phoneCellMORef.get().getCellID(), listing, true));
+		phoneCellMO.getCellID(), listing, true));
             
             spawnOrb(externalCallID, false);
 	    return;
@@ -481,7 +470,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
             
             //Send SUCCESS to phone cell
             sender.send(clientID, new EndCallResponseMessage(
-		phoneCellMORef.get().getCellID(), listing, true, 
+		phoneCellMO.getCellID(), listing, true, 
 		"User requested call end"));
 	    return;
         } 
@@ -490,10 +479,12 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
     }
    
     private void relock(WonderlandClientSender sender) {
-	if (phoneCellMORef.get().getKeepUnlocked() == false && phoneCellMORef.get().getLocked() == false) {
-	    phoneCellMORef.get().setLocked(true);
+	PhoneCellMO phoneCellMO = (PhoneCellMO) getCell();
 
-            LockUnlockResponseMessage response = new LockUnlockResponseMessage(phoneCellMORef.get().getCellID(), true, true);
+	if (phoneCellMO.getKeepUnlocked() == false && phoneCellMO.getLocked() == false) {
+	    phoneCellMO.setLocked(true);
+
+            LockUnlockResponseMessage response = new LockUnlockResponseMessage(phoneCellMO.getCellID(), true, true);
 
             sender.send(response);
 	}
@@ -510,7 +501,7 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	synchronized (this) {
 	    callNumber++;
 
-            return phoneCellMORef.get().getCellID() + "_" + callNumber;
+            return getCell().getCellID() + "_" + callNumber;
 	}
     }
 
@@ -523,9 +514,9 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 
 	logger.fine("Spawning orb...");
 
-	CellMO cellMO = phoneCellMORef.get();
+	CellMO cellMO = getCell();
 
-	BoundingVolume boundingVolume = phoneCellMORef.get().getWorldBounds();
+	BoundingVolume boundingVolume = cellMO.getWorldBounds();
 
 	Vector3f center = new Vector3f();
 
@@ -561,16 +552,11 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
         }
 
 	try {
-	    WonderlandContext.getCellManager().insertCellInWorld(orbCellMO);
+	    CellManagerMO.getCellManager().insertCellInWorld(orbCellMO);
 	} catch (MultipleParentException e) {
 	    logger.warning("Can't insert orb in world:  " + e.getMessage());
 	    return;
 	}
     }
 
-    public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-        //TODO: consider making a subclass of AbstractComponentMessageReceiver
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
 }

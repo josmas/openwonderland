@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
@@ -42,13 +43,19 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
+
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellManager;
+import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
@@ -62,6 +69,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import java.util.ArrayList;
+
 import java.util.logging.Logger;
 
 /**
@@ -69,7 +78,7 @@ import java.util.logging.Logger;
  * @author jprovino
  */
 public class AudioManagerClient extends BaseConnection implements 
-	AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener {
+	AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener, CellStatusChangeListener {
 
     private static final Logger logger =
         Logger.getLogger(AudioManagerClient.class.getName());
@@ -78,6 +87,8 @@ public class AudioManagerClient extends BaseConnection implements
 
     private CellID cellID;
     private boolean connected = true;
+
+    private UserListJFrame userListJFrame;
 
     /** 
      * Create a new AudioManagerClient
@@ -102,7 +113,14 @@ public class AudioManagerClient extends BaseConnection implements
 
         JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
         
+	CellManager.getCellManager().addCellStatusChangeListener(this);
+
 	logger.fine("Starting AudioManagerCLient");
+    }
+
+    public void cellStatusChanged(Cell cell, CellStatus status) {
+	session.send(this, new CellStatusChangeMessage(cell.getCellID(), 
+	    status.equals(CellStatus.ACTIVE)));
     }
 
     public synchronized void execute(final Runnable r) {
@@ -294,6 +312,23 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    logger.fine("CallId " + msg.getCallID() 
 		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
+	} else if (message instanceof GetUserListMessage) {
+	    if (userListJFrame == null) {
+		userListJFrame = new UserListJFrame();
+	    }
+
+	    ArrayList<String> userList = ((GetUserListMessage) message).getUserList();
+
+	    String s = "";
+
+	    for (String user : userList) {
+		s += user + " ";
+	    }
+
+	    System.out.println("Users:  " + s);
+
+	    userListJFrame.setListData(userList.toArray(new String[0]));
+	    userListJFrame.setVisible(true);
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}

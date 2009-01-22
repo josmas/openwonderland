@@ -51,8 +51,8 @@
                              provider="com.sun.mpk20.voicelib.impl.app.VoiceManagerImpl"/>
                              
 		    <cellsetup>
-			<provider classname="org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentSetup"/> 
-			<provider classname="org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentSetup"/> 
+			<provider classname="org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState"/> 
+			<provider classname="org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState"/> 
 		    </cellsetup>
 
                     <include name="${module.src}/server/**"/>

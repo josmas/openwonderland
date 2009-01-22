@@ -24,7 +24,9 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
@@ -45,10 +47,13 @@ import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import java.io.Serializable;
+
 import java.util.logging.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
@@ -120,6 +125,18 @@ public class AudioManagerConnectionHandler
 	    return;
 	}
 
+	if (message instanceof CellStatusChangeMessage) {
+	    CellStatusChangeMessage msg = (CellStatusChangeMessage) message;
+
+	    if (msg.getActive()) {
+	        voiceChatHandler.addTransformChangeListener(msg.getCellID());
+	    } else {
+	        voiceChatHandler.removeTransformChangeListener(msg.getCellID());
+	    }
+
+	    return;
+	}
+
 	if (message instanceof GetVoiceBridgeMessage) {
 	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
 
@@ -139,6 +156,26 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
+	    sender.send(clientID, msg);
+	    return;
+	}
+
+	if (message instanceof GetUserListMessage) {
+	    GetUserListMessage msg = (GetUserListMessage) message;
+
+	    UserManager userManager = UserManager.getUserManager();
+
+	    Iterator<ManagedReference<UserMO>> it = userManager.getAllUsers().iterator();
+	    
+	    ArrayList<String> userList = new ArrayList();
+
+	    while (it.hasNext()) {
+		UserMO userMO = it.next().get();
+
+		userList.add(userMO.getIdentity().getUsername());
+	    }
+
+	    msg.setUserList(userList);
 	    sender.send(clientID, msg);
 	    return;
 	}

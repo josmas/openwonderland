@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.coneofsilence.server.cell;
+package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
@@ -44,13 +44,13 @@ import com.sun.sgs.app.ManagedObject;
  * A server cell that provides conference coneofsilence functionality
  * @author jprovino
  */
-public class MyProximityListener implements ProximityListenerSrv, ManagedObject {
+public class ConeOfSilenceProximityListener implements ProximityListenerSrv, ManagedObject {
 
     private static final Logger logger =
-            Logger.getLogger(ConeOfSilenceMessageHandler.class.getName());
+            Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
     String name;
 
-    public MyProximityListener(String name) {
+    public ConeOfSilenceProximityListener(String name) {
         this.name = name;
     }
 
@@ -58,13 +58,14 @@ public class MyProximityListener implements ProximityListenerSrv, ManagedObject 
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
-        System.out.println("viewEnterExit:  " + entered + " cellID " + cellID);
+	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
+	    + " viewCellID " + viewCellID);
 
-        if (entered) {
-            cellEntered(viewCellID);
-        } else {
-            cellExited(viewCellID);
-        }
+	if (entered) {
+	    cellEntered(viewCellID);
+	} else {
+	    cellExited(viewCellID);
+	}
     }
 
     private void cellEntered(CellID softphoneCellID) {
@@ -143,4 +144,5 @@ public class MyProximityListener implements ProximityListenerSrv, ManagedObject 
         player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
                 AudioGroup.DEFAULT_LISTEN_ATTENUATION);
     }
+
 }

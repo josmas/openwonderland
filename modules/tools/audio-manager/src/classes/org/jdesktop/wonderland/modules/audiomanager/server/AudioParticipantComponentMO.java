@@ -24,13 +24,9 @@ import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
-
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentSetup;
 
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.Player;
@@ -41,7 +37,7 @@ import com.jme.math.Vector3f;
  *
  * @author jprovino
  */
-public class AudioParticipantComponentMO extends CellComponentMO {
+public abstract class AudioParticipantComponentMO extends CellComponentMO {
 
     private static final Logger logger =
             Logger.getLogger(AudioParticipantComponentMO.class.getName());
@@ -52,22 +48,8 @@ public class AudioParticipantComponentMO extends CellComponentMO {
      * Create a AudioParticipantComponent for the given cell. 
      * @param cell
      */
-    public AudioParticipantComponentMO(CellMO cell) {
-        super(cell);
-    }
-
-    @Override
-    public void setServerState(CellComponentServerState setup) {
-        AudioParticipantComponentSetup apcs = (AudioParticipantComponentSetup) setup;
-    }
-
-    @Override
-    public CellComponentServerState getServerState(CellComponentServerState setup) {
-        if (setup == null) {
-            setup = new AudioParticipantComponentSetup();
-        }
-
-        return setup;
+    public AudioParticipantComponentMO(CellMO cellMO) {
+        super(cellMO);
     }
 
     @Override
@@ -87,16 +69,11 @@ public class AudioParticipantComponentMO extends CellComponentMO {
 	cellRef.get().addTransformChangeListener(myTransformChangeListener);
     }
 
-    @Override
-    protected String getClientClass() {
-        return "org.jdesktop.wonderland.modules.audiomanager.client.AudioParticipantComponent";
-    }
-
     static class MyTransformChangeListener implements TransformChangeListenerSrv {
-        public void transformChanged(ManagedReference<CellMO> cellMORef, 
+        public void transformChanged(ManagedReference<CellMO> cellRef, 
 	        final CellTransform localTransform, final CellTransform localToWorldTransform) {
 
-	    String clientId = cellMORef.get().getCellID().toString();
+	    String clientId = cellRef.get().getCellID().toString();
 
 	    logger.fine("localTransform " + localTransform + " world " 
 	        + localToWorldTransform);
@@ -114,7 +91,7 @@ public class AudioParticipantComponentMO extends CellComponentMO {
 
 	        Vector3f location = localToWorldTransform.getTranslation(null);
 	
-	        System.out.println(player + " x " + location.getX()
+	        logger.fine(player + " x " + location.getX()
 		    + " y " + location.getY() + " z " + location.getZ()
 		    + " angle " + angle);
 

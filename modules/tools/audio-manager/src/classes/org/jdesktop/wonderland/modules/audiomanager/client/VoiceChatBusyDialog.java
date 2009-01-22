@@ -50,7 +50,7 @@ public class VoiceChatBusyDialog extends javax.swing.JFrame {
         busyText = new javax.swing.JTextField();
         okButton = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         setTitle("Busy Dialog");
 
         busyText.setText("jTextField1");

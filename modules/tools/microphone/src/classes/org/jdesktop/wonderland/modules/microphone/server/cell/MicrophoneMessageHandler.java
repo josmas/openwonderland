@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
-import com.sun.sgs.app.ManagedReference;
-
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
 
@@ -35,9 +33,6 @@ import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
-
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -60,6 +55,8 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 import org.jdesktop.wonderland.server.UserManager;
 
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
@@ -74,37 +71,24 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * A server cell that provides conference microphone functionality
  * @author jprovino
  */
-public class MicrophoneMessageHandler implements Serializable, ComponentMessageReceiver {
+public class MicrophoneMessageHandler extends AbstractComponentMessageReceiver
+	implements Serializable {
 
     private static final Logger logger =
         Logger.getLogger(MicrophoneMessageHandler.class.getName());
      
-    private ManagedReference<MicrophoneCellMO> microphoneCellMORef;
-
-    private ManagedReference<ChannelComponentMO> channelComponentRef = null;
-
     private String name;
 
     public MicrophoneMessageHandler(MicrophoneCellMO microphoneCellMO, String name) {
+	super(microphoneCellMO);
+
 	this.name = name;
 
-	microphoneCellMORef = AppContext.getDataManager().createReference(
-	        (MicrophoneCellMO) CellManagerMO.getCell(microphoneCellMO.getCellID()));
-
-        ChannelComponentMO channelComponentMO = (ChannelComponentMO) 
-	    microphoneCellMO.getComponent(ChannelComponentMO.class);
-
-        if (channelComponentMO == null) {
-            throw new IllegalStateException("Cell does not have a ChannelComponent");
-	}
-
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponentMO);
-
-        channelComponentMO.addMessageReceiver(MicrophoneEnterCellMessage.class, this);
+        getChannelComponent().addMessageReceiver(MicrophoneEnterCellMessage.class, this);
     }
 
     public void done() {
-	channelComponentRef.get().removeMessageReceiver(MicrophoneEnterCellMessage.class);
+	getChannelComponent().removeMessageReceiver(MicrophoneEnterCellMessage.class);
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
@@ -132,7 +116,7 @@ public class MicrophoneMessageHandler implements Serializable, ComponentMessageR
 	String callId = msg.getCellID().toString();
 
 	MicrophoneCellServerState cellServerState = (MicrophoneCellServerState) 
-	    microphoneCellMORef.get().getServerState(null);
+	    getCell().getServerState(null);
 
 	logger.warning(callId + " entered microphone " + name);
 
@@ -170,8 +154,4 @@ public class MicrophoneMessageHandler implements Serializable, ComponentMessageR
 	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
     }
 
-    public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-        //TODO: consider making a subclass of AbstractComponentMessageReceiver
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }
