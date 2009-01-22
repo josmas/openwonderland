@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="xremwin" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.xremwin}"/>
+    <property name="modules.dir" location="${current.dir}/../.."/>
+        
+    <property name="module.src" value="org/jdesktop/wonderland/modules/xremwin"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.xremwin"/>
+    <property name="module.jarname" value="xremwin"/>
+    
+    <property name="module-common.classpath" value="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+    <pathconvert property="module-client.classpath">
+      <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+      <path location="${current.dir}/lib/escher-0.2.2.lg.jar"/>
+    </pathconvert>
+    <property name="module-server.classpath" value="${current.dir}/../appbase/build/server/appbase-server.jar"/>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="xremwin" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+                builddir="${build.dir}">
+                    
+
+           <client>
+               <clientjar name="xremwin-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                </clientjar> 
+           </client>
+           
+           <server>
+                <serverjar name="xremwin-server" basedir="${build.classes.dir}">
+		    <!-- TODO: eventually include <cellsetup> element for world launch 
+                    <cellsetup>
+                        <provider classname="org.jdesktop.wonderland.modules.xremwin.server.XremwinCellServerState"/>
+                    </cellsetup>
+		    -->
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
+            
+            <art dir="${current.dir}/art"/>
+        </module>
+    </target>                                                       
+                                           
+    <target name="clean" depends="-module-clean"/>
+</project>
