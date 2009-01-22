@@ -32,10 +32,14 @@ import imi.scene.JScene;
 import imi.scene.PScene;
 import java.net.URL;
 import java.util.logging.Level;
+import org.jdesktop.mtgame.CollisionComponent;
+import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -61,8 +65,7 @@ public class ColladaRenderer extends BasicRenderer {
         
         try {
             URL modelLocation = getAssetURL(((ColladaCell)cell).getModelURI());
-            logger.warning("****** URL: " + modelLocation);
-            System.err.println("**********************************************");
+            logger.warning("****** URL: " + modelLocation.toExternalForm());
 
             WorldManager worldManager = ClientContextJME.getWorldManager();
 
@@ -72,13 +75,17 @@ public class ColladaRenderer extends BasicRenderer {
 
             rootNode = environment.getJMENode();
 
-            logger.warning("ColladaREnderer not applying cell origin to geometry yet....");
+            applyTransform(rootNode, cell.getWorldTransform());
+            addRenderState(rootNode);
 
+            addDefaultComponents(environment, rootNode);
+
+            logger.warning("ColladaREnderer not applying geometry offsets yet....");
             // Adjust model origin wrt to cell
-            if (((ColladaCell)cell).getGeometryTranslation()!=null)
-                rootNode.setLocalTranslation(((ColladaCell)cell).getGeometryTranslation());
-            if (((ColladaCell)cell).getGeometryRotation()!=null)
-                rootNode.setLocalRotation(((ColladaCell)cell).getGeometryRotation());
+//            if (((ColladaCell)cell).getGeometryTranslation()!=null)
+//                rootNode.setLocalTranslation(((ColladaCell)cell).getGeometryTranslation());
+//            if (((ColladaCell)cell).getGeometryRotation()!=null)
+//                rootNode.setLocalRotation(((ColladaCell)cell).getGeometryRotation());
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error loading Collada file "+((ColladaCell)cell).getModelURI(), e);
         }
