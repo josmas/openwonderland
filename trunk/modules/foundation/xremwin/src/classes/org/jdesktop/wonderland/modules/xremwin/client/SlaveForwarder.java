@@ -48,6 +48,7 @@ class SlaveForwarder {
             throws IOException {
         this.serverProxy = serverProxy;
         socketSet = new MasterSocketSet(sessionID, serverSocket, new MyListener());
+	socketSet.start();
     }
 
     public void cleanup() {
