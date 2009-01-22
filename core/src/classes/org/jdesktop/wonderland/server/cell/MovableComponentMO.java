@@ -63,6 +63,11 @@ public class MovableComponentMO extends CellComponentMO {
             channelComponent.addMessageReceiver(getMessageClass(), new ComponentMessageReceiverImpl(this));
         } else {
             channelComponent = channelComponentRef.getForUpdate();
+
+	    if (channelComponent == null) {
+		return;
+	    }
+
             channelComponent.removeMessageReceiver(getMessageClass());
         }
     }
