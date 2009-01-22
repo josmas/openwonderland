@@ -32,6 +32,8 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.state.BasicCellServerStateHelper;
+import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.server.WonderlandContext;
 
 /**
  * The server-side cell for an 2D conventional application.

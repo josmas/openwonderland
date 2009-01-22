@@ -29,17 +29,20 @@ import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.sgs.app.ClientSession;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.appbase.server.AppConventionalCellMO;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
- * Handler for app base conventional connections.
+  * Server handler for the app base conventional connection.
  *
  * @author deronj
  */
 
 @InternalAPI
-class AppConventionalConnectionHandler implements ClientConnectionHandler, Serializable {
+public abstract class AppConventionalConnectionHandler implements ClientConnectionHandler, Serializable {
 
     private static final Logger logger = Logger.getLogger(AppConventionalConnectionHandler.class.getName());
     
@@ -82,6 +85,10 @@ class AppConventionalConnectionHandler implements ClientConnectionHandler, Seria
         switch(message.getActionType()) {
 
 	case CELL_CREATE:
+	    AppConventionalCellMO cellMO = createCell((AppConventionalCellCreateMessage)message);
+	    // TODO: add cell to list of cells created by this connection. Model after old 
+	    // Wonderland session listeners
+	    CellID cellID = cellMO.getCellID();
 	    // TODO: return cellID in response message
 	    break;
 
@@ -101,4 +108,11 @@ class AppConventionalConnectionHandler implements ClientConnectionHandler, Seria
     public static WonderlandClientSender getSender() {
         return WonderlandContext.getCommsManager().getSender(CLIENT_TYPE);
     }
+
+
+    /**
+     * Create and return a server cell of the appropriate type.
+     * Subclasses should override this to return a cell of the subclass-specific server cell type.
+     */
+    public abstract AppConventionalCellMO createCell (AppConventionalCellCreateMessage msg);
 }
