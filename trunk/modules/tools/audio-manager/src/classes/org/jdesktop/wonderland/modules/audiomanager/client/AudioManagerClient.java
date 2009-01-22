@@ -88,7 +88,7 @@ public class AudioManagerClient extends BaseConnection implements
     private CellID cellID;
     private boolean connected = true;
 
-    private UserListJFrame userListJFrame;
+    //private UserListJFrame userListJFrame;
 
     /** 
      * Create a new AudioManagerClient
@@ -313,9 +313,9 @@ public class AudioManagerClient extends BaseConnection implements
 	    logger.fine("CallId " + msg.getCallID() 
 		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
 	} else if (message instanceof GetUserListMessage) {
-	    if (userListJFrame == null) {
-		userListJFrame = new UserListJFrame();
-	    }
+	    //if (userListJFrame == null) {
+	    //	userListJFrame = new UserListJFrame();
+	    //}
 
 	    ArrayList<String> userList = ((GetUserListMessage) message).getUserList();
 
@@ -327,8 +327,8 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    System.out.println("Users:  " + s);
 
-	    userListJFrame.setListData(userList.toArray(new String[0]));
-	    userListJFrame.setVisible(true);
+	    //userListJFrame.setListData(userList.toArray(new String[0]));
+	    //userListJFrame.setVisible(true);
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
