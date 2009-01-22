@@ -124,6 +124,11 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
 	    System.out.println("Got ConeOfSilenceMessage");
         }
+
+        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            //TODO: consider making a subclass of AbstractComponentMessageReceiver
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
 }

@@ -58,8 +58,11 @@ import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
+
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -253,6 +256,11 @@ public class AudioTreatmentComponentMO extends CellComponentMO implements Manage
             AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
 
             logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
+        }
+
+        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            //TODO: consider making a subclass of AbstractComponentMessageReceiver
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
