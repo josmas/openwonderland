@@ -99,5 +99,10 @@ public class WhiteboardComponentMO extends CellComponentMO {
             CellMO cell = cellRef.get();
             ((WhiteboardCellMO) cell).receivedMessage(sender, clientID, cmsg);
         }
+
+        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            //TODO: Consider making this class a subclass of AbstractComponentMessageReceiver
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }
