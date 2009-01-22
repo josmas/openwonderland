@@ -179,6 +179,10 @@ public abstract class ResourceURI implements Serializable {
      */
     @Override
     public String toString() {
+        return toExternalForm();
+    }
+
+    public String toExternalForm() {
         StringBuilder sb = new StringBuilder(protocol + "://" + moduleName);
         if (hostName != null) {
             sb.append("@" + hostName);
