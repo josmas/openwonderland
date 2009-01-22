@@ -67,6 +67,7 @@ import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneCellMO;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -167,5 +168,10 @@ public class MicrophoneMessageHandler implements Serializable, ComponentMessageR
 
 	player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
 	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+    }
+
+    public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        //TODO: consider making a subclass of AbstractComponentMessageReceiver
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
