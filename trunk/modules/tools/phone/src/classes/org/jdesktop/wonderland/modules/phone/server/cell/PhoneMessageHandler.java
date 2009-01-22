@@ -96,6 +96,7 @@ import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
 
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -565,6 +566,11 @@ public class PhoneMessageHandler implements Serializable, ComponentMessageReceiv
 	    logger.warning("Can't insert orb in world:  " + e.getMessage());
 	    return;
 	}
+    }
+
+    public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        //TODO: consider making a subclass of AbstractComponentMessageReceiver
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }
