@@ -384,9 +384,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
 
 
         // Notify all components of new live state
-        Collection<ManagedReference<CellComponentMO>> compList = components.values();
-        for(ManagedReference<CellComponentMO> c : compList) {
-            c.get().setLive(live);
+	ManagedReference<CellComponentMO>[] compList = (ManagedReference<CellComponentMO>[]) 
+	    components.values().toArray(new ManagedReference[0]);
+
+	for (int i = 0; i < compList.length; i++) {
+            compList[i].get().setLive(live);
         }
         
         for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
@@ -720,6 +722,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param listener to be removed
      */
     public void removeTransformChangeListener(TransformChangeListenerSrv listener) {
+        if (transformChangeListeners==null)
+	    return;
         transformChangeListeners.remove(listener);
         if (isLive())
             UniverseManagerFactory.getUniverseManager().removeTransformChangeListener(this, listener);
