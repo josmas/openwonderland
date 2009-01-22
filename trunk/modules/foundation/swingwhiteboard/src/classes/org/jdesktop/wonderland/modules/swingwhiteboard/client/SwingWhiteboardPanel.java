@@ -43,7 +43,7 @@ public class SwingWhiteboardPanel extends javax.swing.JPanel {
         greenButton = new javax.swing.JButton();
         strokeButton = new javax.swing.JButton();
         eraseButton = new javax.swing.JButton();
-        drawingPanel = new javax.swing.JPanel();
+        drawingPanel = new SwingWhiteboardDrawingPanel();
 
         buttonPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         buttonPanel.setName("buttonPanel"); // NOI18N
@@ -181,16 +181,14 @@ public class SwingWhiteboardPanel extends javax.swing.JPanel {
     private javax.swing.JButton blackButton;
     private javax.swing.JButton blueButton;
     private javax.swing.JPanel buttonPanel;
-    private javax.swing.JPanel drawingPanel;
+    private SwingWhiteboardDrawingPanel drawingPanel;
     private javax.swing.JButton eraseButton;
     private javax.swing.JButton greenButton;
     private javax.swing.JButton redButton;
     private javax.swing.JButton strokeButton;
     // End of variables declaration//GEN-END:variables
 
-
-    public javax.swing.JPanel getDrawingPanel () {
+    public SwingWhiteboardDrawingPanel getDrawingPanel () {
 	return drawingPanel;
     }
-
 }
