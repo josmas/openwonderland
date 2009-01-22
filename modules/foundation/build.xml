@@ -10,12 +10,17 @@
     <!-- all projects -->
     <fileset dir="${current.dir}" id="all.projects">
         <exclude name="appbase/build.xml"/>
+        <exclude name="xremwin/build.xml"/>
         <exclude name="simplewhiteboard/build.xml"/>
         <include name="*/**/build.xml"/>
     </fileset>
  
     <fileset dir="${current.dir}" id="appbase.module">
         <include name="appbase/build.xml"/>
+    </fileset>
+
+    <fileset dir="${current.dir}" id="xremwin.module">
+        <include name="xremwin/build.xml"/>
     </fileset>
 
    <fileset dir="${current.dir}" id="simplewhiteboard.module">
@@ -25,6 +30,7 @@
     <!-- build and package all subprojects -->
     <target name="dist">
         <build-subprojects fileset="appbase.module" target="dist"/>
+        <build-subprojects fileset="xremwin.module" target="dist"/>
         <build-subprojects fileset="simplewhiteboard.module" target="dist"/>
         <build-subprojects fileset="all.projects" target="dist"/>
     </target>
@@ -32,6 +38,7 @@
     <!-- build the client portions of the module -->
     <target name="build-clientonly">
         <build-subprojects fileset="appbase.module" target="-module-compile-client"/>
+        <build-subprojects fileset="xremwin.module" target="-module-compile-client"/>
         <build-subprojects fileset="simplewhiteboard.module" target="-module-compile-client"/>
         <build-subprojects fileset="all.projects" target="-module-compile-client"/>
     </target>
@@ -40,6 +47,7 @@
     <target name="clean">
         <!-- clean sub-projects -->
         <build-subprojects fileset="appbase.module" target="clean"/>
+        <build-subprojects fileset="xremwin.module" target="clean"/>
         <build-subprojects fileset="simplewhiteboard.module" target="clean"/>
         <build-subprojects fileset="all.projects" target="clean"/>       
     </target>
