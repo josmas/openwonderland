@@ -39,3 +39,7 @@ will (or plan to ) use:
 
 9. Sip Communicator
     - softphone.jar
+
+10. Escher (Java-based X11 client library)
+    - escher-0.2.2.lg.jar
+    

@@ -34,6 +34,11 @@
         <!-- jogl -->
         <unpack-lib-zip pkgname="jogl"
                         srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
+
+        <!-- Escher -->
+        <unpack-lib-zip pkgname="escher"
+                        srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
+
     </target>
 
     <!--
