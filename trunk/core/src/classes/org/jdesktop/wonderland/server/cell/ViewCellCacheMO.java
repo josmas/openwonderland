@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import com.jme.bounding.BoundingSphere;
@@ -75,11 +76,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private ManagedReference<ViewCellMO> viewRef;
     private ManagedReference<UserSecurityContextMO> securityContextRef;
     
-    private String username;
-   
     private WonderlandClientSender sender;
     private WonderlandClientID clientID;
     
+    private WonderlandIdentity identity;
+
     private ClientCapabilities capabilities = null;
          
     private PeriodicTaskHandle task = null;
@@ -100,8 +101,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         
         DataManager dm = AppContext.getDataManager();
         viewRef = dm.createReference(view);
-        dm.setBinding(username + "_CELL_CACHE", this);
 
+        identity = view.getUser().getIdentity();
+        
+        dm.setBinding(identity.getUsername() + "_CELL_CACHE", this);
     }
     
     /**
@@ -123,8 +126,6 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
         UniverseManagerFactory.getUniverseManager().viewLogin(view);
 
-        username = view.getUser().getUsername();
-        
         UserSecurityContextMO securityContextMO = view.getUser().getUserSecurityContext();
         if (securityContextMO!=null)
             securityContextRef = AppContext.getDataManager().createReference(securityContextMO);
@@ -133,7 +134,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
         
         logger.info("AvatarCellCacheMO.login() CELL CACHE LOGIN FOR USER "
-                    + clientID.getSession().getName() + " AS " + username);
+                    + clientID.getSession().getName() + " AS " + identity.getUsername());
                 
         // Setup the Root Cell on the client
         CellHierarchyMessage msg;
@@ -171,7 +172,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
                 if (logger.isLoggable(Level.FINER))
                     logger.finer("Entering cell " + cellDescription.getCellID() +
-                                 " cellcache for user "+username);
+                                 " cellcache for user "+identity.getUsername());
 
                 CellLoadOp op = new CellLoadOp(cellDescription,
                                              clientID,
@@ -189,7 +190,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         for(CellDescription ref : removeCells) {
 //            if (logger.isLoggable(Level.FINER))
                 logger.warning("Leaving cell " + ref.getCellID() +
-                             " cellcache for user "+username);
+                             " cellcache for user "+identity.getUsername());
 
             // schedule the add operation
             CellUnloadOp op = new CellUnloadOp(ref,

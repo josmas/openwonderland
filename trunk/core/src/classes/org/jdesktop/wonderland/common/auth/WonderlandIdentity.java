@@ -35,7 +35,7 @@ public class WonderlandIdentity implements Serializable {
         this.email = email;
     }
 
-    public String getName() {
+    public String getUsername() {
         return username;
     }
 
@@ -49,7 +49,7 @@ public class WonderlandIdentity implements Serializable {
 
     @Override
     public String toString() {
-        return "WonderlandIdentity: username=" + getName() +
+        return "WonderlandIdentity: username=" + getUsername() +
                " fullname=" + getFullName() + " email=" + getEmail();
     }
 

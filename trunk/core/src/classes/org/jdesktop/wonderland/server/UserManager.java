@@ -27,6 +27,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -143,8 +145,9 @@ public class UserManager implements ManagedObject, Serializable {
 //    }
     
     private UserMO createUserMO(String username) {
-        UserMO ret = new UserMO(username);
-        AppContext.getDataManager().setBinding("user_"+username, ret);
+	WonderlandIdentity identity = AppContext.getManager(ClientIdentityManager.class).getClientID();
+	UserMO ret = new UserMO(identity);
+        AppContext.getDataManager().setBinding("user_" + identity.getUsername(), ret);
         return ret;
     }
 

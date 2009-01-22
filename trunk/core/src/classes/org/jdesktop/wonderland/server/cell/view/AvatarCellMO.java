@@ -30,7 +30,10 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.view.ViewCellClientState;
 import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellTransformChangeListener;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -66,6 +69,18 @@ public class AvatarCellMO extends ViewCellMO {
         return "org.jdesktop.wonderland.client.cell.view.AvatarCell";
     }
     
+    @Override
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+
+	if (cellClientState == null) {
+	    cellClientState = new ViewCellClientState(
+		AppContext.getManager(ClientIdentityManager.class).getClientID());
+	}
+
+	return super.getClientState(cellClientState, clientID, capabilities);
+    }
+
     /**
      * {@inheritDoc}
      */

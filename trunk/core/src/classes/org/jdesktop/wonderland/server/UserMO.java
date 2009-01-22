@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -44,8 +46,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class UserMO implements ManagedObject, Serializable {
 
-    private String username;
-    private String fullname;
+    private WonderlandIdentity identity;
     private ArrayList<String> groups = null;
     
     private Set<WonderlandClientID> activeClients = null;
@@ -57,36 +58,25 @@ public class UserMO implements ManagedObject, Serializable {
     /**
      * Create a new User managed object with a unique username
      * 
-     * @param username
+     * @param identity
      */
-    UserMO(String username) {
-        this.username = username;
+    UserMO(WonderlandIdentity identity) {
+        this.identity = identity;
     }
     
     /**
-     * Get unique username
+     * Get unique identity
      * 
      * @return
      */
+    public WonderlandIdentity getIdentity() {
+        return identity;
+    }
+
     public String getUsername() {
-        return username;
+	return identity.getUsername();
     }
 
-    /**
-     * Get full name of user (may not be unique)
-     * @return
-     */
-    public String getFullname() {
-        return fullname;
-    }
-
-    /**
-     * Set full name of user (may not be unique)
-     */
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
-    }
-    
     /**
      * Put a named object in the extended data Map for this User
      * 
@@ -164,6 +154,7 @@ public class UserMO implements ManagedObject, Serializable {
             activeClients = new HashSet<WonderlandClientID>();
         }
         
+	String username = AppContext.getManager(ClientIdentityManager.class).getClientID().getUsername();
         logger.info("User Login " + username);
         activeClients.add(clientID);
     }
