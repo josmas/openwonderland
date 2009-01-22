@@ -86,6 +86,16 @@ public abstract class ChannelComponentMO extends CellComponentMO {
     static public interface ComponentMessageReceiver extends ManagedObject, Serializable {
         public void messageReceived(WonderlandClientSender sender, 
                                     WonderlandClientID clientID,
-                                    CellMessage message );        
+                                    CellMessage message );
+        
+        /**
+         * Record the message--as part of the event recording mechanism.
+         * @param sender the sender of the message
+         * @param clientID the id of the client sending the message
+         * @param message
+         */
+        public void recordMessage(WonderlandClientSender sender,
+                                    WonderlandClientID clientID,
+                                    CellMessage message );
     }
 }
