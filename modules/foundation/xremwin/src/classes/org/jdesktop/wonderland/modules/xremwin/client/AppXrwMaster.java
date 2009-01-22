@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.MonitoredProcess;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.modules.xremwin.client.wm.X11WindowManager;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
 
 /**
  * A Master Xremwin app. This is the AppXrw subclass used on the client machine
@@ -76,6 +77,9 @@ class AppXrwMaster
     AppXrwMaster(AppTypeConventional appType, String appName, String masterHost, String command, Vector2f pixelScale,
             ProcessReporter reporter, WonderlandSession session)
             throws InstantiationException {
+
+	// TODO: temporary
+        //super(appType, appName, new ControlArbAlways(), pixelScale);
         super(appType, appName, new ControlArbXrw(), pixelScale);
         AppXrw.logger.severe("AppXrwMaster: appType = " + appType);
         AppXrw.logger.severe("appName = " + appName);

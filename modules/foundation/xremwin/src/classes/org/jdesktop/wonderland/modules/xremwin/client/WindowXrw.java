@@ -68,6 +68,7 @@ class WindowXrw extends WindowConventional {
     WindowXrw(App app, int x, int y, int width, int height, int borderWidth,
             boolean decorated, Vector2f pixelScale, int wid)
             throws InstantiationException {
+
         // In X11, decorated windows are top-level and have a frame
         super(app, width, height, decorated, borderWidth, pixelScale);
         this.x = x;

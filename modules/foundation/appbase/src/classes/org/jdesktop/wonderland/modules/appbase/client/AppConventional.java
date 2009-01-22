@@ -126,7 +126,7 @@ public abstract class AppConventional extends App2D {
      */
     public static void userLaunchApp (AppTypeConventional appType, String appName, String command, boolean bestView, 
 				      BoundingVolume bounds, CellTransform transform, Vector2f pixelScale) {
-	userLaunchApp(appType, appName, command, bestView, bounds, transform, pixelScale);
+	userLaunchApp(appType, appName, command, bestView, bounds, transform, pixelScale, null);
     }
 
     /**
