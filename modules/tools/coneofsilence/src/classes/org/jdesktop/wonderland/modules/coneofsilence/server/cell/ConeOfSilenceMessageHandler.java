@@ -65,6 +65,7 @@ import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 
 /**
  * A server cell that provides conference coneofsilence functionality
@@ -144,4 +145,9 @@ public class ConeOfSilenceMessageHandler implements Serializable, ComponentMessa
 //            logger.warning("Unknown message " + message);
 //        }
     }
+    public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        //TODO: consider making a subclass of AbstractComponentMessageReceiver
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }
