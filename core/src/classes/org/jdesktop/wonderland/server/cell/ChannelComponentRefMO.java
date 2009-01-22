@@ -131,6 +131,7 @@ public class ChannelComponentRefMO extends ChannelComponentMO {
         }
 
         recvRef.get().messageReceived(sender, clientID, message);
+        recvRef.get().recordMessage(sender, clientID, message);
     }
 
 }

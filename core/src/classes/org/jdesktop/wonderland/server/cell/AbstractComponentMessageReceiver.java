@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 /**
  * An abstract base class that implements the channel component message
@@ -67,4 +68,24 @@ public abstract class AbstractComponentMessageReceiver implements ComponentMessa
     
     public abstract void messageReceived(WonderlandClientSender sender,
             WonderlandClientID clientID, CellMessage message);
+
+    public final void recordMessage(WonderlandClientSender sender,
+                                    WonderlandClientID clientID,
+                                    CellMessage message ) {
+
+        RecorderManager.getDefaultManager().recordMessage(sender, clientID, message);
+        postRecordMessage(sender, clientID, message);
+    }
+
+    /**
+     * Subclasses may override this method to perform specialised recordings for their
+     * component or cell.
+     * @param sender the sender of the message
+     * @param clientID the id of the client sending the message
+     * @param message
+     */
+    protected void postRecordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        //No op
+        //There is no requirement for subclasses to call this method using super.
+    }
 }

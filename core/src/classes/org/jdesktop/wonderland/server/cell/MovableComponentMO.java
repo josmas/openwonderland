@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 /**
  *
@@ -131,6 +132,14 @@ public class MovableComponentMO extends CellComponentMO {
                     Logger.getAnonymousLogger().severe("Server should never receive MOVED messages");
                     break;
             }
+        }
+
+         /**
+         * Record the message -- part of the event recording mechanism.
+         * Nothing more than the message is recorded in this implementation, delegate it to the recorder manager
+         */
+        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            RecorderManager.getDefaultManager().recordMessage(sender, clientID, message);
         }
     }
 }
