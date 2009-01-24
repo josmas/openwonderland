@@ -23,9 +23,11 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
+import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
@@ -41,6 +43,8 @@ public class UserManager implements ManagedObject, Serializable {
     
     private HashMap<WonderlandClientID, ManagedReference<UserMO>> clientToUser =
 	    new HashMap<WonderlandClientID, ManagedReference<UserMO>>();
+
+    private HashSet<ManagedReference<UserListener>> userListeners = new HashSet();
     
     /**
      * Name used in binding this object in DataManager
@@ -68,29 +72,6 @@ public class UserManager implements ManagedObject, Serializable {
         return (UserManager) AppContext.getDataManager().getBinding(UserManager.BINDING_NAME);                
     }
 
-    /**
-     * Add a user to the set of logged in users
-     */
-    public void addUser(WonderlandClientID clientID, UserMO user) {
-        DataManager dm = AppContext.getDataManager();
-        clientToUser.put(clientID, dm.createReference(user));
-    }
-    
-    /**
-     * Remove the user from the set of logged in users.
-     *
-     * @return reference to the UserGLO
-     */
-    public UserMO removeUser(WonderlandClientID clientID) {
-        ManagedReference<UserMO> userRef = 
-                clientToUser.remove(clientID);
-        if (userRef == null) {
-            return null;
-        }
-        
-        return userRef.get();
-    }
-    
     /**
      * Return the user with the given userID
      *
@@ -125,28 +106,9 @@ public class UserManager implements ManagedObject, Serializable {
         return user;
     }
     
-    /**
-     * Find or create and return the user managed object 
-     */
-//    public ManagedReference getOrCreateUserMO(String username) {
-//        
-//        String userObjName = "user_"+username;
-//        UserMO user=null;
-//        
-//        user = getUserMO(username);
-//        if (user==null) {
-//            user = new UserMO(username);
-//            AppContext.getDataManager().setBinding(userObjName, user);
-//        }
-//        
-//        ManagedReference userRef = AppContext.getDataManager().createReference(user);
-//                
-//        return userRef;
-//    }
-    
     private UserMO createUserMO(String username) {
-	WonderlandIdentity identity = AppContext.getManager(ClientIdentityManager.class).getClientID();
-	UserMO ret = new UserMO(identity);
+        WonderlandIdentity identity = AppContext.getManager(ClientIdentityManager.class).getClientID();
+        UserMO ret = new UserMO(identity);
         AppContext.getDataManager().setBinding("user_" + identity.getUsername(), ret);
         return ret;
     }
@@ -205,8 +167,19 @@ public class UserManager implements ManagedObject, Serializable {
         }
         
         clientToUser.remove(clientID);
-   }
-    
+        notifyUserListeners(clientID);
+    }
+
+    /**
+     * Notify listeners that client is logging out
+     * @param clientID
+     */
+    private void notifyUserListeners(WonderlandClientID clientID) {
+        for(ManagedReference<UserListener> listener : userListeners) {
+            AppContext.getTaskManager().scheduleTask(new UserListenerNotifier(listener, clientID));
+        }
+    }
+
     /**
      * Return a Collection of all avatars for currently logged in users
      *
@@ -244,5 +217,22 @@ public class UserManager implements ManagedObject, Serializable {
     public void setUserLimit(int userLimit) {
         this.userLimit = userLimit;
     }
-    
+
+    /**
+     * Add a listener to the set of listeners which are notified when a user
+     * logs out
+     * @param listener
+     */
+    public void addUserListener(UserListener listener) {
+        userListeners.add(AppContext.getDataManager().createReference(listener));
+    }
+
+    /**
+     * Removed a UserListener listener
+     * 
+     * @param listener
+     */
+    public void removeUserListener(UserListener listener) {
+        userListeners.remove(AppContext.getDataManager().createReference(listener));
+    }
 }
