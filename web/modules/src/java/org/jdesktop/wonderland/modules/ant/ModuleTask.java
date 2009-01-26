@@ -614,6 +614,14 @@ public class ModuleTask extends Jar {
         public void addConfiguredCellFactory(CellFactory cellFactory) {
             addConfiguredService(cellFactory);
         }
+
+        public void addConfiguredCellProperties(CellProperties cellProperties) {
+            addConfiguredService(cellProperties);
+        }
+
+        public void addConfiguredComponentProperties(ComponentProperties componentProperties) {
+            addConfiguredService(componentProperties);
+        }
     }
     
     public static class ClientPlugin extends Service {
@@ -625,6 +633,18 @@ public class ModuleTask extends Jar {
     public static class CellFactory extends Service {
         public CellFactory() {
             setType("org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI");
+        }
+    }
+
+    public static class CellProperties extends Service {
+        public CellProperties() {
+            setType("org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI");
+        }
+    }
+
+    public static class ComponentProperties extends Service {
+        public ComponentProperties() {
+            setType("org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI");
         }
     }
 }
