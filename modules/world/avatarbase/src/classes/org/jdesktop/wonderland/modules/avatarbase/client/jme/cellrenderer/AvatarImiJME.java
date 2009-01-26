@@ -23,10 +23,11 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import imi.character.CharacterAttributes;
 import imi.character.CharacterMotionListener;
+import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.statemachine.GameContextListener;
 import imi.scene.PMatrix;
 import imi.scene.processors.JSceneEventProcessor;
-import imi.utils.input.NinjaControlScheme;
+import imi.utils.input.AvatarControlScheme;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
@@ -34,8 +35,6 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import imi.character.ninja.NinjaContext;
-import imi.character.ninja.NinjaContext.TriggerNames;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
@@ -52,9 +51,9 @@ import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarInputSelector;
 @ExperimentalAPI
 public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, AvatarActionTrigger {
 
-    private AvatarCharacter avatarCharacter=null;
-    private AvatarCharacter simpleAvatar = null;
-    private AvatarCharacter currentAvatar = null;
+    private WlAvatarCharacter avatarCharacter=null;
+    private WlAvatarCharacter simpleAvatar = null;
+    private WlAvatarCharacter currentAvatar = null;
     private boolean selectedForInput = false;
 
     private AvatarRendererChangeRequestEvent.AvatarQuality quality = AvatarRendererChangeRequestEvent.AvatarQuality.High;
@@ -152,7 +151,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     public void cellTransformUpdate(CellTransform transform) {
         super.cellTransformUpdate(transform);
         if (!selectedForInput && avatarCharacter!=null) {
-            ((AvatarController)avatarCharacter.getController()).cellTransformUpdate(transform);
+            ((WlAvatarController)avatarCharacter.getController()).cellTransformUpdate(transform);
         }
     }
     
@@ -162,15 +161,15 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         origin.setTranslation(transform.getTranslation(null));
         origin.setRotation(transform.getRotation(null));
 
-        CharacterAttributes attributes = new AvatarAttributes(cell);
+        CharacterAttributes attributes = new WlMaleAvatarAttributes(cell);
 
         // Create the character, but don't add the entity to wm
         // TODO this will change to take the config
-        avatarCharacter = new AvatarCharacter(attributes, wm);
+        avatarCharacter = new WlAvatarCharacter(attributes, wm);
         avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(origin);
 
-        simpleAvatar = new SimpleAvatarCharacter(new SimpleAvatarAttributes(cell), wm);
-        simpleAvatar.getModelInst().getTransform().getLocalMatrix(true).set(origin);
+//        simpleAvatar = new SimpleAvatarCharacter(new SimpleAvatarAttributes(cell), wm);
+//        simpleAvatar.getModelInst().getTransform().getLocalMatrix(true).set(origin);
         
 //        try {
 //            // Now load the config
@@ -187,6 +186,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
 //        wm.removeEntity(avatarCharacter);
+
+        System.err.println("AVATAR LOADER !!!!!");
+
 
         switch(quality) {
             case High :
@@ -212,21 +214,21 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     }
 
     /**
-     * Returns the AvatarCharacter object for this renderer. The AvatarCharacter
+     * Returns the WlAvatarCharacter object for this renderer. The WlAvatarCharacter
      * provides the control points in the avatar system.
      * @return
      */
-    public AvatarCharacter getAvatarCharacter() {
+    public WlAvatarCharacter getAvatarCharacter() {
         return avatarCharacter;
     }
 
     public void selectForInput(boolean selected) {
         WorldManager wm = ClientContextJME.getWorldManager();
-        ((NinjaContext)currentAvatar.getContext()).getSteering().setEnable(false);
-        NinjaControlScheme control = (NinjaControlScheme)((JSceneEventProcessor)wm.getUserData(JSceneEventProcessor.class)).setDefault(new NinjaControlScheme(avatarCharacter));
+        ((WlAvatarContext)currentAvatar.getContext()).getSteering().setEnable(false);
+        AvatarControlScheme control = (AvatarControlScheme)((JSceneEventProcessor)wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
         currentAvatar.selectForInput();
-        control.getNinjaTeam().add(currentAvatar);
-        ((AvatarController)currentAvatar.getController()).selectForInput(selected);
+        control.getAvatarTeam().add(currentAvatar);
+        ((WlAvatarController)currentAvatar.getController()).selectForInput(selected);
         selectedForInput = true;
 
         if (selected) {
@@ -244,8 +246,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     }
 
     public void trigger(int trigger, boolean pressed) {
-        if (!selectedForInput) {
-            System.err.println("Trigger "+trigger);
+        if (!selectedForInput && avatarCharacter!=null) {
+//            System.err.println("Trigger "+trigger);
             if (pressed)
                 avatarCharacter.triggerActionStart(TriggerNames.Move_Forward);
             else

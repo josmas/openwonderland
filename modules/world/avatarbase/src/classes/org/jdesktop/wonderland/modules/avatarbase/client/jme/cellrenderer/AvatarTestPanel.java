@@ -18,7 +18,8 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import imi.character.CharacterEyes;
-import imi.character.ninja.NinjaContext.TriggerNames;
+import imi.character.avatar.AvatarContext.TriggerNames;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarRendererChangeRequestEvent.AvatarQuality;
@@ -30,7 +31,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
  */
 public class AvatarTestPanel extends javax.swing.JPanel {
 
-    private AvatarCharacter avatarCharacter;
+    private WlAvatarCharacter avatarCharacter;
 
 
     /** Creates new form AvatarTestPanel */
@@ -45,14 +46,14 @@ public class AvatarTestPanel extends javax.swing.JPanel {
         setAvatarCharactar(null);
     }
 
-    public void setAvatarCharactar(AvatarCharacter avatar) {
+    public void setAvatarCharactar(WlAvatarCharacter avatar) {
         avatarCharacter = avatar;
 
         boolean enabled = (avatar!=null);
 
         if (enabled) {
             actionCB.removeAllItems();
-            for(String anim : avatar.getAnimations()) {
+            for(String anim : avatar.getAnimationNames()) {
                 actionCB.addItem(anim);
             }
         } else {
@@ -168,8 +169,14 @@ public class AvatarTestPanel extends javax.swing.JPanel {
                         .add(leftB))
                     .add(5, 5, 5)
                     .add(backwardB)
-                    .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addContainerGap(15, Short.MAX_VALUE)))
         );
+
+        actionCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCBActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Action");
 
@@ -299,11 +306,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
 
     private void runActionBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runActionBActionPerformed
         if (avatarCharacter!=null) {
-            avatarCharacter.setAnimation((String) actionCB.getSelectedItem());
-
-            // Calling start and then stop will cause a single loop of the animation to play
-            avatarCharacter.triggerActionStart(TriggerNames.MiscAction);
-            avatarCharacter.triggerActionStop(TriggerNames.MiscAction);
+            avatarCharacter.playAnimation(actionCB.getSelectedItem().toString());
         }
 }//GEN-LAST:event_runActionBActionPerformed
 
@@ -331,6 +334,10 @@ public class AvatarTestPanel extends javax.swing.JPanel {
         eyes.wink((eyeSelectionCB.getSelectedIndex()==1));
 
 }//GEN-LAST:event_winkBActionPerformed
+
+    private void actionCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionCBActionPerformed
+
+    }//GEN-LAST:event_actionCBActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
