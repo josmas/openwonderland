@@ -26,6 +26,7 @@ import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.*;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.test.MouseEvent3DLogger;
 import org.jdesktop.wonderland.client.jme.input.test.SpinObjectEventListener;
@@ -59,7 +60,7 @@ public class MouseSpinCell extends SimpleShapeCell {
             // TODO move this JME specific code into a Component
             Entity entity = ((CellRendererJME)ret).getEntity();
 
-            Node node = getSceneRoot(entity);
+            Node node = ((BasicRenderer)ret).getSceneRoot();
             Vector3f currentLoc = node.getLocalTranslation();
             Vector3f dest = new Vector3f(currentLoc);
             dest.y+=0.3;
@@ -80,14 +81,5 @@ public class MouseSpinCell extends SimpleShapeCell {
         return ret;
     }
     
-
-    static Node getSceneRoot (Entity entity) {
-        RenderComponent renderComp = (RenderComponent) entity.getComponent(RenderComponent.class);
-        if (renderComp == null) {
-            return null;
-        }
-        Node node = renderComp.getSceneRoot();
-        return node;
-    }
 
 }
