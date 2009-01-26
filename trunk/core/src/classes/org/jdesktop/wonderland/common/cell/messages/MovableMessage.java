@@ -33,6 +33,7 @@ public class MovableMessage extends CellMessage {
 
     private Vector3f translation;
     private Quaternion rotation;
+    private Vector3f scale=null;
 
     /**
      * MOVE_REQUEST - client asking the server to move cell
@@ -64,6 +65,20 @@ public class MovableMessage extends CellMessage {
         this.rotation = orientation;
     }
 
+    /**
+     * @return the scale
+     */
+    public Vector3f getScale() {
+        return scale;
+    }
+
+    /**
+     * @param scale the scale to set
+     */
+    public void setScale(Vector3f scale) {
+        this.scale = scale;
+    }
+
     public ActionType getActionType() {
         return actionType;
     }
@@ -72,21 +87,43 @@ public class MovableMessage extends CellMessage {
         MovableMessage ret = new MovableMessage(cellID, ActionType.MOVE_REQUEST);
         ret.setTranslation(transform.getTranslation(null));
         ret.setRotation(transform.getRotation(null));
+        ret.setScale(transform.getScaling(null));
         return ret;
     }
     
      public static MovableMessage newMovedMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
+         return newMovedMessage(cellID, translation, rotation, null);
+     }
+
+     public static MovableMessage newMovedMessage(CellID cellID, Vector3f translation, Quaternion rotation, Vector3f scale) {
         MovableMessage ret = new MovableMessage(cellID, ActionType.MOVED);
         ret.setTranslation(translation);
         ret.setRotation(rotation);
+        ret.setScale(scale);
         return ret;
     }
      
+    public static MovableMessage newMoveRequestMessage(CellID cellID, CellTransform transform) {
+        return newMoveRequestMessage(cellID, transform.getTranslation(null), transform.getRotation(null), transform.getScaling(null));
+    }
+
     public static MovableMessage newMoveRequestMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
+        return newMoveRequestMessage(cellID, translation, rotation, null);
+    }
+
+    public static MovableMessage newMoveRequestMessage(CellID cellID, Vector3f translation, Quaternion rotation, Vector3f scale) {
         MovableMessage ret = new MovableMessage(cellID, ActionType.MOVE_REQUEST);
         ret.setTranslation(translation);
         ret.setRotation(rotation);
+        ret.setScale(scale);
         return ret;
     }
-    
+
+    /**
+     * Return a new CellTransform with the values from this MovableMessage
+     * @return
+     */
+    public CellTransform getCellTransform() {
+        return new CellTransform(rotation, translation, scale);
+    }
 }

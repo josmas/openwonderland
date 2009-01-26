@@ -40,7 +40,7 @@ public class MovableAvatarComponentMO extends MovableComponentMO {
     @Override
     public void moveRequest(WonderlandClientID clientID, MovableMessage msg) {
         MovableAvatarMessage aMsg = (MovableAvatarMessage) msg;
-        CellTransform transform = new CellTransform(msg.getRotation(), msg.getTranslation());
+        CellTransform transform = msg.getCellTransform();
 
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent;

@@ -104,7 +104,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
         identity = view.getUser().getIdentity();
         
-        dm.setBinding(identity.getUsername() + "_CELL_CACHE", this);
+//        dm.setBinding(identity.getUsername() + "_CELL_CACHE", this);
     }
     
     /**
@@ -188,8 +188,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         scheduler.startRevalidate();
         // oldCells contains the set of cells to be removed from client memory
         for(CellDescription ref : removeCells) {
-//            if (logger.isLoggable(Level.FINER))
-                logger.warning("Leaving cell " + ref.getCellID() +
+            if (logger.isLoggable(Level.FINER))
+                logger.fine("Leaving cell " + ref.getCellID() +
                              " cellcache for user "+identity.getUsername());
 
             // schedule the add operation

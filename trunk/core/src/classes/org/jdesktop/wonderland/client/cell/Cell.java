@@ -620,7 +620,7 @@ public class Cell {
             } catch (SecurityException ex) {
                 logger.log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "Can't find component class "+compClassname, ex);
             }
             
         }

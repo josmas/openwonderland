@@ -134,8 +134,7 @@ public class MovableComponent extends CellComponent {
 
     protected CellMessage createMoveRequestMessage(CellTransform transform) {
         return MovableMessage.newMoveRequestMessage(cell.getCellID(),
-                                                    transform.getTranslation(null),
-                                                    transform.getRotation(null));
+                                                    transform);
     }
 
     protected ResponseListener createMoveResponseListener(final CellMoveModifiedListener listener) {
@@ -144,7 +143,7 @@ public class MovableComponent extends CellComponent {
                     public void responseReceived(ResponseMessage response) {
                         MovableMessageResponse msg = (MovableMessageResponse)response;
                         CellTransform requestedTransform = null;
-                        CellTransform actualTransform = new CellTransform(msg.getRotation(), msg.getTranslation());
+                        CellTransform actualTransform = new CellTransform(msg.getRotation(), msg.getTranslation(), msg.getScale());
                         int reason = 1;
                         listener.moveModified(requestedTransform, reason, actualTransform);
                         // TODO Trigger a cell move with the SERVER_ADJUST source
@@ -179,7 +178,7 @@ public class MovableComponent extends CellComponent {
      * @param msg the message received from the server
      */
     protected void serverMoveRequest(MovableMessage msg) {
-        CellTransform transform = new CellTransform(msg.getRotation(), msg.getTranslation());
+        CellTransform transform = msg.getCellTransform();
         applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.REMOTE);
         notifyServerCellMoveListeners(msg, transform, CellMoveSource.REMOTE);
     }
