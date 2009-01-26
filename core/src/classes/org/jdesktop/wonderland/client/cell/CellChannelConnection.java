@@ -107,7 +107,7 @@ public class CellChannelConnection extends BaseConnection {
         
         Cell cell = cellCache.getCell(cellMessage.getCellID());
         if (cell==null) {
-            logger.warning("Unable to deliver CellMessage, cell not available on this client");
+            logger.warning("Unable to deliver CellMessage, cell not available on this client. Msg "+cellMessage+"  cellID "+cellMessage.getCellID());
             return;
         }
         

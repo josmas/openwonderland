@@ -81,10 +81,11 @@ public class JmeCellCache extends CellCacheBasicImpl {
     @Override
     public void unloadCell(CellID cellID) {
         Cell cell = getCell(cellID);
+        // TODO we should call setStatus(DISK)
+//        cell.setStatus(CellStatus.DISK);
         CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         if (cell!=null && rend!=null) {
             if (rend instanceof CellRendererJME) {
-                System.err.println("Unload cell !");
                 Entity e = ((CellRendererJME) rend).getEntity();
                 ClientContextJME.getWorldManager().removeEntity(e);
                 rootEntities.remove(e);

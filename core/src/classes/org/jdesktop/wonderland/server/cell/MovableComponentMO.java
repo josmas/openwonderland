@@ -77,8 +77,7 @@ public class MovableComponentMO extends CellComponentMO {
     }
     
     void moveRequest(WonderlandClientID clientID, MovableMessage msg) {
-        CellTransform transform = new CellTransform(msg.getRotation(), msg.getTranslation());
-        moveRequest(clientID, transform);
+        moveRequest(clientID, msg.getCellTransform());
     }
 
     @Override
