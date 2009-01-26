@@ -73,6 +73,7 @@ public abstract class BasicRenderer implements CellRendererJME {
     protected Cell cell;
     protected Entity entity;
     protected Node rootNode;
+    protected Node sceneRoot;
     protected MoveProcessor moveProcessor = null;
     
     private static ZBufferState zbuf = null;
@@ -185,13 +186,24 @@ public abstract class BasicRenderer implements CellRendererJME {
         Entity ret = new Entity(this.getClass().getName()+"_"+cell.getCellID());
 
         rootNode = new Node();
-        rootNode.attachChild(createSceneGraph(ret));
+        sceneRoot = createSceneGraph(ret);
+        rootNode.attachChild(sceneRoot);
         applyTransform(rootNode, cell.getWorldTransform());
         addRenderState(rootNode);
 
         addDefaultComponents(ret, rootNode);
 
         return ret;        
+    }
+
+    /**
+     * Return the scene root, this is the node created by createSceneGraph.
+     * The BasicRenderer also has a rootNode which contains the cell transform,
+     * the rootNode is the parent of the scene root.
+     * @return
+     */
+    public Node getSceneRoot() {
+        return sceneRoot;
     }
     
     /**
