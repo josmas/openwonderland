@@ -47,15 +47,13 @@ public class AvatarJME extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         ColorRGBA color = new ColorRGBA();
         
-        Vector3f translation = cell.getLocalTransform().getTranslation(null);
-        
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        Node ret = createTeapotEntity(cell.getCellID().toString(), translation.x, translation.y, translation.z, color);        
+        Node ret = createTeapotEntity(cell.getCellID().toString(), color);        
 
         return ret;
     }
 
-    public Node createTeapotEntity(String name, float xoff, float yoff, float zoff, 
+    public Node createTeapotEntity(String name, 
             ColorRGBA color) {
         MaterialState matState = null;
         
@@ -63,14 +61,12 @@ public class AvatarJME extends BasicRenderer {
         Node ret = new Node();
         Teapot teapot = new Teapot();
         teapot.resetData();
-        ret.setLocalTranslation(xoff, yoff, zoff);
-        ret.setLocalScale(0.2f);
+        teapot.setLocalScale(0.2f);
         ret.attachChild(teapot);
 
         matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
         matState.setDiffuse(color);
         ret.setRenderState(matState);
-        ret.setLocalTranslation(xoff, yoff, zoff);
 
         ret.setModelBound(new BoundingSphere());
         ret.updateModelBound();

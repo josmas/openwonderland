@@ -76,9 +76,6 @@ public abstract class BasicRenderer implements CellRendererJME {
     protected Node rootNode;
     protected MoveProcessor moveProcessor = null;
     
-    private Vector3f tmpV3f = new Vector3f();
-    private Quaternion tmpQuat = new Quaternion();
-    
     private static ZBufferState zbuf = null;
 
     private boolean isRendering = false;
@@ -108,6 +105,11 @@ public abstract class BasicRenderer implements CellRendererJME {
                 if (cell!=null && !isRendering) {
                     Entity parentEntity= findParentEntity(cell.getParent());
                     Entity thisEntity = getEntity();
+
+                    if (thisEntity==null) {
+                        logger.severe("Got null entity for "+this.getClass().getName());
+                        return;
+                    }
 
                     thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(cell));
 
@@ -184,6 +186,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         Entity ret = new Entity(this.getClass().getName()+"_"+cell.getCellID());
         
         rootNode = createSceneGraph(ret);
+        applyTransform(rootNode, cell.getWorldTransform());
         addRenderState(rootNode);
 
         addDefaultComponents(ret, rootNode);
@@ -274,12 +277,18 @@ public abstract class BasicRenderer implements CellRendererJME {
         return null;
     }
 
+    /**
+     * Experimental, THIS WILL CHANGE !
+     * @return
+     */
     protected float getMass() {
         return 0f;
     }
 
     /**
-     * Create the scene graph
+     * Create the scene graph. The node it returned will have it's transform
+     * set to match the location of the cell. Also the node will have default
+     * components set to handle collision and rendering.
      * @return
      */
     protected abstract Node createSceneGraph(Entity entity);
@@ -294,7 +303,12 @@ public abstract class BasicRenderer implements CellRendererJME {
         node.setLocalScale(transform.getScaling(null));
         node.setLocalTranslation(transform.getTranslation(null));
     }
-    
+
+    /**
+     * Return the entity for this basic renderer. The first time this
+     * method is called the entity will be created using createEntity()
+     * @return
+     */
     public Entity getEntity() {
         synchronized(this) {
             logger.fine("Get Entity "+this.getClass().getName());
@@ -303,7 +317,11 @@ public abstract class BasicRenderer implements CellRendererJME {
         }
         return entity;
     }
-    
+
+    /**
+     * Callback notifying the renderer that the cell transform has changed.
+     * @param worldTransform
+     */
     public void cellTransformUpdate(CellTransform worldTransform) {
         if (moveProcessor!=null) {
             moveProcessor.cellMoved(worldTransform);
@@ -421,6 +439,10 @@ public abstract class BasicRenderer implements CellRendererJME {
         private boolean dirty = false;
         private Node node;
         private WorldManager worldManager;
+        private Vector3f tmpV3f = new Vector3f();
+        private Vector3f tmp2V3f = new Vector3f();
+        private Quaternion tmpQuat = new Quaternion();
+
 
         private boolean isChained = false;
         private NewFrameCondition postCondition = new NewFrameCondition(this);
@@ -440,6 +462,7 @@ public abstract class BasicRenderer implements CellRendererJME {
                 if (dirty) {
                     node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
                     node.setLocalRotation(cellTransform.getRotation(tmpQuat));
+                    node.setLocalScale(cellTransform.getScaling(tmp2V3f));
 //                    System.err.println("BasicRenderer.cellMoved "+tmpV3f);
                     dirty = false;
                     worldManager.addToUpdateList(node);
