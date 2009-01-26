@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.microphone.client.cell;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
 import com.jme.math.Vector3f;
 import java.awt.Image;
