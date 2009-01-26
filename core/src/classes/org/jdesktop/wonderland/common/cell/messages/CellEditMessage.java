@@ -32,7 +32,9 @@ public class CellEditMessage extends Message {
     private EditType editType;
     
     /** Enumeration of kinds of editing */
-    public enum EditType { CREATE_CELL, DELETE_CELL };
+    public enum EditType {
+        CREATE_CELL, DELETE_CELL, GET_SERVER_STATE, SET_SERVER_STATE
+    };
     
     /**
      * Create a new cell message to the given cellID of the parent.

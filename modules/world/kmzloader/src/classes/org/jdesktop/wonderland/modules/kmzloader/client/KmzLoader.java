@@ -29,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,9 +47,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Scaling;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
@@ -209,9 +210,14 @@ class KmzLoader implements ModelLoader {
             // from here.
             JMEColladaCellServerState setup = new JMEColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
-            setup.setOrigin(new Origin(rootNode.getLocalTranslation()));
-            setup.setRotation(new Rotation(rootNode.getLocalRotation()));
-            setup.setScaling(new Scaling(rootNode.getLocalScale()));
+
+            PositionComponentServerState position = new PositionComponentServerState();
+            position.setOrigin(new Origin(rootNode.getLocalTranslation()));
+            position.setRotation(new Rotation(rootNode.getLocalRotation()));
+            position.setScaling(new Scaling(rootNode.getLocalScale()));
+            setup.setCellComponentServerStates(new CellComponentServerState[] {
+                position
+            });
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
             deploymentInfo.setCellSetup(setup);

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.ClientConnection.Status;
@@ -33,6 +34,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  * @author paulby
  */
 @ExperimentalAPI
+@ComponentLookupClass(ChannelComponent.class)
 public class ChannelComponentImpl extends ChannelComponent {
     
     private HashMap<Class, ComponentMessageReceiver> messageReceivers = new HashMap();

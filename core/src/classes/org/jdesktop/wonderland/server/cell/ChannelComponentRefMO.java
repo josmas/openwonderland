@@ -21,6 +21,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -29,6 +30,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author paulby
  */
+@ComponentLookupClass(ChannelComponentMO.class)
 public class ChannelComponentRefMO extends ChannelComponentMO {
 
     private HashMap<Class, ManagedReference<ComponentMessageReceiver>> messageReceivers = new HashMap();

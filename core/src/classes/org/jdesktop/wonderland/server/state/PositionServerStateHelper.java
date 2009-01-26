@@ -22,23 +22,23 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Bounds.BoundsType;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Scaling;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Bounds.BoundsType;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
 
 /**
- * The BasicCellServerStateHelper class implements a collection of utility routines
+ * The BasicPositionComponentServerStateHelper class implements a collection of utility routines
  * that help convert between JMonkeyEngine (JME) types for the cell bounds and
  * tranform and the representations of these quantities using basic Java types
- * in the CellServerState class.
+ * in the PositionComponentServerState class.
  * 
  * @author jkaplan
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class BasicCellServerStateHelper {
+public class PositionServerStateHelper {
    
     /**
      * Returns the bounds of a cell as a BoundingVolume object, given the cell's
@@ -47,7 +47,7 @@ public class BasicCellServerStateHelper {
      * @param setup The cell's setup information
      * @return The bounds as a JME BoundingVolume object
      */
-    public static BoundingVolume getCellBounds(CellServerState setup) {
+    public static BoundingVolume getCellBounds(PositionComponentServerState setup) {
         BoundsType type = setup.getBounds().type;
         float radius = (float)setup.getBounds().radius;
         
@@ -69,7 +69,7 @@ public class BasicCellServerStateHelper {
      * @param setup The cell's setup parameters
      * @return A CellTranform class representing the origin, rotation, scaling
      */
-    public static CellTransform getCellTransform(CellServerState setup) {
+    public static CellTransform getCellTransform(PositionComponentServerState setup) {
         /* Fetch the raw values from the setup class */
         Origin origin = setup.getOrigin();
         Rotation rotation = setup.getRotation();
@@ -92,10 +92,10 @@ public class BasicCellServerStateHelper {
      * setup information.
      * 
      * @param bounds The JME bounds object
-     * @return The CellServerState.Bounds object
+     * @return The PositionComponentServerState.Bounds object
      */
-    public static CellServerState.Bounds getSetupBounds(BoundingVolume bounds) {
-        CellServerState.Bounds cellBounds = new CellServerState.Bounds();
+    public static PositionComponentServerState.Bounds getSetupBounds(BoundingVolume bounds) {
+        PositionComponentServerState.Bounds cellBounds = new PositionComponentServerState.Bounds();
         if (bounds instanceof BoundingSphere) {
             cellBounds.type = BoundsType.SPHERE;
             cellBounds.radius = ((BoundingSphere)bounds).getRadius();
@@ -118,9 +118,9 @@ public class BasicCellServerStateHelper {
      * @param transform The cell's transform
      * @return The origin used in the cell setup information
      */
-    public static CellServerState.Origin getSetupOrigin(CellTransform transform) {
+    public static PositionComponentServerState.Origin getSetupOrigin(CellTransform transform) {
         Vector3f trans = transform.getTranslation(null);
-        CellServerState.Origin origin = new CellServerState.Origin();
+        PositionComponentServerState.Origin origin = new PositionComponentServerState.Origin();
         origin.x = (double)trans.getX();
         origin.y = (double)trans.getY();
         origin.z = (double)trans.getZ();
@@ -134,12 +134,12 @@ public class BasicCellServerStateHelper {
      * @param transform The cell's transform
      * @return The rotation used in the cell setup information
      */
-    public static CellServerState.Rotation getSetupRotation(CellTransform transform) {
+    public static PositionComponentServerState.Rotation getSetupRotation(CellTransform transform) {
         Quaternion quat = transform.getRotation(null);
         Vector3f axis  = new Vector3f();
         double angle = (double)quat.toAngleAxis(axis);
         
-        CellServerState.Rotation rotation = new CellServerState.Rotation();
+        PositionComponentServerState.Rotation rotation = new PositionComponentServerState.Rotation();
         rotation.x = (double)axis.getX();
         rotation.y = (double)axis.getY();
         rotation.z = (double)axis.getZ();
@@ -154,10 +154,10 @@ public class BasicCellServerStateHelper {
      * @param transform The cell's transform
      * @return The scaling used in the cell setup information
      */
-    public static CellServerState.Scaling getSetupScaling(CellTransform transform) {
+    public static PositionComponentServerState.Scaling getSetupScaling(CellTransform transform) {
         Vector3f scale = transform.getScaling(null);
         
-        CellServerState.Scaling scaling = new CellServerState.Scaling();
+        PositionComponentServerState.Scaling scaling = new PositionComponentServerState.Scaling();
         scaling.x = (double)scale.getX();
         scaling.y = (double)scale.getY();
         scaling.z = (double)scale.getZ();

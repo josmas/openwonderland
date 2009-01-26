@@ -65,17 +65,6 @@ public abstract class ChannelComponent extends CellComponent {
     public abstract void send(CellMessage message, ResponseListener listener);
     
     public abstract void send(CellMessage message);
-    
-    /**
-     * Return the class used to reference this component. Usually this will return
-     * the class of the component, but in some cases, such as the ChannelComponent
-     * subclasses of ChannelComponent will return their parents class
-     * @return
-     */
-    @Override
-    protected Class getLookupClass() {
-        return ChannelComponent.class;
-    }
 
     // TODO various send methods required, cell to server, cell to cell, cell to channel
     // Not sure these need to be defined in this interface, implementors should have

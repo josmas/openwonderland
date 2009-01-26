@@ -23,6 +23,7 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -96,12 +97,20 @@ public abstract class CellComponentMO implements ManagedObject, Serializable {
     protected abstract String getClientClass();
 
     /**
-     * Return the class used to reference this component. Usually this will return
-     * the class of the component, but in some cases, such as the ChannelComponentMO
-     * subclasses of ChannelComponentMO will return their parents class
-     * @return
+     * Return the class used to reference this component. Usually this will
+     * return the class of the component, but in some cases, will return another
+     * Class. This method uses the ComponentClassLookup annotation on the cell
+     * component to determine this class; if not present just returns the Class
+     * given.
+     *
+     * @param clazz The Class of the component
+     * @return The Class used in the component lookup table
      */
-    protected Class getLookupClass() {
-        return getClass();
+    public static final Class getLookupClass(Class clazz) {
+        ComponentLookupClass l = (ComponentLookupClass)clazz.getAnnotation(ComponentLookupClass.class);
+        if (l != null) {
+            return l.value();
+        }
+        return clazz;
     }
 }

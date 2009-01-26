@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;

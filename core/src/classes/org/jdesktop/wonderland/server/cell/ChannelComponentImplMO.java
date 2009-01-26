@@ -20,22 +20,15 @@ package org.jdesktop.wonderland.server.cell;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
 import com.sun.sgs.app.ChannelManager;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.Delivery;
-import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
-import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -44,6 +37,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author paulby
  */
+@ComponentLookupClass(ChannelComponentMO.class)
 public class ChannelComponentImplMO extends ChannelComponentMO {
 
     private WonderlandClientSender cellSender;

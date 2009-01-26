@@ -1,4 +1,5 @@
 <jeditortest-cell>
+  <position-component> 
     <origin>
         <x>0.0</x>
         <y>5.0</y>
@@ -10,5 +11,6 @@
         <z>0.0</z>
 	<angle>3.141569</angle>
     </rotation>
+  </position-component>
     <preferredWidth>700</preferredWidth>
 </jeditortest-cell>

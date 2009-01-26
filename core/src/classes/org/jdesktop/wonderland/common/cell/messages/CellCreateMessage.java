@@ -22,8 +22,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
- * Message sent to add a cell hierarchy. This (for now) specifically assumes a
- * cell that is based upon some model (asset uri).
+ * Message sent to add a cell hierarchy.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */

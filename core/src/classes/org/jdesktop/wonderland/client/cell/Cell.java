@@ -17,9 +17,9 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import org.jdesktop.wonderland.common.cell.messages.CellUpdateMessage;
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -200,7 +200,8 @@ public class Cell {
      * @param component the componnet to be added
      */
     public void addComponent(CellComponent component) {
-        addComponent(component, component.getClass());
+        addComponent(component,
+                CellComponent.getLookupClass(component.getClass()));
     }
 
     /**
@@ -562,6 +563,23 @@ public class Cell {
                     if (components!=null) {
                         components.clear();
                     }
+
+                    // Also, remove the message listener for updates to the
+                    // cell state
+                    ChannelComponent channel = getComponent(ChannelComponent.class);
+                    if (channel != null) {
+                        channel.removeMessageReceiver(CellUpdateMessage.class);
+                    }
+                    break;
+
+                case ACTIVE:
+                    // Add the message receiver for all messages meant to update the state
+                    // cell on the client-side
+                    channel = getComponent(ChannelComponent.class);
+                    if (channel != null) {
+                        channel.addMessageReceiver(CellUpdateMessage.class,
+                                new CellUpdateMessageReceiver(this));
+                    }
                     break;
             }
 
@@ -579,7 +597,10 @@ public class Cell {
      */
     public void setClientState(CellClientState configData) {
 
-//        System.err.println("configure cell "+getCellID()+"  "+getClass());
+        // Sets the name of the cell
+        this.setName(configData.getName());
+        
+        System.err.println("configure cell "+getCellID()+"  "+getClass());
         // Install the CellComponents
         for(String compClassname : configData.getClientComponentClasses()) {
             try {
@@ -592,37 +613,39 @@ public class Cell {
 
                 // us the classloader we found to load the component class
                 Class compClazz = cl.loadClass(compClassname);
-                if (!components.containsKey(compClazz)) {
-//                    logger.warning("Installing component "+compClassname);
 
-                    // Create a new cell component based upon the class name
+                // Find out the Class used to lookup the component in the list
+                // of components
+                Class lookupClazz = CellComponent.getLookupClass(compClazz);
+
+                // Attempt to fetch the component using the lookup class. If
+                // it does not exist, then create and add the component.
+                // Otherwise, just set the client-side of the component
+                CellComponent component = getComponent(lookupClazz);
+                if (component == null) {
+                    // Create a new cell component based upon the class name,
+                    // set its state, and add it to the list of components
                     Constructor<CellComponent> constructor = compClazz.getConstructor(Cell.class);
-                    CellComponent comp = constructor.newInstance(this);
-
-                    // Fetch the client state object based upon the class name.
-                    // If non-null, then tell the component about it
+                    component = constructor.newInstance(this);
                     CellComponentClientState clientState = configData.getCellComponentClientState(compClassname);
                     if (clientState != null) {
-                        comp.setClientState(clientState);
+                        component.setClientState(clientState);
                     }
-                    addComponent(comp, comp.getLookupClass());
+                    addComponent(component, CellComponent.getLookupClass(component.getClass()));
+                }
+                else {
+                    CellComponentClientState clientState = configData.getCellComponentClientState(compClassname);
+                    if (clientState != null) {
+                        component.setClientState(clientState);
+                    }
                 }
             } catch (InstantiationException ex) {
                 logger.log(Level.SEVERE, "Instantiation exception for class "+compClassname+"  in cell "+getClass().getName(), ex);
-            } catch (IllegalAccessException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            } catch (IllegalArgumentException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            } catch (InvocationTargetException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            } catch (NoSuchMethodException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            } catch (SecurityException ex) {
-                logger.log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
                 logger.log(Level.SEVERE, "Can't find component class "+compClassname, ex);
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, null, ex);
             }
-            
         }
     }
     

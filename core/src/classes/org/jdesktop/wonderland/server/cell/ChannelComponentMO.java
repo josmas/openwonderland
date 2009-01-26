@@ -72,11 +72,6 @@ public abstract class ChannelComponentMO extends CellComponentMO {
     public abstract void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver);
 
     public abstract void removeMessageReceiver(Class<? extends CellMessage> msgClass);
-    
-    @Override
-    protected Class getLookupClass() {
-        return ChannelComponentMO.class;
-    }
 
     abstract void messageReceived(WonderlandClientSender sender,
                                 WonderlandClientID clientID,

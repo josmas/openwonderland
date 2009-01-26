@@ -118,6 +118,16 @@ public class CellCacheConnection extends BaseConnection {
                     viewCellID = null;
                 }
                 break;
+
+            case CONFIGURE_CELL:
+                // Update recieving a "configure cell" message, dispatch to all
+                // of the listeners. A "configure" message simply send a new
+                // client cell state to an already existing cell.
+                for (CellCacheMessageListener l : listeners) {
+                    l.configureCell(msg.getCellID(), msg.getSetupData(), msg.getCellName());
+                }
+                break;
+
 //            case MOVE_CELL :  // TODO remove - no longer used
 //                for(CellCacheMessageListener l : listeners) {
 //                    l.moveCell(msg.getCellID(),
@@ -180,6 +190,16 @@ public class CellCacheConnection extends BaseConnection {
                                CellTransform cellTransform,
                                CellClientState setup,
                                String cellName);
+
+        /**
+         * (Re)configures an existing cell with a new client state
+         *
+         * @param cellID The unique ID of the cell
+         * @param clientState The new client state for the cell
+         * @param cellName The (new) name of the cell
+         */
+        public void configureCell(CellID cellID, CellClientState clientState, String cellName);
+        
         /**
          * Unload the cell. This removes the cell from memory but will leave
          * cell data cached on the client

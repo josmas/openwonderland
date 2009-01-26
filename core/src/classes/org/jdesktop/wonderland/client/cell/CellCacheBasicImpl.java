@@ -166,6 +166,31 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public void configureCell(CellID cellID, CellClientState clientState, String cellName) {
+        // First fetch the cell from the cache given the unique ID. If there
+        // is none, post a message to the log
+        Cell cell = cells.get(cellID);
+        if (cell == null) {
+            logger.warning("Received a CONFIGURE_CELL message to a non-" +
+                    "existent cell with id " + cellID);
+            return;
+        }
+
+        // If the name of the cell has changed, then change it
+        if (cellName != null && cellName.equals(cell.getName()) == false) {
+            cell.setName(cellName);
+        }
+
+        // If there is a non-null client state object, then set it
+        if (clientState != null) {
+            cell.setClientState(clientState);
+        }
+    }
+
+
+    /**
      * Create a the cell renderer for this cache.
      * @param cell the cell to create a renderer for
      */

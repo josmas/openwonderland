@@ -41,8 +41,10 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 
 /**
  * A palette of cell types available to create in the world.
@@ -157,7 +159,13 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // Choose a random origin for now
     Vector3f origin = new Vector3f(new Random().nextInt(10) - 5,
             new Random().nextInt(5), new Random().nextInt(10) - 5);
-    setup.setOrigin(new Origin(origin));
+
+    // Create a position component that will set the initial origin
+    PositionComponentServerState position = new PositionComponentServerState();
+    position.setOrigin(new Origin(origin));
+    setup.setCellComponentServerStates(new CellComponentServerState[] {
+        position
+    });
     
     // Send the message to the server
     WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
