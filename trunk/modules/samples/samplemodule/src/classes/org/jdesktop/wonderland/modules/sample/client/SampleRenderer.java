@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.sample.client;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
@@ -28,7 +27,6 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * An example of a cell renderer
@@ -72,10 +70,6 @@ public class SampleRenderer extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         /* Fetch the basic info about the cell */
         String name = cell.getCellID().toString();
-        CellTransform transform = cell.getLocalTransform();
-        Vector3f translation = transform.getTranslation(null);
-        Vector3f scaling = transform.getScaling(null);
-        Quaternion rotation = transform.getRotation(null);
         String shapeType = ((SampleCell)cell).getShapeType();
 
         /* Create the new mesh for the shape */
@@ -90,10 +84,6 @@ public class SampleRenderer extends BasicRenderer {
         node.attachChild(mesh);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
-        node.setLocalTranslation(translation);
-        node.setLocalScale(scaling);
-        node.setLocalRotation(rotation);
-
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
         return node;

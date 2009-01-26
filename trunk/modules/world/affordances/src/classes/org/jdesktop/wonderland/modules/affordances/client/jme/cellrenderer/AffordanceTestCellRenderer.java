@@ -94,7 +94,6 @@ public class AffordanceTestCellRenderer extends BasicRenderer {
         }
 
         // Set the transform
-        applyTransform(ret, cell.getLocalTransform());
         return ret;
     }
 }
