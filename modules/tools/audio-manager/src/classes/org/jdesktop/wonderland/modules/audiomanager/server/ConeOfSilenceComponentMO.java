@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterCellMessage;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -135,10 +134,6 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
 		CellMessage message) {
-
-            ConeOfSilenceEnterCellMessage msg = (ConeOfSilenceEnterCellMessage) message;
-
-	    System.out.println("Got ConeOfSilenceMessage");
         }
 
     }
