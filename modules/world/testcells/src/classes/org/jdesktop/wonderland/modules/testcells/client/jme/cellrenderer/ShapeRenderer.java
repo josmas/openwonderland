@@ -95,9 +95,6 @@ public class ShapeRenderer extends BasicRenderer {
                 matJME.apply(matState);
             geom.setRenderState(matState);
         }
-
-        // Set the transform
-        applyTransform(ret, cell.getLocalTransform());
         
         return ret;
     }
