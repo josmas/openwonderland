@@ -76,7 +76,7 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
      * @inheritDoc()
      */
     public <T extends CellServerState> void updateGUI(T cellServerState) {
-        CellComponentServerState states[] = cellServerState.getCellComponentServerStates();
+        CellComponentServerState states[] = cellServerState.getCellComponentSetups();
         for (CellComponentServerState state : states) {
             if (state instanceof SampleCellComponentServerState) {
                 originalInfo = ((SampleCellComponentServerState)state).getInfo();
@@ -93,7 +93,7 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
         // Figure out whether there already exists a server state for the
         // component -- this is ugly, need to clean up.
         List<CellComponentServerState> list = new LinkedList(
-                Arrays.asList(cellServerState.getCellComponentServerStates()));
+                Arrays.asList(cellServerState.getCellComponentSetups()));
         SampleCellComponentServerState state = null;
         Iterator<CellComponentServerState> it = list.iterator();
         while (it.hasNext() == true) {
@@ -110,7 +110,7 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
             list.add(state);
         }
         state.setInfo(infoTextField.getText());
-        cellServerState.setCellComponentServerStates(
+        cellServerState.setCellComponentSetups(
                 list.toArray(new CellComponentServerState[] {}));
     }
 
