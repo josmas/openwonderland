@@ -237,9 +237,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JSpinner" name="scaleYTF">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel16">
       <Properties>
@@ -247,9 +244,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JSpinner" name="scaleXTF">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel17">
       <Properties>
@@ -257,9 +251,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JSpinner" name="scaleZTF">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="keepMovableCheckbox">
       <Properties>

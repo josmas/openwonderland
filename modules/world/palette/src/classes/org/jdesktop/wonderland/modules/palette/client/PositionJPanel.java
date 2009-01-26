@@ -94,6 +94,9 @@ public class PositionJPanel extends javax.swing.JPanel {
             rotationXTF.setEnabled(false);
             rotationYTF.setEnabled(false);
             rotationZTF.setEnabled(false);
+            scaleXTF.setEnabled(false);
+            scaleYTF.setEnabled(false);
+            scaleZTF.setEnabled(false);
         }
 
         // Listen for changes to the cell transform that may be done by other
@@ -130,7 +133,7 @@ public class PositionJPanel extends javax.swing.JPanel {
         // as a result
         ChangeListener scaleListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                updateTranslation();
+                updateScale();
             }
         };
         ((SpinnerNumberModel)scaleXTF.getModel()).addChangeListener(scaleListener);
@@ -250,6 +253,7 @@ public class PositionJPanel extends javax.swing.JPanel {
             if (movableComponent != null) {
                 CellTransform cellTransform = cell.getLocalTransform();
                 cellTransform.setScaling(scale);
+                System.err.println("SETTING SCALE " + scale);
                 movableComponent.localMoveRequest(cellTransform);
             }
         }
@@ -307,15 +311,9 @@ public class PositionJPanel extends javax.swing.JPanel {
 
         jLabel15.setText("Y :");
 
-        scaleYTF.setEnabled(false);
-
         jLabel16.setText("X :");
 
-        scaleXTF.setEnabled(false);
-
         jLabel17.setText("Z :");
-
-        scaleZTF.setEnabled(false);
 
         keepMovableCheckbox.setText("Allow Cell to be Moved Outside This Dialog");
         keepMovableCheckbox.setEnabled(false);
