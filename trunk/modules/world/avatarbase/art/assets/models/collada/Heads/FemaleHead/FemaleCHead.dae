@@ -14,8 +14,8 @@ exportTexTangents=1;exportConstraints=1;exportPhysics=1;exportXRefs=1;
 dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
       <source_data>file:///Users/ckendall/Documents/IMI/Avatar/scenes/Female/Heads/FemaleCHead_Default.mb</source_data>
     </contributor>
-    <created>2009-01-20T14:16:30Z</created>
-    <modified>2009-01-20T14:16:30Z</modified>
+    <created>2009-01-23T15:15:40Z</created>
+    <modified>2009-01-23T15:15:40Z</modified>
     <unit meter="0.01" name="centimeter"/>
     <up_axis>Y_UP</up_axis>
   </asset>
@@ -47,7 +47,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="file5" name="file5">
-      <init_from>../../scenes/Female/Textures/FemaleHeadSPC.png</init_from>
+      <init_from>../../scenes/DefaultSkeletons/Female/FemaleHeadSPC.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
@@ -56,7 +56,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="file7" name="file7">
-      <init_from>../../obj/Teeth.png</init_from>
+      <init_from>../../scenes/DefaultSkeletons/Female/Teeth.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
@@ -65,7 +65,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="file4" name="file4">
-      <init_from>../../obj/Blue_Eye.png</init_from>
+      <init_from>../../scenes/DefaultSkeletons/Female/Blue_Eye.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>

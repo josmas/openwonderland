@@ -17,20 +17,19 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import imi.character.ninja.Ninja;
-import imi.character.ninja.NinjaController;
+import imi.character.avatar.Avatar;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
  * @author paulby
  */
-public class AvatarController extends NinjaController {
+public class WlAvatarController extends imi.character.avatar.AvatarController {
 
     private boolean selectedForInput = false;
     private CellTransform transform = null;
 
-    public AvatarController(Ninja master) {
+    public WlAvatarController(Avatar master) {
         super(master);
     }
 
