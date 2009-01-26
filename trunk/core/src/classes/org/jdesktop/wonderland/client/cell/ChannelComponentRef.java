@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  *
@@ -114,16 +115,16 @@ public class ChannelComponentRef extends ChannelComponent {
     }
     
     public void send(CellMessage message, ResponseListener listener) {
-        if (message.getCellID() == null) {
-            message.setCellID(cell.getCellID());
-        }
         channelImpl.send(message, listener);
     }
     
     public void send(CellMessage message) {
-        if (message.getCellID() == null) {
-            message.setCellID(cell.getCellID());
-        }
         channelImpl.send(message);
+    }
+
+    public ResponseMessage sendAndWait(CellMessage message)
+        throws InterruptedException
+    {
+        return channelImpl.sendAndWait(message);
     }
 }

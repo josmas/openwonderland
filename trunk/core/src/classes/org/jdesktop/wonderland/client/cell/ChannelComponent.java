@@ -21,6 +21,7 @@ import org.jdesktop.wonderland.client.comms.ClientConnection.Status;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  *
@@ -65,6 +66,9 @@ public abstract class ChannelComponent extends CellComponent {
     public abstract void send(CellMessage message, ResponseListener listener);
     
     public abstract void send(CellMessage message);
+
+    public abstract ResponseMessage sendAndWait(CellMessage message)
+            throws InterruptedException;
 
     // TODO various send methods required, cell to server, cell to cell, cell to channel
     // Not sure these need to be defined in this interface, implementors should have

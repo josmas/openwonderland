@@ -9,6 +9,7 @@
         <include name="voicebridge/build.xml"/>
         <include name="server-manager/build.xml"/>
         <include name="audio-manager/build.xml"/>
+        <include name="sharedstate/build.xml"/>
         <include name="artimport/build.xml"/>
         <include name="orb/build.xml"/>
         <include name="microphone/build.xml"/>
