@@ -33,8 +33,8 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  */
 @XmlRootElement(name="sample-cell")
 public class SampleCellServerState extends CellServerState implements CellServerStateSPI {
-    @XmlElement(name="info")
-    private String info = null;
+    @XmlElement(name="shape-type")
+    private String shapeType = null;
 
     /** Default constructor */
     public SampleCellServerState() {
@@ -45,6 +45,11 @@ public class SampleCellServerState extends CellServerState implements CellServer
         return "org.jdesktop.wonderland.modules.sample.server.SampleCellMO";
     }
 
-    @XmlTransient public String getInfo() { return this.info; }
-    public void setInfo(String info) { this.info = info; }
+    @XmlTransient public String getShapeType() {
+        return shapeType;
+    }
+
+    public void setShapeType(String shapeType) {
+        this.shapeType = shapeType;
+    }
 }

@@ -26,18 +26,18 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  * @author jkaplan
  */
 public class SampleCellClientState extends CellClientState {
-    /* Arbitrary state info -- not really used anywhere */
-    private String info = null;
+    /* The shape type: BOX or SPHERE */
+    private String shapeType = null;
 
     /** Default constructor */
     public SampleCellClientState() {
     }
 
-    public String getInfo() {
-        return info;
+    public String getShapeType() {
+        return shapeType;
     }
 
-    public void setInfo(String info) {
-        this.info = info;
+    public void setShapeType(String shapeType) {
+        this.shapeType = shapeType;
     }
 }

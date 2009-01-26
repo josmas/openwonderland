@@ -26,6 +26,12 @@
                     <cellfactory>
                         <provider classname="org.jdesktop.wonderland.modules.sample.client.SampleCellFactory"/>
                     </cellfactory>
+                    <cellproperties>
+                        <provider classname="org.jdesktop.wonderland.modules.sample.client.SampleCellProperties"/>
+                    </cellproperties>
+                    <componentproperties>
+                        <provider classname="org.jdesktop.wonderland.modules.sample.client.SampleComponentProperties"/>
+                    </componentproperties>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                     <fileset dir="${current.dir}/src/classes">

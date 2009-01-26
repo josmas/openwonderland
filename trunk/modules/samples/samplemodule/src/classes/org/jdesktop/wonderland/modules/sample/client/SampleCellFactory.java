@@ -36,7 +36,9 @@ public class SampleCellFactory implements CellFactorySPI {
     }
 
     public <T extends CellServerState> T getDefaultCellServerState() {
-        return (T)new SampleCellServerState();
+        SampleCellServerState state = new SampleCellServerState();
+        state.setShapeType("SPHERE");
+        return (T)state;
     }
 
     public String getDisplayName() {
