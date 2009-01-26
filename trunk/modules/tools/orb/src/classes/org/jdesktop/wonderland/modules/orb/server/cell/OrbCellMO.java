@@ -53,6 +53,7 @@ public class OrbCellMO extends CellMO {
     private boolean simulateCalls;
 
     public OrbCellMO() {
+        addComponent(new MovableComponentMO(this));
     }
 
     public OrbCellMO(Vector3f center, float size, String callID, boolean simulateCalls) {
@@ -61,6 +62,8 @@ public class OrbCellMO extends CellMO {
 
         this.callID = callID;
         this.simulateCalls = simulateCalls;
+
+        addComponent(new MovableComponentMO(this));
 
         logger.fine("Orb center " + center + " size " + size);
     }
@@ -79,8 +82,6 @@ public class OrbCellMO extends CellMO {
 
             return;
         }
-
-        addComponent(new MovableComponentMO(this));
 
         orbMessageHandlerRef = AppContext.getDataManager().createReference(
                 new OrbMessageHandler(this, callID, simulateCalls));

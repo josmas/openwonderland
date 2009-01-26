@@ -67,12 +67,27 @@ public class MicrophoneCellMO extends CellMO {
 
     private ManagedReference<MicrophoneMessageHandler> microphoneMessageHandlerRef;
 
+    private ManagedReference<ProximityComponentMO> proxRef;
+
     public MicrophoneCellMO() {
+	addComponents();
     }
 
     public MicrophoneCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size),
 	    new CellTransform(null, center));
+
+	addComponents();
+    }
+
+    private void addComponents() {
+	addComponent(new MovableComponentMO(this));
+
+        ProximityComponentMO prox = new ProximityComponentMO(this);
+
+        addComponent(prox);
+
+	proxRef = AppContext.getDataManager().createReference(prox);
     }
 
     protected void setLive(boolean live) {
@@ -92,7 +107,6 @@ public class MicrophoneCellMO extends CellMO {
 	microphoneMessageHandlerRef = AppContext.getDataManager().createReference(
 	    new MicrophoneMessageHandler(this, name));
 
-        ProximityComponentMO prox = new ProximityComponentMO(this);
         BoundingVolume[] bounds = new BoundingVolume[1];
 
         bounds[0] = new BoundingSphere((float) fullVolumeRadius, new Vector3f());
@@ -100,10 +114,7 @@ public class MicrophoneCellMO extends CellMO {
         MicrophoneProximityListener microphoneProximityListener = 
 	    new MicrophoneProximityListener(name);
 
-        prox.addProximityListener(microphoneProximityListener, bounds);
-        addComponent(prox);
-
-	addComponent(new MovableComponentMO(this));
+        proxRef.get().addProximityListener(microphoneProximityListener, bounds);
     }
 
     @Override

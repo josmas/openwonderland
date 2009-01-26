@@ -50,11 +50,14 @@ public class ConeOfSilenceCellMO extends CellMO {
             Logger.getLogger(ConeOfSilenceCellMO.class.getName());
 
     public ConeOfSilenceCellMO() {
+	addComponent(new MovableComponentMO(this));
     }
 
     public ConeOfSilenceCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size),
                 new CellTransform(null, center));
+
+	addComponent(new MovableComponentMO(this));
     }
 
     @Override
@@ -64,8 +67,6 @@ public class ConeOfSilenceCellMO extends CellMO {
         if (live == false) {
             return;
         }
-
-	addComponent(new MovableComponentMO(this));
     }
 
     @Override

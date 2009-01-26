@@ -65,8 +65,6 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
 
 	logger.fine("CREATED NEW ORB CELL " + cellID);
 
-	//addComponent(new MovableComponent(this));
-
 	CellManager.getCellManager().addCellStatusChangeListener(this);
     }
 
