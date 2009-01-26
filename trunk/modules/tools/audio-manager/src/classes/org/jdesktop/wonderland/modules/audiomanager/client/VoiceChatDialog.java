@@ -17,6 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.client.ClientContext;
+
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCache;
+
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
@@ -60,6 +67,8 @@ public class VoiceChatDialog extends javax.swing.JFrame {
     private AudioManagerClient client;
     private WonderlandSession session;
 
+    private String caller;
+
     /** Creates new form VoiceChatDialog */
     public VoiceChatDialog(AudioManagerClient client, WonderlandSession session, CellID cellID) {
 	this.client = client;
@@ -69,9 +78,13 @@ public class VoiceChatDialog extends javax.swing.JFrame {
         initComponents();
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
 
-	callerText.setText(cellID.toString());
+	Cell cell = ClientContext.getCellCache(session).getCell(cellID);
 
-	chatGroupText.setText(cellID.toString());
+	caller = cell.getCellCache().getViewCell().getIdentity().getUsername();
+
+	callerText.setText(caller);
+
+	chatGroupText.setText(caller);
 
 	setVisible(true);
     }
@@ -91,9 +104,13 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 
 	privateRadioButton.setSelected(true);
 
-	callerText.setText(cellID.toString());
+	Cell cell = ClientContext.getCellCache(session).getCell(cellID);
 
-	chatGroupText.setText(cellID.toString());
+	caller = cell.getCellCache().getViewCell().getIdentity().getUsername();
+
+	callerText.setText(caller);
+
+	chatGroupText.setText(caller);
 
 	chatterText.setText(s);
 

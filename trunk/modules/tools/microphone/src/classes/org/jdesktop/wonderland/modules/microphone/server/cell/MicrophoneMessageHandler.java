@@ -94,64 +94,6 @@ public class MicrophoneMessageHandler extends AbstractComponentMessageReceiver
     public void messageReceived(final WonderlandClientSender sender, 
 	    final WonderlandClientID clientID, final CellMessage message) {
 
-	MicrophoneEnterCellMessage msg = (MicrophoneEnterCellMessage) message;
-
-	if (msg.getEntered()) {
-	    cellEntered(msg);
-	} else {
-	    cellExited(msg);
-	}
-    }
-
-    public void cellEntered(MicrophoneEnterCellMessage msg) {
-	/*
-	 * The avatar has entered the microphone cell.
-	 * Set the public and incoming spatializers for the avatar to be 
-	 * the zero volume spatializer.
-	 * Set a private spatializer for the given fullVolume radius
-	 * for all the other avatars in the cell.
-	 * For each avatar already in the cell, set a private spatializer
-	 * for this avatar.
-	 */
-	String callId = msg.getCellID().toString();
-
-	MicrophoneCellServerState cellServerState = (MicrophoneCellServerState) 
-	    getCell().getServerState(null);
-
-	logger.warning(callId + " entered microphone " + name);
-
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-	
-	Player player = vm.getPlayer(callId);
-
-	AudioGroup audioGroup = vm.getAudioGroup(name);
-
-	audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true, 
-	     AudioGroupPlayerInfo.ChatType.SECRET));
-
-	player.attenuateOtherGroups(audioGroup, 0, 0);
-    }
-
-    public void cellExited(MicrophoneEnterCellMessage msg) {
-	String callId = msg.getCellID().toString();
-
-	logger.warning(callId + " exited microphone " + name);
-
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-	    logger.warning("Not a member of audio group " + name);
-	    return;
-	}
-
-	Player player = vm.getPlayer(callId);
-
-	audioGroup.removePlayer(player);
-
-	player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
-	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
     }
 
 }

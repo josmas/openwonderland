@@ -71,7 +71,7 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
     }
 
     /**
-     * Creates a wireframe box or sphere with the same size as the bounds.
+     * Creates a wireframe cone with the same size as the bounds.
      */
     private Node createCone() {
         /* Fetch the basic info about the cell */
@@ -79,22 +79,20 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
         CellTransform transform = cell.getLocalTransform();
         Vector3f translation = new Vector3f();
 	transform.getTranslation(translation);
-	translation.setY((float) 2.5);
         Vector3f scaling = transform.getScaling(null);
-        Quaternion rotation = transform.getRotation(null);
-        
-        /* Create the new object -- either a Box or Sphere */
+
+        /* Create the scene graph object and set its wireframe state */
         float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
         Cone cone = new Cone(name, 30, 30, radius, (float) 1.0 * radius);
-        /* Create the scene graph object and set its wireframe state */
         Node node = new Node();
         node.attachChild(cone);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
+	translation.setY((float) 2.5);  // raise cone off floor
         node.setLocalTranslation(translation);
         node.setLocalScale(scaling);
 
-	rotation = new Quaternion((float) 1, (float) 0, (float) 0, (float) Math.PI / 4);
+        Quaternion rotation = new Quaternion((float) 1, (float) 0, (float) 0, (float) Math.PI / 4);
 
         node.setLocalRotation(rotation);
 

@@ -56,6 +56,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     private String name;
     private float fullVolumeRadius;
 
+    private ManagedReference<ProximityComponentMO> proxRef;
+
     static {
 	serverURL = System.getProperty("wonderland.web.server.url");
     }
@@ -65,8 +67,13 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
      * have a ChannelComponent otherwise this method will throw an IllegalStateException
      * @param cell
      */
-    public ConeOfSilenceComponentMO(CellMO cell) {
-        super(cell);
+    public ConeOfSilenceComponentMO(CellMO cellMO) {
+        super(cellMO);
+
+	ProximityComponentMO prox = new ProximityComponentMO(cellMO);
+        proxRef = AppContext.getDataManager().createReference(prox);
+
+	cellMO.addComponent(prox);
     }
     
     @Override
@@ -75,6 +82,14 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
 	name = cs.getName();
 	fullVolumeRadius = cs.getFullVolumeRadius();
+
+	BoundingVolume[] bounds = new BoundingVolume[1];
+
+	bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
+
+	ConeOfSilenceProximityListener proximityListener = new ConeOfSilenceProximityListener(name);
+
+	proxRef.get().addProximityListener(proximityListener, bounds);
     }
 
     @Override
@@ -99,26 +114,6 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
     @Override
     public void setLive(boolean live) {
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	CellMO cellMO = cellRef.get();
-
-        ChannelComponentMO channelComponent = (ChannelComponentMO) 
-	    cellMO.getComponent(ChannelComponentMO.class);
-
-	if (live) {
-	    ProximityComponentMO prox = new ProximityComponentMO(cellMO);
-	    BoundingVolume[] bounds = new BoundingVolume[1];
-
-	    bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
-
-	    ConeOfSilenceProximityListener proximityListener = new ConeOfSilenceProximityListener(name);
-
-	    prox.addProximityListener(proximityListener, bounds);
-	    cellMO.addComponent(prox);
-	} else {
-	    // XXX Do I need to remove the component?
-	}
     }
     
     @Override
