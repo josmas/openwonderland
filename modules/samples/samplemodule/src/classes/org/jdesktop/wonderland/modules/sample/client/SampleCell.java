@@ -31,8 +31,10 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
  * @author jkaplan
  */
 public class SampleCell extends Cell {
-    /* Arbitrary cell info -- not really used anywhere */
-    private String info = null;
+    /* The type of shape: BOX or SPHERE */
+    private String shapeType = null;
+
+    private SampleRenderer cellRenderer = null;
 
     public SampleCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -47,15 +49,23 @@ public class SampleCell extends Cell {
      */
     @Override
     public void setClientState(CellClientState clientState) {
-        info = ((SampleCellClientState)clientState).getInfo();
         super.setClientState(clientState);
+        shapeType = ((SampleCellClientState)clientState).getShapeType();
+        if (cellRenderer != null) {
+            cellRenderer.updateShape();
+        }
     }
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
-            return new SampleRenderer(this);
+            cellRenderer = new SampleRenderer(this);
+            return cellRenderer;
         }
         return super.createCellRenderer(rendererType);
+    }
+
+    public String getShapeType() {
+        return shapeType;
     }
 }

@@ -39,30 +39,33 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class SampleCellMO extends CellMO { 
 
-    /* Artibtrary info associated with the sample cell -- not really used anywhere */
-    private String info = null;
+    /* The shape of the cell: BOX or SPHERE */
+    private String shapeType = null;
 
     /** Default constructor, used when cell is created via WFS */
     public SampleCellMO() {
+        addComponent(new MovableComponentMO(this));
+        SampleCellComponentMO component = new SampleCellComponentMO(this);
+        SampleCellComponentServerState state = new SampleCellComponentServerState();
+        state.setInfo("My component info");
+        component.setServerState(state);
+        addComponent(component);
     }
 
     public SampleCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
+        addComponent(new MovableComponentMO(this));
+        SampleCellComponentMO component = new SampleCellComponentMO(this);
+        SampleCellComponentServerState state = new SampleCellComponentServerState();
+        state.setInfo("My component info");
+        component.setServerState(state);
+        addComponent(component);
     }
 
     @Override
     protected void setLive(boolean live) {
-        if (live == true) {
-            addComponent(new MovableComponentMO(this));
-            SampleCellComponentMO component = new SampleCellComponentMO(this);
-            SampleCellComponentServerState state = new SampleCellComponentServerState();
-            state.setInfo("My component info");
-            component.setServerState(state);
-            addComponent(component);
-        }
         super.setLive(live);
     }
-
 
     @Override 
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
@@ -74,13 +77,14 @@ public class SampleCellMO extends CellMO {
         if (cellClientState == null) {
           cellClientState = new SampleCellClientState();
         }
-        ((SampleCellClientState)cellClientState).setInfo(info);
+        ((SampleCellClientState)cellClientState).setShapeType(shapeType);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
     public void setServerState(CellServerState serverState) {
-        info = ((SampleCellServerState)serverState).getInfo();
+        shapeType = ((SampleCellServerState)serverState).getShapeType();
+        logger.warning("Setting server shape type " + shapeType);
         super.setServerState(serverState);
     }
 
@@ -89,7 +93,7 @@ public class SampleCellMO extends CellMO {
         if (cellServerState == null) {
             cellServerState = new SampleCellServerState();
         }
-        ((SampleCellServerState)cellServerState).setInfo(info);
+        ((SampleCellServerState)cellServerState).setShapeType(shapeType);
         return super.getServerState(cellServerState);
     }
 }

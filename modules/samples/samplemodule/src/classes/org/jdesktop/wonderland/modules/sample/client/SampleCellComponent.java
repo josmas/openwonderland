@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.sample.client;
 
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -41,6 +40,5 @@ public class SampleCellComponent extends CellComponent {
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
         info = ((SampleCellComponentClientState)clientState).getInfo();
-        Logger.getLogger(SampleCellComponent.class.getName()).warning("SAMPLE CELL COMPONENT INFO " + info);
     }
 }
