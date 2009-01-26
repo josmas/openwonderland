@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellSer
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellClientState;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
@@ -64,6 +65,8 @@ public class ConeOfSilenceCellMO extends CellMO {
         if (live == false) {
             return;
         }
+
+	addComponent(new MovableComponentMO(this));
     }
 
     @Override

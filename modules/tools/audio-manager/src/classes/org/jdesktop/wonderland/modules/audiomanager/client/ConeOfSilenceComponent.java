@@ -104,11 +104,8 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
 	    int proximityIndex) {
 
-	logger.info("cellID " + cell.getCellID() + " viewCellID " + viewCellID + " entered = " + entered);
-
-	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-
-	channelComp.send(new ConeOfSilenceEnterCellMessage(cell.getCellID(), viewCellID, sc.getCallID(), entered));
+	logger.info("COS cellID " + cell.getCellID() + " viewCellID " + viewCellID 
+	    + " entered = " + entered);
     }
 
 }

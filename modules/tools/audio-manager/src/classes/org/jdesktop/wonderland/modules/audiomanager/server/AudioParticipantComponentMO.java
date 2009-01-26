@@ -54,8 +54,6 @@ public abstract class AudioParticipantComponentMO extends CellComponentMO {
 
     @Override
     public void setLive(boolean live) {
-	System.out.println("AudioParticipantComponet setLive " + live);
-
 	if (live == false) {
 	    if (myTransformChangeListener != null) {
 	        cellRef.get().removeTransformChangeListener(myTransformChangeListener);

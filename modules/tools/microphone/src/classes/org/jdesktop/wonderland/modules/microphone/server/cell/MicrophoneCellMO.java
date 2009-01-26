@@ -26,7 +26,10 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
@@ -34,6 +37,8 @@ import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerSta
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
 
@@ -80,11 +85,25 @@ public class MicrophoneCellMO extends CellMO {
 		AppContext.getDataManager().removeObject(microphoneMessageHandler);
 		microphoneMessageHandlerRef = null;
 	    }
+
 	    return;
- 	}
+	}
 
 	microphoneMessageHandlerRef = AppContext.getDataManager().createReference(
 	    new MicrophoneMessageHandler(this, name));
+
+        ProximityComponentMO prox = new ProximityComponentMO(this);
+        BoundingVolume[] bounds = new BoundingVolume[1];
+
+        bounds[0] = new BoundingSphere((float) fullVolumeRadius, new Vector3f());
+
+        MicrophoneProximityListener microphoneProximityListener = 
+	    new MicrophoneProximityListener(name);
+
+        prox.addProximityListener(microphoneProximityListener, bounds);
+        addComponent(prox);
+
+	addComponent(new MovableComponentMO(this));
     }
 
     @Override
