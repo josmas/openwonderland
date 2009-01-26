@@ -103,6 +103,10 @@ public class ChannelComponentImplMO extends ChannelComponentMO {
             return;
         }
 
+        if (message.getCellID() == null) {
+            message.setCellID(cellID);
+        }
+
         if (senderID != null) {
             message.setSenderID(senderID.getID());
         }

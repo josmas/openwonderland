@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  *
@@ -124,6 +125,15 @@ public class ChannelComponentImpl extends ChannelComponent {
             message.setCellID(cell.getCellID());
         }
         connection.send(message);
+    }
+
+    public ResponseMessage sendAndWait(CellMessage message)
+        throws InterruptedException
+    {
+        if (message.getCellID() == null) {
+            message.setCellID(cell.getCellID());
+        }
+        return connection.sendAndWait(message);
     }
 
     /**
