@@ -47,7 +47,6 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
@@ -184,8 +183,9 @@ public abstract class BasicRenderer implements CellRendererJME {
 
     protected Entity createEntity() {
         Entity ret = new Entity(this.getClass().getName()+"_"+cell.getCellID());
-        
-        rootNode = createSceneGraph(ret);
+
+        rootNode = new Node();
+        rootNode.attachChild(createSceneGraph(ret));
         applyTransform(rootNode, cell.getWorldTransform());
         addRenderState(rootNode);
 
@@ -286,9 +286,11 @@ public abstract class BasicRenderer implements CellRendererJME {
     }
 
     /**
-     * Create the scene graph. The node it returned will have it's transform
-     * set to match the location of the cell. Also the node will have default
-     * components set to handle collision and rendering.
+     * Create the scene graph. The node returned will have  default
+     * components set to handle collision and rendering. The returned graph will
+     * also automatically be positioned correctly with the cells transform. This
+     * is achieved by adding the returned Node to a rootNode for this renderer which
+     * automatically tracks the cells transform.
      * @return
      */
     protected abstract Node createSceneGraph(Entity entity);
