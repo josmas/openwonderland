@@ -33,7 +33,7 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
-            <art dir="${current.dir}/art"/>
+<!--            <art dir="${current.dir}/art"/>-->
         </module>
     </target>
     <target name="deploy" depends="dist, -module-deploy"/>
