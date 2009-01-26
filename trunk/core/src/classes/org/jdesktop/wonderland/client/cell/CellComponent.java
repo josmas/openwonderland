@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.cell;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 /**
@@ -53,12 +54,20 @@ public class CellComponent {
     }
 
     /**
-     * Return the class used to reference this component. Usually this will return
-     * the class of the component, but in some cases, such as the ChannelComponentMO
-     * subclasses of ChannelComponentMO will return their parents class
-     * @return
+     * Return the class used to reference this component. Usually this will
+     * return the class of the component, but in some cases, will return another
+     * Class. This method uses the ComponentClassLookup annotation on the cell
+     * component to determine this class; if not present just returns the Class
+     * given.
+     *
+     * @param clazz The Class of the component
+     * @return The Class used in the component lookup table
      */
-    protected Class getLookupClass() {
-        return getClass();
+    public static final Class getLookupClass(Class clazz) {
+        ComponentLookupClass l = (ComponentLookupClass)clazz.getAnnotation(ComponentLookupClass.class);
+        if (l != null) {
+            return l.value();
+        }
+        return clazz;
     }
 }

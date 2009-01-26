@@ -17,15 +17,12 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -33,9 +30,15 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage.EditType;
+import org.jdesktop.wonderland.common.cell.messages.CellGetServerStateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerStateResponseMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellSetServerStateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellUpdateMessage;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -69,16 +72,7 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
     public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, Message message) {
         
         Logger logger = Logger.getLogger(CellEditConnectionHandler.class.getName());
-        
-        // Figure out what the server name and port is
-        String serverNameAndPort = null;
-        try {
-            serverNameAndPort = getServerFromURL(getWebServerURL());
-        } catch (MalformedURLException ex) {
-            logger.log(Level.WARNING, "[EDIT] Invalid Server Name and Port", ex);
-            return;
-        }
-        
+
         CellEditMessage editMessage = (CellEditMessage)message;
         if (editMessage.getEditType() == EditType.CREATE_CELL) {
 
@@ -95,15 +89,10 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
                 logger.warning("Unable to load cell MO: " + className );
                 return;
             }
-
-            logger.warning("[EDIT] Creating cell " + className);
-            logger.warning("[EDIT] Setup " + setup.toString());
             
             /* Call the cell's setup method */
             try {
-                logger.warning("[EDIT] Setting up cell");
                 cellMO.setServerState(setup);
-                logger.warning("[EDIT] Inserting cell int world");
                 WonderlandContext.getCellManager().insertCellInWorld(cellMO);
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
@@ -115,13 +104,61 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
                 logger.log(Level.WARNING, "Error adding new cell " + cellMO.getName() +
                         " of type " + cellMO.getClass() + ", has multiple parents", excp);
             }
-            logger.warning("[EDIT] DONE");
         }
         else if (editMessage.getEditType() == EditType.DELETE_CELL) {
             CellID cellID = ((CellDeleteMessage)editMessage).getCellID();
             CellMO cellMO = CellManagerMO.getCell(cellID);
             CellMO parentMO = cellMO.getParent();
             parentMO.removeChild(cellMO);
+        }
+        else if (editMessage.getEditType() == EditType.GET_SERVER_STATE) {
+            // If we want to query the cell setup for the given cell ID, first
+            // fetch the cell and ask it for its cell setup class. We also
+            // want to catch any exception to make sure we send back a
+            // response
+            try {
+                CellID cellID = ((CellGetServerStateMessage) editMessage).getCellID();
+                CellMO cellMO = CellManagerMO.getCell(cellID);
+                CellServerState cellSetup = cellMO.getServerState(null);
+
+                logger.warning("Getting Cell State " + cellSetup);
+
+                // Formulate a response message, fill in the cell setup, and return
+                // to the client.
+                MessageID messageID = message.getMessageID();
+                CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, cellSetup);
+                sender.send(clientID, response);
+            }
+            catch (java.lang.Exception excp) {
+                // Log a warning and send back a null response
+                logger.log(Level.WARNING, "Unable to fetch cell server state",
+                        excp);
+                MessageID messageID = message.getMessageID();
+                CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, null);
+                sender.send(clientID, response);
+            }
+        }
+        else if (editMessage.getEditType() == EditType.SET_SERVER_STATE) {
+            // Fetch the cell, and set its server state. Catch all exceptions
+            // and report.
+            CellSetServerStateMessage msg = (CellSetServerStateMessage) editMessage;
+            try {
+                CellID cellID = msg.getCellID();
+                CellServerState state = msg.getCellServerState();
+                CellMO cellMO = CellManagerMO.getCell(cellID);
+                cellMO.setServerState(state);
+
+                // Fetch a new client-state and set it
+                ChannelComponentMO channel = cellMO.getComponent(ChannelComponentMO.class);
+                if (channel != null) {
+                    CellClientState clientState = cellMO.getClientState(null, clientID, null);
+                    channel.sendAll(clientID, new CellUpdateMessage(cellID, clientState));
+                }
+            }
+            catch (java.lang.Exception excp) {
+                logger.log(Level.WARNING, "Unable to set cell server state " +
+                        msg.getCellID(), excp);
+            }
         }
     }
     

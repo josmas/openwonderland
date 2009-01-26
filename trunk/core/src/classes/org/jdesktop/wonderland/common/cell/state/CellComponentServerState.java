@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -38,7 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="component")
-public abstract class CellComponentServerState {
+public abstract class CellComponentServerState implements Serializable {
     
     /**
      * Returns the fully-qualified class name of the server-side component

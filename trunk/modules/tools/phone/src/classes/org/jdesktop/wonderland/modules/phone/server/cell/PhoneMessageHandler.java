@@ -78,7 +78,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
+//import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
 
 import org.jdesktop.wonderland.server.UserManager;
 
@@ -540,7 +540,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	OrbCellServerState orbCellServerState = new OrbCellServerState();
 
-	orbCellServerState.setOrigin(new Origin(center));
+	//orbCellServerState.setOrigin(new Origin(center));
 
 	try {
             orbCellMO.setServerState(orbCellServerState);

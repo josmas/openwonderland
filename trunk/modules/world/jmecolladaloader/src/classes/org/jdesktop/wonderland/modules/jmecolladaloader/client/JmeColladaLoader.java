@@ -42,9 +42,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Scaling;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
 
 /**
@@ -117,9 +119,14 @@ class JmeColladaLoader implements ModelLoader {
             }
             JMEColladaCellServerState setup = new JMEColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/art/"+modelFiles.get(0));
-            setup.setOrigin(new Origin(rootNode.getLocalTranslation()));
-            setup.setRotation(new Rotation(rootNode.getLocalRotation()));
-            setup.setScaling(new Scaling(rootNode.getLocalScale()));
+
+            PositionComponentServerState position = new PositionComponentServerState();
+            position.setOrigin(new Origin(rootNode.getLocalTranslation()));
+            position.setRotation(new Rotation(rootNode.getLocalRotation()));
+            position.setScaling(new Scaling(rootNode.getLocalScale()));
+            setup.setCellComponentServerStates(new CellComponentServerState[] {
+                position
+            });
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
             deploymentInfo.setCellSetup(setup);

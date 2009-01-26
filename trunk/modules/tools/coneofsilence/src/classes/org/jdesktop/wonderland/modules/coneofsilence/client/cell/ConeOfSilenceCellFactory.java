@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
 import com.jme.math.Vector3f;
 import java.awt.Image;
@@ -44,7 +43,7 @@ public class ConeOfSilenceCellFactory implements CellFactorySPI {
         /*
          * Try rotating 45 degrees to see what that does.
          */
-        cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
+        //cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
 
         Logger.getLogger(ConeOfSilenceCellFactory.class.getName()).warning("COS!!!!");
         return (T) cellServerState;

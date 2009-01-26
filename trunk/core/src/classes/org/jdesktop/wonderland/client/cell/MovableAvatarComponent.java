@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableAvatarMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
@@ -33,6 +34,7 @@ import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
  *
  * @author paulby
  */
+@ComponentLookupClass(MovableComponent.class)
 public class MovableAvatarComponent extends MovableComponent {
     private int trigger;
     private boolean pressed;
@@ -83,11 +85,6 @@ public class MovableAvatarComponent extends MovableComponent {
     @Override
     protected Class getMessageClass() {
         return MovableAvatarMessage.class;
-    }
-
-    @Override
-    protected Class getLookupClass() {
-        return MovableComponent.class;
     }
 
     @Override

@@ -1,10 +1,12 @@
 <singing-teapot-cell>
 
+  <position-component>
     <origin>
 	<x>-5</x>
         <y>0.0</y>
         <z>10</z>
     </origin>
+  </position-component>
 
     <audio-treatment-component>
   	<treatment>wls://testcells/singing_teapot.au</treatment>

@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.common.cell.state;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
  * The CellComponentClientState class is the base class of all state information

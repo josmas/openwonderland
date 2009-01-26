@@ -28,8 +28,18 @@ import java.util.Map;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class CellClientState implements Serializable {
-    
+    /* The name of the cell */
+    private String name = null;
+
     private Map<String, CellComponentClientState> clientComponentClasses = new HashMap();
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     /**
      * Returns the class names of all the client CellComponents which should

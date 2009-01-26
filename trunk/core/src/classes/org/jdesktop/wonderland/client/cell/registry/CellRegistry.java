@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import sun.misc.Service;
@@ -89,7 +88,7 @@ public class CellRegistry {
      * 
      * @param factory The cell factory
      */
-    public void registerCellFactory(CellFactorySPI factory) {
+    public synchronized void registerCellFactory(CellFactorySPI factory) {
         // For now, don't check if the factory already exists. We may need to
         // create an entry in cellFactoryExtensionMap for the extension type if it does
         // not yet exist.

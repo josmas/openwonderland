@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
@@ -56,22 +54,10 @@ import org.jdesktop.wonderland.common.AssetURIAdapter;
  */
 public abstract class CellServerState implements Serializable {
 
-    /* The (x, y, z) origin of the cell */
-    @XmlElement(name="origin")
-    public Origin origin = new Origin();
-    
-    /* The cell bounds */
-    @XmlElement(name="bounds")
-    public Bounds bounds = new Bounds();
-    
-    /* The (x, y, z) components of the scaling */
-    @XmlElement(name="scale")
-    public Scaling scaling = new Scaling();
-    
-    /* The rotation about an (x, y, z) axis and angle (radians) */
-    @XmlElement(name="rotation")
-    public Rotation rotation = new Rotation();
-    
+    /* The name of the cell */
+    @XmlElement(name="name")
+    private String name = null;
+
     /* Arbitrary collection of key-value meta data */
     @XmlElements({ 
         @XmlElement(name="metadata")
@@ -90,100 +76,7 @@ public abstract class CellServerState implements Serializable {
      */
     @XmlTransient
     public HashMap<String, String> internalMetaData = new HashMap<String, String>();
-    
-    /**
-     * The Origin static inner class simply stores (x, y, z) cell origin.
-     */
-    public static class Origin implements Serializable {
-        /* The (x, y, z) origin components */
-        @XmlElement(name="x") public double x = 0;        
-        @XmlElement(name="y") public double y = 0;        
-        @XmlElement(name="z") public double z = 0;
-        
-        /** Default constructor */
-        public Origin() {
-        }
 
-        public Origin(Vector3f origin) {
-            this.x = origin.x;
-            this.y = origin.y;
-            this.z = origin.z;
-        }
-    }
-    
-    /**
-     * The Bounds static inner class stores the bounds type and bounds radius.
-     */
-    public static class Bounds implements Serializable {
-        public enum BoundsType { SPHERE, BOX };
-                
-        /* The bounds type, either SPHERE or BOX */
-        @XmlElement(name="type") public BoundsType type = BoundsType.SPHERE;
-
-        /* The radius of the bounds */
-        @XmlElement(name="radius") public double radius = 1.0;
-        
-        /** Default constructor */
-        public Bounds() {
-        }
-    }
-    
-    /**
-     * The Scaling static inner class stores the scaling for each of the
-     * (x, y, z) components
-     */
-    public static class Scaling implements Serializable {
-        /* The (x, y, z) scaling components */
-        @XmlElement(name="x") public double x = 1;  
-        @XmlElement(name="y") public double y = 1;
-        @XmlElement(name="z") public double z = 1;
-        
-        /** Default constructor */
-        public Scaling() {
-        }
-
-        public Scaling(Vector3f scaling) {
-            x = scaling.x;
-            y = scaling.y;
-            z = scaling.z;
-        }
-    }
-    
-    /**
-     * The Rotation static inner class stores a rotation about an (x, y, z)
-     * axis over an angle.
-     */
-    public static class Rotation implements Serializable {
-        /* The (x, y, z) rotation axis components */
-        @XmlElement(name="x") public double x = 0;        
-        @XmlElement(name="y") public double y = 0;        
-        @XmlElement(name="z") public double z = 0;
-        
-        /* The angle (radians) about which to rotate */
-        @XmlElement(name="angle") public double angle = 0;
-        
-        /** Default constructor */
-        public Rotation() {
-        }
-
-        public Rotation(Vector3f axis, double angleRadians) {
-            x = axis.x;
-            y = axis.y;
-            z = axis.z;
-            angle = angleRadians;
-        }
-
-        public Rotation(Quaternion quat) {
-            Vector3f axis = new Vector3f();
-            float angleRadians = quat.toAngleAxis(axis);
-            x = axis.x;
-            y = axis.y;
-            z = axis.z;
-            angle = angleRadians;
-
-        }
-    }
-    
     /**
      * A wrapper class for hashmaps, because JAXB does not correctly support
      * the HashMap class.
@@ -225,89 +118,13 @@ public abstract class CellServerState implements Serializable {
      * @return The FQCN of the server-side cell class
      */
     public abstract String getServerClassName();
-
-    /**
-     * Returns the cell origin.
-     * 
-     * @return The cell origin
-     */
-    @XmlTransient public Origin getOrigin() {
-        return this.origin;
-    }
-    
-    /**
-     * Sets the cell origin. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param origin The new cell origin
-     */
-    public void setOrigin(Origin origin) {
-        this.origin = origin;
-    }
-    
-    /**
-     * Returns the cell bounds.
-     * 
-     * @return The cell bounds
-     */
-    @XmlTransient public Bounds getBounds() {
-        return this.bounds;
-    }
-    
-    /**
-     * Sets the cell bounds. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param bounds The new cell bounds
-     */
-    public void setBounds(Bounds bounds) {
-        this.bounds = bounds;
-    }
-    
-    /**
-     * Returns the cell scaling.
-     * 
-     * @return The cell scaing
-     */
-    @XmlTransient public Scaling getScaling() {
-        return this.scaling;
-    }
-    
-    /**
-     * Sets the cell scaling. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param scaling The new cell scaling
-     */
-    public void setScaling(Scaling scaling) {
-        this.scaling = scaling;
-    }    
-    
-    /**
-     * Returns the cell rotation.
-     * 
-     * @return The cell rotation
-     */
-    @XmlTransient public Rotation getRotation() {
-        return this.rotation;
-    }
-    
-    /**
-     * Sets the cell rotation. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param rotation The new cell rotation
-     */
-    public void setRotation(Rotation rotation) {
-        this.rotation = rotation;
-    }
     
     /**
      * Returns the cell's collection of component setup information
      * 
      * @return The cell's collection of component setup information
      */
-    @XmlTransient public CellComponentServerState[] getCellComponentSetups() {
+    @XmlTransient public CellComponentServerState[] getCellComponentServerStates() {
         return this.components;
     }
     
@@ -317,7 +134,7 @@ public abstract class CellServerState implements Serializable {
      * 
      * @param bounds The new cell bounds
      */
-    public void setCellComponentSetups(CellComponentServerState[] components) {
+    public void setCellComponentServerStates(CellComponentServerState[] components) {
         this.components = components;
     }
     
@@ -339,7 +156,15 @@ public abstract class CellServerState implements Serializable {
     public void setMetaData(HashMap<String, String> metadata) {
         this.internalMetaData = metadata;
     }
-    
+
+    @XmlTransient public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+   
     /**
      * Takes the input reader of the XML data and instantiates an instance of
      * the CellServerState class
@@ -436,10 +261,10 @@ public abstract class CellServerState implements Serializable {
      */
     @Override
     public String toString() {
-        return "[BasicCellSetup] origin=(" + this.origin.x + "," + this.origin.y +
-                "," + this.origin.z + ") rotation=(" + this.rotation.x + "," +
-                this.rotation.y + "," + this.rotation.z + ") @ " + this.rotation.angle +
-                " scaling=(" + this.scaling.x + "," + this.scaling.y + "," +
-                this.scaling.z + ") bounds=" + this.bounds.type + "@" + this.bounds.radius;
+        StringBuilder sb = new StringBuilder("[CellServerState] ");
+        for (CellComponentServerState state : this.getCellComponentServerStates()) {
+            sb.append(state.toString());
+        }
+        return sb.toString();
     }
 }

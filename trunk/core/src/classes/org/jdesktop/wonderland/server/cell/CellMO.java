@@ -41,15 +41,19 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.messages.CellAddComponentMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.state.BasicCellServerStateHelper;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
+import org.jdesktop.wonderland.server.state.PositionServerStateHelper;
 
 /**
  * Superclass for all server side representation of a cell
@@ -378,8 +382,23 @@ public abstract class CellMO implements ManagedObject, Serializable {
 
             createChannelComponent();
             addToUniverse(UniverseManagerFactory.getUniverseManager());
+
+            // Add a message receiver to handle messages to dynamically add and
+            // remove components
+            ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
+            if (channel != null) {
+                channel.addMessageReceiver(CellAddComponentMessage.class,
+                        new ComponentUpdateMessageReceiver(this));
+            }
         } else {
             removeFromUniverse(UniverseManagerFactory.getUniverseManager());
+
+            // Remove the message receiver that handles messages to dynamically
+            // add and remove components
+            ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
+            if (channel != null) {
+                channel.removeMessageReceiver(CellAddComponentMessage.class);
+            }
         }
 
 
@@ -407,10 +426,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
 
         if (parentRef==null) {
             // Root node
-            addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+            addComponent(new ChannelComponentImplMO(this));
         } else {
             // Not a root node
-            addComponent(new ChannelComponentRefMO(this), ChannelComponentMO.class);
+            addComponent(new ChannelComponentRefMO(this));
         }
     }
 
@@ -537,6 +556,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
             cellClientState = new CellClientState();
         }
         populateCellClientState(cellClientState, clientID, capabilities);
+
+        // Set the name of the cell
+        cellClientState.setName(this.getName());
         return cellClientState;
     }
 
@@ -566,24 +588,51 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     
     /**
-     * Set up the cell from the given properties
-     * @param setup the properties to setup with
+     * Sets the server-side state of the cell, given the server state properties
+     * passed in.
+     *
+     * @param state the properties to set the state with
      */
-    public void setServerState(CellServerState setup) {
-        // Set up the transform (origin, rotation, scaling) and cell bounds
-        setLocalTransform(BasicCellServerStateHelper.getCellTransform(setup));
-        setLocalBounds(BasicCellServerStateHelper.getCellBounds(setup));
+    public void setServerState(CellServerState state) {
+        // Set the name of the cell if it is not null
+        if (state.getName() != null) {
+            this.setName(state.getName());
+        }
         
         // For all components in the setup class, create the component classes
         // and setup them up and add to the cell.
-        for (CellComponentServerState compSetup : setup.getCellComponentSetups()) {
-            String className = compSetup.getServerComponentClassName();
+        for (CellComponentServerState compState : state.getCellComponentServerStates()) {
+
+            // Check to see if the component server state is the special case
+            // of the Position state. If so, set the values in the cell manually.
+            if (compState instanceof PositionComponentServerState) {
+                
+                // Set up the transform (origin, rotation, scaling) and cell bounds
+                PositionComponentServerState posState = (PositionComponentServerState)compState;
+                setLocalTransform(PositionServerStateHelper.getCellTransform(posState));
+                setLocalBounds(PositionServerStateHelper.getCellBounds(posState));
+                continue;
+            }
+
+            // Otherwise, set the state of the server-side component, creating
+            // it if necessary.
+            String className = compState.getServerComponentClassName();
+            if (className == null) {
+                continue;
+            }
             try {
                 Class clazz = Class.forName(className);
-                Constructor<CellComponentMO> constructor = clazz.getConstructor(CellMO.class);
-                CellComponentMO comp = constructor.newInstance(this);
-                comp.setServerState(compSetup);
-                this.addComponent(comp);
+                Class lookupClazz = CellComponentMO.getLookupClass(clazz);
+                CellComponentMO comp = this.getComponent(lookupClazz);
+                if (comp == null) {
+                    Constructor<CellComponentMO> constructor = clazz.getConstructor(CellMO.class);
+                    comp = constructor.newInstance(this);
+                    comp.setServerState(compState);
+                    this.addComponent(comp);
+                }
+                else {
+                    comp.setServerState(compState);
+                }
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
@@ -605,15 +654,23 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (setup == null) {
             return null;
         }
+
+        // Set the name of the cell
+        setup.setName(this.getName());
         
-        // Fill in the details about the origin, rotation, and scaling
-        setup.setBounds(BasicCellServerStateHelper.getSetupBounds(localBounds));
-        setup.setOrigin(BasicCellServerStateHelper.getSetupOrigin(localTransform));
-        setup.setRotation(BasicCellServerStateHelper.getSetupRotation(localTransform));
-        setup.setScaling(BasicCellServerStateHelper.getSetupScaling(localTransform));
+        // Create a list to hold all of the individual components for now
+        List<CellComponentServerState> setups = new LinkedList<CellComponentServerState>();
+
+        // Fill in the details about the origin, rotation, and scaling. Create
+        // and add a PositionComponentServerState with all of this information
+        PositionComponentServerState position = new PositionComponentServerState();
+        position.setBounds(PositionServerStateHelper.getSetupBounds(localBounds));
+        position.setOrigin(PositionServerStateHelper.getSetupOrigin(localTransform));
+        position.setRotation(PositionServerStateHelper.getSetupRotation(localTransform));
+        position.setScaling(PositionServerStateHelper.getSetupScaling(localTransform));
+        setups.add(position);
 
         // add setups for each component
-        List<CellComponentServerState> setups = new LinkedList<CellComponentServerState>();
         for (ManagedReference<CellComponentMO> componentRef : components.values()) {
             CellComponentMO component = componentRef.get();
             CellComponentServerState compSetup = component.getServerState(null);
@@ -621,7 +678,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 setups.add(compSetup);
             }
         }
-        setup.setCellComponentSetups(setups.toArray(new CellComponentServerState[0]));
+        setup.setCellComponentServerStates(setups.toArray(new CellComponentServerState[0]));
 
         return setup;
     }
@@ -680,7 +737,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param component
      */
     public void addComponent(CellComponentMO component) {
-        addComponent(component, component.getClass());
+        addComponent(component,
+                CellComponentMO.getLookupClass(component.getClass()));
     }
 
     public void addComponent(CellComponentMO component, Class componentClass) {
@@ -726,6 +784,48 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (isLive())
             UniverseManagerFactory.getUniverseManager().removeTransformChangeListener(this, listener);
     }
-    
+
+    /**
+     * Inner class to receive messages to dynamically add and remove components
+     */
+    private static class ComponentUpdateMessageReceiver extends AbstractComponentMessageReceiver {
+
+        public ComponentUpdateMessageReceiver(CellMO cellMO) {
+            super(cellMO);
+        }
+
+        @Override
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            CellAddComponentMessage msg = (CellAddComponentMessage)message;
+//            CellComponentServerState state = msg.getServerState();
+
+            // Otherwise, set the state of the server-side component, creating
+            // it if necessary.
+//            String className = state.getServerComponentClassName();
+            String className = msg.getComponentClassName();
+            if (className == null) {
+                return;
+            }
+            try {
+                Class clazz = Class.forName(className);
+                Class lookupClazz = CellComponentMO.getLookupClass(clazz);
+                CellMO cellMO = getCell();
+                CellComponentMO comp = cellMO.getComponent(lookupClazz);
+                if (comp == null) {
+                    Constructor<CellComponentMO> constructor = clazz.getConstructor(CellMO.class);
+                    comp = constructor.newInstance(cellMO);
+//                    comp.setServerState(state);
+                    cellMO.addComponent(comp);
+                    logger.warning("DYNAMICALLY ADD COMPONENT " + clazz.getName());
+                }
+                else {
+//                    comp.setServerState(state);
+                    logger.warning("DYNAMICALLY ADD COMPONENT " + clazz.getName());
+                }
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
 }
 
