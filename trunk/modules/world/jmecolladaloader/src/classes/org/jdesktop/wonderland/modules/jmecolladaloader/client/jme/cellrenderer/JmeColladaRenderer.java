@@ -60,37 +60,37 @@ public class JmeColladaRenderer extends BasicRenderer {
      *
      * @deprecated this is just a test method, TODO remove
      */
-    public Node loadCollada(String name, float xoff, float yoff, float zoff, LightState ls) {
-        MaterialState matState = null;
-        
-        Node ret;
-
-        try {
-//            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/duck_triangulate.dae");
-            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/sphere2.dae");
-//            System.out.println("Resource stream "+input);
-            ColladaImporter.load(input, "Test");
-            ret = ColladaImporter.getModel();
-            ColladaImporter.cleanUp();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error loading Collada file", e);
-            ret = new Node();
-        }
-        
-        
-        ret.setModelBound(new BoundingBox());
-        ret.updateModelBound();
-//        System.out.println("Triangles "+ret.getTriangleCount());
-
-        ret.setLocalTranslation(xoff, yoff, zoff);
-        
-        ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
-
-        ret.setModelBound(new BoundingSphere());
-        ret.updateModelBound();
-
-        return ret;
-    }
+//    public Node loadCollada(String name, float xoff, float yoff, float zoff, LightState ls) {
+//        MaterialState matState = null;
+//
+//        Node ret;
+//
+//        try {
+////            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/duck_triangulate.dae");
+//            InputStream input = this.getClass().getClassLoader().getResourceAsStream("org/jdesktop/wonderland/client/resources/jme/sphere2.dae");
+////            System.out.println("Resource stream "+input);
+//            ColladaImporter.load(input, "Test");
+//            ret = ColladaImporter.getModel();
+//            ColladaImporter.cleanUp();
+//        } catch (Exception e) {
+//            logger.log(Level.SEVERE, "Error loading Collada file", e);
+//            ret = new Node();
+//        }
+//
+//
+//        ret.setModelBound(new BoundingBox());
+//        ret.updateModelBound();
+////        System.out.println("Triangles "+ret.getTriangleCount());
+//
+//        ret.setLocalTranslation(xoff, yoff, zoff);
+//
+//        ret.setName("Cell_"+cell.getCellID()+":"+cell.getName());
+//
+//        ret.setModelBound(new BoundingSphere());
+//        ret.updateModelBound();
+//
+//        return ret;
+//    }
     
     /**
      * Loads a collada cell from the asset managergiven an asset URL
@@ -100,12 +100,6 @@ public class JmeColladaRenderer extends BasicRenderer {
     public Node loadColladaAsset(String name) {        
         Node node = new Node();
         Node model=null;
-
-        /* Fetch the basic info about the cell */
-        CellTransform transform = cell.getLocalTransform();
-        Vector3f translation = transform.getTranslation(null);
-        Vector3f scaling = transform.getScaling(null);
-        Quaternion rotation = transform.getRotation(null);
         
         try {
             URL url = getAssetURL(((JmeColladaCell)cell).getModelURI());
@@ -132,10 +126,6 @@ public class JmeColladaRenderer extends BasicRenderer {
         }
         
         
-        /* Create the scene graph object and set its wireframe state */
-        node.setLocalTranslation(translation);
-        node.setLocalScale(scaling);
-        node.setLocalRotation(rotation);
         node.setName(name);
 
         // Make sure all the geometry has model bounds
