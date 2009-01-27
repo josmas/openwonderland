@@ -150,6 +150,15 @@ public class CellServerStateFactory {
             setupClasses.add(it2.next().getClass());
         }
 
+        /* Attempt to load the component class names using annotations */
+        Iterator<CellComponentServerState> it3 = classLoader.getInstances(
+                ServerState.class,
+                CellComponentServerState.class);
+
+        while (it3.hasNext()) {
+            setupClasses.add(it3.next().getClass());
+        }
+
         return setupClasses.toArray(new Class[0]);
     }
 }
