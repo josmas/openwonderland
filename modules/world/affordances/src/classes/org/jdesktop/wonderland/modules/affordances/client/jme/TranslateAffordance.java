@@ -62,6 +62,15 @@ public class TranslateAffordance extends Affordance {
     /* The width scaling factor for each arrow */
     private static final float WIDTH_SCALE = 0.10f;
 
+    /* The current scale of the affordance w.r.t the size of the cell */
+    private float currentScale = LENGTH_SCALE;
+
+    /* The original extent of the object, before it was modified */
+    private float xExtent = 0.0f, yExtent = 0.0f, zExtent = 0.0f;
+
+    /* The root of the scene graph of the cell */
+    private Node sceneRoot = null;
+
     /** An enumeration of the axis along which to effect the drag motion */
     public enum TranslateAxis {
         X_AXIS, Y_AXIS, Z_AXIS
@@ -89,10 +98,8 @@ public class TranslateAffordance extends Affordance {
 
         // Figure out the bounds of the root entity of the cell and create an
         // arrow to be just a bit larger than that
-        CellRendererJME renderer = (CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME);
-        RenderComponent cellRC = (RenderComponent)renderer.getEntity().getComponent(RenderComponent.class);
-        BoundingVolume bounds = cellRC.getSceneRoot().getWorldBound();
-        float xExtent = 0.0f, yExtent = 0.0f, zExtent = 0.0f;
+        sceneRoot = getSceneGraphRoot();
+        BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
             xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius;
         }
@@ -109,7 +116,7 @@ public class TranslateAffordance extends Affordance {
 
         // Fetch the world translation for the root node of the cell and set
         // the translation for this entity root node
-        Vector3f translation = cellRC.getSceneRoot().getWorldTranslation();
+        Vector3f translation = sceneRoot.getWorldTranslation();
         rootNode.setLocalTranslation(translation);
         
         // Create a red arrow in the +x direction. We arrow we get back is
@@ -146,13 +153,17 @@ public class TranslateAffordance extends Affordance {
         addDragListener(zEntity, zNode, TranslateAxis.Z_AXIS);
 
         // Listen for changes to the cell's translation and apply the same
-        // update to the root node of the affordances
+        // update to the root node of the affordances. We also re-set the size
+        // of the affordances: this handles the case where the bounds of the
+        // scene graph has changed and we need to update the affordances
+        // accordingly.
         final Node[] nodeArray = new Node[1];
         nodeArray[0] = rootNode;
-        cellRC.getSceneRoot().addGeometricUpdateListener(updateListener = new GeometricUpdateListener() {
+        sceneRoot.addGeometricUpdateListener(updateListener = new GeometricUpdateListener() {
             public void geometricDataChanged(Spatial arg0) {
                 Vector3f translation = arg0.getWorldTranslation();
                 nodeArray[0].setLocalTranslation(translation);
+                setSize(currentScale);
                 ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
             }
         });
@@ -182,12 +193,33 @@ public class TranslateAffordance extends Affordance {
     }
 
     public void setSize(float size) {
+        // To set the scale properly, we need to compute the scale w.r.t the
+        // current size of the object as a ratio of the original size of the
+        // object (in case the size of the object has changed).
+        currentScale = size;
+        float xScale = 0.0f, yScale = 0.0f, zScale = 0.0f;
+        BoundingVolume bounds = sceneRoot.getWorldBound();
+        if (bounds instanceof BoundingSphere) {
+            float newExtent = ((BoundingSphere)bounds).radius;
+            xScale = (newExtent / xExtent) * currentScale;
+            yScale = (newExtent / yExtent) * currentScale;
+            zScale = (newExtent / zExtent) * currentScale;
+        }
+        else if (bounds instanceof BoundingBox) {
+            float newXExtent = ((BoundingBox)bounds).xExtent;
+            float newYExtent = ((BoundingBox)bounds).yExtent;
+            float newZExtent = ((BoundingBox)bounds).zExtent;
+            xScale = (newXExtent / xExtent) * currentScale;
+            yScale = (newYExtent / yExtent) * currentScale;
+            zScale = (newZExtent / zExtent) * currentScale;
+        }
+
         // In order to set the size of the arrows, we just set the scaling. Note
         // that we set the scaling along the +y axis since all arrows are
         // created facing that direction.
-        xNode.setLocalScale(new Vector3f(1.0f, size, 1.0f));
-        yNode.setLocalScale(new Vector3f(1.0f, size, 1.0f));
-        zNode.setLocalScale(new Vector3f(1.0f, size, 1.0f));
+        xNode.setLocalScale(new Vector3f(1.0f, xScale, 1.0f));
+        yNode.setLocalScale(new Vector3f(1.0f, yScale, 1.0f));
+        zNode.setLocalScale(new Vector3f(1.0f, zScale, 1.0f));
         ClientContextJME.getWorldManager().addToUpdateList(xNode);
         ClientContextJME.getWorldManager().addToUpdateList(yNode);
         ClientContextJME.getWorldManager().addToUpdateList(zNode);
