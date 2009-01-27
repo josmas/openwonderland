@@ -26,6 +26,9 @@
                  
            <client>
                <clientjar name="swingwhiteboard-client" basedir="${build.classes.dir}">
+                    <cellfactory>
+                        <provider classname="org.jdesktop.wonderland.modules.swingwhiteboard.client.SwingWhiteboardCellFactory"/>
+                    </cellfactory>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar> 
