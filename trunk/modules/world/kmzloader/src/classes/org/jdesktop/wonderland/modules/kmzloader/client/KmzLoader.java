@@ -215,9 +215,7 @@ class KmzLoader implements ModelLoader {
             position.setOrigin(new Origin(rootNode.getLocalTranslation()));
             position.setRotation(new Rotation(rootNode.getLocalRotation()));
             position.setScaling(new Scaling(rootNode.getLocalScale()));
-            setup.setCellComponentServerStates(new CellComponentServerState[] {
-                position
-            });
+            setup.addComponentServerState(position);
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
             deploymentInfo.setCellSetup(setup);

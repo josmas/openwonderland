@@ -76,13 +76,11 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
      * @inheritDoc()
      */
     public <T extends CellServerState> void updateGUI(T cellServerState) {
-        CellComponentServerState states[] = cellServerState.getCellComponentServerStates();
-        for (CellComponentServerState state : states) {
-            if (state instanceof SampleCellComponentServerState) {
-                originalInfo = ((SampleCellComponentServerState)state).getInfo();
-                infoTextField.setText(originalInfo);
-                return;
-            }
+        CellComponentServerState state = cellServerState.getComponentServerState(SampleCellComponentServerState.class);
+        if (state != null) {
+            originalInfo = ((SampleCellComponentServerState) state).getInfo();
+            infoTextField.setText(originalInfo);
+            return;
         }
     }
 
@@ -91,27 +89,13 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
      */
     public <T extends CellServerState> void getCellServerState(T cellServerState) {
         // Figure out whether there already exists a server state for the
-        // component -- this is ugly, need to clean up.
-        List<CellComponentServerState> list = new LinkedList(
-                Arrays.asList(cellServerState.getCellComponentServerStates()));
-        SampleCellComponentServerState state = null;
-        Iterator<CellComponentServerState> it = list.iterator();
-        while (it.hasNext() == true) {
-            CellComponentServerState tmp = it.next();
-            if (tmp instanceof SampleCellComponentServerState) {
-                state = (SampleCellComponentServerState)tmp;
-                break;
-            }
-        }
-
-        // If it does not exist, create it
+        // component.
+        CellComponentServerState state = cellServerState.getComponentServerState(SampleCellComponentServerState.class);
         if (state == null) {
             state = new SampleCellComponentServerState();
-            list.add(state);
         }
-        state.setInfo(infoTextField.getText());
-        cellServerState.setCellComponentServerStates(
-                list.toArray(new CellComponentServerState[] {}));
+        ((SampleCellComponentServerState)state).setInfo(infoTextField.getText());
+        cellServerState.addComponentServerState(state);
     }
 
     /**

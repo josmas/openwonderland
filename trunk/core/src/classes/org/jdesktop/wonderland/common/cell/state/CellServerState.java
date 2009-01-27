@@ -62,26 +62,31 @@ public abstract class CellServerState implements Serializable {
     @XmlElements({ 
         @XmlElement(name="metadata")
     })
-    public MetaDataHashMap metadata = new MetaDataHashMap();
-    
+    private MetaDataHashMap metadata = new MetaDataHashMap();
+
+    /* An array of server component states for the XML */
     @XmlElementRefs({
         @XmlElementRef()
     })
-    public CellComponentServerState components[] = new CellComponentServerState[0];
-    
+    private CellComponentServerState components[] = new CellComponentServerState[0];
+
+    /* A hashmap of server components, used by API access to component states */
+    @XmlTransient
+    private Map<Class, CellComponentServerState> internalComponentMap = new HashMap();
+
     /*
      * The internal representation of the metadata as a hashed map. The HashMap
      * class is not supported by JAXB so we must convert it to a list for
      * serialization
      */
     @XmlTransient
-    public HashMap<String, String> internalMetaData = new HashMap<String, String>();
+    private Map<String, String> internalMetaData = new HashMap();
 
     /**
      * A wrapper class for hashmaps, because JAXB does not correctly support
      * the HashMap class.
      */
-    public static class MetaDataHashMap implements Serializable {
+    private static class MetaDataHashMap implements Serializable {
         /* A list of entries */
         @XmlElements( {
             @XmlElement(name="entry")
@@ -97,7 +102,7 @@ public abstract class CellServerState implements Serializable {
      * A wrapper class for hashmap entries, because JAXB does not correctly
      * support the HashMap class
      */
-    public static class HashMapEntry implements Serializable {
+    private static class HashMapEntry implements Serializable {
         /* The key and values */
         @XmlAttribute public String key;
         @XmlAttribute public String value;
@@ -118,24 +123,46 @@ public abstract class CellServerState implements Serializable {
      * @return The FQCN of the server-side cell class
      */
     public abstract String getServerClassName();
-    
+
     /**
-     * Returns the cell's collection of component setup information
-     * 
-     * @return The cell's collection of component setup information
+     * Adds a component server state. If a server state of the same Class has
+     * already been added, this replaces the existing server state.
+     *
+     * @param serverState The component server state to add
      */
-    @XmlTransient public CellComponentServerState[] getCellComponentServerStates() {
-        return this.components;
+    public void addComponentServerState(CellComponentServerState serverState) {
+        internalComponentMap.put(serverState.getClass(), serverState);
+    }
+
+    /**
+     * Returns a CellComponentServerState given its Class, or null if a server
+     * state object is not present on the cell server state class of the given
+     * Class type.
+     *
+     * @param clazz The Class of the component server-state object
+     * @return The component server state object if it exist, null otherwise
+     */
+    public CellComponentServerState getComponentServerState(Class clazz) {
+        return internalComponentMap.get(clazz);
+    }
+
+    /**
+     * Returns a map of all of the CellComponentServerState objects.
+     *
+     * @return A Map of Class object to their component server-state objects
+     */
+    public Map<Class, CellComponentServerState> getComponentServerStates() {
+        return new HashMap(internalComponentMap);
     }
     
     /**
-     * Sets the cell's collection of component setup information. If null, then
-     * this property will not be written out to the file.
-     * 
-     * @param bounds The new cell bounds
+     * Removes a CellComponentServerState given its Class. If a server state
+     * for the given Class does not exist, this method does nothing.
+     *
+     * @param clazz The Class of the component server-state object
      */
-    public void setCellComponentServerStates(CellComponentServerState[] components) {
-        this.components = components;
+    public void removeComponentServerState(Class clazz) {
+        internalComponentMap.remove(clazz);
     }
     
     /**
@@ -143,7 +170,7 @@ public abstract class CellServerState implements Serializable {
      * 
      * @return The cell metadata
      */
-    @XmlTransient public HashMap<String, String> getMetaData() {
+    @XmlTransient public Map<String, String> getMetaData() {
         return this.internalMetaData;
     }
     
@@ -153,7 +180,7 @@ public abstract class CellServerState implements Serializable {
      * 
      * @param metadata The new cell metadata
      */
-    public void setMetaData(HashMap<String, String> metadata) {
+    public void setMetaData(Map<String, String> metadata) {
         this.internalMetaData = metadata;
     }
 
@@ -213,6 +240,17 @@ public abstract class CellServerState implements Serializable {
         else {
             setup.internalMetaData = null;
         }
+
+        /* Convert components to internal representation */
+        if (setup.components != null) {
+            setup.internalComponentMap = new HashMap();
+            for (CellComponentServerState state : setup.components) {
+                setup.internalComponentMap.put(state.getClass(), state);
+            }
+        }
+        else {
+            setup.internalComponentMap = null;
+        }
         return setup;
     }
     
@@ -235,7 +273,7 @@ public abstract class CellServerState implements Serializable {
      * @throw JAXBException Upon error writing the XML data
      */   
     public void encode(Writer w, ClassLoader cl) throws JAXBException {
-        /* Convert internal metadata hash to one suitable for serialization */
+        /* Convert internal metadata map to one suitable for serialization */
         if (this.internalMetaData != null) {
             this.metadata = new MetaDataHashMap();
             for (Map.Entry<String, String> e : this.internalMetaData.entrySet()) {
@@ -247,6 +285,19 @@ public abstract class CellServerState implements Serializable {
         }
         else {
             this.metadata = null;
+        }
+
+        /* Convert internal component map to one suitable for serialization */
+        if (this.internalComponentMap != null) {
+            this.components = new CellComponentServerState[this.internalComponentMap.size()];
+            int i = 0;
+            for (Map.Entry<Class, CellComponentServerState> e : this.internalComponentMap.entrySet()) {
+                this.components[i] = e.getValue();
+                i++;
+            }
+        }
+        else {
+            this.components = null;
         }
 
         /* Write out as XML */
@@ -262,8 +313,8 @@ public abstract class CellServerState implements Serializable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("[CellServerState] ");
-        for (CellComponentServerState state : this.getCellComponentServerStates()) {
-            sb.append(state.toString());
+        for (Map.Entry<Class, CellComponentServerState> e : internalComponentMap.entrySet()) {
+            sb.append(e.getValue().toString());
         }
         return sb.toString();
     }

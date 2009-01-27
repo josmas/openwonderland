@@ -111,55 +111,6 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             CellMO parentMO = cellMO.getParent();
             parentMO.removeChild(cellMO);
         }
-        else if (editMessage.getEditType() == EditType.GET_SERVER_STATE) {
-            // If we want to query the cell setup for the given cell ID, first
-            // fetch the cell and ask it for its cell setup class. We also
-            // want to catch any exception to make sure we send back a
-            // response
-            try {
-                CellID cellID = ((CellGetServerStateMessage) editMessage).getCellID();
-                CellMO cellMO = CellManagerMO.getCell(cellID);
-                CellServerState cellSetup = cellMO.getServerState(null);
-
-                logger.warning("Getting Cell State " + cellSetup);
-
-                // Formulate a response message, fill in the cell setup, and return
-                // to the client.
-                MessageID messageID = message.getMessageID();
-                CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, cellSetup);
-                sender.send(clientID, response);
-            }
-            catch (java.lang.Exception excp) {
-                // Log a warning and send back a null response
-                logger.log(Level.WARNING, "Unable to fetch cell server state",
-                        excp);
-                MessageID messageID = message.getMessageID();
-                CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, null);
-                sender.send(clientID, response);
-            }
-        }
-        else if (editMessage.getEditType() == EditType.SET_SERVER_STATE) {
-            // Fetch the cell, and set its server state. Catch all exceptions
-            // and report.
-            CellSetServerStateMessage msg = (CellSetServerStateMessage) editMessage;
-            try {
-                CellID cellID = msg.getCellID();
-                CellServerState state = msg.getCellServerState();
-                CellMO cellMO = CellManagerMO.getCell(cellID);
-                cellMO.setServerState(state);
-
-                // Fetch a new client-state and set it
-                ChannelComponentMO channel = cellMO.getComponent(ChannelComponentMO.class);
-                if (channel != null) {
-                    CellClientState clientState = cellMO.getClientState(null, clientID, null);
-                    channel.sendAll(clientID, new CellUpdateMessage(cellID, clientState));
-                }
-            }
-            catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "Unable to set cell server state " +
-                        msg.getCellID(), excp);
-            }
-        }
     }
     
     /**

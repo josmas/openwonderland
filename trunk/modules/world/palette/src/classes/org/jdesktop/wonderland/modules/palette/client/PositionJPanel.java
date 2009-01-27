@@ -226,7 +226,6 @@ public class PositionJPanel extends javax.swing.JPanel {
         Quaternion newRotation = new Quaternion(new float[] { x, y, z });
 
         if (currentRotation == null || newRotation.equals(currentRotation) == false) {
-            System.out.println("ROTATION " + currentRotation + " " + newRotation);
             currentRotation = newRotation;
 
             if (movableComponent != null) {
@@ -253,7 +252,6 @@ public class PositionJPanel extends javax.swing.JPanel {
             if (movableComponent != null) {
                 CellTransform cellTransform = cell.getLocalTransform();
                 cellTransform.setScaling(scale);
-                System.err.println("SETTING SCALE " + scale);
                 movableComponent.localMoveRequest(cellTransform);
             }
         }

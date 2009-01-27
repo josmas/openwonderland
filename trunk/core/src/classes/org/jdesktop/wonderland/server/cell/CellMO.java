@@ -32,8 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -42,13 +41,18 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellAddComponentMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellGetServerStateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerStateResponseMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellSetServerStateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellUpdateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
@@ -384,20 +388,26 @@ public abstract class CellMO implements ManagedObject, Serializable {
             addToUniverse(UniverseManagerFactory.getUniverseManager());
 
             // Add a message receiver to handle messages to dynamically add and
-            // remove components
+            // remove components, get and set the server state.
             ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
             if (channel != null) {
                 channel.addMessageReceiver(CellAddComponentMessage.class,
                         new ComponentUpdateMessageReceiver(this));
+                channel.addMessageReceiver(CellGetServerStateMessage.class,
+                        new ComponentGetStateMessageReceiver(this));
+                channel.addMessageReceiver(CellSetServerStateMessage.class,
+                        new ComponentSetStateMessageReceiver(this));
             }
         } else {
             removeFromUniverse(UniverseManagerFactory.getUniverseManager());
 
             // Remove the message receiver that handles messages to dynamically
-            // add and remove components
+            // add and remove components, get and set the server state.
             ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
             if (channel != null) {
                 channel.removeMessageReceiver(CellAddComponentMessage.class);
+                channel.removeMessageReceiver(CellGetServerStateMessage.class);
+                channel.removeMessageReceiver(CellSetServerStateMessage.class);
             }
         }
 
@@ -601,7 +611,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
         
         // For all components in the setup class, create the component classes
         // and setup them up and add to the cell.
-        for (CellComponentServerState compState : state.getCellComponentServerStates()) {
+        for (Map.Entry<Class, CellComponentServerState> e : state.getComponentServerStates().entrySet()) {
+            CellComponentServerState compState = e.getValue();
 
             // Check to see if the component server state is the special case
             // of the Position state. If so, set the values in the cell manually.
@@ -657,9 +668,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
 
         // Set the name of the cell
         setup.setName(this.getName());
-        
-        // Create a list to hold all of the individual components for now
-        List<CellComponentServerState> setups = new LinkedList<CellComponentServerState>();
 
         // Fill in the details about the origin, rotation, and scaling. Create
         // and add a PositionComponentServerState with all of this information
@@ -668,17 +676,16 @@ public abstract class CellMO implements ManagedObject, Serializable {
         position.setOrigin(PositionServerStateHelper.getSetupOrigin(localTransform));
         position.setRotation(PositionServerStateHelper.getSetupRotation(localTransform));
         position.setScaling(PositionServerStateHelper.getSetupScaling(localTransform));
-        setups.add(position);
+        setup.addComponentServerState(position);
 
         // add setups for each component
         for (ManagedReference<CellComponentMO> componentRef : components.values()) {
             CellComponentMO component = componentRef.get();
             CellComponentServerState compSetup = component.getServerState(null);
             if (compSetup != null) {
-                setups.add(compSetup);
+                setup.addComponentServerState(compSetup);
             }
         }
-        setup.setCellComponentServerStates(setups.toArray(new CellComponentServerState[0]));
 
         return setup;
     }
@@ -783,6 +790,76 @@ public abstract class CellMO implements ManagedObject, Serializable {
         transformChangeListeners.remove(listener);
         if (isLive())
             UniverseManagerFactory.getUniverseManager().removeTransformChangeListener(this, listener);
+    }
+
+    /**
+     * Inner class to receive messages to fetch the server state of the cell
+     */
+    private static class ComponentGetStateMessageReceiver extends AbstractComponentMessageReceiver {
+
+        public ComponentGetStateMessageReceiver(CellMO cellMO) {
+            super(cellMO);
+        }
+
+        @Override
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            // If we want to query the cell setup for the given cell ID, first
+            // fetch the cell and ask it for its cell setup class. We also
+            // want to catch any exception to make sure we send back a
+            // response
+            try {
+                CellMO cellMO = getCell();
+                CellServerState cellSetup = cellMO.getServerState(null);
+
+                logger.warning("Getting Cell State " + cellSetup);
+
+                // Formulate a response message, fill in the cell setup, and return
+                // to the client.
+                MessageID messageID = message.getMessageID();
+                CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, cellSetup);
+                sender.send(clientID, response);
+            }
+            catch (java.lang.Exception excp) {
+                // Log a warning and send back a null response
+                logger.log(Level.WARNING, "Unable to fetch cell server state",
+                        excp);
+                MessageID messageID = message.getMessageID();
+                CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, null);
+                sender.send(clientID, response);
+            }
+        }
+    }
+
+    /**
+     * Inner class to receive messages to set the server state of the cell
+     */
+    private static class ComponentSetStateMessageReceiver extends AbstractComponentMessageReceiver {
+
+        public ComponentSetStateMessageReceiver(CellMO cellMO) {
+            super(cellMO);
+        }
+
+        @Override
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            // Fetch the cell, and set its server state. Catch all exceptions
+            // and report.
+            CellSetServerStateMessage msg = (CellSetServerStateMessage)message;
+            try {
+                CellServerState state = msg.getCellServerState();
+                CellMO cellMO = getCell();
+                cellMO.setServerState(state);
+
+                // Fetch a new client-state and set it
+                ChannelComponentMO channel = cellMO.getComponent(ChannelComponentMO.class);
+                if (channel != null) {
+                    CellClientState clientState = cellMO.getClientState(null, clientID, null);
+                    channel.sendAll(clientID, new CellUpdateMessage(cellMO.getCellID(), clientState));
+                }
+            }
+            catch (java.lang.Exception excp) {
+                logger.log(Level.WARNING, "Unable to set cell server state " +
+                        msg.getCellID(), excp);
+            }        }
     }
 
     /**
