@@ -28,8 +28,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public class CellSetServerStateMessage extends CellEditMessage {
-    private CellID cellID;
+public class CellSetServerStateMessage extends CellMessage {
     private CellServerState cellServerState;
 
     /**
@@ -38,18 +37,8 @@ public class CellSetServerStateMessage extends CellEditMessage {
      * @param cellID The id of the cell
      */
     public CellSetServerStateMessage(CellID cellID, CellServerState cellServerState) {
-        super(EditType.SET_SERVER_STATE);
-        this.cellID = cellID;
+        super(cellID);
         this.cellServerState = cellServerState;
-    }
-    
-    /**
-     * Get the ID of the cell.
-     * 
-     * @return The CellID
-     */
-    public CellID getCellID() {
-        return this.cellID;
     }
 
     public CellServerState getCellServerState() {

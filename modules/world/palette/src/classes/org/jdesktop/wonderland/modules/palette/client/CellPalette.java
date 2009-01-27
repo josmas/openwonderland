@@ -163,9 +163,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // Create a position component that will set the initial origin
     PositionComponentServerState position = new PositionComponentServerState();
     position.setOrigin(new Origin(origin));
-    setup.setCellComponentServerStates(new CellComponentServerState[] {
-        position
-    });
+    setup.addComponentServerState(position);
     
     // Send the message to the server
     WonderlandSession session = LoginManager.getPrimary().getPrimarySession();

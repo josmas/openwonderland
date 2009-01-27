@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.palette.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.jdesktop.mtgame.Entity;
@@ -106,8 +108,12 @@ public class PaletteClientPlugin implements ClientPlugin {
 
                 // Create a new cell edit frame passing in the Cell and make
                 // it visible
-                CellEditFrame frame = new CellEditFrame(cell);
-                frame.setVisible(true);
+                try {
+                    CellEditFrame frame = new CellEditFrame(cell);
+                    frame.setVisible(true);
+                } catch (IllegalStateException excp) {
+                    Logger.getLogger(PaletteClientPlugin.class.getName()).log(Level.WARNING, null, excp);
+                }
             }
         });
     }

@@ -33,7 +33,7 @@ public class CellEditMessage extends Message {
     
     /** Enumeration of kinds of editing */
     public enum EditType {
-        CREATE_CELL, DELETE_CELL, GET_SERVER_STATE, SET_SERVER_STATE
+        CREATE_CELL, DELETE_CELL
     };
     
     /**

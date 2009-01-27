@@ -27,25 +27,13 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public class CellGetServerStateMessage extends CellEditMessage {
-    private CellID cellID;
-
+public class CellGetServerStateMessage extends CellMessage {
     /**
      * Create a new cell message to the given cellID of the cell.
      * 
      * @param cellID The id of the cell
      */
     public CellGetServerStateMessage(CellID cellID) {
-        super(EditType.GET_SERVER_STATE);
-        this.cellID = cellID;
-    }
-    
-    /**
-     * Get the ID of the cell.
-     * 
-     * @return The CellID
-     */
-    public CellID getCellID() {
-        return this.cellID;
+        super(cellID);
     }
 }

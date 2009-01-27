@@ -17,12 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.palette.client;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -33,6 +30,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.properties.CellComponentPropertiesManager;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesManager;
@@ -87,15 +85,16 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
      * argument
      *
      * @param cell The Cell to be edited
+     * @throw IlegalStateException If the dialog cannot be created sucessfully
      */
-    public CellEditFrame(Cell cell) {
+    public CellEditFrame(Cell cell) throws IllegalStateException {
         this.cell = cell;
 
         // Check to see that the cell is non-null. If so, flag an error and
         // return
         if (cell == null) {
             logger.warning("Cell passed to the cell properties frame is null");
-            return;
+            throw new IllegalStateException("Invalid Cell passed to Dialog");
         }
 
         // Fetch the initial server state of the cell. If we cannot fetch it,
@@ -104,7 +103,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         cellServerState = getCellServerState();
         if (cellServerState == null) {
             logger.warning("Unable to fetch cell server state for " + cell.getName());
-            return;
+            throw new IllegalStateException("Unable to fetch cell server state");
         }
 
         // Look through the registry of cell property objects and check to see
@@ -131,7 +130,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         listModel.add(1, "Position");
 
         // If the cell properties panel exists, add an entry for it
-        if (cellProperties.getPropertiesJPanel(this) != null) {
+        if (cellProperties != null && cellProperties.getPropertiesJPanel(this) != null) {
             listModel.add(2, cellProperties.getDisplayName());
         }
 
@@ -378,11 +377,13 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
             spi.getCellServerState(cellServerState);
         }
         
-        // Tell the server-side cell to update itself
+        // Tell the server-side cell to update itself. Send the message over
+        // the cell channel, so fetch the channel component first.
         CellSetServerStateMessage msg = new CellSetServerStateMessage(cell.getCellID(), cellServerState);
-        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-        CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-        connection.send(msg);
+        ChannelComponent channel = cell.getComponent(ChannelComponent.class);
+        if (channel != null) {
+            channel.send(msg);
+        }
 
         // XXX Probably should get a success/failed here!
 
@@ -398,34 +399,27 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
      */
     private CellServerState getCellServerState() {
         // Fetch the setup object from the Cell object. We send a message on
-        // "edit" connection of the cell manager and wait for a response.
+        // the cell channel, so we must fetch that first.
         CellGetServerStateMessage message = new CellGetServerStateMessage(cell.getCellID());
-        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-        CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-        try {
-            // Wait for the response from the server and get the server state
-            // object that is returned. We must remove the position component
-            // because that is a special case handle separately.
-            CellServerStateResponseMessage response = (CellServerStateResponseMessage) connection.sendAndWait(message);
-            CellServerState state = response.getCellServerState();
-            if (state != null) {
-                List<CellComponentServerState> components = new LinkedList(
-                        Arrays.asList(state.getCellComponentServerStates()));
-                Iterator<CellComponentServerState> it = components.listIterator();
-                while (it.hasNext() == true) {
-                    CellComponentServerState compState = it.next();
-                    if (compState instanceof PositionComponentServerState) {
-                        it.remove();
-                    }
+        ChannelComponent channel = cell.getComponent(ChannelComponent.class);
+        if (channel != null) {
+            try {
+                // Send the message on the cell channel and wait for the resonse.
+                // We need to remove the position component first as a special
+                // case since we do not want to update it after the cell is
+                // create
+                CellServerStateResponseMessage response = (CellServerStateResponseMessage) channel.sendAndWait(message);
+                CellServerState state = response.getCellServerState();
+                if (state != null) {
+                    state.removeComponentServerState(PositionComponentServerState.class);
                 }
-                state.setCellComponentServerStates(components.toArray(
-                        new CellComponentServerState[] {}));
+                return state;
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CellEditFrame.class.getName()).log(Level.WARNING, null, ex);
+                return null;
             }
-            return state;
-        } catch (InterruptedException ex) {
-            Logger.getLogger(CellEditFrame.class.getName()).log(Level.WARNING, null, ex);
-            return null;
         }
+        return null;
     }
 
     /**
@@ -463,8 +457,8 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         // each see if there is a properties sheet registered for it. If so,
         // then add it.
         CellComponentPropertiesManager manager = CellComponentPropertiesManager.getCellComponentPropertiesManager();
-        CellComponentServerState states[] = cellSetup.getCellComponentServerStates();
-        for (CellComponentServerState state : states) {
+        for (Map.Entry<Class, CellComponentServerState> e : cellSetup.getComponentServerStates().entrySet()) {
+            CellComponentServerState state = e.getValue();
             CellComponentPropertiesSPI spi = manager.getCellComponentPropertiesByClass(state.getClass());
             if (spi != null) {
                 JPanel panel = spi.getPropertiesJPanel(this);
