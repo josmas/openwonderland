@@ -21,7 +21,6 @@ import com.jme.scene.Node;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
-import com.jmex.model.collada.ColladaImporter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -47,6 +46,7 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
 
 /**
@@ -86,19 +86,16 @@ class JmeColladaLoader implements ModelLoader {
         
         logger.info("Loading MODEL " + file.getName());
         BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-        
-        ColladaImporter.load(in, file.getName());
-        rootNode = ColladaImporter.getModel();
 
-        ColladaImporter.cleanUp();
+        rootNode = JmeColladaRenderer.loadModel(in, file.getName());
+        in.close();
         
         ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
         return rootNode;
     }
-    
 
-    
+
     public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException {
         try {
             String modelName = origFile.getName();
