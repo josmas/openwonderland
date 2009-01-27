@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.sample.client;
 
 import javax.swing.JPanel;
+import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -29,6 +30,7 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@CellProperties
 public class SampleCellProperties extends javax.swing.JPanel implements CellPropertiesSPI {
     CellPropertiesEditor editor = null;
     private String originalShapeType = null;
