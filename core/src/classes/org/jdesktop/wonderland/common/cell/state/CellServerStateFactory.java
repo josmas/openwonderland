@@ -17,17 +17,20 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
-import sun.misc.Service;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
  * The CellServerStateFactory returns marshallers and unmarshallers that can encode
@@ -45,10 +48,9 @@ import sun.misc.Service;
  */
 public class CellServerStateFactory {
     /* A list of core cell setup class names, currently only for components */
-    private static String[] coreSetup = {
-        "org.jdesktop.wonderland.common.cell.state.CellComponentServerState",
-        "org.jdesktop.wonderland.common.cell.state.PositionComponentServerState",
-        "org.jdesktop.wonderland.common.AssetURI",
+    private static Class[] coreSetupClasses = {
+        CellComponentServerState.class, PositionComponentServerState.class,
+        AssetURI.class
     };
     
     /* The JAXB contexts used to create marshallers and unmarshallers */
@@ -59,15 +61,10 @@ public class CellServerStateFactory {
      
     /* Create the XML marshaller and unmarshaller once for all setup classes */
     static {
-        try {
-            /* Attempt to load the class names using the service providers */
-            Iterator<CellServerStateSPI> it = Service.providers(CellServerStateSPI.class);
-            Collection<Class> names = CellServerStateFactory.getCoreCellSetup();
-            while (it.hasNext() == true) {
-                names.add(it.next().getClass());
-            }
+        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
 
-            jaxbContext = JAXBContext.newInstance(names.toArray(new Class[]{}));
+        try {
+            jaxbContext = JAXBContext.newInstance(getClasses(scl));
         } catch (javax.xml.bind.JAXBException excp) {
             CellServerStateFactory.logger.log(Level.SEVERE, "[CELL] SETUP FACTORY Failed to create JAXBContext", excp);
         }
@@ -80,12 +77,10 @@ public class CellServerStateFactory {
      * 
      * @return A marhsaller for JAXB-annotated classes
      */
-    public static Marshaller getMarshaller(ClassLoader classLoader) {
+    public static Marshaller getMarshaller(ScannedClassLoader classLoader) {
         try {
             if (classLoader == null) {
-                Marshaller m = jaxbContext.createMarshaller();
-                m.setProperty("jaxb.formatted.output", true);
-                return m;
+                classLoader = ScannedClassLoader.getSystemScannedClassLoader();
             }
         
             Class[] clazz = getClasses(classLoader);
@@ -109,10 +104,10 @@ public class CellServerStateFactory {
      * 
      * @return An unmarshaller for XML
      */
-    public static Unmarshaller getUnmarshaller(ClassLoader classLoader) {
+    public static Unmarshaller getUnmarshaller(ScannedClassLoader classLoader) {
         try {
             if (classLoader == null) {
-                return jaxbContext.createUnmarshaller();
+                classLoader = ScannedClassLoader.getSystemScannedClassLoader();
             }
 
             Class[] clazz = getClasses(classLoader);
@@ -133,28 +128,28 @@ public class CellServerStateFactory {
      * @param classLoader
      * @return
      */
-    private static Class[] getClasses(ClassLoader classLoader) {
-        Iterator<CellServerStateSPI> it = Service.providers(CellServerStateSPI.class, classLoader);
-        Collection<Class> names = CellServerStateFactory.getCoreCellSetup();
-        while (it.hasNext() == true) {
-            names.add(it.next().getClass());
+    private static Class[] getClasses(ScannedClassLoader classLoader) {
+        Set<Class> setupClasses = new LinkedHashSet<Class>(Arrays.asList(coreSetupClasses));
+
+        /* Attempt to load the class names using annotations */
+        Iterator<CellServerState> it = classLoader.getInstances(
+                ServerState.class,
+                CellServerState.class);
+
+        while (it.hasNext()) {
+            setupClasses.add(it.next().getClass());
         }
 
-        return names.toArray(new Class[]{} );
-    }
-    
-    /**
-     * Returns a collection of classes that represent the core cell setups.
-     */
-    private static Collection<Class> getCoreCellSetup() {
-        Collection<Class> list = new LinkedList<Class>();
-        for (String className : coreSetup) {
-            try {
-                list.add(Class.forName(className));
-            } catch (ClassNotFoundException excp) {
-                CellServerStateFactory.logger.log(Level.WARNING, "[CELL] SETUP FACTORY Failed to find class", excp);
-            }
+        /* Also add the deprecated CellServerStateSPI implementations, although
+         * we hope these will go away eventually
+         */
+        Iterator<CellServerStateSPI> it2 = classLoader.getAll(
+                ServerState.class,
+                CellServerStateSPI.class);
+        while (it2.hasNext()) {
+            setupClasses.add(it2.next().getClass());
         }
-        return list;
+
+        return setupClasses.toArray(new Class[0]);
     }
 }

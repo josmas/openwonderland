@@ -25,7 +25,10 @@ package org.jdesktop.wonderland.common.cell.state.spi;
  * <p>
  * This SPI has no methods -- the class name may be obtained from the Java VM
  * which is sufficient to create the JAXBContext class.
- * 
+ * <p>
+ * This interface is deprecated.  Use the @CellServerState annotation instead
+ *
+ * @deprecated
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public interface CellServerStateSPI {

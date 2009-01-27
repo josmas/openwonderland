@@ -23,11 +23,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.InternalAPI;
-import sun.misc.Service;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
  * Manages the set of propery panels configuring cell components. Cell components
@@ -53,8 +54,10 @@ public class CellComponentPropertiesManager {
         /* Attempt to load the class names using the service providers */
         // This needs to work with federation XXX
         ServerSessionManager manager = LoginManager.getPrimary();
-        ClassLoader cl = manager.getClassloader();
-        Iterator<CellComponentPropertiesSPI> it = Service.providers(CellComponentPropertiesSPI.class, cl);
+        ScannedClassLoader cl = manager.getClassloader();
+
+        Iterator<CellComponentPropertiesSPI> it = cl.getAll(
+                CellComponentProperties.class, CellComponentPropertiesSPI.class);
         while (it.hasNext() == true) {
             CellComponentPropertiesSPI spi = it.next();
             CellComponentPropertiesManager.getCellComponentPropertiesManager().registerCellComponentFactory(spi);
