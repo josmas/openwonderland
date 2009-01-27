@@ -18,8 +18,9 @@
 
 package org.jdesktop.wonderland.server.eventrecorder;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -31,10 +32,16 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * Manages a singleton instance of itself.
  * @author Bernard Horan
  */
-public class RecorderManager implements EventRecorder {
+public class RecorderManager {
+    private static final Logger logger = Logger.getLogger(RecorderManager.class.getName());
     private static RecorderManager DEFAULT_MANAGER;
 
-    private Set<EventRecorder> recorders = new HashSet<EventRecorder>();
+    /***
+     *Mapping table from name of event recorder to its instance. Can't use a Set due to DarkStar
+     * managing persistence. (I.e. no object identity).
+     */
+
+    private Map<String, EventRecorder> recorders = new HashMap<String, EventRecorder>();
 
     /**
      * Return the singleton instance of the RecorderManager
@@ -57,13 +64,13 @@ public class RecorderManager implements EventRecorder {
      * @param message
      */
     public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-        for (EventRecorder recorder : recorders) {
+        for (EventRecorder recorder : recorders.values()) {
             recorder.recordMessage(sender, clientID, message);
         }
     }
 
     public boolean isRecording() {
-        for (EventRecorder recorder : recorders) {
+        for (EventRecorder recorder : recorders.values()) {
             if (recorder.isRecording()) {
                 return true;
             }
@@ -71,22 +78,24 @@ public class RecorderManager implements EventRecorder {
         return false;
     }
 
-
-
     /**
-     *
-     * @param recorder
+     * Register an event recorder with me.
+     * @param recorder the recorder to be registered
      */
     public void register(EventRecorder recorder) {
-        recorders.add(recorder);
+        recorders.put(recorder.getName(), recorder);
     }
 
     /**
-     *
-     * @param recorder
+     * Unregister an event recorder
+     * @param recorder the event recorder to be unregistered
      */
     public void unregister(EventRecorder recorder) {
-        recorders.remove(recorder);
+        EventRecorder registeredRecorder = recorders.get(recorder.getName());
+        if (registeredRecorder == null) {
+            throw new RuntimeException("Trying to remove unregistered recorder: " + recorder.getName());
+        }
+        recorders.remove(registeredRecorder.getName());
     }
 
 }
