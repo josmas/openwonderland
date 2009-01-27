@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.AssetURIAdapter;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
  * The CellServerState class is the base class for all classes that represent
@@ -119,7 +120,7 @@ public abstract class CellServerState implements Serializable {
     /**
      * Returns the fully-qualified class name for the server-side cell class
      * to instantiate.
-     * 
+     *
      * @return The FQCN of the server-side cell class
      */
     public abstract String getServerClassName();
@@ -215,7 +216,7 @@ public abstract class CellServerState implements Serializable {
      * @throw ClassCastException If the input data does not map to CellServerState
      * @throw JAXBException Upon error reading the XML data
      */
-    public static CellServerState decode(Reader r, ClassLoader cl, String server) throws JAXBException {
+    public static CellServerState decode(Reader r, ScannedClassLoader cl, String server) throws JAXBException {
         /*
          * De-serialize from XML. We set up an adapter to handle XML elements
          * of type AssetURI. This will properly decode them and also fill in
@@ -272,7 +273,7 @@ public abstract class CellServerState implements Serializable {
      * @param cl The class loader
      * @throw JAXBException Upon error writing the XML data
      */   
-    public void encode(Writer w, ClassLoader cl) throws JAXBException {
+    public void encode(Writer w, ScannedClassLoader cl) throws JAXBException {
         /* Convert internal metadata map to one suitable for serialization */
         if (this.internalMetaData != null) {
             this.metadata = new MetaDataHashMap();

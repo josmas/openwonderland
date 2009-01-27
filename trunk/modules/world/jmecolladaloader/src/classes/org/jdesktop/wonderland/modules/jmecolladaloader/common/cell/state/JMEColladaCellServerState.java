@@ -22,7 +22,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * The ColladaCellSetup class is the cell that renders a collada model cell in
@@ -31,7 +31,8 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="jme-collada-cell")
-public class JMEColladaCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
+@ServerState
+public class JMEColladaCellServerState extends CellServerState implements Serializable {
     
     /* The URI of the static model file */
     @XmlElement(name="model")

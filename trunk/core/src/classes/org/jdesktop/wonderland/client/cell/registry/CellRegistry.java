@@ -23,9 +23,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import sun.misc.Service;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
  * The cell registry manages the collection of cell types registered with the
@@ -49,11 +50,14 @@ public class CellRegistry {
         /* Attempt to load the class names using the service providers */
         // This needs to work with federation XXX
         ServerSessionManager manager = LoginManager.getPrimary();
-        ClassLoader cl = manager.getClassloader();
-        Iterator<CellFactorySPI> it = Service.providers(CellFactorySPI.class, cl);
-        while (it.hasNext() == true) {
-            CellFactorySPI spi = it.next();
-            CellRegistry.getCellRegistry().registerCellFactory(spi);
+        
+        // now search annotations
+        ScannedClassLoader cl = manager.getClassloader();
+        Iterator<CellFactorySPI> it = cl.getAll(CellFactory.class, 
+                                                CellFactorySPI.class);
+        while (it.hasNext()) {
+            CellFactorySPI factory = it.next();
+            CellRegistry.getCellRegistry().registerCellFactory(factory);
         }
     }
 

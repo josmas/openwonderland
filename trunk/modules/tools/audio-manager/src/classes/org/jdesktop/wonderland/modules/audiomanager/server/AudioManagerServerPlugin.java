@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -26,6 +27,7 @@ import org.jdesktop.wonderland.server.comms.CommsManager;
  * Pluging to support the audio manager
  * @author paulby
  */
+@Plugin
 public class AudioManagerServerPlugin implements ServerPlugin {
     private static final Logger logger =
             Logger.getLogger(AudioManagerServerPlugin.class.getName());

@@ -17,9 +17,8 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import org.jdesktop.wonderland.server.cell.*;
 import java.util.Iterator;
-import sun.misc.Service;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
  * A factory that creates cell GLOs by type.  This uses the service provider
@@ -50,11 +49,15 @@ public class CellMOFactory {
         throws LoadCellMOException
     {       
         CellMO res = null;
-        
+
+        // get a list of providers by type or annotation
+        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+        Iterator<CellMOProvider> i = scl.getAll(
+                org.jdesktop.wonderland.server.cell.annotation.CellMOProvider.class,
+                CellMOProvider.class);
+
         // check each provider
-        for (Iterator<CellMOProvider> i = Service.providers(CellMOProvider.class); 
-             i.hasNext();)
-        {
+        while (i.hasNext()) {
             res = i.next().loadCellMO(typeName, args);
             if (res != null) {
                 break;

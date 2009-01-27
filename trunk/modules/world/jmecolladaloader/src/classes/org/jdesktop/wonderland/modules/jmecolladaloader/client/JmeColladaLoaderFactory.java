@@ -22,12 +22,14 @@ import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
  * LoaderFactory for the JmeColladaLoader.
  * 
  * @author paulby
  */
+@Plugin
 public class JmeColladaLoaderFactory extends ModelLoaderFactory
     implements ClientPlugin
 {

@@ -23,12 +23,14 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
 import com.jme.math.Vector3f;
 import java.awt.Image;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 
 /**
  * The cell factory for the sample cell.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@CellFactory
 public class MicrophoneCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {

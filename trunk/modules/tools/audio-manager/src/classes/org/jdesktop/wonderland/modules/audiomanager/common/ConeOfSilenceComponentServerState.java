@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * The ConeOfSilenceCellServerState class is the cell that renders a coneofsilence cell in
@@ -31,8 +31,9 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author jprovino
  */
 @XmlRootElement(name = "cone-of-silence-component")
+@ServerState
 public class ConeOfSilenceComponentServerState extends CellComponentServerState
-        implements Serializable, CellServerStateSPI {
+        implements Serializable {
 
     @XmlElement(name = "name")
     private String name;

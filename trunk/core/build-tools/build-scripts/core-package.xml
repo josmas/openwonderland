@@ -22,7 +22,13 @@
                 <include name="wonderland-common.jar"/>
                 <include name="wonderland-server.jar"/>
             </zipfileset>
-            
+
+            <!-- other necessary common jars -->
+            <zipfileset dir="${core.common.dir}" prefix="core/lib/common">
+                <include name="scannotation-1.0.2.jar"/>
+                <include name="javassist.jar"/>
+            </zipfileset>
+
             <!-- include ant files -->
             <zipfileset dir="${core.build-scripts.dir}" prefix="core/build-tools/build-scripts">
                 <include name="core-setup.xml"/>
