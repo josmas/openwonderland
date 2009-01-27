@@ -47,5 +47,11 @@ public interface EventRecorder {
      */
     public boolean isRecording();
 
+    /**
+     * Get the unique name for this event recorder
+     * @return 
+     */
+    public String getName();
+
 
 }
