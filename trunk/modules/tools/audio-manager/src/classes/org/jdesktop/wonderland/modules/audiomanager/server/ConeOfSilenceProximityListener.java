@@ -24,19 +24,10 @@ import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.VoiceManager;
-
 import com.sun.sgs.app.AppContext;
-
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
-
-import java.lang.String;
-
 import java.util.logging.Logger;
-
 import org.jdesktop.wonderland.common.cell.CellID;
-
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
-
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedObject;
 

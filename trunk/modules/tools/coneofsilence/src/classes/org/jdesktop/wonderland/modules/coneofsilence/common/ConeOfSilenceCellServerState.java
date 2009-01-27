@@ -17,13 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.coneofsilence.common;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import java.io.Serializable;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 
@@ -34,14 +28,13 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author jprovino
  */
 @XmlRootElement(name = "ConeOfSilence-cell")
-public class ConeOfSilenceCellServerState extends CellServerState
-        implements Serializable, CellServerStateSPI {
+public class ConeOfSilenceCellServerState extends CellServerState implements CellServerStateSPI {
 
     public ConeOfSilenceCellServerState() {
+        super();
     }
 
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO";
     }
-
 }

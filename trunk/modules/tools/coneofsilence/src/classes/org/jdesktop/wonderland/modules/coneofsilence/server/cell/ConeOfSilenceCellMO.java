@@ -17,28 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.coneofsilence.server.cell;
 
-import java.util.logging.Logger;
-
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellClientState;
-
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
-
-import com.jme.bounding.BoundingBox;
-import com.jme.math.Vector3f;
-
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedReference;
+import org.jdesktop.wonderland.modules.audiomanager.server.ConeOfSilenceComponentMO;
 
 /**
  * A server cell that provides conference coneofsilence functionality
@@ -46,60 +33,48 @@ import com.sun.sgs.app.ManagedReference;
  */
 public class ConeOfSilenceCellMO extends CellMO {
 
-    private static final Logger logger =
-            Logger.getLogger(ConeOfSilenceCellMO.class.getName());
-
     public ConeOfSilenceCellMO() {
-	addComponent(new MovableComponentMO(this));
-    }
-
-    public ConeOfSilenceCellMO(Vector3f center, float size) {
-        super(new BoundingBox(new Vector3f(), size, size, size),
-                new CellTransform(null, center));
-
-	addComponent(new MovableComponentMO(this));
-    }
-
-    @Override
-    protected void setLive(boolean live) {
-        super.setLive(live);
-
-        if (live == false) {
-            return;
-        }
-    }
-
-    @Override
-    protected String getClientCellClassName(WonderlandClientID clientID,
-            ClientCapabilities capabilities) {
-
-        return "org.jdesktop.wonderland.modules.coneofsilence.client.cell.ConeOfSilenceCell";
-    }
-
-    @Override
-    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
-            ClientCapabilities capabilities) {
-
-        if (cellClientState == null) {
-            cellClientState = new ConeOfSilenceCellClientState();
-        }
-
-        return super.getClientState(cellClientState, clientID, capabilities);
-    }
-
-    @Override
-    public void setServerState(CellServerState cellServerState) {
-        super.setServerState(cellServerState);
-
-        ConeOfSilenceCellServerState coneOfSilenceCellServerState =
-                (ConeOfSilenceCellServerState) cellServerState;
+        addComponent(new MovableComponentMO(this));
+        addComponent(new ConeOfSilenceComponentMO(this));
     }
 
     /**
-     * Return a new CellServerState Java bean class that represents the current
-     * state of the cell.
-     *
-     * @return CellServerState representing the current state
+     * @{inheritDoc}
+     */
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    @Override
+    protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
+        return "org.jdesktop.wonderland.modules.coneofsilence.client.cell.ConeOfSilenceCell";
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    @Override
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (cellClientState == null) {
+            cellClientState = new ConeOfSilenceCellClientState();
+        }
+        return super.getClientState(cellClientState, clientID, capabilities);
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    @Override
+    public void setServerState(CellServerState cellServerState) {
+        super.setServerState(cellServerState);
+    }
+
+    /**
+     * @{inheritDoc}
      */
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {
@@ -109,5 +84,4 @@ public class ConeOfSilenceCellMO extends CellMO {
         }
         return super.getServerState(cellServerState);
     }
-
 }

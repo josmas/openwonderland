@@ -18,20 +18,12 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.util.HashMap;
-import java.util.HashSet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.Math3DUtils;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
-import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 /**
  * Provides a mechanism for listener notification when the a view cell

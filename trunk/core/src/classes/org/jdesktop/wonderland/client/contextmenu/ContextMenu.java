@@ -156,9 +156,9 @@ public class ContextMenu implements ActionListener {
         Component component = event.getComponent();
         Point parentPoint = new Point(component.getLocationOnScreen());
         parentPoint.translate(event.getX(), event.getY());
-        contextMenu.setVisible(true);
         contextMenu.toFront();
         contextMenu.setLocation(parentPoint);
+        contextMenu.setVisible(true);
     }
 
     /**

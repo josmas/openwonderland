@@ -17,26 +17,17 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
-import com.sun.mpk20.voicelib.app.VoiceManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-
 import com.jme.math.Vector3f;
 
 /**
@@ -48,18 +39,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceComponentMO.class.getName());
 
-    private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
-
-    private static String serverURL;
-
     private String name;
     private float fullVolumeRadius;
-
-    private ManagedReference<ProximityComponentMO> proxRef;
-
-    static {
-	serverURL = System.getProperty("wonderland.web.server.url");
-    }
 
     /**
      * Create a ConeOfSilenceComponent for the given cell. The cell must already
@@ -69,73 +50,88 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     public ConeOfSilenceComponentMO(CellMO cellMO) {
         super(cellMO);
 
-	ProximityComponentMO prox = new ProximityComponentMO(cellMO);
-        proxRef = AppContext.getDataManager().createReference(prox);
-
-	cellMO.addComponent(prox);
+        // The Cone of Silence Components depends upon the Proximity Component.
+        // We add this component as a dependency if it does not yet exist
+        if (cellMO.getComponent(ProximityComponentMO.class) == null) {
+            cellMO.addComponent(new ProximityComponentMO(cellMO));
+        }
     }
-    
+
+    /**
+     * @{inheritDoc}
+     */
     @Override
     public void setServerState(CellComponentServerState serverState) {
-	ConeOfSilenceComponentServerState cs = (ConeOfSilenceComponentServerState) serverState;
+        super.setServerState(serverState);
 
-	name = cs.getName();
-	fullVolumeRadius = cs.getFullVolumeRadius();
-
-	BoundingVolume[] bounds = new BoundingVolume[1];
-
-	bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
-
-	ConeOfSilenceProximityListener proximityListener = new ConeOfSilenceProximityListener(name);
-
-	proxRef.get().addProximityListener(proximityListener, bounds);
+        // Fetch the component-specific state and set member variables
+        ConeOfSilenceComponentServerState cs = (ConeOfSilenceComponentServerState) serverState;
+        name = cs.getName();
+        fullVolumeRadius = cs.getFullVolumeRadius();
     }
 
+    /**
+     * @{inheritDoc}
+     */
     @Override
     public CellComponentServerState getServerState(CellComponentServerState serverState) {
+        // Create the proper server state object if it does not yet exist
         if (serverState == null) {
-            serverState = new ConeOfSilenceComponentServerState(name, fullVolumeRadius);
+            serverState = new ConeOfSilenceComponentServerState();
         }
+        ((ConeOfSilenceComponentServerState)serverState).setName(name);
+        ((ConeOfSilenceComponentServerState)serverState).setFullVolumeRadius(fullVolumeRadius);
 
-        return serverState;
+        return super.getServerState(serverState);
     }
 
+    /**
+     * @{inheritDoc}
+     */
     @Override
-    public CellComponentClientState getClientState(
-            CellComponentClientState state,
+    public CellComponentClientState getClientState(CellComponentClientState state,
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
-        
-	// TODO: Create own client state object?
-        return state;
+
+        // TODO: Create own client state object?
+        return super.getClientState(state, clientID, capabilities);
     }
 
-
-    @Override
-    public void setLive(boolean live) {
-    }
-    
+    /**
+     * @{inheritDoc}
+     */
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.modules.audiomanager.client.ConeOfSilenceComponent";
+        // There is no client-side component class, so return null.
+        return null;
     }
 
-    private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
+    /**
+     * @{inheritDoc}
+     */
+    @Override
+    public void setLive(boolean live) {
+        super.setLive(live);
 
-        private ManagedReference<ConeOfSilenceComponentMO> compRef;
-        
-        public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellMORef,
-		ConeOfSilenceComponentMO comp) {
-
-	    super(cellMORef.get());
-
-            compRef = AppContext.getDataManager().createReference(comp);
+        // Fetch the proximity component, we will need this below. If it does
+        // not exist (it should), then log an error
+        ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
+        if (component == null) {
+            logger.warning("The Cone of Silence Component does not have a " +
+                    "Proximity Component for Cell ID " + cellID);
+            return;
         }
 
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
-		CellMessage message) {
+        // If we are making this component live, then add a listener to the
+        // proximity component.
+        if (live == true) {
+            BoundingVolume[] bounds = new BoundingVolume[1];
+            bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
+            ConeOfSilenceProximityListener proximityListener = new ConeOfSilenceProximityListener(name);
+            component.addProximityListener(proximityListener, bounds);
         }
-
+        else {
+            // Really should remove the proximity listener here! XXX
+        }
     }
-
 }
