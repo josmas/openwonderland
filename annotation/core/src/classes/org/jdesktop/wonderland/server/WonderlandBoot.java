@@ -24,9 +24,10 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.server.comms.ProtocolSessionListener;
 import org.jdesktop.wonderland.server.comms.WonderlandClientCommsProtocol;
-import sun.misc.Service;
 
 /**
  * SGS Boot class for Wonderland
@@ -80,12 +81,14 @@ public class WonderlandBoot implements AppListener, Serializable {
      * Load plugins specified as services in the various plugin jars
      */
     protected void loadPlugins() {
-        // get the service providers fot the CellGLOProvider class
+        // get the service providers for the ServerPlugin class
         // and check each provider
-        for (Iterator<ServerPlugin> services = Service.providers(ServerPlugin.class); 
-             services.hasNext();)
-        {
-            ServerPlugin plugin = services.next();
+        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+        Iterator<ServerPlugin> plugins = scl.getAll(Plugin.class,
+                                                    ServerPlugin.class);
+
+        while (plugins.hasNext()) {
+            ServerPlugin plugin = plugins.next();
             
             logger.info("Initializing plugin: " + plugin);
             plugin.initialize();

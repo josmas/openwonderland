@@ -17,12 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.testcells.server.cell;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.TestWorldCellServerState;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -32,7 +35,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author paulby
  */
 @ExperimentalAPI
-public class TestWorldCellMO extends SimpleShapeCellMO{
+public class TestWorldCellMO extends CellMO {
     
     /** Default constructor, used when cell is created via WFS */
     public TestWorldCellMO() {
@@ -40,7 +43,7 @@ public class TestWorldCellMO extends SimpleShapeCellMO{
     }
 
     public TestWorldCellMO(Vector3f center, float size) {
-        super(center, size);
+        super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
 
         try {
             //addChild(new SimpleShapeCellMO(new Vector3f(7, 0, 5), 1));

@@ -17,12 +17,10 @@
  */
 package org.jdesktop.wonderland.client.login;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,8 +43,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.common.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.JarURI;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
-import sun.misc.Service;
 
 /**
  * Manager for all the sessions for a particular server
@@ -431,11 +429,15 @@ public class ServerSessionManager {
     /**
      * Initialize plugins
      */
-    private void initPlugins(ClassLoader loader) {
+    private void initPlugins(ScannedClassLoader loader) {
         // At this point, we have successfully logged in to the server,
         // and the session should be connected.
-        Iterator<ClientPlugin> it = Service.providers(ClientPlugin.class,
-                                                      loader);
+
+        // Collect all plugins from service provides and from annotated
+        // classes, then initialize each one
+        Iterator<ClientPlugin> it = loader.getAll(Plugin.class,
+                                                  ClientPlugin.class);
+        
         while (it.hasNext()) {
             ClientPlugin plugin = it.next();
 

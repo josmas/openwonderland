@@ -15,17 +15,16 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-package org.jdesktop.wonderland.client.cell.registry.annotation;
+package org.jdesktop.wonderland.common.cell.state.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that indicates this class is a cell factory.  Cell factories
- * must implement the CellFactorySPI interface.
+ * Annotation indicating this class implements a cell or component server
+ * state. 
  * @author jkaplan
  */
 @Target(ElementType.TYPE)
-public @interface CellFactory {
+public @interface ServerState {
 }

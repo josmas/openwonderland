@@ -23,11 +23,13 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
+import sun.misc.Service;
 
 /**
  * A classloader that scans its contents for annotations. It can then be
@@ -42,10 +44,18 @@ public class ScannedClassLoader extends URLClassLoader {
     private AnnotationDB annotationDB;
 
     /**
-     * Create a scannned classloader that scans the contents of
-     * the system classloader.
+     * Get a singleton instance for the System class loader
+     * @return a singleton scanned version of the System class loader
      */
-    public ScannedClassLoader() {
+    public static ScannedClassLoader getSystemScannedClassLoader() {
+        return SingletonHolder.INSTANCE;
+    }
+
+    /**
+     * Create a scannned classloader that scans the contents of
+     * the system classloader. Use getSystemScannedClassLoader() instead.
+     */
+    protected ScannedClassLoader() {
         super (new URL[0]);
 
         createDB(ClasspathUrlFinder.findClassPaths());
@@ -80,6 +90,122 @@ public class ScannedClassLoader extends URLClassLoader {
         return out;
     }
 
+    /**
+     * Get instances of every class marked with the given annotation.  The
+     * returned iterator will instantiate the object during the call to
+     * hasNext() or next().  If there is an error, a ClassScanningError will
+     * be thrown by the call to hasNext() or next().  If an error is thrown,
+     * the iterator will attempt to recover so subsequent calls don't fail,
+     * but the recovery can't be guaranteed.
+     * <p>
+     * All instantiations will be done using the default, no argument 
+     * constructor.
+     * <p>
+     * This iterator does not support removal.
+     * <p>
+     * @param annot the annotation to search for
+     * @param clazz the class of the return type
+     * @return an iterator of instantiated instances of the given type
+     */
+    public <T> Iterator<T> getInstances(Class<? extends Annotation> annot,
+                                        final Class<T> clazz)
+    {
+        final Iterator<String> classNames = getClasses(annot).iterator();
+
+        return new Iterator<T>() {
+            private T next;
+
+            public boolean hasNext() {
+                if (next != null) {
+                    return true;
+                } else {
+                    return loadNext();
+                }
+            }
+
+            public T next() {
+                if (!hasNext()) {
+                    throw new IllegalStateException("No more elements");
+                }
+
+                T out = next;
+                next = null;
+
+                return out;
+            }
+
+            boolean loadNext() {
+                next = null;
+
+                while (next == null && classNames.hasNext()) {
+                    String className = classNames.next();
+
+                    try {
+                        Class loaded = loadClass(className);
+                        if (clazz.isAssignableFrom(loaded)) {
+                            next = (T) loaded.newInstance();
+                        }
+                    } catch (InstantiationException ex) {
+                        throw new ClassScanningError("Error loading " + className, ex);
+                    } catch (IllegalAccessException ex) {
+                        throw new ClassScanningError("Error loading " + className, ex);
+                    } catch (ClassNotFoundException ex) {
+                        throw new ClassScanningError("Error loading " + className, ex);
+                    }
+                }
+
+                return (next != null);
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException("Not supported.");
+            }
+        };
+    }
+
+    /**
+     * Get instances of all classes that implement the given interface,
+     * defined either by service provider or by annoation.
+     * @param annot the annotation to search for
+     * @param clazz the class of the return type
+     * @return an iterator of instantiated instances of the given type
+     */
+    public <T> Iterator<T> getAll(Class<? extends Annotation> annot,
+                                  Class<T> clazz)
+    {
+        // get the iterator for service providers
+        final Iterator<T> providers = Service.providers(clazz, this);
+
+        // get the iterator for annotations
+        final Iterator<T> annots = getInstances(annot, clazz);
+
+        // return a combined iterator
+        return new Iterator<T>() {
+            private boolean p = true;
+
+            public boolean hasNext() {
+                if (p && providers.hasNext()) {
+                    return true;
+                } else {
+                    p = false;
+                    return annots.hasNext();
+                }
+            }
+
+            public T next() {
+                if (p) {
+                    return providers.next();
+                } else {
+                    return annots.next();
+                }
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException("Not supported.");
+            }
+        };
+    }
+
     @Override
     protected void addURL(URL url) {
         super.addURL(url);
@@ -110,4 +236,13 @@ public class ScannedClassLoader extends URLClassLoader {
                        Arrays.toString(urls) + " for annotation", ioe);
         }
     }
+
+   /**
+    * SingletonHolder is loaded on the first execution of
+    * ScannedClassLoader.getInstance() or the first access to
+    * SingletonHolder.INSTANCE, not before.
+    */
+   private static class SingletonHolder {
+     private final static ScannedClassLoader INSTANCE = new ScannedClassLoader();
+   }
 }
