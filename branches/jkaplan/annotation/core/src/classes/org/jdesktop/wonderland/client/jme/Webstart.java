@@ -18,13 +18,8 @@
 package org.jdesktop.wonderland.client.jme;
 
 import java.net.URL;
-import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 import java.security.Permission;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import sun.misc.Service;
 
@@ -40,10 +35,6 @@ public class Webstart {
     // check for Java Web Start
     private static boolean webstartChecked = false;
     private static boolean isWebstart = false;
-    
-    // listeners
-    private static Collection<WebstartStartupListener> startupListeners =
-            new ArrayList<WebstartStartupListener>();
     
     public synchronized static boolean isWebstart() {
         if (!webstartChecked) {

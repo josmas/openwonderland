@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * The StaticModelCellServerState class is the cell that renders a static cell in
@@ -29,7 +29,8 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="static-model")
-public class StaticModelCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
+@ServerState
+public class StaticModelCellServerState extends CellServerState implements Serializable {
 
     /** Default constructor */
     public StaticModelCellServerState() {

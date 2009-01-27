@@ -21,7 +21,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  *
@@ -29,8 +29,9 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  */
 @XmlRootElement(name="jmecolladaloader-testworld")
 @XmlType(name="jmecolladaloader-testworld")
+@ServerState
 public class TestWorldCellServerState extends CellServerState
-        implements Serializable, CellServerStateSPI
+        implements Serializable
 {
     /** Default constructor */
     public TestWorldCellServerState() {
