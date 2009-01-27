@@ -35,7 +35,9 @@
             <client dir="${current.dir}/lib">
                 <clientjar name="audiomanager-client" basedir="${build.classes.dir}">
                     <clientplugin provider="org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlugin"/>
-
+                    <componentproperties>
+                        <provider classname="org.jdesktop.wonderland.modules.audiomanager.client.ConeOfSilenceComponentProperties"/>
+                    </componentproperties>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>                   
                 </clientjar>

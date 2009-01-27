@@ -17,9 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -40,7 +37,7 @@ public class ConeOfSilenceComponentServerState extends CellComponentServerState
     @XmlElement(name = "name")
     private String name;
     @XmlElement(name = "fullVolumeRadius")
-    private float fullVolumeRadius;
+    private float fullVolumeRadius = 1.0f;
 
     /** Default constructor */
     public ConeOfSilenceComponentServerState() {

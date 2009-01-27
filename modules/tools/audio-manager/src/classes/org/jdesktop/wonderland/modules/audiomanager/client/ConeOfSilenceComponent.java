@@ -17,29 +17,17 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import java.util.ArrayList;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
-
-import org.jdesktop.wonderland.client.comms.ClientConnection;
-import org.jdesktop.wonderland.client.comms.ResponseListener;
-
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
-
 import com.jme.bounding.BoundingVolume;
 
 /**
@@ -71,24 +59,24 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
 
 	case BOUNDS:
 	    if (msgReceiver==null) {
-                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-                    public void messageReceived(CellMessage message) {
-                    }
-                };                    
-        	channelComp = cell.getComponent(ChannelComponent.class);
-                //channelComp.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, msgReceiver);
+            msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+                public void messageReceived(CellMessage message) {
+                }
+            };
+            channelComp = cell.getComponent(ChannelComponent.class);
+            //channelComp.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, msgReceiver);
 
-		ProximityComponent comp = new ProximityComponent(cell);
+            ProximityComponent comp = new ProximityComponent(cell);
 
-		BoundingVolume[] boundingVolume = new BoundingVolume[1];
+            BoundingVolume[] boundingVolume = new BoundingVolume[1];
 
-		boundingVolume[0] = cell.getLocalBounds();
+            boundingVolume[0] = cell.getLocalBounds();
 
-		comp.addProximityListener(this, boundingVolume);
+            comp.addProximityListener(this, boundingVolume);
 
-		cell.addComponent(comp);
-            }
-	    break;
+            cell.addComponent(comp);
+        }
+        break;
         }
     }
 
@@ -96,12 +84,12 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
     }
-    
-    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
-	    int proximityIndex) {
 
-	logger.info("COS cellID " + cell.getCellID() + " viewCellID " + viewCellID 
-	    + " entered = " + entered);
+    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
+            int proximityIndex) {
+
+        logger.info("COS cellID " + cell.getCellID() + " viewCellID " + viewCellID
+ + " entered = " + entered);
     }
 
 }

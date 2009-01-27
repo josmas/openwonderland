@@ -12,7 +12,7 @@
         <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
 	<path location="${current.dir}/../audio-manager/lib/voip.jar"/>
 	<path location="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
-	<path location="${current.dir}/../orb/build/lib/server/orb-server.jar"/>
+	<path location="${current.dir}/../audio-manager/build/lib/server/audiomanager-server.jar"/>
     </pathconvert>
 
     <!-- import common build file -->
@@ -39,9 +39,9 @@
             </client>
                 
             <server dir="${current.dir}/../audio-manager/lib">
-		<include name="voicelib.jar"/>
-		<include name="bridge_connector.jar"/>
-		<include name="voip.jar"/> 
+                <include name="voicelib.jar"/>
+                <include name="bridge_connector.jar"/>
+                <include name="voip.jar"/>
 
                 <serverjar name="coneofsilence-server" basedir="${build.classes.dir}">
                     <cellsetup>
