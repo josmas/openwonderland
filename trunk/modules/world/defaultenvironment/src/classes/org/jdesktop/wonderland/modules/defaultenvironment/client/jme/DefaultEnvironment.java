@@ -65,14 +65,15 @@ public class DefaultEnvironment implements Environment {
     /**
      * @{@inheritDoc}
      */
-    public void setGlobalLights() {
+    public void setGlobalLights() {             
         LightNode globalLight1 = new LightNode();
         PointLight light = new PointLight();
         light.setDiffuse(new ColorRGBA(0.95f, 0.95f, 0.95f, 1.0f));
-        light.setAmbient(new ColorRGBA(0.85f, 0.85f, 0.85f, 1.0f));
+        //light.setAmbient(new ColorRGBA(0.85f, 0.85f, 0.85f, 1.0f));
+        light.setAmbient(new ColorRGBA(0.25f, 0.25f, 0.25f, 1.0f));
         light.setEnabled(true);
         globalLight1.setLight(light);
-        globalLight1.setLocalTranslation(0.0f, 50.0f, 50.0f);
+        globalLight1.setLocalTranslation(0.0f, 500.0f, 500.0f);
 
         LightNode globalLight2 = new LightNode();
         light = new PointLight();
@@ -80,8 +81,7 @@ public class DefaultEnvironment implements Environment {
         light.setAmbient(new ColorRGBA(0.25f, 0.25f, 0.25f, 1.0f));
         light.setEnabled(true);
         globalLight2.setLight(light);
-        globalLight2.setLocalTranslation(0.0f, -50.0f, -50.0f);
-             
+        globalLight2.setLocalTranslation(0.0f, -500.0f, -500.0f);
         ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight1);
         ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight2);
     }
