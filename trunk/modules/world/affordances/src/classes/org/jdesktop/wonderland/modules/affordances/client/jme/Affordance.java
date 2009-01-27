@@ -24,9 +24,11 @@ import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 
 /**
  * The base class of all Affordances (manipulators)
@@ -56,6 +58,26 @@ public abstract class Affordance extends Entity {
         // off of the cell
         CellRefComponent refComponent = new CellRefComponent(cell);
         this.addComponent(CellRefComponent.class, refComponent);
+    }
+
+    /**
+     * Returns the affordance's cell.
+     *
+     * @return The Cell
+     */
+    protected Cell getCell() {
+        return this.cell;
+    }
+
+    /**
+     * Returns the scene root for the Cell's scene graph
+     *
+     * @return The scene graph root Node
+     */
+    protected Node getSceneGraphRoot() {
+        CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+        RenderComponent cellRC = (RenderComponent)renderer.getEntity().getComponent(RenderComponent.class);
+        return cellRC.getSceneRoot();
     }
 
     /**

@@ -74,6 +74,15 @@ public class RotateAffordance extends Affordance {
     /* The nodes representing the discs for each axis */
     private Node xNode = null, yNode = null, zNode = null;
 
+    /* The current scale of the affordance w.r.t the size of the cell */
+    private float currentScale = RADIUS_SCALE;
+
+    /* The original outer radius of the affordance */
+    private float outerRadius = 0.0f;
+
+    /* The root of the scene graph of the cell */
+    private Node sceneRoot = null;
+
     private static ZBufferState zbuf = null;
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -89,12 +98,11 @@ public class RotateAffordance extends Affordance {
         
         // Figure out the bounds of the root entity of the cell and create a
         // tube to be just a bit larger than that
-        CellRendererJME renderer = (CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME);
-        RenderComponent cellRC = (RenderComponent)renderer.getEntity().getComponent(RenderComponent.class);
-        BoundingVolume bounds = cellRC.getSceneRoot().getWorldBound();
-        float outerRadius = 0.0f, innerRadius = 0.0f;
+        sceneRoot = getSceneGraphRoot();
+        BoundingVolume bounds = sceneRoot.getWorldBound();
+        float innerRadius = 0.0f;
         if (bounds instanceof BoundingSphere) {
-            outerRadius = ((BoundingSphere)bounds).radius;
+            outerRadius = ((BoundingSphere) bounds).radius;
             innerRadius = outerRadius - RADIUS_WIDTH;
         }
         else if (bounds instanceof BoundingBox) {
@@ -112,7 +120,7 @@ public class RotateAffordance extends Affordance {
 
         // Fetch the world translation for the root node of the cell and set
         // the translation for this entity root node
-        Vector3f translation = cellRC.getSceneRoot().getWorldTranslation();
+        Vector3f translation = sceneRoot.getWorldTranslation();
         rootNode.setLocalTranslation(translation);
 
         // Create a tube to rotate about the X axis. The tube is drawn in the
@@ -152,11 +160,13 @@ public class RotateAffordance extends Affordance {
         // update to the root node of the affordances
         final Node[] nodeArray = new Node[1];
         nodeArray[0] = rootNode;
-        cellRC.getSceneRoot().addGeometricUpdateListener(updateListener = new GeometricUpdateListener() {
+        sceneRoot.addGeometricUpdateListener(updateListener = new GeometricUpdateListener() {
             public void geometricDataChanged(Spatial arg0) {
                 // For the rotate affordance we need to move it whenever the
                 // cell is moved, but also need to rotate it when the cell
-                // rotation changes too.
+                // rotation changes too. We also need to account for any changes
+                // to the size of the cell's scene graph, so we reset the size
+                // here to take care of that.
                 Vector3f translation = arg0.getWorldTranslation();
                 nodeArray[0].setLocalTranslation(translation);
 
@@ -164,18 +174,37 @@ public class RotateAffordance extends Affordance {
                 Quaternion affordanceRotation = nodeArray[0].getLocalRotation();
 //                affordanceRotation = affordanceRotation.mult(rotation);
                 nodeArray[0].setLocalRotation(rotation);
+                setSize(currentScale);
                 ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
             }
         });
     }
 
     public void setSize(float size) {
+        // To set the scale properly, we need to compute the scale w.r.t the
+        // current size of the object as a ratio of the original size of the
+        // object (in case the size of the object has changed).
+        currentScale = size;
+        float scale = 0.0f;
+        BoundingVolume bounds = sceneRoot.getWorldBound();
+        if (bounds instanceof BoundingSphere) {
+            float newOuterRadius = ((BoundingSphere)bounds).radius;
+            scale = (newOuterRadius / outerRadius) * currentScale;
+        }
+        else if (bounds instanceof BoundingBox) {
+            float xExtent = ((BoundingBox)bounds).xExtent;
+            float yExtent = ((BoundingBox)bounds).yExtent;
+            float zExtent = ((BoundingBox)bounds).zExtent;
+            float newOuterRadius = Math.max(Math.max(xExtent, yExtent), zExtent);
+            scale = (newOuterRadius / outerRadius) * currentScale;
+        }
+
         // In order to set the size of the arrows, we just set the scaling. Note
         // that we set the scaling along the (x, z) axis since disks are drawn
         // in the x-z plane
-        xNode.setLocalScale(new Vector3f(size, 1.0f, size));
-        yNode.setLocalScale(new Vector3f(size, 1.0f, size));
-        zNode.setLocalScale(new Vector3f(size, 1.0f, size));
+        xNode.setLocalScale(new Vector3f(scale, 1.0f, scale));
+        yNode.setLocalScale(new Vector3f(scale, 1.0f, scale));
+        zNode.setLocalScale(new Vector3f(scale, 1.0f, scale));
         ClientContextJME.getWorldManager().addToUpdateList(xNode);
         ClientContextJME.getWorldManager().addToUpdateList(yNode);
         ClientContextJME.getWorldManager().addToUpdateList(zNode);
