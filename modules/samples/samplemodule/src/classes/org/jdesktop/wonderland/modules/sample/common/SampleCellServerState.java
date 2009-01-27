@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * Represents the server-side configuration information for the sample cell.
@@ -32,7 +32,8 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author jkaplan
  */
 @XmlRootElement(name="sample-cell")
-public class SampleCellServerState extends CellServerState implements CellServerStateSPI {
+@ServerState
+public class SampleCellServerState extends CellServerState {
     @XmlElement(name="shape-type")
     private String shapeType = null;
 
