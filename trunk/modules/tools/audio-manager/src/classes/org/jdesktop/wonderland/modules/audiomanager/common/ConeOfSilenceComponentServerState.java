@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -30,10 +29,9 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  * 
  * @author jprovino
  */
-@XmlRootElement(name = "cone-of-silence-component")
+@XmlRootElement(name="cone-of-silence-component")
 @ServerState
-public class ConeOfSilenceComponentServerState extends CellComponentServerState
-        implements Serializable {
+public class ConeOfSilenceComponentServerState extends CellComponentServerState {
 
     @XmlElement(name = "name")
     private String name;
