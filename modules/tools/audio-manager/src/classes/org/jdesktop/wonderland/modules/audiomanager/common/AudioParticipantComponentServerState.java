@@ -24,16 +24,15 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
-
-import java.io.Serializable;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * The component server state
  * @author jprovino
  */
 @XmlRootElement(name="audio-participant-component")
-public class AudioParticipantComponentServerState extends CellComponentServerState implements Serializable, CellServerStateSPI {
+@ServerState
+public class AudioParticipantComponentServerState extends CellComponentServerState {
 
     public AudioParticipantComponentServerState() {
     }
