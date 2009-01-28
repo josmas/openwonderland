@@ -17,12 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.swingwhiteboard.server;
 
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
-import java.math.BigInteger;
-import java.util.Collection;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -31,6 +27,7 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -39,46 +36,48 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class SwingWhiteboardComponentMO extends CellComponentMO {
 
     /** A managed reference to the cell channel communications component */
-    private ManagedReference<ChannelComponentMO> channelComponentRef = null;
+    @AutoCellComponentMO(ChannelComponentMO.class)
+    private ManagedReference<ChannelComponentMO> channelComponentRef;
 
     /** 
      * Create a new instance of SwingWhiteboardComponentMO. 
      * @param cell The cell to which this component belongs.
      * @throws IllegalStateException If the cell does not already have a ChannelComponent IllegalStateException will be thrown.
      */
-    public SwingWhiteboardComponentMO (SwingWhiteboardCellMO cell) {
+    public SwingWhiteboardComponentMO(CellMO cell) {
         super(cell);
-
-        ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
-        if (channelComponent==null)
-            throw new IllegalStateException("Cell does not have a ChannelComponent");
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent); 
-                
-        channelComponent.addMessageReceiver(WhiteboardCompoundCellMessage.class, 
-					    new ComponentMessageReceiverImpl(this, cellRef));
     }
-    
+
+    @Override
+    public void setLive(boolean isLive) {
+        super.setLive(isLive);
+
+        if (isLive) {
+            channelComponentRef.getForUpdate().addMessageReceiver(WhiteboardCompoundCellMessage.class,
+                            new ComponentMessageReceiverImpl(this, cellRef));
+        } else {
+            channelComponentRef.getForUpdate().removeMessageReceiver(WhiteboardCompoundCellMessage.class);
+        }
+    }
+
     /**
      * Broadcast the given message to all clients.
      * @param sourceID the originator of this message, or null if it originated
      * with the server
      * @param message The message to broadcast.
      */
-    public void sendAllClients (WonderlandClientID clientID, WhiteboardCompoundCellMessage message) {
-        CellMO cell = cellRef.getForUpdate();
+    public void sendAllClients(WonderlandClientID clientID, WhiteboardCompoundCellMessage message) {
         ChannelComponentMO channelComponent = channelComponentRef.getForUpdate();
-	channelComponent.sendAll(clientID, message);
+        channelComponent.sendAll(clientID, message);
     }
-    
+
     @Override
     protected String getClientClass() {
-	return "org.jdesktop.wonderland.modules.swingwhiteboard.client.SwingWhiteboardComponent";
-        //return "org.jdesktop.wonderland.modules.swingwhiteboard.client.SwingWhiteboardComponent";
+        return "org.jdesktop.wonderland.modules.swingwhiteboard.client.SwingWhiteboardComponent";
     }
 
     /**
@@ -88,22 +87,22 @@ public class SwingWhiteboardComponentMO extends CellComponentMO {
     private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
 
         private ManagedReference<SwingWhiteboardComponentMO> compRef;
-	private ManagedReference<CellMO> cellRef;
-        
-        public ComponentMessageReceiverImpl (SwingWhiteboardComponentMO comp,  ManagedReference<CellMO> cellRef) {
+        private ManagedReference<CellMO> cellRef;
+
+        public ComponentMessageReceiverImpl(SwingWhiteboardComponentMO comp, ManagedReference<CellMO> cellRef) {
             compRef = AppContext.getDataManager().createReference(comp);
-	    this.cellRef = cellRef;
+            this.cellRef = cellRef;
         }
 
-        public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-	    WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
-	    CellMO cell = cellRef.get();
-	    ((SwingWhiteboardCellMO)cell).receivedMessage(sender, clientID, cmsg);
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage) message;
+            CellMO cell = cellRef.get();
+            ((SwingWhiteboardCellMO) cell).receivedMessage(sender, clientID, cmsg);
         }
 
         public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             //TODO: consider making this a subclass of AbstractMessageReceiver
-            throw new UnsupportedOperationException("Not supported yet.");
+//            Logger.getAnonymousLogger().warning("SwingWhiteboardComponentMO does not support recording");
         }
     }
 }

@@ -42,40 +42,36 @@ import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
+import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
 
 /**
  * A server cell associated with a whiteboard
  *
  * @author nsimpson,deronj
  */
-
 @ExperimentalAPI
 public class SwingWhiteboardCellMO extends App2DCellMO {
 
     private static final Logger logger = Logger.getLogger(SwingWhiteboardCellMO.class.getName());
-    
     // The messages list contains the current state of the whiteboard.
     // It's updated every time a client makes a change to the whiteboard
     // so that when new clients join, they receive the current state
     private static LinkedList<WhiteboardCompoundCellMessage> messages;
     private static WhiteboardCompoundCellMessage lastMessage;
-    
-    /** The communications component used to broadcast to all clients */
-    private ManagedReference<SwingWhiteboardComponentMO> commComponentRef = null;
 
+    /** The communications component used to broadcast to all clients */
+    @AutoCellComponentMO(SwingWhiteboardComponentMO.class)
+    private ManagedReference<SwingWhiteboardComponentMO> commComponentRef = null;
     /** The preferred width (from the WFS file) */
     private int preferredWidth;
-
     /** The preferred height (from the WFS file) */
     private int preferredHeight;
 
     /** Default constructor, used when the cell is created via WFS */
     public SwingWhiteboardCellMO() {
         super();
+        // Force the whiteboard to have a its own channel
         addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
-	SwingWhiteboardComponentMO commComponent = new SwingWhiteboardComponentMO(this);
-        commComponentRef = AppContext.getDataManager().createReference(commComponent); 
-        addComponent(commComponent);
         messages = new LinkedList<WhiteboardCompoundCellMessage>();
     }
 
@@ -90,23 +86,23 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
     /** 
      * {@inheritDoc}
      */
-    public AppTypeMO getAppType () {
-	return new SwingWhiteboardAppTypeMO();
+    public AppTypeMO getAppType() {
+        return new SwingWhiteboardAppTypeMO();
     }
 
     /** 
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getClientState (CellClientState cellClientState, 
-						  WonderlandClientID clientID, 
-						  ClientCapabilities capabilities) {
-	System.err.println("Enter SwingWhiteboardCellMO.getClientState");
+    protected CellClientState getClientState(CellClientState cellClientState,
+            WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+        System.err.println("Enter SwingWhiteboardCellMO.getClientState");
         if (cellClientState == null) {
             cellClientState = new SwingWhiteboardCellClientState(pixelScale);
         }
-        ((SwingWhiteboardCellClientState)cellClientState).setPreferredWidth(preferredWidth);
-        ((SwingWhiteboardCellClientState)cellClientState).setPreferredHeight(preferredHeight);
+        ((SwingWhiteboardCellClientState) cellClientState).setPreferredWidth(preferredWidth);
+        ((SwingWhiteboardCellClientState) cellClientState).setPreferredHeight(preferredHeight);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -115,12 +111,12 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
      */
     @Override
     public void setServerState(CellServerState state) {
-	super.setServerState(state);
+        super.setServerState(state);
 
-	SwingWhiteboardCellServerState serverState = (SwingWhiteboardCellServerState) state;
-	preferredWidth = serverState.getPreferredWidth();
-	preferredHeight = serverState.getPreferredHeight();
-	pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
+        SwingWhiteboardCellServerState serverState = (SwingWhiteboardCellServerState) state;
+        preferredWidth = serverState.getPreferredWidth();
+        preferredHeight = serverState.getPreferredHeight();
+        pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
     }
 
     /**
@@ -135,24 +131,24 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
      * @param commComponent The communications component that received the message.
      */
     public void receivedMessage(WonderlandClientSender clientSender, WonderlandClientID clientID, CellMessage message) {
-        WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage)message;
+        WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage) message;
         logger.fine("received whiteboard message: " + cmsg);
 
-	SwingWhiteboardComponentMO commComponent = commComponentRef.getForUpdate();
+        SwingWhiteboardComponentMO commComponent = commComponentRef.getForUpdate();
 
         if (cmsg.getAction() == Action.REQUEST_SYNC) {
             logger.fine("sending " + messages.size() + " whiteboard sync messages");
             Iterator<WhiteboardCompoundCellMessage> iter = messages.iterator();
-            
+
             while (iter.hasNext()) {
                 WhiteboardCompoundCellMessage msg = iter.next();
-		clientSender.send(clientID, msg);
+                clientSender.send(clientID, msg);
             }
         } else {
 
-	    // Create the copy of the message to be broadcast to clients
+            // Create the copy of the message to be broadcast to clients
             WhiteboardCompoundCellMessage msg = new WhiteboardCompoundCellMessage(
-						    cmsg.getClientID(), cmsg.getCellID(), cmsg.getAction());
+                    cmsg.getClientID(), cmsg.getCellID(), cmsg.getAction());
             switch (cmsg.getAction()) {
                 case SET_COLOR:
                     // color
@@ -170,7 +166,7 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
                     msg.setCommand(cmsg.getCommand());
                     break;
             }
-            
+
             // record the message in setup data (move events are not recorded)
             if (cmsg.getAction() == Action.EXECUTE_COMMAND) {
                 if (cmsg.getCommand() == Command.ERASE) {
@@ -181,19 +177,19 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
             } else {
                 if (cmsg.getAction() != Action.MOVE_TO) {
                     if ((lastMessage != null) &&
-			lastMessage.getAction() == Action.MOVE_TO) {
+                            lastMessage.getAction() == Action.MOVE_TO) {
                         messages.add(lastMessage);
                     }
 
-		    // Must guarantee that the original sender doesn't ignore this when it is played back during a sync
-		    cmsg.setClientID(null);
+                    // Must guarantee that the original sender doesn't ignore this when it is played back during a sync
+                    cmsg.setClientID(null);
 
                     messages.add(cmsg);
                 }
             }
             lastMessage = cmsg;
 
-	    // Broadcast message to all clients (including the original sender of the message).
+            // Broadcast message to all clients (including the original sender of the message).
             commComponent.sendAllClients(clientID, msg);
         }
     }
