@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
@@ -26,6 +25,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
  */
 public class MovableComponentMO extends CellComponentMO {
 
+    @AutoCellComponentMO(ChannelComponentMO.class)
     protected ManagedReference<ChannelComponentMO> channelComponentRef = null;
     
     /**
@@ -49,26 +50,10 @@ public class MovableComponentMO extends CellComponentMO {
     
     @Override
     public void setLive(boolean live) {
-        ChannelComponentMO channelComponent;
         if (live) {
-            if (channelComponentRef==null) {
-                channelComponent = (ChannelComponentMO) CellManagerMO.getCell(cellID).getComponent(ChannelComponentMO.class);
-                if (channelComponent==null)
-                    throw new IllegalStateException("Cell does not have a ChannelComponent");
-                channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
-            } else {
-                channelComponent = channelComponentRef.getForUpdate();
-            }
-
-            channelComponent.addMessageReceiver(getMessageClass(), new ComponentMessageReceiverImpl(this));
+            channelComponentRef.getForUpdate().addMessageReceiver(getMessageClass(), new ComponentMessageReceiverImpl(this));
         } else {
-            channelComponent = channelComponentRef.getForUpdate();
-
-	    if (channelComponent == null) {
-		return;
-	    }
-
-            channelComponent.removeMessageReceiver(getMessageClass());
+            channelComponentRef.getForUpdate().removeMessageReceiver(getMessageClass());
         }
     }
 
