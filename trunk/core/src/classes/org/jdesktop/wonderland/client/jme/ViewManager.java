@@ -109,7 +109,7 @@ public class ViewManager {
         this.height = height;
         this.aspect = (float)width/(float)height;
 
-        String avatarDetail = System.getProperty("avatar.detail", "low");
+        String avatarDetail = System.getProperty("avatar.detail", "high");
         if (avatarDetail.equalsIgnoreCase("high") || avatarDetail.equalsIgnoreCase("medium"))
             useAvatars=true;
     }

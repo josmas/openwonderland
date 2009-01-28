@@ -135,7 +135,16 @@ public abstract class BasicRenderer implements CellRendererJME {
             break;
             case BOUNDS :
                 if (isRendering) {
-                    getEntity().getParent().removeEntity(getEntity());
+                    try {
+                        Entity parent = getEntity().getParent();
+                        if (parent!=null)
+                            parent.removeEntity(getEntity());
+                        else
+                            ClientContextJME.getWorldManager().removeEntity(getEntity());
+                    } catch(Exception e) {
+                        System.err.println("NPE in "+this);
+                        e.printStackTrace();
+                    }
                     isRendering = false;
                 }
                 break;

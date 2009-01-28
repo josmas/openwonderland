@@ -34,13 +34,12 @@ public class ViewCellClientState extends CellClientState {
     /** Default constructor */
     public ViewCellClientState() {
     }
-    
+
     public ViewCellClientState(WonderlandIdentity identity) {
-	this.identity = identity;
+        this.identity = identity;
     }
 
     public WonderlandIdentity getIdentity() {
-	return identity;
+        return identity;
     }
-
 }

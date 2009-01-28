@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
@@ -135,10 +136,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         else
             logger.warning("NO RenderComponent for Avatar");
 
-//        rootEntity.addEntity(ret);
-//
-//        return rootEntity;
-
         return ret;
     }
 
@@ -161,7 +158,15 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         origin.setTranslation(transform.getTranslation(null));
         origin.setRotation(transform.getRotation(null));
 
-        CharacterAttributes attributes = new WlMaleAvatarAttributes(cell);
+        String name = ((ViewCell)cell).getIdentity().getUsername();
+
+        System.err.println("******* "+name+"  "+this);
+
+        CharacterAttributes attributes;
+        if (name.contains("icole") || name.contains("iriam"))
+            attributes = new WlFemaleAvatarAttributes(cell);
+        else
+            attributes = new WlMaleAvatarAttributes(cell);
 
         // Create the character, but don't add the entity to wm
         // TODO this will change to take the config
