@@ -28,6 +28,8 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCe
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState.Shape;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+
 /**
  * Test Cell for use until WFS is integrated, this will be removed.
  * 
@@ -44,6 +46,8 @@ public class SingingTeapotCellMO extends SimpleShapeCellMO {
 
     public SingingTeapotCellMO(Vector3f center, float size, MaterialJME materialJME) {
         super(center, size, SimpleShapeCellClientState.Shape.TEAPOT, 1f, materialJME);
+
+	addComponent(new MovableComponentMO(this));
     }
     
     @Override protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
