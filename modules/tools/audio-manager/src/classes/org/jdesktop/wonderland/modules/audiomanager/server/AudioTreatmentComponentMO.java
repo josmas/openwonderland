@@ -234,6 +234,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         }
     }
 
+    public void transformChanged(Vector3f location, double angle) {
+	System.out.println("Treatment moved to " + location + " angle " + angle);
+    }
 
     @Override
     protected String getClientClass() {
