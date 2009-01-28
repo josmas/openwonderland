@@ -34,12 +34,15 @@ import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -60,10 +63,9 @@ public class MicrophoneCellMO extends CellMO {
 
     private String name;
 
-    private double fullVolumeRadius;
+    private FullVolumeArea fullVolumeArea;
 
-    private double activeRadius;
-    private String activeRadiusType;
+    private ActiveArea activeArea;
 
     private ManagedReference<MicrophoneMessageHandler> microphoneMessageHandlerRef;
 
@@ -107,14 +109,28 @@ public class MicrophoneCellMO extends CellMO {
 	microphoneMessageHandlerRef = AppContext.getDataManager().createReference(
 	    new MicrophoneMessageHandler(this, name));
 
-        BoundingVolume[] bounds = new BoundingVolume[1];
+        BoundingVolume[] bounds = new BoundingVolume[2];
 
-        bounds[0] = new BoundingSphere((float) fullVolumeRadius, new Vector3f());
+	if (fullVolumeArea.areaType.equalsIgnoreCase("Sphere")) {
+            bounds[0] = new BoundingSphere((float) fullVolumeArea.xExtent, new Vector3f());
+	} else {
+            bounds[0] = new BoundingBox(new Vector3f(), (float) fullVolumeArea.xExtent,
+		(float) fullVolumeArea.yExtent, (float) fullVolumeArea.zExtent);
+	}
+	
+	/*
+	 * TODO:  Set the activeOrigin correctly.
+	 */
+ 	Vector3f activeOrigin = new Vector3f((float) activeArea.origin.x,
+	    (float) activeArea.origin.y, (float) activeArea.origin.z);
+
+  	//bounds[1] = new BoundingBox(activeOrigin, (float) activeArea.xExtent,
+	//    (float) activeArea.yExtent, (float) activeArea.zExtent);
+
+        bounds[1] = new BoundingSphere((float) 2, new Vector3f());
 
         MicrophoneProximityListener microphoneProximityListener = 
-	    new MicrophoneProximityListener(name);
-
-        proxRef.get().addProximityListener(microphoneProximityListener, bounds);
+	    new MicrophoneProximityListener(name, proxRef, bounds);
     }
 
     @Override
@@ -129,8 +145,8 @@ public class MicrophoneCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new MicrophoneCellClientState(name, fullVolumeRadius,
-                activeRadius, activeRadiusType);
+            cellClientState = new MicrophoneCellClientState(name, fullVolumeArea,
+                activeArea);
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -143,9 +159,20 @@ public class MicrophoneCellMO extends CellMO {
 	MicrophoneCellServerState microphoneCellServerState = (MicrophoneCellServerState) cellServerState;
 
 	name = microphoneCellServerState.getName();
-	fullVolumeRadius = microphoneCellServerState.getFullVolumeRadius();
-	activeRadius = microphoneCellServerState.getActiveRadius();
-	activeRadiusType = microphoneCellServerState.getActiveRadiusType();
+	fullVolumeArea = microphoneCellServerState.getFullVolumeArea();
+	activeArea = microphoneCellServerState.getActiveArea();
+
+        logger.finer("setServerState fva " + fullVolumeArea.areaType
+            + " x " + fullVolumeArea.xExtent
+            + " y " + fullVolumeArea.yExtent
+            + " z " + fullVolumeArea.zExtent);
+
+        logger.finer("setServerState active " 
+	    + " active origin (" + activeArea.origin.x + ","
+	    + activeArea.origin.y + "," + activeArea.origin.z + ")"
+            + " x " + activeArea.xExtent
+            + " y " + activeArea.yExtent
+            + " z " + activeArea.zExtent);
     }
 
     /**
@@ -158,8 +185,8 @@ public class MicrophoneCellMO extends CellMO {
     public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new MicrophoneCellServerState(name, fullVolumeRadius,
-		activeRadius, activeRadiusType);
+            cellServerState = new MicrophoneCellServerState(name, fullVolumeArea,
+		activeArea);
         }
 
         return super.getServerState(cellServerState);

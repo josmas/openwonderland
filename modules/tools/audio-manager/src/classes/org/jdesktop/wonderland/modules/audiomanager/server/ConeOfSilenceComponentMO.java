@@ -39,8 +39,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceComponentMO.class.getName());
 
-    private String name;
-    private float fullVolumeRadius;
+    private float fullVolumeRadius = 0;
 
     /**
      * Create a ConeOfSilenceComponent for the given cell. The cell must already
@@ -66,7 +65,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
         // Fetch the component-specific state and set member variables
         ConeOfSilenceComponentServerState cs = (ConeOfSilenceComponentServerState) serverState;
-        name = cs.getName();
+
         fullVolumeRadius = cs.getFullVolumeRadius();
     }
 
@@ -79,7 +78,6 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         if (serverState == null) {
             serverState = new ConeOfSilenceComponentServerState();
         }
-        ((ConeOfSilenceComponentServerState)serverState).setName(name);
         ((ConeOfSilenceComponentServerState)serverState).setFullVolumeRadius(fullVolumeRadius);
 
         return super.getServerState(serverState);
@@ -127,7 +125,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         if (live == true) {
             BoundingVolume[] bounds = new BoundingVolume[1];
             bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
-            ConeOfSilenceProximityListener proximityListener = new ConeOfSilenceProximityListener(name);
+            ConeOfSilenceProximityListener proximityListener = 
+		new ConeOfSilenceProximityListener(cellRef.get().getName());
             component.addProximityListener(proximityListener, bounds);
         }
         else {

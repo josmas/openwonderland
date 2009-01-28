@@ -37,7 +37,7 @@ import com.jme.math.Vector3f;
  *
  * @author jprovino
  */
-public abstract class AudioParticipantComponentMO extends CellComponentMO {
+public class AudioParticipantComponentMO extends CellComponentMO {
 
     private static final Logger logger =
             Logger.getLogger(AudioParticipantComponentMO.class.getName());
@@ -67,6 +67,10 @@ public abstract class AudioParticipantComponentMO extends CellComponentMO {
 	cellRef.get().addTransformChangeListener(myTransformChangeListener);
     }
 
+    protected String getClientClass() {
+	return "org.jdesktop.wonderland.modules.audiomanager.client.AudioParticipantComponent";
+    }
+
     static class MyTransformChangeListener implements TransformChangeListenerSrv {
         public void transformChanged(ManagedReference<CellMO> cellRef, 
 	        final CellTransform localTransform, final CellTransform localToWorldTransform) {
@@ -79,22 +83,23 @@ public abstract class AudioParticipantComponentMO extends CellComponentMO {
 	    Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
 
 	    if (player == null) {
-	        logger.warning("got transformChanged, but can't find player for " + clientId);
-	    } else {
-	        float[] angles = new float[3];
-
-	        localToWorldTransform.getRotation(null).toAngles(angles);
-
-	        double angle = Math.toDegrees(angles[1]) % 360 + 90;
-
-	        Vector3f location = localToWorldTransform.getTranslation(null);
-	
-	        logger.fine(player + " x " + location.getX()
-		    + " y " + location.getY() + " z " + location.getZ()
-		    + " angle " + angle);
-
-	        player.moved(location.getX(), location.getY(), location.getZ(), angle);
+	        System.out.println("AudioParticipant:  got transformChanged, but can't find player for " + clientId);
+		return;
 	    }
+
+	    float[] angles = new float[3];
+
+	    localToWorldTransform.getRotation(null).toAngles(angles);
+
+	    double angle = Math.toDegrees(angles[1]) % 360 + 90;
+
+	    Vector3f location = localToWorldTransform.getTranslation(null);
+	
+	    System.out.println(player + " x " + location.getX()
+		+ " y " + location.getY() + " z " + location.getZ()
+		+ " angle " + angle);
+
+	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
         }
     }
 

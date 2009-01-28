@@ -39,6 +39,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
 
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
+
     String name;
 
     public ConeOfSilenceProximityListener(String name) {

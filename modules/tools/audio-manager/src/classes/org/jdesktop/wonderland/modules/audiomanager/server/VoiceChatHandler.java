@@ -610,21 +610,22 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	if (player == null) {
 	    logger.warning("got AvatarMovedMessage but can't find player for " + clientId);
-	} else {
-	    float[] angles = new float[3];
-
-	    localToWorldTransform.getRotation(null).toAngles(angles);
-
-	    double angle = Math.toDegrees(angles[1]) % 360 + 90;
-
-	    Vector3f location = localToWorldTransform.getTranslation(null);
-	
-	    logger.fine(player + " x " + location.getX()
-		+ " y " + location.getY() + " z " + location.getZ()
-		+ " angle " + angle);
-
-	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
+	    return;
 	}
+
+	float[] angles = new float[3];
+
+	localToWorldTransform.getRotation(null).toAngles(angles);
+
+	double angle = Math.toDegrees(angles[1]) % 360 + 90;
+
+	Vector3f location = localToWorldTransform.getTranslation(null);
+	
+	logger.fine(player + " x " + location.getX()
+	    + " y " + location.getY() + " z " + location.getZ()
+	    + " angle " + angle);
+
+	player.moved(location.getX(), location.getY(), location.getZ(), angle);
     }
 
 }
