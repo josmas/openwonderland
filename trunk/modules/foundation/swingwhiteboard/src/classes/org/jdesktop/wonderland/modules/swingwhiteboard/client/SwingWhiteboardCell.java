@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.annotation.AutoCellComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
@@ -50,7 +50,7 @@ public class SwingWhiteboardCell extends App2DCell {
     /** The cell client state message received from the server cell */
     private SwingWhiteboardCellClientState clientState;
     /** The communications component used to communicate with the server */
-    @AutoCellComponent
+    @UsesCellComponent
     private SwingWhiteboardComponent commComponent;
 
     /**

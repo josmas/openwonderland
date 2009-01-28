@@ -750,7 +750,8 @@ private void targetModuleSelectorActionPerformed(java.awt.event.ActionEvent evt)
                 
         File modelFile = new File(model.getOrigModel());
         ModelLoader modelLoader = LoaderManager.getLoaderManager().getLoader(modelFile);
-        
+
+        logger.info("Using model loader "+modelLoader);
         
         if (modelLoader==null) {
             JOptionPane.showMessageDialog(null, "No Loader for "+org.jdesktop.wonderland.common.FileUtils.getFileExtension(modelFile.getName()));

@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
-import org.jdesktop.wonderland.client.cell.annotation.AutoCellComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -45,7 +45,7 @@ public class MovableComponent extends CellComponent {
     protected static Logger logger = Logger.getLogger(MovableComponent.class.getName());
     protected ArrayList<CellMoveListener> serverMoveListeners = null;
 
-    @AutoCellComponent
+    @UsesCellComponent
     protected ChannelComponent channelComp;
     
     public enum CellMoveSource { LOCAL, REMOTE }; // Do we need BOTH as well ?

@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class DragTestMO extends SimpleShapeCellMO {
     
-    @AutoCellComponentMO(MovableComponentMO.class)
+    @UsesCellComponentMO(MovableComponentMO.class)
     private transient ManagedReference<MovableComponentMO> moveableComp;
 
     /** Default constructor, used when cell is created via WFS */

@@ -24,10 +24,37 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation indicates to the system that a Cell or CellComponent
+ * uses (depends upon) a CellComponent.
+ *
+ * An example usage would be
+ *
+ * public class Foo extends CellComponent {
+ *
+ *  @UsesCellComponent
+ *  private ChannelComponent channelComp;
+ *
+ *  public Foo() {
+ *  }
+ *
+ *  public void setStatus(CellStatus status) {
+ *      super.setStatus(status);
+ *
+ *      channelComp.addMessageListener(.....)
+ *  }
+ *
+ * }
+ *
+ * In this example the annotation @UsesCellComponent
+ * informs the system that the cell Foo uses that component. The system
+ * will guarantee that ChannelComponent is installed and that the channelComp
+ * field references the component before the call to setStatus.
+ *
+ * Thus in setStatus we can simply use the channel component.
  *
  * @author paulby
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface AutoCellComponent {
+public @interface UsesCellComponent {
 }

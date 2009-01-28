@@ -23,7 +23,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.*;
-import org.jdesktop.wonderland.client.cell.annotation.AutoCellComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -44,7 +44,7 @@ public class DragTest extends SimpleShapeCell {
 
     MyDragListener dragListener = new MyDragListener();
 
-    @AutoCellComponent
+    @UsesCellComponent
     private MovableComponent movableComp;
 
     private DragTestRenderer cellRenderer;

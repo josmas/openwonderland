@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
-import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 
 /**
  * A server cell associated with a whiteboard
@@ -60,7 +60,7 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
     private static WhiteboardCompoundCellMessage lastMessage;
 
     /** The communications component used to broadcast to all clients */
-    @AutoCellComponentMO(SwingWhiteboardComponentMO.class)
+    @UsesCellComponentMO(SwingWhiteboardComponentMO.class)
     private ManagedReference<SwingWhiteboardComponentMO> commComponentRef = null;
     /** The preferred width (from the WFS file) */
     private int preferredWidth;

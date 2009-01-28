@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.annotation.AutoCellComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -533,20 +533,16 @@ public class Cell {
      * If you overload this method in your own class you must call super.setStatus(...) as the first operation
      * in your method.
      *
+     * Note users should not call this method directly, it should only be called
+     * from implementations of the cache.
+     *
      * @param status the cell status
      * @return true if the status was changed, false if the new and previous status are the same
      */
     public boolean setStatus(CellStatus status) {
         synchronized(currentStatus) {
-            if (currentStatus==status)
+            if (currentStatus==status) {
                 return false;
-
-            int ord = status.ordinal();
-            int currentOrd = currentStatus.ordinal();
-            if (ord>currentOrd+1 || ord<currentOrd-1) {
-                int t = currentOrd;
-                int dir = (ord>currentOrd ? 1 : -1);
-                setStatus(CellStatus.values()[t+dir]);
             }
 
             if (status==CellStatus.BOUNDS) {
@@ -602,7 +598,7 @@ public class Cell {
     }
 
     /**
-     * Check for @AutoCellComponent annotations in the cellcomponent and
+     * Check for @UsesCellComponent annotations in the cellcomponent and
      * populate fields appropriately. Also checks the superclassses of the
      * cell component upto CellComponent.class
      * 
@@ -617,7 +613,7 @@ public class Cell {
     }
 
     /**
-     * Check for @AutoCellComponent annotations in the cell and
+     * Check for @UsesCellComponent annotations in the cell and
      * populate fields appropriately. Also checks the superclassses of the
      * cell upto Cell.class
      *
@@ -634,10 +630,11 @@ public class Cell {
     private void resolveAnnotations(Class clazz, Object o) {
         Field[] fields = clazz.getDeclaredFields();
         for(Field f : fields) {
-            AutoCellComponent a = f.getAnnotation(AutoCellComponent.class);
+            UsesCellComponent a = f.getAnnotation(UsesCellComponent.class);
 //            System.err.println("Field "+f.getName()+"  "+f.getType()+"   "+f.getAnnotations().length);
             if (a!=null) {
-                System.err.println("****** GOT ANNOTATION for field "+f.getName()+"  "+f.getType());
+                if (logger.isLoggable(Level.FINE))
+                    logger.fine("****** GOT ANNOTATION for field "+f.getName()+"  "+f.getType());
 
                 Class componentClazz = f.getType();
                 CellComponent comp = getComponent(componentClazz);
@@ -661,7 +658,6 @@ public class Cell {
                 }
 
                 try {
-                    System.err.println("SETTING FIELD "+comp);
                     f.setAccessible(true);
                     f.set(o, comp);
                 } catch (IllegalArgumentException ex) {
@@ -685,7 +681,7 @@ public class Cell {
         // Sets the name of the cell
         this.setName(configData.getName());
         
-        System.err.println("configure cell "+getCellID()+"  "+getClass());
+        logger.fine("configure cell "+getCellID()+"  "+getClass());
         // Install the CellComponents
         for(String compClassname : configData.getClientComponentClasses()) {
             try {

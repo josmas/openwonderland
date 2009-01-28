@@ -23,11 +23,38 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation indicates to the system that a CellMO or CellComponentMO
+ * uses (depends upon) a CellComponentMO.
+ *
+ * An example usage would be
+ *
+ * public class FooMO extends CellComponentMO {
+ *
+ *  @UsesCellComponentMO(ChannelComponentMO.class)
+ *  private ManagedReference<ChannelComponentMO> channelCompRef;
+ *
+ *  public FooMO() {
+ *  }
+ *
+ *  public void setLive(boolean isLive) {
+ *      super.setStatus(isLive);
+ *
+ *      channelCompRef.getForUpdate().addMessageListener(.....)
+ *  }
+ *
+ * }
+ *
+ * In this example the annotation @UsesCellComponentMO(ChannelComponentMO.class)
+ * informs the system that the cell FooMO uses that component. The system
+ * will guarantee that ChannelComponentMO is installed and that the channelCompRef
+ * references points to the component before the call to setLive.
+ *
+ * Thus in setLive we can simply use the channel component.
  *
  * @author paulby
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface AutoCellComponentMO {
+public @interface UsesCellComponentMO {
     Class value();
 }

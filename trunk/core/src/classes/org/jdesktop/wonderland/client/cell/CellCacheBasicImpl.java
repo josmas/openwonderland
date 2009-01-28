@@ -204,7 +204,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      */
     public void unloadCell(CellID cellId) {
         Cell cell = cells.remove(cellId);
-        cell.setStatus(CellStatus.DISK);
+        setCellStatus(cell, CellStatus.DISK);
     }
 
     /**
@@ -214,7 +214,41 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         // TODO - remove local resources from client asset cache as long
         // as they are not shared
         Cell cell = cells.remove(cellId);
-        cell.setStatus(CellStatus.DISK);
+        setCellStatus(cell, CellStatus.DISK);
+    }
+
+    /**
+     * Set the cell status, ensuring that the cell passes through any intermediate
+     * status.
+     * 
+     * @param cell
+     * @param status
+     */
+    private void setCellStatus(Cell cell, CellStatus status) {
+        int currentStatus = cell.getStatus().ordinal();
+        int requiredStatus = status.ordinal();
+
+        if (currentStatus==requiredStatus)
+            return;
+
+        int dir = (requiredStatus>currentStatus ? 1 : -1);
+
+        while(currentStatus!=requiredStatus) {
+            currentStatus += dir;
+            cell.setStatus(CellStatus.values()[currentStatus]);
+        }
+
+//        int ord = status.ordinal();
+//        int currentOrd = currentStatus.ordinal();
+//        if (ord>currentOrd+1 || ord<currentOrd-1) {
+//            int t = currentOrd;
+//            int dir = (ord>currentOrd ? 1 : -1);
+//            System.err.println("CALLING setSTATUS "+status+"  "+currentOrd+" heading for "+ord+"  "+CellStatus.values()[t+dir]+"  "+(t+dir));
+//            setStatus(CellStatus.values()[t+dir]);
+//        } else {
+//            System.err.println("ord "+ord+"  currentOrd "+currentOrd);
+//
+//        }
     }
 
     /**
@@ -297,7 +331,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
         public void run() {
             try {
-                cell.setStatus(cellStatus);
+                setCellStatus(cell, cellStatus);
             } catch(Exception e) {
                 // Report the exception, otherwise it will get swallowed
                 logger.log(Level.WARNING, "Exception thrown in Cell.setStatus "+e.getLocalizedMessage(), e);
