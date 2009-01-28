@@ -21,14 +21,16 @@ import java.awt.Image;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
- * A CellFactory class is responsible for generating the necessary information
+ * A CellFactorySPI class is responsible for generating the necessary information
  * to generate a new cell. This includes:
  * <ol>
  * <li>A default cell setup class.
  * <li>A display name and image to be used in a palette of cell types.
  * <li>A list of file extensions which can be rendered by this cell type.
  * </ol>
- * 
+ * Classes that implement this interface must also annotate themselves with
+ * @CellFactory.
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public interface CellFactorySPI {
