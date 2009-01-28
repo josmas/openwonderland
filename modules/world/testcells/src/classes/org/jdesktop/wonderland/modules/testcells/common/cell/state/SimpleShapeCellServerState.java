@@ -22,7 +22,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState.Shape;
 
 /**
@@ -33,8 +33,9 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCe
  * @author paulby
  */
 @XmlRootElement(name="SimpleShape-cell")
+@ServerState
 public class SimpleShapeCellServerState extends CellServerState
-        implements Serializable, CellServerStateSPI {
+        implements Serializable {
 
     private Shape shape;
 

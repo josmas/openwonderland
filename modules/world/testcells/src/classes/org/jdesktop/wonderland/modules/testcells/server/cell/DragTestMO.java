@@ -21,11 +21,13 @@ import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -37,6 +39,9 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class DragTestMO extends SimpleShapeCellMO {
     
+    @AutoCellComponentMO(MovableComponentMO.class)
+    private transient ManagedReference<MovableComponentMO> moveableComp;
+
     /** Default constructor, used when cell is created via WFS */
     public DragTestMO () {
         this(new Vector3f(), 50);
@@ -44,7 +49,7 @@ public class DragTestMO extends SimpleShapeCellMO {
 
     public DragTestMO (Vector3f center, float size) {
         super(center, size);
-        addComponent(new MovableComponentMO(this));
+//        addComponent(new MovableComponentMO(this));
     }
     
     @Override 

@@ -23,6 +23,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.*;
+import org.jdesktop.wonderland.client.cell.annotation.AutoCellComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -42,13 +43,17 @@ import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.DragTes
 public class DragTest extends SimpleShapeCell {
 
     MyDragListener dragListener = new MyDragListener();
-    private MovableComponent movableComp=null;
+
+    @AutoCellComponent
+    private MovableComponent movableComp;
+
     private DragTestRenderer cellRenderer;
     static Node sceneRoot;
     Entity smallCubeEntity;
 
     public DragTest(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        System.out.print("CREATE DRAG TEST <-------------------------");
     }
 
     @Override
@@ -69,10 +74,12 @@ public class DragTest extends SimpleShapeCell {
     public boolean setStatus(CellStatus status) {
         boolean ret = super.setStatus(status);
 
+        System.err.println("***** "+this+"  "+movableComp+"<-------------------------------");
+
+
         switch (status) {
 
             case ACTIVE:
-                movableComp = getComponent(MovableComponent.class);
                 if (cellRenderer != null) { // May be null if this is a 2D renderer
                     dragListener.addToEntity(cellRenderer.getEntity());
                 }
