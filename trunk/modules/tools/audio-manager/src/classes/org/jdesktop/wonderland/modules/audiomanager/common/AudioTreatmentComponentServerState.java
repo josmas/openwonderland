@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
@@ -32,7 +31,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  */
 @XmlRootElement(name="audio-treatment-component")
 @ServerState
-public class AudioTreatmentComponentServerState extends CellComponentServerState implements Serializable {
+public class AudioTreatmentComponentServerState extends CellComponentServerState {
 
     @XmlElements({
 	@XmlElement(name="treatment")
