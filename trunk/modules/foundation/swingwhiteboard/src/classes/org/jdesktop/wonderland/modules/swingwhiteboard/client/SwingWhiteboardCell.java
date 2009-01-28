@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.annotation.AutoCellComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
@@ -39,20 +40,17 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
  *
  * @author paulby,nsimpson,deronj
  */
-
 @ExperimentalAPI
 public class SwingWhiteboardCell extends App2DCell {
-    
+
     /** The logger used by this class */
     private static final Logger logger = Logger.getLogger(SwingWhiteboardCell.class.getName());
-    
     /** The (singleton) window created by the whiteboard app */
     private SwingWhiteboardWindow whiteboardWin;
-
     /** The cell client state message received from the server cell */
     private SwingWhiteboardCellClientState clientState;
-    
     /** The communications component used to communicate with the server */
+    @AutoCellComponent
     private SwingWhiteboardComponent commComponent;
 
     /**
@@ -61,15 +59,15 @@ public class SwingWhiteboardCell extends App2DCell {
      * @param cellID The ID of the cell.
      * @param cellCache the cell cache which instantiated, and owns, this cell.
      */
-    public SwingWhiteboardCell (CellID cellID, CellCache cellCache) {
+    public SwingWhiteboardCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
-    
+
     /** 
      * {@inheritDoc}
      */
-    public AppType getAppType () {
-	return new SwingWhiteboardAppType();
+    public AppType getAppType() {
+        return new SwingWhiteboardAppType();
     }
 
     /**
@@ -78,11 +76,11 @@ public class SwingWhiteboardCell extends App2DCell {
      * @param state the client state data to initialize the cell with
      */
     @Override
-    public void setClientState (CellClientState state) {
-	super.setClientState(state);
+    public void setClientState(CellClientState state) {
+        super.setClientState(state);
         clientState = (SwingWhiteboardCellClientState) state;
     }
-    
+
     /**
      * This is called when the status of the cell changes.
      */
@@ -90,32 +88,32 @@ public class SwingWhiteboardCell extends App2DCell {
     public boolean setStatus(CellStatus status) {
         boolean ret = super.setStatus(status);
 
+        System.err.println("HERE !!!! "+commComponent);
+
         switch (status) {
 
-	    // The cell is now visible
+            // The cell is now visible
             case ACTIVE:
+                setApp(new SwingWhiteboardApp(getAppType(), clientState.getPreferredWidth(),
+                        clientState.getPreferredHeight(),
+                        clientState.getPixelScale(), commComponent));
 
-		commComponent = getComponent(SwingWhiteboardComponent.class);
-		setApp(new SwingWhiteboardApp(getAppType(), clientState.getPreferredWidth(), 
-					      clientState.getPreferredHeight(),
-					      clientState.getPixelScale(), commComponent));
+                // Associate the app with this cell (must be done before making it visible)
+                app.setCell(this);
 
-		// Associate the app with this cell (must be done before making it visible)
-		app.setCell(this);
+                // Get the window the app created
+                whiteboardWin = ((SwingWhiteboardApp) app).getWindow();
 
-		// Get the window the app created
-		whiteboardWin = ((SwingWhiteboardApp)app).getWindow();
-
-		// Make the app window visible
-		((SwingWhiteboardApp)app).setVisible(true);
+                // Make the app window visible
+                ((SwingWhiteboardApp) app).setVisible(true);
 
                 break;
 
-	    // The cell is no longer visible
+            // The cell is no longer visible
             case DISK:
-		((SwingWhiteboardApp)app).setVisible(false);
-		removeComponent(SwingWhiteboardComponent.class);
-		commComponent = null;
+                ((SwingWhiteboardApp) app).setVisible(false);
+                removeComponent(SwingWhiteboardComponent.class);
+                commComponent = null;
                 break;
         }
 
@@ -136,7 +134,7 @@ public class SwingWhiteboardCell extends App2DCell {
             case DRAG_TO:
                 LinkedList<Point> positions = msg.getPositions();
                 Iterator<Point> iter = positions.iterator();
-                
+
                 while (iter.hasNext()) {
                     Point position = iter.next();
                     if (msg.getAction() == Action.MOVE_TO) {
@@ -156,7 +154,7 @@ public class SwingWhiteboardCell extends App2DCell {
     /**
      * Returns the client ID of this cell's session.
      */
-    BigInteger getClientID () {
-	return getCellCache().getSession().getID();
+    BigInteger getClientID() {
+        return getCellCache().getSession().getID();
     }
 }
