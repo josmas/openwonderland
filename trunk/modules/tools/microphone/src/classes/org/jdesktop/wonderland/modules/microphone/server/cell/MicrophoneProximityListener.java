@@ -35,10 +35,12 @@ import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
 import com.jme.bounding.BoundingVolume;
 
+import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.ManagedObject;
 
 /**
@@ -51,8 +53,17 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
             Logger.getLogger(MicrophoneProximityListener.class.getName());
     String name;
 
-    public MicrophoneProximityListener(String name) {
+    ManagedReference<ProximityComponentMO> proxRef;
+
+    BoundingVolume[] bounds;
+
+    public MicrophoneProximityListener(String name,
+	    ManagedReference<ProximityComponentMO> proxRef, 
+	    BoundingVolume[] bounds) {
+
         this.name = name;
+	this.proxRef = proxRef;
+	this.bounds = bounds;
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
@@ -62,18 +73,24 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
 	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
+	String callId = viewCellID.toString();
+
 	if (entered) {
-	    cellEntered(viewCellID);
+	    if (proximityIndex == 0) {
+	        cellEntered(callId);
+	    } else {
+		activeAreaEntered(callId);
+	    }
 	} else {
-	    cellExited(viewCellID);
+	    if (proximityIndex == 0) {
+	        cellExited(callId);
+	    } else {
+		activeAreaExited(callId);
+	    }
 	}
     }
 
-    private void cellEntered(CellID softphoneCellID) {
-        cellEntered(softphoneCellID.toString());
-    }
-
-    public void cellEntered(String callId) {
+    private void cellEntered(String callId) {
         /*
          * The avatar has entered the Microphone cell.
          * Set the public and incoming spatializers for the avatar to be
@@ -83,8 +100,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
          * For each avatar already in the cell, set a private spatializer
          * for this avatar.
          */
-        logger.info(callId + " entered microphone " + name + " cell ID " 
-	    + callId);
+        logger.info(callId + " entered microphone " + name);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -108,18 +124,14 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
             audioGroup = vm.createAudioGroup(name, ags);
         }
 
-        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
-                AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(false,
+                AudioGroupPlayerInfo.ChatType.PUBLIC));
 
         player.attenuateOtherGroups(audioGroup, 0, 0);
     }
 
-    private void cellExited(CellID softphoneCellID) {
-        cellExited(softphoneCellID.toString());
-    }
-
-    public void cellExited(String callId) {
-        logger.info(callId + " exited microphone " + name + " avatar cell ID " + callId);
+    private void cellExited(String callId) {
+        logger.info(callId + " exited microphone " + name);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -145,6 +157,55 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
 
         player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
                 AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+    }
+
+    private void activeAreaEntered(String callId) {
+	logger.info(callId + " entered active area " + name);
+
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        Player player = vm.getPlayer(callId);
+
+        if (player == null) {
+            logger.warning("Can't find player for " + callId);
+            return;
+        }
+
+        AudioGroup audioGroup = vm.getAudioGroup(name);
+
+        if (audioGroup == null) {
+	    logger.warning("Can't find audio group " + name);
+	    return;
+	}
+
+	if (audioGroup.getPlayerInfo(player) == null) {
+            audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
+                AudioGroupPlayerInfo.ChatType.PUBLIC));
+	} else {
+	    audioGroup.setSpeaking(player, true);
+	}
+    }
+
+    private void activeAreaExited(String callId) {
+	logger.info(callId + " exited active area " + name);
+
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        Player player = vm.getPlayer(callId);
+
+        if (player == null) {
+            logger.warning("Can't find player for " + callId);
+            return;
+        }
+
+        AudioGroup audioGroup = vm.getAudioGroup(name);
+
+        if (audioGroup == null) {
+	    logger.warning("Can't find audio group " + name);
+	    return;
+	}
+
+	audioGroup.setSpeaking(player, false);
     }
 
 }

@@ -17,7 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.microphone.common;
 
+import java.io.Serializable;
+
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
 
 /**
  * The MicrophoneCellSetup class is the cell that renders a microphone cell in
@@ -29,22 +34,20 @@ public class MicrophoneCellClientState extends CellClientState {
 
     private String name;
 
-    private double fullVolumeRadius;
+    private FullVolumeArea fullVolumeArea;
 
-    private double activeRadius;
-    private String activeRadiusType;
-
+    private ActiveArea activeArea;
+    
     /** Default constructor */
     public MicrophoneCellClientState() {
     }
     
-    public MicrophoneCellClientState(String name, double fullVolumeRadius,
-	    double activeRadius, String activeRadiusType) {
+    public MicrophoneCellClientState(String name, FullVolumeArea fullVolumeArea,
+	    ActiveArea activeArea) {
 
 	this.name = name;
-	this.fullVolumeRadius = fullVolumeRadius;
-	this.activeRadius = activeRadius;
-	this. activeRadiusType = activeRadiusType;
+	this.fullVolumeArea = fullVolumeArea;
+	this.activeArea = activeArea;
     }
 
     public void setName(String name) {
@@ -55,28 +58,20 @@ public class MicrophoneCellClientState extends CellClientState {
         return name;
     }
 
-    public void setFullVolumeRadius(double fullVolumeRadius) {
-        this.fullVolumeRadius = fullVolumeRadius;
+    public void setFullVolumeArea(FullVolumeArea fullVolumeArea) {
+	this.fullVolumeArea = fullVolumeArea;
     }
 
-    public double getFullVolumeRadius() {
-        return fullVolumeRadius;
+    public FullVolumeArea getFullVolumeArea() {
+        return fullVolumeArea;
     }
 
-    public void setActiveRadius(double activeRadius) {
-	this.activeRadius = activeRadius;
+    public void setActiveArea(ActiveArea activeArea) {
+	this.activeArea = activeArea;
     }
 
-    public double getActiveRadius() {
-	return activeRadius;
-    }
-
-    public void setActiveRadiusType(String activeRadiusType) {
-	this.activeRadiusType = activeRadiusType;
-    }
-
-    public String getActiveRadiusType() {
-	return activeRadiusType;
+    public ActiveArea getActiveArea() {
+        return activeArea;
     }
 
 }
