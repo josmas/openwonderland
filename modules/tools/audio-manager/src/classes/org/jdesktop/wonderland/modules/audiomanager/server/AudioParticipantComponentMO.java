@@ -51,7 +51,7 @@ public class AudioParticipantComponentMO extends CellComponentMO {
     public AudioParticipantComponentMO(CellMO cellMO) {
         super(cellMO);
 
-	System.out.println("AudioParticipantComponentMO for " + cellMO.getName());
+	//System.out.println("AudioParticipantComponentMO for " + cellMO.getName());
     }
 
     @Override
@@ -71,13 +71,6 @@ public class AudioParticipantComponentMO extends CellComponentMO {
 
     protected String getClientClass() {
 	return "org.jdesktop.wonderland.modules.audiomanager.client.AudioParticipantComponent";
-    }
-
-    /*
-     * Let subclasses overrid this to be notified of the change.
-     */
-    protected void transformChanged(Vector3f location, double angle) {
-	//System.out.println("Audio participant transformChanged() called");
     }
 
     static class MyTransformChangeListener implements TransformChangeListenerSrv {
@@ -100,16 +93,15 @@ public class AudioParticipantComponentMO extends CellComponentMO {
 	
 	    Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
 
-	    AudioParticipantComponentMO component = 
-		cellRef.get().getComponent(AudioParticipantComponentMO.class);
+	    AudioTreatmentComponentMO component = 
+		cellRef.get().getComponent(AudioTreatmentComponentMO.class);
 
 	    if (component != null) {
-		//System.out.println("Let subclasses know transform changed");
 	        component.transformChanged(location, angle);   // let subclasses know
 	    }
 
 	    if (player == null) {
-	        System.out.println("AudioParticipant:  got transformChanged, but can't find player for " + clientId);
+	        logger.fine("AudioParticipant:  got transformChanged, but can't find player for " + clientId);
 		return;
 	    }
 
