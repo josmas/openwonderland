@@ -27,7 +27,10 @@ import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,6 +56,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
@@ -375,8 +379,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
     protected void setLive(boolean live) {
         if (this.live==live)
             return;
-        
-        this.live = live;
 
         if (live) {
             if (localBounds==null) {
@@ -385,6 +387,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
             }
 
             createChannelComponent();
+            resolveAutoComponentAnnotationsForCell();
+
+            this.live = live;  // Needs to happen after resolveAutoComponentAnnotationsForCell
+
             addToUniverse(UniverseManagerFactory.getUniverseManager());
 
             // Add a message receiver to handle messages to dynamically add and
@@ -398,7 +404,13 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 channel.addMessageReceiver(CellSetServerStateMessage.class,
                         new ComponentSetStateMessageReceiver(this));
             }
+
+            Collection<ManagedReference<CellComponentMO>> compList = components.values();
+            for(ManagedReference<CellComponentMO> c : compList) {
+                resolveAutoComponentAnnotationsForComponent(c);
+            }
         } else {
+            this.live = live;
             removeFromUniverse(UniverseManagerFactory.getUniverseManager());
 
             // Remove the message receiver that handles messages to dynamically
@@ -421,6 +433,78 @@ public abstract class CellMO implements ManagedObject, Serializable {
         for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
             CellMO child = ref.get();
             child.setLive(live);
+        }
+    }
+
+    /**
+     * Check for @AutoCellComponent annotations in the cellcomponent and
+     * populate fields appropriately. Also checks the superclassses of the
+     * cell component upto CellComponent.class
+     *
+     * @param c
+     */
+    private void resolveAutoComponentAnnotationsForComponent(ManagedReference<CellComponentMO> c) {
+            Class clazz = c.get().getClass();
+            while(clazz!=CellComponentMO.class) {
+                resolveAnnotations(clazz, c);
+                clazz = clazz.getSuperclass();
+            }
+    }
+
+    /**
+     * Check for @AutoCellComponent annotations in the cell and
+     * populate fields appropriately. Also checks the superclassses of the
+     * cell upto Cell.class
+     *
+     * @param c
+     */
+    private void resolveAutoComponentAnnotationsForCell() {
+        Class clazz = this.getClass();
+        ManagedReference<CellMO> c = AppContext.getDataManager().createReference(this);
+        while(clazz!=CellMO.class) {
+            resolveAnnotations(clazz, c);
+            clazz = clazz.getSuperclass();
+        }
+
+    }
+    private void resolveAnnotations(Class clazz, ManagedReference<? extends ManagedObject> o) {
+        Field[] fields = clazz.getDeclaredFields();
+        for(Field f : fields) {
+            AutoCellComponentMO a = f.getAnnotation(AutoCellComponentMO.class);
+            if (a!=null) {
+                System.err.println("****** GOT ANNOTATION for field "+f.getName());
+
+                Class componentClazz = a.value();
+                CellComponentMO comp = getComponent(componentClazz);
+                if (comp==null) {
+                    try {
+                        comp = (CellComponentMO) (componentClazz.getConstructor(CellMO.class).newInstance(this));
+                        addComponent(comp);
+                    } catch (InstantiationException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalAccessException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchMethodException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SecurityException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                try {
+                    System.err.println("SETTING FIELD "+comp);
+                    f.setAccessible(true);
+                    f.set(o.getForUpdate(), AppContext.getDataManager().createReference(comp));
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 
@@ -753,8 +837,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 AppContext.getDataManager().createReference(component));
         if (previous!=null)
             throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName());
-        if (live)
+        if (live) {
+            resolveAutoComponentAnnotationsForComponent(AppContext.getDataManager().createReference(component));
             component.setLive(live);
+        }
     }
     
     

@@ -17,9 +17,11 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.lang.reflect.InvocationTargetException;
 import org.jdesktop.wonderland.common.cell.messages.CellUpdateMessage;
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.annotation.AutoCellComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -221,6 +224,8 @@ public class Cell {
         if (previous!=null)
             throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
         synchronized(currentStatus) {
+            if (currentStatus.ordinal()>CellStatus.DISK.ordinal())
+                resolveAutoComponentAnnotationsForComponents(component);
             component.setStatus(currentStatus);
         }
     }
@@ -544,6 +549,14 @@ public class Cell {
                 setStatus(CellStatus.values()[t+dir]);
             }
 
+            if (status==CellStatus.BOUNDS) {
+                resolveAutoComponentAnnotationsForCell();
+                Collection<CellComponent> compList = components.values();
+                for(CellComponent c : compList) {
+                    resolveAutoComponentAnnotationsForComponents(c);
+                }
+            }
+
             currentStatus = status;
 
             for(CellComponent component : components.values())
@@ -587,7 +600,79 @@ public class Cell {
         }
         return true;
     }
-    
+
+    /**
+     * Check for @AutoCellComponent annotations in the cellcomponent and
+     * populate fields appropriately. Also checks the superclassses of the
+     * cell component upto CellComponent.class
+     * 
+     * @param c
+     */
+    private void resolveAutoComponentAnnotationsForComponents(CellComponent c) {
+        Class clazz = c.getClass();
+        while(clazz!=CellComponent.class) {
+            resolveAnnotations(clazz, c);
+            clazz = clazz.getSuperclass();
+        }
+    }
+
+    /**
+     * Check for @AutoCellComponent annotations in the cell and
+     * populate fields appropriately. Also checks the superclassses of the
+     * cell upto Cell.class
+     *
+     * @param c
+     */
+    private void resolveAutoComponentAnnotationsForCell() {
+        Class clazz = this.getClass();
+        while(clazz!=Cell.class) {
+            resolveAnnotations(clazz, this);
+            clazz = clazz.getSuperclass();
+        }
+    }
+
+    private void resolveAnnotations(Class clazz, Object o) {
+        Field[] fields = clazz.getDeclaredFields();
+        for(Field f : fields) {
+            AutoCellComponent a = f.getAnnotation(AutoCellComponent.class);
+//            System.err.println("Field "+f.getName()+"  "+f.getType()+"   "+f.getAnnotations().length);
+            if (a!=null) {
+                System.err.println("****** GOT ANNOTATION for field "+f.getName()+"  "+f.getType());
+
+                Class componentClazz = f.getType();
+                CellComponent comp = getComponent(componentClazz);
+                if (comp==null) {
+                    try {
+                        comp = (CellComponent) componentClazz.getConstructor(Cell.class).newInstance(this);
+                        addComponent(comp);
+                     } catch (IllegalArgumentException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    } catch (NoSuchMethodException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    } catch (SecurityException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    } catch (InstantiationException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    } catch (IllegalAccessException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                try {
+                    System.err.println("SETTING FIELD "+comp);
+                    f.setAccessible(true);
+                    f.set(o, comp);
+                } catch (IllegalArgumentException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+
     /**
      * Called when the cell is initially created and any time there is a 
      * major configuration change. The cell will already be attached to it's parent
