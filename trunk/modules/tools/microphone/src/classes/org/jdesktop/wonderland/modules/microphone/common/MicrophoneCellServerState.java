@@ -58,15 +58,15 @@ public class MicrophoneCellServerState extends CellServerState
 	this.fullVolumeArea = fullVolumeArea;
 	this.activeArea = activeArea;
 
-	logger.finer("fva " + fullVolumeArea.areaType
-	    + " x " + fullVolumeArea.xExtent
-	    + " y " + fullVolumeArea.yExtent
-	    + " z " + fullVolumeArea.zExtent);
+	//logger.finer("fva " + fullVolumeArea.areaType
+	//    + " x " + fullVolumeArea.xExtent
+	//    + " y " + fullVolumeArea.yExtent
+	//    + " z " + fullVolumeArea.zExtent);
 
-	logger.finer("active " + activeArea.origin
-	    + " x " + activeArea.xExtent
-	    + " y " + activeArea.yExtent
-	    + " z " + activeArea.zExtent);
+	//logger.finer("active " + activeArea.origin
+	//    + " x " + activeArea.xExtent
+	//    + " y " + activeArea.yExtent
+	//    + " z " + activeArea.zExtent);
     }
 
     public String getServerClassName() {
