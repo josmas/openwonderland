@@ -74,7 +74,34 @@ public class ProximityComponentMO extends CellComponentMO {
         super(cell);
     }
     
-    
+    /**
+     * Add a ProximityListener for the cell to which this component is attached.
+     * The listener will be called as View cells in the universe enter or exit
+     * the bounds specified.
+     *
+     * The bounds must be ordered from largest to smallest, thus localBounds[i]
+     * must enclose localBounds[i+1]. The listeners will be notified as the View
+     * enters each subsequent bounding volume and then notified the view exits each
+     * volume.
+     *
+     * For example given a set of Bounding Spheres with the same center and radii of
+     * 10, 5, 2. As the ViewCell moves from outside to the center of the spheres the
+     * listeners will be called with
+     *
+     * enter, 10
+     * enter, 5
+     * enter, 2
+     *
+     * then as the user moves away from the center the following sequence of exits
+     * will be called
+     *
+     * exit, 2
+     * exit, 5
+     * exit, 10
+     * 
+     * @param listener
+     * @param localBounds the set of bounds, in the local coordinate system of the cell
+     */
     public void addProximityListener(ProximityListenerSrv listener, BoundingVolume[] localBounds) {
 
         ServerProximityListenerRecord rec = new ServerProximityListenerRecord(new ServerProximityListenerWrapper(cellID, listener), localBounds);
@@ -93,6 +120,24 @@ public class ProximityComponentMO extends CellComponentMO {
         UniverseManager mgr = AppContext.getManager(UniverseManager.class);
         CellMO cell = cellRef.get();
         rec.setLive(isLive, cell, mgr);
+    }
+
+    /**
+     * Remove the specified ProximityListener
+     * @param listener
+     */
+    public void removeProximityListener(ProximityListenerSrv listener) {
+        ServerProximityListenerRecord rec;
+        if (listener instanceof ManagedObject) {
+            rec = proximityListenersRef.remove(listener);
+        } else {
+            rec = proximityListeners.remove(listener);
+        }
+        if (rec!=null) {
+            UniverseManager mgr = AppContext.getManager(UniverseManager.class);
+            CellMO cell = cellRef.get();
+            rec.setLive(false, cell, mgr);
+        }
     }
     
     @Override
@@ -128,7 +173,6 @@ public class ProximityComponentMO extends CellComponentMO {
     @Override
     protected String getClientClass() {
         return null;
-//        return "org.jdesktop.wonderland.client.cell.ProximityComponent";
     }
 
 }
