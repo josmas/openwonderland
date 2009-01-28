@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
@@ -61,6 +62,7 @@ public class SharedStateComponentMO extends CellComponentMO {
             Logger.getLogger(SharedStateComponentMO.class.getName());
 
     /** the channel from that cell */
+    @UsesCellComponentMO(ChannelComponentMO.class)
     private ManagedReference<ChannelComponentMO> channelRef;
 
     /**
@@ -170,13 +172,8 @@ public class SharedStateComponentMO extends CellComponentMO {
             return;
         }
         
-        // get the channel component from the cell
-        CellMO cell = cellRef.get();
-        ChannelComponentMO channel = cell.getComponent(ChannelComponentMO.class);
-        channelRef = AppContext.getDataManager().createReference(channel);
-
         // set the channel in the receiver
-        receiverRef.get().setChannel(channel);
+        receiverRef.get().setChannel(channelRef.get());
 
         // set the state
         if (state != null) {
@@ -185,10 +182,10 @@ public class SharedStateComponentMO extends CellComponentMO {
         }
 
         // register for the messages we care about
-        channel.addMessageReceiver(MapRequestMessage.class, receiverRef.get());
-        channel.addMessageReceiver(GetRequestMessage.class, receiverRef.get());
-        channel.addMessageReceiver(PutRequestMessage.class, receiverRef.get());
-        channel.addMessageReceiver(RemoveRequestMessage.class, receiverRef.get());
+        channelRef.get().addMessageReceiver(MapRequestMessage.class, receiverRef.get());
+        channelRef.get().addMessageReceiver(GetRequestMessage.class, receiverRef.get());
+        channelRef.get().addMessageReceiver(PutRequestMessage.class, receiverRef.get());
+        channelRef.get().addMessageReceiver(RemoveRequestMessage.class, receiverRef.get());
     }
 
     @Override
@@ -344,7 +341,7 @@ public class SharedStateComponentMO extends CellComponentMO {
             ManagedReference<SharedMapImpl> mapRef = maps.get(name);
             if (mapRef == null && create) {
                 SharedMapImpl map = new SharedMapImpl(name, this, channelRef.get());
-                addMap(name, map);
+                mapRef = addMap(name, map);
             } else if (mapRef == null) {
                 logger.warning("[SharedMap] Request for unknown map: " + name);
                 return null;
@@ -353,7 +350,7 @@ public class SharedStateComponentMO extends CellComponentMO {
             return mapRef.get();
         }
 
-        private void addMap(String mapName, SharedMapImpl map) {
+        private ManagedReference<SharedMapImpl> addMap(String mapName, SharedMapImpl map) {
             logger.warning("[SharedStateComponentMO]: creating map " + mapName);
 
             MapOfMaps maps = mapsRef.get();
@@ -361,6 +358,8 @@ public class SharedStateComponentMO extends CellComponentMO {
             ManagedReference<SharedMapImpl> mapRef =
                     AppContext.getDataManager().createReference(map);
             maps.put(mapName, mapRef);
+
+            return mapRef;
         }
 
         private void removeMap(String mapName) {

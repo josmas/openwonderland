@@ -28,9 +28,11 @@ class SharedDataXmlAdapter extends XmlAdapter<SharedXML, SharedData> {
     @Override
     public SharedData unmarshal(SharedXML xml) throws Exception {
         if (xml.getType().equals("integer")) {
-            return SharedInteger.valueOf(Integer.parseInt(xml.getValue()));
+            return SharedInteger.valueOf(xml.getValue());
         } else if (xml.getType().equals("string")) {
             return SharedString.valueOf(xml.getValue());
+        } else if (xml.getType().equals("boolean")) {
+            return SharedBoolean.valueOf(xml.getValue());
         } else {
             return null;
         }
@@ -42,6 +44,8 @@ class SharedDataXmlAdapter extends XmlAdapter<SharedXML, SharedData> {
             return new SharedXML("integer", v.toString());
         } else if (v instanceof SharedString) {
             return new SharedXML("string", v.toString());
+        } else if (v instanceof SharedBoolean) {
+            return new SharedXML("boolean", v.toString());
         } else {
             return null;
         }

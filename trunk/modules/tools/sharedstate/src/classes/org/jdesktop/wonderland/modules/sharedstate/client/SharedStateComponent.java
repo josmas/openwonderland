@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -41,6 +42,7 @@ public class SharedStateComponent extends CellComponent
      * the channel to connect to -- not valud until the cell's status
      * is set to ACTIVE. 
      */
+    @UsesCellComponent
     private ChannelComponent channel;
 
     /** the set of maps we know about, indexed by map name */
@@ -80,7 +82,6 @@ public class SharedStateComponent extends CellComponent
         super.setStatus(status);
     
         if (status == CellStatus.ACTIVE) {
-            channel = cell.getComponent(ChannelComponent.class);
             channel.addMessageReceiver(ChangeValueMessage.class, this);
         }
     }

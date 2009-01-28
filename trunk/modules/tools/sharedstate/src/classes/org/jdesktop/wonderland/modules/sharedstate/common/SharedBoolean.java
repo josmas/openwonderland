@@ -21,30 +21,34 @@ package org.jdesktop.wonderland.modules.sharedstate.common;
  * Shared data representation of an integer
  * @author jkaplan
  */
-public class SharedInteger implements SharedData {
+public class SharedBoolean implements SharedData {
     private static final long serialVersionUID = 1L;
-    private int value;
+
+    public static final SharedBoolean TRUE = SharedBoolean.valueOf(true);
+    public static final SharedBoolean FALSE = SharedBoolean.valueOf(false);
+
+    private boolean value;
 
     /**
      * No arg constructor needed by jaxb.  Use valueOf() when constructing
      * this class directly.
      */
-    public SharedInteger() {
+    public SharedBoolean() {
     }
 
     /**
      * Use valueOf() instead of this
      * @param value the value
      */
-    private SharedInteger(int value) {
+    private SharedBoolean(boolean value) {
         this.value = value;
     }
 
-    public int getValue() {
+    public boolean getValue() {
         return value;
     }
 
-    public void setValue(int value) {
+    public void setValue(boolean value) {
         this.value = value;
     }
 
@@ -53,11 +57,11 @@ public class SharedInteger implements SharedData {
         return String.valueOf(getValue());
     }
 
-    public static SharedInteger valueOf(int value) {
-        return new SharedInteger(value);
+    public static SharedBoolean valueOf(boolean value) {
+        return new SharedBoolean(value);
     }
 
-    public static SharedInteger valueOf(String value) {
-        return valueOf(Integer.parseInt(value));
+    public static SharedBoolean valueOf(String value) {
+        return valueOf(Boolean.parseBoolean(value));
     }
 }
