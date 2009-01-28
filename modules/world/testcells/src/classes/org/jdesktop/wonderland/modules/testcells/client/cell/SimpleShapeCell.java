@@ -35,6 +35,7 @@ public class SimpleShapeCell extends Cell {
     protected SimpleShapeCellClientState.Shape shape;
     protected MaterialJME materialJME;
     private float mass;
+    private ShapeRenderer shapeRenderer;
 
     /**
      * Mass of zero will result in a static rigid body, non zero will be dynamic
@@ -53,22 +54,23 @@ public class SimpleShapeCell extends Cell {
         this.shape = c.getShape();
         this.mass = c.getMass();
         this.materialJME = c.getMaterialJME();
+        shapeRenderer.shapeChanged();
+        shapeRenderer.colorChanged();
     }
 
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        CellRenderer ret = null;
         switch(rendererType) {
             case RENDERER_2D :
                 // No 2D Renderer yet
                 break;
             case RENDERER_JME :
-                ret= new ShapeRenderer(this);
+                shapeRenderer= new ShapeRenderer(this);
                 break;                
         }
         
-        return ret;
+        return shapeRenderer;
     }
 
     public SimpleShapeCellClientState.Shape getShape() {

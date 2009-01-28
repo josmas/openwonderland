@@ -56,7 +56,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
@@ -470,9 +470,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private void resolveAnnotations(Class clazz, ManagedReference<? extends ManagedObject> o) {
         Field[] fields = clazz.getDeclaredFields();
         for(Field f : fields) {
-            AutoCellComponentMO a = f.getAnnotation(AutoCellComponentMO.class);
+            UsesCellComponentMO a = f.getAnnotation(UsesCellComponentMO.class);
             if (a!=null) {
-                System.err.println("****** GOT ANNOTATION for field "+f.getName());
+                if (logger.isLoggable(Level.FINE))
+                    logger.fine("****** GOT ANNOTATION for field "+f.getName());
 
                 Class componentClazz = a.value();
                 CellComponentMO comp = getComponent(componentClazz);
@@ -496,7 +497,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 }
 
                 try {
-                    System.err.println("SETTING FIELD "+comp);
                     f.setAccessible(true);
                     f.set(o.getForUpdate(), AppContext.getDataManager().createReference(comp));
                 } catch (IllegalArgumentException ex) {

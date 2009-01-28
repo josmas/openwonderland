@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCompoundCellMessage;
-import org.jdesktop.wonderland.server.cell.annotation.AutoCellComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 public class SwingWhiteboardComponentMO extends CellComponentMO {
 
     /** A managed reference to the cell channel communications component */
-    @AutoCellComponentMO(ChannelComponentMO.class)
+    @UsesCellComponentMO(ChannelComponentMO.class)
     private ManagedReference<ChannelComponentMO> channelComponentRef;
 
     /** 

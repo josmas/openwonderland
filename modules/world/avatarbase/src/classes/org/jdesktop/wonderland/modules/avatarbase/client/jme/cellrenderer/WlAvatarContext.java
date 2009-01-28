@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 /**
  *
- * Overload NinjaContext so we can install our own WlAvatarController
+ * Overload AvatarContext so we can install our own WlAvatarController
  *
  * @author paulby
  */

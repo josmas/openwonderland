@@ -46,43 +46,27 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCe
  */
 public class ShapeRenderer extends BasicRenderer {
 
+    private Node scene;
+    private Geometry geom;
+
     public ShapeRenderer(Cell cell) {
         super(cell);
     }
-    
+
+    public void shapeChanged() {
+
+    }
+
+    public void colorChanged() {
+
+    }
+
     @Override
     protected Node createSceneGraph(Entity entity) {
-        float xExtent = 1f;
-        float yExtent = 1f;
-        float zExtent = 1f;
+        scene = new Node();
+        scene.setName(cell.getCellID().toString());
         
-        Node ret = new Node();
-        ret.setName(cell.getCellID().toString());
-        Geometry geom=null;
-        
-        switch(((SimpleShapeCell)cell).getShape()) {
-            case BOX :
-                ret.attachChild(geom = new Box("Box", new Vector3f(), xExtent, yExtent, zExtent));
-                break;
-            case CYLINDER :
-                ret.attachChild(geom = new Cylinder("Cylinder", 10, 10, xExtent, yExtent));
-                // Make yUp
-                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
-                break;
-            case CONE :
-                ret.attachChild(geom = new Cone("Cone", 10, 10, xExtent, yExtent));
-                // Make yUp
-                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
-                break;
-            case SPHERE :
-                ret.attachChild(geom = new Sphere("Sphere", 10, 10, xExtent));
-                break;
-            case TEAPOT :
-                ret.attachChild(geom = new Teapot());
-                ((Teapot)geom).resetData();
-                ret.setLocalScale(0.2f);
-                break;
-        }
+        createShapeNode();
 
         if (geom!=null) {
 
@@ -96,7 +80,38 @@ public class ShapeRenderer extends BasicRenderer {
             geom.setRenderState(matState);
         }
         
-        return ret;
+        return scene;
+    }
+
+    private void createShapeNode() {
+
+        float xExtent = 1f;
+        float yExtent = 1f;
+        float zExtent = 1f;
+
+        switch(((SimpleShapeCell)cell).getShape()) {
+            case BOX :
+                scene.attachChild(geom = new Box("Box", new Vector3f(), xExtent, yExtent, zExtent));
+                break;
+            case CYLINDER :
+                scene.attachChild(geom = new Cylinder("Cylinder", 10, 10, xExtent, yExtent));
+                // Make yUp
+                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
+                break;
+            case CONE :
+                scene.attachChild(geom = new Cone("Cone", 10, 10, xExtent, yExtent));
+                // Make yUp
+                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
+                break;
+            case SPHERE :
+                scene.attachChild(geom = new Sphere("Sphere", 10, 10, xExtent));
+                break;
+            case TEAPOT :
+                scene.attachChild(geom = new Teapot());
+                ((Teapot)geom).resetData();
+                scene.setLocalScale(0.2f);
+                break;
+        }
     }
 
     protected float getMass() {
