@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.testcells.client.cell;
 
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import java.awt.Image;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState.Shape;
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellServerState;
@@ -28,6 +29,7 @@ import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCe
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@CellFactory
 public class SimpleShapeCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
