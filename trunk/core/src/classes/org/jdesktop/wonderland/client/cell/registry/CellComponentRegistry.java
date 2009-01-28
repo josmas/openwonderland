@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -53,8 +53,8 @@ public class CellComponentRegistry {
         
         // now search annotations
         ScannedClassLoader cl = manager.getClassloader();
-        Iterator<CellComponentFactorySPI> it = cl.getAll(CellFactory.class,
-                                                CellComponentFactorySPI.class);
+        Iterator<CellComponentFactorySPI> it = cl.getAll(
+                CellComponentFactory.class, CellComponentFactorySPI.class);
         while (it.hasNext()) {
             CellComponentFactorySPI factory = it.next();
             CellComponentRegistry.getCellComponentRegistry().registerCellComponentFactory(factory);
