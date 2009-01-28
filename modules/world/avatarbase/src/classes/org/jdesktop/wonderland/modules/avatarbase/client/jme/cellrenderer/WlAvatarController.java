@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import imi.character.avatar.Avatar;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -28,6 +30,12 @@ public class WlAvatarController extends imi.character.avatar.AvatarController {
 
     private boolean selectedForInput = false;
     private CellTransform transform = null;
+
+    // Global tmp variable
+    private Quaternion quat = new Quaternion();
+
+    // Global tmp variable
+    private Vector3f v3f = new Vector3f();
 
     public WlAvatarController(Avatar master) {
         super(master);
@@ -54,8 +62,7 @@ public class WlAvatarController extends imi.character.avatar.AvatarController {
             }
             
             if (transform!=null) {
-                body.getTransform().getLocalMatrix(true).setTranslation(transform.getTranslation(null));
-//                body.getTransform().getLocalMatrix(true).setRotation(transform.getRotation(null));
+                body.getTransform().getLocalMatrix(true).set2(transform.getRotation(quat), transform.getTranslation(v3f), 1f);
             }
         }
     }

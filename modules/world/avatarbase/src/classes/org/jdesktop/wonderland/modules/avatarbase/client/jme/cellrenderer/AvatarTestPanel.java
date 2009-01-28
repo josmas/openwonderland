@@ -199,6 +199,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
         jLabel3.setText("Render Quality");
 
         renderQuality.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "High", "Medium", "Low" }));
+        renderQuality.setEnabled(false);
         renderQuality.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renderQualityActionPerformed(evt);

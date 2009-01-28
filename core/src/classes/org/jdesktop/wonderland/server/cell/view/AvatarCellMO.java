@@ -74,8 +74,7 @@ public class AvatarCellMO extends ViewCellMO {
             ClientCapabilities capabilities) {
 
 	if (cellClientState == null) {
-	    cellClientState = new ViewCellClientState(
-		AppContext.getManager(ClientIdentityManager.class).getClientID());
+	    cellClientState = new ViewCellClientState(userRef.get().getIdentity());
 	}
 
 	return super.getClientState(cellClientState, clientID, capabilities);

@@ -37,10 +37,9 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
     public WlAvatarContext(Avatar avatar) {
         super(avatar);
 
-//        for(ActionInfo actionInfo : getGenericAnimations()) {
-//            actionMap.put(actionInfo.getAnimationName(), actionInfo);
-//            System.err.println("Found Animation "+actionInfo.getAnimationName());
-//        }
+        for(ActionInfo actionInfo : getGenericAnimations()) {
+            actionMap.put(actionInfo.getAnimationName(), actionInfo);
+        }
     }
 
     @Override

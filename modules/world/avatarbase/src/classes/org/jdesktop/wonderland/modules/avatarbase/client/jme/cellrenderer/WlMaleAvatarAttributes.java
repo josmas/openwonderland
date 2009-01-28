@@ -35,7 +35,8 @@ public class WlMaleAvatarAttributes extends MaleAvatarAttributes {
 
     public WlMaleAvatarAttributes(Cell cell) {
 //        NinjaAvatarAttributes attribs = new NinjaAvatarAttributes("WeirdGuy", 2, 3, 5, 10, 1);
-        super(cell.getName(), 2, 3, 5, 10, 1);
+        //super(cell.getName(), 2, 3, 5, 10, 1);
+        super(cell.getName(), true);
         // Animations are setup in the super class
 
         WonderlandSession session = cell.getCellCache().getSession();
