@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
 
 /**
@@ -30,8 +30,9 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
  * @author jprovino
  */
 @XmlRootElement(name = "shared-state-component")
+@ServerState
 public class SharedStateComponentServerState extends CellComponentServerState
-        implements Serializable, CellServerStateSPI
+        implements Serializable
 {
     private MapEntry[] maps = new MapEntry[0];
 
