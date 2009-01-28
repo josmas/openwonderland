@@ -239,10 +239,16 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         propertyPanel.setLayout(new java.awt.GridLayout(1, 1));
         mainSplitPane.setRightComponent(propertyPanel);
 
+        addCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         addCapabilityButton.setText("+");
-        addCapabilityButton.setEnabled(false);
         addCapabilityButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        addCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addCapabilityButtonActionPerformed(evt);
+            }
+        });
 
+        removeCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         removeCapabilityButton.setEnabled(false);
         removeCapabilityButton.setLabel("-");
         removeCapabilityButton.setMargin(new java.awt.Insets(2, 4, 2, 4));
@@ -273,7 +279,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addCapabilityButton)
                     .add(removeCapabilityButton))
-                .addContainerGap(3, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -311,6 +317,12 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         this.setVisible(false);
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void addCapabilityButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCapabilityButtonActionPerformed
+        // Create a new AddComponentDialog and display
+        AddComponentDialog dialog = new AddComponentDialog(this, true);
+        dialog.setVisible(true);
+    }//GEN-LAST:event_addCapabilityButtonActionPerformed
 
     /**
      * Inner class to deal with selection on the capability list
@@ -352,6 +364,10 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
             // Invalidate the layout and repaint
             propertyPanel.revalidate();
             propertyPanel.repaint();
+
+            // If there is a selection then enable the '-' sign to remove the
+            // component, otherwise, disable the '-' sign
+            removeCapabilityButton.setEnabled(selection != null);
         }
     }
 
