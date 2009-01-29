@@ -17,10 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.appbase.server;
 
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.common.cell.CellTransform;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellServerState;
 
 /**
  * An abstract server-side app.base cell for 2D apps. 
@@ -28,39 +30,48 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-public abstract class App2DCellMO extends AppCellMO { 
+public abstract class App2DCellMO extends AppCellMO {
 
+    private static final Logger logger = Logger.getLogger(App2DCellMO.class.getName());
     /** The pixel scale. */
     protected Vector2f pixelScale;
 
-    /** Default constructor, used when the cell is created via WFS */
-    public App2DCellMO () {
-	super();
-    }
-    
-    /**
-     * Creates a new instance of <code>App2DCellMO</code> with the specified localBounds and transform
-     * and the default pixel scale. If either parameter is null an IllegalArgumentException will be thrown.
-     *
-     * @param localBounds the bounds of the new cell, must not be null.
-     * @param transform the transform for this cell, must not be null.
-     */
-    public App2DCellMO (BoundingVolume localBounds, CellTransform transform) {
-        super(localBounds, transform);
+    /** Create an instance of App2DCellMO. */
+    public App2DCellMO() {
+        super();
     }
 
     /**
-     * Creates a new instance of <code>App2DCellMO</code> with the specified localBounds, transform
-     * and pixel scale. If either parameter is null an IllegalArgumentException will be thrown.
-     *
-     * @param localBounds the bounds of the new cell, must not be null.
-     * @param transform the transform for this cell, must not be null.
-     * @param pixelScale The size of the application pixels in world coordinates.
+     * {@inheritDoc}
      */
-    public App2DCellMO (BoundingVolume bounds, CellTransform transform, Vector2f pixelScale){
-        super(bounds, transform);
-	this.pixelScale = new Vector2f(pixelScale);
+    @Override
+    public void setServerState(CellServerState state) {
+        super.setServerState(state);
+        App2DCellServerState serverState = (App2DCellServerState) state;
+        pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
+    }
+
+    /**
+     * Fill in the given client state with the cell server state.
+     */
+    protected void populateClientState(App2DCellClientState clientState) {
+        clientState.setPixelScale(pixelScale);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CellServerState getServerState(CellServerState stateToFill) {
+        if (stateToFill == null) {
+            return null;
+        }
+
+        App2DCellServerState state = (App2DCellServerState) stateToFill;
+        state.setPixelScaleX(pixelScale.getX());
+        state.setPixelScaleY(pixelScale.getY());
+
+        return stateToFill;
     }
 }

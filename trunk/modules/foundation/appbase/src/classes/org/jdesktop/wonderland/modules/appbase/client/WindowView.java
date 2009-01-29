@@ -24,16 +24,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class WindowView {
 
     /** The window being viewed */
     protected Window window;
-
     /** The name of the space in which the view is displayed */
     protected String spaceName;
-
     /** The GUI handler for this view */
     protected Gui gui;
 
@@ -43,32 +40,32 @@ public class WindowView {
      * @param window The window this view displays.
      * @param spaceName The GUI space in which the view resides.
      */
-    public WindowView (Window window, String spaceName) {
-	this.window = window;
-	this.spaceName = spaceName;
+    public WindowView(Window window, String spaceName) {
+        this.window = window;
+        this.spaceName = spaceName;
     }
 
     /** 
      * Release resources held.
      */
-    public void cleanup () {
-	if (gui != null) {
-	    gui.cleanup();
-	    gui = null;
-	}
+    public void cleanup() {
+        if (gui != null) {
+            gui.cleanup();
+            gui = null;
+        }
     }
 
     /**
      * The window this view displays.
      */
-    public Window getWindow () { 
-	return window; 
+    public Window getWindow() {
+        return window;
     }
 
     /**
      * The name of the space in which the view is displayed.
      */
-    public String getSpaceName () {
-	return spaceName;
+    public String getSpaceName() {
+        return spaceName;
     }
 }

@@ -33,8 +33,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * <code>App2DCellClientState</code>) sent by the server when it instantiates this cell.
  *
  * @author deronj
- */ 
-
+ */
 @ExperimentalAPI
 public abstract class App2DCell extends AppCell {
 
@@ -47,16 +46,16 @@ public abstract class App2DCell extends AppCell {
      * @param cellID The ID of the cell.
      * @param cellCache the cell cache which instantiated, and owns, this cell.
      */
-    public App2DCell (CellID cellID, CellCache cellCache) {
+    public App2DCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void cleanup () {
-	super.cleanup();
-	pixelScale = null;
+    public void cleanup() {
+        super.cleanup();
+        pixelScale = null;
     }
 
     /**
@@ -64,16 +63,15 @@ public abstract class App2DCell extends AppCell {
      */
     @Override
     public void setClientState(CellClientState clientState) {
-	super.setClientState(clientState);
-	App2DCellClientState appClientState = (App2DCellClientState) clientState;
-	pixelScale = appClientState.getPixelScale();
+        super.setClientState(clientState);
+        pixelScale = ((App2DCellClientState) clientState).getPixelScale();
     }
 
     /**
      * Returns the pixel scale.
      */
-    public Vector2f getPixelScale () {
-	return pixelScale;
+    public Vector2f getPixelScale() {
+        return pixelScale;
     }
 
     /**
@@ -83,8 +81,8 @@ public abstract class App2DCell extends AppCell {
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append(super.toString());
-	buf.append(" pixelScale: ");
-	buf.append(pixelScale);
-	return buf.toString();
+        buf.append(" pixelScale: ");
+        buf.append(pixelScale);
+        return buf.toString();
     }
 }

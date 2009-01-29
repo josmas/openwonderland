@@ -146,9 +146,6 @@ public class AppCellRendererJME extends AppCellRenderer {
 	getEntity().addEntity(viewWorld.getEntity());
 	viewWorld.setParentEntity(getEntity());
 
-	AppCell cell = viewWorld.getCell();
-        applyTransform(rootNode, cell.getLocalTransform());
-
         FrameWorldDefault frame = viewWorld.getFrame();
 	if (frame != null) {
 	    getEntity().addEntity(frame.getEntity());

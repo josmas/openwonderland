@@ -21,7 +21,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
-import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb.EventMode;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;

@@ -26,25 +26,23 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class ProcessReporterFactory {
-    
+
     /** The ProcessReporterFactory singleton */
     protected static ProcessReporterFactory reporterFactory;
-
     /** A process-name-keyed map of process reporters which have been created */
-    protected HashMap<String,ProcessReporter> reporterMap = new HashMap<String,ProcessReporter>();
+    protected HashMap<String, ProcessReporter> reporterMap = new HashMap<String, ProcessReporter>();
 
     /** 
      * Returns the ProcessReporterFactory singleton.
      */
-    public static ProcessReporterFactory getFactory () {
-	if (reporterFactory == null) {
-	    // TODO: eventually replace with one which uses swing
-	    reporterFactory = new ProcessReporterFactoryLogger();
-	}
-	return reporterFactory;
+    public static ProcessReporterFactory getFactory() {
+        if (reporterFactory == null) {
+            // TODO: eventually replace with one which uses swing
+            reporterFactory = new ProcessReporterFactoryLogger();
+        }
+        return reporterFactory;
     }
 
     /**
@@ -52,5 +50,5 @@ public abstract class ProcessReporterFactory {
      * @param processName the name of the process for which to report.
      * @return A process reporter which reports output and exit status for the given process.
      */
-    public abstract ProcessReporter create (String processName);
+    public abstract ProcessReporter create(String processName);
 }

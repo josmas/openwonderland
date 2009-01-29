@@ -29,21 +29,20 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class ControlArbMulti extends ControlArb {
 
     /**
      * {@inheritDoc}
      */
-    public void deliverEvent (Window2D window, KeyEvent event) {
-	window.deliverEvent(event);
+    public void deliverEvent(Window2D window, KeyEvent event) {
+        window.deliverEvent(event);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void deliverEvent (Window2D window, MouseEvent event) {
-	window.deliverEvent(event);
+    public void deliverEvent(Window2D window, MouseEvent event) {
+        window.deliverEvent(event);
     }
 }

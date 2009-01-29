@@ -32,14 +32,12 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * The stack position of the bottom window is 0.
  *
  * @author deronj
- */ 
-
+ */
 @ExperimentalAPI
 public abstract class App2D extends App {
 
     /** The window stack for this app */
     protected WindowStack stack = new WindowStack();
-
     /** The world size of pixels */
     protected Vector2f pixelScale;
 
@@ -50,41 +48,42 @@ public abstract class App2D extends App {
      * @param controlArb The control arbiter to use. null means that all users can control at the same time.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
-    public App2D (AppType appType, ControlArb controlArb, Vector2f pixelScale) {
-	super(appType, controlArb);
-	this.pixelScale = pixelScale;
+    public App2D(AppType appType, ControlArb controlArb, Vector2f pixelScale) {
+        super(appType, controlArb);
+        this.pixelScale = pixelScale;
     }
 
     /**
      * Deallocate resources.
      */
-    public void cleanup () {
-	super.cleanup();
-	if (stack != null) {
-	    stack.cleanup();
-	    stack = null;              
-	}
-	pixelScale = null;
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        if (stack != null) {
+            stack.cleanup();
+            stack = null;
+        }
+        pixelScale = null;
     }
 
     /** 
      * Returns the pixel scale 
      */
-    public Vector2f getPixelScale () {
-	return new Vector2f(pixelScale);
+    public Vector2f getPixelScale() {
+        return new Vector2f(pixelScale);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setCell (AppCell cell) {
-	super.setCell(cell);
+    public void setCell(AppCell cell) {
+        super.setCell(cell);
 
-	// Do an updateAll on all windows currently attached to this app
-	for (Window window : windows) {
-	    ((Window2D)window).updateAll();
-	}
+        // Do an updateAll on all windows currently attached to this app
+        for (Window window : windows) {
+            ((Window2D) window).updateAll();
+        }
     }
 
     /**
@@ -93,9 +92,9 @@ public abstract class App2D extends App {
      *
      * @param window The window to add.
      */
-    public void windowAdd (Window2D window) {
-	super.windowAdd(window);
-	stack.add(window);
+    public void windowAdd(Window2D window) {
+        super.windowAdd(window);
+        stack.add(window);
     }
 
     /**
@@ -104,8 +103,8 @@ public abstract class App2D extends App {
      * @param window The window to add.
      * @param sibling The window that is immediately above the added window.
      */
-    public void windowAddSiblingAbove (Window2D window, Window2D sibling) {
-	stack.addSiblingAbove(window, sibling);
+    public void windowAddSiblingAbove(Window2D window, Window2D sibling) {
+        stack.addSiblingAbove(window, sibling);
     }
 
     /**
@@ -113,9 +112,9 @@ public abstract class App2D extends App {
      *
      * @param window The window to remove.
      */
-    public void windowRemove (Window2D window) {
-	super.windowRemove(window);
-	stack.remove(window);
+    public void windowRemove(Window2D window) {
+        super.windowRemove(window);
+        stack.remove(window);
     }
 
     /**
@@ -123,22 +122,22 @@ public abstract class App2D extends App {
      *
      * @param window The window to move.
      */
-    public void windowToFront (Window2D window) {
-	stack.toFront(window);
+    public void windowToFront(Window2D window) {
+        stack.toFront(window);
     }
 
     /** 
      * Return the top window of the window stack.
      */
-    public Window2D windowGetTop () {
-	return stack.getTop();
+    public Window2D windowGetTop() {
+        return stack.getTop();
     }
 
     /** 
      * Return the bottom window of the window stack.
      */
-    public Window2D windowGetBottom () {
-	return stack.getBottom();
+    public Window2D windowGetBottom() {
+        return stack.getBottom();
     }
 
     /**
@@ -148,7 +147,7 @@ public abstract class App2D extends App {
      * are to appear in the stack. The window at order[index] should have
      * stack position N-index, where N is the number of windows in the stack.
      */
-    public void restackWindows (Window2D[] order) {
-	stack.restack(order);
+    public void restackWindows(Window2D[] order) {
+        stack.restack(order);
     }
 }

@@ -17,15 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.xremwin.server;
 
-import com.sun.sgs.app.ClientSession;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.appbase.server.AppConventionalCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
-import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.modules.xremwin.common.AppCellXrwServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -33,38 +31,24 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * 
  * @author deronj
  */
-
 @ExperimentalAPI
 public class AppCellMOXrw extends AppConventionalCellMO {
-    
+
     private static final Logger logger = Logger.getLogger(AppCellMOXrw.class.getName());
+    /** The parameters from the WFS file. */
+    private AppCellXrwServerState serverState;
 
-    /** Whether the connection handler has been registered. */
-    private boolean connectionHandlerRegistered;
-
-    /** Default constructor, used when the cell is created via WFS */
-    public AppCellMOXrw () {}
-
-    /**
-     * Creates a new instance of a user-launched <code>AppCellMOXrw</code>.
-     * @param msg The creation message received from the client.
-     */
-    public AppCellMOXrw (AppConventionalCellCreateMessage msg) {
-	super(msg);
-	
-	// Register the connection handler when the first cell is created
-	if (!connectionHandlerRegistered) {
-	    CommsManager cm = WonderlandContext.getCommsManager();
-	    cm.registerClientHandler(new AppConnectionHandlerXrw());
-	    connectionHandlerRegistered = true;
-	}
+    /** Create an instance of AppCellMOXrw. */
+    public AppCellMOXrw() {
+        super();
     }
- 
+
     /** 
      * {@inheritDoc}
      */
-    public AppTypeMO getAppType () {
-	return new AppTypeMOXrw();
+    @Override
+    public AppTypeMO getAppType() {
+        return new AppTypeMOXrw();
     }
 
     /**
@@ -72,6 +56,27 @@ public class AppCellMOXrw extends AppConventionalCellMO {
      */
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return "org.jdesktop.lg3d.wonderland.client.app.xremwin.AppCellXrw";
+        return "org.jdesktop.wonderland.modules.xremwin.client.AppCellXrw";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setServerState(CellServerState state) {
+        System.err.println("**************** Enter AppCellMOXrw.setServerState: state = " + state);
+        super.setServerState(state);
+        serverState = (AppCellXrwServerState) state;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CellServerState getServerState(CellServerState state) {
+        if (state == null) {
+            return null;
+        }
+        return super.getServerState(state);
     }
 }

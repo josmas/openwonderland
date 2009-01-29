@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -25,16 +24,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-public abstract class Gui { 
+public abstract class Gui {
 
     /** This Gui's view */
     protected WindowView view;
-
     /** The window displayed by this Gui's view */
     protected Window window;
-
     /** The control arb of the associated application */
     protected ControlArb controlArb;
 
@@ -43,25 +39,25 @@ public abstract class Gui {
      *
      * @param view The view associated with the component that uses this Gui.
      */
-    public Gui (WindowView view) {
-	this.view = view;
-	window = (Window) view.getWindow();
-	controlArb = window.getApp().getControlArb();
+    public Gui(WindowView view) {
+        this.view = view;
+        window = (Window) view.getWindow();
+        controlArb = window.getApp().getControlArb();
     }
 
     /**
      * Clean up resources.
      */
-    public void cleanup () {
-	window = null;
-	view = null;
-	controlArb = null;
+    public void cleanup() {
+        window = null;
+        view = null;
+        controlArb = null;
     }
 
     /**
      * Return the GUI's control arb
      */
-    protected ControlArb getControlArb () {
-	return controlArb;
+    protected ControlArb getControlArb() {
+        return controlArb;
     }
 }

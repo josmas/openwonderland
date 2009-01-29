@@ -17,66 +17,27 @@
  */
 package org.jdesktop.wonderland.modules.appbase.server;
 
-import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.appbase.common.AppCellClientState;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import com.sun.sgs.app.ClientSession;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-
 
 /**
  * A server-side <code>app.base</code> app cell.
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-public abstract class AppCellMO extends CellMO { 
+public abstract class AppCellMO extends CellMO {
 
-    /** Default constructor, used when the cell is created via WFS */
+    private static final Logger logger = Logger.getLogger(AppCellMO.class.getName());
+
+    /** Create an instance of AppCellMO. */
     public AppCellMO() {
-	super();
+        super();
     }
-    
-    /**
-     * Creates a new instance of <code>AppCellMO</code> with the specified localBounds and transform.
-     * If either parameter is null an IllegalArgumentException will be thrown.
-     *
-     * @param localBounds the bounds of the new cell, must not be null.
-     * @param transform the transform for this cell, must not be null.
-     */
-    public AppCellMO (BoundingVolume localBounds, CellTransform transform) {
-        super(localBounds, transform);
-    }
-    
+
     /** 
      * Return the app type of this cell.
      */
-    public abstract AppTypeMO getAppType ();
-
-    /** 
-     * {@inheritDoc}
-     */
-    @Override
-    protected CellClientState getClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-        // If the given cellClient State is null, then create one
-        if (cellClientState == null) {
-            cellClientState = new AppCellClientState();
-        }
-        return super.getClientState(cellClientState, clientID, capabilities);
-    }
-
-    /** 
-     * {@inheritDoc}
-     */
-    @Override
-    public void setServerState(CellServerState serverState) {
-        super.setServerState(serverState);
-    }
+    public abstract AppTypeMO getAppType();
 }

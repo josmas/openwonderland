@@ -29,22 +29,17 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class ProcessMonitor {
 
     /** The process being monitored */
     private Process process;
-
     /** The name of the process */
     private String processName;
-
     /** The reporter to use to report process info to the user */
     private ProcessReporter reporter;
-
     /** A thread which monitors and reports process output */
     private OutputMonitor outputMonitor;
-
     /** 
      * A thread which waits for the process to exit and reports
      * the exit status to the user.
@@ -56,8 +51,8 @@ public class ProcessMonitor {
      *
      * @param process The process to monitor.
      */
-    public ProcessMonitor (Process process, String processName) {
-	this(process, processName, ProcessReporterFactory.getFactory().create(processName));
+    public ProcessMonitor(Process process, String processName) {
+        this(process, processName, ProcessReporterFactory.getFactory().create(processName));
     }
 
     /** 
@@ -66,115 +61,119 @@ public class ProcessMonitor {
      * @param process The process to monitor.
      * @param reporter The reporter with which to report to the user.
      */
-    public ProcessMonitor (Process process, String processName, ProcessReporter reporter) {
-	this.process = process;
-	this.processName = processName;
-	this.reporter = reporter;
+    public ProcessMonitor(Process process, String processName, ProcessReporter reporter) {
+        this.process = process;
+        this.processName = processName;
+        this.reporter = reporter;
 
-	// Start both monitors for process
-	outputMonitor = new OutputMonitor();
-	exitMonitor = new ExitMonitor();
+        // Start both monitors for process
+        outputMonitor = new OutputMonitor();
+        exitMonitor = new ExitMonitor();
     }
 
     /** 
      * Force the process to be killed and clean up resources.
      */
-    public void cleanup () {
+    public void cleanup() {
 
-	// This kills the process. Do this first.
-	if (exitMonitor != null) {
-	    exitMonitor.cleanup();
-	    exitMonitor = null;
-	}
+        // This kills the process. Do this first.
+        if (exitMonitor != null) {
+            exitMonitor.cleanup();
+            exitMonitor = null;
+        }
 
-	if (outputMonitor != null) {
-	    outputMonitor.cleanup();
-	    outputMonitor = null;
-	}
+        if (outputMonitor != null) {
+            outputMonitor.cleanup();
+            outputMonitor = null;
+        }
 
-	reporter = null;
-	process = null;
+        reporter = null;
+        process = null;
     }
 
     /** The class which monitors process output */
     private class OutputMonitor implements Runnable {
 
-	/** A reader of the process's stderr */
+        /** A reader of the process's stderr */
         private BufferedReader stderr;
+        /** The thread loops until stopped */
+        private boolean stop;
+        /** The monitoring thread */
+        private Thread thread;
 
-	/** The thread loops until stopped */
-	private boolean stop;
-
-	/** The monitoring thread */
-	private Thread thread;
-
-	/** Create a new instance of OutputMonitor */
-	private OutputMonitor () {
+        /** Create a new instance of OutputMonitor */
+        private OutputMonitor() {
             stderr = new BufferedReader(new InputStreamReader(process.getInputStream()));
-	    thread = new Thread(this, "Output Monitor for process " + processName);
-	    thread.start();
-	}
+            thread = new Thread(this, "Output Monitor for process " + processName);
+            thread.start();
+        }
 
-	/** Stop monitoring the process and clean up resources. */
-	public void cleanup () {
-	    stop = true;
-	    try { thread.join(); } catch (InterruptedException ex) {}
-	    thread = null;
-	}
+        /** Stop monitoring the process and clean up resources. */
+        public void cleanup() {
+            stop = true;
+            try {
+                thread.join();
+            } catch (InterruptedException ex) {
+            }
+            thread = null;
+        }
 
-	/** The thread main loop */
-	public void run () {
+        /** The thread main loop */
+        public void run() {
             try {
                 String line = stderr.readLine();
-                while(line != null && !stop) {
-		    if (reporter != null) {
-			reporter.output(line);
-		    }
+                while (line != null && !stop) {
+                    if (reporter != null) {
+                        reporter.output(line);
+                    }
                     line = stderr.readLine();
                 }
             } catch (IOException e) {
-		// IOExceptions sometimes occur for normal reasons 
-		// when a unix process exits. So ignore these.
+                // IOExceptions sometimes occur for normal reasons
+                // when a unix process exits. So ignore these.
             } finally {
                 try {
                     stderr.close();
                 } catch (IOException e) {
                 }
             }
-	}
+        }
     }
 
     /** The class which monitors process exit status */
     private class ExitMonitor implements Runnable {
 
-	/** The monitoring thread */
-	private Thread thread;
+        /** The monitoring thread */
+        private Thread thread;
 
-	/** Create a new instance of ExitMonitor */
-	private ExitMonitor () {
-	    thread = new Thread(this, "Exit Monitor for process " + processName);
-	    thread.start();
-	}
+        /** Create a new instance of ExitMonitor */
+        private ExitMonitor() {
+            thread = new Thread(this, "Exit Monitor for process " + processName);
+            thread.start();
+        }
 
-	/** Force the process to be killed and clean up resources. */
-	public void cleanup () {
-	    process.destroy();
-	    try { thread.join(); } catch (InterruptedException ex) {}
-	    thread = null;
-	}
+        /** Force the process to be killed and clean up resources. */
+        public void cleanup() {
+            process.destroy();
+            try {
+                thread.join();
+            } catch (InterruptedException ex) {
+            }
+            thread = null;
+        }
 
-	/** The thread main loop */
-	public void run () {
+        /** The thread main loop */
+        public void run() {
             try {
 
-		// Block thread until process exits
-		int exitValue = process.waitFor();
+                // Block thread until process exits
+                int exitValue = process.waitFor();
 
-		if (reporter != null) {
-		    reporter.exitValue(exitValue);
-		}
+                if (reporter != null) {
+                    reporter.exitValue(exitValue);
+                }
             } catch (InterruptedException e) {
             }
-	}
+        }
     }
 }

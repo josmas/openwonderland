@@ -29,9 +29,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-class WindowStack {
+public class WindowStack {
 
     /** The list of windows in the stack. Windows in the list appear in top to bottom order */
     protected LinkedList<Window2D> stack = new LinkedList<Window2D>();
@@ -39,11 +38,11 @@ class WindowStack {
     /**
      * Deallocate resources.
      */
-    public void cleanup () {
-	if (stack != null) {
-	    stack.clear();
-	    stack = null;
-	}
+    public void cleanup() {
+        if (stack != null) {
+            stack.clear();
+            stack = null;
+        }
     }
 
     /**
@@ -51,10 +50,12 @@ class WindowStack {
      *
      * @param window The window whose stack position is to be returned.
      */
-    public int getStackPosition (Window2D window) {
-	int index = stack.indexOf(window);
-	if (index < 0) return index;
-	return stack.size() - 1 - index;
+    public int getStackPosition(Window2D window) {
+        int index = stack.indexOf(window);
+        if (index < 0) {
+            return index;
+        }
+        return stack.size() - 1 - index;
     }
 
     /**
@@ -63,12 +64,12 @@ class WindowStack {
      *
      * @param window The window to be added.
      */
-    public synchronized void add (Window2D window) {
-	if (stack.indexOf(window) > 0) {
-	    stack.remove(window);
-	}
-	stack.addFirst(window);
-	//printStack();
+    public synchronized void add(Window2D window) {
+        if (stack.indexOf(window) > 0) {
+            stack.remove(window);
+        }
+        stack.addFirst(window);
+    //printStack();
     }
 
     /**
@@ -77,17 +78,17 @@ class WindowStack {
      * @param window The window to be added.
      * @param sibWin The sibling window.
      */
-    public synchronized void addSiblingAbove (Window2D window, Window2D sibWin) {
-	if (getStackPosition(window) >= 0) {
-	    stack.remove(window);
-	}
+    public synchronized void addSiblingAbove(Window2D window, Window2D sibWin) {
+        if (getStackPosition(window) >= 0) {
+            stack.remove(window);
+        }
 
-	int indexOfSibling = stack.indexOf(sibWin);
-	if (indexOfSibling < 0) {
-	    stack.addFirst(window);
-	} else {
-	    stack.add(indexOfSibling, window);
-	}
+        int indexOfSibling = stack.indexOf(sibWin);
+        if (indexOfSibling < 0) {
+            stack.addFirst(window);
+        } else {
+            stack.add(indexOfSibling, window);
+        }
     }
 
     /**
@@ -95,8 +96,8 @@ class WindowStack {
      *
      * @param window The window to be removed.
      */
-    public synchronized void remove (Window2D window) {
-	stack.remove(window);
+    public synchronized void remove(Window2D window) {
+        stack.remove(window);
     }
 
     /**
@@ -104,31 +105,31 @@ class WindowStack {
      *
      * @param window The window to be moved.
      */
-    public synchronized void toFront (Window2D window) {
-	stack.remove(window);
-	stack.addFirst(window);
+    public synchronized void toFront(Window2D window) {
+        stack.remove(window);
+        stack.addFirst(window);
     }
 
     /** 
      * Return the top window of the stack.
      */
-    public Window2D getTop () {
-	try {
-	    return stack.getFirst();
-	} catch (NoSuchElementException ex) {
-	    return null;
-	}
+    public Window2D getTop() {
+        try {
+            return stack.getFirst();
+        } catch (NoSuchElementException ex) {
+            return null;
+        }
     }
 
     /** 
      * Return the bottom window of the stack.
      */
-    public Window2D getBottom () {
-	try {
-	    return stack.getLast();
-	} catch (NoSuchElementException ex) {
-	    return null;
-	}
+    public Window2D getBottom() {
+        try {
+            return stack.getLast();
+        } catch (NoSuchElementException ex) {
+            return null;
+        }
     }
 
     /**
@@ -138,12 +139,12 @@ class WindowStack {
      * bottommost window on the stack and the window order[order.length-1] should be the topmost window on the
      * stack.
      */
-    public synchronized void restack (Window2D[] order) {
-	stack.clear();
-	for (Window2D win : order) {
-	    if (win != null) {
-		stack.addFirst(win);
-	    }
-	}
+    public synchronized void restack(Window2D[] order) {
+        stack.clear();
+        for (Window2D win : order) {
+            if (win != null) {
+                stack.addFirst(win);
+            }
+        }
     }
 }

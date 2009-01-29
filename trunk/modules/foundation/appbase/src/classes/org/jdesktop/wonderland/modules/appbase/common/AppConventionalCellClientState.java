@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.common;
 
-import java.util.UUID;
-import com.jme.math.Vector2f;
 import java.io.Serializable;
 import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -29,174 +27,75 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class AppConventionalCellClientState extends App2DCellClientState {
 
-    /** Whether the app has been launched by the world or user */
-    private boolean userLaunched;
-
-    /** The host on which to run the app master */
-    private String masterHost;
-
-    /** The name of the app */
-    private String appName;
-
+    /** The name of the app. */
+    protected String appName;
+    /** Where the app should be launched (user vs. server host). */
+    protected String launchLocation;
     /** 
-     * The unique ID of the app. For user-launched apps this is assigned
-     * by the master and therefore is only unique within the master client.
-     * For world-launched apps this is assigned by the server and is
-     * therefore unique within the entire system.
+     * User that should launch the app. 
+     * (Only used when launchLocation == user).
      */
-    private UUID appId;
-
-    /** 
-     * The command the master should use to execute the app program.
-     * This is only used in the case of world-launched apps.
-     */
-    private String command;
-
-    /** Will the app be moved to the best view on the master after start up? */
-    private boolean bestView;
-
+    protected String launchUser;
+    /** Cell should be configured so that primary window is in best view. */
+    protected boolean isBestView;
+    /** The command which launches the app. */
+    protected String command;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
-    private Serializable connectionInfo;
+    protected Serializable connectionInfo;
 
-    /** 
-     * Create a new instance of AppConventionalCellClientState with default state.
-     */
-    public AppConventionalCellClientState () {
-	this(null, null, null, null);
+    /** Create an instance of AppConventionalCellClientState. */
+    public AppConventionalCellClientState() {
+        super();
     }
 
-    /** 
-     * Create a new instance of AppConventionalCellClientState.
-     *
-     * @param masterHost The master host on which the app master will run.
-     * @param appName The name of the application.
-     * @param pixelScale The number of world units per pixel in the cell local X and Y directions.
-     * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master and slave.
-     */
-    public AppConventionalCellClientState (String masterHost, String appName, Vector2f pixelScale, 
-					   Serializable connectionInfo) {
-	super(pixelScale);
-	this.masterHost = masterHost;
-	this.appName = appName;
-	this.connectionInfo = connectionInfo;
+    public String getAppName() {
+        return appName;
     }
 
-    /**
-     * Specify the master host.
-     *
-     * @param masterHost The host name of the master host.
-     */
-    public void setMasterHost (String masterHost) {
-	this.masterHost = masterHost;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
-    /**
-     * Returns the master host name.
-     */
-    public String getMasterHost () {
-	return masterHost;
+    public String getLaunchLocation() {
+        return launchLocation;
     }
 
-    /**
-     * Specify the app name.
-     *
-     * @param appName The name of the app.
-     */
-    public void setAppName (String appName) {
-	this.appName = appName;
+    public void setLaunchLocation(String launchLocation) {
+        this.launchLocation = launchLocation;
     }
 
-    /**
-     * Returns the app name.
-     */
-    public String getAppName () {
-	return appName;
+    public String getLaunchUser() {
+        return launchUser;
     }
 
-    /**
-     * Specify whether the app was launched by a user.
-     *
-     * @param userLaunched True if the app was launched by the user. 
-     * False if the app was launched by the world.
-     */
-    public void setUserLaunched (boolean userLaunched) {
-	this.userLaunched = userLaunched;
+    public void setLaunchUser(String launchUser) {
+        this.launchUser = launchUser;
     }
 
-    /**
-     * Was the app launched by a user?
-     * Note: This information is used only by the master client.
-     */
-    public boolean isUserLaunched () {
-	return userLaunched;
+    public boolean isBestView() {
+        return isBestView;
     }
 
-    /**
-     * Specify the app ID.
-     *
-     * @param appId The app ID.
-     */
-    public void setAppId (UUID appId) {
-	this.appId = appId;
+    public void setBestView(boolean bestView) {
+        isBestView = bestView;
     }
 
-    /**
-     * Returns the app ID.
-     * Note: This information is used only by the master client for user-launched apps.
-     */
-    public UUID getAppId () {
-	return appId;
+    public String getCommand() {
+        return command;
     }
 
-    /**
-     * Specify the command the master should use to execute the app program.
-     *
-     * @param command The platform command string (contains both the command name and arguments).
-     */
-    public void setCommand (String command) {
-	this.command = command;
+    public void setCommand(String command) {
+        this.command = command;
     }
 
-    /**
-     * Returns the command string.
-     * Note: This information is used only by the master client for world-launched apps.
-     */
-    public String getCommand () {
-	return command;
+    public void setConnectionInfo(Serializable connectionInfo) {
+        this.connectionInfo = connectionInfo;
     }
 
-    /**
-     * Specify whether the app will be moved to the best view on the master after start up.
-     *
-     * @param bestView True indicates that this movement should take place.
-     */
-    public void setBestView (boolean bestView) {
-	this.bestView = bestView;
-    }
-
-    /**
-     * Should the the app will be moved to the best view on the master after start up?
-     * Note: This information is used only by the master client.
-     */
-    public boolean isBestView () {
-	return bestView;
-    }
-
-    /**
-     * Specify the connection info.
-     */
-    public void setConnectionInfo (Serializable connectionInfo) {
-	this.connectionInfo = connectionInfo;
-    }
-
-    /**
-     * Returns the connection info.
-     */
-    public Serializable getConnectionInfo () {
-	return connectionInfo;
+    public Serializable getConnectionInfo() {
+        return connectionInfo;
     }
 }

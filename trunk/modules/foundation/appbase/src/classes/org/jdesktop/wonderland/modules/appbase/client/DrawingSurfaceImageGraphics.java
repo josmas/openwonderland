@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.appbase.client;
 import com.jme.image.Texture;
 import java.awt.Graphics2D;
 import com.jmex.awt.swingui.ImageGraphics;
-import java.awt.Color;
 import java.awt.Point;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.NewFrameCondition;
@@ -55,7 +54,6 @@ import org.jdesktop.wonderland.common.InternalAPI;
  *
  * @author paulby, deronj
  */
-
 @InternalAPI
 public class DrawingSurfaceImageGraphics implements DrawingSurface {
 
@@ -69,25 +67,18 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
 
     /* The Y location of the current cursor position (in image coordinates). */
     protected int penY;
-
     /** The width of the surface (in pixels) */
     protected int surfaceWidth;
-
     /** The height of the surface (in pixels) */
     protected int surfaceHeight;
-    
     /** The desired destination texture. */
     private Texture texture;
-
     /** Whether texture updating is enabled */
     private boolean updateEnable;
-
     /** The processor performing the updates. */
     private UpdateProcessor updateProcessor;
-
     /** The entity to which the processor is attached. */
     private Entity updateEntity;
-
     /** The 2D window which is served by this drawing surface. */
     private Window2D window;
 
@@ -96,40 +87,41 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
      * <br>
      * Note: You must do a setSize before using a surface created in this way.
      */
-    public DrawingSurfaceImageGraphics () {}
+    public DrawingSurfaceImageGraphics() {
+    }
 
     /** 
      * Create an instance of DrawingSurfaceImageGraphics.
      * @param width The width of the surface in pixels.
      * @param height The height of the surface in pixels.
      */
-    public DrawingSurfaceImageGraphics (int width, int height) {
-	this();
-	setSize(width, height);
+    public DrawingSurfaceImageGraphics(int width, int height) {
+        this();
+        setSize(width, height);
     }
-    
+
     /**
      * Clean up resources held.
      */
-    public void cleanup () {
-	setUpdateEnable(false);
-	imageGraphics = null;
-	texture = null;
+    public void cleanup() {
+        setUpdateEnable(false);
+        imageGraphics = null;
+        texture = null;
     }
 
     /**
      * Returns this drawing surface's window.
      */
-    public Window2D getWindow () {
-	return window;
+    public Window2D getWindow() {
+        return window;
     }
 
     /**
      * Specify the window which uses this drawing surface.
      * @param window The 2D window which is served by this drawing surface.
      */
-    public void setWindow (Window2D window) {
-	this.window = window;
+    public void setWindow(Window2D window) {
+        this.window = window;
     }
 
     /**
@@ -139,19 +131,19 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
      * @param height The new height of the surface in pixels.
      */
     public synchronized void setSize(int width, int height) {
-	imageGraphics = ImageGraphics.createInstance(width, height, 0);
+        imageGraphics = ImageGraphics.createInstance(width, height, 0);
         surfaceWidth = width;
         surfaceHeight = height;
-	imageGraphics.clipRect(0, 0, width, height);
+        imageGraphics.clipRect(0, 0, width, height);
 
-	updateUpdating();
+        updateUpdating();
     }
-    
+
     /**
      * Initialize the contents of the surface.
      */
-    public void initializeSurface () {
-	initSurface(imageGraphics);
+    public void initializeSurface() {
+        initSurface(imageGraphics);
     }
 
     /**
@@ -162,12 +154,12 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
      * @return The corresponding pixel location in the image.
      */
     protected Point computeImagePoint(float x, float y) {
-        int pX = surfaceWidth / 2 + (int)((x * surfaceWidth) / 2);
-        int pY = surfaceHeight / 2 + (int)((y * surfaceHeight) / 2);
-        
+        int pX = surfaceWidth / 2 + (int) ((x * surfaceWidth) / 2);
+        int pY = surfaceHeight / 2 + (int) ((y * surfaceHeight) / 2);
+
         return new Point(pX, pY);
     }
-    
+
     /**
      * Called on surface initialization after the surface has been
      * initially erased. The subclass can draw whatever it wants on 
@@ -177,143 +169,148 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
      * @param g The Graphics2D that must be used during this call 
      * to draw to the surface. Use g instead of getGraphics().
      */
-    protected void initSurface (Graphics2D g) {}
+    protected void initSurface(Graphics2D g) {
+    }
 
     /**
      * Returns a Graphics2D to draw on the surface.
      */
-    public Graphics2D getGraphics () {
+    public Graphics2D getGraphics() {
         return imageGraphics;
     }
 
     /**
      * Returns the width of the surface.
      */
-    public int getWidth () {
-	return surfaceWidth;
+    public int getWidth() {
+        return surfaceWidth;
     }
 
     /**
      * Returns the height of the surface.
      */
-    public int getHeight () {
-	return surfaceHeight;
+    public int getHeight() {
+        return surfaceHeight;
     }
 
     /**
      * Specify the texture that this surface's contents should be copied into.
      */
-    public synchronized void setTexture (Texture texture) {
-	this.texture = texture;
-	updateUpdating();
+    public synchronized void setTexture(Texture texture) {
+        this.texture = texture;
+        updateUpdating();
     }
 
     /**
      * Return this surface's associated texture.
      */
-    public Texture getTexture () {
-	return texture;
+    public Texture getTexture() {
+        return texture;
     }
 
     /**
      * Enable or disabling the updating of the texture.
      */
     // TODO: must tie processor enable in with setvisible. 
-    public synchronized void setUpdateEnable (boolean enable) {
-	if (enable == updateEnable) return;
-	updateEnable = enable;
-	updateUpdating();
+    public synchronized void setUpdateEnable(boolean enable) {
+        if (enable == updateEnable) {
+            return;
+        }
+        updateEnable = enable;
+        updateUpdating();
     }
 
     /**
      * Return whether texture updating is enabled.
      */
-    public boolean getUpdateEnable () {
-	return updateEnable;
+    public boolean getUpdateEnable() {
+        return updateEnable;
     }
 
     /**
      * Check whether or not updating should be activated.
      */
-    private void updateUpdating () {
-	if (updateEnable && imageGraphics != null && texture != null) {
-	    if (updateProcessor == null) {
-		updateProcessor = createUpdateProcessor();
-		updateEntity = new Entity("DrawingSurface updateEntity");
-		updateEntity.addComponent(ProcessorComponent.class, updateProcessor);
-		ClientContextJME.getWorldManager().addEntity(updateEntity);
-		updateProcessor.start();
-	    }
-	} else {
-	    if (updateProcessor != null) {
-		updateProcessor.stop();
-		ClientContextJME.getWorldManager().removeEntity(updateEntity);
-		updateEntity.removeComponent(ProcessorComponent.class);
-		updateEntity = null;
-		updateProcessor = null;
-	    }
-	}
+    private void updateUpdating() {
+        if (updateEnable && imageGraphics != null && texture != null) {
+            if (updateProcessor == null) {
+                updateProcessor = createUpdateProcessor();
+                updateEntity = new Entity("DrawingSurface updateEntity");
+                updateEntity.addComponent(ProcessorComponent.class, updateProcessor);
+                ClientContextJME.getWorldManager().addEntity(updateEntity);
+                updateProcessor.start();
+            }
+        } else {
+            if (updateProcessor != null) {
+                updateProcessor.stop();
+                ClientContextJME.getWorldManager().removeEntity(updateEntity);
+                updateEntity.removeComponent(ProcessorComponent.class);
+                updateEntity = null;
+                updateProcessor = null;
+            }
+        }
     }
 
     /**
      * Create a new instance of UpdateProcessor.
      */
-    protected UpdateProcessor createUpdateProcessor () {
-	return new UpdateProcessor();
+    protected UpdateProcessor createUpdateProcessor() {
+        return new UpdateProcessor();
     }
 
     protected class UpdateProcessor extends ProcessorComponent {
 
-	/**
-	 * Initialze the processor to be called once per frame.
-	 */
-	// TODO: don't enable until the window is visible
-	public void initialize () {
-	    start();
-	}
+        /**
+         * Initialze the processor to be called once per frame.
+         */
+        // TODO: don't enable until the window is visible
+        public void initialize() {
+            start();
+        }
 
-	/**
-	 * Called once per frame to perform the update.
-	 */
-	public void compute (ProcessorArmingCollection collection) {
-	}
+        /**
+         * Called once per frame to perform the update.
+         */
+        public void compute(ProcessorArmingCollection collection) {
+        }
 
-	/**
-	 * Called once per frame to perform the update.
-	 */
-	public void commit (ProcessorArmingCollection collection) {
-	    synchronized (DrawingSurfaceImageGraphics.this) {
-		// TODO: doug: okay to be doing a lock and this much work in a commit?
-		if (texture.getTextureId() == 0) {
-		    if (window == null) return;
-		    window.forceTextureIdAssignment();
-		    if (texture.getTextureId() == 0) {
-			Thread.dumpStack();
-			logger.severe("********* imageGraphics.update when texture id is still unassigned!!!!");
-		    }
-		}
-		
-		if (checkForUpdate()) {
-		    imageGraphics.update(texture, true);
-		}
-	    }
-	}
+        /**
+         * Called once per frame to perform the update.
+         */
+        public void commit(ProcessorArmingCollection collection) {
+            synchronized (DrawingSurfaceImageGraphics.this) {
+                // TODO: doug: okay to be doing a lock and this much work in a commit?
+                if (texture.getTextureId() == 0) {
+                    if (window == null) {
+                        return;
+                    }
+                    window.forceTextureIdAssignment();
+                    if (texture.getTextureId() == 0) {
+                        Thread.dumpStack();
+                        logger.severe("********* imageGraphics.update when texture id is still unassigned!!!!");
+                    }
+                }
 
-	/**
-	 * Return whether the processor should perform imageGraphics.update.
-	 */
-	protected boolean checkForUpdate () {
-	    // In this implementation, the imageGraphics.update always checks itself to see whether
-	    // it is dirty and needs copying into the texture.
-	    return true;
-	}
+                if (checkForUpdate()) {
+                    imageGraphics.update(texture, true);
+                }
+            }
+        }
 
-	private void start () {
-	    setArmingCondition(new NewFrameCondition(this));
-	}
+        /**
+         * Return whether the processor should perform imageGraphics.update.
+         */
+        protected boolean checkForUpdate() {
+            // In this implementation, the imageGraphics.update always checks itself to see whether
+            // it is dirty and needs copying into the texture.
+            return true;
+        }
 
-	private void stop () {
-	    setArmingCondition(null);
-	}
+        private void start() {
+            setArmingCondition(new NewFrameCondition(this));
+        }
+
+        private void stop() {
+            setArmingCondition(null);
+        }
     }
 }

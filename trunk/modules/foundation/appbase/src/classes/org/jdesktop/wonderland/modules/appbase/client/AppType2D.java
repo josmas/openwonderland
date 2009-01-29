@@ -29,14 +29,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class AppType2D extends AppType {
 
     /**
      * {@inheritDoc}
      */
-    public GuiFactory getGuiFactory () {
-	return Gui2DFactory.getFactory();
+    public GuiFactory getGuiFactory() {
+        return Gui2DFactory.getFactory();
     }
 }

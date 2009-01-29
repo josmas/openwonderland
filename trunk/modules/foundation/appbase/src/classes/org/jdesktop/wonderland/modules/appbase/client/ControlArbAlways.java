@@ -27,7 +27,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class ControlArbAlways extends ControlArb {
 
@@ -37,21 +36,21 @@ public class ControlArbAlways extends ControlArb {
      * This method always returns true.
      */
     @Override
-    public boolean hasControl () {
-	return true;
+    public boolean hasControl() {
+        return true;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void deliverEvent (Window2D window, KeyEvent event) {
-	window.deliverEvent(event);
+    public void deliverEvent(Window2D window, KeyEvent event) {
+        window.deliverEvent(event);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void deliverEvent (Window2D window, MouseEvent event) {
-	window.deliverEvent(event);
+    public void deliverEvent(Window2D window, MouseEvent event) {
+        window.deliverEvent(event);
     }
 }

@@ -41,20 +41,19 @@ class SlaveForwarder {
     private byte[] welcomeBuf = new byte[Proto.WELCOME_MESSAGE_SIZE];
     static boolean perfTestEnabled = false;
     static boolean perfTestExitOnCompletion = true;
-    private HashMap<Integer, String> clientIdToUserName = new HashMap<Integer, String>();
+    private final HashMap<Integer, String> clientIdToUserName = new HashMap<Integer, String>();
     private int nextNewClientId = 1;
 
     public SlaveForwarder(ServerProxyMaster serverProxy, BigInteger sessionID, ServerSocket serverSocket)
             throws IOException {
         this.serverProxy = serverProxy;
         socketSet = new MasterSocketSet(sessionID, serverSocket, new MyListener());
-	socketSet.start();
+        socketSet.start();
     }
 
     public void cleanup() {
         disconnect();
         serverProxy = null;
-        clientIdToUserName = null;
     }
 
     void disconnect() {

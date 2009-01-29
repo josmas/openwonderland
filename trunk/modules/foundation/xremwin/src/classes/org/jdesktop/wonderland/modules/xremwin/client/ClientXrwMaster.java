@@ -39,13 +39,11 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArg
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener
-{
+class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener {
+
     private SlaveCloseWindowMsgArgs slaveCloseWindowMsgArgs = new SlaveCloseWindowMsgArgs();
     private SetWindowTitleMsgArgs setWindowTitleMsgArgs = new SetWindowTitleMsgArgs();
-
     protected WindowSystemXrw winSys;
 
     /**
@@ -60,106 +58,105 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener
      * @param reporter Report output and exit status to this.
      * @throws InstantiationException If it could not make contact with the server.
      */
-    public ClientXrwMaster (AppXrw app, ControlArbXrw controlArb, WonderlandSession session, String masterHost, 
-			    ServerSocket serverSocket, WindowSystemXrw winSys, ProcessReporter reporter) 
-	throws InstantiationException
-    {
-	super(app, controlArb, reporter);
-	this.winSys = winSys;
-	winSys.setExitListener(this);
+    public ClientXrwMaster(AppXrw app, ControlArbXrw controlArb, WonderlandSession session, String masterHost,
+            ServerSocket serverSocket, WindowSystemXrw winSys, ProcessReporter reporter)
+            throws InstantiationException {
+        super(app, controlArb, reporter);
+        this.winSys = winSys;
+        winSys.setExitListener(this);
 
-	// Connect to the Xremwin server
+        // Connect to the Xremwin server
 
-        int wsDisplayMaster =  winSys.getDisplayNum();
-	serverProxy = new ServerProxyMaster(session, masterHost, wsDisplayMaster, serverSocket);
-	try {
-	    serverProxy.connect();
-	} catch (IOException ex) {
-	    throw new InstantiationException("Could not contact Xremwin server");
-	}
-	serverConnected = true;
+        int wsDisplayMaster = winSys.getDisplayNum();
+        serverProxy = new ServerProxyMaster(session, masterHost, wsDisplayMaster, serverSocket);
+        try {
+            serverProxy.connect();
+        } catch (IOException ex) {
+            throw new InstantiationException("Could not contact Xremwin server");
+        }
+        serverConnected = true;
 
-	controlArb.setServerProxy(serverProxy);
+        controlArb.setServerProxy(serverProxy);
 
-	// Start the protocol interpreter
-	start();
+        // Start the protocol interpreter
+        start();
     }
 
     /**
      * Release held resources.
      */
-    public void cleanup () {
-	super.cleanup();
-	winSys = null;
+    public void cleanup() {
+        super.cleanup();
+        winSys = null;
     }
 
     /**
      * @{inheritDoc}
      */
     @Override
-    protected MessageArgs readMessageArgs (ServerMessageType msgType) {
-	switch (msgType) {
+    protected MessageArgs readMessageArgs(ServerMessageType msgType) {
+        switch (msgType) {
 
-	case SERVER_DISCONNECT:
-	    return null;
+            case SERVER_DISCONNECT:
+                return null;
 
-        case SLAVE_HELLO:
-	    return null;
+            case SLAVE_HELLO:
+                return null;
 
-        case SLAVE_CLOSE_WINDOW:
-    	    ((ServerProxyMaster)serverProxy).getData(slaveCloseWindowMsgArgs);
-	    return slaveCloseWindowMsgArgs;
+            case SLAVE_CLOSE_WINDOW:
+                ((ServerProxyMaster) serverProxy).getData(slaveCloseWindowMsgArgs);
+                return slaveCloseWindowMsgArgs;
 
-	case SET_WINDOW_TITLE:
-	    serverProxy.getData(setWindowTitleMsgArgs);
-	    return null;
+            case SET_WINDOW_TITLE:
+                serverProxy.getData(setWindowTitleMsgArgs);
+                return null;
 
-	default:
-	    return super.readMessageArgs(msgType);
-	}
+            default:
+                return super.readMessageArgs(msgType);
+        }
     }
 
     /**
      * @{inheritDoc}
      */
     @Override
-    protected void processMessage (ServerMessageType msgType) {
-	switch (msgType) {
+    protected void processMessage(ServerMessageType msgType) {
+        switch (msgType) {
 
-	case SERVER_DISCONNECT:
-	    serverConnected = false;
-	    break;
+            case SERVER_DISCONNECT:
+                serverConnected = false;
+                break;
 
-    	// A slave is trying to connect. Welcome messages to slaves need to be
-        // properly serialized with the server messages which we will send to them.		
+            // A slave is trying to connect. Welcome messages to slaves need to be
+            // properly serialized with the server messages which we will send to them.
 
-        case SLAVE_HELLO: 
-	    ServerProxyMaster spm = (ServerProxyMaster) serverProxy;
-	    BigInteger slaveID = spm.getConnectingSlaveID();
-	    String userName = spm.getConnectingUserName();
-	    // TODO: It is definitely weird that we are calling a method of a 
-	    // ServerSocketMaster object order to communicate with the slave. But 
-	    // really we are communicating a slave via the SlaveForwarder that 
-	    // the ServerSocketMaster owns. Eventually must up-level most of 
-	    // SlaveForwarder.unicastWelcomeMessage et al. into Client.
-	    spm.sendWelcomeMessageToSlave(slaveID, userName);
-	    break;
+            case SLAVE_HELLO:
+                ServerProxyMaster spm = (ServerProxyMaster) serverProxy;
+                BigInteger slaveID = spm.getConnectingSlaveID();
+                String userName = spm.getConnectingUserName();
+                // TODO: It is definitely weird that we are calling a method of a
+                // ServerSocketMaster object order to communicate with the slave. But
+                // really we are communicating a slave via the SlaveForwarder that
+                // the ServerSocketMaster owns. Eventually must up-level most of
+                // SlaveForwarder.unicastWelcomeMessage et al. into Client.
+                spm.sendWelcomeMessageToSlave(slaveID, userName);
+                break;
 
-        case SLAVE_CLOSE_WINDOW:
+            case SLAVE_CLOSE_WINDOW:
 
-	    // If this was performed interactively by this client, ignore it */
-	    if (slaveCloseWindowMsgArgs.clientId != clientId) {
-		slaveCloseWindow(slaveCloseWindowMsgArgs.wid);
-	    }
-	    break;
+                // If this was performed interactively by this client, ignore it */
+                if (slaveCloseWindowMsgArgs.clientId != clientId) {
+                    slaveCloseWindow(slaveCloseWindowMsgArgs.wid);
+                }
+                break;
 
-	case SET_WINDOW_TITLE:
-	    // Ignore the message
-	    break;
+            case SET_WINDOW_TITLE:
+                // Ignore the message
+                break;
 
-	default:
-	    super.processMessage(msgType);
-	}
+            default:
+                super.processMessage(msgType);
+        }
     }
 
     /**
@@ -168,30 +165,29 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener
      * @param wid The window whose title changed.
      * @param title The window's new title.
      */
-    public synchronized void setWindowTitle (int wid, String title) 
-    {
-	WindowXrw win = lookupWindow(wid);
-	if (win != null) {
-	    win.setTitle(title);
-	}
+    public synchronized void setWindowTitle(int wid, String title) {
+        WindowXrw win = lookupWindow(wid);
+        if (win != null) {
+            win.setTitle(title);
+        }
 
-	// Now tell the server so it can tell the slave clients
-	try {
-	    AppXrw.logger.finer("Write set window title to server");
-	    serverProxy.writeSetWindowTitle(wid, title);
-	} catch (IOException ex) {
-	    AppXrw.logger.warning("Master cannot set window title for wid " + wid);
-	}
+        // Now tell the server so it can tell the slave clients
+        try {
+            AppXrw.logger.finer("Write set window title to server");
+            serverProxy.writeSetWindowTitle(wid, title);
+        } catch (IOException ex) {
+            AppXrw.logger.warning("Master cannot set window title for wid " + wid);
+        }
     }
 
     /**
      * Handle the ControllerStatus Message.
      */
-    protected void processControllerStatus (ControllerStatusMsgArgs msgArgs) {
-	super.processControllerStatus(msgArgs);
-	if (msgArgs.status == ControllerStatus.GAINED) {
-	    controlArb.setController(((ServerProxyMaster)serverProxy).getControllingUser());
-	}
+    protected void processControllerStatus(ControllerStatusMsgArgs msgArgs) {
+        super.processControllerStatus(msgArgs);
+        if (msgArgs.status == ControllerStatus.GAINED) {
+            controlArb.setController(((ServerProxyMaster) serverProxy).getControllingUser());
+        }
     }
 
     /**
@@ -200,10 +196,10 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener
      * @param window The popup window.
      * @param parent The new parent of the popup window.
      */
-    public void setPopupParent (WindowXrw window, WindowXrw parent) {
-	int wid = window.getWid();
-	int parentWid = parent.getWid();
-	((ServerProxyMaster)serverProxy).setPopupParent(wid, parentWid);
+    public void setPopupParent(WindowXrw window, WindowXrw parent) {
+        int wid = window.getWid();
+        int parentWid = parent.getWid();
+        ((ServerProxyMaster) serverProxy).setPopupParent(wid, parentWid);
     }
 
     /**
@@ -211,31 +207,31 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener
      *
      * @param wid The wid of the window the slave has closed.
      */
-    public void slaveCloseWindow (int wid) {
-	// A slave can only close a window when it has control
-	if (controlArb.hasControl()) {
-	    AppXrw.logger.finer("CLOSE_WINDOW");
-	    WindowXrw win = lookupWindow(wid);
-	    if (win != null) {
-		closeWindow(win);
-	    }
-	}
+    public void slaveCloseWindow(int wid) {
+        // A slave can only close a window when it has control
+        if (controlArb.hasControl()) {
+            AppXrw.logger.finer("CLOSE_WINDOW");
+            WindowXrw win = lookupWindow(wid);
+            if (win != null) {
+                closeWindow(win);
+            }
+        }
     }
 
     /**
      * Close the given window.
      */
-    public void closeWindow (WindowXrw win) {
-	winSys.deleteWindow(win.getWid());
+    public void closeWindow(WindowXrw win) {
+        winSys.deleteWindow(win.getWid());
     }
 
     // Called by window system exit listener 
-    public void windowSystemExitted () {
-	controlArb.releaseControl();
+    public void windowSystemExitted() {
+        controlArb.releaseControl();
     }
 
-    public void writeSyncSlavePixels (BigInteger slaveID, int[] pixels, int w, int h) {
-	byte[] pixelBuf = intAryToByteAry(pixels, w, h);
-	((ServerProxyMaster)serverProxy).writeSlaveSyncPixels(slaveID, pixelBuf);
+    public void writeSyncSlavePixels(BigInteger slaveID, int[] pixels, int w, int h) {
+        byte[] pixelBuf = intAryToByteAry(pixels, w, h);
+        ((ServerProxyMaster) serverProxy).writeSlaveSyncPixels(slaveID, pixelBuf);
     }
 }

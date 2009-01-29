@@ -32,25 +32,19 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class MonitoredProcess {
-    
+
     /** The name of the process */
     private String processName;
-    
     /** The command to run and its arguments */
     private ArrayList<String> cmdAndArgs;
-
     /** A map of environment variable (name, value) pairs */
-    private Map<String,String> env;
-
+    private Map<String, String> env;
     /** The reporter used to report app output and exit status */
     private ProcessReporter reporter;
-    
     /** The process */
     private Process process;
-
     /** The process monitor */
     private ProcessMonitor monitor;
 
@@ -60,8 +54,8 @@ public class MonitoredProcess {
      * @param processName The name of the process.
      * @param cmdAndArgs The command to run and its arguments.
      */
-    public MonitoredProcess (String processName, String cmdAndArgs) {
-	this(processName, stringToArrayListString(cmdAndArgs), null, null);
+    public MonitoredProcess(String processName, String cmdAndArgs) {
+        this(processName, stringToArrayListString(cmdAndArgs), null, null);
     }
 
     /** 
@@ -70,8 +64,8 @@ public class MonitoredProcess {
      * @param processName The name of the process.
      * @param cmdAndArgs The command to run and its arguments.
      */
-    public MonitoredProcess (String processName, String[] cmdAndArgs) {
-	this(processName, stringArrayToArrayListString(cmdAndArgs), null, null);
+    public MonitoredProcess(String processName, String[] cmdAndArgs) {
+        this(processName, stringArrayToArrayListString(cmdAndArgs), null, null);
     }
 
     /** 
@@ -80,20 +74,8 @@ public class MonitoredProcess {
      * @param processName The name of the process.
      * @param cmdAndArgs The command to run and its arguments.
      */
-    public MonitoredProcess (String processName, ArrayList<String> cmdAndArgs) {
-	this(processName, cmdAndArgs, null, null);
-    }
-
-    /** 
-     * Create a new instance of MonitoredProcess. Use the default reporter.
-     *
-     * @param processName The name of the process.
-     * @param cmdAndArgs The command to run and its arguments.
-     * @param env A map of environment variable (name, value) pairs.
-     */
-    public MonitoredProcess (String processName, String cmdAndArgs, 
-			     Map<String,String> env) {
-	this(processName, stringToArrayListString(cmdAndArgs), env, null);
+    public MonitoredProcess(String processName, ArrayList<String> cmdAndArgs) {
+        this(processName, cmdAndArgs, null, null);
     }
 
     /** 
@@ -103,9 +85,9 @@ public class MonitoredProcess {
      * @param cmdAndArgs The command to run and its arguments.
      * @param env A map of environment variable (name, value) pairs.
      */
-    public MonitoredProcess (String processName, String[] cmdAndArgs,
-			     Map<String,String> env) {
-	this(processName, stringArrayToArrayListString(cmdAndArgs), env, null);
+    public MonitoredProcess(String processName, String cmdAndArgs,
+            Map<String, String> env) {
+        this(processName, stringToArrayListString(cmdAndArgs), env, null);
     }
 
     /** 
@@ -115,9 +97,21 @@ public class MonitoredProcess {
      * @param cmdAndArgs The command to run and its arguments.
      * @param env A map of environment variable (name, value) pairs.
      */
-    public MonitoredProcess (String processName, ArrayList<String> cmdAndArgs, 
-			     Map<String,String> env) {
-	this(processName, cmdAndArgs, env, null);
+    public MonitoredProcess(String processName, String[] cmdAndArgs,
+            Map<String, String> env) {
+        this(processName, stringArrayToArrayListString(cmdAndArgs), env, null);
+    }
+
+    /** 
+     * Create a new instance of MonitoredProcess. Use the default reporter.
+     *
+     * @param processName The name of the process.
+     * @param cmdAndArgs The command to run and its arguments.
+     * @param env A map of environment variable (name, value) pairs.
+     */
+    public MonitoredProcess(String processName, ArrayList<String> cmdAndArgs,
+            Map<String, String> env) {
+        this(processName, cmdAndArgs, env, null);
     }
 
     /** 
@@ -127,10 +121,10 @@ public class MonitoredProcess {
      * @param cmdAndArgs The command to run and its arguments.
      * @param reporter The reporter used to report app output and exit status.
      */
-    public MonitoredProcess (String processName, String cmdAndArgs, 
-			     ProcessReporter reporter) {
-	this(processName, stringToArrayListString(cmdAndArgs), null, 
-	     reporter);
+    public MonitoredProcess(String processName, String cmdAndArgs,
+            ProcessReporter reporter) {
+        this(processName, stringToArrayListString(cmdAndArgs), null,
+                reporter);
     }
 
     /** 
@@ -139,22 +133,10 @@ public class MonitoredProcess {
      * @param cmdAndArgs The command to run and its arguments.
      * @param reporter The reporter used to report app output and exit status.
      */
-    public MonitoredProcess (String processName, String[] cmdAndArgs, 
-			     ProcessReporter reporter) {
-	this(processName, stringArrayToArrayListString(cmdAndArgs), null, 
-	     reporter);
-    }
-
-    /** 
-     * Create a new instance of MonitoredProcess.
-     *
-     * @param processName The name of the process.
-     * @param cmdAndArgs The command to run and its arguments.
-     * @param reporter The reporter used to report app output and exit status.
-     */
-    public MonitoredProcess (String processName, ArrayList<String> cmdAndArgs, 
-			     ProcessReporter reporter) {
-	this(processName, cmdAndArgs, null, reporter);
+    public MonitoredProcess(String processName, String[] cmdAndArgs,
+            ProcessReporter reporter) {
+        this(processName, stringArrayToArrayListString(cmdAndArgs), null,
+                reporter);
     }
 
     /** 
@@ -162,12 +144,11 @@ public class MonitoredProcess {
      *
      * @param processName The name of the process.
      * @param cmdAndArgs The command to run and its arguments.
-     * @param env A map of environment variable (name, value) pairs.
      * @param reporter The reporter used to report app output and exit status.
      */
-    public MonitoredProcess (String processName, String cmdAndArgs, 
-			     Map<String,String> env, ProcessReporter reporter) {
-	this(processName, stringToArrayListString(cmdAndArgs), env, reporter);
+    public MonitoredProcess(String processName, ArrayList<String> cmdAndArgs,
+            ProcessReporter reporter) {
+        this(processName, cmdAndArgs, null, reporter);
     }
 
     /** 
@@ -178,9 +159,9 @@ public class MonitoredProcess {
      * @param env A map of environment variable (name, value) pairs.
      * @param reporter The reporter used to report app output and exit status.
      */
-    public MonitoredProcess (String processName, String[] cmdAndArgs, 
-			     Map<String,String> env, ProcessReporter reporter) {
-	this(processName, stringArrayToArrayListString(cmdAndArgs), env, reporter);
+    public MonitoredProcess(String processName, String cmdAndArgs,
+            Map<String, String> env, ProcessReporter reporter) {
+        this(processName, stringToArrayListString(cmdAndArgs), env, reporter);
     }
 
     /** 
@@ -191,34 +172,47 @@ public class MonitoredProcess {
      * @param env A map of environment variable (name, value) pairs.
      * @param reporter The reporter used to report app output and exit status.
      */
-    public MonitoredProcess (String processName,  ArrayList<String> cmdAndArgs, 
-			     Map<String,String> env, ProcessReporter reporter) {
-	this.processName = processName;
-	this.cmdAndArgs = cmdAndArgs;
-	this.env = env;
+    public MonitoredProcess(String processName, String[] cmdAndArgs,
+            Map<String, String> env, ProcessReporter reporter) {
+        this(processName, stringArrayToArrayListString(cmdAndArgs), env, reporter);
+    }
 
-	this.reporter = reporter;
-	if (reporter == null) {
-	    reporter = ProcessReporterFactory.getFactory().create(processName);
-	}
+    /** 
+     * Create a new instance of MonitoredProcess.
+     *
+     * @param processName The name of the process.
+     * @param cmdAndArgs The command to run and its arguments.
+     * @param env A map of environment variable (name, value) pairs.
+     * @param reporter The reporter used to report app output and exit status.
+     */
+    public MonitoredProcess(String processName, ArrayList<String> cmdAndArgs,
+            Map<String, String> env, ProcessReporter reporter) {
+        this.processName = processName;
+        this.cmdAndArgs = cmdAndArgs;
+        this.env = env;
+
+        this.reporter = reporter;
+        if (reporter == null) {
+            reporter = ProcessReporterFactory.getFactory().create(processName);
+        }
     }
 
     /**
      * Forcibly kill the process and clean up resources.
      */
-    public void cleanup () {
-	if (process != null) {
-	    process.destroy();
-	    process = null;
-	}
-	if (monitor != null) {
-	    monitor.cleanup();
-	    monitor = null;
-	}
-	if (reporter != null) {
-	    reporter.cleanup();
-	    reporter = null;
-	}
+    public void cleanup() {
+        if (process != null) {
+            process.destroy();
+            process = null;
+        }
+        if (monitor != null) {
+            monitor.cleanup();
+            monitor = null;
+        }
+        if (reporter != null) {
+            reporter.cleanup();
+            reporter = null;
+        }
     }
 
     /**
@@ -226,41 +220,41 @@ public class MonitoredProcess {
      *
      * @return false if the process cannot be started.
      */
-    public boolean start () {
-	if (cmdAndArgs == null || cmdAndArgs.size() <= 0) {
-	    cleanup();
-	    return false;
-	}
+    public boolean start() {
+        if (cmdAndArgs == null || cmdAndArgs.size() <= 0) {
+            cleanup();
+            return false;
+        }
 
-	// Create a process builder
-	ProcessBuilder pb = new ProcessBuilder(cmdAndArgs);
-	pb.redirectErrorStream(true);
+        // Create a process builder
+        ProcessBuilder pb = new ProcessBuilder(cmdAndArgs);
+        pb.redirectErrorStream(true);
 
-	// Initialize environment (if necessary)
-	if (env != null) {
-	    Map<String, String> pbEnv = pb.environment();
-	    for (String envName : env.keySet()) {
-		String envValue = env.get(envName);
-		pbEnv.put(envName, envValue);
-	    }
-	}
+        // Initialize environment (if necessary)
+        if (env != null) {
+            Map<String, String> pbEnv = pb.environment();
+            for (String envName : env.keySet()) {
+                String envValue = env.get(envName);
+                pbEnv.put(envName, envValue);
+            }
+        }
 
-	// Now start the process
-	try {
+        // Now start the process
+        try {
             process = pb.start();
         } catch (IOException ex) {
             cleanup();
             return false;
         }
-	if (process == null) {
-	    cleanup();
-	    return false;
-	}
+        if (process == null) {
+            cleanup();
+            return false;
+        }
 
-	// Finally, create the process monitor
-	monitor = new ProcessMonitor(process, processName, reporter);
+        // Finally, create the process monitor
+        monitor = new ProcessMonitor(process, processName, reporter);
 
-	return true;
+        return true;
     }
 
     /**
@@ -268,31 +262,33 @@ public class MonitoredProcess {
      *
      * @param str The input string.
      */
-    private static ArrayList<String> stringToArrayListString (String str) {
-	ArrayList<String> als = new ArrayList<String>();
-	StringTokenizer tok = new StringTokenizer(str);
+    private static ArrayList<String> stringToArrayListString(String str) {
+        ArrayList<String> als = new ArrayList<String>();
+        StringTokenizer tok = new StringTokenizer(str);
 
-	int numTokens = tok.countTokens();
-	if (numTokens <= 0) return null;
+        int numTokens = tok.countTokens();
+        if (numTokens <= 0) {
+            return null;
+        }
 
-	for (int i = 0; i < tok.countTokens(); i++) {
-	    als.add(tok.nextToken());
-	}
+        for (int i = 0; i < tok.countTokens(); i++) {
+            als.add(tok.nextToken());
+        }
 
-	return als;
+        return als;
     }
-    
+
     /**
      * Convert an array of strings into an ArrayList of the same strings.
      *
      * @param str The input string array.
      */
-    private static ArrayList<String> stringArrayToArrayListString (String[] str) {
-	ArrayList<String> als = new ArrayList<String>();
-	for (int i = 0; i < str.length; i++) {
-	    als.add(str[i]);
-	}
+    private static ArrayList<String> stringArrayToArrayListString(String[] str) {
+        ArrayList<String> als = new ArrayList<String>();
+        for (int i = 0; i < str.length; i++) {
+            als.add(str[i]);
+        }
 
-	return als;
+        return als;
     }
 }

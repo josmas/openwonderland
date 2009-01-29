@@ -44,7 +44,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public interface GuiFactory {
 
@@ -53,7 +52,7 @@ public interface GuiFactory {
      * @param cell The cell to be rendered.
      * @return The renderer created. 
      */
-    public AppCellRenderer createCellRenderer (AppCell cell);
+    public AppCellRenderer createCellRenderer(AppCell cell);
 
     /**
      * Create a window view object which displays the given window in the specified space.
@@ -62,7 +61,7 @@ public interface GuiFactory {
      * @param spaceName The name of the space in which the view will reside.
      * @return The view created. Null indicates that this factory doesn't support the given spaceName.
      */
-    public WindowView createView (Window window, String spaceName);
+    public WindowView createView(Window window, String spaceName);
 
     /**
      * Create a window frame which wraps the view of a window. 
@@ -70,6 +69,6 @@ public interface GuiFactory {
      * @param view The view to wrap with a frame.
      * @return The frame created. 
      */
-    public WindowFrame createFrame (WindowView view);
+    public WindowFrame createFrame(WindowView view);
 }
 

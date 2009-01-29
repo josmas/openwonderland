@@ -26,7 +26,6 @@
         
         <module name="xremwin" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.dir}">
-                    
 
            <client>
                <clientjar name="xremwin-client" basedir="${build.classes.dir}">
@@ -37,11 +36,9 @@
            
            <server>
                 <serverjar name="xremwin-server" basedir="${build.classes.dir}">
-		    <!-- TODO: eventually include <cellsetup> element for world launch 
                     <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.xremwin.server.XremwinCellServerState"/>
+                        <provider classname="org.jdesktop.wonderland.modules.xremwin.common.AppCellXrwServerState"/>
                     </cellsetup>
-		    -->
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </serverjar>
@@ -51,5 +48,7 @@
         </module>
     </target>                                                       
                                            
+    <target name="deploy" depends="dist, -module-deploy"/>
+
     <target name="clean" depends="-module-clean"/>
 </project>

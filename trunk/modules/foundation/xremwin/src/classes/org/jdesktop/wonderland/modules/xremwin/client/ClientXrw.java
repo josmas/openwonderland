@@ -986,7 +986,7 @@ abstract class ClientXrw implements Runnable {
         byte[] bytes = new byte[w * h * 4];
 
         int srcIdx, dstIdx;
-        for (srcIdx = 0  , dstIdx = 0;
+        for (srcIdx = 0    , dstIdx = 0;
                 srcIdx < w * h;
                 srcIdx++) {
 
@@ -1026,6 +1026,7 @@ abstract class ClientXrw implements Runnable {
             super("Xremwin");
         }
 
+        @Override
         protected boolean hasTriggered() {
             // Don't print stats for silent windows
             return numRequests != 0;
@@ -1061,21 +1062,21 @@ abstract class ClientXrw implements Runnable {
             stats.numCopyAreas = max(stats.numCopyAreas, numCopyAreas);
         }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void appendStats (StringBuffer sb) {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void appendStats(StringBuffer sb) {
             sb.append("numRequests = " + numRequests + "\n");
             sb.append("displayPixelsNumBytes = " + displayPixelsNumBytes + "\n");
             sb.append("numCopyAreas = " + numCopyAreas + "\n");
         }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-        protected void appendStatsAndRates (StringBuffer sb, double timeSecs) {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void appendStatsAndRates(StringBuffer sb, double timeSecs) {
             appendStats(sb);
 
             // Calculate and print rates

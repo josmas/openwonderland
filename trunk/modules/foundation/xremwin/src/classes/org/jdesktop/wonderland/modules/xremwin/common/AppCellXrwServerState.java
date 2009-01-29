@@ -15,29 +15,30 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server;
+package org.jdesktop.wonderland.modules.xremwin.common;
 
-import java.io.Serializable;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellServerState;
 
 /**
- * The WFS server state class for AppCellMO.
+ * The WFS server state class for AppCellXrwMO.
  * 
  * @author deronj
  */
-@XmlRootElement(name="app-cell")
-public class AppCellServerState extends CellServerState implements Serializable {
-    
+@XmlRootElement(name = "xremwin-cell")
+public class AppCellXrwServerState extends AppConventionalCellServerState 
+    implements CellServerStateSPI 
+{
+
     /** Default constructor */
-    public AppCellServerState() {}
-    
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.appbase.server.AppCellMO";
+    public AppCellXrwServerState() {
     }
-    
+
+    public String getServerClassName() {
+        return "org.jdesktop.wonderland.modules.xremwin.server.AppCellMOXrw";
+    }
+
     /**
      * Returns a string representation of this class.
      *
@@ -45,6 +46,6 @@ public class AppCellServerState extends CellServerState implements Serializable 
      */
     @Override
     public String toString() {
-        return super.toString() + " [AppCellServerState]";
+        return super.toString() + " [AppCellXrwServerState]";
     }
 }

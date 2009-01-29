@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import com.jme.image.Texture;
 import com.jme.math.Vector2f;
 import com.jmex.awt.swingui.ImageGraphics;
 import java.awt.Graphics2D;
@@ -29,12 +28,10 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class WindowGraphics2D extends Window2D {
 
     private static final Logger logger = Logger.getLogger(WindowGraphics2D.class.getName());
-
     /** The surface the client on which subclasses should draw */
     private DrawingSurface surface;
 
@@ -49,49 +46,49 @@ public class WindowGraphics2D extends Window2D {
      * @param surface The drawing surface on which the creator will draw
      * @throws InstantiationException if the windows world view cannot be created.
      */
-    public WindowGraphics2D (App app, int width, int height, boolean topLevel,
-			     Vector2f pixelScale, DrawingSurface surface) 
-	throws InstantiationException 
-    {
-	super(app, width, height, topLevel, pixelScale);
-	updateTexture();
+    public WindowGraphics2D(App app, int width, int height, boolean topLevel,
+            Vector2f pixelScale, DrawingSurface surface)
+            throws InstantiationException {
+        super(app, width, height, topLevel, pixelScale);
+        updateTexture();
 
-	// Arrange for the surface contents to be continuously copied into this window's texture.
-	this.surface = surface;
-	surface.setWindow(this);
-	surface.setTexture(texture);
-	surface.setUpdateEnable(true);
+        // Arrange for the surface contents to be continuously copied into this window's texture.
+        this.surface = surface;
+        surface.setWindow(this);
+        surface.setTexture(texture);
+        surface.setUpdateEnable(true);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void cleanup () {
-	if (surface != null) {
-	    surface.cleanup();
-	    surface = null;
-	}
-	super.cleanup();
+    public void cleanup() {
+        if (surface != null) {
+            surface.cleanup();
+            surface = null;
+        }
+        super.cleanup();
     }
 
     /**
      * Initialize the contents of the surface.
      */
-    protected void initializeSurface () {
-	if (surface != null) {
-	    surface.initializeSurface();
-	}
+    protected void initializeSurface() {
+        if (surface != null) {
+            surface.initializeSurface();
+        }
     }
 
     /**
      * Returns the drawing surface of this windows. 
      */
-    public DrawingSurface getSurface () {
-	return surface;
+    public DrawingSurface getSurface() {
+        return surface;
     }
 
-    protected void paint(Graphics2D g) {}
+    protected void paint(Graphics2D g) {
+    }
 
-    protected void repaint() {  }
-
+    protected void repaint() {
+    }
 }

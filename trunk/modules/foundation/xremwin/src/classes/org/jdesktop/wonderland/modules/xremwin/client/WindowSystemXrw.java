@@ -34,21 +34,19 @@ import org.jdesktop.wonderland.modules.xremwin.client.wm.X11IntegrationModule;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-class WindowSystemXrw 
-    implements X11WindowManager.ExitListener 
-{
+class WindowSystemXrw
+        implements X11WindowManager.ExitListener {
+
     /**
      * Provides a way for the window system to notify other
      * Wonderland software components that it has exitted.
      */
     public interface ExitListener {
 
-	/** The window system has exitted */
-	public void windowSystemExitted();
+        /** The window system has exitted */
+        public void windowSystemExitted();
     }
-
     /**
      * Preallocate the first two display numbers. The first for the user display and
      * the second for the LG3D display (no longer necessary but used for safety).
@@ -57,16 +55,12 @@ class WindowSystemXrw
 
     // TODO: change this name
     public static final String XREMWIN_WEBSTART_DIR_PROP = "appshare.xremwinWebStartDir";
-
     /** The name of the app instance */
     private String appInstanceName;
-
     /** The X display number of the X server started. This number is valid when it is non-zero */
     private int displayNum;
-
     /** The name of the X display. This is the display number prefixed with ":". */
     private String displayName;
-       
     /** The reporter to use for the server */
     private ProcessReporter xServerReporter;
 
@@ -78,7 +72,6 @@ class WindowSystemXrw
 
     /* A component who wants to listen for window title changes from the window manager */
     private X11WindowManager.WindowTitleListener wtl;
-
     /** An exit listener */
     private ExitListener exitListener;
 
@@ -92,14 +85,14 @@ class WindowSystemXrw
      * @param wtl A listener whose setWindowTitle method is called whenever the Xremwin server notifies us
      * that the title of the window has changed.
      */
-    public static WindowSystemXrw create (String appInstanceName, X11WindowManager.WindowTitleListener wtl) {
-	WindowSystemXrw winSys = null;
-	try {
-	    winSys = new WindowSystemXrw(appInstanceName, wtl);
-	} catch (Exception ex) {
-	    ex.printStackTrace();
-	}
-	return winSys;
+    public static WindowSystemXrw create(String appInstanceName, X11WindowManager.WindowTitleListener wtl) {
+        WindowSystemXrw winSys = null;
+        try {
+            winSys = new WindowSystemXrw(appInstanceName, wtl);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return winSys;
     }
 
     /**
@@ -112,45 +105,44 @@ class WindowSystemXrw
      * @param wtl A listener whose setWindowTitle method is called whenever the Xremwin server notifies us
      * that the title of the window has changed.
      */
-    private WindowSystemXrw (String appInstanceName, X11WindowManager.WindowTitleListener wtl) 
-    {
-	this.appInstanceName = appInstanceName;
-	startXServer();
-	startWindowManager(wtl);
+    private WindowSystemXrw(String appInstanceName, X11WindowManager.WindowTitleListener wtl) {
+        this.appInstanceName = appInstanceName;
+        startXServer();
+        startWindowManager(wtl);
     }
 
     /** Attach an exit listener */
-    void setExitListener (ExitListener listener) {
-	exitListener = listener;
+    void setExitListener(ExitListener listener) {
+        exitListener = listener;
     }
-	
+
     /** Start the Xremwin server */
-    private void startXServer () {
-	displayNum = allocDisplayNum();
-	displayName = ":" + displayNum;
+    private void startXServer() {
+        displayNum = allocDisplayNum();
+        displayName = ":" + displayNum;
 
-	String topDirPath = determineXremwinTopDirPath();
+        String topDirPath = determineXremwinTopDirPath();
 
-	String[] cmdAndArgs = new String[3];
-	cmdAndArgs[0] = determineRunxremwinExecutable(topDirPath);
-	cmdAndArgs[1] = displayName;
-	cmdAndArgs[2] = determineXvfbDirectory(topDirPath);
+        String[] cmdAndArgs = new String[3];
+        cmdAndArgs[0] = determineRunxremwinExecutable(topDirPath);
+        cmdAndArgs[1] = displayName;
+        cmdAndArgs[2] = determineXvfbDirectory(topDirPath);
 
-	String processName = "Xremwin server for " + appInstanceName;
-	xServerReporter = ProcessReporterFactory.getFactory().create(processName);
-	if (xServerReporter == null) {
-	    cleanup();
-	    throw new RuntimeException("Cannot create error reporter for " +
-				       processName);
-	}
-	
-	xServerProcess = new MonitoredProcess(appInstanceName, cmdAndArgs, xServerReporter);
-	if (!xServerProcess.start()) {
-	    cleanup();
-	    xServerReporter.output("Cannot start Xremwin server");
-	    xServerReporter.exitValue(-1);
-	    throw new RuntimeException("Cannot start Xremwin server");
-	}
+        String processName = "Xremwin server for " + appInstanceName;
+        xServerReporter = ProcessReporterFactory.getFactory().create(processName);
+        if (xServerReporter == null) {
+            cleanup();
+            throw new RuntimeException("Cannot create error reporter for " +
+                    processName);
+        }
+
+        xServerProcess = new MonitoredProcess(appInstanceName, cmdAndArgs, xServerReporter);
+        if (!xServerProcess.start()) {
+            cleanup();
+            xServerReporter.output("Cannot start Xremwin server");
+            xServerReporter.exitValue(-1);
+            throw new RuntimeException("Cannot start Xremwin server");
+        }
     }
 
     /** 
@@ -159,69 +151,68 @@ class WindowSystemXrw
      * @param wtl A listener whose setWindowTitle method is called whenever the Xremwin server notifies us
      * that the title of the window has changed.
      */
-    private void startWindowManager (X11WindowManager.WindowTitleListener wtl) 
-    {
-	X11IntegrationModule nativeWinIntegration = 
-	    new X11IntegrationModule(displayName);
-	nativeWinIntegration.initialize(wtl);
-	wm = nativeWinIntegration.getWindowManager();
-	wm.addExitListener(this);
+    private void startWindowManager(X11WindowManager.WindowTitleListener wtl) {
+        X11IntegrationModule nativeWinIntegration =
+                new X11IntegrationModule(displayName);
+        nativeWinIntegration.initialize(wtl);
+        wm = nativeWinIntegration.getWindowManager();
+        wm.addExitListener(this);
     }
 
     /** For internal use only */
-    public void windowManagerExitted () {
-	AppXrw.logger.info("Window manager exitted for " + appInstanceName);
-	wm.removeExitListener(this);
-	cleanup();
+    public void windowManagerExitted() {
+        AppXrw.logger.info("Window manager exitted for " + appInstanceName);
+        wm.removeExitListener(this);
+        cleanup();
     }
 
     /** 
      * Clean up resources. This kill the server process and stops the window manager thread.
      */
-    public void cleanup () {
-	if (displayNum != 0) {
-	    deallocDisplayNum(displayNum);
-	}
+    public void cleanup() {
+        if (displayNum != 0) {
+            deallocDisplayNum(displayNum);
+        }
 
-	if (xServerReporter != null) {
-	    xServerReporter.cleanup();
-	    xServerReporter = null;
-	}
+        if (xServerReporter != null) {
+            xServerReporter.cleanup();
+            xServerReporter = null;
+        }
 
-	if (xServerProcess != null) {
-	    xServerProcess.cleanup();
-	    xServerProcess = null;
-	}
+        if (xServerProcess != null) {
+            xServerProcess.cleanup();
+            xServerProcess = null;
+        }
 
 
-	// In the case of an error, the WindowManager may still be running.
+        // In the case of an error, the WindowManager may still be running.
         // Calling disconnect multiple times won't break anything, so double
         // check that it is disconnected.
-	if (wm != null) {
-	    wm.disconnect();
-	    wm = null;
-	}
+        if (wm != null) {
+            wm.disconnect();
+            wm = null;
+        }
 
-	wtl = null;
+        wtl = null;
 
-	if (exitListener != null) {
-	    exitListener.windowSystemExitted();
-	}
-	exitListener = null;
+        if (exitListener != null) {
+            exitListener.windowSystemExitted();
+        }
+        exitListener = null;
     }
 
     /**
      * The display name used to start the X server.
      */
-    public String getDisplayName () {
-	return displayName;
+    public String getDisplayName() {
+        return displayName;
     }
 
     /**
      * The display number used to start the X server.
      */
-    public int getDisplayNum () {
-	return displayNum;
+    public int getDisplayNum() {
+        return displayNum;
     }
 
     /** 
@@ -229,8 +220,8 @@ class WindowSystemXrw
      *
      * @return The display number allocated.
      */
-    private static int allocDisplayNum () {
-	return displayNumAllocator.allocate();
+    private static int allocDisplayNum() {
+        return displayNumAllocator.allocate();
     }
 
     /**
@@ -238,20 +229,20 @@ class WindowSystemXrw
      *
      * @param displayNum The display number to deallocated.
      */
-    private static void deallocDisplayNum (int displayNum) {
-	displayNumAllocator.free(displayNum);
+    private static void deallocDisplayNum(int displayNum) {
+        displayNumAllocator.free(displayNum);
     }
 
     /**
      * Returns true if the Wonderland client is being run via Java webstart.
      */
-    private static boolean usingWebStart () {
-	try {
+    private static boolean usingWebStart() {
+        try {
             Class clazz = Class.forName("javax.jnlp.BasicService");
-	    return true;
-	} catch (Exception ex) {
-	    return false;
-	}
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
     /**
@@ -263,54 +254,54 @@ class WindowSystemXrw
      * Note: for now we can assume that WL is always run in the 
      * top level wonderland directory.
      */
-    private static String determineXremwinTopDirPath () {
-	String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
-	System.err.println("xremwinWebStartDirPath = " + xremwinWebStartDirPath);
-	if (xremwinWebStartDirPath == null) {
-	    // Note: Assumes that the wonderland client is always run 
-	    // with current working directory = lg3d-wonderland top-level.
-	    return ".";
-	} 
-	
-	return xremwinWebStartDirPath;
+    private static String determineXremwinTopDirPath() {
+        String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
+        System.err.println("xremwinWebStartDirPath = " + xremwinWebStartDirPath);
+        if (xremwinWebStartDirPath == null) {
+            // Note: Assumes that the wonderland client is always run
+            // with current working directory = lg3d-wonderland top-level.
+            return ".";
+        }
+
+        return xremwinWebStartDirPath;
     }
 
-    private static String determineRunxremwinExecutable (String topDirPath) {
-	String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
-	if (xremwinWebStartDirPath == null) {
-	    // Non-webstart case (release or workspace)
-	    String scriptDir = System.getProperty("wonderland.scripts.dir");
-	    return  scriptDir + "/runxremwin";
-	} else {
-	    return topDirPath + "/runxremwin";
-	}
+    private static String determineRunxremwinExecutable(String topDirPath) {
+        String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
+        if (xremwinWebStartDirPath == null) {
+            // Non-webstart case (release or workspace)
+            String scriptDir = System.getProperty("wonderland.scripts.dir");
+            return scriptDir + "/runxremwin";
+        } else {
+            return topDirPath + "/runxremwin";
+        }
     }
 
-    private static String determineXvfbDirectory (String topDirPath) {
-	String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
-	if (xremwinWebStartDirPath == null) {
+    private static String determineXvfbDirectory(String topDirPath) {
+        String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
+        if (xremwinWebStartDirPath == null) {
 
-	    // Non-webstart case (release or workspace)
-	    String xvfbDir = System.getProperty("wonderland.xvfb.dir");
-	    return xvfbDir;
+            // Non-webstart case (release or workspace)
+            String xvfbDir = System.getProperty("wonderland.xvfb.dir");
+            return xvfbDir;
 
-	} else {
+        } else {
 
-	    // Webstart case
-	    if ("SunOS".equals(System.getProperty("os.name"))) {
-		// Solaris
-		return topDirPath + "/solaris/bin";
-	    } else {
-		// Linux
-		return topDirPath + "/linux/bin";
-	    }
-	}
+            // Webstart case
+            if ("SunOS".equals(System.getProperty("os.name"))) {
+                // Solaris
+                return topDirPath + "/solaris/bin";
+            } else {
+                // Linux
+                return topDirPath + "/linux/bin";
+            }
+        }
     }
 
     /**
      * Tell the window system that this window has been closed.
      */
-    public void deleteWindow (int wid) {
-	wm.deleteWindow(wid);
+    public void deleteWindow(int wid) {
+        wm.deleteWindow(wid);
     }
 }

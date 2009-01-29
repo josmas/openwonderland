@@ -17,9 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import java.io.Serializable;
-import java.util.UUID;
-import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -27,32 +24,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class AppTypeConventional extends AppType2D {
-
-    /** The return type of AppTypeConventional.executeMasterProgram */
-    public static class ExecuteMasterProgramReturn {
-
-	/** The app instance created */
-	public AppConventional app;
-
-	/** The app's unique ID (note: the ID is unique only within the master client session) */
-	public UUID appId;
-
-	/** Subclass-specific data for making a peer-to-peer connection between master and slave. */
-	public Serializable connectionInfo;
-    }
-
-    /**
-     * Used by the master client to execute an app with a given type and name. 
-     *
-     * @param appName A short name describing the app instance.
-     * @param command The platform command to execute in order to start the app.
-     * @param pixelScale The size of the window pixels.
-     * @param reporter The reporter with which to report to the user. If null, a default reporter is used.
-     * @return An instance of ExecuteMasterProgramReturn which contains information about the new app.
-     */
-    public abstract ExecuteMasterProgramReturn executeMasterProgram (String appName, String command, 
-								     Vector2f pixelScale, ProcessReporter reporter);
 }

@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 class AppXrwSlave extends AppXrw {
 
@@ -44,33 +43,32 @@ class AppXrwSlave extends AppXrw {
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master and slave.
      * @param session This app's Wonderland session.
      */
-    AppXrwSlave (AppTypeConventional appType, String appName, Vector2f pixelScale, ProcessReporter reporter,
-		 Serializable connectionInfo, WonderlandSession session) {
+    AppXrwSlave(AppTypeConventional appType, String appName, Vector2f pixelScale, ProcessReporter reporter,
+            Serializable connectionInfo, WonderlandSession session) {
 
-	// TODO: temporary
-	//super(appType, appName, new ControlArbXrw(), pixelScale);
-	super(appType, appName, new ControlArbAlways(), pixelScale);
-	controlArb.setApp(this);
+        // TODO: temporary
+        //super(appType, appName, new ControlArbXrw(), pixelScale);
+        super(appType, appName, new ControlArbAlways(), pixelScale);
+        controlArb.setApp(this);
 
-	// Create the Xremwin protocol client and start its interpreter loop running.
-	client = null;
-	try {
-	    client = new ClientXrwSlave(this, (ControlArbXrw)controlArb, session, 
-					(AppXrwConnectionInfo)connectionInfo, reporter);
-	} catch (InstantiationException ex) {
-	    ex.printStackTrace();
-	    reportLaunchError("Cannot create Xremwin protocol client for " + appName);
-	    cleanup();
-	}
+        // Create the Xremwin protocol client and start its interpreter loop running.
+        client = null;
+        try {
+            client = new ClientXrwSlave(this, (ControlArbXrw) controlArb, session,
+                    (AppXrwConnectionInfo) connectionInfo, reporter);
+        } catch (InstantiationException ex) {
+            ex.printStackTrace();
+            reportLaunchError("Cannot create Xremwin protocol client for " + appName);
+            cleanup();
+        }
     }
 
     /**
      * {inheritDoc}
      */
-    int getTransientForWid (int wid) {
-	// TODO: If the slave really needs to know this we need to 
-	// create a protocol for it to ask the master.
-	return 0;
+    int getTransientForWid(int wid) {
+        // TODO: If the slave really needs to know this we need to
+        // create a protocol for it to ask the master.
+        return 0;
     }
-
 }

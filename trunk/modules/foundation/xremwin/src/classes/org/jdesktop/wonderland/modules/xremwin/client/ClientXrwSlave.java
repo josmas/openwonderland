@@ -35,9 +35,9 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.UserNameMsgArgs;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 class ClientXrwSlave extends ClientXrw implements ServerProxySlave.DisconnectListener {
+
     /** Argument buffers for slave-specific messages */
     private SetWindowTitleMsgArgs setWindowTitleMsgArgs = new SetWindowTitleMsgArgs();
     private SetPopupParentMsgArgs setPopupParentMsgArgs = new SetPopupParentMsgArgs();
@@ -53,91 +53,90 @@ class ClientXrwSlave extends ClientXrw implements ServerProxySlave.DisconnectLis
      * @param reporter Report output and exit status to this.
      * @throws InstantiationException If it could not make contact with the server.
      */
-    public ClientXrwSlave (AppXrw app, ControlArbXrw controlArb, WonderlandSession session, 
-			   AppXrwConnectionInfo connectionInfo, ProcessReporter reporter) 
-	throws InstantiationException
-    {
-	super(app, controlArb, reporter);
+    public ClientXrwSlave(AppXrw app, ControlArbXrw controlArb, WonderlandSession session,
+            AppXrwConnectionInfo connectionInfo, ProcessReporter reporter)
+            throws InstantiationException {
+        super(app, controlArb, reporter);
 
-	// Connect to the Xremwin server
-	serverProxy = new ServerProxySlave(this, cell, session, connectionInfo, this);
-	try {
-	    serverProxy.connect();
-	} catch (IOException ex) {
-	    throw new InstantiationException();
-	}
-	serverConnected = true;
+        // Connect to the Xremwin server
+        serverProxy = new ServerProxySlave(this, cell, session, connectionInfo, this);
+        try {
+            serverProxy.connect();
+        } catch (IOException ex) {
+            throw new InstantiationException();
+        }
+        serverConnected = true;
 
-	((ControlArbXrw)controlArb).setServerProxy(serverProxy);
+        ((ControlArbXrw) controlArb).setServerProxy(serverProxy);
 
-	// Start the protocol interpreter
-	start();
+        // Start the protocol interpreter
+        start();
     }
 
     /**
      * @{inheritDoc}
      */
     @Override
-    protected MessageArgs readMessageArgs (ServerMessageType msgType) {
-	switch (msgType) {
+    protected MessageArgs readMessageArgs(ServerMessageType msgType) {
+        switch (msgType) {
 
-	case SET_WINDOW_TITLE:
-	    serverProxy.getData(setWindowTitleMsgArgs);
-	    return setWindowTitleMsgArgs;
+            case SET_WINDOW_TITLE:
+                serverProxy.getData(setWindowTitleMsgArgs);
+                return setWindowTitleMsgArgs;
 
-	case SET_POPUP_PARENT:
-	    ((ServerProxySlave)serverProxy).getData(setPopupParentMsgArgs);
-	    return setPopupParentMsgArgs;
-	    
-	case CONTROLLING_USER_NAME:
-	    ((ServerProxySlave)serverProxy).getData(userNameMsgArgs);
-	    return userNameMsgArgs;
+            case SET_POPUP_PARENT:
+                ((ServerProxySlave) serverProxy).getData(setPopupParentMsgArgs);
+                return setPopupParentMsgArgs;
 
-	default:
-	    return super.readMessageArgs(msgType);
-	}
+            case CONTROLLING_USER_NAME:
+                ((ServerProxySlave) serverProxy).getData(userNameMsgArgs);
+                return userNameMsgArgs;
+
+            default:
+                return super.readMessageArgs(msgType);
+        }
     }
 
     /**
      * @{inheritDoc}
      */
     @Override
-    protected void processMessage (ServerMessageType msgType) {
+    protected void processMessage(ServerMessageType msgType) {
         WindowXrw win;
 
-	switch (msgType) {
+        switch (msgType) {
 
-	case SET_WINDOW_TITLE:
-	    win = lookupWindow(setWindowTitleMsgArgs.wid);
-	    if (win != null) {
-		win.setTitle(setWindowTitleMsgArgs.title);
-	    }
-	    break;
+            case SET_WINDOW_TITLE:
+                win = lookupWindow(setWindowTitleMsgArgs.wid);
+                if (win != null) {
+                    win.setTitle(setWindowTitleMsgArgs.title);
+                }
+                break;
 
-	case SET_POPUP_PARENT:
-	    win = lookupWindow(setPopupParentMsgArgs.wid);
-	    WindowXrw parentWin = lookupWindow(setPopupParentMsgArgs.parentWid);
-	    if (win != null && parentWin != null) {
-		win.setPopupParent(parentWin);
-	    } else {
-		if (win == null) {
-		    AppXrw.logger.warning("SetPopupParent: window doesn't exist: wid = " + 
-				   setPopupParentMsgArgs.wid);
-		}
-		if (parentWin == null) {
-		    AppXrw.logger.warning("SetPopupParent: parent window doesn't exist: wid = " + 
-				   setPopupParentMsgArgs.parentWid);
-		}
-	    }
-	    break;
+            case SET_POPUP_PARENT:
+                win = lookupWindow(setPopupParentMsgArgs.wid);
+                WindowXrw parentWin = lookupWindow(setPopupParentMsgArgs.parentWid);
+                if (win != null && parentWin != null) {
+                    win.setPopupParent(parentWin);
+                } else {
+                    if (win == null) {
+                        AppXrw.logger.warning("SetPopupParent: window doesn't exist: wid = " +
+                                setPopupParentMsgArgs.wid);
+                    }
+                    if (parentWin == null) {
+                        AppXrw.logger.warning("SetPopupParent: parent window doesn't exist: wid = " +
+                                setPopupParentMsgArgs.parentWid);
+                    }
+                }
+                break;
 
-	case CONTROLLING_USER_NAME:
-	    controlArb.setController(userNameMsgArgs.userName);
-	    break;
+            case CONTROLLING_USER_NAME:
+                controlArb.setController(userNameMsgArgs.userName);
+                break;
 
-	default:
-	    super.processMessage(msgType);
-	}
+            default:
+                super.processMessage(msgType);
+        }
     }
 
     /** 
@@ -146,27 +145,27 @@ class ClientXrwSlave extends ClientXrw implements ServerProxySlave.DisconnectLis
      *
      * @param clientId The unique small integer ID of this slave client
      */
-    void setClientId (int clientId) {
-	this.clientId = clientId;
+    void setClientId(int clientId) {
+        this.clientId = clientId;
     }
 
-    public void closeWindow (WindowXrw window) {
-	if (controlArb.hasControl()) {
-	    try {
-		((ServerProxySlave)serverProxy).slaveCloseWindow(clientId, window.getWid());
-	    } catch (IOException ex) {
-		AppXrw.logger.warning("Controlling slave cannot close X window " + window.getWid());
-	    }
-	}
+    public void closeWindow(WindowXrw window) {
+        if (controlArb.hasControl()) {
+            try {
+                ((ServerProxySlave) serverProxy).slaveCloseWindow(clientId, window.getWid());
+            } catch (IOException ex) {
+                AppXrw.logger.warning("Controlling slave cannot close X window " + window.getWid());
+            }
+        }
     }
 
     /**
      * Called when the slave disconnects from the master.
      */
-    public void disconnected () {
-	// We no longer control the remote app group
-	if (controlArb.hasControl()) {
-	    controlArb.controlLost();
-	}
+    public void disconnected() {
+        // We no longer control the remote app group
+        if (controlArb.hasControl()) {
+            controlArb.controlLost();
+        }
     }
 }

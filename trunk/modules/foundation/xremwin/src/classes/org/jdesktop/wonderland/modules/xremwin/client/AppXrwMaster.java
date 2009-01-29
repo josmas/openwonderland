@@ -29,7 +29,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.utils.SmallIntegerAllocator;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
-import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.MonitoredProcess;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.modules.xremwin.client.wm.X11WindowManager;
@@ -67,20 +66,19 @@ class AppXrwMaster
      *
      * @param appType The type of app (this will always be AppTypeXrw).
      * @param appName The name of the application.
-     * @param masterHost The master host name (this host).
      * @param command The operating system command to execute to start app program.
      * @param pixelScale The size of the window pixels.
      * @param processReporter Report output and exit status to this
      * @param session This app's Wonderland session.
      * @throws InstantiationException Could not launch app
      */
-    AppXrwMaster(AppTypeConventional appType, String appName, String masterHost, String command, Vector2f pixelScale,
+    AppXrwMaster(AppTypeXrw appType, String appName, String command, Vector2f pixelScale,
             ProcessReporter reporter, WonderlandSession session)
             throws InstantiationException {
 
-	// TODO: temporary
-        //super(appType, appName, new ControlArbAlways(), pixelScale);
-        super(appType, appName, new ControlArbXrw(), pixelScale);
+        // TODO: temporary
+        //super(appType, appName, new ControlArbXrw(), pixelScale);
+        super(appType, appName, new ControlArbAlways(), pixelScale);
         AppXrw.logger.severe("AppXrwMaster: appType = " + appType);
         AppXrw.logger.severe("appName = " + appName);
         controlArb.setApp(this);
@@ -105,6 +103,7 @@ class AppXrwMaster
 
         // Create the peer-to-peer server socket
         // TODO: change name of this property?
+        String masterHost = NetworkAddress.getDefaultHostAddress();
         String publicMasterHost = System.getProperty("wonderland.appshare.hostName", masterHost);
         InetAddress inetAddr = NetworkAddress.getDefaultInetAddress();
         try {
