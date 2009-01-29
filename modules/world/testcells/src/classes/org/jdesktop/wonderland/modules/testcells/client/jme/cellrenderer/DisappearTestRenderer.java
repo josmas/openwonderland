@@ -81,9 +81,6 @@ public class DisappearTestRenderer extends BasicRenderer {
 		ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(sceneRoot);
 	rootEntity.addComponent(RenderComponent.class, rc);
 
-	// Transfer the cell transform into the root node
-	applyTransform(sceneRoot, cell.getLocalTransform());
-
 	return sceneRoot;
     }
 
