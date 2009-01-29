@@ -25,10 +25,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class ProcessReporterLogger extends ProcessReporter {
-    
+
     private static final Logger logger = Logger.getLogger(ProcessReporterLogger.class.getName());
 
     /** 
@@ -36,22 +35,22 @@ public class ProcessReporterLogger extends ProcessReporter {
      *
      * @param processName The name of the process on which to report.
      */
-    ProcessReporterLogger (String processName) {
-	super(processName);
+    ProcessReporterLogger(String processName) {
+        super(processName);
     }
 
     /** 
      * {@inheritDoc}
      */
-    public void output (String str) {
-	logger.info("Output from app " + processName + ": " + str);
+    public void output(String str) {
+        logger.info("Output from app " + processName + ": " + str);
     }
 
     /** 
      * {@inheritDoc}
      */
-    public void exitValue (int value) {
-	logger.info("Process " + processName + "exitted.");
-	logger.info("exitValue = " + value);
+    public void exitValue(int value) {
+        logger.info("Process " + processName + "exitted.");
+        logger.info("exitValue = " + value);
     }
 }

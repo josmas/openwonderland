@@ -18,11 +18,7 @@
 package org.jdesktop.wonderland.modules.xremwin.client;
 
 import com.jme.math.Vector2f;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.awt.image.WritableRaster;
 import java.math.BigInteger;
-import javax.vecmath.Vector2d;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
@@ -47,11 +43,6 @@ class WindowXrw extends WindowConventional {
     private int x;
     /** The X11 y coordinate of the top-left corner window */
     private int y;
-    /** 
-     * The X11 border width.
-     * TODO: must apply as an offset to display pixels!
-     */
-    private int borderWidth;
 
     /**
      * Create a new WindowXrw instance and its "World" view.
@@ -85,6 +76,7 @@ class WindowXrw extends WindowConventional {
     /**
      * Clean up resources.
      */
+    @Override
     public void cleanup() {
         super.cleanup();
         winTransientFor = null;

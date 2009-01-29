@@ -32,25 +32,24 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author paulby, deronj
  */
-
 @ExperimentalAPI
 public interface DrawingSurface {
 
     /**
      * Clean up resources held.
      */
-    public void cleanup ();
+    public void cleanup();
 
     /**
      * Returns this drawing surface's window.
      */
-    public Window2D getWindow ();
+    public Window2D getWindow();
 
     /**
      * Specify the window which uses this drawing surface.
      * @param window The 2D window which is served by this drawing surface.
      */
-    public void setWindow (Window2D window);
+    public void setWindow(Window2D window);
 
     /**
      * Resize the surface. 
@@ -59,44 +58,44 @@ public interface DrawingSurface {
      * @param height The new height of the surface in pixels.
      */
     public void setSize(int width, int height);
-    
+
     /**
      * Initialize the contents of the surface.
      */
-    public void initializeSurface ();
-    
+    public void initializeSurface();
+
     /**
      * Returns a Graphics2D to draw on the surface.
      */
-    public Graphics2D getGraphics ();
+    public Graphics2D getGraphics();
 
     /**
      * Returns the width of the surface.
      */
-    public int getWidth ();
+    public int getWidth();
 
     /**
      * Returns the height of the surface.
      */
-    public int getHeight ();
+    public int getHeight();
 
     /**
      * Specify the texture that this surface's contents should be copied into.
      */
-    public void setTexture (Texture texture);
+    public void setTexture(Texture texture);
 
     /**
      * Return this surface's associated texture.
      */
-    public Texture getTexture ();
+    public Texture getTexture();
 
     /**
      * Enable or disabling the updating of the texture.
      */
-    public void setUpdateEnable (boolean enable);
+    public void setUpdateEnable(boolean enable);
 
     /**
      * Return whether texture updating is enabled.
      */
-    public boolean getUpdateEnable ();
+    public boolean getUpdateEnable();
 }

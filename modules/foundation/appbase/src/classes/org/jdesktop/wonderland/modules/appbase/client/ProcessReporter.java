@@ -26,12 +26,10 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class ProcessReporter {
-    
-    // TODO: concrete subclasses ProcessReporterMultiOutput, ProcessReporterMultiOutputSwing
 
+    // TODO: concrete subclasses ProcessReporterMultiOutput, ProcessReporterMultiOutputSwing
     /** The name of the process. */
     protected String processName;
 
@@ -40,26 +38,27 @@ public abstract class ProcessReporter {
      *
      * @param processName The name of the process on which to report.
      */
-    ProcessReporter (String processName) {
-	this.processName = processName;
+    ProcessReporter(String processName) {
+        this.processName = processName;
     }
-    
+
     /**
      * Clean up resources.
      */
-    public void cleanup () {}
+    public void cleanup() {
+    }
 
     /** 
      * Report to the user text output which the process generates.
      *
      * @param str A text string output by the process.
      */
-    public abstract void output (String str);
+    public abstract void output(String str);
 
     /** 
      * Report to the user the exit value of the process when it terminates.
      *
      * @param value The exit status value.
      */
-    public abstract void exitValue (int value);
+    public abstract void exitValue(int value);
 }

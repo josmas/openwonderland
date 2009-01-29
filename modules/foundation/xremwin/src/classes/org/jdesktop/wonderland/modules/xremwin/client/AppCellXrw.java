@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.xremwin.client;
 
+import java.io.Serializable;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -26,7 +27,6 @@ import org.jdesktop.wonderland.modules.appbase.client.AppConventionalCell;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporterFactory;
-import org.jdesktop.wonderland.modules.xremwin.common.AppTypeNameXrw;
 
 /**
  * An Xremwin client-side app cell.
@@ -60,24 +60,26 @@ public class AppCellXrw extends AppConventionalCell {
     /**
      * {@inheritDoc}
      */
-    protected void startMaster(String command, boolean initInBestView) {
+    protected Serializable startMaster(String appName, String command, boolean initInBestView) {
         try {
-            AppXrw app = new AppXrwMaster((AppTypeConventional) getAppType(), appName, masterHost, command,
+            app = new AppXrwMaster((AppTypeXrw) getAppType(), appName, command,
                     pixelScale, ProcessReporterFactory.getFactory().create(appName), session);
         } catch (InstantiationException ex) {
-            return;
+            return null;
         }
 
         ((AppConventional) app).setInitInBestView(initInBestView);
         app.setCell(this);
+        return ((AppXrwMaster) app).getConnectionInfo();
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void startSlave() {
+    protected void startSlave(Serializable connectionInfo) {
         app = new AppXrwSlave((AppTypeConventional) getAppType(), appName, pixelScale,
-                ProcessReporterFactory.getFactory().create(appName), connectionInfo, session);
+                ProcessReporterFactory.getFactory().create(appName),
+                (AppXrwConnectionInfo) connectionInfo, session);
         app.setCell(this);
     }
 }

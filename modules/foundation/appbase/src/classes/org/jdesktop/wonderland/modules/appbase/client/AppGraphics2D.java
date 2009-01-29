@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import java.util.HashMap;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -26,7 +25,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class AppGraphics2D extends App2D {
 
@@ -37,8 +35,8 @@ public class AppGraphics2D extends App2D {
      * @param controlArb The control arbiter to use. null means that all users can control at the same time.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
-    public AppGraphics2D (AppType appType, ControlArb controlArb, Vector2f pixelScale) {
-	super(appType, controlArb, pixelScale);
+    public AppGraphics2D(AppType appType, ControlArb controlArb, Vector2f pixelScale) {
+        super(appType, controlArb, pixelScale);
     }
 
     /** 
@@ -48,10 +46,9 @@ public class AppGraphics2D extends App2D {
      * @param height The height (in pixels of the window.
      * @param topLevel Whether the window is top-level (that is, whether the window is decorated with a frame).
      */
-    public WindowGraphics2D createWindow (int width, int height, boolean topLevel) 
-	throws InstantiationException
-    {
-	return new WindowGraphics2D(this, width, height, topLevel, pixelScale,
-				    new DrawingSurfaceBufferedImage(width, height));
+    public WindowGraphics2D createWindow(int width, int height, boolean topLevel)
+            throws InstantiationException {
+        return new WindowGraphics2D(this, width, height, topLevel, pixelScale,
+                new DrawingSurfaceBufferedImage(width, height));
     }
 }

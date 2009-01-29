@@ -41,7 +41,6 @@ import com.jme.math.Vector3f;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.SocketException;
-import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocket;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
@@ -58,12 +57,10 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowCursorMsgArgs;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 class ServerProxyMaster extends ServerProxyMasterSocket {
 
     static final int MASTER_CLIENT_ID = 0;
-
     private static final int CREATE_WINDOW_MESSAGE_SIZE = 20;
     private static final int DESTROY_WINDOW_MESSAGE_SIZE = 8;
     private static final int SHOW_WINDOW_MESSAGE_SIZE = 12;
@@ -86,12 +83,9 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     private static final int DISPLAY_CURSOR_MESSAGE_SIZE = 12;
     private static final int MOVE_CURSOR_MESSAGE_SIZE = 16;
     private static final int SHOW_CURSOR_MESSAGE_SIZE = 2;
-
     private SlaveForwarder sf;
     private byte lastMsgCode;
-
     private DataBufferQueue.CurrentBuffer curBuf = new DataBufferQueue.CurrentBuffer();
-
     private byte[] createWindowBuf = new byte[CREATE_WINDOW_MESSAGE_SIZE];
     private byte[] destroyWindowBuf = new byte[DESTROY_WINDOW_MESSAGE_SIZE];
     private byte[] showWindowBuf = new byte[SHOW_WINDOW_MESSAGE_SIZE];
@@ -120,28 +114,27 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     // The client id and the user name of the last SLAVE_HELLO message received.
     private BigInteger connectingSlaveID;
     private String connectingUserName;
-
     /** This app's Wonderland session. */
     protected WonderlandSession session;
-
     /** The server socket to which slaves should connect. */
     protected ServerSocket serverSocket;
-
     /** Which user is currently controlling the app */
     private String controllingUserName = null;
 
     private class SlaveHelloMessage {
-	BigInteger slaveID;
-	String userName;
-	SlaveHelloMessage (BigInteger slaveID, String userName) {
-	    this.slaveID = slaveID;
-	    this.userName = userName;
+
+        BigInteger slaveID;
+        String userName;
+
+        SlaveHelloMessage(BigInteger slaveID, String userName) {
+            this.slaveID = slaveID;
+            this.userName = userName;
         }
     }
 
     // The incoming message queue. A message can either come from 
     // the server or be a hello from a connecting slave.
-    private LinkedList<SlaveHelloMessage> slaveHellos = new LinkedList<SlaveHelloMessage>();
+    private final LinkedList<SlaveHelloMessage> slaveHellos = new LinkedList<SlaveHelloMessage>();
 
     /** 
      * Create a new instance of ServerXrwMaster.
@@ -150,85 +143,86 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
      * @param wsDisplayNum The X11 display number used by the window system for this app.
      * @param serverSocket The server socket to which slaves should connect.
      */
-    public ServerProxyMaster (WonderlandSession session, String masterHost, int wsDisplayMaster, 
-			      ServerSocket serverSocket) {
-	super(masterHost, wsDisplayMaster);
-	this.session = session;
-	this.serverSocket = serverSocket;
+    public ServerProxyMaster(WonderlandSession session, String masterHost, int wsDisplayMaster,
+            ServerSocket serverSocket) {
+        super(masterHost, wsDisplayMaster);
+        this.session = session;
+        this.serverSocket = serverSocket;
     }
 
-    public void connect () throws IOException {
-	setClientId(MASTER_CLIENT_ID);
+    public void connect() throws IOException {
+        setClientId(MASTER_CLIENT_ID);
 
-	establishConnection();
+        establishConnection();
 
-	sf = new SlaveForwarder(this, session.getID(), serverSocket);
+        sf = new SlaveForwarder(this, session.getID(), serverSocket);
     }
 
+    @Override
     public void disconnect() {
-	super.disconnect();
+        super.disconnect();
 
-	try {
-	    if (sf != null) {
-		sf.disconnect();
-	    }
-	} catch (Exception ex) {
-	    throw new RuntimeException(ex);
-	}
+        try {
+            if (sf != null) {
+                sf.disconnect();
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
-    public void cleanup () {
-	disconnect();
+    public void cleanup() {
+        disconnect();
 
-	super.cleanup();
+        super.cleanup();
 
-	if (sf != null) {
-	    sf.cleanup();
-	    sf = null;
-	}
+        if (sf != null) {
+            sf.cleanup();
+            sf = null;
+        }
 
-	curBuf = null;
+        curBuf = null;
     }
 
     /**
      * Used by the Client to read the next incoming message.
      */
-    public ServerMessageType getMessageType () {
+    public ServerMessageType getMessageType() {
 
-	// Loop until we get a message from either server or a 
-	// connecting slave
-	while (true) {
+        // Loop until we get a message from either server or a
+        // connecting slave
+        while (true) {
 
-	    // First poll for whether there are any slaves who want to connect.
-	    // Process these first. (Note: this is a poll, not a wait)
-	    // TODO: it probably is a good idea to put a limit on the number
-	    // of slave hellos we service here
-	    //System.err.println("Service slave hellos");
-	    SlaveHelloMessage msg = null;
-	    synchronized (slaveHellos) {
-		while (slaveHellos.size() > 0) {
-		    msg= slaveHellos.getFirst();
-		    slaveHellos.removeFirst();
-		    connectingSlaveID = msg.slaveID;
-		    connectingUserName = msg.userName;
-		    return ServerMessageType.SLAVE_HELLO;
-		}
-	    }
+            // First poll for whether there are any slaves who want to connect.
+            // Process these first. (Note: this is a poll, not a wait)
+            // TODO: it probably is a good idea to put a limit on the number
+            // of slave hellos we service here
+            //System.err.println("Service slave hellos");
+            SlaveHelloMessage msg = null;
+            synchronized (slaveHellos) {
+                while (slaveHellos.size() > 0) {
+                    msg = slaveHellos.getFirst();
+                    slaveHellos.removeFirst();
+                    connectingSlaveID = msg.slaveID;
+                    connectingUserName = msg.userName;
+                    return ServerMessageType.SLAVE_HELLO;
+                }
+            }
 
-	    // After servicing connectin slaves, try read a message from the server.
-	    //System.err.println("Service server messages");
-	    try {
-		ServerMessageType type = socketReadMessageType();
-		return type;
-	    } catch (IOException e) {
-		if (e instanceof SocketTimeoutException) {
-		    // No message yet from server. Keep looping.
-		    //System.err.println("Nothing from server yet")
-		} else {
-		    throw new RuntimeException(e);
-		}
-	    }
-	}
+            // After servicing connectin slaves, try read a message from the server.
+            //System.err.println("Service server messages");
+            try {
+                ServerMessageType type = socketReadMessageType();
+                return type;
+            } catch (IOException e) {
+                if (e instanceof SocketTimeoutException) {
+                    // No message yet from server. Keep looping.
+                    //System.err.println("Nothing from server yet")
+                } else {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     /**
@@ -236,8 +230,8 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
      * a SLAVE_HELLO message. Only call this when getMessageType
      * returns SLAVE_HELLO.
      */
-    public BigInteger getConnectingSlaveID () {
-	return connectingSlaveID;
+    public BigInteger getConnectingSlaveID() {
+        return connectingSlaveID;
     }
 
     /**
@@ -245,536 +239,536 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
      * a SLAVE_HELLO message. Only call this when getMessageType
      * returns SLAVE_HELLO.
      */
-    public String getConnectingUserName () {
-	return connectingUserName;
+    public String getConnectingUserName() {
+        return connectingUserName;
     }
 
-    public ServerMessageType socketReadMessageType () throws IOException {
-	try {
-	    lastMsgCode = (byte) in.readUnsignedByte();
-	    int msgCode = (int) lastMsgCode;
-	    //System.err.println("msgCode = " + msgCode);
-	    return ServerMessageType.values()[msgCode];
-	} catch (SocketException e) {
-	    // TODO: for now, ignore socket close errors. They occur
-	    // normally when the X server goes away on application death.
-	    // Later on we may want to find a better way to handle this.
-	    return ServerMessageType.SERVER_DISCONNECT;
-	} catch (EOFException e) {
-	    return ServerMessageType.SERVER_DISCONNECT;
-	}
+    public ServerMessageType socketReadMessageType() throws IOException {
+        try {
+            lastMsgCode = (byte) in.readUnsignedByte();
+            int msgCode = (int) lastMsgCode;
+            //System.err.println("msgCode = " + msgCode);
+            return ServerMessageType.values()[msgCode];
+        } catch (SocketException e) {
+            // TODO: for now, ignore socket close errors. They occur
+            // normally when the X server goes away on application death.
+            // Later on we may want to find a better way to handle this.
+            return ServerMessageType.SERVER_DISCONNECT;
+        } catch (EOFException e) {
+            return ServerMessageType.SERVER_DISCONNECT;
+        }
     }
 
-    public void addIncomingSlaveHelloMessage (BigInteger slaveID, String userName) {
-	synchronized (slaveHellos) {
-	    slaveHellos.addLast(new SlaveHelloMessage(slaveID, userName));
-	}
+    public void addIncomingSlaveHelloMessage(BigInteger slaveID, String userName) {
+        synchronized (slaveHellos) {
+            slaveHellos.addLast(new SlaveHelloMessage(slaveID, userName));
+        }
     }
 
-    public void sendWelcomeMessageToSlave (BigInteger slaveID, String userName) {
-	sf.unicastWelcomeMessage(slaveID, userName);
+    public void sendWelcomeMessageToSlave(BigInteger slaveID, String userName) {
+        sf.unicastWelcomeMessage(slaveID, userName);
     }
 
-    public void getData (CreateWindowMsgArgs msgArgs) {
-	try {
-	    createWindowBuf[0] = lastMsgCode;
-	    in.readFully(createWindowBuf, 1, createWindowBuf.length-1);
-	    sf.broadcastSend(createWindowBuf);
+    public void getData(CreateWindowMsgArgs msgArgs) {
+        try {
+            createWindowBuf[0] = lastMsgCode;
+            in.readFully(createWindowBuf, 1, createWindowBuf.length - 1);
+            sf.broadcastSend(createWindowBuf);
 
-	    curBuf.setBuffer(createWindowBuf, 1);
-	    msgArgs.decorated =  curBuf.nextByte() != 0;
-	    msgArgs.borderWidth = curBuf.nextShort();
-	    msgArgs.wid = curBuf.nextInt();
-	    msgArgs.x = curBuf.nextShort();
-	    msgArgs.y = curBuf.nextShort();
-	    msgArgs.wAndBorder = curBuf.nextInt();
-	    msgArgs.hAndBorder = curBuf.nextInt();
+            curBuf.setBuffer(createWindowBuf, 1);
+            msgArgs.decorated = curBuf.nextByte() != 0;
+            msgArgs.borderWidth = curBuf.nextShort();
+            msgArgs.wid = curBuf.nextInt();
+            msgArgs.x = curBuf.nextShort();
+            msgArgs.y = curBuf.nextShort();
+            msgArgs.wAndBorder = curBuf.nextInt();
+            msgArgs.hAndBorder = curBuf.nextInt();
 
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (DestroyWindowMsgArgs msgArgs) {
-	try {
-	    destroyWindowBuf[0] = lastMsgCode;
-	    in.readFully(destroyWindowBuf, 1, destroyWindowBuf.length - 1);
-	    sf.broadcastSend(destroyWindowBuf);
+    public void getData(DestroyWindowMsgArgs msgArgs) {
+        try {
+            destroyWindowBuf[0] = lastMsgCode;
+            in.readFully(destroyWindowBuf, 1, destroyWindowBuf.length - 1);
+            sf.broadcastSend(destroyWindowBuf);
 
-	    curBuf.setBuffer(destroyWindowBuf, 4);
-	    msgArgs.wid = curBuf.nextInt();
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(destroyWindowBuf, 4);
+            msgArgs.wid = curBuf.nextInt();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (ShowWindowMsgArgs msgArgs) {
-	try {
-	    showWindowBuf[0] = lastMsgCode;
-	    in.readFully(showWindowBuf, 1, showWindowBuf.length - 1);
-	    sf.broadcastSend(showWindowBuf);
+    public void getData(ShowWindowMsgArgs msgArgs) {
+        try {
+            showWindowBuf[0] = lastMsgCode;
+            in.readFully(showWindowBuf, 1, showWindowBuf.length - 1);
+            sf.broadcastSend(showWindowBuf);
 
-	    curBuf.setBuffer(showWindowBuf, 1);
-	    msgArgs.show = curBuf.nextByte() != 0;
-	    curBuf.skip(2);
-	    msgArgs.wid = curBuf.nextInt();
-	    /* TODO: 0.4 protocol:
-	    msgArgs.transientFor = curBuf.nextInt();
-	    */
-	    curBuf.nextInt();  // Ignore
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(showWindowBuf, 1);
+            msgArgs.show = curBuf.nextByte() != 0;
+            curBuf.skip(2);
+            msgArgs.wid = curBuf.nextInt();
+            /* TODO: 0.4 protocol:
+            msgArgs.transientFor = curBuf.nextInt();
+             */
+            curBuf.nextInt();  // Ignore
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (ConfigureWindowMsgArgs msgArgs) {
-	try {
-	    configureWindowBuf[0] = lastMsgCode;
-	    in.readFully(configureWindowBuf, 1, configureWindowBuf.length - 1);
-	    sf.broadcastSend(configureWindowBuf);
+    public void getData(ConfigureWindowMsgArgs msgArgs) {
+        try {
+            configureWindowBuf[0] = lastMsgCode;
+            in.readFully(configureWindowBuf, 1, configureWindowBuf.length - 1);
+            sf.broadcastSend(configureWindowBuf);
 
-	    curBuf.setBuffer(configureWindowBuf, 4);
+            curBuf.setBuffer(configureWindowBuf, 4);
 
-	    msgArgs.clientId = curBuf.nextInt();
+            msgArgs.clientId = curBuf.nextInt();
 
-	    msgArgs.wid = curBuf.nextInt();
+            msgArgs.wid = curBuf.nextInt();
 
-	    msgArgs.x = curBuf.nextShort();
-	    msgArgs.y = curBuf.nextShort();
+            msgArgs.x = curBuf.nextShort();
+            msgArgs.y = curBuf.nextShort();
 
-	    msgArgs.wAndBorder = curBuf.nextInt();
+            msgArgs.wAndBorder = curBuf.nextInt();
 
-	    msgArgs.hAndBorder = curBuf.nextInt();
+            msgArgs.hAndBorder = curBuf.nextInt();
 
-	    msgArgs.sibid = curBuf.nextInt();
+            msgArgs.sibid = curBuf.nextInt();
 
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (PositionWindowMsgArgs msgArgs) {
-	try {
-	    positionWindowBuf[0] = lastMsgCode;
-	    in.readFully(positionWindowBuf, 1, positionWindowBuf.length - 1);
-	    sf.broadcastSend(positionWindowBuf);
+    public void getData(PositionWindowMsgArgs msgArgs) {
+        try {
+            positionWindowBuf[0] = lastMsgCode;
+            in.readFully(positionWindowBuf, 1, positionWindowBuf.length - 1);
+            sf.broadcastSend(positionWindowBuf);
 
-	    curBuf.setBuffer(positionWindowBuf, 4);
-	    msgArgs.clientId = curBuf.nextInt();
-	    msgArgs.wid = curBuf.nextInt();
-	    msgArgs.x = curBuf.nextShort();
-	    msgArgs.y = curBuf.nextShort();
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(positionWindowBuf, 4);
+            msgArgs.clientId = curBuf.nextInt();
+            msgArgs.wid = curBuf.nextInt();
+            msgArgs.x = curBuf.nextShort();
+            msgArgs.y = curBuf.nextShort();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (RestackWindowMsgArgs msgArgs) {
-	try {
-	    restackWindowBuf[0] = lastMsgCode;
-	    in.readFully(restackWindowBuf, 1, restackWindowBuf.length - 1);
-	    sf.broadcastSend(restackWindowBuf);
+    public void getData(RestackWindowMsgArgs msgArgs) {
+        try {
+            restackWindowBuf[0] = lastMsgCode;
+            in.readFully(restackWindowBuf, 1, restackWindowBuf.length - 1);
+            sf.broadcastSend(restackWindowBuf);
 
-	    curBuf.setBuffer(restackWindowBuf, 4);
-	    msgArgs.clientId = curBuf.nextInt();
-	    msgArgs.wid = curBuf.nextInt();
-	    msgArgs.sibid = curBuf.nextInt();
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(restackWindowBuf, 4);
+            msgArgs.clientId = curBuf.nextInt();
+            msgArgs.wid = curBuf.nextInt();
+            msgArgs.sibid = curBuf.nextInt();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (WindowSetDecoratedMsgArgs msgArgs) {
-	try {
-	    windowSetDecoratedBuf[0] = lastMsgCode;
-	    in.readFully(windowSetDecoratedBuf, 1, windowSetDecoratedBuf.length - 1);
-	    sf.broadcastSend(windowSetDecoratedBuf);
+    public void getData(WindowSetDecoratedMsgArgs msgArgs) {
+        try {
+            windowSetDecoratedBuf[0] = lastMsgCode;
+            in.readFully(windowSetDecoratedBuf, 1, windowSetDecoratedBuf.length - 1);
+            sf.broadcastSend(windowSetDecoratedBuf);
 
-	    curBuf.setBuffer(windowSetDecoratedBuf, 1);
-	    msgArgs.decorated = (curBuf.nextByte() == 1) ? true : false;
-	    curBuf.skip(2);
-	    msgArgs.wid = curBuf.nextInt();
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
-    }
-    
-    public void getData (WindowSetBorderWidthMsgArgs msgArgs) {
-	try {
-	    windowSetBorderWidthBuf[0] = lastMsgCode;
-	    in.readFully(windowSetBorderWidthBuf, 1, windowSetBorderWidthBuf.length - 1);
-	    sf.broadcastSend(windowSetBorderWidthBuf);
-
-	    curBuf.setBuffer(windowSetBorderWidthBuf, 2);
-	    msgArgs.borderWidth = curBuf.nextShort();
-	    msgArgs.wid = curBuf.nextInt();
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(windowSetDecoratedBuf, 1);
+            msgArgs.decorated = (curBuf.nextByte() == 1) ? true : false;
+            curBuf.skip(2);
+            msgArgs.wid = curBuf.nextInt();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (WindowSetUserDisplMsgArgs msgArgs) {
-	try {
-	    winSetUserDisplBuf[0] = lastMsgCode;
-	    in.readFully(winSetUserDisplBuf, 1, winSetUserDisplBuf.length - 1);
-	    sf.broadcastSend(winSetUserDisplBuf);
+    public void getData(WindowSetBorderWidthMsgArgs msgArgs) {
+        try {
+            windowSetBorderWidthBuf[0] = lastMsgCode;
+            in.readFully(windowSetBorderWidthBuf, 1, windowSetBorderWidthBuf.length - 1);
+            sf.broadcastSend(windowSetBorderWidthBuf);
 
-	    curBuf.setBuffer(winSetUserDisplBuf, 4);
-	    msgArgs.clientId = curBuf.nextInt();
-	    msgArgs.wid = curBuf.nextInt();
-	    int ix = curBuf.nextInt();
-	    int iy = curBuf.nextInt();
-	    int iz = curBuf.nextInt();
-	    msgArgs.userDispl = new Vector3f(Float.intBitsToFloat(ix),
-					 Float.intBitsToFloat(iy),
-					 Float.intBitsToFloat(iz));
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(windowSetBorderWidthBuf, 2);
+            msgArgs.borderWidth = curBuf.nextShort();
+            msgArgs.wid = curBuf.nextInt();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (WindowSetRotateYMsgArgs msgArgs) {
-	try {
-	    winSetRotateYBuf[0] = lastMsgCode;
-	    in.readFully(winSetRotateYBuf, 1, winSetRotateYBuf.length - 1);
-	    sf.broadcastSend(winSetRotateYBuf);
+    public void getData(WindowSetUserDisplMsgArgs msgArgs) {
+        try {
+            winSetUserDisplBuf[0] = lastMsgCode;
+            in.readFully(winSetUserDisplBuf, 1, winSetUserDisplBuf.length - 1);
+            sf.broadcastSend(winSetUserDisplBuf);
 
-	    curBuf.setBuffer(winSetRotateYBuf, 4);
-	    msgArgs.clientId = curBuf.nextInt();
-	    msgArgs.wid = curBuf.nextInt();
-	    int iroty = curBuf.nextInt();
-	    msgArgs.roty = Float.intBitsToFloat(iroty);
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(winSetUserDisplBuf, 4);
+            msgArgs.clientId = curBuf.nextInt();
+            msgArgs.wid = curBuf.nextInt();
+            int ix = curBuf.nextInt();
+            int iy = curBuf.nextInt();
+            int iz = curBuf.nextInt();
+            msgArgs.userDispl = new Vector3f(Float.intBitsToFloat(ix),
+                    Float.intBitsToFloat(iy),
+                    Float.intBitsToFloat(iz));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (DisplayPixelsMsgArgs msgArgs) {
-	try {
-	    displayPixelsBuf[0] = lastMsgCode;
-	    in.readFully(displayPixelsBuf, 1, displayPixelsBuf.length - 1);
-	    //System.err.print("DP: ");
-	    //print10bytes(displayPixelsBuf);
+    public void getData(WindowSetRotateYMsgArgs msgArgs) {
+        try {
+            winSetRotateYBuf[0] = lastMsgCode;
+            in.readFully(winSetRotateYBuf, 1, winSetRotateYBuf.length - 1);
+            sf.broadcastSend(winSetRotateYBuf);
 
-	    curBuf.setBuffer(displayPixelsBuf, 1);
-	    int encodingCode = curBuf.nextByte();
-	    msgArgs.encoding = Proto.PixelEncoding.values()[encodingCode];
-
-	    msgArgs.x = curBuf.nextShort();
-	    msgArgs.wid = curBuf.nextInt();
-	    msgArgs.y = curBuf.nextShort();
-	    msgArgs.w = curBuf.nextShort();
-	    msgArgs.h = curBuf.nextShort();
-
-	    sf.broadcastSend(displayPixelsBuf);
-
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(winSetRotateYBuf, 4);
+            msgArgs.clientId = curBuf.nextInt();
+            msgArgs.wid = curBuf.nextInt();
+            int iroty = curBuf.nextInt();
+            msgArgs.roty = Float.intBitsToFloat(iroty);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (CopyAreaMsgArgs msgArgs) {
-	try {
-	    copyAreaBuf[0] = lastMsgCode;
-	    in.readFully(copyAreaBuf, 1, copyAreaBuf.length - 1);
+    public void getData(DisplayPixelsMsgArgs msgArgs) {
+        try {
+            displayPixelsBuf[0] = lastMsgCode;
+            in.readFully(displayPixelsBuf, 1, displayPixelsBuf.length - 1);
+            //System.err.print("DP: ");
+            //print10bytes(displayPixelsBuf);
 
-	    curBuf.setBuffer(copyAreaBuf, 4);
-	    msgArgs.wid = curBuf.nextInt();
-	    msgArgs.srcX = curBuf.nextInt();
-	    msgArgs.srcY = curBuf.nextInt();
-	    msgArgs.width = curBuf.nextInt();
-	    msgArgs.height = curBuf.nextInt();
-	    msgArgs.dstX = curBuf.nextInt();
-	    msgArgs.dstY = curBuf.nextInt();
+            curBuf.setBuffer(displayPixelsBuf, 1);
+            int encodingCode = curBuf.nextByte();
+            msgArgs.encoding = Proto.PixelEncoding.values()[encodingCode];
 
-	    sf.broadcastSend(copyAreaBuf);
+            msgArgs.x = curBuf.nextShort();
+            msgArgs.wid = curBuf.nextInt();
+            msgArgs.y = curBuf.nextShort();
+            msgArgs.w = curBuf.nextShort();
+            msgArgs.h = curBuf.nextShort();
 
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            sf.broadcastSend(displayPixelsBuf);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (ControllerStatusMsgArgs msgArgs) {
-	try {
-	    controllerStatusBuf[0] = lastMsgCode;
-	    in.readFully(controllerStatusBuf, 1, controllerStatusBuf.length - 1);
-	    sf.broadcastSend(controllerStatusBuf);
+    public void getData(CopyAreaMsgArgs msgArgs) {
+        try {
+            copyAreaBuf[0] = lastMsgCode;
+            in.readFully(copyAreaBuf, 1, copyAreaBuf.length - 1);
 
-	    curBuf.setBuffer(controllerStatusBuf, 1);
-	    int status = (int) curBuf.nextByte();
-	    msgArgs.status = Proto.ControllerStatus.values()[status];
+            curBuf.setBuffer(copyAreaBuf, 4);
+            msgArgs.wid = curBuf.nextInt();
+            msgArgs.srcX = curBuf.nextInt();
+            msgArgs.srcY = curBuf.nextInt();
+            msgArgs.width = curBuf.nextInt();
+            msgArgs.height = curBuf.nextInt();
+            msgArgs.dstX = curBuf.nextInt();
+            msgArgs.dstY = curBuf.nextInt();
 
-	    curBuf.skip(2);
+            sf.broadcastSend(copyAreaBuf);
 
-	    msgArgs.clientId = curBuf.nextInt();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	    if (msgArgs.status == Proto.ControllerStatus.GAINED) {
-		if (msgArgs.clientId == -1) {
-		    // Nobody has control
-		    controllingUserName = null;
-		} else if (msgArgs.clientId == 0) {
-		    // Master
-		    //TODO: notyet: controllingUserName = session.getUserName();
-		    controllingUserName = "deronj";
-		} else {
-		    // Slaves
-		    controllingUserName = sf.clientIdToUserName(msgArgs.clientId);
-		}
-		broadcastControllingUserNameToSlaves(controllingUserName);
-	    }
+    public void getData(ControllerStatusMsgArgs msgArgs) {
+        try {
+            controllerStatusBuf[0] = lastMsgCode;
+            in.readFully(controllerStatusBuf, 1, controllerStatusBuf.length - 1);
+            sf.broadcastSend(controllerStatusBuf);
 
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(controllerStatusBuf, 1);
+            int status = (int) curBuf.nextByte();
+            msgArgs.status = Proto.ControllerStatus.values()[status];
+
+            curBuf.skip(2);
+
+            msgArgs.clientId = curBuf.nextInt();
+
+            if (msgArgs.status == Proto.ControllerStatus.GAINED) {
+                if (msgArgs.clientId == -1) {
+                    // Nobody has control
+                    controllingUserName = null;
+                } else if (msgArgs.clientId == 0) {
+                    // Master
+                    controllingUserName = session.getUserID().getUsername();
+                } else {
+                    // Slaves
+                    controllingUserName = sf.clientIdToUserName(msgArgs.clientId);
+                }
+                broadcastControllingUserNameToSlaves(controllingUserName);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Returns null if no user has control
-    public String getControllingUser () {
-	return controllingUserName;
+    public String getControllingUser() {
+        return controllingUserName;
     }
 
     // TODO: 0.4 protocol: temporarily insert
-    public void getData (DisplayCursorMsgArgs msg) {
-	try {
-	    displayCursorBuf[0] = lastMsgCode;
-	    in.readFully(displayCursorBuf, 1, displayCursorBuf.length - 1);
-	    // TODO: don't send cursor to slave: sf.broadcastMessage(displayCursorBuf);
+    public void getData(DisplayCursorMsgArgs msg) {
+        try {
+            displayCursorBuf[0] = lastMsgCode;
+            in.readFully(displayCursorBuf, 1, displayCursorBuf.length - 1);
+            // TODO: don't send cursor to slave: sf.broadcastMessage(displayCursorBuf);
 
-	    curBuf.setBuffer(displayCursorBuf, 4);
-	    msg.width = curBuf.nextShort();
-	    msg.height = curBuf.nextShort();
-	    msg.xhot = curBuf.nextShort();
-	    msg.yhot = curBuf.nextShort();
+            curBuf.setBuffer(displayCursorBuf, 4);
+            msg.width = curBuf.nextShort();
+            msg.height = curBuf.nextShort();
+            msg.xhot = curBuf.nextShort();
+            msg.yhot = curBuf.nextShort();
 
-	    int numPixels = msg.width * msg.height;
-	    int numBytes = numPixels * 4;
-	    msg.pixels = new int[numPixels];
-	    byte[] imageBuf = new byte[numBytes];
+            int numPixels = msg.width * msg.height;
+            int numBytes = numPixels * 4;
+            msg.pixels = new int[numPixels];
+            byte[] imageBuf = new byte[numBytes];
 
-	    in.readFully(imageBuf, 0, numBytes);
-	    curBuf.setBuffer(imageBuf, 0);
-	    for (int i : msg.pixels) {
-		msg.pixels[i] = curBuf.nextInt();
-	    }
+            in.readFully(imageBuf, 0, numBytes);
+            curBuf.setBuffer(imageBuf, 0);
+            for (int i : msg.pixels) {
+                msg.pixels[i] = curBuf.nextInt();
+            }
 
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // TODO: 0.4 protocol: temporarily insert
-    public void getData (MoveCursorMsgArgs msg) {
-	try {
-	    moveCursorBuf[0] = lastMsgCode;
-	    in.readFully(moveCursorBuf, 1, moveCursorBuf.length - 1);
-	    // TODO: don't send cursor to slave: sf.broadcastMessage(moveCursorBuf);
+    public void getData(MoveCursorMsgArgs msg) {
+        try {
+            moveCursorBuf[0] = lastMsgCode;
+            in.readFully(moveCursorBuf, 1, moveCursorBuf.length - 1);
+            // TODO: don't send cursor to slave: sf.broadcastMessage(moveCursorBuf);
 
-	    curBuf.setBuffer(moveCursorBuf, 4);
-	    msg.wid = curBuf.nextInt();
-	    msg.x = curBuf.nextInt();
-	    msg.y = curBuf.nextInt();
+            curBuf.setBuffer(moveCursorBuf, 4);
+            msg.wid = curBuf.nextInt();
+            msg.x = curBuf.nextInt();
+            msg.y = curBuf.nextInt();
 
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // TODO: 0.4 protocol: temporarily insert
-    public void getData (ShowCursorMsgArgs msg) {
-	try {
-	    showCursorBuf[0] = lastMsgCode;
-	    in.readFully(showCursorBuf, 1, showCursorBuf.length - 1);
-	    // TODO: don't send cursor to slave: sf.broadcastMessage(showCursorBuf);
+    public void getData(ShowCursorMsgArgs msg) {
+        try {
+            showCursorBuf[0] = lastMsgCode;
+            in.readFully(showCursorBuf, 1, showCursorBuf.length - 1);
+            // TODO: don't send cursor to slave: sf.broadcastMessage(showCursorBuf);
 
-	    curBuf.setBuffer(showCursorBuf, 1);
-	    msg.show = (curBuf.nextByte() == 1) ? true : false;
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(showCursorBuf, 1);
+            msg.show = (curBuf.nextByte() == 1) ? true : false;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (SetWindowTitleMsgArgs msgArgs) {
-	try {
-	    setWindowTitleBuf[0] = lastMsgCode;
-	    in.readFully(setWindowTitleBuf, 1, setWindowTitleBuf.length - 1);
+    public void getData(SetWindowTitleMsgArgs msgArgs) {
+        try {
+            setWindowTitleBuf[0] = lastMsgCode;
+            in.readFully(setWindowTitleBuf, 1, setWindowTitleBuf.length - 1);
 
-	    curBuf.setBuffer(setWindowTitleBuf, 4);
-	    msgArgs.wid = curBuf.nextInt();
-	    //System.err.println("msgArgs.wid = " + msgArgs.wid);
+            curBuf.setBuffer(setWindowTitleBuf, 4);
+            msgArgs.wid = curBuf.nextInt();
+            //System.err.println("msgArgs.wid = " + msgArgs.wid);
 
-	    curBuf.setBuffer(setWindowTitleBuf, 8);
-	    int strLen = curBuf.nextInt();
-	    //System.err.println("strlen = " + strLen);
+            curBuf.setBuffer(setWindowTitleBuf, 8);
+            int strLen = curBuf.nextInt();
+            //System.err.println("strlen = " + strLen);
 
-	    byte[] title = new byte[strLen];
-	    in.readFully(title);
+            byte[] title = new byte[strLen];
+            in.readFully(title);
 
-	    int hdrLen = setWindowTitleBuf.length;
-	    byte[] bytes = new byte[hdrLen + strLen];
-	    System.arraycopy(setWindowTitleBuf, 0, bytes, 0, hdrLen);
-	    System.arraycopy(title, 0, bytes, hdrLen, strLen);
-	    sf.broadcastSend(bytes);
+            int hdrLen = setWindowTitleBuf.length;
+            byte[] bytes = new byte[hdrLen + strLen];
+            System.arraycopy(setWindowTitleBuf, 0, bytes, 0, hdrLen);
+            System.arraycopy(title, 0, bytes, hdrLen, strLen);
+            sf.broadcastSend(bytes);
 
-	    msgArgs.title = new String(title);
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            msgArgs.title = new String(title);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData (SlaveCloseWindowMsgArgs msgArgs) {
-	try {
-	    slaveCloseWindowBuf[0] = lastMsgCode;
-	    in.readFully(slaveCloseWindowBuf, 1, slaveCloseWindowBuf.length - 1);
-	    sf.broadcastSend(slaveCloseWindowBuf);
+    public void getData(SlaveCloseWindowMsgArgs msgArgs) {
+        try {
+            slaveCloseWindowBuf[0] = lastMsgCode;
+            in.readFully(slaveCloseWindowBuf, 1, slaveCloseWindowBuf.length - 1);
+            sf.broadcastSend(slaveCloseWindowBuf);
 
-	    curBuf.setBuffer(slaveCloseWindowBuf, 4);
-	    msgArgs.clientId = curBuf.nextInt();
-	    msgArgs.wid = curBuf.nextInt();
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            curBuf.setBuffer(slaveCloseWindowBuf, 4);
+            msgArgs.clientId = curBuf.nextInt();
+            msgArgs.wid = curBuf.nextInt();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void getData () {
-	beepBuf[0] = lastMsgCode;
-	sf.broadcastSend(beepBuf);
+    public void getData() {
+        beepBuf[0] = lastMsgCode;
+        sf.broadcastSend(beepBuf);
     }
 
-    public void setScanLineWidth (int width) {
-	if (scanLineWidth != width) {
-	    scanLineBuf = new byte[width * 4];
-	}
-	scanLineWidth = width;
+    public void setScanLineWidth(int width) {
+        if (scanLineWidth != width) {
+            scanLineBuf = new byte[width * 4];
+        }
+        scanLineWidth = width;
     }
 
     /* Debug 
     static int scanLinesRead = 0;
     static int bytesRead = 0;
-    */
+     */
+    public byte[] readScanLine() {
+        try {
+            in.readFully(scanLineBuf);
+            sf.broadcastSend(scanLineBuf);
 
-    public byte[] readScanLine () {
-	try {
-	    in.readFully(scanLineBuf);	
-	    sf.broadcastSend(scanLineBuf);
+            /* Debug
+            scanLinesRead++;
+            System.err.println("scanLinesRead = " + scanLinesRead);
+            bytesRead += scanLineBuf.length;
+            System.err.println("bytesRead = " + bytesRead);
+             */
 
-	    /* Debug
-   	    scanLinesRead++;
-	    System.err.println("scanLinesRead = " + scanLinesRead);
-	    bytesRead += scanLineBuf.length;
-	    System.err.println("bytesRead = " + bytesRead);
-	    */
-
-	    return scanLineBuf;
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+            return scanLineBuf;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public int readRleInt () {
-	try {
-	    in.readFully(integerBuf);
-	    //System.err.print("DPINT: ");
-	    //print10bytes(integerBuf);
-	    sf.broadcastSend(integerBuf);
-	    
-	    curBuf.setBuffer(integerBuf, 0);
-	    int value = curBuf.nextInt();
-	    return value;
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+    public int readRleInt() {
+        try {
+            in.readFully(integerBuf);
+            //System.err.print("DPINT: ");
+            //print10bytes(integerBuf);
+            sf.broadcastSend(integerBuf);
+
+            curBuf.setBuffer(integerBuf, 0);
+            int value = curBuf.nextInt();
+            return value;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void readRleChunk (byte[] chunkBuf) {
-	try {
-	    in.readFully(chunkBuf);	
-	    //System.err.print("DPCHUNK: ");
-	    //print10bytes(chunkBuf);
-	    sf.broadcastSend(chunkBuf);
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+    public void readRleChunk(byte[] chunkBuf) {
+        try {
+            in.readFully(chunkBuf);
+            //System.err.print("DPCHUNK: ");
+            //print10bytes(chunkBuf);
+            sf.broadcastSend(chunkBuf);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void readRleChunk (byte[] chunkBuf, int len) {
-	try {
-	    in.readFully(chunkBuf, 0, len);	
-	    //System.err.print("DPCHUNK: ");
-	    //print10bytes(chunkBuf);
-	    sf.broadcastSend(chunkBuf, len);
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+    public void readRleChunk(byte[] chunkBuf, int len) {
+        try {
+            in.readFully(chunkBuf, 0, len);
+            //System.err.print("DPCHUNK: ");
+            //print10bytes(chunkBuf);
+            sf.broadcastSend(chunkBuf, len);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void broadcastControllingUserNameToSlaves (String userName) throws IOException {
-	if (userName == null) return;
+    public void broadcastControllingUserNameToSlaves(String userName) throws IOException {
+        if (userName == null) {
+            return;
+        }
 
-	int n = 0;
-	int strLen = userName.length();
+        int n = 0;
+        int strLen = userName.length();
 
-	// Compose the header
- 	userNameBuf[n++] = (byte) ServerMessageType.CONTROLLING_USER_NAME.ordinal();
-	userNameBuf[n++] = 0; // Pad
-	userNameBuf[n++] = (byte) ((strLen >> 8) & 0xff);
-	userNameBuf[n++] = (byte) (strLen & 0xff);
+        // Compose the header
+        userNameBuf[n++] = (byte) ServerMessageType.CONTROLLING_USER_NAME.ordinal();
+        userNameBuf[n++] = 0; // Pad
+        userNameBuf[n++] = (byte) ((strLen >> 8) & 0xff);
+        userNameBuf[n++] = (byte) (strLen & 0xff);
 
-	// Then send the string
-	byte[] strBytes = userName.getBytes();
-	int hdrLen = userNameBuf.length;
-	byte[] bytes = new byte[hdrLen + strLen];
-	System.arraycopy(userNameBuf, 0, bytes, 0, hdrLen);
-	System.arraycopy(strBytes, 0, bytes, hdrLen, strLen);
-	sf.broadcastSend(bytes);
+        // Then send the string
+        byte[] strBytes = userName.getBytes();
+        int hdrLen = userNameBuf.length;
+        byte[] bytes = new byte[hdrLen + strLen];
+        System.arraycopy(userNameBuf, 0, bytes, 0, hdrLen);
+        System.arraycopy(strBytes, 0, bytes, hdrLen, strLen);
+        sf.broadcastSend(bytes);
     }
 
-    public void setPopupParent (int wid, int parentWid) {
-	int n = 0;
+    public void setPopupParent(int wid, int parentWid) {
+        int n = 0;
 
- 	setPopupParentBuf[n++] = (byte) ServerMessageType.SET_POPUP_PARENT.ordinal();
-	setPopupParentBuf[n++] = 0; // Pad
-	setPopupParentBuf[n++] = 0; // Pad
-	setPopupParentBuf[n++] = 0; // Pad
-	setPopupParentBuf[n++] = (byte) ((wid >> 24) & 0xff);
-	setPopupParentBuf[n++] = (byte) ((wid >> 16) & 0xff);
-	setPopupParentBuf[n++] = (byte) ((wid >> 8)  & 0xff);
-	setPopupParentBuf[n++] = (byte) (wid & 0xff);
-	setPopupParentBuf[n++] = (byte) ((parentWid >> 24) & 0xff);
-	setPopupParentBuf[n++] = (byte) ((parentWid >> 16) & 0xff);
-	setPopupParentBuf[n++] = (byte) ((parentWid >> 8)  & 0xff);
-	setPopupParentBuf[n++] = (byte) (parentWid & 0xff);
+        setPopupParentBuf[n++] = (byte) ServerMessageType.SET_POPUP_PARENT.ordinal();
+        setPopupParentBuf[n++] = 0; // Pad
+        setPopupParentBuf[n++] = 0; // Pad
+        setPopupParentBuf[n++] = 0; // Pad
+        setPopupParentBuf[n++] = (byte) ((wid >> 24) & 0xff);
+        setPopupParentBuf[n++] = (byte) ((wid >> 16) & 0xff);
+        setPopupParentBuf[n++] = (byte) ((wid >> 8) & 0xff);
+        setPopupParentBuf[n++] = (byte) (wid & 0xff);
+        setPopupParentBuf[n++] = (byte) ((parentWid >> 24) & 0xff);
+        setPopupParentBuf[n++] = (byte) ((parentWid >> 16) & 0xff);
+        setPopupParentBuf[n++] = (byte) ((parentWid >> 8) & 0xff);
+        setPopupParentBuf[n++] = (byte) (parentWid & 0xff);
 
-	sf.broadcastSend(setPopupParentBuf);
+        sf.broadcastSend(setPopupParentBuf);
     }
 
-    public void writeSlaveSyncPixels (BigInteger slaveID, byte[] pixelBuf) {
-	sf.unicastSend(slaveID, pixelBuf);
+    public void writeSlaveSyncPixels(BigInteger slaveID, byte[] pixelBuf) {
+        sf.unicastSend(slaveID, pixelBuf);
     }
 
     /* For Debug
     private void debugPrintSlaveSyncPixels (byte[] pixelBuf) {
-	int pixelCount = 0;
-	for (int i = 0; i < pixelBuf.length; i += 4) {
-	    int pixel = pixelBuf[i]   << 24 |
-		        pixelBuf[i+1] << 16 |
-		        pixelBuf[i+2] <<  8 |
-		        pixelBuf[i+3];
-	    System.err.print(Integer.toHexString(pixel) + " ");
-	    pixelCount++;
-	    if ((pixelCount % 10) == 9) {
-		System.err.println();
-	    }
-	}
+    int pixelCount = 0;
+    for (int i = 0; i < pixelBuf.length; i += 4) {
+    int pixel = pixelBuf[i]   << 24 |
+    pixelBuf[i+1] << 16 |
+    pixelBuf[i+2] <<  8 |
+    pixelBuf[i+3];
+    System.err.print(Integer.toHexString(pixel) + " ");
+    pixelCount++;
+    if ((pixelCount % 10) == 9) {
+    System.err.println();
     }
-    */
+    }
+    }
+     */
 
     // For Debug
-    private static void print10bytes (byte[] bytes) {
-	int n = (bytes.length > 10) ? 10 : bytes.length;
-	for (int i = 0; i < n; i++) {
-	    System.err.print(Integer.toHexString(bytes[i]&0xff) + " ");
-	}
-	System.err.println();
+    private static void print10bytes(byte[] bytes) {
+        int n = (bytes.length > 10) ? 10 : bytes.length;
+        for (int i = 0; i < n; i++) {
+            System.err.print(Integer.toHexString(bytes[i] & 0xff) + " ");
+        }
+        System.err.println();
     }
 }
 

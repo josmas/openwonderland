@@ -1,3 +1,5 @@
+// TODO: delete the whole file?	
+
 /**
  * Project Wonderland
  *
@@ -35,6 +37,6 @@ class AppConnectionHandlerXrw extends AppConventionalConnectionHandler {
      * {@inheritDoc}
      */
     public AppConventionalCellMO createCell (AppConventionalCellCreateMessage msg) {
-	return new AppCellMOXrw(msg);
+        return new AppCellMOXrw();
     }
 }

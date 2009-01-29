@@ -18,23 +18,19 @@
 package org.jdesktop.wonderland.modules.appbase.server;
 
 import java.io.Serializable;
-import java.util.UUID;
-import com.jme.bounding.BoundingVolume;
-import com.jme.bounding.BoundingBox;
-import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import com.sun.sgs.app.ClientSession;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 
 /**
+ * TODO: rework
  * The server-side cell for an 2D conventional application.
  *
  * This cell can be created in two different ways:
@@ -71,151 +67,133 @@ import org.jdesktop.wonderland.server.WonderlandContext;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-public abstract class AppConventionalCellMO extends App2DCellMO { 
+public abstract class AppConventionalCellMO extends App2DCellMO {
 
-    /** Whether the app has been launched by the world or user */
-    protected boolean userLaunched;
-
-    /** The name of the app */
-    protected String appName;
-
-    /** The host on which to run the app master */
-    protected String masterHost;
-
-    /** Will the app be moved to the best view on the master after start up? */
-    protected boolean bestView;
-
+    private static final Logger logger = Logger.getLogger(AppConventionalCellMO.class.getName());
+    /** The parameters from the WFS file. */
+    AppConventionalCellServerState serverState;
+    /** The parameters given to the client. */
+    AppConventionalCellClientState clientState;
+    /** Whether the client connection handler has been registered. */
+    private boolean connectionHandlerRegistered;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
-    private Serializable connectionInfo;
+    protected Serializable connectionInfo;
 
-    /** 
-     * The unique ID of the app. For user-launched apps this is assigned
-     * by the master and therefore is only unique within the master client.
-     * For world-launched apps this is assigned by the server and is
-     * therefore unique within the entire system.
-     */
-    protected UUID appId;
-
-    /** 
-     * The command the master should use to execute the app program.
-     * This is only used in the case of world-launched apps.
-     */
-    protected String command;
-
-    /** Client state data */
-    private AppConventionalCellClientState clientState;
-
-    /** Default constructor, used when the cell is created via WFS */
+    /** Create an instance of AppConventionalCellMO. */
     public AppConventionalCellMO() {
-	super();
+        super();
     }
 
     /**
-     * Creates a new instance of a user-launched <code>AppConventionalCellMO</code>.
-     *
-     * @param msg The creation message received from the client.
+     * {@inheritDoc}
      */
-    public AppConventionalCellMO (AppConventionalCellCreateMessage msg) {
-        super(calcBounds(msg.getBestView(), msg.getBounds()), 
-	      calcTransform(msg.getBestView(), msg.getTransform()), 
-	      msg.getPixelScale());
-	this.masterHost = msg.getMasterHost();
-	this.appName = msg.getAppName();
-	this.appId = msg.getAppId();
-	this.bestView = msg.getBestView();
-	this.connectionInfo = msg.getConnectionInfo();
-	userLaunched = true;
+    @Override
+    protected void setLive(boolean live) {
+        // Register the connection handler when the first cell is created
+        if (live) {
+            if (!connectionHandlerRegistered) {
+                CommsManager cm = WonderlandContext.getCommsManager();
+                //TODO: cm.registerClientHandler(new AppConnectionHandlerXrw());
+                connectionHandlerRegistered = true;
+            }
+        } else {
+            if (connectionHandlerRegistered) {
+                // TODO: how to unregister?
+            }
+        }
     }
 
     /**
-     * If bestView is true, returns a reasonable "best view" bounds. Otherwise just returns the given bounds.
+     * {@inheritDoc}
      */
-    private static BoundingVolume calcBounds (boolean bestView, BoundingVolume bounds) {
-	if (bestView) {
-	    // Override bounds with a temporary value which will get the cell loaded into 
-	    // the client caches before permanent positioning.
-	    bounds = new BoundingBox(new Vector3f(0f, 0f, 0f),  1f, 1f, 1f);
-	}
-	return bounds;
-    }
+    @Override
+    public void setServerState(CellServerState state) {
+        super.setServerState(state);
+        serverState = (AppConventionalCellServerState) state;
 
-    /**
-     * If bestView is true, supply a reasonable "best view" transform. Otherwise just return the given transform.
-     */
-    private static CellTransform calcTransform (boolean bestView, CellTransform transform) {
-	if (bestView) {
-	    // Override origin with a temporary value which will get the cell loaded into 
-	    // the client caches before permanent positioning.
-	    transform = new CellTransform(null, null);
-	}
-	return transform;
+        // Validate WFS parameters
+        // TODO: what is the proper way to signal this error which is non-fatal to the server?
+
+        /*
+        String appName = serverState.getAppName();
+        if (appName == null || appName.length() <= 0) {
+            String msg = "Invalid app name";
+            logger.severe(msg);
+            throw new RuntimeException(msg);
+        }
+
+        String launchLocation = serverState.getLaunchLocation();
+        if (!"user".equalsIgnoreCase(launchLocation) &&
+            !"server".equalsIgnoreCase(launchLocation)) {
+            String msg = "Invalid launch location: " + launchLocation;
+            logger.severe(msg);
+            throw new RuntimeException(msg);
+        }
+
+        if ("server".equalsIgnoreCase(launchLocation)) {
+            String launchUser = serverState.getLaunchUser();
+            if (launchUser == null || launchUser.length() <= 0) {
+                String msg = "Invalid app launch user";
+                logger.severe(msg);
+                throw new RuntimeException(msg);
+            }
+        }
+
+        String command = serverState.getCommand();
+        if (command == null || command.length() <= 0) {
+            String msg = "Invalid app command";
+            logger.severe(msg);
+            throw new RuntimeException(msg);
+        }
+        */
     }
 
     /** 
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-	if (clientState == null) {
-	    clientState = new AppConventionalCellClientState(masterHost, appName, pixelScale, connectionInfo);
-	    if (userLaunched) {
-		clientState.setUserLaunched(true);
-		clientState.setAppId(appId);
-		clientState.setBestView(bestView);
-		clientState.setConnectionInfo(connectionInfo);
-	    } else {
-		clientState.setUserLaunched(false);
-		clientState.setCommand(command);
-	    }
-	}
-	return clientState;
+    protected CellClientState getClientState(CellClientState cellClientState,
+            WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (clientState == null) {
+            clientState = new AppConventionalCellClientState();
+        }
+        populateClientState(clientState);
+        return clientState;
     }
 
+    /**
+     * Fill in the given client state with this cell's state.
+     * @param clientState The client state whose properties are to be set.
+     */
+    protected void populateClientState(AppConventionalCellClientState clientState) {
+        super.populateClientState(clientState);
+        clientState.setAppName(serverState.getAppName());
+        clientState.setLaunchLocation(serverState.getLaunchLocation());
+        clientState.setLaunchUser(serverState.getLaunchUser());
+        clientState.setBestView(serverState.isBestView());
+        clientState.setCommand(serverState.getCommand());
+        clientState.setConnectionInfo(connectionInfo);
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setServerState(CellServerState serverState) {
-	super.setServerState(serverState);
-
-	AppConventionalCellServerState state = (AppConventionalCellServerState) serverState;
-
-	// TODO: what should this be?
-	//masterHost = NetworkAddress.getDefaultHostAddress();
-	masterHost = "localHost";
-
-	appName = state.getAppName();
-
-	command = state.getCommand();
-	if (command == null || command.length() <= 0) {
-	    // TODO: what is the proper way to signal this error which is non-fatal to the server?
-	    throw new RuntimeException("Invalid app cell command");
-	}
-
-	pixelScale = state.getPixelScale();
-    }
-
-    /**
-     * Return a new CellServerState Java bean class that represents the current
-     * state of the cell.
-     * 
-     * @return a JavaBean representing the current state
-     */
-    @Override
-    public CellServerState getServerState(CellServerState cellServerState) {
-
-        /* Create a new BasicCellState and populate its members */
-        if (cellServerState == null) {
-            cellServerState = new AppConventionalCellServerState();
+    public CellServerState getServerState(CellServerState stateToFill) {
+        if (stateToFill == null) {
+            return null;
         }
-	((AppConventionalCellServerState)cellServerState).setMasterHost(this.masterHost);
-	((AppConventionalCellServerState)cellServerState).setAppName(this.appName);
-	((AppConventionalCellServerState)cellServerState).setCommand(this.command);
-	((AppConventionalCellServerState)cellServerState).setPixelScale(this.pixelScale);
-        
-        return super.getServerState(cellServerState);
+
+        super.getServerState(stateToFill);
+
+        AppConventionalCellServerState state = (AppConventionalCellServerState) stateToFill;
+        state.setAppName(serverState.getAppName());
+        state.setLaunchLocation(serverState.getLaunchLocation());
+        state.setLaunchUser(serverState.getLaunchUser());
+        state.setBestView(serverState.isBestView());
+        state.setCommand(serverState.getCommand());
+
+        return stateToFill;
     }
 }

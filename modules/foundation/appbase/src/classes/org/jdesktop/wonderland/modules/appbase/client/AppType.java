@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethods;
@@ -31,33 +30,31 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class AppType {
 
     /** A list of all apps of this app type in the client session */
     protected LinkedList<App> apps = new LinkedList<App>();
-
     /** The default launch methods (returned by getLaunchMethods if this method is not overridden by the subclass */
     protected AppLaunchMethods defaultLaunchMethods;
-    
+
     /**
      * Returns the name of the app type. The name must be unique within the server and group of connected clients.
      */
-    public abstract String getName ();
+    public abstract String getName();
 
     /**
      * Returns the factory object which creates user-visible objects for this type of app.
      */
-    public abstract GuiFactory getGuiFactory ();
+    public abstract GuiFactory getGuiFactory();
 
     /**
      * Used by an app to add itself app to this app type's list of apps.
      *
      * @param app The app to add to the list.
      */
-    void appAdd (App app) {
-	apps.add(app);
+    void appAdd(App app) {
+        apps.add(app);
     }
 
     /**
@@ -65,15 +62,15 @@ public abstract class AppType {
      *
      * @param app The app to add to the list.
      */
-    void appRemove (App app) {
-	apps.remove(app);
+    void appRemove(App app) {
+        apps.remove(app);
     }
 
     /**
      * Returns an iterator over all app instances of this type.
      */
-    public Iterator<App> getAppIterator () {
-	return apps.iterator();
+    public Iterator<App> getAppIterator() {
+        return apps.iterator();
     }
 
     /**
@@ -82,10 +79,10 @@ public abstract class AppType {
      * launch method which is World launch of a Wonderland app. Therefore if 
      * the subclass app type is a Conventional app it MUST override this method.
      */
-    public AppLaunchMethods getLaunchMethods () {
-	if (defaultLaunchMethods == null) {
-	    defaultLaunchMethods = new AppLaunchMethodsDefault();
-	}
-	return defaultLaunchMethods;
+    public AppLaunchMethods getLaunchMethods() {
+        if (defaultLaunchMethods == null) {
+            defaultLaunchMethods = new AppLaunchMethodsDefault();
+        }
+        return defaultLaunchMethods;
     }
 }

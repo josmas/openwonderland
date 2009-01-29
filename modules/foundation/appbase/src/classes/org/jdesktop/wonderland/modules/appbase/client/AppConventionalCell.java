@@ -18,14 +18,12 @@
 package org.jdesktop.wonderland.modules.appbase.client;
 
 import java.io.Serializable;
-import java.util.UUID;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellClientState;
-import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -33,96 +31,84 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class AppConventionalCell extends App2DCell {
 
     private static final Logger logger = Logger.getLogger(AppConventionalCell.class.getName());
-
-    /** The server-determined host on which the master is to run */
-    protected String masterHost;
-
+    /** The session used by the cell cache of this cell to connect to the server */
+    private WonderlandSession session;
     /** The user-visible app name */
     protected String appName;
-
-    /** pixelScale The size of the window pixels in world coordinates.
-    protected Vector2f pixelScale;
-
     /** The connection info. */
     protected Serializable connectionInfo;
 
+    // TODO: eventually: do we need to save client state in the cell?
     /** 
      * Creates a new instance of AppConventionalCell.
      *
      * @param cellID The ID of the cell.
      * @param cellCache the cell cache which instantiated, and owns, this cell.
      */
-    public AppConventionalCell (CellID cellID, CellCache cellCache) {
+    public AppConventionalCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        session = cellCache.getSession();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setClientState (CellClientState clientState) {
-	super.setClientState(clientState);
+    public void setClientState(CellClientState clientState) {
+        super.setClientState(clientState);
 
-	AppConventionalCellClientState state = (AppConventionalCellClientState) clientState;
-	masterHost = state.getMasterHost();
-	appName = state.getAppName();
-	pixelScale = state.getPixelScale();
-	connectionInfo = state.getConnectionInfo();
+        AppConventionalCellClientState state = (AppConventionalCellClientState) clientState;
+        appName = state.getAppName();
 
-	if (masterHost.equals(NetworkAddress.getDefaultHostAddress())) {
 
-	    // App Master case
-    	    boolean bestView = state.isBestView();
+        if (state.getLaunchLocation().equalsIgnoreCase("user") &&
+            state.getLaunchUser().equals(session.getUserID().getUsername())) {
 
-	    // Master User launch case: See if app has already been executed on this host 
-	    if (state.isUserLaunched()) {
-		UUID appId = state.getAppId();
-		App appToAttach = AppConventional.findDisembodiedApp(appId);
-		if (appToAttach == null) {
-		    logger.severe("Cannot find master app to attach to cell");
-		    return;
-		}
-		app = appToAttach;
-		AppConventional.removeDisembodiedApp(appId);
-		((AppConventional)app).setInitInBestView(bestView);
-		appToAttach.setCell(this);
-		// The master app is now connected to its cell and
-		// it's protocol client and is free to run.
-		return;
-		
-	    } else {
+            // Master case
 
-		// World launch case: execute the app now. 
-		startMaster(state.getCommand(), false);
-	    }
+            // TODO: later?: boolean bestView = state.isBestView();
 
-	} else {
+            connectionInfo = startMaster(appName, state.getCommand(), false);
+            if (connectionInfo == null) {
+                // TODO: what to do?
+                return;
+            }
 
-	    // App Slave case
-	    startSlave();
-	}
-    }
+        // TODO: xxxxx: set connection info
 
-    /**
-     * A utility method used to report a launch error.
-     */
-    protected static void reportLaunchError (String message) {
-	JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+
+            // Slave case
+
+            connectionInfo = state.getConnectionInfo();
+            if (connectionInfo == null) {
+                // TODO: xxx
+                //waitForConnectionInfo();
+            }
+
+            // App User or World Launch: Slave case
+            startSlave(connectionInfo);
+        }
     }
 
     /** 
      * Launch a master client.
+     * @param appName The name of the app.
      * @param command The command string which launches the master app program (used only by master).
      * @param initInBestView Force this cell to be initialized in approximately the best view
      * based on the viewer position at the time of client cell creation.
+     * @return Subclass-specific data for making a peer-to-peer connection between master and slave.
      */
-    protected abstract void startMaster (String command, boolean initInBestView);
+    protected abstract Serializable startMaster(String appName, String command, boolean initInBestView);
 
-    /** Launch a slave client */
-    protected abstract void startSlave ();
+    /** 
+     * Launch a slave client.
+     * @parem connectionInfo Subclass-specific data for making a peer-to-peer connection between 
+     * master and slave.
+     */
+    protected abstract void startSlave(Serializable connectionInfo);
 }

@@ -15,119 +15,86 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server;
+package org.jdesktop.wonderland.modules.appbase.common;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
  * The WFS server state class for AppConventionalCellMO.
  * 
  * @author deronj
  */
-@XmlRootElement(name="app-conventional-cell")
-public class AppConventionalCellServerState extends CellServerState implements Serializable {
-    
-    /** The master host. */
-    @XmlElement(name="masterHost")
-    public String masterHost = null;
-    
-    /** The name of the app. */
-    @XmlElement(name="appName")
-    public String appName = null;
+public abstract class AppConventionalCellServerState extends App2DCellServerState {
 
-    /* The platform-specific app startup command. */
-    @XmlElement(name="command")
-    public String command= null;
-    
-    /* The pixel scale. */
-    @XmlElement(name="pixelScale")
-    public Vector2f pixelScale = null;
+    /** The name of the app. */
+    @XmlElement(name = "appName")
+    public String appName;
+    /** Where the app should be launched (user vs. server host). */
+    @XmlElement(name = "launchLocation")
+    public String launchLocation;
+    /** 
+     * User that should launch the app. 
+     * (Only used when launchLocation == user).
+     */
+    @XmlElement(name = "launchUser")
+    public String launchUser;
+    /** Cell should be configured so that primary window is in best view. */
+    @XmlElement(name = "bestView")
+    public boolean isBestView;
+    /** The command which launches the app. */
+    @XmlElement(name = "command")
+    public String command;
 
     /** Default constructor */
-    public AppConventionalCellServerState() {}
-    
-    /**
-     * Returns the master host.
-     * @return The master host.
-     */
-    @XmlTransient public String getMasterHost () {
-        return masterHost;
+    public AppConventionalCellServerState() {
     }
-    
-    /**
-     * Sets the master host. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param masterHost The name of the master host.
-     */
-    public void setMasterHost (String masterHost) {
-        this.masterHost = masterHost;
-    }
-    
-    /**
-     * Returns the app name.
-     * @return The app name.
-     */
-    @XmlTransient public String getAppName () {
+
+    @XmlTransient
+    public String getAppName() {
         return appName;
     }
-    
-    /**
-     * Sets the appName. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param appName The name of the app.
-     */
-    public void setAppName (String appName) {
+
+    public void setAppName(String appName) {
         this.appName = appName;
     }
 
-    /**
-     * Returns the platform-specific app startup command.
-     * @return command The command.
-     */
-    @XmlTransient public String getCommand () {
+    @XmlTransient
+    public String getLaunchLocation() {
+        return launchLocation;
+    }
+
+    public void setLaunchLocation(String launchLocation) {
+        this.launchLocation = launchLocation;
+    }
+
+    @XmlTransient
+    public String getLaunchUser() {
+        return launchUser;
+    }
+
+    public void setLaunchUser(String launchUser) {
+        this.launchUser = launchUser;
+    }
+
+    @XmlTransient
+    public boolean isBestView() {
+        return isBestView;
+    }
+
+    public void setBestView(boolean bestView) {
+        isBestView = bestView;
+    }
+
+    @XmlTransient
+    public String getCommand() {
         return command;
     }
-    
-    /**
-     * Sets the platform-specific app startup command. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param command The command.
-     */
-    public void setCommand (String command) {
+
+    public void setCommand(String command) {
         this.command = command;
     }
-    
 
-    /**
-     * Returns the pixel scale.
-     * @return The pixel scale.
-     */
-    @XmlTransient public Vector2f getPixelScale () {
-        return new Vector2f(pixelScale);
-    }
-    
-    /**
-     * Sets the pixel scale. If null, then this property will not be written
-     * out to the file.
-     * 
-     * @param pixelScale The pixel scale.
-     */
-    public void setPixelScale (Vector2f pixelScale) {
-        this.pixelScale = new Vector2f(pixelScale);
-    }
-    
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.appbase.server.AppConventionalCellMO";
-    }
-    
     /**
      * Returns a string representation of this class.
      *
@@ -136,9 +103,10 @@ public class AppConventionalCellServerState extends CellServerState implements S
     @Override
     public String toString() {
         return super.toString() + " [AppConventionalCellServerState]: " +
-	    "masterHost = " + masterHost +
-	    "appName = " + appName +
-	    "command = " + command +
-	    "pixelScale = " + pixelScale;
+                "appName=" + appName + 
+                ",launchLocation=" + launchLocation + 
+                ",launchUser=" + launchUser + 
+                ",isBestView=" + isBestView + 
+                ",command=" + command;
     }
 }

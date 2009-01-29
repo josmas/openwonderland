@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import com.jme.math.Vector3f;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 
@@ -28,26 +27,24 @@ import org.jdesktop.wonderland.client.input.EventListener;
  *
  * @author deronj
  */
-
 public interface Window2DViewWorld {
 
     /**
      * Returns the depth offset above a base window that popup windows should be positioned.
      */
-    public float getPopupDepthOffset ();
-
+    public float getPopupDepthOffset();
 
     /**
      * Sets the translation of the view. Don't forget to also call update(CHANGED_TRANSFORM) afterward.
      *
      * @param translation The new translation of the window relative to the center of the cell.
      */
-    public void setTranslation (Vector3f translation);
+    public void setTranslation(Vector3f translation);
 
     /**
      * Returns the translation of the view.
      */
-    public Vector3f getTranslation ();
+    public Vector3f getTranslation();
 
     /**
      * Sets the dimensions of the position of the view. Don't forget to 
@@ -56,17 +53,17 @@ public interface Window2DViewWorld {
      * @param width The new width of the window.
      * @param height The new height of the window.
      */
-    public void setSize (float width, float height);
+    public void setSize(float width, float height);
 
     /**
      * Returns the width of the window.
      */
-    public float getWidth ();
+    public float getWidth();
 
     /**
      * Returns the height of the window.
      */
-    public float getHeight ();
+    public float getHeight();
 
     /**
      * Specify whether the view is top-level. Don't forget to also
@@ -74,12 +71,12 @@ public interface Window2DViewWorld {
      *
      * @param topLevel True if the window should be a topLevel window.
      */
-    public void setTopLevel (boolean topLevel);
+    public void setTopLevel(boolean topLevel);
 
     /**
      * Returns whether the window of the view is top-level.
      */
-    public boolean getTopLevel ();
+    public boolean getTopLevel();
 
     /**
      * Sets the visibility of the view (independent of the window).
@@ -87,12 +84,12 @@ public interface Window2DViewWorld {
      *
      * @param visible True if the window should be made visible.
      */
-    public void setVisible (boolean visible);
+    public void setVisible(boolean visible);
 
     /**
      * Returns the visibility of the view (independent of the window)
      */
-    public boolean getVisible ();
+    public boolean getVisible();
 
     /**
      * Transform the given 3D point in local coordinates into the corresponding point
@@ -102,45 +99,45 @@ public interface Window2DViewWorld {
      * position is outside of the geometry's rectangle. Otherwise, return null if these conditions hold.
      * @return the 2D position of the pixel space the window's image.
      */
-    public Point calcPositionInPixelCoordinates (Vector3f point, boolean clamp);
+    public Point calcPositionInPixelCoordinates(Vector3f point, boolean clamp);
 
     /**
      * Given a point in the pixel space of the Wonderland canvas calculates 
      * the texel coordinates of the point on the geometry  where a
      * ray starting from the current eye position intersects the geometry.
      */
-    public Point calcIntersectionPixelOfEyeRay (int x, int y);
+    public Point calcIntersectionPixelOfEyeRay(int x, int y);
 
     /**
      * Add an event listener to this view.
      * @param listener The listener to add.
      */
-    public void addEventListener (EventListener listener);
+    public void addEventListener(EventListener listener);
 
     /**
      * Remove an event listener from this view.
      * @param listener The listener to remove.
      */
-    public void removeEventListener (EventListener listener);
+    public void removeEventListener(EventListener listener);
 
     /**
      * Does this view have the given listener attached to it?
      * @param listener The listener to check.
      */
-    public boolean hasEventListener (EventListener listener);
+    public boolean hasEventListener(EventListener listener);
 
     /**
      * Add the given entity component to the view's entity.
      */
-    public void addEntityComponent (Class clazz, EntityComponent comp);
+    public void addEntityComponent(Class clazz, EntityComponent comp);
 
     /**
      * Remove the given entity component from the view's entity.
      */
-    public void removeEntityComponent (Class clazz);
+    public void removeEntityComponent(Class clazz);
 
     /**
      * Returns the given component of the view's entity.
      */
-    public EntityComponent getEntityComponent (Class clazz);
+    public EntityComponent getEntityComponent(Class clazz);
 }

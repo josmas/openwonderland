@@ -33,9 +33,6 @@
                 
             <server>
                 <serverjar name="swingtest-server" basedir="${build.classes.dir}">
-                    <cellsetup>
-                        <provider classname="org.jdesktop.wonderland.modules.swingtest.server.SwingTestCellServerState"/>
-                    </cellsetup>
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </serverjar>

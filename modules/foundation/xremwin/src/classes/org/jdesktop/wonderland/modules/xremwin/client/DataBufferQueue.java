@@ -22,259 +22,266 @@ import java.util.LinkedList;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /*
-** This class allows us to read the incoming byte arrays from the
-** RemoteWindowServer client as a sequential list of bytes. It provides methods
-** similar for InputStream for decoding shorts and ints as well.
+ ** This class allows us to read the incoming byte arrays from the
+ ** RemoteWindowServer client as a sequential list of bytes. It provides methods
+ ** similar for InputStream for decoding shorts and ints as well.
  *
  * @author deronj
-*/
-
+ */
 @ExperimentalAPI
 class DataBufferQueue {
 
     private CurrentBuffer curBuf = new CurrentBuffer();
-
     private LinkedList<ClientData> bufQueue = new LinkedList<ClientData>();
 
     class ClientData {
-	byte[] buf;
+
+        byte[] buf;
     }
 
     static class CurrentBuffer {
-	byte[] buf = null;
-	int idx = 0;
 
-	void setBuffer (byte[] buf) {
-	    this.buf = buf;
-	    idx = 0;
-	}
+        byte[] buf = null;
+        int idx = 0;
 
-	void setBuffer (byte[] buf, int startIdx) {
-	    this.buf = buf;
-	    idx = startIdx;
-	}
+        void setBuffer(byte[] buf) {
+            this.buf = buf;
+            idx = 0;
+        }
 
-	boolean hasData () { 
-	    return buf != null && idx < buf.length;
-	}
+        void setBuffer(byte[] buf, int startIdx) {
+            this.buf = buf;
+            idx = startIdx;
+        }
 
-	int numBytesAvail () {
-	    if (buf == null) return 0;
-	    return buf.length - idx;
-	}
+        boolean hasData() {
+            return buf != null && idx < buf.length;
+        }
 
-	void skip (int n) {
-	    idx += n;
-	}
+        int numBytesAvail() {
+            if (buf == null) {
+                return 0;
+            }
+            return buf.length - idx;
+        }
 
-	byte nextByte () {
-	    return buf[idx++];
-	}
+        void skip(int n) {
+            idx += n;
+        }
 
-	short nextShort () {
-	    int value = ((buf[idx+0] << 8)  & 0xff00) | 
-		        ((buf[idx+1])       & 0x00ff);
-	    idx += 2;
-	    return (short) value;
-	}
+        byte nextByte() {
+            return buf[idx++];
+        }
 
-	int nextInt() {
-	    int value = ((buf[idx+0] << 24) & 0xff000000) | 
-		        ((buf[idx+1] << 16) & 0x00ff0000) | 
-    	                ((buf[idx+2] << 8)  & 0x0000ff00) | 
-	                ((buf[idx+3])       & 0x000000ff);
-	    idx += 4;
-	    return value;
-	}
+        short nextShort() {
+            int value = ((buf[idx + 0] << 8) & 0xff00) |
+                    ((buf[idx + 1]) & 0x00ff);
+            idx += 2;
+            return (short) value;
+        }
 
-	float nextFloat() {
-	    byte[] b = new byte[4];
-	    b[0] = buf[idx+0];
-	    b[1] = buf[idx+1];
-	    b[2] = buf[idx+2];
-	    b[3] = buf[idx+3];
-	    idx += 4;
-	    return bytesToFloat(b);
-	}
+        int nextInt() {
+            int value = ((buf[idx + 0] << 24) & 0xff000000) |
+                    ((buf[idx + 1] << 16) & 0x00ff0000) |
+                    ((buf[idx + 2] << 8) & 0x0000ff00) |
+                    ((buf[idx + 3]) & 0x000000ff);
+            idx += 4;
+            return value;
+        }
 
-	float bytesToFloat (byte[] bytes) {
-	    ByteBuffer byteBuf = ByteBuffer.allocate(4);
-	    byteBuf.put(bytes);
-	    byteBuf.rewind();
-	    return byteBuf.getFloat();
-	}
+        float nextFloat() {
+            byte[] b = new byte[4];
+            b[0] = buf[idx + 0];
+            b[1] = buf[idx + 1];
+            b[2] = buf[idx + 2];
+            b[3] = buf[idx + 3];
+            idx += 4;
+            return bytesToFloat(b);
+        }
 
-	// For debug
-	void printNumeric () {
-	    printByteArrayNumeric(buf);
-	}
+        float bytesToFloat(byte[] bytes) {
+            ByteBuffer byteBuf = ByteBuffer.allocate(4);
+            byteBuf.put(bytes);
+            byteBuf.rewind();
+            return byteBuf.getFloat();
+        }
 
-	private void printByteArrayNumeric (byte[] buf) {
-	    for (byte b : buf) {
-		System.err.print(Integer.toHexString(((int)b & 0xff)) + " ");
-	    }
-	    System.err.println();
-	}
+        // For debug
+        void printNumeric() {
+            printByteArrayNumeric(buf);
+        }
+
+        private void printByteArrayNumeric(byte[] buf) {
+            for (byte b : buf) {
+                System.err.print(Integer.toHexString(((int) b & 0xff)) + " ");
+            }
+            System.err.println();
+        }
     }
 
-    public void printCurBufNumeric () {
-	curBuf.printNumeric();
+    public void printCurBufNumeric() {
+        curBuf.printNumeric();
     }
 
     // Debug
     int numEnqueues = 0;
 
     // Called by the message receiver to add an incoming buffer to the queue
-    synchronized void enqueue (byte[] buf) {
-	/* Debug 
-	numEnqueues++;
-	System.err.println("Enqueue buf " + numEnqueues + ", buflen = " +
-			   buf.length);
-	*/
+    synchronized void enqueue(byte[] buf) {
+        /* Debug
+        numEnqueues++;
+        System.err.println("Enqueue buf " + numEnqueues + ", buflen = " +
+        buf.length);
+         */
 
-	ClientData cd = new ClientData();
-	cd.buf = buf;
-	bufQueue.addLast(cd);
-	try { notify(); } catch (Exception e) {}
+        ClientData cd = new ClientData();
+        cd.buf = buf;
+        bufQueue.addLast(cd);
+        try {
+            notify();
+        } catch (Exception e) {
+        }
     }
 
-    private synchronized ClientData dequeue () {
-	while (bufQueue.size() == 0) {
-	    //System.err.println("DBQ.dequeue: waiting for data ...");
-	    try { wait(); } catch (Exception e) {}
-	}	    
-	    
-	ClientData cd = bufQueue.getFirst();
-	bufQueue.remove(0);
+    private synchronized ClientData dequeue() {
+        while (bufQueue.size() == 0) {
+            //System.err.println("DBQ.dequeue: waiting for data ...");
+            try {
+                wait();
+            } catch (Exception e) {
+            }
+        }
 
-	//System.err.println("Dequeued buf, buflen = " + cd.buf.length);
-	return cd;
+        ClientData cd = bufQueue.getFirst();
+        bufQueue.remove(0);
+
+        //System.err.println("Dequeued buf, buflen = " + cd.buf.length);
+        return cd;
     }
 
     // Return the next current buffer for next*() to pull from.
     // This blocks if no buffer is available.
-
-    private void getNextCurBufIfNoData () {
-	//System.err.println("Enter getNextCurBufIfNoData");
-	if (curBuf.hasData()) return;
-	ClientData cd = dequeue();
-	// Note: at least for now, cd.client is always the RemoteWindowServer client
-	curBuf.setBuffer(cd.buf);
+    private void getNextCurBufIfNoData() {
+        //System.err.println("Enter getNextCurBufIfNoData");
+        if (curBuf.hasData()) {
+            return;
+        }
+        ClientData cd = dequeue();
+        // Note: at least for now, cd.client is always the RemoteWindowServer client
+        curBuf.setBuffer(cd.buf);
     }
-    
+
     // Read a single byte from the RemoteWindowServer. Block if a byte isn't available.
-    byte nextByte () {
-	//System.err.println("Enter DBQ.nextByte");
-	getNextCurBufIfNoData();
-	return curBuf.nextByte();
+    byte nextByte() {
+        //System.err.println("Enter DBQ.nextByte");
+        getNextCurBufIfNoData();
+        return curBuf.nextByte();
     }
 
     // Fills a byte array of a given length with data from the RemoteWindowServer. 
     // Block if all bytes aren't available.
-
-    void nextBytes (byte[] buf) {
-	nextBytes(buf, buf.length);
+    void nextBytes(byte[] buf) {
+        nextBytes(buf, buf.length);
     }
 
     // Fills a byte array with the specified number of data bytes from the
     // RemoteWindowServer. Block if all bytes aren't available.
+    void nextBytes(byte[] buf, int len) {
+        getNextCurBufIfNoData();
+        int numAvail = curBuf.numBytesAvail();
+        if (numAvail < len) {
+            int i;
 
-    void nextBytes (byte[] buf, int len) {
-	getNextCurBufIfNoData();
-	int numAvail = curBuf.numBytesAvail();
-	if (numAvail < len) {
-	    int i;
+            // Get the available bytes the fast way
+            for (i = 0; i < numAvail; i++) {
+                buf[i] = curBuf.buf[curBuf.idx + i];
+            }
+            curBuf.idx += numAvail;
 
-	    // Get the available bytes the fast way
-	    for (i = 0; i < numAvail; i++) {
-		buf[i] = curBuf.buf[curBuf.idx + i];
-	    }
-	    curBuf.idx += numAvail;
-
-	    // Get the rest the slower way
-	    // Note: we could optimize this more, but nextBytes()
-	    // is used only during the initial handshake..
-	    while (i < len) {
-		buf[i++] = nextByte();
-	    }
-	} else {
-	    for (int i = 0; i < len; i++) {
-		buf[i] = curBuf.buf[curBuf.idx + i];
-	    }
-	    curBuf.idx += len;
+            // Get the rest the slower way
+            // Note: we could optimize this more, but nextBytes()
+            // is used only during the initial handshake..
+            while (i < len) {
+                buf[i++] = nextByte();
+            }
+        } else {
+            for (int i = 0; i < len; i++) {
+                buf[i] = curBuf.buf[curBuf.idx + i];
+            }
+            curBuf.idx += len;
         }
     }
 
     // Skip n bytes without returning any
     // Note: this method isn't used for anything performance critical
     // so we'll skip the slower way
-    void skipBytes (int n) {
-	for (int i = 0; i < n; i++) {
-	    nextByte();
-	}
+    void skipBytes(int n) {
+        for (int i = 0; i < n; i++) {
+            nextByte();
+        }
     }
 
     // Read a short from the RemoteWindowServer. Block if a full short isn't available.
-    short nextShort () {
-	getNextCurBufIfNoData();
-	if (curBuf.numBytesAvail() < 2) {
-	    // There must be at least one, so read it directly
-	    byte b0 = curBuf.nextByte();
-	    // For the next byte, get block for new buffers as necessary
-	    byte b1 = nextByte();
-	    return (short)((b0 << 8)| b1);
-	} else {
-	    return curBuf.nextShort();
-	}
+    short nextShort() {
+        getNextCurBufIfNoData();
+        if (curBuf.numBytesAvail() < 2) {
+            // There must be at least one, so read it directly
+            byte b0 = curBuf.nextByte();
+            // For the next byte, get block for new buffers as necessary
+            byte b1 = nextByte();
+            return (short) ((b0 << 8) | b1);
+        } else {
+            return curBuf.nextShort();
+        }
     }
 
     // Read an int from the RemoteWindowServer. Block if a full int isn't available.
-    int nextInt () {
-	getNextCurBufIfNoData();
-	if (curBuf.numBytesAvail() < 4) {
-	    // There must be at least one, so read it directly
-	    byte b0 = curBuf.nextByte();
-	    // For the next 3 bytes, get block for new buffers as necessary
-	    byte b1 = nextByte();
-	    byte b2 = nextByte();
-	    byte b3 = nextByte();
-	    return (b0 << 24) | (b1 << 16) | (b2 << 8)  | b3;
-	} else {
-	    return curBuf.nextInt();
-	}
+    int nextInt() {
+        getNextCurBufIfNoData();
+        if (curBuf.numBytesAvail() < 4) {
+            // There must be at least one, so read it directly
+            byte b0 = curBuf.nextByte();
+            // For the next 3 bytes, get block for new buffers as necessary
+            byte b1 = nextByte();
+            byte b2 = nextByte();
+            byte b3 = nextByte();
+            return (b0 << 24) | (b1 << 16) | (b2 << 8) | b3;
+        } else {
+            return curBuf.nextInt();
+        }
     }
 
     // Read a float from the RemoteWindowServer. Block if a full float isn't available.
-    float nextFloat () {
-	getNextCurBufIfNoData();
-	if (curBuf.numBytesAvail() < 4) {
-	    // There must be at least one, so read it directly
-	    byte[] b = new byte[4];
-	    b[0] = curBuf.nextByte();
-	    // For the next 3 bytes, get block for new buffers as necessary
-	    b[1] = nextByte();
-	    b[2] = nextByte();
-	    b[3] = nextByte();
-	    return curBuf.bytesToFloat(b);
-	} else {
-	    return curBuf.nextFloat();
-	}
+    float nextFloat() {
+        getNextCurBufIfNoData();
+        if (curBuf.numBytesAvail() < 4) {
+            // There must be at least one, so read it directly
+            byte[] b = new byte[4];
+            b[0] = curBuf.nextByte();
+            // For the next 3 bytes, get block for new buffers as necessary
+            b[1] = nextByte();
+            b[2] = nextByte();
+            b[3] = nextByte();
+            return curBuf.bytesToFloat(b);
+        } else {
+            return curBuf.nextFloat();
+        }
     }
 
     // Return the next complete buffer. Throw an exception if there 
     // is partial data in the current buffer.
-    byte[] nextBuffer () {
-	if (curBuf.numBytesAvail() != 0) {
-	    throw new RuntimeException("Remote window protocol error");
-	}
-	
-	ClientData cd = dequeue();
-	curBuf.setBuffer(null);
-	return cd.buf;
+    byte[] nextBuffer() {
+        if (curBuf.numBytesAvail() != 0) {
+            throw new RuntimeException("Remote window protocol error");
+        }
+
+        ClientData cd = dequeue();
+        curBuf.setBuffer(null);
+        return cd.buf;
     }
 
-    int numBytesAvail () {
-	return curBuf.numBytesAvail();
+    int numBytesAvail() {
+        return curBuf.numBytesAvail();
     }
 }
 

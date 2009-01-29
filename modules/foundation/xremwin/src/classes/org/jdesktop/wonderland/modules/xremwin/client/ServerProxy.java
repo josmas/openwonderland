@@ -47,66 +47,91 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArg
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 interface ServerProxy {
 
     public void connect() throws IOException;
+
     public void disconnect();
 
     public void cleanup();
 
-    public Proto.ServerMessageType getMessageType ();
+    public Proto.ServerMessageType getMessageType();
 
-    public void getData (CreateWindowMsgArgs msgArgs);
-    public void getData (DestroyWindowMsgArgs msgArgs);
-    public void getData (ShowWindowMsgArgs msgArgs);
-    public void getData (ConfigureWindowMsgArgs msgArgs);
-    public void getData (PositionWindowMsgArgs msgArgs);
-    public void getData (RestackWindowMsgArgs msgArgs);
-    public void getData (WindowSetDecoratedMsgArgs msgArgs);
-    public void getData (WindowSetBorderWidthMsgArgs msgArgs);
-    public void getData (WindowSetUserDisplMsgArgs msgArgs);
-    public void getData (WindowSetRotateYMsgArgs msgArgs);
-    public void getData (DisplayPixelsMsgArgs msgArgs);
-    public void getData (CopyAreaMsgArgs msgArgs);
-    public void getData (ControllerStatusMsgArgs msgArgs);
-    public void getData (SetWindowTitleMsgArgs msgArgs);
+    public void getData(CreateWindowMsgArgs msgArgs);
+
+    public void getData(DestroyWindowMsgArgs msgArgs);
+
+    public void getData(ShowWindowMsgArgs msgArgs);
+
+    public void getData(ConfigureWindowMsgArgs msgArgs);
+
+    public void getData(PositionWindowMsgArgs msgArgs);
+
+    public void getData(RestackWindowMsgArgs msgArgs);
+
+    public void getData(WindowSetDecoratedMsgArgs msgArgs);
+
+    public void getData(WindowSetBorderWidthMsgArgs msgArgs);
+
+    public void getData(WindowSetUserDisplMsgArgs msgArgs);
+
+    public void getData(WindowSetRotateYMsgArgs msgArgs);
+
+    public void getData(DisplayPixelsMsgArgs msgArgs);
+
+    public void getData(CopyAreaMsgArgs msgArgs);
+
+    public void getData(ControllerStatusMsgArgs msgArgs);
+
+    public void getData(SetWindowTitleMsgArgs msgArgs);
 
     // TODO: 0.4 protocol: temporarily insert
-    public void getData (DisplayCursorMsgArgs msgArgs);
-    public void getData (MoveCursorMsgArgs msgArgs);
-    public void getData (ShowCursorMsgArgs msgArgs);
+    public void getData(DisplayCursorMsgArgs msgArgs);
+
+    public void getData(MoveCursorMsgArgs msgArgs);
+
+    public void getData(ShowCursorMsgArgs msgArgs);
 
     // Returns no data; currently used only for Beep
-    public void getData ();
+    public void getData();
 
     // Set scanline width (in pixels) 
-    void setScanLineWidth (int width);
+    void setScanLineWidth(int width);
 
-    byte[] readScanLine ();
+    byte[] readScanLine();
 
     // The next three are for RLE24 only
     // Note: these don't broadcast to pull slaves
-
-    int readRleInt ();
+    int readRleInt();
 
     // Read a chunk of data which is the length of the given buffer
-    void readRleChunk (byte[] buf);
+    void readRleChunk(byte[] buf);
 
     // Read a chunk of data len bytes long
-    void readRleChunk (byte[] buf, int len);
+    void readRleChunk(byte[] buf, int len);
 
     public void writeEvent(int wid, MouseEvent event) throws IOException;
+
     public void writeWheelEvent(int wid, MouseWheelEvent event) throws IOException;
+
     public void writeEvent(KeyEvent event) throws IOException;
-    public void writeTakeControl (boolean steal) throws IOException;
-    public void writeReleaseControl () throws IOException;
-    public void writeSetWindowTitle (int wid, String title) throws IOException;
-    public void windowSetUserDisplacement (int clientId, int wid, Vector3f userDispl) throws IOException;
-    public void windowSetSize (int clientId, int wid, int w, int h) throws IOException;
-    public void windowSetRotateY (int clientId, int wid, float rotY) throws IOException;
-    public void windowToFront (int clientId, int wid) throws IOException;
-    public void destroyWindow (int wid) throws IOException;
+
+    public void writeTakeControl(boolean steal) throws IOException;
+
+    public void writeReleaseControl() throws IOException;
+
+    public void writeSetWindowTitle(int wid, String title) throws IOException;
+
+    public void windowSetUserDisplacement(int clientId, int wid, Vector3f userDispl) throws IOException;
+
+    public void windowSetSize(int clientId, int wid, int w, int h) throws IOException;
+
+    public void windowSetRotateY(int clientId, int wid, float rotY) throws IOException;
+
+    public void windowToFront(int clientId, int wid) throws IOException;
+
+    public void destroyWindow(int wid) throws IOException;
+
     public String getControllingUser();
 }

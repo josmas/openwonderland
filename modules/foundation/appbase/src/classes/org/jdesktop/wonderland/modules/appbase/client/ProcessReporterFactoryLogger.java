@@ -24,22 +24,21 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class ProcessReporterFactoryLogger extends ProcessReporterFactory {
-    
+
     /**
      * Create a new reporter of this type.
      *
      * @param processName the name of the process for which to report.
      * @return A process reporter which reports output and exit status for the given process.
      */
-    public ProcessReporter create (String processName) {
-	ProcessReporter reporter = reporterMap.get(processName);
-	if (reporter == null) {
-	    reporter = new ProcessReporterLogger(processName);
-	    reporterMap.put(processName, reporter);
-	}
-	return reporter;
+    public ProcessReporter create(String processName) {
+        ProcessReporter reporter = reporterMap.get(processName);
+        if (reporter == null) {
+            reporter = new ProcessReporterLogger(processName);
+            reporterMap.put(processName, reporter);
+        }
+        return reporter;
     }
 }

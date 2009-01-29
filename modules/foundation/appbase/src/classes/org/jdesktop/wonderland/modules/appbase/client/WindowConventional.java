@@ -17,10 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -43,13 +39,11 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public abstract class WindowConventional extends WindowGraphics2D {
 
     /** The app to which the window belongs */
     protected AppConventional appConventional;
-
     /** The border width of the window */
     protected int borderWidth;
 
@@ -64,22 +58,21 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param pixelScale The size of the window pixels in world coordinates.
      * @throws InstantiationException if the the window cannot be created.
      */
-    public WindowConventional (App app, int width, int height, boolean topLevel, int borderWidth, Vector2f pixelScale)
-	throws InstantiationException
-    {
-	super(app, width, height, topLevel, pixelScale, 
-	      new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
-	this.borderWidth = borderWidth;
-	appConventional = (AppConventional) app;
+    public WindowConventional(App app, int width, int height, boolean topLevel, int borderWidth, Vector2f pixelScale)
+            throws InstantiationException {
+        super(app, width, height, topLevel, pixelScale,
+                new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
+        this.borderWidth = borderWidth;
+        appConventional = (AppConventional) app;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void cleanup () {
-	super.cleanup();
+    @Override
+    public void cleanup() {
+        super.cleanup();
     }
-
 
     /**
      * Resize the window. Note that window contents will be lost when the window is resized.
@@ -88,8 +81,8 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param width The new width of the window. This does NOT include the borderWidth.
      * @param height The new height of the window. This does NOT include the borderWidth
      */
-    public void setSize (int width, int height) {
-	super.setSize(width + 2 * borderWidth, height + 2 * borderWidth);
+    public void setSize(int width, int height) {
+        super.setSize(width + 2 * borderWidth, height + 2 * borderWidth);
     }
 
     /**
@@ -98,37 +91,37 @@ public abstract class WindowConventional extends WindowGraphics2D {
      *
      * @param borderWidth The new border width.
      */
-    public void setBorderWidth (int borderWidth) {
-	width -= 2 * borderWidth;
-	height -= 2 * borderWidth;
-	this.borderWidth = borderWidth;
-	setSize(width, height);
+    public void setBorderWidth(int borderWidth) {
+        width -= 2 * borderWidth;
+        height -= 2 * borderWidth;
+        this.borderWidth = borderWidth;
+        setSize(width, height);
     }
 
     /** 
      * Returns the border width of the window.
      */
-    public int getBorderWidth () {
-	return borderWidth;
+    public int getBorderWidth() {
+        return borderWidth;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setVisible (boolean visible) {
-	super.setVisible(visible);
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
 
-	if (visible && appConventional.getInitInBestView()) {
-	    moveToBestView();
-	    appConventional.setInitInBestView(false);
-	}
+        if (visible && appConventional.getInitInBestView()) {
+            moveToBestView();
+            appConventional.setInitInBestView(false);
+        }
 
-	// TODO: ensureIsAboveFloor();
+    // TODO: ensureIsAboveFloor();
     }
 
     /** TODO: promote to parent! */
-    public void moveToBestView () {
-	// TODO
+    public void moveToBestView() {
+        // TODO
     }
 
     /**
@@ -141,8 +134,8 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param h The height of the image subrectangle which is to be changed.
      * @param pixels An array which contains the pixels. It must be of length w x h.
      */
-    public void displayPixels (int x, int y, int w, int h, ByteBuffer pixels) {
-	//TODO	((ViewWorldConventional)(viewWorld)).displayPixels(x, y, w, h, pixels);
+    public void displayPixels(int x, int y, int w, int h, ByteBuffer pixels) {
+        //TODO	((ViewWorldConventional)(viewWorld)).displayPixels(x, y, w, h, pixels);
     }
 
     /**
@@ -158,7 +151,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param dstX The X coordinate of the top left corner of the destination subrectangle.
      * @param dstY The Y coordinate of the top left corner of the destination subrectangle.
      */
-    public void copyArea (int srcX, int srcY, int width, int height, int dstX, int dstY) {
-	// TODO getSurface.getGraphics().copyArea(srcX, srcY, width, height, dstX, dstY);
+    public void copyArea(int srcX, int srcY, int width, int height, int dstX, int dstY) {
+        // TODO getSurface.getGraphics().copyArea(srcX, srcY, width, height, dstX, dstY);
     }
 }

@@ -27,7 +27,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 abstract public class ControlArbSingle extends ControlArb {
 
@@ -37,47 +36,47 @@ abstract public class ControlArbSingle extends ControlArb {
     /**
      * Specifies the current controlling user.
      */
-    protected synchronized void setController (String controller) {
-	String oldController = this.controller;
-	this.controller = controller;
-	if (controller != oldController) {
-	    updateControl();
-	}
+    protected synchronized void setController(String controller) {
+        String oldController = this.controller;
+        this.controller = controller;
+        if (!controller.equals(oldController)) {
+            updateControl();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public synchronized String[] getControllers () { 
-	String[] ary = new String[1];
-	ary[0] = controller;
-	return ary;
+    public synchronized String[] getControllers() {
+        String[] ary = new String[1];
+        ary[0] = controller;
+        return ary;
     }
 
     /**
      * Returns the user that is currently in control.
      * (null if there currently isn't a controller).
      */
-    public String getController () {
-	return controller;
+    public String getController() {
+        return controller;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void deliverEvent (Window2D window, KeyEvent event) {
-	if (hasControl()) {
-	    window.deliverEvent(event);
-	}
+    public void deliverEvent(Window2D window, KeyEvent event) {
+        if (hasControl()) {
+            window.deliverEvent(event);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void deliverEvent (Window2D window, MouseEvent event) {
-	if (hasControl()) {
-	    window.deliverEvent(event);
-	}
+    public void deliverEvent(Window2D window, MouseEvent event) {
+        if (hasControl()) {
+            window.deliverEvent(event);
+        }
     }
 }

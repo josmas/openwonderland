@@ -29,14 +29,12 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * The generic application cell superclass. Created with a subclass-specific constructor.
  *
  * @author deronj
- */ 
-
+ */
 @ExperimentalAPI
 public abstract class AppCell extends Cell {
 
     /** A list of all app cells in existence */
-    private static ArrayList<AppCell> appCells = new ArrayList<AppCell>();
-
+    private static final ArrayList<AppCell> appCells = new ArrayList<AppCell>();
     /**
      * If non-null, this is the master app which was awaiting its cell.
      * If null, this is a slave cell.
@@ -49,28 +47,28 @@ public abstract class AppCell extends Cell {
      * @param cellID The ID of the cell.
      * @param cellCache the cell cache which instantiated, and owns, this cell.
      */
-    public AppCell (CellID cellID, CellCache cellCache) {
+    public AppCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-	appCells.add(this);
+        appCells.add(this);
     }
 
     /**
      * Clean up resources held. 
      */
-    public void cleanup () {
-	synchronized (appCells) {
-	    appCells.remove(this);
-	}
-	if (app != null) {
-	    app.cleanup();
-	}
-	app = null;
+    public void cleanup() {
+        synchronized (appCells) {
+            appCells.remove(this);
+        }
+        if (app != null) {
+            app.cleanup();
+        }
+        app = null;
     }
 
     /** 
      * Return the app type of this cell.
      */
-    public abstract AppType getAppType ();
+    public abstract AppType getAppType();
 
     /**
      * Associate the app with a cell. May only be called one time.
@@ -79,38 +77,37 @@ public abstract class AppCell extends Cell {
      * @throws IllegalArgumentException If the app already is associated with a cell .
      * @throws IllegalStateException If the cell is already associated with an app.
      */
-    public void setApp (App app) 
-	throws IllegalArgumentException, IllegalStateException 
-    {
-	if (app == null) {
-	    throw new NullPointerException();
-	}
-	if (app.getCell() != null) {
-	    throw new IllegalArgumentException("App already has a cell");
-	}
-	if (this.app != null) {
-	    throw new IllegalStateException("Cell already has an app");
-	}
+    public void setApp(App app)
+            throws IllegalArgumentException, IllegalStateException {
+        if (app == null) {
+            throw new NullPointerException();
+        }
+        if (app.getCell() != null) {
+            throw new IllegalArgumentException("App already has a cell");
+        }
+        if (this.app != null) {
+            throw new IllegalStateException("Cell already has an app");
+        }
 
-	this.app = app;
-	updateBoundsFromApp();
+        this.app = app;
+        updateBoundsFromApp();
     }
 
     /**
      * Get the app associated with this cell.
      */
-    public App getApp () {
-	return app;
+    public App getApp() {
+        return app;
     }
 
     /**
      * Update cell bounds from the app bounds.
      */
-    private void updateBoundsFromApp () {
-	if (app == null) {
-	    return;
-	}
-	//TODO: How do we do this?
+    private void updateBoundsFromApp() {
+        if (app == null) {
+            return;
+        }
+    //TODO: How do we do this?
     }
 
     /**
@@ -119,15 +116,16 @@ public abstract class AppCell extends Cell {
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         CellRenderer ret = null;
-        switch(rendererType) {
-            case RENDERER_2D :
+        switch (rendererType) {
+            case RENDERER_2D:
                 // No 2D Renderer yet
                 break;
-            case RENDERER_JME :
-		ret = getAppType().getGuiFactory().createCellRenderer(this);;
-                break;                
+            case RENDERER_JME:
+                ret = getAppType().getGuiFactory().createCellRenderer(this);
+                ;
+                break;
         }
-        
+
         return ret;
     }
 
@@ -137,13 +135,13 @@ public abstract class AppCell extends Cell {
      * INTERNAL ONLY.
      */
     @InternalAPI
-    public void attachView (WindowView view, RendererType rendererType) {
-        switch(rendererType) {
-	case RENDERER_JME :
-	    ((AppCellRenderer)getCellRenderer(rendererType)).attachView(view);
-	    break;                
-	default:
-	    throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+    public void attachView(WindowView view, RendererType rendererType) {
+        switch (rendererType) {
+            case RENDERER_JME:
+                ((AppCellRenderer) getCellRenderer(rendererType)).attachView(view);
+                break;
+            default:
+                throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
         }
     }
 
@@ -153,13 +151,13 @@ public abstract class AppCell extends Cell {
      * INTERNAL ONLY.
      */
     @InternalAPI
-    public void detachView (WindowView view, RendererType rendererType) {
-        switch(rendererType) {
-	case RENDERER_JME :
-	    ((AppCellRenderer)getCellRenderer(rendererType)).detachView(view);
-	    break;                
-	default:
-	    throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+    public void detachView(WindowView view, RendererType rendererType) {
+        switch (rendererType) {
+            case RENDERER_JME:
+                ((AppCellRenderer) getCellRenderer(rendererType)).detachView(view);
+                break;
+            default:
+                throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
         }
     }
 
@@ -169,13 +167,13 @@ public abstract class AppCell extends Cell {
      * FOR DEBUG. INTERNAL ONLY.
      */
     @InternalAPI
-    public void logSceneGraph (RendererType rendererType) {
-        switch(rendererType) {
-	case RENDERER_JME :
-	    ((AppCellRenderer)getCellRenderer(rendererType)).logSceneGraph();
-	    break;                
-	default:
-	    throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+    public void logSceneGraph(RendererType rendererType) {
+        switch (rendererType) {
+            case RENDERER_JME:
+                ((AppCellRenderer) getCellRenderer(rendererType)).logSceneGraph();
+                break;
+            default:
+                throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
         }
     }
 
@@ -183,10 +181,10 @@ public abstract class AppCell extends Cell {
      * Returns the string representation of this object.
      */
     @Override
-    public String toString () {
+    public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append(super.toString());
-	buf.append(",app=[" + app + "]");
+        buf.append(",app=[" + app + "]");
         return buf.toString();
-    }	
+    }
 }

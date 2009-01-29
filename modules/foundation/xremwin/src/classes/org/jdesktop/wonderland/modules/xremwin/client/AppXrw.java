@@ -39,7 +39,7 @@ class AppXrw extends AppConventional {
     /** The logger for app.modules.xremwin */
     static final Logger logger = Logger.getLogger("wl.app.modules.xremwin");
     /** A mapping of wids to the corresponding windows */
-    static HashMap<Integer, WindowXrw> widToWindow = new HashMap<Integer, WindowXrw>();
+    static final HashMap<Integer, WindowXrw> widToWindow = new HashMap<Integer, WindowXrw>();
     /** The Xremwin protocol interpreter -- Set it subclass constructor */
     protected ClientXrw client;
 
@@ -91,7 +91,6 @@ class AppXrw extends AppConventional {
                 window.cleanup();
             }
         }
-        widToWindow = null;
 
         if (client != null) {
             client.cleanup();
@@ -112,7 +111,7 @@ class AppXrw extends AppConventional {
     @Override
     public synchronized void setCell(AppCell cell)
             throws IllegalArgumentException, IllegalStateException {
-        client.setCell((AppCellXrw)cell);
+        client.setCell((AppCellXrw) cell);
         super.setCell(cell);
     }
 

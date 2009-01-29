@@ -18,14 +18,12 @@
 package org.jdesktop.wonderland.modules.appbase.client;
 
 import java.nio.ByteBuffer;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An interface used by conventional view world objects provided by the gui factory.
  *
  * @author deronj
  */
-
 public interface Window2DViewWorldConventional {
 
     /**
@@ -38,5 +36,5 @@ public interface Window2DViewWorldConventional {
      * @param h The height of the image subrectangle which is to be changed.
      * @param pixels An array which contains the pixels. It must be of length w x h.
      */
-    public void displayPixels (int x, int y, int w, int h, ByteBuffer pixels);
+    public void displayPixels(int x, int y, int w, int h, ByteBuffer pixels);
 }
