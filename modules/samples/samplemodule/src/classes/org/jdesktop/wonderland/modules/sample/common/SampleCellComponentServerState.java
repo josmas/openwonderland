@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.sample.common;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * Server state for sample cell component
@@ -27,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @XmlRootElement(name="sample-cell-component")
+@ServerState
 public class SampleCellComponentServerState extends CellComponentServerState {
 
     private String info;

@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.common.cell.state;
 
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * The CellComponentServerState class is the base class for the cell configuration
@@ -38,7 +37,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@XmlRootElement(name="component")
 public abstract class CellComponentServerState implements Serializable {
     
     /**

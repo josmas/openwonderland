@@ -49,7 +49,7 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 public class CellServerStateFactory {
     /* A list of core cell setup class names, currently only for components */
     private static Class[] coreSetupClasses = {
-        CellComponentServerState.class, PositionComponentServerState.class,
+        PositionComponentServerState.class,
         AssetURI.class
     };
     
