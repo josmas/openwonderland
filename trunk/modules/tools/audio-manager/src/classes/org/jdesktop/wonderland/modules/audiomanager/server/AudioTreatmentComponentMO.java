@@ -53,6 +53,7 @@ import com.sun.voip.client.connector.CallStatus;
 
 
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
+import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
@@ -193,14 +194,14 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
                         "audio");
 
                 if (mc == null) {
-                    System.out.println("ModuleChecksums is null");
+                    logger.warning("ModuleChecksums is null");
                 } else {
                     Map<String, Checksum> checksums = mc.getChecksums();
 
                     Iterator<String> it = checksums.keySet().iterator();
 
                     if (it.hasNext() == false) {
-                        System.out.println("There are no checksums!");
+                        logger.warning("There are no checksums!");
                     } else {
                         while (it.hasNext()) {
                             String s = it.next();
@@ -235,7 +236,26 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     }
 
     public void transformChanged(Vector3f location, double angle) {
-	System.out.println("Treatment moved to " + location + " angle " + angle);
+	logger.finer("Treatment moved to " + location + " angle " + angle);
+
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	for (int i = 0; i < treatments.length; i++) {
+	    String treatmentId = treatments[i];
+
+            if (treatmentId.startsWith("wls://")) {
+		treatmentId = treatmentId.substring(6);
+	    }
+
+	    Player player = vm.getPlayer(treatmentId);
+
+	    if (player == null) {
+		logger.warning("Can't find player for " + treatments[i]);
+	    } else {
+		player.moved(location.getX(), location.getY(), location.getZ(),
+		    angle);
+	    }
+	}
     }
 
     @Override
@@ -307,7 +327,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception e) {
             /* Log an error and return null */
-            System.out.println("[MODULES] FETCH CHECKSUMS Failed " + e.getMessage());
+            logger.warning("[MODULES] FETCH CHECKSUMS Failed " + e.getMessage());
             return null;
         }
     }
