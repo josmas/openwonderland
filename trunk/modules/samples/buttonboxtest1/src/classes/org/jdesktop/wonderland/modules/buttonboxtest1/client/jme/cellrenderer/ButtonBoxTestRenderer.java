@@ -56,10 +56,8 @@ public class ButtonBoxTestRenderer extends BasicRenderer {
     @Override
     protected Node createSceneGraph(Entity entity) {
 
-        // Create the root node of the test and position it appropriately.
-	// We do this by moving the cell's transform into the sceneRoot node.
+        // Create the root node of the test
         Node sceneRoot = new Node("Button Box Test Scene Root Node");
-        applyTransform(sceneRoot, cell.getLocalTransform());
 
         // Attach root node to to the root entity by placing it into an attached render component
         RenderComponent rc =

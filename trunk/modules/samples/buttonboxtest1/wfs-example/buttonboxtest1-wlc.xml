@@ -1,7 +1,8 @@
 <buttonboxtest1-cell>
+  <position-component>
     <origin>
         <x>0.0</x>
-        <y>5.0</y>
+        <y>3.0</y>
         <z>5.0</z>
     </origin>
     <rotation>
@@ -10,4 +11,5 @@
         <z>0.0</z>
 	<angle>3.141569</angle>
     </rotation>
+  </position-component>
 </buttonboxtest1-cell>
