@@ -51,7 +51,7 @@ public class AudioParticipantComponentMO extends CellComponentMO {
     public AudioParticipantComponentMO(CellMO cellMO) {
         super(cellMO);
 
-	//System.out.println("AudioParticipantComponentMO for " + cellMO.getName());
+	logger.info("Adding AudioParticpantComponent to " + cellMO.getName());
     }
 
     @Override
@@ -105,11 +105,11 @@ public class AudioParticipantComponentMO extends CellComponentMO {
 		return;
 	    }
 
-	    //System.out.println(player + " x " + location.getX()
-	    //	+ " y " + location.getY() + " z " + location.getZ()
-	    //	+ " angle " + angle);
-
 	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
+
+	    logger.fine(player + " x " + location.getX()
+	    	+ " y " + location.getY() + " z " + location.getZ()
+	    	+ " angle " + angle);
         }
 
     }

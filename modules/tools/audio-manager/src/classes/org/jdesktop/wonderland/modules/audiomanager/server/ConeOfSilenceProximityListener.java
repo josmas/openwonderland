@@ -50,7 +50,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
-	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
+	logger.fine("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
 	if (entered) {
