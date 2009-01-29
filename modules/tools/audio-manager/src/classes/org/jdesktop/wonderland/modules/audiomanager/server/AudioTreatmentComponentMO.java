@@ -52,6 +52,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatme
 import com.sun.voip.client.connector.CallStatus;
 
 
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
@@ -79,9 +81,16 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
     private String groupId;
     private String[] treatments;
+
     private double x;
     private double y;
     private double z;
+
+    private double fullVolumeRadius;
+    private double zeroVolumeRadius;
+
+    private boolean spatialize = true;
+
     private static String serverURL;
 
 
@@ -105,18 +114,30 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         treatments = state.getTreatments();
 
         groupId = state.getGroupId();
+
+	fullVolumeRadius = state.getFullVolumeRadius();
+	zeroVolumeRadius = state.getZeroVolumeRadius();
+	spatialize = state.getSpatialize();
+
+	System.out.println("Treatment:  fvr " + fullVolumeRadius + " zvr " + zeroVolumeRadius
+	    + " spatialize " + spatialize);
     }
 
     @Override
     public CellComponentServerState getServerState(CellComponentServerState serverState) {
-        if (serverState == null) {
-            serverState = new AudioTreatmentComponentServerState();
+	AudioTreatmentComponentServerState state = (AudioTreatmentComponentServerState) serverState;
+
+        if (state == null) {
+            state = new AudioTreatmentComponentServerState();
         }
 
-        ((AudioTreatmentComponentServerState) serverState).setGroupId(groupId);
-        ((AudioTreatmentComponentServerState) serverState).treatments = treatments;
+        state.treatments = treatments;
+        state.setGroupId(groupId);
+	state.setFullVolumeRadius(fullVolumeRadius);
+	state.setZeroVolumeRadius(zeroVolumeRadius);
+	state.setSpatialize(spatialize);
 
-        return serverState;
+        return state;
     }
 
     @Override
@@ -149,6 +170,20 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
         for (int i = 0; i < treatments.length; i++) {
             TreatmentSetup setup = new TreatmentSetup();
+
+	    if (spatialize) {
+		DefaultSpatializer spatializer = new DefaultSpatializer();
+
+		setup.spatializer = spatializer;
+
+		spatializer.setFullVolumeRadius(fullVolumeRadius);
+
+		if (zeroVolumeRadius != 0) {
+		    spatializer.setZeroVolumeRadius(zeroVolumeRadius);
+		}
+	    } else {
+		setup.spatializer = new FullVolumeSpatializer(fullVolumeRadius);
+	    }
 
             String treatment = treatments[i];
 

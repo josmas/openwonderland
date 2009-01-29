@@ -41,23 +41,14 @@ public class AudioTreatmentComponentServerState extends CellComponentServerState
     @XmlElement(name="groupId")
     public String groupId = null;
 
-    @XmlElement(name="lowerLeftX")
-    public double lowerLeftX;
+    @XmlElement(name="fullVolumeRadius")
+    public double fullVolumeRadius;
 
-    @XmlElement(name="lowerLeftY")
-    public double lowerLeftY;
+    @XmlElement(name="zeroVolumeRadius")
+    public double zeroVolumeRadius;
 
-    @XmlElement(name="lowerLeftZ")
-    public double lowerLeftZ;
-
-    @XmlElement(name="upperRightX")
-    public double upperRightX;
-
-    @XmlElement(name="upperRightY")
-    public double upperRightY;
-
-    @XmlElement(name="upperRightZ")
-    public double upperRightZ;
+    @XmlElement(name="spatialize")
+    public boolean spatialize;
 
     public AudioTreatmentComponentServerState() {
     }
@@ -76,34 +67,31 @@ public class AudioTreatmentComponentServerState extends CellComponentServerState
 	return groupId;
     }
 
-    @XmlTransient
-    public double getLowerLeftX() {
-	return lowerLeftX;
+    public void setFullVolumeRadius(double fullVolumeRadius) {
+	this.fullVolumeRadius = fullVolumeRadius;
     }
 
     @XmlTransient
-    public double getLowerLeftY() {
-	return lowerLeftY;
+    public double getFullVolumeRadius() {
+	return fullVolumeRadius;
+    }
+
+    public void setZeroVolumeRadius(double zeroVolumeRadius) {
+	this.zeroVolumeRadius = zeroVolumeRadius;
     }
 
     @XmlTransient
-    public double getLowerLeftZ() {
-	return lowerLeftZ;
+    public double getZeroVolumeRadius() {
+	return zeroVolumeRadius;
+    }
+
+    public void setSpatialize(boolean spatialize) {
+	this.spatialize = spatialize;
     }
 
     @XmlTransient
-    public double getUpperRightX() {
-	return upperRightX;
-    }
-
-    @XmlTransient
-    public double getUpperRightY() {
-	return upperRightY;
-    }
-
-    @XmlTransient
-    public double getUpperRightZ() {
-	return upperRightZ;
+    public boolean getSpatialize() {
+	return spatialize;
     }
 
     public String getServerComponentClassName() {
