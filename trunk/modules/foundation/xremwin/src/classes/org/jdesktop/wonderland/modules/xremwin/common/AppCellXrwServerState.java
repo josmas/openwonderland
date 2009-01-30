@@ -18,8 +18,8 @@
 package org.jdesktop.wonderland.modules.xremwin.common;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellServerState;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * The WFS server state class for AppCellXrwMO.
@@ -27,9 +27,8 @@ import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellServerS
  * @author deronj
  */
 @XmlRootElement(name = "xremwin-cell")
-public class AppCellXrwServerState extends AppConventionalCellServerState 
-    implements CellServerStateSPI 
-{
+@ServerState
+public class AppCellXrwServerState extends AppConventionalCellServerState {
 
     /** Default constructor */
     public AppCellXrwServerState() {
