@@ -52,7 +52,7 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
@@ -208,7 +208,7 @@ class KmzLoader implements ModelLoader {
 
             // XXX There should not be a direct reference to another module
             // from here.
-            JMEColladaCellServerState setup = new JMEColladaCellServerState();
+            JmeColladaCellServerState setup = new JmeColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
 
             PositionComponentServerState position = new PositionComponentServerState();
