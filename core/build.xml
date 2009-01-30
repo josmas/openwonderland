@@ -89,7 +89,7 @@
     
     <target name="avatargui" depends="jar">
         <!--<java classname="imi.tests.GUITest" fork="true">-->
-        <java classname="imi.tests.COLLADA_CharacterTest" fork="true" dir="../modules/world/avatarbase/art">
+        <java classname="imi.tests.GUITest" fork="true" dir="../modules/world/avatarbase/art">
         <!--<java classname="imi.tests.MusicalChairs" fork="true">-->
             <jvmarg value="-Xmx512m"/>
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
