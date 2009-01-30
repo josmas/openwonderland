@@ -32,14 +32,14 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  */
 @XmlRootElement(name="jme-collada-cell")
 @ServerState
-public class JMEColladaCellServerState extends CellServerState implements Serializable {
+public class JmeColladaCellServerState extends CellServerState implements Serializable {
     
     /* The URI of the static model file */
     @XmlElement(name="model")
     public String model = null;
     
     /** Default constructor */
-    public JMEColladaCellServerState() {
+    public JmeColladaCellServerState() {
     }
     
     /**
