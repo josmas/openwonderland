@@ -1,7 +1,8 @@
 <swingsettest-cell>
+  <position-component>
     <origin>
         <x>0.0</x>
-        <y>5.0</y>
+        <y>2.5</y>
         <z>5.0</z>
     </origin>
     <rotation>
@@ -10,4 +11,7 @@
         <z>0.0</z>
 	<angle>3.141569</angle>
     </rotation>
+  </position-component>
+  <preferredWidth>800</preferredWidth>
+  <preferredHeight>800</preferredHeight>
 </swingsettest-cell>
