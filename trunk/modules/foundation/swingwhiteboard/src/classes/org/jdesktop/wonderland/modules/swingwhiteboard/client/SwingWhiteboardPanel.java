@@ -47,6 +47,7 @@ public class SwingWhiteboardPanel extends javax.swing.JPanel {
 
         buttonPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         buttonPanel.setName("buttonPanel"); // NOI18N
+        buttonPanel.setPreferredSize(new java.awt.Dimension(74, 768));
 
         blackButton.setBackground(new java.awt.Color(8, 8, 7));
         blackButton.addActionListener(new java.awt.event.ActionListener() {
@@ -124,6 +125,7 @@ public class SwingWhiteboardPanel extends javax.swing.JPanel {
         );
 
         drawingPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        drawingPanel.setPreferredSize(new java.awt.Dimension(945, 768));
 
         org.jdesktop.layout.GroupLayout drawingPanelLayout = new org.jdesktop.layout.GroupLayout(drawingPanel);
         drawingPanel.setLayout(drawingPanelLayout);
@@ -147,7 +149,7 @@ public class SwingWhiteboardPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(buttonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
             .add(drawingPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
