@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -77,6 +77,23 @@ public class JmeColladaCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
-        this.modelURI = ((JMEColladaCellServerState)setup).getModel();
+        this.modelURI = ((JmeColladaCellServerState)setup).getModel();
+    }
+
+    @Override
+    public CellServerState getServerState(CellServerState state) {
+        JmeColladaCellServerState ret;
+        if (state==null) {
+            ret = new JmeColladaCellServerState();
+        } else {
+            ret = (JmeColladaCellServerState) state;
+        }
+
+        System.err.println("**************************************");
+        System.err.println(modelURI);
+
+        ret.setModel(modelURI);
+
+        return ret;
     }
 }
