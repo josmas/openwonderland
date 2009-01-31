@@ -74,10 +74,12 @@
             <!--start debug-->
 	    <!-- 
             <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
 	    <jvmarg value="-agentpath:/tmp/NBProfiler60438.link/deployed/jdk15/mac/libprofilerinterface.jnilib=/tmp/NBProfiler60438.link,5140"/>
             -->
 	    <!--end debug-->
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
             
             <classpath>
                 <pathelement path="${core-client.classpath}"/>
@@ -89,7 +91,7 @@
     
     <target name="avatargui" depends="jar">
         <!--<java classname="imi.tests.GUITest" fork="true">-->
-        <java classname="imi.tests.COLLADA_CharacterTest" fork="true" dir="../modules/world/avatarbase/art">
+        <java classname="imi.tests.GUITest" fork="true" dir="../modules/world/avatarbase/art">
         <!--<java classname="imi.tests.MusicalChairs" fork="true">-->
             <jvmarg value="-Xmx512m"/>
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>

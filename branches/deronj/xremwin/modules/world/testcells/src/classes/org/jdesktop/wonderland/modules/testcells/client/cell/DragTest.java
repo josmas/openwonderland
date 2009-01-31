@@ -53,7 +53,6 @@ public class DragTest extends SimpleShapeCell {
 
     public DragTest(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        System.out.print("CREATE DRAG TEST <-------------------------");
     }
 
     @Override
@@ -73,9 +72,6 @@ public class DragTest extends SimpleShapeCell {
     @Override
     public boolean setStatus(CellStatus status) {
         boolean ret = super.setStatus(status);
-
-        System.err.println("***** "+this+"  "+movableComp+"<-------------------------------");
-
 
         switch (status) {
 

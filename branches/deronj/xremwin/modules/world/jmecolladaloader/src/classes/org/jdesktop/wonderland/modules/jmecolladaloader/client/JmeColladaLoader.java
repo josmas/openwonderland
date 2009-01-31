@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Or
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
 import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JMEColladaCellServerState;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 
 /**
  *
@@ -114,7 +114,7 @@ class JmeColladaLoader implements ModelLoader {
             if (modelFiles.size() > 1) {
                 logger.warning("Multiple models not supported during deploy");
             }
-            JMEColladaCellServerState setup = new JMEColladaCellServerState();
+            JmeColladaCellServerState setup = new JmeColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/art/"+modelFiles.get(0));
 
             PositionComponentServerState position = new PositionComponentServerState();
