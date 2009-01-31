@@ -23,8 +23,8 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellServerState;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * The WFS server state class for SwingWhiteboardCellMO.
@@ -32,7 +32,8 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author deronj
  */
 @XmlRootElement(name="swingwhiteboard-cell")
-public class SwingWhiteboardCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
+@ServerState
+public class SwingWhiteboardCellServerState extends App2DCellServerState {
     
     /** The user's preferred width of the whiteboard window. */
     @XmlElement(name="preferredWidth")

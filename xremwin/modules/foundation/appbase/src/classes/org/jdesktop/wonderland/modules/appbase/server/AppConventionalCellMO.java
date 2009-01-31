@@ -90,6 +90,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      */
     @Override
     protected void setLive(boolean live) {
+        super.setLive(live);
+
         // Register the connection handler when the first cell is created
         if (live) {
             if (!connectionHandlerRegistered) {
