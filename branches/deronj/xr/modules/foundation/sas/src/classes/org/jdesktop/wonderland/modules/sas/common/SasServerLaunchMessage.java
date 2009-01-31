@@ -17,22 +17,33 @@
  */
 package org.jdesktop.wonderland.common.app.sas;
 
+import com.jme.bounding.BoundingVolume;
+import com.sun.xml.internal.bind.v2.TODO;
+import java.io.Serializable;
+import java.util.UUID;
+import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage.ActionType;
+import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
+
 /**
  * A message which SAS user uses to tell a SAS provider to launch an app.
  * 
  * @author deronj
  */
 
-Adds:
+/*
+ Adds:
 int sequenceNumber
+*/
 
 @InternalAPI
 public abstract class SasServerLaunchMessage extends SasUserLaunchMessage {
 
     /** The default constructor */
-    public SasLaunchMessage () {}
+    public SasServerLaunchMessage () {}
 
-TODO
+//TODO
     /**
      * Create a new instance of SasLaunchMessage
      *
