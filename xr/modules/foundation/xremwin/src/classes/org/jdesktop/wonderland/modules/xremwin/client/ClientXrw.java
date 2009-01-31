@@ -839,7 +839,7 @@ abstract class ClientXrw implements Runnable {
 
         // Now transfer the decoded pixels into the texture
         if (win != null) {
-            // TODO: win.displayPixels(dpMsgArgs.x, dpMsgArgs.y, dpMsgArgs.w, h, winPixels);
+            win.displayPixels(dpMsgArgs.x, dpMsgArgs.y, dpMsgArgs.w, h, winPixels);
         }
     }
 

@@ -33,7 +33,7 @@ public class WindowGraphics2D extends Window2D {
 
     private static final Logger logger = Logger.getLogger(WindowGraphics2D.class.getName());
     /** The surface the client on which subclasses should draw */
-    private DrawingSurface surface;
+    protected DrawingSurface surface;
 
     /**
      * Create a Window2D instance and its "World" view.

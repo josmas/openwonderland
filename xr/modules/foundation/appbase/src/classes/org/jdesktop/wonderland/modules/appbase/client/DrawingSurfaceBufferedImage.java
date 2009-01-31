@@ -114,21 +114,34 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     public synchronized void setSize(int width, int height) {
         super.setSize(width, height);
 
-        if (bufImage == null ||
-                width != bufImage.getWidth() || height != bufImage.getHeight()) {
-            bufImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        // Any change?
+        if (width == bufImage.getWidth() && height == bufImage.getHeight()) {
+            return;
         }
 
-        // Create a dirty-tracking Graphics2D which renders onto this buffered image
-        g = new DirtyTrackingGraphics((Graphics2D) bufImage.getGraphics());
-        g.setClip(0, 0, width, height);
+        // Create new image of new size
+        BufferedImage bufImageNew = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        // Create new graphics for the new image
+        DirtyTrackingGraphics gNew = new DirtyTrackingGraphics((Graphics2D) bufImageNew.getGraphics());
+        gNew.setClip(0, 0, width, height);
 
         // Erase the buffered image to all white
-        Color bkgdSave = g.getBackground();
-        g.setBackground(Color.WHITE);
-        g.clearRect(0, 0, width, height);
-        g.setBackground(bkgdSave);
-        g.addDirtyRectangle(0, 0, width, height);
+        // TODO: change this to 50% gray?
+        Color bkgdSave = gNew.getBackground();
+        gNew.setBackground(Color.WHITE);
+        gNew.clearRect(0, 0, width, height);
+        gNew.setBackground(bkgdSave);
+
+        // Copy the old image into the new
+        gNew.drawImage(bufImage, 0, 0, null);
+
+        // Dirty the entire new image
+        gNew.addDirtyRectangle(0, 0, width, height);
+
+        // Make the new image current
+        bufImage = bufImageNew;
+        g = gNew;
     }
 
     /**
