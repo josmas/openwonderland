@@ -209,4 +209,25 @@ public abstract class WindowConventional extends WindowGraphics2D {
             }
         });
     }
+
+    /**
+     * Extracts the pixels in a given subrectangle and places them as bytes in a byte array.
+     * @param pixelBytes The byte array in which the pixels are returned.
+     * @param x The x coordinate of the origin of the subrectangle.
+     * @param y The y coordinate of the origin of the subrectangle.
+     * @param width The width of the subrectangle.
+     * @param height The height of the subrectangle.
+     */
+    public void getPixelBytes (final byte[] pixelBytes, final int x, final int y, 
+                               final int width, final int height) {
+
+        final DrawingSurfaceBufferedImage.DirtyTrackingGraphics gDst =
+                (DrawingSurfaceBufferedImage.DirtyTrackingGraphics) surface.getGraphics();
+        gDst.executeAtomic(new Runnable() {
+
+            public void run() {
+                ((DrawingSurfaceBufferedImage)surface).getPixelBytes(pixelBytes, x, y, width, height);
+            }
+        });
+    }
 }

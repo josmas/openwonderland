@@ -981,25 +981,6 @@ abstract class ClientXrw implements Runnable {
         }
     }
 
-    // Note: pixel buffer may be longer than w*h
-    protected byte[] intAryToByteAry(int[] pixels, int w, int h) {
-        byte[] bytes = new byte[w * h * 4];
-
-        int srcIdx, dstIdx;
-        for (srcIdx = 0    , dstIdx = 0;
-                srcIdx < w * h;
-                srcIdx++) {
-
-            int pixel = pixels[srcIdx];
-            bytes[dstIdx++] = (byte) ((pixel >> 24) & 0xff);
-            bytes[dstIdx++] = (byte) ((pixel >> 16) & 0xff);
-            bytes[dstIdx++] = (byte) ((pixel >> 8) & 0xff);
-            bytes[dstIdx++] = (byte) (pixel & 0xff);
-        }
-
-        return bytes;
-    }
-
     /**
      * Rearrange the window stack so that the windows are in the given order.
      *
