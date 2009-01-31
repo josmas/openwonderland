@@ -20,20 +20,24 @@
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client"/>
+
+    <!-- TODO: temp -->
+    <target name="dist"> </target>
+
+<!--
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="sas" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.dir}">
 
-	  <!-- TODO: there is no client but there is a provider
+	  TODO: there is no client but there is a provider
            <client>
                <clientjar name="sas-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar> 
            </client>
-           -->
 
            <server>
                 <serverjar name="sas-server" basedir="${build.classes.dir}">
@@ -45,6 +49,7 @@
             <art dir="${current.dir}/art"/>
         </module>
     </target>                                                       
+-->
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
 
