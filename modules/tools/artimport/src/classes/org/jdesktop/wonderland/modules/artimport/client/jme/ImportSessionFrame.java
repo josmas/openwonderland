@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.bounding.BoundingBox;
@@ -54,11 +55,13 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -80,10 +83,14 @@ import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.common.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.common.modules.ModuleUploader;
+import org.jdesktop.wonderland.common.modules.utils.ModuleJarWriter;
 
 /**
  * Frame that provides the controls for the user to position and orient
@@ -113,14 +120,13 @@ public class ImportSessionFrame extends javax.swing.JFrame
     private SceneGraphViewFrame sgViewFrame;
 
     private String targetModuleDir = null;
-   
+
     /** Creates new form ImportSessionFrame */
     public ImportSessionFrame() {
         initComponents();
-        targetModuleSelector.setSelectedIndex(0);
         
         sgViewFrame = new SceneGraphViewFrame();
-        sgViewFrame.setVisible(true);
+        sgViewFrame.setVisible(false);
         
         tableModel = (DefaultTableModel) importTable.getModel();
         importTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -142,21 +148,6 @@ public class ImportSessionFrame extends javax.swing.JFrame
         importTable.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent tme) {
                 boolean models = importTable.getModel().getRowCount() > 0;
-                serverB.setEnabled(models);
-            }
-        });
-        
-        compiledModelsTF.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent arg0) {
-                checkLocalSaveButtons();
-            }
-
-            public void removeUpdate(DocumentEvent arg0) {
-                checkLocalSaveButtons();
-            }
-
-            public void changedUpdate(DocumentEvent arg0) {
-                checkLocalSaveButtons();
             }
         });
         
@@ -176,7 +167,6 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 if (in.readBoolean()) {
                     str = in.readUTF();
                     compiledDir = new File(str);
-                    compiledModelsTF.setText(str);
                 } else
                     compiledDir=null;
                 in.close();
@@ -195,17 +185,6 @@ public class ImportSessionFrame extends javax.swing.JFrame
  
     }
 
-    private String createArtModule(File parentDir, String modulename) {
-        File file = new File(parentDir.getAbsolutePath()+File.separator+modulename);
-
-        if (!file.exists()) {
-            ModuleSourceManager moduleMgr = new ModuleSourceManager();
-            moduleMgr.createModule(modulename, "Art Module", parentDir, true, false, false);
-        }
-
-        return file.getAbsolutePath();
-    }
-    
     /**
      * Write the defaults for this UI
      */
@@ -244,32 +223,32 @@ public class ImportSessionFrame extends javax.swing.JFrame
         tablePopupMenu = new javax.swing.JPopupMenu();
         editPMI = new javax.swing.JMenuItem();
         removePMI = new javax.swing.JMenuItem();
-        localSaveDialog = new javax.swing.JDialog();
-        jLabel2 = new javax.swing.JLabel();
-        compiledModelsTF = new javax.swing.JTextField();
-        chooseLocalDirB = new javax.swing.JButton();
-        localSaveCancelB = new javax.swing.JButton();
-        localSaveOKB = new javax.swing.JButton();
-        invalidDirLabel = new javax.swing.JLabel();
         loadingDialogPanel = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         importTable = new javax.swing.JTable();
         importModelB = new javax.swing.JButton();
-        serverB = new javax.swing.JButton();
+        deployToServerB = new javax.swing.JButton();
         editB = new javax.swing.JButton();
         removeB = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         cancelButton = new javax.swing.JButton();
-        moduleChooseB = new javax.swing.JButton();
-        targetModuleSelector = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
         targetServerSelector = new javax.swing.JComboBox();
+        targetModuleTF = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        descriptionTF = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        saveAsModuleB = new javax.swing.JButton();
+        saveAsSrcB = new javax.swing.JButton();
+        okB = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         loadImportGroupMI = new javax.swing.JMenuItem();
         saveImportGroupMI = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        sceneGraphWindowMI = new javax.swing.JMenuItem();
 
         jList1.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -283,79 +262,6 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         removePMI.setText("Remove");
         tablePopupMenu.add(removePMI);
-
-        jLabel2.setText("Save to local directory");
-
-        compiledModelsTF.setToolTipText("Select a directory to save the local files in");
-        compiledModelsTF.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                compiledModelsTFFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                compiledModelsTFFocusLost(evt);
-            }
-        });
-
-        chooseLocalDirB.setText("Choose...");
-
-        localSaveCancelB.setText("Cancel");
-        localSaveCancelB.setToolTipText("Cancel save to local directory");
-        localSaveCancelB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                localSaveCancelBActionPerformed(evt);
-            }
-        });
-
-        localSaveOKB.setText("OK");
-        localSaveOKB.setEnabled(false);
-        localSaveOKB.setSelected(true);
-        localSaveOKB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                localSaveOKBActionPerformed(evt);
-            }
-        });
-
-        invalidDirLabel.setForeground(new java.awt.Color(255, 0, 0));
-        invalidDirLabel.setText("Invalid directory");
-
-        org.jdesktop.layout.GroupLayout localSaveDialogLayout = new org.jdesktop.layout.GroupLayout(localSaveDialog.getContentPane());
-        localSaveDialog.getContentPane().setLayout(localSaveDialogLayout);
-        localSaveDialogLayout.setHorizontalGroup(
-            localSaveDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(localSaveDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(localSaveDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
-                    .add(localSaveDialogLayout.createSequentialGroup()
-                        .add(localSaveDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(invalidDirLabel)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, compiledModelsTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
-                            .add(localSaveDialogLayout.createSequentialGroup()
-                                .add(localSaveCancelB)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(localSaveOKB)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(chooseLocalDirB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .addContainerGap())
-        );
-        localSaveDialogLayout.setVerticalGroup(
-            localSaveDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(localSaveDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(localSaveDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(chooseLocalDirB)
-                    .add(compiledModelsTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(1, 1, 1)
-                .add(invalidDirLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(localSaveDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(localSaveOKB)
-                    .add(localSaveCancelB))
-                .addContainerGap())
-        );
 
         loadingDialogPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         loadingDialogPanel.setMinimumSize(new java.awt.Dimension(215, 100));
@@ -403,12 +309,11 @@ public class ImportSessionFrame extends javax.swing.JFrame
             }
         });
 
-        serverB.setText("Deploy to server");
-        serverB.setToolTipText("Deploy target module to server");
-        serverB.setEnabled(false);
-        serverB.addActionListener(new java.awt.event.ActionListener() {
+        deployToServerB.setText("Deploy to server");
+        deployToServerB.setToolTipText("Deploy target module to server");
+        deployToServerB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                serverBActionPerformed(evt);
+                deployToServerBActionPerformed(evt);
             }
         });
 
@@ -431,7 +336,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         jLabel1.setText("Model List");
 
-        jLabel3.setText("Target Module :");
+        jLabel3.setText("Target Name :");
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -440,25 +345,41 @@ public class ImportSessionFrame extends javax.swing.JFrame
             }
         });
 
-        moduleChooseB.setText("New Module");
-        moduleChooseB.setToolTipText("A a new target module");
-        moduleChooseB.setEnabled(false);
-        moduleChooseB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                moduleChooseBActionPerformed(evt);
-            }
-        });
-
-        targetModuleSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "UserArt1", "UserArt2", "UserArt3", " " }));
-        targetModuleSelector.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                targetModuleSelectorActionPerformed(evt);
-            }
-        });
-
         jLabel5.setText("Target Server :");
 
         targetServerSelector.setRenderer(new LoginManagerRenderer());
+
+        targetModuleTF.setText("MyModule");
+        targetModuleTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                targetModuleTFActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("Description :");
+
+        saveAsModuleB.setText("Save as module...");
+        saveAsModuleB.setToolTipText("Save the module jar file");
+        saveAsModuleB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsModuleBActionPerformed(evt);
+            }
+        });
+
+        saveAsSrcB.setText("Save as source...");
+        saveAsSrcB.setToolTipText("Create a module source base, with build.xml etc");
+        saveAsSrcB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsSrcBActionPerformed(evt);
+            }
+        });
+
+        okB.setText("OK");
+        okB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okBActionPerformed(evt);
+            }
+        });
 
         jMenu1.setText("File");
 
@@ -480,6 +401,18 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         jMenuBar1.add(jMenu1);
 
+        jMenu2.setText("View");
+
+        sceneGraphWindowMI.setText("Scene Graph Window");
+        sceneGraphWindowMI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sceneGraphWindowMIActionPerformed(evt);
+            }
+        });
+        jMenu2.add(sceneGraphWindowMI);
+
+        jMenuBar1.add(jMenu2);
+
         setJMenuBar(jMenuBar1);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -487,35 +420,49 @@ public class ImportSessionFrame extends javax.swing.JFrame
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel5)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 242, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(1028, 1028, 1028))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(96, 96, 96)
+                        .add(deployToServerB)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(saveAsSrcB)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(saveAsModuleB)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
+                        .add(okB))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
                             .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jLabel5)
-                                    .add(jLabel3))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jLabel3)
+                                    .add(jLabel7))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(serverB)
-                                        .add(18, 18, 18)
-                                        .add(cancelButton))
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, targetServerSelector, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, targetModuleSelector, 0, 224, Short.MAX_VALUE)))))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 168, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
+                                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
+                                    .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 154, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(jLabel6)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 723, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(editB)
-                    .add(importModelB)
-                    .add(removeB)
-                    .add(moduleChooseB))
-                .add(26, 26, 26))
+                    .add(layout.createSequentialGroup()
+                        .add(26, 26, 26)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(editB)
+                            .add(importModelB)
+                            .add(removeB)))
+                    .add(layout.createSequentialGroup()
+                        .add(4, 4, 4)
+                        .add(cancelButton)))
+                .add(20, 20, 20))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -523,27 +470,36 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
                         .add(importModelB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeB))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(moduleChooseB)
-                    .add(targetModuleSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
-                    .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(61, 61, 61)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(serverB)
-                    .add(cancelButton))
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel3)
+                            .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel6)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(jLabel7)))
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabel5))
+                        .add(48, 48, 48)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(deployToServerB)
+                            .add(saveAsModuleB)
+                            .add(saveAsSrcB)
+                            .add(cancelButton)
+                            .add(okB))))
                 .addContainerGap())
         );
 
@@ -570,7 +526,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         }
         
         ImportedModel ic = imports.remove(row);
-        ic.getRootBG().getParent().detachChild(ic.getRootBG());
+        ClientContextJME.getWorldManager().removeEntity(ic.getEntity());
         tableModel.removeRow(row);
     }//GEN-LAST:event_removeBActionPerformed
 
@@ -578,38 +534,36 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
     }//GEN-LAST:event_formComponentHidden
 
-    private void serverBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverBActionPerformed
-        // upload to server
+    private void deployToServerBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deployToServerBActionPerformed
 
-        WorldManager wm = ClientContextJME.getWorldManager();
+        String moduleName = targetModuleTF.getText();
         ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo = new ArrayList();
+        WorldManager wm = ClientContextJME.getWorldManager();
+        ServerSessionManager targetServer = (ServerSessionManager) targetServerSelector.getSelectedItem();
 
-        for(ImportedModel model : imports) {
-            try {
-                deploymentInfo.add(model.getModelLoader().deployToModule(new File(targetModuleDir)));
-                wm.removeEntity(model.getEntity());
-            } catch (IOException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
+        // Check we are not about to overwrite an existing module
+        ModuleInfo[] modules = ModuleUtils.fetchModuleList(targetServer.getServerURL()).getModuleInfos();
+        if (modules!=null) {
+            boolean conflict = false;
+            for(int i=0; i<modules.length && !conflict; i++) {
+                if (moduleName.equals(modules[i].getName()))
+                    conflict = true;
+            }
+
+            if (conflict) {
+                int ret = JOptionPane.showConfirmDialog(this, "This module already exists,\n" +
+                        "Overwrite ?", "Module Conflict", JOptionPane.YES_NO_OPTION);
+                if (ret==JOptionPane.NO_OPTION)
+                    return;
             }
         }
 
-        // Compile the target module
-        NoExitAnt ant = new NoExitAnt();
-        ant.startAnt(new String[] {"-f", targetModuleDir+File.separator+"build.xml", "dist"}, null, this.getClass().getClassLoader());
+        File moduleJar = createModuleJar(deploymentInfo, null);
 
-        String modulename = targetModuleDir.substring(targetModuleDir.lastIndexOf(File.separatorChar)+1);
-        File distJar = new File(targetModuleDir+File.separator+"dist"+File.separator+modulename+".jar");
-//        System.err.println("DEPLOYING "+distJar.getAbsolutePath());
-        if (!distJar.exists()) {
-            JOptionPane.showMessageDialog(this, "Module failed to compile\nSee console for error messages", "Deployment Failed", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
         // Now deploy to server
-        // TODO
-        ServerSessionManager targetServer = (ServerSessionManager) targetServerSelector.getSelectedItem();
         try {
             ModuleUploader uploader = new ModuleUploader(new URL(targetServer.getServerURL()));
-            uploader.upload(distJar);
+            uploader.upload(moduleJar);
         } catch (MalformedURLException ex) {
             Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
             return;
@@ -618,11 +572,11 @@ public class ImportSessionFrame extends javax.swing.JFrame
             return;
         }
 
-        // Cleanup
-        imports.clear();
-        tableModel.setRowCount(0);
-
-
+        // Remove entities, once we create the cells on the server we
+        // will be sent the client cells
+        for(ImportedModel model : imports) {
+            wm.removeEntity(model.getEntity());
+        }
         // Now create the cells for the new content
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
         CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
@@ -632,7 +586,59 @@ public class ImportSessionFrame extends javax.swing.JFrame
             connection.send(msg);
         }
 
-}//GEN-LAST:event_serverBActionPerformed
+    }
+
+    private File createModuleJar(ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo, File targetDir) {
+
+        File moduleJar=null;
+        String moduleName = targetModuleTF.getText();
+
+        try {
+            File tmpDir = File.createTempFile("wlart", null);
+            tmpDir.delete();
+            tmpDir.mkdir();
+            tmpDir = new File(tmpDir, targetModuleTF.getText());
+
+            for(ImportedModel model : imports) {
+                try {
+                    deploymentInfo.add(model.getModelLoader().deployToModule(tmpDir));
+                } catch (IOException ex) {
+                    Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
+                }
+            }
+
+
+            ModuleJarWriter mjw = new ModuleJarWriter();
+            File[] dirs = tmpDir.listFiles();
+            for(File f : dirs) {
+                if (f.isDirectory())
+                    mjw.addDirectory(f);
+            }
+            ModuleInfo mi = new ModuleInfo(moduleName, 1, 0, descriptionTF.getText());
+            mjw.setModuleInfo(mi);
+            try {
+                if (targetDir==null)
+                    targetDir = tmpDir.getParentFile();
+                moduleJar = new File(targetDir, moduleName+".jar");
+                mjw.writeToJar(moduleJar);
+            } catch (IOException ex) {
+                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (JAXBException ex) {
+                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            if (moduleJar==null) {
+                JOptionPane.showMessageDialog(this,"Failed to create module jar", "Error", JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+
+        return moduleJar;
+
+}//GEN-LAST:event_deployToServerBActionPerformed
 
     private void saveImportGroupMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveImportGroupMIActionPerformed
         File sessionFile = new File(ClientContext.getUserDirectory("config"), "import_session");
@@ -660,49 +666,96 @@ public class ImportSessionFrame extends javax.swing.JFrame
         }
 }//GEN-LAST:event_loadImportGroupMIActionPerformed
 
-private void localSaveCancelBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localSaveCancelBActionPerformed
-        localSaveDialog.setVisible(false);
-}//GEN-LAST:event_localSaveCancelBActionPerformed
-
-private void localSaveOKBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localSaveOKBActionPerformed
-
-}//GEN-LAST:event_localSaveOKBActionPerformed
-
-private void compiledModelsTFFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_compiledModelsTFFocusLost
-        checkLocalSaveButtons();
-}//GEN-LAST:event_compiledModelsTFFocusLost
-
-private void compiledModelsTFFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_compiledModelsTFFocusGained
-        checkLocalSaveButtons();
-}//GEN-LAST:event_compiledModelsTFFocusGained
-
 private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        setVisible(false);
-        logger.warning("Cancel does not clean up imported files in target module");
+        WorldManager wm = ClientContextJME.getWorldManager();
+        for(ImportedModel model : imports) {
+            wm.removeEntity(model.getEntity());
+        }
+        imports.clear();
+        tableModel.setRowCount(0);
+
 }//GEN-LAST:event_cancelButtonActionPerformed
 
-private void moduleChooseBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleChooseBActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_moduleChooseBActionPerformed
+private void targetModuleTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetModuleTFActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_targetModuleTFActionPerformed
 
-private void targetModuleSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetModuleSelectorActionPerformed
-        File defaultDir = new File("../modules/samples");
-        String defaultModule = targetModuleSelector.getSelectedItem().toString();
-        targetModuleDir = createArtModule(defaultDir, defaultModule);
-}//GEN-LAST:event_targetModuleSelectorActionPerformed
-    
-    private void checkLocalSaveButtons() {
-        boolean okEnabled = false;
-        
-        String dirName = compiledModelsTF.getText();
-        if (dirName != null && dirName.length() > 0) {
-            File dir = new File(dirName);
-            okEnabled = dir.exists() && dir.isDirectory();
-        }
-        
-        localSaveOKB.setEnabled(okEnabled);
-        invalidDirLabel.setVisible(!okEnabled);
+private void saveAsModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsModuleBActionPerformed
+
+    ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo = new ArrayList();
+
+    JFileChooser chooser = new JFileChooser();
+    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+//                chooser.setCurrentDirectory(lastModelDir);
+    int returnVal = chooser.showOpenDialog(ImportSessionFrame.this);
+    if(returnVal == JFileChooser.APPROVE_OPTION) {
+        createModuleJar(deploymentInfo, chooser.getSelectedFile());
     }
+}//GEN-LAST:event_saveAsModuleBActionPerformed
+
+private void sceneGraphWindowMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sceneGraphWindowMIActionPerformed
+    sgViewFrame.setVisible(true);
+}//GEN-LAST:event_sceneGraphWindowMIActionPerformed
+
+private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsSrcBActionPerformed
+        String moduleName = targetModuleTF.getText();
+        ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo = new ArrayList();
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = chooser.showOpenDialog(ImportSessionFrame.this);
+        if(returnVal != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File parentDir = chooser.getSelectedFile();
+        File srcDir = new File(parentDir, moduleName);
+        if (srcDir.exists()) {
+            if (srcDir.listFiles().length>0) {
+                int res = JOptionPane.showConfirmDialog(this, "Module Directory exists, replace ?", "Module exists !", JOptionPane.YES_NO_OPTION);
+                if (res==JOptionPane.NO_OPTION)
+                    return;
+                deleteDirContents(srcDir);
+            }
+        } else {
+            srcDir.mkdir();
+        }
+
+        ModuleSourceManager moduleMgr = new ModuleSourceManager();
+        moduleMgr.createModule(moduleName, "Art Module", parentDir, true, false, false);
+
+            // Compile the target module
+        for(ImportedModel model : imports) {
+            try {
+                deploymentInfo.add(model.getModelLoader().deployToModule(srcDir));
+            } catch (IOException ex) {
+                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
+            }
+        }
+
+//        NoExitAnt ant = new NoExitAnt();
+//        ant.startAnt(new String[] {"-f", targetModuleDir+File.separator+"build.xml", "dist"}, null, this.getClass().getClassLoader());
+
+//        String modulename = targetModuleDir.substring(targetModuleDir.lastIndexOf(File.separatorChar)+1);
+//        File distJar = new File(targetModuleDir+File.separator+"dist"+File.separator+modulename+".jar");
+////        System.err.println("DEPLOYING "+distJar.getAbsolutePath());
+//        if (!distJar.exists()) {
+//            JOptionPane.showMessageDialog(this, "Module failed to compile\nSee console for error messages", "Deployment Failed", JOptionPane.ERROR_MESSAGE);
+//            return;
+//        }
+
+}//GEN-LAST:event_saveAsSrcBActionPerformed
+
+private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okBActionPerformed
+    setVisible(false);
+    imports.clear();
+    tableModel.setRowCount(0);
+}//GEN-LAST:event_okBActionPerformed
+
+    private void deleteDirContents(File dir) {
+        logger.warning("delteDirContents not implemented");
+    }
+
 
     synchronized void asyncLoadModel(final ImportedModel model, final LoadCompleteListener listener) {
         final JDialog loadingDialog = new JDialog(importFrame);
@@ -933,35 +986,35 @@ private void targetModuleSelectorActionPerformed(java.awt.event.ActionEvent evt)
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
-    private javax.swing.JButton chooseLocalDirB;
-    private javax.swing.JTextField compiledModelsTF;
+    private javax.swing.JButton deployToServerB;
+    private javax.swing.JTextField descriptionTF;
     private javax.swing.JButton editB;
     private javax.swing.JMenuItem editPMI;
     private javax.swing.JButton importModelB;
     private javax.swing.JTable importTable;
-    private javax.swing.JLabel invalidDirLabel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JList jList1;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuItem loadImportGroupMI;
     private javax.swing.JPanel loadingDialogPanel;
-    private javax.swing.JButton localSaveCancelB;
-    private javax.swing.JDialog localSaveDialog;
-    private javax.swing.JButton localSaveOKB;
-    private javax.swing.JButton moduleChooseB;
+    private javax.swing.JButton okB;
     private javax.swing.JButton removeB;
     private javax.swing.JMenuItem removePMI;
+    private javax.swing.JButton saveAsModuleB;
+    private javax.swing.JButton saveAsSrcB;
     private javax.swing.JMenuItem saveImportGroupMI;
-    private javax.swing.JButton serverB;
+    private javax.swing.JMenuItem sceneGraphWindowMI;
     private javax.swing.JPopupMenu tablePopupMenu;
-    private javax.swing.JComboBox targetModuleSelector;
+    private javax.swing.JTextField targetModuleTF;
     private javax.swing.JComboBox targetServerSelector;
     // End of variables declaration//GEN-END:variables
    
