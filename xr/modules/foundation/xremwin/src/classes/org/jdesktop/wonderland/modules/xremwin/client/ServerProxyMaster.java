@@ -741,8 +741,8 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         sf.broadcastSend(setPopupParentBuf);
     }
 
-    public void writeSlaveSyncPixels(BigInteger slaveID, byte[] pixelBuf) {
-        sf.unicastSend(slaveID, pixelBuf);
+    public void writeSlaveSyncPixels(BigInteger slaveID, byte[] pixelBytes) {
+        sf.unicastSend(slaveID, pixelBytes);
     }
 
     /* For Debug

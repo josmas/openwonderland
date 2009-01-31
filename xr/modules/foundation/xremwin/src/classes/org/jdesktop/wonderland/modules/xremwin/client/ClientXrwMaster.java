@@ -230,8 +230,7 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener 
         controlArb.releaseControl();
     }
 
-    public void writeSyncSlavePixels(BigInteger slaveID, int[] pixels, int w, int h) {
-        byte[] pixelBuf = intAryToByteAry(pixels, w, h);
-        ((ServerProxyMaster) serverProxy).writeSlaveSyncPixels(slaveID, pixelBuf);
+    public void writeSyncSlavePixels(BigInteger slaveID, byte[] pixelBytes) {
+        ((ServerProxyMaster) serverProxy).writeSlaveSyncPixels(slaveID, pixelBytes);
     }
 }

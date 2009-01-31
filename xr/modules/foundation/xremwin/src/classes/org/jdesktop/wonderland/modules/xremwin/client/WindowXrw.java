@@ -43,6 +43,8 @@ class WindowXrw extends WindowConventional {
     private int x;
     /** The X11 y coordinate of the top-left corner window */
     private int y;
+    /** A temporary buffer used by syncSlavePixels. */
+    private byte[] tmpPixelBytes;
 
     /**
      * Create a new WindowXrw instance and its "World" view.
@@ -232,22 +234,17 @@ class WindowXrw extends WindowConventional {
      * @param slaveID The slave to which to send the window pixels.
      */
     public void syncSlavePixels(BigInteger slaveID) {
-        /* TODO
-        BufferedImage image = imageComp.getImage();
-        WritableRaster ras = image.getRaster();
-        DataBufferInt dataBuf = (DataBufferInt) ras.getDataBuffer();
-        int[] srcPixels = dataBuf.getData();
 
-        // TODO: eventually preallocate this and grow the array
-        int[] dstPixels = new int[getWidth() * getHeight()];
+        // Resize temporary buffer (if necessary)
+        int numBytes = width * height * 4;
+        if (tmpPixelBytes == null || tmpPixelBytes.length < numBytes) {
+            tmpPixelBytes = new byte[numBytes];
+        }
 
-        extractPixelIntBuf(dstPixels, srcPixels, 0, 0, getWidth(), getHeight(), image.getWidth());
-
-        //System.err.println("performSyncSlavePixels, wh = " + getWidth() + ", " + getHeight());
-        //debugPrintSlaveSyncPixels(dstPixels);
+        // Get pixels in a byte array
+        getPixelBytes(tmpPixelBytes, 0, 0, width, height);
 
         ClientXrw client = ((AppXrw) app).getClient();
-        ((ClientXrwMaster) client).writeSyncSlavePixels(slave, dstPixels, getWidth(), getHeight());
-         */
+        ((ClientXrwMaster) client).writeSyncSlavePixels(slaveID, tmpPixelBytes);
     }
 }
