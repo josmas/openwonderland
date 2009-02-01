@@ -64,6 +64,7 @@ public class WindowGraphics2D extends Window2D {
      */
     public void cleanup() {
         if (surface != null) {
+            surface.setUpdateEnable(false);
             surface.cleanup();
             surface = null;
         }
