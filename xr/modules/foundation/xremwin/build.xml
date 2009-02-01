@@ -26,14 +26,15 @@
         
         <module name="xremwin" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.dir}">
-
-           <client>
-               <clientjar name="xremwin-client" basedir="${build.classes.dir}">
-                    <include name="${module.src}/client/**"/>
-                    <include name="${module.src}/common/**"/>
-                </clientjar> 
-           </client>
-           
+  
+           <client dir="${current.dir}/lib">
+             <include name="escher-0.2.2.lg.jar"/>
+             <clientjar name="xremwin-client" basedir="${build.classes.dir}">
+               <include name="${module.src}/client/**"/>
+               <include name="${module.src}/common/**"/>
+             </clientjar>
+           </client> 
+    
            <server>
                 <serverjar name="xremwin-server" basedir="${build.classes.dir}">
                     <include name="${module.src}/server/**"/>
