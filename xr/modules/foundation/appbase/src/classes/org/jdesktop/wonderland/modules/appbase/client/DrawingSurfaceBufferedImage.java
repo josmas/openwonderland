@@ -117,7 +117,7 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
         super.setSize(width, height);
 
         // Any change?
-        if (width == bufImage.getWidth() && height == bufImage.getHeight()) {
+        if (bufImage != null && width == bufImage.getWidth() && height == bufImage.getHeight()) {
             return;
         }
 

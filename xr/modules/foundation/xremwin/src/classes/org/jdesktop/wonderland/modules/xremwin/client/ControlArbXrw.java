@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb.EventMode;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
 
 /**
  * The Xremwin ControlArb class. This currently doesn't implement
@@ -33,7 +34,7 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
  * @author deronj
  */
 @ExperimentalAPI
-class ControlArbXrw extends ControlArbSingle {
+class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
 
     /** The default take control politeness mode */
     private static boolean TAKE_CONTROL_IMPOLITE = true;
@@ -85,10 +86,12 @@ class ControlArbXrw extends ControlArbSingle {
     /**
      * {@inheritDoc}
      */
+    /* TODO
     @Override
     public String getController() {
         return controller;
     }
+    */
 
     /**
      * {@inheritDoc}
@@ -239,7 +242,7 @@ class ControlArbXrw extends ControlArbSingle {
      * {@inheritDoc}
      */
     protected synchronized void setController(String controller) {
-        super.setController(controller);
+        // TODO: super.setController(controller);
     }
 
     /**

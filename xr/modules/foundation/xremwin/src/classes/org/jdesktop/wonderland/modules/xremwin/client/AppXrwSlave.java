@@ -23,7 +23,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
 
 /**
  * A Slave Xremwin app. This is the AppXrw subclass used on a client machine
@@ -46,9 +45,7 @@ class AppXrwSlave extends AppXrw {
     AppXrwSlave(AppTypeConventional appType, String appName, Vector2f pixelScale, ProcessReporter reporter,
             Serializable connectionInfo, WonderlandSession session) {
 
-        // TODO: temporary
-        //super(appType, appName, new ControlArbXrw(), pixelScale);
-        super(appType, appName, new ControlArbAlways(), pixelScale);
+        super(appType, appName, new ControlArbXrw(), pixelScale);
         controlArb.setApp(this);
 
         // Create the Xremwin protocol client and start its interpreter loop running.
