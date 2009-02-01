@@ -386,7 +386,7 @@ public abstract class Window2D extends Window {
      */
     public Window2DView createView(String spaceName) {
         Window2DView view = (Window2DView) guiFactory.createView(this, spaceName);
-        if (view == null) {
+        if (view == null || views == null) {
             return null;
         }
         views.add(view);
@@ -399,6 +399,9 @@ public abstract class Window2D extends Window {
      * @param view The view to destroy.
      */
     public void destroyView(Window2DView view) {
+        if (view == null || views == null) {
+            return;
+        }
         views.remove(view);
         view.cleanup();
     }
@@ -665,6 +668,9 @@ public abstract class Window2D extends Window {
      * Returns an iterator over all the views of this window.
      */
     protected Iterator<Window2DView> getViewIterator() {
+        if (views == null) {
+            return null;
+        }
         return views.iterator();
     }
 
@@ -740,6 +746,9 @@ public abstract class Window2D extends Window {
     }
 
     public void forceTextureIdAssignment() {
+        if (views == null) {
+            return;
+        }
         if (views.size() <= 0) {
             System.err.println("Trying to assign texture ID before view has been created.");
             System.exit(1);
