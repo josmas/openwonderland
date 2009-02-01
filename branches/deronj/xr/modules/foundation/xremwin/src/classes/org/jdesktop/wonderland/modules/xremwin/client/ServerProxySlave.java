@@ -365,12 +365,15 @@ class ServerProxySlave implements ServerProxy {
 
     public void getData(ShowWindowMsgArgs msgArgs) {
         msgArgs.show = (bufQueue.nextByte() != 0);
-        bufQueue.nextShort(); // Skip 2 bytes of pad
+
+        // TODO: 0.4 protocol: skip 2 bytes of transient and pad (ignore transient for now)
+        // TODO: 0.5 protocol: skip 2 bytes of pad
+        bufQueue.nextShort(); 
+
         msgArgs.wid = bufQueue.nextInt();
-        /* TODO: 0.4 protocol:
-        msgArgs.transientFor = bufQueue.nextInt();
-         */
-        bufQueue.nextInt();
+
+        // TODO: 0.5 protocol: not yet
+        //msgArgs.transientFor = bufQueue.nextInt();
     }
 
     public void getData(ConfigureWindowMsgArgs msgArgs) {
