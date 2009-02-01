@@ -43,9 +43,9 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.UserNameMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetPopupParentMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.SlaveClientSocket;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 // TODO: 0.4 protocol
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -62,9 +62,9 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowCursorMsgArgs;
 class ServerProxySlave implements ServerProxy {
 
     interface DisconnectListener {
-
         public void disconnected();
     }
+
     private static final boolean debugIO = true;
     private static final int BUTTON4_MASK = 0x08;
     private static final int BUTTON5_MASK = 0x10;
@@ -153,7 +153,7 @@ class ServerProxySlave implements ServerProxy {
 
         private boolean welcomeReceived = false;
 
-        public void receivedMessage(BigInteger sender, byte[] message) {
+        public void receivedMessage(BigInteger otherClientID, byte[] message) {
 
             // Ignore all messages until the welcome message is received
             if (welcomeReceived) {
@@ -165,8 +165,9 @@ class ServerProxySlave implements ServerProxy {
             }
         }
 
-        public void slaveLeft(BigInteger slave) {
-            // TODO: anything to do here?
+        public void otherClientHasLeft(BigInteger otherClientID) {
+            cleanup();
+            AppXrw.logger.info("Master has disconnected: " + otherClientID);
         }
     }
 

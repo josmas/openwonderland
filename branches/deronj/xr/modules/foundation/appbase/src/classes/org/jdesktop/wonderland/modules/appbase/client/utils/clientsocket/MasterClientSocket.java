@@ -21,7 +21,10 @@ import java.math.BigInteger;
 import java.net.Socket;
 import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsReporter;
 
-public class MasterClientSocket extends ClientSocket {
+/**
+ * The master side of the socket code.
+ */
+class MasterClientSocket extends ClientSocket {
 
     public MasterClientSocket(BigInteger masterClientID, Socket s, ClientSocketListener listener) {
         super(masterClientID, s, listener);
@@ -37,15 +40,7 @@ public class MasterClientSocket extends ClientSocket {
         }
     }
 
-    public void setEnableSlave(BigInteger slave, boolean enable) {
-	/* TODO: clientSocketMap isn't defined!
-        SlaveClientSocket scs = clientSocketMap.get(slave);
-        if (scs != null) {
-            scs.setEnable(enable);
-        }
-	*/
-    }
-
+    @Override
     public void close() {
         super.close();
         if (ENABLE_STATS) {
