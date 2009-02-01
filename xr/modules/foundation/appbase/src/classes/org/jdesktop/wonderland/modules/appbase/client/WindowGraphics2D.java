@@ -71,6 +71,17 @@ public class WindowGraphics2D extends Window2D {
     }
 
     /**
+     * {@inheritDoc}
+     * Note: the arguments do NOT include the borderWidth.
+     */
+    @Override
+    public void setSize(int width, int height) {
+        if (surface != null) {
+            surface.setSize(width, height);
+        }
+    }
+
+    /**
      * Initialize the contents of the surface.
      */
     protected void initializeSurface() {

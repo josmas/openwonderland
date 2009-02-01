@@ -81,12 +81,10 @@ public abstract class WindowConventional extends WindowGraphics2D {
     }
 
     /**
-     * Resize the window. Note that window contents will be lost when the window is resized.
-     * The visual representations of the window are updated accordingly.
-     *
-     * @param width The new width of the window. This does NOT include the borderWidth.
-     * @param height The new height of the window. This does NOT include the borderWidth
+     * {@inheritDoc}
+     * Note: the arguments do NOT include the borderWidth.
      */
+    @Override
     public void setSize(int width, int height) {
         super.setSize(width + 2 * borderWidth, height + 2 * borderWidth);
     }
