@@ -38,8 +38,8 @@ import java.awt.Point;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import java.util.logging.Logger;
 
-// TODO: for debug
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
  * class are created by the createWindow methods of App2D subclasses.
@@ -51,6 +51,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public abstract class Window2D extends Window {
+
+    private static final Logger logger = Logger.getLogger(Window2D.class.getName());
 
     /** The XY (planar) translation of the window within the cell. */
     protected Vector2f xyTranslation;
@@ -746,13 +748,11 @@ public abstract class Window2D extends Window {
     }
 
     public void forceTextureIdAssignment() {
-        if (views == null) {
+        if (views == null || views.size() <= 0) {
+            logger.warning("Cannot assign texture ID because there are no views");
             return;
         }
-        if (views.size() <= 0) {
-            System.err.println("Trying to assign texture ID before view has been created.");
-            System.exit(1);
-        }
+
         for (Window2DView view : views) {
             view.forceTextureIdAssignment();
         }
