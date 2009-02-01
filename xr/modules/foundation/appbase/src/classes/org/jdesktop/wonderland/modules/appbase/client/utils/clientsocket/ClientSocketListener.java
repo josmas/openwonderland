@@ -18,8 +18,24 @@
 package org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket;
 
 import java.math.BigInteger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
+/**
+ * A listener which is called when there is activity from a master or client socket.
+ */
+@ExperimentalAPI
 public interface ClientSocketListener {
-    public void receivedMessage(BigInteger slave, byte[] buf);
-    public void slaveLeft(BigInteger slave);
+
+    /**
+     * A message has arrived from client on the other end.
+     * @param otherClientID The Wonderland ID of the client from whom the message has arrived.
+     * @param buf The contents of the message.
+     */
+    public void receivedMessage(BigInteger otherClientID, byte[] buf);
+
+    /**
+     * The client on the other end has disconnected.
+     * @param otherClientID The client who has disconnected.
+     */
+    public void otherClientHasLeft (BigInteger otherClientID);
 }

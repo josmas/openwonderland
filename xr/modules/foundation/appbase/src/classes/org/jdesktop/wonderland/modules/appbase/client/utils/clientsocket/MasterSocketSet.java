@@ -23,7 +23,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
+/**
+ * Manages communications between a single master and multiple slaves over socket connections.
+ * Slaves connect to the master by establishing a socket connection to the input server socket.
+ * The master can unicast send to a single slave or broadcast send to all slaves. Slaves can
+ * unicast send to the master. NOTE: slaves cannot send to other slaves.
+ *
+ * The master is notified of slave activity via the listener given to the constructor.
+ */
+@ExperimentalAPI
 public class MasterSocketSet implements Runnable {
 
     private static Logger logger = Logger.getLogger(MasterSocketSet.class.getName());
@@ -33,9 +43,11 @@ public class MasterSocketSet implements Runnable {
     private ClientSocketListener listener;
     private Thread acceptThread;
     private boolean stop = false;
-    private HashMap<BigInteger, MasterClientSocket> clientSocketMap = new HashMap<BigInteger, MasterClientSocket>();
+    private final HashMap<BigInteger, MasterClientSocket> clientSocketMap =
+        new HashMap<BigInteger, MasterClientSocket>();
 
-    public MasterSocketSet(BigInteger masterClientID, ServerSocket serverSocket, ClientSocketListener listener) {
+    public MasterSocketSet(BigInteger masterClientID, ServerSocket serverSocket, 
+                           ClientSocketListener listener) {
         this.masterClientID = masterClientID;
         this.serverSocket = serverSocket;
         this.listener = listener;
@@ -56,6 +68,10 @@ public class MasterSocketSet implements Runnable {
         synchronized (clientSocketMap) {
 	    mcs = clientSocketMap.get(slaveID);
 	}
+        if (mcs == null) {
+            logger.warning("Slave to be enabled isn't connected, slaveID = " + slaveID);
+            return;
+        }
 	mcs.setEnable(enable);
     }
 
@@ -92,66 +108,67 @@ public class MasterSocketSet implements Runnable {
                     addSlave(mcs);
                     mcs.start();
                 } else {
+		    mcs.close();
                     logger.warning("Failed to start client socket : " + s);
                 }
             } catch (Exception e) {
                 if (serverSocket.isClosed()) {
+                    // Stop the thread if the server socket closes
                     break;
                 }
-
-                e.printStackTrace();
+                logger.warning("Exception in MasterSocketSet accept thread, exception = " + e);
             }
         }
     }
 
     private class MyListener implements ClientSocketListener {
 
-	public void receivedMessage(BigInteger slave, byte[] buf) {
+	public void receivedMessage(BigInteger otherClientID, byte[] buf) {
             if (listener != null) {
-                listener.receivedMessage(slave, buf);
+                listener.receivedMessage(otherClientID, buf);
             }
         }
 
-        public void slaveLeft(BigInteger slave) {
-            removeSlave(slave);
+        public void otherClientHasLeft(BigInteger otherClientID) {
+            removeSlave(otherClientID);
+            if (listener != null) {
+                listener.otherClientHasLeft(otherClientID);
+            }
         }
     }
 
-    protected void addSlave(MasterClientSocket mcs) {
+    private void addSlave(MasterClientSocket mcs) {
         synchronized (clientSocketMap) {
             clientSocketMap.put(mcs.getOtherClientID(), mcs);
         }
     }
 
-    protected void removeSlave(BigInteger slave) {
+    private void removeSlave(BigInteger slaveID) {
         synchronized (clientSocketMap) {
-            clientSocketMap.remove(slave);
-        }
-        if (listener != null) {
-            listener.slaveLeft(slave);
+            clientSocketMap.remove(slaveID);
         }
     }
 
     /**
      * Send an entire byte array to the given slave. Don't block.
      */
-    public void send(BigInteger recipient, byte[] buf) throws IOException {
-        send(recipient, buf, buf.length);
+    public void send(BigInteger slaveID, byte[] buf) throws IOException {
+        send(slaveID, buf, buf.length);
     }
 
     /**
      * Send the given number of bytes of the given byte array to the given slave. Don't block.
      */
-    public void send(BigInteger slave, byte[] buf, int len) throws IOException {
+    public void send(BigInteger slaveID, byte[] buf, int len) throws IOException {
         if (len <= 0) {
             return;
         }
 	MasterClientSocket mcs;
         synchronized (clientSocketMap) {
-	    mcs = clientSocketMap.get(slave);
+	    mcs = clientSocketMap.get(slaveID);
 	}
         if (mcs != null) {
-            mcs.writeMessageBuf(buf, len);
+            mcs.send(buf, len);
         }
     }
 
@@ -173,7 +190,7 @@ public class MasterSocketSet implements Runnable {
             for (BigInteger slave : clientSocketMap.keySet()) {
                 MasterClientSocket mcs = clientSocketMap.get(slave);
                 if (mcs != null) {
-                    mcs.writeMessageBuf(buf, len);
+                    mcs.send(buf, len);
                 }
             }
         }
