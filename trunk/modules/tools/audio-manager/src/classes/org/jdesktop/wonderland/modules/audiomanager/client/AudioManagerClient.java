@@ -244,7 +244,7 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    try {
 	        InetAddress ia = NetworkAddress.getPrivateLocalAddress(
-		    "server:" + tokens[5] + ":" + tokens[6] + ":10000");
+		    "server:" + tokens[5] + ":" + tokens[7] + ":10000");
 
 	        localAddress = ia.getHostAddress();
 	    } catch (UnknownHostException e) {
