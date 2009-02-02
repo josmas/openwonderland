@@ -313,7 +313,7 @@ public abstract class CellServerState implements Serializable {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("[CellServerState] ");
+        StringBuilder sb = new StringBuilder("[" + getClass().getSimpleName() +"] ");
         for (Map.Entry<Class, CellComponentServerState> e : internalComponentMap.entrySet()) {
             sb.append(e.getValue().toString());
         }
