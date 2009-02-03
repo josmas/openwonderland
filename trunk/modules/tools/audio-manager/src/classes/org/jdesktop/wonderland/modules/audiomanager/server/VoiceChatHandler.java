@@ -609,7 +609,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
 
 	if (player == null) {
-	    logger.warning("got AvatarMovedMessage but can't find player for " + clientId);
+	    logger.fine("got AvatarMovedMessage but can't find player for " + clientId);
 	    return;
 	}
 
