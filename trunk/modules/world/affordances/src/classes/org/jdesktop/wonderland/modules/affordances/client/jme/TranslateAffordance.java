@@ -59,8 +59,11 @@ public class TranslateAffordance extends Affordance {
     /* The length scaling factor for each arrow */
     private static final float LENGTH_SCALE = 1.5f;
 
-    /* The width scaling factor for each arrow */
-    private static final float WIDTH_SCALE = 0.10f;
+    /* The width (thickness) for each arrow */
+    private static final float THICKNESS = 0.10f;
+
+    /* The constant amount to extent the arrows beyond the size of the object */
+    private static final float LENGTH_OFFSET = 0.2f;
 
     /* The current scale of the affordance w.r.t the size of the cell */
     private float currentScale = LENGTH_SCALE;
@@ -79,6 +82,9 @@ public class TranslateAffordance extends Affordance {
     /* The nodes representing the double-edged arrows for each axis */
     private Node xNode = null, yNode = null, zNode = null;
 
+    /* The endities representing the double-edged arrows for each axis */
+    private Entity xEntity = null, yEntity = null, zEntity = null;
+
     private static ZBufferState zbuf = null;
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -86,8 +92,11 @@ public class TranslateAffordance extends Affordance {
         zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
     }
 
-    /* Listener for changes in the translation of the cell */
+    /* Listener for changes in the transform of the cell */
     private GeometricUpdateListener updateListener = null;
+
+    /* Listeners for drag events for each axis */
+    private TranslateDragListener xListener = null, yListener = null, zListener = null;
 
     /**
      * Private constructor, use the addToCell() method instead.
@@ -101,18 +110,13 @@ public class TranslateAffordance extends Affordance {
         sceneRoot = getSceneGraphRoot();
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
-            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius;
+            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius + LENGTH_OFFSET;
         }
         else if (bounds instanceof BoundingBox) {
-            xExtent = ((BoundingBox)bounds).xExtent;
-            yExtent = ((BoundingBox)bounds).yExtent;
-            zExtent = ((BoundingBox)bounds).zExtent;
+            xExtent = ((BoundingBox)bounds).xExtent + LENGTH_OFFSET;
+            yExtent = ((BoundingBox)bounds).yExtent + LENGTH_OFFSET;
+            zExtent = ((BoundingBox)bounds).zExtent + LENGTH_OFFSET;
         }
-
-        // Set the width of the arrow to be a proportion of the length of the
-        // arrows. Use the maximum length of the three axes to determine the
-        // width
-        float width = /*Math.max(Math.max(xExtent, yExtent), zExtent) **/ WIDTH_SCALE;
 
         // Fetch the world translation for the root node of the cell and set
         // the translation for this entity root node
@@ -122,35 +126,35 @@ public class TranslateAffordance extends Affordance {
         // Create a red arrow in the +x direction. We arrow we get back is
         // pointed in the +y direction, so we rotate around the -z axis to
         // orient the arrow properly.
-        Entity xEntity = new Entity("Entity X");
-        xNode = createArrow("Arrow X", xExtent, width, ColorRGBA.red);
+        xEntity = new Entity("Entity X");
+        xNode = createArrow("Arrow X", xExtent, THICKNESS, ColorRGBA.red);
         Quaternion xRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(0, 0, -1));
         xNode.setLocalRotation(xRotation);
         xNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
         xNode.setRenderState(zbuf);
         addSubEntity(xEntity, xNode);
-        addDragListener(xEntity, xNode, TranslateAxis.X_AXIS);
+        xListener = addDragListener(xEntity, xNode, TranslateAxis.X_AXIS);
 
         // Create a green arrow in the +y direction. We arrow we get back is
         // pointed in the +y direction.
-        Entity yEntity = new Entity("Entity Y");
-        yNode = createArrow("Arrow Y", yExtent, width, ColorRGBA.green);
+        yEntity = new Entity("Entity Y");
+        yNode = createArrow("Arrow Y", yExtent, THICKNESS, ColorRGBA.green);
         yNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
         yNode.setRenderState(zbuf);
         addSubEntity(yEntity, yNode);
-        addDragListener(yEntity, yNode, TranslateAxis.Y_AXIS);
+        yListener = addDragListener(yEntity, yNode, TranslateAxis.Y_AXIS);
 
         // Create a red arrow in the +z direction. We arrow we get back is
         // pointed in the +y direction, so we rotate around the +x axis to
         // orient the arrow properly.
-        Entity zEntity = new Entity("Entity Z");
-        zNode = createArrow("Arrow Z", zExtent, width, ColorRGBA.blue);
+        zEntity = new Entity("Entity Z");
+        zNode = createArrow("Arrow Z", zExtent, THICKNESS, ColorRGBA.blue);
         Quaternion zRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(1, 0, 0));
         zNode.setLocalRotation(zRotation);
         zNode.setRenderState(zbuf);
         zNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
         addSubEntity(zEntity, zNode);
-        addDragListener(zEntity, zNode, TranslateAxis.Z_AXIS);
+        zListener = addDragListener(zEntity, zNode, TranslateAxis.Z_AXIS);
 
         // Listen for changes to the cell's translation and apply the same
         // update to the root node of the affordances. We also re-set the size
@@ -168,7 +172,13 @@ public class TranslateAffordance extends Affordance {
             }
         });
     }
-    
+
+    /**
+     * Adds a translation affordance to a given cell.
+     *
+     * @param cell The cell to which to add the affordance
+     * @return The affordance object, or null upon error
+     */
     public static TranslateAffordance addToCell(Cell cell) {
         Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
 
@@ -192,6 +202,9 @@ public class TranslateAffordance extends Affordance {
         return affordance;
     }
 
+    /**
+     * @inheritDoc()
+     */
     public void setSize(float size) {
         // To set the scale properly, we need to compute the scale w.r.t the
         // current size of the object as a ratio of the original size of the
@@ -226,7 +239,7 @@ public class TranslateAffordance extends Affordance {
     }
 
     /**
-     * Removes the affordance from the cell
+     * @inheritDoc()
      */
     public void remove() {
         // Remove the Entity from the scene graph. We also want to unregister
@@ -238,6 +251,11 @@ public class TranslateAffordance extends Affordance {
                 CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
                 RenderComponent cellRC = (RenderComponent) renderer.getEntity().getComponent(RenderComponent.class);
                 cellRC.getSceneRoot().removeGeometricUpdateListener(updateListener);
+                xListener.removeFromEntity(xEntity);
+                yListener.removeFromEntity(yEntity);
+                zListener.removeFromEntity(zEntity);
+                xListener = yListener = zListener = null;
+                xEntity = yEntity = zEntity = null;
             }}, null);
     }
 
@@ -245,10 +263,11 @@ public class TranslateAffordance extends Affordance {
      * Adds a drag listener for the Entity and the node, given the axis along
      * which the drag should take place.
      */
-    private void addDragListener(Entity entity, Node node, TranslateAxis direction) {
+    private TranslateDragListener addDragListener(Entity entity, Node node, TranslateAxis direction) {
         makeEntityPickable(entity, node);
         TranslateDragListener l = new TranslateDragListener(direction);
         l.addToEntity(entity);
+        return l;
     }
 
     /**

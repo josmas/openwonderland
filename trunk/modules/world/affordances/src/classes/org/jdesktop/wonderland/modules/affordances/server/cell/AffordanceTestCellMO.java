@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.affordances.common.cell.config.AffordanceTestCellConfig;
+import org.jdesktop.wonderland.modules.affordances.common.cell.state.AffordanceTestCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -79,4 +80,14 @@ public class AffordanceTestCellMO extends CellMO {
     public void setServerState(CellServerState setup) {
         super.setServerState(setup);
     }
+
+    @Override
+    public CellServerState getServerState(CellServerState setup) {
+        if (setup == null) {
+            setup = new AffordanceTestCellServerState();
+        }
+        return super.getServerState(setup);
+    }
+
+
 }
