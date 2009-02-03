@@ -48,7 +48,7 @@ public class MicrophoneCellFactory implements CellFactorySPI {
 	
 	Origin origin = new Origin(new Vector3f(0F, 0F, 0F));
 
-	cellServerState.setActiveArea(new ActiveArea(origin, 2., 0., 2.));
+	cellServerState.setActiveArea(new ActiveArea(origin, "BOX", 2., 0., 2.));
 
         Logger.getLogger(MicrophoneCellFactory.class.getName()).warning("MICROPHONE!!!!");
         return (T) cellServerState;
