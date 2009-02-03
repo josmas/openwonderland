@@ -27,13 +27,9 @@ import com.jme.scene.shape.Cone;
 import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.shape.Teapot;
-import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceTestCell;
 
 /**
@@ -64,12 +60,12 @@ public class AffordanceTestCellRenderer extends BasicRenderer {
             case CYLINDER :
                 ret.attachChild(geom = new Cylinder("Cylinder", 10, 10, xExtent, yExtent));
                 // Make yUp
-                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
+                ret.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
                 break;
             case CONE :
                 ret.attachChild(geom = new Cone("Cone", 10, 10, xExtent, yExtent));
                 // Make yUp
-                geom.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
+                ret.setLocalRotation(new Quaternion().fromAngleAxis((float)Math.toRadians(90), new Vector3f(1.0f, 0.0f, 0.0f)));
                 break;
             case SPHERE :
                 ret.attachChild(geom = new Sphere("Sphere", 10, 10, xExtent));
@@ -82,18 +78,10 @@ public class AffordanceTestCellRenderer extends BasicRenderer {
         }
 
         if (geom!=null) {
-
             geom.setModelBound(new BoundingSphere());
             geom.updateModelBound();
-
-            MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
-            MaterialJME matJME = ((AffordanceTestCell)cell).getMaterialJME();
-            if (matJME!=null)
-                matJME.apply(matState);
-            geom.setRenderState(matState);
         }
 
-        // Set the transform
         return ret;
     }
 }

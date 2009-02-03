@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
 import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceCellComponent;
+import org.jdesktop.wonderland.modules.affordances.client.cell.ResizeAffordanceCellComponent;
 import org.jdesktop.wonderland.modules.affordances.client.cell.RotateAffordanceCellComponent;
 import org.jdesktop.wonderland.modules.affordances.client.cell.TranslateAffordanceCellComponent;
 
@@ -72,7 +73,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
 
         translateToggleButton = new javax.swing.JToggleButton();
         rotateToggleButton = new javax.swing.JToggleButton();
-        scaleToggleButton = new javax.swing.JToggleButton();
+        resizeToggleButton = new javax.swing.JToggleButton();
         slidePanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         sizeSlider = new javax.swing.JSlider();
@@ -110,15 +111,19 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         });
         add(rotateToggleButton);
 
-        scaleToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/scale_icon.png"))); // NOI18N
-        scaleToggleButton.setBorderPainted(false);
-        scaleToggleButton.setEnabled(false);
-        scaleToggleButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        scaleToggleButton.setMaximumSize(new java.awt.Dimension(43, 43));
-        scaleToggleButton.setMinimumSize(new java.awt.Dimension(43, 43));
-        scaleToggleButton.setPreferredSize(new java.awt.Dimension(43, 43));
-        scaleToggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/scale_icon_selected.png"))); // NOI18N
-        add(scaleToggleButton);
+        resizeToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/scale_icon.png"))); // NOI18N
+        resizeToggleButton.setBorderPainted(false);
+        resizeToggleButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        resizeToggleButton.setMaximumSize(new java.awt.Dimension(43, 43));
+        resizeToggleButton.setMinimumSize(new java.awt.Dimension(43, 43));
+        resizeToggleButton.setPreferredSize(new java.awt.Dimension(43, 43));
+        resizeToggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/scale_icon_selected.png"))); // NOI18N
+        resizeToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resizeToggleButtonActionPerformed(evt);
+            }
+        });
+        add(resizeToggleButton);
 
         slidePanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
@@ -156,6 +161,8 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
             translateToggleButton.setEnabled(false);
             rotateToggleButton.setSelected(false);
             rotateToggleButton.setEnabled(false);
+            resizeToggleButton.setSelected(false);
+            resizeToggleButton.setEnabled(false);
             sizeSlider.setValue(50);
             sizeSlider.setEnabled(false);
             return;
@@ -165,6 +172,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         frame.setTitle("Edit Cell: " + cell.getName());
         translateToggleButton.setEnabled(true);
         rotateToggleButton.setEnabled(true);
+        resizeToggleButton.setEnabled(true);
         sizeSlider.setEnabled(true);
 
         // See if there is a translate component on the Cell. If so, then set
@@ -188,33 +196,15 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // toggle button state.
         component = cell.getComponent(RotateAffordanceCellComponent.class);
         rotateToggleButton.setSelected(component != null);
+
+        // See if there is a resize component on the Cell. If so, then set the
+        // toggle button state.
+        component = cell.getComponent(ResizeAffordanceCellComponent.class);
+        resizeToggleButton.setSelected(component != null);
     }
 
     private void translateToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_translateToggleButtonActionPerformed
-        // Fetch the currently selected Cell. If none, then do nothing
-        Cell cell = getSelectedCell();
-        if (cell == null) {
-            return;
-        }
-
-        // See if there is already a translate component on the Cell.
-        CellComponent component = cell.getComponent(TranslateAffordanceCellComponent.class);
-
-        // If we are selecting the translate toggle button, then add the translate
-        // component if it is not already on there. Also, set its size.
-        if (translateToggleButton.isSelected() == true) {
-            if (component == null) {
-                component = new TranslateAffordanceCellComponent(cell);
-                cell.addComponent(component);
-            }
-            ((AffordanceCellComponent)component).setSize(getSliderSize());
-        }
-        else {
-            // Otherwise if the remove exists, then remove it from the Cell
-            if (component != null) {
-                ((AffordanceCellComponent)component).remove();
-            }
-        }
+        setTranslationVisible(translateToggleButton.isSelected());
     }//GEN-LAST:event_translateToggleButtonActionPerformed
 
     private void sizeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sizeSliderStateChanged
@@ -237,21 +227,88 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         if (rotateComponent != null) {
             rotateComponent.setSize(newSize);
         }
+
+        // Set the size on the resize affordance
+        ResizeAffordanceCellComponent resizeComponent = cell.getComponent(ResizeAffordanceCellComponent.class);
+        if (resizeComponent != null) {
+            resizeComponent.setSize(newSize);
+        }
     }//GEN-LAST:event_sizeSliderStateChanged
 
     private void rotateToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateToggleButtonActionPerformed
+        setRotationVisible(rotateToggleButton.isSelected());
+    }//GEN-LAST:event_rotateToggleButtonActionPerformed
+
+    private void resizeToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resizeToggleButtonActionPerformed
+        setResizingVisible(resizeToggleButton.isSelected());
+    }//GEN-LAST:event_resizeToggleButtonActionPerformed
+
+    /**
+     * Manually set whether the translation affordance is visible (true) or
+     * not (false).
+     *
+     * @param visible True if the translation affordance should be visible
+     */
+    public void setTranslationVisible(boolean visible) {
         // Fetch the currently selected Cell. If none, then do nothing
         Cell cell = getSelectedCell();
         if (cell == null) {
             return;
         }
 
-        // See if there is already a rotate component on the Cell.
-        CellComponent component = cell.getComponent(RotateAffordanceCellComponent.class);
+        // Make sure the translate toggle button is in the same state. We need
+        // to check to make sure the toggle button isn't already in this
+        // state to prevent generated a spurious event.
+        if (translateToggleButton.isSelected() != visible) {
+            translateToggleButton.setSelected(visible);
+        }
+
+        // See if there is already a translate component on the Cell.
+        CellComponent component = cell.getComponent(TranslateAffordanceCellComponent.class);
 
         // If we are selecting the translate toggle button, then add the translate
         // component if it is not already on there. Also, set its size.
-        if (rotateToggleButton.isSelected() == true) {
+        if (visible == true) {
+            if (component == null) {
+                component = new TranslateAffordanceCellComponent(cell);
+                cell.addComponent(component);
+            }
+            ((AffordanceCellComponent)component).setSize(getSliderSize());
+        }
+        else {
+            // Otherwise if the remove exists, then remove it from the Cell
+            if (component != null) {
+                ((AffordanceCellComponent)component).remove();
+            }
+        }
+    }
+
+    /**
+     * Manually set whether the rotation affordance is visible (true) or
+     * not (false).
+     *
+     * @param visible True if the rotation affordance should be visible
+     */
+    public void setRotationVisible(boolean visible) {
+        // Fetch the currently selected Cell. If none, then do nothing
+        Cell cell = getSelectedCell();
+        if (cell == null) {
+            return;
+        }
+
+        // Make sure the rotation toggle button is in the same state. We need
+        // to check to make sure the toggle button isn't already in this
+        // state to prevent generated a spurious event.
+        if (rotateToggleButton.isSelected() != visible) {
+            rotateToggleButton.setSelected(visible);
+        }
+
+        // See if there is already a rotate component on the Cell.
+        CellComponent component = cell.getComponent(RotateAffordanceCellComponent.class);
+
+        // If we are selecting the rotation toggle button, then add the rotate
+        // component if it is not already on there. Also, set its size.
+        if (visible == true) {
             if (component == null) {
                 component = new RotateAffordanceCellComponent(cell);
                 cell.addComponent(component);
@@ -264,7 +321,47 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
                 ((AffordanceCellComponent)component).remove();
             }
         }
-    }//GEN-LAST:event_rotateToggleButtonActionPerformed
+    }
+
+    /**
+     * Manually set whether the resizing affordance is visible (true) or
+     * not (false).
+     *
+     * @param visible True if the resizing affordance should be visible
+     */
+    public void setResizingVisible(boolean visible) {
+        // Fetch the currently selected Cell. If none, then do nothing
+        Cell cell = getSelectedCell();
+        if (cell == null) {
+            return;
+        }
+
+        // Make sure the resize toggle button is in the same state. We need
+        // to check to make sure the toggle button isn't already in this
+        // state to prevent generated a spurious event.
+        if (resizeToggleButton.isSelected() != visible) {
+            resizeToggleButton.setSelected(visible);
+        }
+
+        // See if there is already a rotate component on the Cell.
+        CellComponent component = cell.getComponent(ResizeAffordanceCellComponent.class);
+
+        // If we are selecting the resize toggle button, then add the resize
+        // component if it is not already on there. Also, set its size.
+        if (visible == true) {
+            if (component == null) {
+                component = new ResizeAffordanceCellComponent(cell);
+                cell.addComponent(component);
+            }
+            ((AffordanceCellComponent)component).setSize(getSliderSize());
+        }
+        else {
+            // Otherwise if the remove exists, then remove it from the Cell
+            if (component != null) {
+                ((AffordanceCellComponent)component).remove();
+            }
+        }
+    }
 
     /**
      * Returns the currently selected cell, null if no cell is currently
@@ -307,11 +404,10 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JToggleButton resizeToggleButton;
     private javax.swing.JToggleButton rotateToggleButton;
-    private javax.swing.JToggleButton scaleToggleButton;
     private javax.swing.JSlider sizeSlider;
     private javax.swing.JPanel slidePanel;
     private javax.swing.JToggleButton translateToggleButton;
     // End of variables declaration//GEN-END:variables
-
 }

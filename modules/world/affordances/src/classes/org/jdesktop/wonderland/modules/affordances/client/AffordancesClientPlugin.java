@@ -101,6 +101,7 @@ public class AffordancesClientPlugin implements ClientPlugin {
             if (affordanceHUDFrame == null) {
                 createHUDFrame();
             }
+            affordanceHUDPanel.setTranslationVisible(true);
             affordanceHUDFrame.setVisible(true);
             affordanceHUDPanel.updateGUI();
         }

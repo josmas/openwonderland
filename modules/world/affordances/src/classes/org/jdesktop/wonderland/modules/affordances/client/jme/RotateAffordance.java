@@ -66,10 +66,13 @@ public class RotateAffordance extends Affordance {
     private static final float RADIUS_SCALE = 1.5f;
 
     /* The inner radius offset */
-    private static final float RADIUS_WIDTH = 0.05f;
+    private static final float RADIUS_WIDTH = 0.1f;
 
     /* The thickness of tube */
-    private static final float THICKNESS_SCALE = 0.1f;
+    private static final float THICKNESS = 0.1f;
+
+    /* The entitye represents the discs for each axis */
+    private Entity xEntity = null, yEntity = null, zEntity = null;
 
     /* The nodes representing the discs for each axis */
     private Node xNode = null, yNode = null, zNode = null;
@@ -77,8 +80,8 @@ public class RotateAffordance extends Affordance {
     /* The current scale of the affordance w.r.t the size of the cell */
     private float currentScale = RADIUS_SCALE;
 
-    /* The original outer radius of the affordance */
-    private float outerRadius = 0.0f;
+    /* The original innert radius of the affordance */
+    private float innerRadius = 0.0f;
 
     /* The root of the scene graph of the cell */
     private Node sceneRoot = null;
@@ -93,6 +96,13 @@ public class RotateAffordance extends Affordance {
     /* Listener for changes in the translation of the cell */
     private GeometricUpdateListener updateListener = null;
 
+    /* Listeners for drag events for each axis */
+    private RotationDragListener xListener = null, yListener = null, zListener = null;
+
+    /**
+     * Private constructor, use the addToCell() method instead.
+     * @param cell
+     */
     private RotateAffordance(Cell cell) {
         super("Rotate", cell);
         
@@ -100,23 +110,18 @@ public class RotateAffordance extends Affordance {
         // tube to be just a bit larger than that
         sceneRoot = getSceneGraphRoot();
         BoundingVolume bounds = sceneRoot.getWorldBound();
-        float innerRadius = 0.0f;
+        float outerRadius = 0.0f;
         if (bounds instanceof BoundingSphere) {
-            outerRadius = ((BoundingSphere) bounds).radius;
-            innerRadius = outerRadius - RADIUS_WIDTH;
+            innerRadius = ((BoundingSphere) bounds).radius;
+            outerRadius = innerRadius + RADIUS_WIDTH;
         }
         else if (bounds instanceof BoundingBox) {
             float xExtent = ((BoundingBox)bounds).xExtent;
             float yExtent = ((BoundingBox)bounds).yExtent;
             float zExtent = ((BoundingBox)bounds).zExtent;
-            outerRadius = Math.max(Math.max(xExtent, yExtent), zExtent);
-            innerRadius = outerRadius - RADIUS_WIDTH;
+            innerRadius = Math.max(Math.max(xExtent, yExtent), zExtent);
+            outerRadius = innerRadius + RADIUS_WIDTH;
         }
-
-        // Set the width of the arrow to be a proportion of the length of the
-        // arrows. Use the maximum length of the three axes to determine the
-        // width
-        float width = THICKNESS_SCALE;
 
         // Fetch the world translation for the root node of the cell and set
         // the translation for this entity root node
@@ -126,35 +131,35 @@ public class RotateAffordance extends Affordance {
         // Create a tube to rotate about the X axis. The tube is drawn in the
         // X-Z plane, so we must rotate 90 degrees about the +z axis so that the
         // axis of rotation is about +x axis.
-        Entity xEntity = new Entity("Tube X");
-        xNode = createTube("Tube X", outerRadius, innerRadius, width, ColorRGBA.red);
+        xEntity = new Entity("Tube X");
+        xNode = createTube("Tube X", outerRadius, innerRadius, THICKNESS, ColorRGBA.red);
         Quaternion xQ = new Quaternion().fromAngleAxis(1.5707f, new Vector3f(0, 0, 1));
         xNode.setLocalRotation(xQ);
-        xNode.setLocalScale(new Vector3f(RADIUS_SCALE, 1.0f, RADIUS_SCALE));
+        xNode.setLocalScale(new Vector3f(currentScale, 1.0f, currentScale));
         xNode.setRenderState(zbuf);
         addSubEntity(xEntity, xNode);
-        addRotateListener(xEntity, xNode, RotateAxis.X_AXIS);
+        xListener = addRotateListener(xEntity, xNode, RotateAxis.X_AXIS);
 
         // Create a tube to rotate about the Y axis. The tube is drawn in the
         // X-Z plane already.
-        Entity yEntity = new Entity("Tube Y");
-        yNode = createTube("Tube Y", outerRadius, innerRadius, width, ColorRGBA.green);
-        yNode.setLocalScale(new Vector3f(RADIUS_SCALE, 1.0f, RADIUS_SCALE));
+        yEntity = new Entity("Tube Y");
+        yNode = createTube("Tube Y", outerRadius, innerRadius, THICKNESS, ColorRGBA.green);
+        yNode.setLocalScale(new Vector3f(currentScale, 1.0f, currentScale));
         yNode.setRenderState(zbuf);
         addSubEntity(yEntity, yNode);
-        addRotateListener(yEntity, yNode, RotateAxis.Y_AXIS);
+        yListener = addRotateListener(yEntity, yNode, RotateAxis.Y_AXIS);
 
         // Create a tube to rotate about the Z axis. The tube is drawn in the
         // X-Z plane, so we must rotate 90 degrees about the +x axis so that the
         // axis of rotation is about +z axis.
-        Entity zEntity = new Entity("Tube Z");
-        zNode = createTube("Tube Z", outerRadius, innerRadius, width, ColorRGBA.blue);
+        zEntity = new Entity("Tube Z");
+        zNode = createTube("Tube Z", outerRadius, innerRadius, THICKNESS, ColorRGBA.blue);
         Quaternion zQ = new Quaternion().fromAngleAxis(1.5707f, new Vector3f(1, 0, 0));
         zNode.setLocalRotation(zQ);
-        zNode.setLocalScale(new Vector3f(RADIUS_SCALE, 1.0f, RADIUS_SCALE));
+        zNode.setLocalScale(new Vector3f(currentScale, 1.0f, currentScale));
         zNode.setRenderState(zbuf);
         addSubEntity(zEntity, zNode);
-        addRotateListener(zEntity, zNode, RotateAxis.Z_AXIS);
+        zListener = addRotateListener(zEntity, zNode, RotateAxis.Z_AXIS);
 
         // Listen for changes to the cell's translation and apply the same
         // update to the root node of the affordances
@@ -180,6 +185,9 @@ public class RotateAffordance extends Affordance {
         });
     }
 
+    /**
+     * @inheritDoc()
+     */
     public void setSize(float size) {
         // To set the scale properly, we need to compute the scale w.r.t the
         // current size of the object as a ratio of the original size of the
@@ -188,15 +196,15 @@ public class RotateAffordance extends Affordance {
         float scale = 0.0f;
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
-            float newOuterRadius = ((BoundingSphere)bounds).radius;
-            scale = (newOuterRadius / outerRadius) * currentScale;
+            float newInnerRadius = ((BoundingSphere)bounds).radius;
+            scale = (newInnerRadius / innerRadius) * currentScale;
         }
         else if (bounds instanceof BoundingBox) {
             float xExtent = ((BoundingBox)bounds).xExtent;
             float yExtent = ((BoundingBox)bounds).yExtent;
             float zExtent = ((BoundingBox)bounds).zExtent;
-            float newOuterRadius = Math.max(Math.max(xExtent, yExtent), zExtent);
-            scale = (newOuterRadius / outerRadius) * currentScale;
+            float newInnerRadius = Math.max(Math.max(xExtent, yExtent), zExtent);
+            scale = (newInnerRadius / innerRadius) * currentScale;
         }
 
         // In order to set the size of the arrows, we just set the scaling. Note
@@ -210,6 +218,9 @@ public class RotateAffordance extends Affordance {
         ClientContextJME.getWorldManager().addToUpdateList(zNode);
     }
 
+    /**
+     * @inheritDoc()
+     */
     public void remove() {
         // Remove the Entity from the scene graph. We also want to unregister
         // the listener from the cell's node. We need to do this in a special
@@ -220,9 +231,20 @@ public class RotateAffordance extends Affordance {
                 CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
                 RenderComponent cellRC = (RenderComponent) renderer.getEntity().getComponent(RenderComponent.class);
                 cellRC.getSceneRoot().removeGeometricUpdateListener(updateListener);
+                xListener.removeFromEntity(xEntity);
+                yListener.removeFromEntity(yEntity);
+                zListener.removeFromEntity(zEntity);
+                xListener = yListener = zListener = null;
+                xEntity = yEntity = zEntity = null;
             }}, null);
     }
-    
+
+    /**
+     * Adds a translation affordance to a given cell.
+     *
+     * @param cell The cell to which to add the affordance
+     * @return The affordance object, or null upon error
+     */
     public static RotateAffordance addToCell(Cell cell) {
         // First check to see if the cell has the moveable component. If not,
         // then do not add the affordance
@@ -248,9 +270,11 @@ public class RotateAffordance extends Affordance {
      * Adds a rotation listener for the Entity and the node, given the axis along
      * which the rotate should take place.
      */
-    private void addRotateListener(Entity entity, Node node, RotateAxis direction) {
+    private RotationDragListener addRotateListener(Entity entity, Node node, RotateAxis direction) {
         makeEntityPickable(entity, node);
-        new RotationDragListener(direction).addToEntity(entity);
+        RotationDragListener l = new RotationDragListener(direction);
+        l.addToEntity(entity);
+        return l;
     }
     
    /**
