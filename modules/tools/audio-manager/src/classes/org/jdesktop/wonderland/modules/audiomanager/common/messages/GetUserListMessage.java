@@ -24,6 +24,8 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import java.util.ArrayList;
 
+import java.awt.Point;
+
 /**
  * Get the list of users
  *
@@ -33,7 +35,14 @@ import java.util.ArrayList;
 public class GetUserListMessage extends Message {
     private ArrayList<String> userList;
 
-    public GetUserListMessage() {
+    private Point location;
+
+    public GetUserListMessage(Point location) {
+	this.location = location;
+    }
+
+    public Point getLocation() {
+	return location;
     }
 
     public void setUserList(ArrayList<String> userList) {

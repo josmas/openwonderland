@@ -18,8 +18,12 @@
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
 
 import com.sun.voip.client.connector.CallStatus;
 import com.sun.voip.client.connector.CallStatusListener;
@@ -39,13 +43,18 @@ import com.sun.voip.CallParticipant;
 import com.sun.voip.client.connector.CallStatus;
 import com.sun.voip.client.connector.CallStatusListener;
 
+import org.jdesktop.wonderland.common.cell.CellTransform;
+
+import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
+
 import java.math.BigInteger;
 
 import java.io.IOException;
 import java.io.Serializable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.logging.Logger;
 
@@ -64,37 +73,26 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
     private static int defaultCallAnswerTimeout = 90;  // 90 seconds
 
-    private HashMap<String, CallHandler> callTable = new HashMap();
+    private ConcurrentHashMap<String, CallHandler> callTable = new ConcurrentHashMap();
 
     private static final int DEFAULT_TIMEOUT = 30000;
     private static int timeout = DEFAULT_TIMEOUT;
 
-    private class PhoneInfo implements Serializable {
-	public CellID phoneCellID;
-	public Vector3f origin;
-	public String phoneNumber;
-	public String phoneLocation;
-	public double zeroVolumeRadius;
-	public double fullVolumeRadius;
+    private ConcurrentHashMap<String, Phone> phoneMap = new ConcurrentHashMap();
 
-	public PhoneInfo(CellID phoneCellId, Vector3f origin, 
-		String phoneNumber, String phoneLocation,
-		double zeroVolumeRadius, double fullVolumeRadius) {
-
-	    this.phoneCellID = phoneCellId;
-	    this.origin = origin;    
-	    this.phoneNumber = phoneNumber;
-	    this.phoneLocation = phoneLocation;
-	    this.zeroVolumeRadius = zeroVolumeRadius;
-	    this.fullVolumeRadius = fullVolumeRadius;
-	}
-    }
-	
-    private HashMap<String, PhoneInfo> phoneMap = new HashMap();
-
-    private ArrayList<PhoneInfo> phoneList = new ArrayList();
+    private ArrayList<Phone> phoneList = new ArrayList();
 
     private static IncomingCallHandler incomingCallHandler;
+
+    private class Phone implements Serializable {
+	public Phone(ManagedReference<CellMO> phoneCellRef, PhoneInfo phoneInfo) {
+	    this.phoneCellRef = phoneCellRef;
+	    this.phoneInfo = phoneInfo;
+	}
+
+	public ManagedReference<CellMO> phoneCellRef;
+	public PhoneInfo phoneInfo;
+    }
 
     /**
      * Constructor.
@@ -107,83 +105,72 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	    return incomingCallHandler;
 	}
 
-	incomingCallHandler = new IncomingCallHandler();
-
-	return incomingCallHandler;
-    }
-
-    public static void initialize() {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	incomingCallHandler = new IncomingCallHandler();
 
 	vm.addCallStatusListener(incomingCallHandler);
 
 	vm.addCallBeginEndListener(incomingCallHandler);
+
+	return incomingCallHandler;
     }
 
-    public void addPhone(CellID phoneCellID, Vector3f origin, 
-	    String phoneNumber, String phoneLocation,
-	    double zeroVolumeRadius, double fullVolumeRadius) {
+    public void addPhone(CellID phoneCellID, PhoneInfo phoneInfo) {
 
-	logger.info("adding phone " + phoneNumber + " "
-	    + phoneLocation + " zero volume radius " + zeroVolumeRadius
-	    + " full volume radius " + fullVolumeRadius);
+	logger.info("adding phone " + phoneInfo.phoneNumber + " "
+	    + phoneInfo.phoneLocation + " zero volume radius " 
+	    + phoneInfo.zeroVolumeRadius + " full volume radius " 
+	    + phoneInfo.fullVolumeRadius + " locked " + phoneInfo.locked 
+	    + " keepUnlocked " + phoneInfo.keepUnlocked);
+
+	ManagedReference<CellMO> phoneCellRef = 
+	    AppContext.getDataManager().createReference(
+	    CellManagerMO.getCell(phoneCellID));
+
+	Phone phone = new Phone(phoneCellRef, phoneInfo);
+
+	phoneMap.put(phoneInfo.phoneNumber, phone);
 
 	/*
-	 * Graphics interchanges y and z.  We switch them around here.
+	 * Add phoneInfo to the right place in the list so that
+	 * the phone numbers are increasing.
 	 */
-	Vector3f v = new Vector3f(origin.getX(), origin.getZ(), origin.getY());
+	int n;
 
-	logger.finer("phone origin " + v);
+	try {
+	    n = Integer.parseInt(phoneInfo.phoneNumber);
+	} catch (NumberFormatException e) {
+	    phoneList.add(phone);
+	    return;
+	}
 
-	synchronized (phoneMap) {
-	    PhoneInfo phoneInfo = 
-		new PhoneInfo(phoneCellID, v, phoneNumber, phoneLocation,
-		    zeroVolumeRadius, fullVolumeRadius);
+	for (int i = 0; i < phoneList.size(); i++) {
+	    Phone p = phoneList.get(i);
 
-	    phoneMap.put(phoneNumber, phoneInfo);
-
-	    /*
-	     * Add phoneInfo to the right place in the list so that
-	     * the phone numbers are increasing.
-	     */
-	    int n;
+	    int nn;
 
 	    try {
-		n = Integer.parseInt(phoneNumber);
+		nn = Integer.parseInt(p.phoneInfo.phoneNumber);
 	    } catch (NumberFormatException e) {
-	        phoneList.add(phoneInfo);
+	       	phoneList.add(phone);
 		return;
 	    }
 
-	    synchronized (phoneList) {
-		for (int i = 0; i < phoneList.size(); i++) {
-		    PhoneInfo pi = (PhoneInfo) phoneList.get(i);
-
-		    int nn;
-
-		    try {
-			nn = Integer.parseInt(pi.phoneNumber);
-	    	    } catch (NumberFormatException e) {
-	        	phoneList.add(phoneInfo);
-			return;
-		    }
-
-		    if (n < nn) {
-	        	phoneList.add(i, phoneInfo);
-			return;
-		    }
-		}
-
-	        phoneList.add(phoneInfo);
+	    if (n < nn) {
+	       	phoneList.add(i, phone);
+		return;
 	    }
 	}
+
+	phoneList.add(phone);
     }
 	
     /*
      * Called when a call is established or ended.
      */
     public void callBeginEndNotification(CallStatus status) {
-	logger.fine("got status " + status);
+	logger.finer("got status " + status);
 
 	String callId = status.getCallId();
 
@@ -232,15 +219,20 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	/*
 	 * New incoming call
 	 */
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	
 	CallSetup setup = new CallSetup();
+	setup.incomingCall = true;
+
 	setup.cp = new CallParticipant();	
 	setup.cp.setCallId(callId);
+	setup.cp.setConferenceId(vm.getConferenceId());
 	setup.cp.setPhoneNumber(status.getCallInfo());
 
 	Call call;
 
 	try {
-	    call = AppContext.getManager(VoiceManager.class).createCall(callId, setup);
+	    call = vm.createCall(callId, setup);
 	} catch (IOException e) {
 	    logger.warning("Unable to create call " + callId + ": " + e.getMessage());
 	    return;
@@ -275,7 +267,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
         private String phoneNumber = "";
 
- 	private PhoneInfo phoneInfo;
+ 	private Phone phone;
 
 	private int attemptCount = 0;
     
@@ -335,6 +327,12 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
 	private void playWaitingForPhoneNumber() {
 	    playTreatment("enter_phone_number.au");
+	}
+
+	private Vector3f getLocation(ManagedReference<CellMO> phoneCellRef) {
+	    Vector3f location = new Vector3f();
+
+	    return phoneCellRef.get().getWorldTransform(null).getTranslation(location);
 	}
 
 	public void run() {
@@ -467,9 +465,12 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
             attemptCount++;
 
-            if ((phoneInfo = getPhoneInfo()) != null) {
-                logger.fine("Found phone for " + phoneNumber
-		    + " at " + phoneInfo.origin);
+	    phone = getPhone();
+
+            if (phone != null) {
+		Vector3f location = getLocation(phone.phoneCellRef);
+
+                logger.fine("Found phone for " + phoneNumber + " at " + location);
 
                 if (transferCall() == true) {
 		    return;
@@ -492,7 +493,9 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	
 	private void selectPhoneNumber(String dtmfKey) {
 	    if (dtmfKey != null) {
-		if ((phoneInfo = getPhoneInfo(dtmfKey)) != null) {
+		phone = getPhone();
+
+		if ((phone = getPhone(dtmfKey)) != null) {
                     if (transferCall() == false) {
 			playTreatment("cant_transfer.au");
 		    }
@@ -507,91 +510,91 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 		nextPhoneIndex++;
 	    }
 
-	    synchronized (phoneList) {
-		if (nextPhoneIndex >= phoneList.size()) {
-		    // play treatment saying there are no more phones
-		    playTreatment("no_more_phones.au");
+	    if (nextPhoneIndex >= phoneList.size()) {
+		// play treatment saying there are no more phones
+		playTreatment("no_more_phones.au");
 
-		    state = WAITING_FOR_PHONE_NUMBER;
-		    playWaitingForPhoneNumber();
-		    return;
-		}
-
-		phoneInfo = phoneList.get(nextPhoneIndex);
-
-                Vector3f v = phoneInfo.origin;
-
-                int n = AppContext.getManager(VoiceManager.class).getNumberOfPlayersInRange(
-                    v.getX(), v.getY(), v.getZ());
-
-		/*
-		 * Play treatment saying the phone number and number of
-		 * people in range.   <Press phoneNumber> to select, # to go to the next.
-		 */
-	        if (n == 0) {
-		    playTreatment("phone_number.au;tts:" + phoneInfo.phoneNumber
-			+ ";no_one.au");
-	        } else if (n == 1) {
-		    playTreatment("phone_number.au;tts:" + phoneInfo.phoneNumber
-			+ ";one_person.au");
-	        } else {
-		    playTreatment("phone_number.au;tts:" + phoneInfo.phoneNumber
-			+ ";has.au" + n + ";people_in_range.au");
-		}
-
-		if (phoneInfo.phoneLocation != null) {
-		    playTreatment(phoneInfo.phoneLocation);
-		} else {
-		    playTreatment("unknown_location.au");
-		}
-
-		String s;
-
-		if (phoneInfo.phoneNumber.equals("1")) {
-		    s = "select_phone1.au;select_next.au";
-		} else if (phoneInfo.phoneNumber.equals("2")) {
-		    s = "select_phone2.au;select_next.au";
-		} else if (phoneInfo.phoneNumber.equals("3")) {
-		    s = "select_phone3.au;select_next.au";
-		} else if (phoneInfo.phoneNumber.equals("4")) {
-		    s = "select_phone4.au;select_next.au";
-		} else if (phoneInfo.phoneNumber.equals("5")) {
-		    s = "select_phone5.au;select_next.au";
-		} else {
-	            s = "tts:Press " + phoneInfo.phoneNumber + " to select this phone "
-		        + "or pound, to skip to the next phone";
-		}
-
-	        playTreatment(s);
+		state = WAITING_FOR_PHONE_NUMBER;
+		playWaitingForPhoneNumber();
+		return;
 	    }
+
+	    phone = phoneList.get(nextPhoneIndex);
+
+	    PhoneInfo phoneInfo = phone.phoneInfo;
+
+	    Vector3f location = getLocation(phone.phoneCellRef);
+
+            int n = AppContext.getManager(VoiceManager.class).getNumberOfPlayersInRange(
+                location.getX(), location.getY(), location.getZ());
+
+	    /*
+	     * Play treatment saying the phone number and number of
+	     * people in range.   <Press phoneNumber> to select, # to go to the next.
+	     */
+	    if (n == 0) {
+	        playTreatment("phone_number.au;tts:" + phoneInfo.phoneNumber
+		    + ";no_one.au");
+	    } else if (n == 1) {
+		playTreatment("phone_number.au;tts:" + phoneInfo.phoneNumber
+		    + ";one_person.au");
+	    } else {
+		playTreatment("phone_number.au;tts:" + phoneInfo.phoneNumber
+		    + ";has.au" + n + ";people_in_range.au");
+	    }
+
+	    if (phoneInfo.phoneLocation != null) {
+		playTreatment(phoneInfo.phoneLocation);
+	    } else {
+		playTreatment("unknown_location.au");
+	    }
+
+	    String s;
+
+	    if (phoneInfo.phoneNumber.equals("1")) {
+		s = "select_phone1.au;select_next.au";
+	    } else if (phoneInfo.phoneNumber.equals("2")) {
+		s = "select_phone2.au;select_next.au";
+	    } else if (phoneInfo.phoneNumber.equals("3")) {
+		s = "select_phone3.au;select_next.au";
+	    } else if (phoneInfo.phoneNumber.equals("4")) {
+		s = "select_phone4.au;select_next.au";
+	    } else if (phoneInfo.phoneNumber.equals("5")) {
+		s = "select_phone5.au;select_next.au";
+	    } else {
+	        s = "tts:Press " + phoneInfo.phoneNumber + " to select this phone "
+		    + "or pound, to skip to the next phone";
+	    }
+
+	    playTreatment(s);
 	}
 
 	/*
 	 * Find the conference
          */
-	private PhoneInfo getPhoneInfo() {
+	private Phone getPhone() {
             logger.fine("Looking for phoneNumber: " + phoneNumber);
 
-	    return getPhoneInfo(phoneNumber);
+	    return getPhone(phoneNumber);
 	}
 
-	private PhoneInfo getPhoneInfo(String phoneNumber) {
-	    synchronized (phoneMap) {
-	        return phoneMap.get(phoneNumber);
-	    }
+	private Phone getPhone(String phoneNumber) {
+	    return phoneMap.get(phoneNumber);
 	}
 
 	private boolean transferCall() {
 	    try {
+		PhoneInfo phoneInfo = phone.phoneInfo;
+
                 logger.info("Transferring call " + call
 		    + " to phone " + phoneInfo.phoneNumber);
 
-		Vector3f origin = phoneInfo.origin;
+		Vector3f location = getLocation(phone.phoneCellRef);
 
 		PlayerSetup setup = new PlayerSetup();
-		setup.x = origin.getX();
-		setup.y = origin.getY();
-		setup.z = origin.getZ();
+		setup.x = location.getX();
+		setup.y = location.getY();
+		setup.z = location.getZ();
 		setup.isOutworlder = true;
 		setup.isLivePlayer = true;
 

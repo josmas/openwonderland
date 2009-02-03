@@ -37,6 +37,12 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.EventListener;
+
+
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.common.messages.Message;
@@ -73,6 +79,9 @@ import java.util.ArrayList;
 
 import java.util.logging.Logger;
 
+import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+
 /**
  *
  * @author jprovino
@@ -88,7 +97,7 @@ public class AudioManagerClient extends BaseConnection implements
     private CellID cellID;
     private boolean connected = true;
 
-    //private UserListJFrame userListJFrame;
+    private UserListJFrame userListJFrame;
 
     /** 
      * Create a new AudioManagerClient
@@ -114,6 +123,8 @@ public class AudioManagerClient extends BaseConnection implements
         JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
         
 	CellManager.getCellManager().addCellStatusChangeListener(this);
+
+	InputManager.inputManager().addGlobalEventListener(new MouseEventListener());
 
 	logger.fine("Starting AudioManagerCLient");
     }
@@ -313,9 +324,10 @@ public class AudioManagerClient extends BaseConnection implements
 	    logger.fine("CallId " + msg.getCallID() 
 		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
 	} else if (message instanceof GetUserListMessage) {
-	    //if (userListJFrame == null) {
-	    //	userListJFrame = new UserListJFrame();
-	    //}
+	    if (userListJFrame == null) {
+	    	userListJFrame = 
+		    new UserListJFrame(((GetUserListMessage) message).getLocation());
+	    }
 
 	    ArrayList<String> userList = ((GetUserListMessage) message).getUserList();
 
@@ -325,10 +337,8 @@ public class AudioManagerClient extends BaseConnection implements
 		s += user + " ";
 	    }
 
-	    System.out.println("Users:  " + s);
-
-	    //userListJFrame.setListData(userList.toArray(new String[0]));
-	    //userListJFrame.setVisible(true);
+	    userListJFrame.setListData(userList.toArray(new String[0]));
+	    userListJFrame.setVisible(true);
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
@@ -336,6 +346,28 @@ public class AudioManagerClient extends BaseConnection implements
 
     public ConnectionType getConnectionType() {
         return AudioManagerConnectionType.CONNECTION_TYPE;
+    }
+
+    private void inputEvent(Event event) {
+	//System.out.println("Got event " + event);
+    }
+
+    /**
+     * Global mouse listener for selection events. Reports back to the Selection
+     * Manager on any updates.
+     */
+    class MouseEventListener extends EventClassListener {
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[] { MouseEvent3D.class };
+        }
+
+        // Note: we don't override computeEvent because we don't do any computation in this listener.
+
+        @Override
+        public void commitEvent(Event event) {
+            inputEvent(event);
+        }
     }
 
 }

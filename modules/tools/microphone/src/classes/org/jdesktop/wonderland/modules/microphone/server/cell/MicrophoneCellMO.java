@@ -112,22 +112,21 @@ public class MicrophoneCellMO extends CellMO {
         BoundingVolume[] bounds = new BoundingVolume[2];
 
 	if (fullVolumeArea.areaType.equalsIgnoreCase("Sphere")) {
-            bounds[0] = new BoundingSphere((float) fullVolumeArea.xExtent, new Vector3f());
+            bounds[0] = new BoundingSphere((float) fullVolumeArea.xExtent / 2, new Vector3f());
 	} else {
             bounds[0] = new BoundingBox(new Vector3f(), (float) fullVolumeArea.xExtent,
 		(float) fullVolumeArea.yExtent, (float) fullVolumeArea.zExtent);
 	}
 	
-	/*
-	 * TODO:  Set the activeOrigin correctly.
-	 */
  	Vector3f activeOrigin = new Vector3f((float) activeArea.origin.x,
 	    (float) activeArea.origin.y, (float) activeArea.origin.z);
 
-  	//bounds[1] = new BoundingBox(activeOrigin, (float) activeArea.xExtent,
-	//    (float) activeArea.yExtent, (float) activeArea.zExtent);
-
-        bounds[1] = new BoundingSphere((float) 2, new Vector3f());
+	if (activeArea.areaType.equalsIgnoreCase("Sphere")) {
+            bounds[1] = new BoundingSphere((float) 2, activeOrigin);
+	} else {
+  	    bounds[1] = new BoundingBox(activeOrigin, (float) activeArea.xExtent,
+	        (float) activeArea.yExtent, (float) activeArea.zExtent);
+	}
 
         MicrophoneProximityListener microphoneProximityListener = 
 	    new MicrophoneProximityListener(name, proxRef, bounds);
@@ -162,14 +161,15 @@ public class MicrophoneCellMO extends CellMO {
 	fullVolumeArea = microphoneCellServerState.getFullVolumeArea();
 	activeArea = microphoneCellServerState.getActiveArea();
 
-        logger.finer("setServerState fva " + fullVolumeArea.areaType
+        logger.fine("setServerState fva " + fullVolumeArea.areaType
             + " x " + fullVolumeArea.xExtent
             + " y " + fullVolumeArea.yExtent
             + " z " + fullVolumeArea.zExtent);
 
-        logger.finer("setServerState active " 
-	    + " active origin (" + activeArea.origin.x + ","
+        logger.fine("setServerState active area" 
+	    + "origin (" + activeArea.origin.x + ","
 	    + activeArea.origin.y + "," + activeArea.origin.z + ")"
+	    + " type " + activeArea.areaType
             + " x " + activeArea.xExtent
             + " y " + activeArea.yExtent
             + " z " + activeArea.zExtent);

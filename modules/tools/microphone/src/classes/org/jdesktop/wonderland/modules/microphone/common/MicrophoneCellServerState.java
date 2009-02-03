@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
@@ -36,7 +37,7 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Or
 @XmlRootElement(name="microphone-cell")
 @ServerState
 public class MicrophoneCellServerState extends CellServerState
-        implements Serializable {
+        implements Serializable,  CellServerStateSPI {
 
     @XmlElement(name="name")
     private String name;
@@ -125,6 +126,7 @@ public class MicrophoneCellServerState extends CellServerState
     public static class ActiveArea implements Serializable {
 
 	@XmlElement(name="origin") public Origin origin;
+	@XmlElement(name="areaType") public String areaType = "BOX";
 	@XmlElement(name="xExtent") public double xExtent;
 	@XmlElement(name="yExtent") public double yExtent;
 	@XmlElement(name="zExtent") public double zExtent;
@@ -133,9 +135,11 @@ public class MicrophoneCellServerState extends CellServerState
 	public ActiveArea() {
 	}
 
-	public ActiveArea (Origin origin, double xExtent,
+	public ActiveArea (Origin origin, String areaType, double xExtent,
                 double yExtent, double zExtent) {
 
+	    this.origin = origin;
+	    this.areaType = areaType;
 	    this.xExtent = xExtent;
             this.yExtent = yExtent;
             this.zExtent = zExtent;

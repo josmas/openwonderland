@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.phone.server.cell;
 import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
+import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
 
 import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
@@ -78,7 +79,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-//import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 
 import org.jdesktop.wonderland.server.UserManager;
 
@@ -151,20 +152,22 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	    boolean successful = true;
 
+	    PhoneInfo phoneInfo = phoneCellMO.getPhoneInfo();
+
 	    if (m.getPassword() != null) {
-		successful = m.getPassword().equals(phoneCellMO.getPassword());
+		successful = m.getPassword().equals(phoneInfo.password);
 	    }
 
 	    if (successful) {
-		phoneCellMO.setLocked(!phoneCellMO.getLocked());
-	        phoneCellMO.setKeepUnlocked(m.keepUnlocked());
+		phoneInfo.locked = !phoneInfo.locked;
+	        phoneInfo.keepUnlocked = m.keepUnlocked();
 	    }
 
-	    logger.fine("locked " + phoneCellMO.getLocked() + " successful " 
+	    logger.fine("locked " + phoneInfo.locked + " successful " 
 		+ successful + " pw " + m.getPassword());
 
             LockUnlockResponseMessage response = 
-		new LockUnlockResponseMessage(phoneCellMO.getCellID(), phoneCellMO.getLocked(), successful);
+		new LockUnlockResponseMessage(phoneCellMO.getCellID(), phoneInfo.locked, successful);
 
 	    sender.send(response);
 	    return;
@@ -379,9 +382,11 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
             if (listing.simulateCalls() == false) {
                 //Place the calls audio at the phones position
-                //translation = new vector3f();                
-                //getOriginWorld().get(translation);                
-                //externalPlayer.moved(translation.x, translation.y, translation.z, 0);
+           	Vector3f location = new Vector3f();
+
+                location = phoneCellMO.getWorldTransform(null).getTranslation(location);
+
+                externalPlayer.moved(location.x, location.y, location.z, 0);
             }
           
             /*
@@ -481,8 +486,10 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
     private void relock(WonderlandClientSender sender) {
 	PhoneCellMO phoneCellMO = (PhoneCellMO) getCell();
 
-	if (phoneCellMO.getKeepUnlocked() == false && phoneCellMO.getLocked() == false) {
-	    phoneCellMO.setLocked(true);
+	PhoneInfo phoneInfo = phoneCellMO.getPhoneInfo();
+
+	if (phoneInfo.keepUnlocked == false && phoneInfo.locked == false) {
+	    phoneInfo.locked = true;
 
             LockUnlockResponseMessage response = new LockUnlockResponseMessage(phoneCellMO.getCellID(), true, true);
 
@@ -524,8 +531,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	center.setY((float)1.5);
 
-	System.out.println("phone bounding volume:  " + boundingVolume
-	    + " center " + center);
+	logger.fine("phone bounding volume:  " + boundingVolume
+	    + " orb center " + center);
 
         String cellType = 
 	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
@@ -538,12 +545,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 	    return;
 	}
 
-	OrbCellServerState orbCellServerState = new OrbCellServerState();
-
-	//orbCellServerState.setOrigin(new Origin(center));
-
 	try {
-            orbCellMO.setServerState(orbCellServerState);
+            orbCellMO.setServerState(new OrbCellServerState());
         } catch (ClassCastException e) {
             logger.warning("Error setting up new cell " +
                 orbCellMO.getName() + " of type " +

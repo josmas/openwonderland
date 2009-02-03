@@ -43,6 +43,8 @@ import javax.swing.JList;
 
 import java.util.logging.Logger;
 
+import java.awt.Point;
+
 /**
  *
  * @author  jprovino
@@ -83,6 +85,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	caller = cell.getCellCache().getViewCell().getIdentity().getUsername();
 
 	callerText.setText(caller);
+	callerText.setEnabled(false);
 
 	chatGroupText.setText(caller);
 
@@ -109,6 +112,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	caller = cell.getCellCache().getViewCell().getIdentity().getUsername();
 
 	callerText.setText(caller);
+	callerText.setEnabled(false);
 
 	chatGroupText.setText(caller);
 
@@ -437,7 +441,7 @@ private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_busyButtonActionPerformed
 
 private void usersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usersButtonActionPerformed
-    session.send(client, new GetUserListMessage());
+    session.send(client, new GetUserListMessage(new Point((int) (getLocation().getX() + getWidth()), 0)));
 }//GEN-LAST:event_usersButtonActionPerformed
 
     private void stopFlasher() {
