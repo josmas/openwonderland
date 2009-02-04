@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-class SasProviderSession extends WonderlandSessionImpl {
+public class SasProviderSession extends WonderlandSessionImpl {
 
     private SasProviderConnection connection;
     private SasProviderConnectionListener listener;

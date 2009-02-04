@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.sas.provider;
 
 import com.jme.math.Vector2f;
+import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -36,5 +37,5 @@ public interface SasProviderConnectionListener {
      * Launch the specified app.
      * TODO: params
      */
-    public boolean launch (String appName, String command, Vector2f pixelScale);
+    public Serializable launch (String appName, String command, Vector2f pixelScale);
 }
