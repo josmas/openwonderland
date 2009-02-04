@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
 import org.jdesktop.wonderland.common.modules.ModuleRequires;
+import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
  * The FileModule class extends the Module abstract base class and represents
@@ -37,7 +38,9 @@ import org.jdesktop.wonderland.common.modules.ModuleRequires;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class FileModule extends Module {
-    
+
+    private static Logger logger = Logger.getLogger(FileModule.class.getName());
+
     /** Default constructor, takes a reference to the module directory root */
     public FileModule(File root) {
         super();
@@ -80,7 +83,7 @@ public class FileModule extends Module {
      * Reads the module info from the module.
      */
     private ModuleInfo fetchModuleInfo() {
-        Logger logger = Logger.getLogger(Module.class.getName());
+        FileReader reader = null;
         try {
             /* Fetch the entry, return null if it does not exist */
             File entry = new File(this.getFile(), Module.MODULE_INFO);
@@ -88,11 +91,16 @@ public class FileModule extends Module {
                 logger.info("[MODULE] No module.xml for Module " + this.getFile());
                 return null;
             }
-            return ModuleInfo.decode(new FileReader(entry));
+
+            /* Read in the file and parse it */
+            reader = new FileReader(entry);
+            return ModuleInfo.decode(reader);
         } catch (java.lang.Exception excp) {
             /* This is pretty bad -- if this doesn't exist, then the module is invalid */
             logger.log(Level.WARNING, "[MODULE] Invalid Module " + this.getFile(), excp);
             return null;
+        } finally {
+            RunUtil.close(reader);
         }
     }
 
@@ -100,7 +108,7 @@ public class FileModule extends Module {
      * Reads the dependency info from the module.
      */
     private ModuleRequires fetchModuleRequires() {
-        Logger logger = Logger.getLogger(Module.class.getName());
+        FileReader reader = null;
         try {
             /* Fetch the entry, return null if it does not exist */
             File entry = new File(this.getFile(), Module.MODULE_REQUIRES);
@@ -108,11 +116,16 @@ public class FileModule extends Module {
                 logger.info("[MODULE] No requires.xml for Module " + this.getFile());
                 return null;
             }
-            return ModuleRequires.decode(new FileReader(entry));
+
+            /* Read in the file and parse it */
+            reader = new FileReader(entry);
+            return ModuleRequires.decode(reader);
         } catch (java.lang.Exception excp) {
             /* This is not too bad if it does not exist */
             logger.log(Level.INFO, "[MODULE] Error reading requires.xml for Module " + this.getFile(), excp);
             return null;
+        } finally {
+            RunUtil.close(reader);
         }
     }
 
@@ -120,7 +133,7 @@ public class FileModule extends Module {
      * Reads the asset server info from the module.
      */
     private ModuleRepository fetchModuleRepository() {
-        Logger logger = Logger.getLogger(Module.class.getName());
+        FileReader reader = null;
         try {
             /* Fetch the entry, return null if it does not exist */
             File entry = new File(this.getFile(), Module.MODULE_REPOSITORY);
@@ -128,11 +141,16 @@ public class FileModule extends Module {
                 logger.info("[MODULE] No repository.xml for Module " + this.getFile());
                 return null;
             }
-            return ModuleRepository.decode(new FileReader(entry));
+
+            /* Read in the file and parse it */
+            reader = new FileReader(entry);
+            return ModuleRepository.decode(reader);
         } catch (java.lang.Exception excp) {
             /* This is not too bad if it does not exist */
             logger.log(Level.INFO, "[MODULE] Error reading repository.xml for Module " + this.getFile(), excp);
             return null;
+        } finally {
+            RunUtil.close(reader);
         }
     }
     
