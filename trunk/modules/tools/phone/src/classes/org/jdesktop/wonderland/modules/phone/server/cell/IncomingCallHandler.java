@@ -28,6 +28,9 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import com.sun.voip.client.connector.CallStatus;
 import com.sun.voip.client.connector.CallStatusListener;
 
+import com.sun.mpk20.voicelib.app.AudioGroup;
+import com.sun.mpk20.voicelib.app.AudioGroupSetup;
+import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
 import com.sun.mpk20.voicelib.app.Player;
@@ -85,13 +88,13 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
     private static IncomingCallHandler incomingCallHandler;
 
     private class Phone implements Serializable {
+	public ManagedReference<CellMO> phoneCellRef;
+	public PhoneInfo phoneInfo;
+
 	public Phone(ManagedReference<CellMO> phoneCellRef, PhoneInfo phoneInfo) {
 	    this.phoneCellRef = phoneCellRef;
 	    this.phoneInfo = phoneInfo;
 	}
-
-	public ManagedReference<CellMO> phoneCellRef;
-	public PhoneInfo phoneInfo;
     }
 
     /**
@@ -128,6 +131,22 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	    AppContext.getDataManager().createReference(
 	    CellManagerMO.getCell(phoneCellID));
 
+	AudioGroupSetup setup = new AudioGroupSetup();
+
+	/*
+	 * Provide Outworlder with full volume for an
+	 * extended radius.
+	 */
+        DefaultSpatializer extendedRadiusSpatializer = new DefaultSpatializer();
+
+	extendedRadiusSpatializer.setZeroVolumeRadius(
+	    phoneInfo.zeroVolumeRadius);
+
+	extendedRadiusSpatializer.setFullVolumeRadius(
+	    phoneInfo.fullVolumeRadius);
+
+	setup.spatializer = extendedRadiusSpatializer;
+   
 	Phone phone = new Phone(phoneCellRef, phoneInfo);
 
 	phoneMap.put(phoneInfo.phoneNumber, phone);
@@ -598,37 +617,32 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 		setup.isOutworlder = true;
 		setup.isLivePlayer = true;
 
-		Player player = AppContext.getManager(VoiceManager.class).createPlayer(
-		    call.getId(), setup);
+		VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-		call.setPlayer(player);
-		player.setCall(call);
+		Player externalPlayer = vm.createPlayer(call.getId(), setup);
 
-if (false) {
-                DefaultSpatializer extendedRadiusSpatializer = 
-		    new DefaultSpatializer();
+		call.setPlayer(externalPlayer);
+		externalPlayer.setCall(call);
 
-		extendedRadiusSpatializer.setZeroVolumeRadius(
-		    phoneInfo.zeroVolumeRadius);
-		extendedRadiusSpatializer.setFullVolumeRadius(
-		    phoneInfo.fullVolumeRadius);
+                AudioGroup defaultLivePlayerAudioGroup =
+                    vm.getDefaultLivePlayerAudioGroup();
 
-		/*
-	 	 * Provide Outworlder with full volume for an
-		 * extended radius.
-		 */
-                //voiceHandler.setIncomingSpatializer(callId, 
-		//    extendedRadiusSpatializer);
+                AudioGroupPlayerInfo groupInfo = new AudioGroupPlayerInfo(true,
+                    AudioGroupPlayerInfo.ChatType.PUBLIC);
 
-		/*
-		 * Provide Inworlders with full volume for an
-		 * extended radius.
-		 */
-                //voiceHandler.setPublicSpatializer(callId, 
-		//    extendedRadiusSpatializer);
-}
+		groupInfo.defaultListenAttenuation = 1.0;
+
+                defaultLivePlayerAudioGroup.addPlayer(externalPlayer, groupInfo);
+
+		AudioGroup defaultStationaryPlayerAudioGroup =
+                    vm.getDefaultStationaryPlayerAudioGroup();
+
+                defaultStationaryPlayerAudioGroup.addPlayer(externalPlayer,
+                    new AudioGroupPlayerInfo(false,
+                    AudioGroupPlayerInfo.ChatType.PUBLIC));
 
                 call.mute(false);
+
 		call.transferToConference(
 		    AppContext.getManager(VoiceManager.class).getConferenceId());
 		
@@ -653,7 +667,7 @@ if (false) {
 
 		String info = establishedStatus.getCallInfo();
 
-		String phoneNumber = "callId";
+		String phoneNumber = call.getId();
 
 		if (info != null) {
 		    String[] tokens = info.split("@");
@@ -668,7 +682,7 @@ if (false) {
 		playTreatment("help.au");
 		playTreatment(JOIN_CLICK);
 
-		spawnAvatarOrb(this);
+		new Orb(call.getId(), phone.phoneCellRef.get().getWorldBounds(), false);
 
 		state = ESTABLISHED;
             } catch (IOException e) {
@@ -678,34 +692,6 @@ if (false) {
 
 	    return true;
         }
-
-	private void spawnAvatarOrb(CallHandler callHandler) {
- 	    //Spawn the AvatarOrb to represent the new public call.
-             String cellType =
-                 "com.sun.labs.mpk20.avatarorb.server.cell.AvatarOrbCellGLO";
- 
- 	    String info = establishedStatus.getCallInfo();
- 
- 	    String name = "Anonymous";
- 	    String number = "Unknown";
- 
-            if (info != null) {
-                String[] tokens = info.split("@");
- 
-                if (info.startsWith("sip:")) {
- 		    name = tokens[2];
-                    number = tokens[2];
-                } else {
-                    name = tokens[0];
-                    number = tokens[1];
-                }
- 	    }
- 
-            //CellGLO cellGLO = CellGLOFactory.loadCellGLO(cellType, 
-	    //	phoneInfo.phoneCellID, call.getId(), name, number);
- 
-	    //callHandler.addCallStatusListener((ManagedCallStatusListener)cellGLO);
- 	}
     }
 
 }

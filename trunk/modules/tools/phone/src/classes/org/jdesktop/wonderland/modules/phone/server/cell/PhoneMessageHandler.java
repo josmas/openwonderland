@@ -377,7 +377,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
                     logger.fine("back from attenuate other groups");
                 }
             } else {
-                spawnOrb(externalCallID, listing.simulateCalls());
+                new Orb(externalCallID, phoneCellMO.getWorldBounds(), listing.simulateCalls());
 	    }
 
             if (listing.simulateCalls() == false) {
@@ -439,7 +439,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
             sender.send(clientID, new JoinCallResponseMessage(
 		phoneCellMO.getCellID(), listing, true));
             
-            spawnOrb(externalCallID, false);
+            new Orb(externalCallID, phoneCellMO.getWorldBounds(), false);
 	    return;
 	}
 
@@ -509,56 +509,6 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 	    callNumber++;
 
             return getCell().getCellID() + "_" + callNumber;
-	}
-    }
-
-    private void spawnOrb(String externalCallID, boolean simulateCalls) {
-	/*
-	 * XXX I was trying to get this to delay for 2 seconds,
-	 * But there are no managers in the system context in which run() runs.
-	 */
-        //Spawn the Orb to represent the new public call.
-
-	logger.fine("Spawning orb...");
-
-	CellMO cellMO = getCell();
-
-	BoundingVolume boundingVolume = cellMO.getWorldBounds();
-
-	Vector3f center = new Vector3f();
-
-	boundingVolume.getCenter(center);
-
-	center.setY((float)1.5);
-
-	logger.fine("phone bounding volume:  " + boundingVolume
-	    + " orb center " + center);
-
-        String cellType = 
-	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
-
-        OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	    center, (float) .5, externalCallID, simulateCalls);
-
-	if (orbCellMO == null) {
-	    logger.warning("Unable to spawn orb");
-	    return;
-	}
-
-	try {
-            orbCellMO.setServerState(new OrbCellServerState());
-        } catch (ClassCastException e) {
-            logger.warning("Error setting up new cell " +
-                orbCellMO.getName() + " of type " +
-                orbCellMO.getClass() + e.getMessage());
-            return;
-        }
-
-	try {
-	    CellManagerMO.getCellManager().insertCellInWorld(orbCellMO);
-	} catch (MultipleParentException e) {
-	    logger.warning("Can't insert orb in world:  " + e.getMessage());
-	    return;
 	}
     }
 
