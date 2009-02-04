@@ -9,14 +9,14 @@
     <property name="module.jarname" value="microphone"/>
 
     <pathconvert property="module-server.classpath">
-        <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
-        <path location="${current.dir}/../audio-manager/lib/voip.jar"/>
-        <path location="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
-        <path location="${current.dir}/../orb/build/lib/server/orb-server.jar"/>
+        <path location="${current.dir}/../../tools/audio-manager/lib/voicelib.jar"/>
+        <path location="${current.dir}/../../tools/audio-manager/lib/voip.jar"/>
+        <path location="${current.dir}/../../tools/audio-manager/lib/bridge_connector.jar"/>
+        <path location="${current.dir}/../../tools/orb/build/lib/server/orb-server.jar"/>
     </pathconvert>
 
     <!-- microphone is dependent on the jmecolladaloader -->
-    <property name="module-client.classpath" value="${current.dir}/../../world/jmecolladaloader/build/classes"/>
+    <property name="module-client.classpath" value="${current.dir}/../jmecolladaloader/build/classes"/>
 
 
     <!-- import common build file -->
@@ -39,7 +39,7 @@
                 </clientjar>
             </client>
                 
-            <server dir="${current.dir}/../audio-manager/lib">
+            <server dir="${current.dir}/../../tools/audio-manager/lib">
                 <include name="voicelib.jar"/>
                 <include name="bridge_connector.jar"/>
                 <include name="voip.jar"/>
