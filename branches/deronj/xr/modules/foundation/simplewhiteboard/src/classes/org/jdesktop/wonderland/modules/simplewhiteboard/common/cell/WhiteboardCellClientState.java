@@ -15,18 +15,13 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.simplewhiteboard.common;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common.cell;
 
-import java.awt.Point;
 import java.lang.reflect.Array;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 
 /**
  * Container for whiteboard cell data

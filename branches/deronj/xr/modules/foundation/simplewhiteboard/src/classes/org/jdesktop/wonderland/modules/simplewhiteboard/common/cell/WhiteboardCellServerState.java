@@ -15,15 +15,13 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.simplewhiteboard.server;
+package org.jdesktop.wonderland.modules.simplewhiteboard.server.cell;
 
-import com.jme.math.Vector2f;
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
 
 /**
  * The WFS server state class for WhiteboardCellMO.

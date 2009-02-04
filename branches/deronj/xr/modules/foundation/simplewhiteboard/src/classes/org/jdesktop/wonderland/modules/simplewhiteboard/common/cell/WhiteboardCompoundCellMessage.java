@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.simplewhiteboard.common;
+package org.jdesktop.wonderland.modules.simplewhiteboard.common.cell;
 
 import java.awt.Color;
 import java.awt.Point;
