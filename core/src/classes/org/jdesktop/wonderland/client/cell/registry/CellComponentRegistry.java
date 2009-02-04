@@ -45,6 +45,9 @@ public class CellComponentRegistry {
     /* A map of Class to their cell component factories */
     private Map<Class, CellComponentFactorySPI> componentFactoryMap;
 
+    /* A map of cell component server state classes to their factories */
+    private Map<Class, CellComponentFactorySPI> stateFactoryMap;
+
     /* Initialize from the list of service providers in module JARs */
     static {
         /* Attempt to load the class names using the service providers */
@@ -65,6 +68,7 @@ public class CellComponentRegistry {
     public CellComponentRegistry() {
         componentFactorySet = new HashSet();
         componentFactoryMap = new HashMap();
+        stateFactoryMap = new HashMap();
     }
     
     /**
@@ -96,6 +100,7 @@ public class CellComponentRegistry {
         // Add to the set containing all cell factories and the map
         componentFactorySet.add(factory);
         componentFactoryMap.put(factory.getClass(), factory);
+        stateFactoryMap.put(factory.getDefaultCellComponentServerState().getClass(), factory);
     }
     
     /**
@@ -113,9 +118,20 @@ public class CellComponentRegistry {
      * are present for the given Class, returns null.
      * 
      * @param clazz The Class for the cell component factory
-     * @return A CellComponentFactory objects registered on the Class
+     * @return A CellComponentFactorySPI object registered on the Class
      */
     public CellComponentFactorySPI getCellFactoryByClass(Class clazz) {
         return componentFactoryMap.get(clazz);
+    }
+
+    /**
+     * Returns a set of cell factories given the Class of the server-side state
+     * object. If no factories are present for the given Class, return null.
+     *
+     * @param clazz The Class for the cell component server state
+     * @return A CellComponentFactorySPI object registered on the Class
+     */
+    public CellComponentFactorySPI getCellFactoryByStateClass(Class clazz) {
+        return stateFactoryMap.get(clazz);
     }
 }
