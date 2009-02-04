@@ -19,8 +19,8 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.gui.guidefault;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.gui.GuiFactory;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Window;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.Window;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.gui.WindowFrame;
 import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -33,59 +33,56 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.AppCellRenderer;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class Gui2DFactoryConventional implements GuiFactory {
 
-   /** The logger for gui.guidefault */
+    /** The logger for gui.guidefault */
     static final Logger logger = Logger.getLogger("wl.app.base.gui.guidefault");
-
     /** The singleton gui factory */
     private static GuiFactory guiFactory;
 
     /**
      * Returns the singleton GUI factory object.
      */
-    public static GuiFactory getFactory () {
-	if (guiFactory == null) {
-	    guiFactory = new Gui2DFactoryConventional();
-	}
-	return guiFactory;
+    public static GuiFactory getFactory() {
+        if (guiFactory == null) {
+            guiFactory = new Gui2DFactoryConventional();
+        }
+        return guiFactory;
     }
 
     /**
      * {@inheritDoc}
      */
-    public AppCellRenderer createCellRenderer (AppCell cell) {
-	return new AppCellRendererJME(cell);
+    public AppCellRenderer createCellRenderer(AppCell cell) {
+        return new AppCellRendererJME(cell);
     }
 
     /**
      * {@inheritDoc}
      */
-    public WindowView createView (Window window, String spaceName) {
-	if        ("World".equals(spaceName)) {
-	    return new ViewWorldConventionalDefault((Window2D)window);
-	} else if ("HUD".equals(spaceName)) {
-	    // TODO: app windows in HUD: not yet
-	    //return new ViewHUD(window);
-	    return null;
-	}
+    public WindowView createView(Window window, String spaceName) {
+        if ("World".equals(spaceName)) {
+            return new ViewWorldConventionalDefault((Window2D) window);
+        } else if ("HUD".equals(spaceName)) {
+            // TODO: app windows in HUD: not yet
+            //return new ViewHUD(window);
+            return null;
+        }
         return null;
     }
 
     /**
      * {@inheritDoc}
      */
-    public WindowFrame createFrame (WindowView view) {
-	if (view instanceof ViewWorldDefault) {
-	    return new FrameWorldDefault(view);
-	} else {
-	    // TODO: app windows in HUD: not yet
-	    // return new FrameHUD(view);
-	    return null;
-	}
+    public WindowFrame createFrame(WindowView view) {
+        if (view instanceof ViewWorldDefault) {
+            return new FrameWorldDefault(view);
+        } else {
+            // TODO: app windows in HUD: not yet
+            // return new FrameHUD(view);
+            return null;
+        }
     }
-
 }
 
