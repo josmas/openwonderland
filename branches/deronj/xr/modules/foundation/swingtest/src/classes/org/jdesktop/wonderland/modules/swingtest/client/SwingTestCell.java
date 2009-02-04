@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
-import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
