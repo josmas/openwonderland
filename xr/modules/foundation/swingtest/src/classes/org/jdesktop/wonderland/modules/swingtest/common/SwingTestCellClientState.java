@@ -17,15 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.swingtest.common;
 
-import java.awt.Point;
-import java.lang.reflect.Array;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 
 /**
  * Container for Swing test client cell client state data.
