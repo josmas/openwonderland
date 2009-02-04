@@ -89,7 +89,7 @@ public class SwingMenuTestCell extends App2DCell {
 					    clientState.getPixelScale()));
 
 		// Associate the app with this cell (must be done before making it visible)
-		app.setCell(this);
+		app.setDisplayer(this);
 
 		// Get the window the app created
 		window = ((SwingMenuTestApp)app).getWindow();
