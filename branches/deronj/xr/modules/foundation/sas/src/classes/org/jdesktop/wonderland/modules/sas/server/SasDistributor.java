@@ -185,7 +185,7 @@ class SasDistributor {
 		  state.executionCapability, state.appName, state.launchInfo, state);
     }
 
-    private void abort (BigInteger providerClientID, LaunchAttemptState state) {
+    private void abort(BigInteger providerClientID, LaunchAttemptState state) {
 	// TODO: create abort message
 	state.providerSender.send(SasMessage.createAbortMessage)(TODO);
     }
