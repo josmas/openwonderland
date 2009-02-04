@@ -73,19 +73,6 @@ public class SwingMenuTestApp extends AppGraphics2D  {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setCell (AppCell cell) 
-	throws IllegalArgumentException, IllegalStateException 
-    {
-	super.setCell(cell);
-
-	// TODO: temp for popups
-	// TODO: NOTYET: WindowSwingPopup.setCell(this);
-    }
-
-    /**
      * Returns the app's window.
      */
     public SwingMenuTestWindow getWindow () {
