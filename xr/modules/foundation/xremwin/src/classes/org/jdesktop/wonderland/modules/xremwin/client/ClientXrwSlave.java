@@ -59,7 +59,7 @@ class ClientXrwSlave extends ClientXrw implements ServerProxySlave.DisconnectLis
         super(app, controlArb, reporter);
 
         // Connect to the Xremwin server
-        serverProxy = new ServerProxySlave(this, cell, session, connectionInfo, this);
+        serverProxy = new ServerProxySlave(this, session, connectionInfo, this);
         try {
             serverProxy.connect();
         } catch (IOException ex) {

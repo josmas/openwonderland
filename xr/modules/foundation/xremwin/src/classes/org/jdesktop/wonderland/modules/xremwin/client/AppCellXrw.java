@@ -69,7 +69,7 @@ public class AppCellXrw extends AppConventionalCell {
         }
 
         ((AppConventional) app).setInitInBestView(initInBestView);
-        app.setCell(this);
+        app.setDisplayer(this);
         return ((AppXrwMaster) app).getConnectionInfo();
     }
 
