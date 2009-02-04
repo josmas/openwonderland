@@ -27,45 +27,32 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * A 2D label which displays a text string.
  *
  * @author deronj
- */ 
-
+ */
 @ExperimentalAPI
 public class FrameLabel extends FrameTexRect {
-       
-    private static final Logger logger = Logger.getLogger(FrameLabel.class.getName());
 
+    private static final Logger logger = Logger.getLogger(FrameLabel.class.getName());
     /** The height of this label */
     //protected static final float LABEL_HEIGHT = 0.17f;
     // TODO: the following hangs the machine?
     protected static final float LABEL_HEIGHT = FrameWorldDefault.HEADER_HEIGHT * 0.9f;
-
     /** The distance the label is "above" (i.e. toward the eye from) the header */
     //protected static float Z_OFFSET = 0.0005f;
     protected static float Z_OFFSET = 0.01f;
-
     /** TODO: dial these down for now 
 
     /** Convert from width world units to texture width */
     protected static final float wScale = /*180.0f*/ /*10*/ 2;
-
     /** Convert from height world units to texture width */
     protected static final float hScale = /*180.0f*/ /*10*/ 2;
-
     /** The text to display in the label */
     protected String text;
-
-    /** The texture created from the text string */
-    Texture texture;
-
     /** Width (in pixels) of the texture */
     protected int texWidth;
-
     /** Height (in pixels) of the texture */
     protected int texHeight;
-
     /** The x position of the label (in cell local coordinates) */
     protected float x;
-
     /** The y position of the label (in cell local coordinates) */
     protected float y;
 
@@ -75,8 +62,8 @@ public class FrameLabel extends FrameTexRect {
      * @param view The view the frame encloses.
      * @param gui The event handler.
      */
-    public FrameLabel (Window2DView view, Gui2D gui) {
-	this("FrameLabel", view, gui);
+    public FrameLabel(Window2DView view, Gui2D gui) {
+        this("FrameLabel", view, gui);
     }
 
     /** 
@@ -86,18 +73,19 @@ public class FrameLabel extends FrameTexRect {
      * @param view The view the frame encloses.
      * @param gui The event handler.
      */
-    public FrameLabel (String name, Window2DView view, Gui2D gui) {
-	// The texture and size is calculated in update() based on the text string.
-	super(name, view, gui, null, 0f, 0f);
+    public FrameLabel(String name, Window2DView view, Gui2D gui) {
+        // The texture and size is calculated in update() based on the text string.
+        super(name, view, gui, null, 0f, 0f);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void cleanup () {
-	super.cleanup();
-	text = null;
-	texture = null;
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        text = null;
+        texture = null;
     }
 
     /**
@@ -105,14 +93,14 @@ public class FrameLabel extends FrameTexRect {
      *
      * @param text The new text of the label.
      */
-    public void setText (String text) {
-	this.text = text;
+    public void setText(String text) {
+        this.text = text;
 
-	// Force all geometry and render state to be recalculated
-	if (quad != null) {
-	    quad = null;
-	}
-	try {
+        // Force all geometry and render state to be recalculated
+        if (quad != null) {
+            quad = null;
+        }
+        try {
             update();
         } catch (InstantiationException ex) {
             logger.warning("Cannot update FrameLabel component");
@@ -122,60 +110,61 @@ public class FrameLabel extends FrameTexRect {
     /**
      * {@inheritDoc}
      */
-    public void update () throws InstantiationException {
-	super.update();
+    @Override
+    public void update() throws InstantiationException {
+        super.update();
 
-	updateTexture();
+        updateTexture();
 
         // Update position relative to view
-	localToCellNode.setLocalTranslation(new Vector3f(x, y, Z_OFFSET));
+        localToCellNode.setLocalTranslation(new Vector3f(x, y, Z_OFFSET));
     }
 
     /**
      * Recalulate texture from the text string.
      */
-    private void updateTexture () {
+    private void updateTexture() {
 
-	float w = getWidth();
-	float h = getHeight();
-	logger.warning("wh = " + w + " " + h);
-	logger.warning("whScale = " + wScale + " " + hScale);
+        float w = getWidth();
+        float h = getHeight();
+        logger.warning("wh = " + w + " " + h);
+        logger.warning("whScale = " + wScale + " " + hScale);
 
-	texWidth = (int)(wScale * getWidth());
-	texHeight = (int)(hScale * getHeight());
-	logger.warning("updateTexture: texWH = " + texWidth + " " + texHeight);
+        texWidth = (int) (wScale * getWidth());
+        texHeight = (int) (hScale * getHeight());
+        logger.warning("updateTexture: texWH = " + texWidth + " " + texHeight);
 
-	// TODO
-	// For debug
-	texWidth = 256;
-	texHeight = 64;
+        // TODO
+        // For debug
+        texWidth = 256;
+        texHeight = 64;
 
-	/**/
+        /**/
         TextTextureGenerator ttg = new TextTextureGenerator(text, texWidth, texHeight);
         texture = ttg.getTexture();
-	texture.setApply(Texture.ApplyMode.Modulate);
-	/**/
+        texture.setApply(Texture.ApplyMode.Modulate);
+        /**/
 
-	/*-------------- 
-	java.awt.Image bi = Toolkit.getDefaultToolkit().getImage(
-		              "/home/dj/jme/cvs/jme/src/jmetest/data/images/Monkey.jpg");
+        /*--------------
+        java.awt.Image bi = Toolkit.getDefaultToolkit().getImage(
+        "/home/dj/jme/cvs/jme/src/jmetest/data/images/Monkey.jpg");
 
-	Image image = TextureManager.loadImage(bi, false);
+        Image image = TextureManager.loadImage(bi, false);
 
-	texture = new Texture();
-	texture.setImage(image);
+        texture = new Texture();
+        texture.setImage(image);
         texture.setFilter(Texture.FM_LINEAR);
         texture.setMipmapState(Texture.MM_LINEAR);
-	texture.setApply(Texture.AM_REPLACE);
-	--------------*/
+        texture.setApply(Texture.AM_REPLACE);
+        --------------*/
 
-	setTexture(texture);
+        setTexture(texture);
 
-	/* For debug 
-	printRenderState();
-	if (quad != null) {
-	    printGeometry();
-	}
-	*/
+    /* For debug
+    printRenderState();
+    if (quad != null) {
+    printGeometry();
+    }
+     */
     }
 }

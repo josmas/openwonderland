@@ -157,6 +157,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * Clean up resources.
      */
+    @Override
     public void cleanup() {
         super.cleanup();
         setVisible(false);
@@ -948,8 +949,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         ts.load();
 
         // Verify
-        Texture texture = ((Window2D) window).getTexture();
-        int texid = texture.getTextureId();
+        Texture tex = ((Window2D) window).getTexture();
+        int texid = tex.getTextureId();
         logger.warning("ViewWorldDefault: allocated texture id " + texid);
         if (texid == 0) {
             logger.severe("Texture Id is still 0!!!");

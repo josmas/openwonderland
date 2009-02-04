@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.appbase.client.cell;
 import java.lang.reflect.Constructor;
 import org.jdesktop.wonderland.modules.appbase.client.*;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -40,8 +39,6 @@ import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
  */
 @ExperimentalAPI
 public abstract class AppCell extends Cell implements Displayer, ClientPlugin {
-
-    private static final Logger logger = Logger.getLogger(AppCell.class.getName());
 
     /** The default GUI factory to use. */
     private static final String GUI_FACTORY_CLASS_DEFAULT = 

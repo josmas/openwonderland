@@ -104,6 +104,7 @@ public class FrameResizeCorner extends FrameComponent {
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void cleanup () {
 	super.cleanup();
 	if (horizBar != null) {

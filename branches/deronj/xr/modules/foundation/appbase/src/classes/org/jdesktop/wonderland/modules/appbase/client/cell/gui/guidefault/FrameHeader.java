@@ -29,59 +29,57 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * The frame header (top side) for FrameWorldDefault.
  *
  * @author deronj
- */ 
-
+ */
 @ExperimentalAPI
 public class FrameHeader extends FrameSide {
 
     /** The window title */
     protected FrameLabelTitle title;
-
     /** Who is currently controlling the app */
     protected FrameLabelController controller;
-
     /** The close button */
     protected FrameCloseButton closeButton;
-    
+
     /**
      * Create a new instance of FrameHeader.
      *
      * @param view The view the frame encloses.
      * @param closeListeners The listeners to be notified when the header's close button is pressed.
      */
-    public FrameHeader (Window2DView view, LinkedList<Window2DFrame.CloseListener> closeListeners) {
-	super("FrameHeader", view, Side.TOP, new Gui2DSide(view));
+    public FrameHeader(Window2DView view, LinkedList<Window2DFrame.CloseListener> closeListeners) {
+        super("FrameHeader", view, Side.TOP, new Gui2DSide(view));
 
-	// TODO: bug: currently getting an instantiation exception on the image resource.
-       	//closeButton = new FrameCloseButton(view, closeListeners);
+    // TODO: bug: currently getting an instantiation exception on the image resource.
+    //closeButton = new FrameCloseButton(view, closeListeners);
 
-	// TODO: bug 12: this sometimes makes the entire frame disappear! 
-	// title = new FrameLabelTitle(view, gui);
+    // TODO: bug 12: this sometimes makes the entire frame disappear!
+    // title = new FrameLabelTitle(view, gui);
 
-	// The position of the controller label depends on the position of the close button
-	//controller = new FrameLabelController(view, gui, closeButton);
+    // The position of the controller label depends on the position of the close button
+    //controller = new FrameLabelController(view, gui, closeButton);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void cleanup () {
-	super.cleanup();
+    @Override
+    public void cleanup() {
+        super.cleanup();
 
-	if (title != null) {
-	    title.cleanup();
-	    title = null;
-	}
+        if (title != null) {
+            title.cleanup();
+            title = null;
+        }
 
-	if (controller != null) {
-	    controller.cleanup();
-	    controller = null;
-	}
-	
-	if (closeButton != null) {
-	    closeButton.cleanup();
-	    closeButton = null;
-	}
+        if (controller != null) {
+            controller.cleanup();
+            controller = null;
+        }
+
+        if (closeButton != null) {
+            closeButton.cleanup();
+            closeButton = null;
+        }
     }
 
     /**
@@ -89,17 +87,17 @@ public class FrameHeader extends FrameSide {
      *
      * @throw InstantiationException if couldn't allocate resources for the visual representation.
      */
-    public void update () throws InstantiationException {
-	if (title != null) {
-	    title.update();
-	}
-	if (controller != null) {
-	    controller.update();
-	}
-	if (closeButton != null) {
-	    closeButton.update();
-	}
-	super.update();
+    public void update() throws InstantiationException {
+        if (title != null) {
+            title.update();
+        }
+        if (controller != null) {
+            controller.update();
+        }
+        if (closeButton != null) {
+            closeButton.update();
+        }
+        super.update();
     }
 
     /**
@@ -107,10 +105,10 @@ public class FrameHeader extends FrameSide {
      *
      * @param text The new title.
      */
-    public void setTitle (String text) {
-	if (title != null) {
-	    title.setText(text);
-	}
+    public void setTitle(String text) {
+        if (title != null) {
+            title.setText(text);
+        }
     }
 
     /**
@@ -118,63 +116,63 @@ public class FrameHeader extends FrameSide {
      *
      * @param controlArb The app's control arb.
      */
-    public void updateControl (ControlArb controlArb) {
-	super.updateControl(controlArb);
-	if (title != null) {
-	    title.updateControl(controlArb);
-	}
-	if (controller != null) {
-	    controller.updateControl(controlArb);
-	}
-	if (closeButton != null) {
-	    closeButton.updateControl(controlArb);
-	}
+    public void updateControl(ControlArb controlArb) {
+        super.updateControl(controlArb);
+        if (title != null) {
+            title.updateControl(controlArb);
+        }
+        if (controller != null) {
+            controller.updateControl(controlArb);
+        }
+        if (closeButton != null) {
+            closeButton.updateControl(controlArb);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setColor (ColorRGBA color) {
-	super.setColor(color);
-	if (title != null) {
-	    title.setColor(color);
-	}
-	if (controller != null) {
-	    controller.setColor(color);
-	}
-	if (closeButton != null) {
-	    closeButton.setColor(color);
-	}
+    public void setColor(ColorRGBA color) {
+        super.setColor(color);
+        if (title != null) {
+            title.setColor(color);
+        }
+        if (controller != null) {
+            controller.setColor(color);
+        }
+        if (closeButton != null) {
+            closeButton.setColor(color);
+        }
     }
 
     /**
      * Attach this component's event listeners to the given entity.
      */
-    protected void attachEventListeners (Entity entity) {
-	if (title != null) {
-	    title.attachEventListeners(entity);
-	}
-	if (controller != null) {
-	    controller.attachEventListeners(entity);
-	}
-	if (closeButton != null) {
-	    closeButton.attachEventListeners(entity);
-	}
+    protected void attachEventListeners(Entity entity) {
+        if (title != null) {
+            title.attachEventListeners(entity);
+        }
+        if (controller != null) {
+            controller.attachEventListeners(entity);
+        }
+        if (closeButton != null) {
+            closeButton.attachEventListeners(entity);
+        }
     }
 
     /**
      * Detach this component's event listeners from the given entity.
      */
-    protected void detachEventListeners (Entity entity) {
-	if (title != null) {
-	    title.detachEventListeners(entity);
-	}
-	if (controller != null) {
-	    controller.detachEventListeners(entity);
-	}
-	if (closeButton != null) {
-	    closeButton.detachEventListeners(entity);
-	}
+    protected void detachEventListeners(Entity entity) {
+        if (title != null) {
+            title.detachEventListeners(entity);
+        }
+        if (controller != null) {
+            controller.detachEventListeners(entity);
+        }
+        if (closeButton != null) {
+            closeButton.detachEventListeners(entity);
+        }
     }
 }
 

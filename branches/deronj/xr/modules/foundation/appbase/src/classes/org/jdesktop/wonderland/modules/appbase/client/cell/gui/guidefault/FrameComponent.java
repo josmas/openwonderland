@@ -32,38 +32,29 @@ import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
  * The generic superclass of window frame components.
  *
  * @author deronj
- */ 
-
+ */
 @ExperimentalAPI
 public abstract class FrameComponent {
 
     /** The component name */
     protected String name;
-
     /** The color to display when the app has control. */
     protected static final ColorRGBA HAS_CONTROL_COLOR = new ColorRGBA(0f, 0.9f, 0f, 1f);
-
     /** The color to display when the app has control. */
     protected static final ColorRGBA NO_CONTROL_COLOR = new ColorRGBA(0.9f, 0f, 0f, 1f);
-
     /** The view of the window the frame encloses. */
     protected ViewWorldDefault view;
-
     /** The control arb of the app. */
     protected ControlArb controlArb;
-
     /** The event handler of this component. */
     protected Gui2D gui;
-
     /** 
      * The entity of this component's parent component. This components entity is attached to this as
      * a child when ever the parentEntity is non-null.
      */
     protected Entity parentEntity;
-
     /** This component's entity. The scene graph and event listeners component are attached to this. */
     protected Entity entity;
-
     /** 
      * The local-to-cell transform node. Moves the rect local coords into cell coords. This is parented
      * to attach point of the parent entity when the cell goes live.
@@ -76,58 +67,58 @@ public abstract class FrameComponent {
      * @param view The view the frame encloses.
      * @param gui The event handler.
      */
-    public FrameComponent (String name, WindowView view, Gui2D gui) {
-	this.name = name;
-	this.view = (ViewWorldDefault) view;
-	this.gui = gui;
-	controlArb = view.getWindow().getApp().getControlArb();
-	initEntity();
+    public FrameComponent(String name, WindowView view, Gui2D gui) {
+        this.name = name;
+        this.view = (ViewWorldDefault) view;
+        this.gui = gui;
+        controlArb = view.getWindow().getApp().getControlArb();
+        initEntity();
     }
 
     /**
      * Clean up resources.
      */
-    public void cleanup () {
-	view = null;
-	if (gui != null) {
-	    gui.cleanup();
-	    gui = null;
-	}
-	cleanupEntity();
+    public void cleanup() {
+        view = null;
+        if (gui != null) {
+            gui.cleanup();
+            gui = null;
+        }
+        cleanupEntity();
     }
 
     /**
      * Return this component's entity.
      */
-    public Entity getEntity () {
-	return entity;
+    public Entity getEntity() {
+        return entity;
     }
 
     /**
      * Initialize this component's entity.
      */
-    protected void initEntity () {
+    protected void initEntity() {
 
-	// Create this component's entity and parent it
-	entity = new Entity("Entity for frame component " + name);
+        // Create this component's entity and parent it
+        entity = new Entity("Entity for frame component " + name);
 
-	// Create this component scene graph (l2c -> geometry)
-	initSceneGraph();
+        // Create this component scene graph (l2c -> geometry)
+        initSceneGraph();
 
-	// Attach event listeners for this component
-	attachEventListeners(entity);
+        // Attach event listeners for this component
+        attachEventListeners(entity);
 
-	attachToParentEntity();
+        attachToParentEntity();
     }
 
     /**
      * Clean up resources for this component's entity.
      */
-    protected void cleanupEntity () {
-	detachFromParentEntity();
-	detachEventListeners(entity);
-	cleanupSceneGraph();
-	entity = null;
+    protected void cleanupEntity() {
+        detachFromParentEntity();
+        detachEventListeners(entity);
+        cleanupSceneGraph();
+        entity = null;
     }
 
     /**
@@ -135,79 +126,79 @@ public abstract class FrameComponent {
      *
      * parentEntity attachPoint -> localToCellNode -> Spatial, Spatial, etc. (subclass provided)
      */
-    protected void initSceneGraph () {
-	
-	// Attach the localToCell node to the entity
-	localToCellNode = new Node("Local-to-cell node for frame component " + name);
-	RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().
-	    createRenderComponent(localToCellNode);
-	entity.addComponent(RenderComponent.class, rc);
-	rc.setEntity(entity);
+    protected void initSceneGraph() {
 
-	// Attach the subclass spatials to the localToCell node
-	Spatial[] spatials = getSpatials();
-	for (Spatial spatial : spatials) {
-	    localToCellNode.attachChild(spatial);
-	}
+        // Attach the localToCell node to the entity
+        localToCellNode = new Node("Local-to-cell node for frame component " + name);
+        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().
+                createRenderComponent(localToCellNode);
+        entity.addComponent(RenderComponent.class, rc);
+        rc.setEntity(entity);
+
+        // Attach the subclass spatials to the localToCell node
+        Spatial[] spatials = getSpatials();
+        for (Spatial spatial : spatials) {
+            localToCellNode.attachChild(spatial);
+        }
     }
 
     /**
      * Detach and deallocate this component's scene graph nodes.
      */
-    protected void cleanupSceneGraph () {
-	entity.removeComponent(RenderComponent.class);
-	localToCellNode = null;
-	// Note: the subclasses cleanup routine is responsible for cleaning up the spatials.
+    protected void cleanupSceneGraph() {
+        entity.removeComponent(RenderComponent.class);
+        localToCellNode = null;
+    // Note: the subclasses cleanup routine is responsible for cleaning up the spatials.
     }
 
     /**
      * Returns a list of this component's spatials. Non-container subclasses should
      * override this to return actual spatials
      */
-    protected Spatial[] getSpatials () {
-	return null;
+    protected Spatial[] getSpatials() {
+        return null;
     }
 
     /**
      * Attach this component's entity to its parent entity.
      */
-    protected void attachToParentEntity () {
-	if (parentEntity != null) {
-	    parentEntity.addEntity(entity);
-	    RenderComponent rcParentEntity = 
-		(RenderComponent) parentEntity.getComponent(RenderComponent.class);
-	    RenderComponent rcEntity = (RenderComponent)entity.getComponent(RenderComponent.class);
-	    if (rcParentEntity != null && rcParentEntity.getSceneRoot() != null && rcEntity != null) {
-		rcEntity.setAttachPoint(rcParentEntity.getSceneRoot());
-	    }
-	}
+    protected void attachToParentEntity() {
+        if (parentEntity != null) {
+            parentEntity.addEntity(entity);
+            RenderComponent rcParentEntity =
+                    (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+            RenderComponent rcEntity = (RenderComponent) entity.getComponent(RenderComponent.class);
+            if (rcParentEntity != null && rcParentEntity.getSceneRoot() != null && rcEntity != null) {
+                rcEntity.setAttachPoint(rcParentEntity.getSceneRoot());
+            }
+        }
     }
 
     /**
      * Detach this component's entity from its parent entity.
      */
-    protected void detachFromParentEntity () {
-	if (parentEntity != null) {
-	    parentEntity.removeEntity(entity);
-	    RenderComponent rcEntity = (RenderComponent)entity.getComponent(RenderComponent.class);
-	    if (rcEntity != null) {
-		rcEntity.setAttachPoint(null);
-	    }
-	}
-	parentEntity = null;
+    protected void detachFromParentEntity() {
+        if (parentEntity != null) {
+            parentEntity.removeEntity(entity);
+            RenderComponent rcEntity = (RenderComponent) entity.getComponent(RenderComponent.class);
+            if (rcEntity != null) {
+                rcEntity.setAttachPoint(null);
+            }
+        }
+        parentEntity = null;
     }
 
     /**
      * Specify the parent entity of this component.
      */
-    public void setParentEntity (Entity parentEntity) {
-	if (parentEntity != null) {
-	    detachFromParentEntity();
-	}
-	this.parentEntity = parentEntity;
-	if (this.parentEntity != null) {
-	    attachToParentEntity();
-	}
+    public void setParentEntity(Entity parentEntity) {
+        if (parentEntity != null) {
+            detachFromParentEntity();
+        }
+        this.parentEntity = parentEntity;
+        if (this.parentEntity != null) {
+            attachToParentEntity();
+        }
     }
 
     /**
@@ -216,8 +207,8 @@ public abstract class FrameComponent {
      *
      * @throw InstantiationException if couldn't allocate resources for the visual representation.
      */
-    public void update () throws InstantiationException {
-	updateColor();
+    public void update() throws InstantiationException {
+        updateColor();
     }
 
     /**
@@ -225,19 +216,19 @@ public abstract class FrameComponent {
      *
      * @param controlArb The app's control arb.
      */
-    public void updateControl (ControlArb controlArb) {
-	updateColor();
+    public void updateControl(ControlArb controlArb) {
+        updateColor();
     }
 
     /**
      * Update the component color based on whether the user has control of the app.
      */
-    protected void updateColor () {
+    protected void updateColor() {
         if (controlArb == null || controlArb.hasControl()) {
-	    setColor(HAS_CONTROL_COLOR);
+            setColor(HAS_CONTROL_COLOR);
         } else {
-	    setColor(NO_CONTROL_COLOR);
-	}               
+            setColor(NO_CONTROL_COLOR);
+        }
     }
 
     /**
@@ -245,45 +236,45 @@ public abstract class FrameComponent {
      *
      * @param color The new background color.
      */
-    public abstract void setColor (ColorRGBA color);
+    public abstract void setColor(ColorRGBA color);
 
     /**
      * Get the background color of the component.
      */
-    public abstract ColorRGBA getColor ();
+    public abstract ColorRGBA getColor();
 
     /**
      * Sets the localToCell translation of this component.
      *
      * @param trans The translation vector.
      */
-    public void setLocalTranslation (Vector3f trans) {
-	localToCellNode.setLocalTranslation(trans);
+    public void setLocalTranslation(Vector3f trans) {
+        localToCellNode.setLocalTranslation(trans);
     }
 
     /**
      * Attach this component's event listeners to the givenentity.
      */
-    protected void attachEventListeners (Entity entity) {
-	if (gui != null) {
-	    gui.attachEventListeners(entity);
-	}
+    protected void attachEventListeners(Entity entity) {
+        if (gui != null) {
+            gui.attachEventListeners(entity);
+        }
     }
 
     /**
      * Detach this component's event listeners from the given entity.
      */
-    protected void detachEventListeners (Entity entity) {
-	if (gui != null) {
-	    gui.detachEventListeners(entity);
-	}
+    protected void detachEventListeners(Entity entity) {
+        if (gui != null) {
+            gui.detachEventListeners(entity);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String toString () {
-	return "Frame component " + name;
+    public String toString() {
+        return "Frame component " + name;
     }
 }

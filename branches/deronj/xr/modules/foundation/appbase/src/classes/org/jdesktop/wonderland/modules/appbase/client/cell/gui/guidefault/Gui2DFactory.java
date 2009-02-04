@@ -33,49 +33,46 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.GuiFactoryCell;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class Gui2DFactory implements GuiFactoryCell {
 
-   /** The logger for gui.guidefault */
+    /** The logger for gui.guidefault */
     static final Logger logger = Logger.getLogger("wl.app.base.gui.guidefault");
-
     /** The singleton gui factory */
     private static GuiFactoryCell guiFactory;
 
     /**
      * {@inheritDoc}
      */
-    public AppCellRenderer createCellRenderer (AppCell cell) {
-	return new AppCellRendererJME(cell);
+    public AppCellRenderer createCellRenderer(AppCell cell) {
+        return new AppCellRendererJME(cell);
     }
 
     /**
      * {@inheritDoc}
      */
-    public WindowView createView (Window window, String spaceName) {
-	if        ("World".equals(spaceName)) {
-	    return new ViewWorldDefault((Window2D)window);
-	} else if ("HUD".equals(spaceName)) {
-	    // TODO: app windows in HUD: not yet
-	    //return new ViewHUD(window);
-	    return null;
-	}
+    public WindowView createView(Window window, String spaceName) {
+        if ("World".equals(spaceName)) {
+            return new ViewWorldDefault((Window2D) window);
+        } else if ("HUD".equals(spaceName)) {
+            // TODO: app windows in HUD: not yet
+            //return new ViewHUD(window);
+            return null;
+        }
         return null;
     }
 
     /**
      * {@inheritDoc}
      */
-    public WindowFrame createFrame (WindowView view) {
-	if (view instanceof ViewWorldDefault) {
-	    return new FrameWorldDefault(view);
-	} else {
-	    // TODO: app windows in HUD: not yet
-	    // return new FrameHUD(view);
-	    return null;
-	}
+    public WindowFrame createFrame(WindowView view) {
+        if (view instanceof ViewWorldDefault) {
+            return new FrameWorldDefault(view);
+        } else {
+            // TODO: app windows in HUD: not yet
+            // return new FrameHUD(view);
+            return null;
+        }
     }
-
 }
 
