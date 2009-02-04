@@ -17,13 +17,8 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
-<!-- TODO
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
-                                                -module-compile-client,
-						compile-provider"/>
--->
-    <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-client,
 						compile-provider"/>
 
@@ -63,14 +58,12 @@
                 </clientjar> 
            </client>
 
-<!-- TODO
            <server>
                 <serverjar name="sas-server" basedir="${build.classes.dir}">
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
--->
             
         </module>
     </target>                                                       

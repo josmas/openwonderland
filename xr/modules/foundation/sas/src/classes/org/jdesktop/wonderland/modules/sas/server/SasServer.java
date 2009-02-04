@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -15,7 +15,15 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.server.app.sas;
+package org.jdesktop.wonderland.modules.sas.server;
+
+import java.io.Serializable;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Provides the main server-side logic for SAS. This singleton contains the Registry,
@@ -25,6 +33,38 @@ package org.jdesktop.wonderland.server.app.sas;
  */
 
 @ExperimentalAPI
-public class SasServer {
+public class SasServer implements AppConventionalCellMO.AppServerLauncher {
+
+    private static final Logger logger = Logger.getLogger(SasServer.class.getName());
+
+    /**
+     * Called when a new provider client connects to the SAS server.
+     */
+    public void providerConnected(WonderlandClientSender sender, WonderlandClientID clientID) {
+        logger.severe("**** Sas provider connected, clientID = " + clientID);
+    }
+
+    /**
+     * Called when provider client disconnects from the SAS server.
+     */
+    public void providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
+        logger.severe("**** Sas provider disconnnected, clientID = " + clientID);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Serializable appLaunch (CellID cellID, String executionCapability, String appname, 
+                                   String command) {
+        logger.severe("***** appLaunch, command = " + command);
+        return null;
+    }
+        
+    /**
+     * {@inheritDoc}
+     */
+    public void appStop (CellID cellID) {
+        logger.severe("***** appLaunch, cellID = " + cellID);
+    }
 }
 
