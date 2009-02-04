@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSe
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
+import com.sun.sgs.app.AppContext;
 
 /**
  * TODO: rework
@@ -70,6 +71,10 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 @ExperimentalAPI
 public abstract class AppConventionalCellMO extends App2DCellMO {
 
+    /** The name of the Darkstar binding we use to store the reference to the SAS. */
+    private static String APP_SERVER_LAUNCHER_BINDING_NAME = 
+        "org.jdesktop.wonderland.modules.appbase.server.cell.AppServerLauncher";
+
     /** The parameters from the WFS file. */
     AppConventionalCellServerState serverState;
     /** The parameters given to the client. */
@@ -78,8 +83,6 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     private boolean connectionHandlerRegistered;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     protected Serializable connectionInfo;
-    /** The SAS server. */
-    private static AppServerLauncher appServerLauncher;
 
     /**
      * The SAS server must implement this.
@@ -106,7 +109,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * Register an app server launcher with app conventional.
      */
     public static void registerAppServerLauncher (AppServerLauncher appServerLauncher) {
-        appServerLauncher = appServerLauncher;
+        AppContext.getDataManager().setBinding(APP_SERVER_LAUNCHER_BINDING_NAME, appServerLauncher);
     }
 
     /** Create an instance of AppConventionalCellMO. */
@@ -209,8 +212,12 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
     @Override
     protected void setLive(boolean live) {
+        logger.severe("***** Enter ACCMO.setLive: live = " + live);
+
         if (isLive()==live)
             return;
+
+        logger.severe("1");
 
         super.setLive(live);
 
@@ -218,11 +225,20 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
             return;
         }
 
+        logger.severe("2");
+
+        AppServerLauncher appServerLauncher = 
+            (AppServerLauncher) AppContext.getDataManager().getBinding(APP_SERVER_LAUNCHER_BINDING_NAME);
+
+        logger.severe("3");
+
         if (appServerLauncher == null) {
             logger.warning("No SAS registered. Cannot launch app " + serverState.getAppName());
         }
 
         if (live) {
+
+            logger.severe("4");
 
             // Register the connection handler when the first cell is created
             if (!connectionHandlerRegistered) {
@@ -234,6 +250,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
             connectionInfo = appServerLauncher.appLaunch(cellID, 
                                                          /*TODO:serverState.getExecutionCapability()*/"xremwin", 
                                                          serverState.getAppName(), serverState.getCommand());
+            logger.severe("5");
             if (connectionInfo == null) {
                 logger.warning("Could not launch app " + serverState.getAppName());
                 return;

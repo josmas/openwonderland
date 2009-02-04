@@ -26,6 +26,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderConnectionType;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.AppContext;
 
 /**
  * The connection between the SAS provider and the SAS server.
@@ -37,11 +39,11 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
     private static final Logger logger = Logger.getLogger(SasProviderConnectionHandler.class.getName());
     
     /** The SAS server which lives in the Wonderland server. */
-    private SasServer sasServer;
+    private ManagedReference<SasServer> serverRef;
 
-    public SasProviderConnectionHandler(SasServer sasServer) {
+    public SasProviderConnectionHandler(SasServer server) {
         super();
-        this.sasServer = sasServer;
+        serverRef = AppContext.getDataManager().createReference(server);
     }
 
     public ConnectionType getConnectionType() {
@@ -56,7 +58,8 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
                                 WonderlandClientID clientID,
                                 Properties properties) 
     {
-        sasServer.providerConnected(sender, clientID);
+        SasServer server = (SasServer) serverRef.get();
+        server.providerConnected(sender, clientID);
     }
 
     public void messageReceived(WonderlandClientSender sender, 
@@ -79,6 +82,7 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger./*TODO: fine*/severe("SasProvider client disconnected.");
-        sasServer.providerDisconnected(sender, clientID);
+        SasServer server = (SasServer) serverRef.get();
+        server.providerDisconnected(sender, clientID);
     }
 }
