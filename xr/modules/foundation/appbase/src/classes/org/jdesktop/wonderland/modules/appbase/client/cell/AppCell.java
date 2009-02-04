@@ -196,7 +196,7 @@ public abstract class AppCell extends Cell implements Displayer, ClientPlugin {
     /**
      * {@inheritDoc}
      */
-    public GuiFactory getGuiFactory () {
+    public GuiFactory getGui2DFactory () {
         return gui2DFactory;
     }
 
