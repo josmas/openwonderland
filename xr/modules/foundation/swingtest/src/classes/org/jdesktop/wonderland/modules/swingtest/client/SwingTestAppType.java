@@ -28,21 +28,21 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class SwingTestAppType extends AppType2D {
 
     /** 
      * Return the name of the Swing tst app type.
      */
-    public String getName () {
-	return SwingTestTypeName.SWING_TEST_APP_TYPE_NAME;
+    public String getName() {
+        return SwingTestTypeName.SWING_TEST_APP_TYPE_NAME;
     }
 
     /**
      * {@inheritDoc}
      */
-    public AppLaunchMethods getLaunchMethods () {
-	return new SwingTestLaunchMethods();
+    @Override
+    public AppLaunchMethods getLaunchMethods() {
+        return new SwingTestLaunchMethods();
     }
 }

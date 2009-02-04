@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.swingtest.client;
+package org.jdesktop.wonderland.modules.swingtest.client.cell;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -23,43 +23,43 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
-import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellClientState;
+import org.jdesktop.wonderland.modules.swingtest.common.cell.SwingTestCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.modules.swingtest.client.SwingTestApp;
+import org.jdesktop.wonderland.modules.swingtest.client.SwingTestAppType;
+import org.jdesktop.wonderland.modules.swingtest.client.SwingTestWindow;
 
 /**
  * Client cell for the swing test.
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class SwingTestCell extends App2DCell {
-    
+
     /** The logger used by this class */
     private static final Logger logger = Logger.getLogger(SwingTestCell.class.getName());
-    
     /** The (singleton) window created by the Swing test app */
     private SwingTestWindow window;
-
     /** The cell client state message received from the server cell */
     private SwingTestCellClientState clientState;
-    
+
     /**
      * Create an instance of SwingTestCell.
      *
      * @param cellID The ID of the cell.
      * @param cellCache the cell cache which instantiated, and owns, this cell.
      */
-    public SwingTestCell (CellID cellID, CellCache cellCache) {
+    public SwingTestCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
-    
+
     /** 
      * {@inheritDoc}
      */
-    public AppType getAppType () {
-	return new SwingTestAppType();
+    public AppType getAppType() {
+        return new SwingTestAppType();
     }
 
     /**
@@ -67,11 +67,11 @@ public class SwingTestCell extends App2DCell {
      *
      * @param state the client state with which initialize the cell.
      */
-    public void setClientState (CellClientState state) {
-	super.setClientState(state);
+    @Override
+    public void setClientState(CellClientState state) {
+        super.setClientState(state);
         clientState = (SwingTestCellClientState) state;
     }
-
 
     /**
      * This is called when the status of the cell changes.
@@ -82,29 +82,29 @@ public class SwingTestCell extends App2DCell {
 
         switch (status) {
 
-	    // The cell is now visible
+            // The cell is now visible
             case ACTIVE:
-		
-		setApp(new SwingTestApp(getAppType(), clientState.getPreferredWidth(), 
-					clientState.getPreferredHeight(),
-					clientState.getPixelScale()));
 
-		// Associate the app with this cell (must be done before making it visible)
-		app.setDisplayer(this);
+                setApp(new SwingTestApp(getAppType(), clientState.getPreferredWidth(),
+                        clientState.getPreferredHeight(),
+                        clientState.getPixelScale()));
 
-		// Get the window the app created
-		window = ((SwingTestApp)app).getWindow();
+                // Associate the app with this cell (must be done before making it visible)
+                app.setDisplayer(this);
 
-		// Make the app window visible
-		((SwingTestApp)app).setVisible(true);
-		break;
+                // Get the window the app created
+                window = ((SwingTestApp) app).getWindow();
 
-	    // The cell is no longer visible
+                // Make the app window visible
+                ((SwingTestApp) app).setVisible(true);
+                break;
+
+            // The cell is no longer visible
             case DISK:
-		((SwingTestApp)app).setVisible(false);
-		window = null;
-		break;
-	} 
+                ((SwingTestApp) app).setVisible(false);
+                window = null;
+                break;
+        }
 
         return ret;
     }
