@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.appbase.client.cell.gui.guidefault;
 
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;

@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.input.test.KeyEvent3DLogger;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 
 /**
  * FOR DEBUG.

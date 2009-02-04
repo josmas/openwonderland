@@ -24,8 +24,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * A 2D label which displays the window title.
  *
  * @author deronj
- */ 
-
+ */
 @ExperimentalAPI
 public class FrameLabelTitle extends FrameLabel {
 
@@ -35,21 +34,22 @@ public class FrameLabelTitle extends FrameLabel {
      * @param view The view the frame encloses.
      * @param gui The event handler.
      */
-    public FrameLabelTitle (Window2DView view, Gui2D gui) {
-	super("FrameLabelTitle", view, gui);
+    public FrameLabelTitle(Window2DView view, Gui2D gui) {
+        super("FrameLabelTitle", view, gui);
     }
 
     /**
      * Calculate the geometry layout.
      */
-    protected void updateLayout () {
+    @Override
+    protected void updateLayout() {
 
-	// The width of title is half of view width
-	width = view.getWidth() / 2f;
-	height = LABEL_HEIGHT;
+        // The width of title is half of view width
+        width = view.getWidth() / 2f;
+        height = LABEL_HEIGHT;
 
-	//	x = FrameWorldDefault.SIDE_THICKNESS;
-	x = -(view.getWidth() - width) / 2f;
-	y = 0f;
+        //	x = FrameWorldDefault.SIDE_THICKNESS;
+        x = -(view.getWidth() - width) / 2f;
+        y = 0f;
     }
 }

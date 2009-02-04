@@ -31,9 +31,8 @@ import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-class Gui2DResizeCorner extends Gui2DSide { 
+class Gui2DResizeCorner extends Gui2DSide {
 
     /** The associated resize corner component */
     protected FrameResizeCorner resizeCorner;
@@ -43,16 +42,17 @@ class Gui2DResizeCorner extends Gui2DSide {
      *
      * @param view The view associated with the component that uses this Gui.
      */
-    public Gui2DResizeCorner (Window2DView view) {
-	super(view);
+    public Gui2DResizeCorner(Window2DView view) {
+        super(view);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void cleanup () {
-	super.cleanup();
-	resizeCorner = null;
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        resizeCorner = null;
     }
 
     /**
@@ -60,16 +60,16 @@ class Gui2DResizeCorner extends Gui2DSide {
      *
      * @param resizeCorner The resize corner component.
      */
-    public void setComponent (FrameResizeCorner resizeCorner) {
-	this.resizeCorner = resizeCorner;
+    public void setComponent(FrameResizeCorner resizeCorner) {
+        this.resizeCorner = resizeCorner;
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void attachMouseListener (Entity entity) {
-	mouseListener = new ResizeCornerMouseListener();
-	mouseListener.addToEntity(entity);
+    protected void attachMouseListener(Entity entity) {
+        mouseListener = new ResizeCornerMouseListener();
+        mouseListener.addToEntity(entity);
     }
 
     /**
@@ -77,21 +77,21 @@ class Gui2DResizeCorner extends Gui2DSide {
      */
     protected class ResizeCornerMouseListener extends Gui2DSide.SideMouseListener {
 
-	/**
-	 * Called when a 3D event has occurred.
-	 */
-	public void commitEvent (Event event) {
-	    Action action;
+        /**
+         * Called when a 3D event has occurred.
+         */
+        public void commitEvent(Event event) {
+            Action action;
 
-	    MouseEvent3D me3d = (MouseEvent3D) event;
+            MouseEvent3D me3d = (MouseEvent3D) event;
 
-	    if (me3d instanceof MouseEnterExitEvent3D &&
-		controlArb.hasControl()) {
-		resizeCorner.setMouseInside(((MouseEnterExitEvent3D)me3d).isEnter());
-	    }
+            if (me3d instanceof MouseEnterExitEvent3D &&
+                    controlArb.hasControl()) {
+                resizeCorner.setMouseInside(((MouseEnterExitEvent3D) me3d).isEnter());
+            }
 
-	    super.commitEvent(event);
-	}
+            super.commitEvent(event);
+        }
     }
 
     /**
@@ -101,13 +101,13 @@ class Gui2DResizeCorner extends Gui2DSide {
      * @param me The AWT event for this 3D mouse event.
      * @param me3d The 3D mouse event.
      */
-    protected Action determineIfConfigAction (MouseEvent me, MouseEvent3D me3d) {
-	Action action = determineIfToFrontAction (me);
-	if (action != null) {
-	    return action;
-	}
+    protected Action determineIfConfigAction(MouseEvent me, MouseEvent3D me3d) {
+        Action action = determineIfToFrontAction(me);
+        if (action != null) {
+            return action;
+        }
 
-	return super.determineIfConfigAction(me, me3d);
+        return super.determineIfConfigAction(me, me3d);
     }
 
     /**
@@ -117,12 +117,12 @@ class Gui2DResizeCorner extends Gui2DSide {
      * @param me The AWT event for this 3D mouse event.
      * @param me3d The 3D mouse event.
      */
-    protected void performConfigAction (Action action, MouseEvent me, MouseEvent3D me3d) {
-	if (action.type == ActionType.TO_FRONT) {
-	    ((Window2D)window).toFront();
-	    return;
-	}
+    protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
+        if (action.type == ActionType.TO_FRONT) {
+            ((Window2D) window).toFront();
+            return;
+        }
 
-	super.performConfigAction(action, me, me3d);
+        super.performConfigAction(action, me, me3d);
     }
 }

@@ -39,7 +39,6 @@ import javax.media.opengl.GLContext;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class Gui2DInterior extends Gui2D {
 
@@ -49,18 +48,19 @@ public class Gui2DInterior extends Gui2D {
     // BTW: we don't support Java 5 on Linux, so this is okay.
     private static boolean isLinux = System.getProperty("os.name").equals("Linux");
     private static Method isAWTLockHeldByCurrentThreadMethod;
-    static {
-	if (isLinux) {
-	    try {
-		Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
-		isAWTLockHeldByCurrentThreadMethod = 
-		    awtToolkitClass.getMethod("isAWTLockHeldByCurrentThread");
-	    } catch (ClassNotFoundException ex) {
-	    } catch (NoSuchMethodException ex) {
-	    }
-	}
-    }
 
+
+    static {
+        if (isLinux) {
+            try {
+                Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
+                isAWTLockHeldByCurrentThreadMethod =
+                        awtToolkitClass.getMethod("isAWTLockHeldByCurrentThread");
+            } catch (ClassNotFoundException ex) {
+            } catch (NoSuchMethodException ex) {
+            }
+        }
+    }
     /** A listener for keys pressed and released */
     protected InteriorKeyListener keyListener;
 
@@ -69,26 +69,27 @@ public class Gui2DInterior extends Gui2D {
      *
      * @param view The view associated with the component that uses this Gui.
      */
-    public Gui2DInterior (Window2DView view) {
-	super(view);
+    public Gui2DInterior(Window2DView view) {
+        super(view);
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void attachMouseListener (Entity entity) {
-	logger.severe("&&&&&&& entity = " + entity);
-	mouseListener = new InteriorMouseListener();
-	mouseListener.addToEntity(entity);
+    @Override
+    protected void attachMouseListener(Entity entity) {
+        logger.severe("&&&&&&& entity = " + entity);
+        mouseListener = new InteriorMouseListener();
+        mouseListener.addToEntity(entity);
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void detachMouseListener (Entity entity) {
-	if (mouseListener != null && entity != null) {
-	    mouseListener.removeFromEntity(entity);
-	}
+    protected void detachMouseListener(Entity entity) {
+        if (mouseListener != null && entity != null) {
+            mouseListener.removeFromEntity(entity);
+        }
     }
 
     /**
@@ -101,68 +102,69 @@ public class Gui2DInterior extends Gui2D {
      */
     protected class InteriorMouseListener extends Gui2D.MouseListener {
 
-	public void commitEvent (Event event) {
-	    logger.fine("event = " + event);
-	    MouseEvent3D me3d = (MouseEvent3D) event;
+        public void commitEvent(Event event) {
+            logger.fine("event = " + event);
+            MouseEvent3D me3d = (MouseEvent3D) event;
 
-	    // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
-	    // In order to avoid deadlock with any threads which are already holding the AWT lock and which 
-	    // want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
-	    // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
-	    // the AWT lock afterward.
-	    GLContext glContext = null;
-	    if (isAWTLockHeldByCurrentThreadMethod != null) {
-		try {
-		    Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
-		    if (ret.booleanValue()) {
-			glContext = GLContext.getCurrent();
-			glContext.release();
-		    }
-		} catch (Exception ex) {}
-	    }
+            // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
+            // In order to avoid deadlock with any threads which are already holding the AWT lock and which
+            // want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
+            // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
+            // the AWT lock afterward.
+            GLContext glContext = null;
+            if (isAWTLockHeldByCurrentThreadMethod != null) {
+                try {
+                    Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
+                    if (ret.booleanValue()) {
+                        glContext = GLContext.getCurrent();
+                        glContext.release();
+                    }
+                } catch (Exception ex) {
+                }
+            }
 
-	    // When user has control all events over the interior are sent to the app.
-	    // First send it to the app's view for conversion to a 2D event.
-	    try {
-		if (getControlArb().hasControl()) {
-		    ((Window2DView)view).deliverEvent((Window2D)window, me3d);
-		    return;
-		}
-	    } finally {
-		// Linux-specific workaround: Reacquire the lock if necessary.
-		if (glContext != null) {
-		    glContext.makeCurrent();
-		}
-	    }
+            // When user has control all events over the interior are sent to the app.
+            // First send it to the app's view for conversion to a 2D event.
+            try {
+                if (getControlArb().hasControl()) {
+                    ((Window2DView) view).deliverEvent((Window2D) window, me3d);
+                    return;
+                }
+            } finally {
+                // Linux-specific workaround: Reacquire the lock if necessary.
+                if (glContext != null) {
+                    glContext.makeCurrent();
+                }
+            }
 
-	    MouseEvent me = (MouseEvent) me3d.getAwtEvent();
+            MouseEvent me = (MouseEvent) me3d.getAwtEvent();
 
-	    // Handle miscellaneous events over interior when user doesn't have control
-	    Action action = determineIfMiscAction(me, me3d);
-	    if (action != null) {
-		performMiscAction(action, me, me3d);
-		return;
-	    }
+            // Handle miscellaneous events over interior when user doesn't have control
+            Action action = determineIfMiscAction(me, me3d);
+            if (action != null) {
+                performMiscAction(action, me, me3d);
+                return;
+            }
 
-	    super.commitEvent(event);
-	}
+            super.commitEvent(event);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void attachKeyListener (Entity entity) {
-	keyListener = new InteriorKeyListener();
-	keyListener.addToEntity(entity);
+    protected void attachKeyListener(Entity entity) {
+        keyListener = new InteriorKeyListener();
+        keyListener.addToEntity(entity);
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void detachKeyListener (Entity entity) {
-	if (keyListener != null && entity != null) {
-	    keyListener.removeFromEntity(entity);
-	}
+    protected void detachKeyListener(Entity entity) {
+        if (keyListener != null && entity != null) {
+            keyListener.removeFromEntity(entity);
+        }
     }
 
     /**
@@ -177,27 +179,27 @@ public class Gui2DInterior extends Gui2D {
      */
     protected class InteriorKeyListener extends EventClassListener {
 
-	public Class[] eventClassesToConsume () {
-	    return new Class[] { KeyEvent3D.class };
-	}
+        public Class[] eventClassesToConsume() {
+            return new Class[]{KeyEvent3D.class};
+        }
 
-    public void commitEvent (Event event) {
-	    KeyEvent3D ke3d = (KeyEvent3D) event;
-	    KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
-            
-	    if (ke3d.isPressed() &&
-		ke.getKeyCode() == KeyEvent.VK_F12 &&
-		(ke.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
-		ControlArb.releaseControlAll();
-		return;
-	    }
-	    
-	    // Note: currently no special GUI processing is needed for key events
-	    // so they are all just sent to the app group if it has control
+        public void commitEvent(Event event) {
+            KeyEvent3D ke3d = (KeyEvent3D) event;
+            KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
+
+            if (ke3d.isPressed() &&
+                    ke.getKeyCode() == KeyEvent.VK_F12 &&
+                    (ke.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+                ControlArb.releaseControlAll();
+                return;
+            }
+
+            // Note: currently no special GUI processing is needed for key events
+            // so they are all just sent to the app group if it has control
             ControlArb controlArb = getControlArb();
             if (controlArb.hasControl()) {
-		controlArb.deliverEvent((Window2D)window, ke);
-	    }
-	}	    
+                controlArb.deliverEvent((Window2D) window, ke);
+            }
+        }
     }
 }

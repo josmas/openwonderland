@@ -39,22 +39,18 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * The width and height of the rectangle are as specified.
  *
  * @author deronj
- */ 
-
+ */
 @ExperimentalAPI
 public class FrameRect extends FrameComponent {
 
     private static final Logger logger = Logger.getLogger(FrameRect.class.getName());
-
     /** The width of the side in local coordinates. */
     protected float width;
-
     /** The height of the side in local coordinates. */
     protected float height;
-
     /** The quad geometry for the rect. */
     protected Quad quad;
-    
+
     /** 
      * Create a new instance of <code>FrameRect</code> a default name and with the specified size.
      *
@@ -63,16 +59,16 @@ public class FrameRect extends FrameComponent {
      * @param width The width of rectangle in local coordinates.
      * @param height The height of rectangle in local coordinates.
      */
-    public FrameRect (WindowView view, Gui2D gui, float width, float height) {
+    public FrameRect(WindowView view, Gui2D gui, float width, float height) {
         this("FrameRect", view, gui, width, height);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void cleanup () {
-	super.cleanup();
-	quad = null;
+    public void cleanup() {
+        super.cleanup();
+        quad = null;
     }
 
     /** 
@@ -84,102 +80,100 @@ public class FrameRect extends FrameComponent {
      * @param width The width of rectangle in local coordinates.
      * @param height The height of rectangle in local coordinates.
      */
-    public FrameRect (String name, WindowView view, Gui2D gui, float width, float height) {
+    public FrameRect(String name, WindowView view, Gui2D gui, float width, float height) {
         super(name, view, gui);
-	try {
-	    resize(width, height);
+        try {
+            resize(width, height);
         } catch (InstantiationException ex) {
             logger.warning("Cannot update FrameRect component");
         }
 
-	// TODO: eventually remove when world lights are working
-	initLightState();
+        // TODO: eventually remove when world lights are working
+        initLightState();
     }
-
 
     /**
      * {@inheritDoc}
      */
-    public void update () throws InstantiationException {
-	updateLayout();
+    public void update() throws InstantiationException {
+        updateLayout();
 
-	if (quad == null) {
-	    quad = new Quad("FrameRect-Quad", width, height);
-	    quad.setModelBound(new BoundingBox());
-	} else {
-	    quad.resize(width, height);
-	}
-	quad.updateModelBound();
-	localToCellNode.attachChild(quad);
+        if (quad == null) {
+            quad = new Quad("FrameRect-Quad", width, height);
+            quad.setModelBound(new BoundingBox());
+        } else {
+            quad.resize(width, height);
+        }
+        quad.updateModelBound();
+        localToCellNode.attachChild(quad);
 
-	super.update();
+        super.update();
     }
 
     /**
      * Returns the width of this component. 
      */
-    public float getWidth () {
-	return width;
+    public float getWidth() {
+        return width;
     }
 
     /**
      * Returns the height of this component. 
      */
-    public float getHeight () {
-	return height;
+    public float getHeight() {
+        return height;
     }
 
     // TODO: temp: until sync up with global light change
     /**
      * Initialize the light state.
      */
-    protected void initLightState () {
-	PointLight light = new PointLight();
-	light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
-	light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
-	light.setLocation(new Vector3f(100, 100, 100));
-	light.setEnabled(true);
-	LightState lightState = (LightState) 
-	    ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
-	lightState.setEnabled(true);
-	lightState.attach(light);
-	quad.setRenderState(lightState);
-	/*
-	System.err.println(">>>>>>>>>>>>>> Initializing light state for component" + name);
-	System.err.println("--------------------------------------------");
-	GraphicsUtils.printCommonRenderStates(quad);
-	System.err.println("--------------------------------------------");
-	*/
+    protected void initLightState() {
+        PointLight light = new PointLight();
+        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
+        light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
+        light.setLocation(new Vector3f(100, 100, 100));
+        light.setEnabled(true);
+        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
+        lightState.setEnabled(true);
+        lightState.attach(light);
+        quad.setRenderState(lightState);
+    /*
+    System.err.println(">>>>>>>>>>>>>> Initializing light state for component" + name);
+    System.err.println("--------------------------------------------");
+    GraphicsUtils.printCommonRenderStates(quad);
+    System.err.println("--------------------------------------------");
+     */
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setColor (ColorRGBA color) {
-	if (quad != null) {
-	    MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
-	    if (ms == null) {
-		ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-		quad.setRenderState(ms);
-	    }
-	    ms.setAmbient(new ColorRGBA(color));
-	    ms.setDiffuse(new ColorRGBA(color));
-	}
+    public void setColor(ColorRGBA color) {
+        if (quad != null) {
+            MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
+            if (ms == null) {
+                ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                quad.setRenderState(ms);
+            }
+            ms.setAmbient(new ColorRGBA(color));
+            ms.setDiffuse(new ColorRGBA(color));
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public ColorRGBA getColor () {
-	MaterialState ms = null;
-	if (quad != null) {
-	    ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
-	}
-	if (ms == null) {
-	    return new ColorRGBA(1f, 1f, 1f, 1f);
-	} else {
-	    return ms.getDiffuse();
-	}
+    public ColorRGBA getColor() {
+        MaterialState ms = null;
+        if (quad != null) {
+            ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
+        }
+        if (ms == null) {
+            return new ColorRGBA(1f, 1f, 1f, 1f);
+        } else {
+            return ms.getDiffuse();
+        }
     }
 
     /**
@@ -188,25 +182,25 @@ public class FrameRect extends FrameComponent {
      * @param width The new width.
      * @param height The new height.
      */
-    public void resize (float width, float height) throws InstantiationException {
-	this.width = width;
-	this.height = height;
-	update();
+    public void resize(float width, float height) throws InstantiationException {
+        this.width = width;
+        this.height = height;
+        update();
     }
 
     /**
      * Calculate the geometry layout.
      */
-    protected void updateLayout () {
-	// Nothing to do for this class
+    protected void updateLayout() {
+        // Nothing to do for this class
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected Spatial[] getSpatials () {
-	return new Node[] { localToCellNode };
+    protected Spatial[] getSpatials() {
+        return new Node[]{localToCellNode};
     }
 }
 

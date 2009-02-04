@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell;
 
-import org.jdesktop.wonderland.modules.appbase.client.cell.AppCell;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
 
