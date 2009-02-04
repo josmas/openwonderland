@@ -21,14 +21,11 @@ import java.util.Properties;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
-import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderConnectionType;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.servermanager.common.PingRequestMessage;
-import org.jdesktop.wonderland.servermanager.common.PingResponseMessage;
-import org.jdesktop.wonderland.servermanager.common.ServerManagerConnectionType;
 
 /**
  * The connection between the SAS provider and the SAS server.
@@ -39,29 +36,36 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
 
     private static final Logger logger = Logger.getLogger(SasProviderConnectionHandler.class.getName());
     
-    public SasProviderConnectionHandler() {
+    /** The SAS server which lives in the Wonderland server. */
+    private SasServer sasServer;
+
+    public SasProviderConnectionHandler(SasServer sasServer) {
         super();
+        this.sasServer = sasServer;
     }
 
     public ConnectionType getConnectionType() {
-        return SasProviderConnectionType.CONNECTION_TYPE;
+        return SasProviderConnectionType.CLIENT_TYPE;
     }
 
     public void registered(WonderlandClientSender sender) {
-        logger.info("Sas provider connection registered.");
+        logger./*TODO: info*/severe("Sas provider connection registered.");
     }
 
     public void clientConnected(WonderlandClientSender sender, 
                                 WonderlandClientID clientID,
                                 Properties properties) 
     {
-        logger.fine("SasProvider client connected.");
+        sasServer.providerConnected(sender, clientID);
     }
 
     public void messageReceived(WonderlandClientSender sender, 
                                 WonderlandClientID clientID,
                                 Message message) 
     {
+        logger.severe("***** Message received from sas provider: " + message);
+
+        /* TODO
         if (message instanceof PingRequestMessage) {
 
             logger.fine("Received ping message");
@@ -70,9 +74,11 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
 
             sender.send(clientID, resp);
         }
+        */
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-        logger.fine("SasProvider client disconnected.");
+        logger./*TODO: fine*/severe("SasProvider client disconnected.");
+        sasServer.providerDisconnected(sender, clientID);
     }
 }
