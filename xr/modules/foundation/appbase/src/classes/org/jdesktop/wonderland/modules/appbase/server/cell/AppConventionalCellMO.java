@@ -79,12 +79,12 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     protected Serializable connectionInfo;
     /** The SAS server. */
-    private AppServerLauncher appServerLauncher;
+    private static AppServerLauncher appServerLauncher;
 
     /**
      * The SAS server must implement this.
      */
-    public static interface AppServerLauncher {
+    public interface AppServerLauncher {
 
         /**
          * Launch a server shared application.
@@ -105,8 +105,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     /**
      * Register an app server launcher with app conventional.
      */
-    public void registerAppServerLauncher (AppServerLauncher appServerLauncher) {
-        this.appServerLauncher = appServerLauncher;
+    public static void registerAppServerLauncher (AppServerLauncher appServerLauncher) {
+        appServerLauncher = appServerLauncher;
     }
 
     /** Create an instance of AppConventionalCellMO. */
@@ -231,10 +231,9 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
                 connectionHandlerRegistered = true;
             }
 
-            /* TODO
-            connectionInfo = appServerLauncher.appLaunch(cellID, serverState.getExecutionCapability(), 
+            connectionInfo = appServerLauncher.appLaunch(cellID, 
+                                                         /*TODO:serverState.getExecutionCapability()*/"xremwin", 
                                                          serverState.getAppName(), serverState.getCommand());
-            */                                                         
             if (connectionInfo == null) {
                 logger.warning("Could not launch app " + serverState.getAppName());
                 return;
@@ -244,7 +243,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
         } else {
             if (connectionInfo != null) {
-                // TODO: SasServer.appStop(cellID);
+                appServerLauncher.appStop(cellID);
                 connectionInfo = null;
             }
             if (connectionHandlerRegistered) {
