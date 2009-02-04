@@ -18,10 +18,12 @@
 package org.jdesktop.wonderland.modules.sas.provider;
 
 import java.io.IOException;
+import java.net.URL;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.LoginUI;
 import org.jdesktop.wonderland.client.login.PluginFilter;
@@ -62,6 +64,9 @@ public class SasProvider {
         this.password = password;
         this.serverUrl = serverUrl;
         this.listener = listener;
+
+        // set up URL handlers for Wonderland types
+        URL.setURLStreamHandlerFactory(new WonderlandURLStreamHandlerFactory());
 
         // Prevent the login manager from loading usual Wonderland user client jars
         LoginManager.setPluginFilter(new PluginFilter.NoPluginFilter());
