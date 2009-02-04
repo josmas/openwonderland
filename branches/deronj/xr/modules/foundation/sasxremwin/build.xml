@@ -43,10 +43,26 @@
     </target>
 
     <target name="dist" depends="build,jar-provider">
-        <mkdir dir="${module.dist.dir}"/>
+        <mkdir dir="${module.dist.dir}"/> 
+	<copy todir="${module.dist.dir}"
+	      file="${current.dir}/build/provider/sasxremwin-provider.jar">
+        </copy>
     </target>                                                       
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
 
     <target name="clean" depends="-module-clean"/>
+
+    <pathconvert property="provider-run.classpath">
+      <path location="dist/sasxremwin-provider.jar"/>
+      <path location="${module-provider.classpath}"/>
+      <path location="${core-client.classpath}"/>
+    </pathconvert>
+    
+    <target name="run" depends="dist">
+        <exec executable="java">
+	  <arg line="-cp ${provider-run.classpath} org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain"/>
+        </exec>
+    </target>
+
 </project>
