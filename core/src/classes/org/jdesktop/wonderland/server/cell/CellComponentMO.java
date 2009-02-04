@@ -35,14 +35,26 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 public abstract class CellComponentMO implements ManagedObject, Serializable {
     protected ManagedReference<CellMO> cellRef;
     protected CellID cellID;
-    
+
+    /* True if the component is live, false if not */
+    private boolean isLive = false;
+
     public CellComponentMO(CellMO cell) {        
         this.cellRef = AppContext.getDataManager().createReference(cell);
         cellID = cell.getCellID();
     }
     
     protected void setLive(boolean live) {
-        // Do nothing by default 
+        this.isLive = live;
+    }
+
+    /**
+     * Returns true if the component is live, false if not.
+     *
+     * @return True if the component is live
+     */
+    public boolean isLive() {
+        return isLive;
     }
     
     /**
