@@ -249,6 +249,7 @@ public class PendingManager {
                 read += len;
                 os.write(b, 0, len);
             }
+            jis.close();
             os.close();
         }
     }
