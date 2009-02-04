@@ -21,8 +21,8 @@ import com.jme.math.Vector2f;
 import java.math.BigInteger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App;
-import org.jdesktop.wonderland.modules.appbase.client.Window2DView;
 import org.jdesktop.wonderland.modules.appbase.client.WindowConventional;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
 
 /**
  * The Xremwin window class. 
@@ -224,7 +224,8 @@ class WindowXrw extends WindowConventional {
      * Returns the name of the controlling user.
      */
     public String getControllingUser() {
-        return ((ControlArbXrw) app.getControlArb()).getController();
+       // TODO: return ((ControlArbXrw) app.getControlArb()).getController();
+       return null;
     }
 
     /**

@@ -20,9 +20,10 @@
 package org.jdesktop.wonderland.modules.xremwin.server;
 
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
-import org.jdesktop.wonderland.modules.appbase.server.AppConventionalCellMO;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellCreateMessage;
+import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppConventionalConnectionHandler;
+import org.jdesktop.wonderland.modules.xremwin.server.cell.AppCellMOXrw;
 
 /**
  * Handler for Xremwin the app conventional connection.

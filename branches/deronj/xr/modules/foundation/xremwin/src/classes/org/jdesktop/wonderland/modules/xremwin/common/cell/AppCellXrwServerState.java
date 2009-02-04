@@ -15,10 +15,10 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.xremwin.common;
+package org.jdesktop.wonderland.modules.xremwin.common.cell;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellServerState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**

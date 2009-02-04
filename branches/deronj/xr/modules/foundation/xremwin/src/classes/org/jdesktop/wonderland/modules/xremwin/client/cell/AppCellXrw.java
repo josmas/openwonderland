@@ -15,7 +15,7 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.xremwin.client;
+package org.jdesktop.wonderland.modules.xremwin.client.cell;
 
 import java.io.Serializable;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -23,10 +23,14 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.AppConventional;
-import org.jdesktop.wonderland.modules.appbase.client.AppConventionalCell;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporterFactory;
+import org.jdesktop.wonderland.modules.appbase.client.cell.AppConventionalCell;
+import org.jdesktop.wonderland.modules.xremwin.client.AppTypeXrw;
+import org.jdesktop.wonderland.modules.xremwin.client.AppXrwMaster;
+import org.jdesktop.wonderland.modules.xremwin.client.AppXrwSlave;
+import org.jdesktop.wonderland.modules.xremwin.client.AppXrwConnectionInfo;
 
 /**
  * An Xremwin client-side app cell.
@@ -80,6 +84,6 @@ public class AppCellXrw extends AppConventionalCell {
         app = new AppXrwSlave((AppTypeConventional) getAppType(), appName, pixelScale,
                 ProcessReporterFactory.getFactory().create(appName),
                 (AppXrwConnectionInfo) connectionInfo, session);
-        app.setCell(this);
+        app.setDisplayer(this);
     }
 }
