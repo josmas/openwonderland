@@ -35,7 +35,7 @@ public class AppCellXrwServerState extends AppConventionalCellServerState {
     }
 
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.xremwin.server.AppCellMOXrw";
+        return "org.jdesktop.wonderland.modules.xremwin.server.cell.AppCellMOXrw";
     }
 
     /**

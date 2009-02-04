@@ -18,15 +18,19 @@
 package org.jdesktop.wonderland.modules.sas.server;
 
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
+import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.AppContext;
 
 /**
  * Plugin to support the SAS.
  * @author deronj
  */
+@Plugin
 public class SasServerPlugin implements ServerPlugin {
 
     private static final Logger logger = Logger.getLogger(SasServerPlugin.class.getName());
@@ -36,12 +40,12 @@ public class SasServerPlugin implements ServerPlugin {
         logger.severe("***** SasServerPlugin: start initialization");
 
         // Tell the app base to call us to launch conventional server apps
-        SasServer sasServer = new SasServer();
-        AppConventionalCellMO.registerAppServerLauncher(sasServer);
+        SasServer server = new SasServer();
+        AppConventionalCellMO.registerAppServerLauncher(server);
 
         // Register the Provider connection
         CommsManager cm = WonderlandContext.getCommsManager();
-        cm.registerClientHandler(new SasProviderConnectionHandler(sasServer));
+        cm.registerClientHandler(new SasProviderConnectionHandler(server));
 
         logger.severe("***** SasServerPlugin: initialization complete");
     }
