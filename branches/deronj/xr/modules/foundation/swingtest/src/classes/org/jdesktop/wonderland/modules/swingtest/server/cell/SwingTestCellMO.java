@@ -15,16 +15,18 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.swingtest.server;
+package org.jdesktop.wonderland.modules.swingtest.server.cell;
 
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.swingtest.common.SwingTestCellClientState;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
+import org.jdesktop.wonderland.modules.swingtest.common.cell.SwingTestCellClientState;
+import org.jdesktop.wonderland.modules.swingtest.common.cell.SwingTestCellServerState;
+import org.jdesktop.wonderland.modules.swingtest.server.SwingTestAppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -32,13 +34,11 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  *
  * @author nsimpson,deronj
  */
-
 @ExperimentalAPI
 public class SwingTestCellMO extends App2DCellMO {
 
     /** The preferred width (from the WFS file) */
     private int preferredWidth;
-
     /** The preferred height (from the WFS file) */
     private int preferredHeight;
 
@@ -58,20 +58,20 @@ public class SwingTestCellMO extends App2DCellMO {
     /** 
      * {@inheritDoc}
      */
-    public AppTypeMO getAppType () {
-	return new SwingTestAppTypeMO();
+    public AppTypeMO getAppType() {
+        return new SwingTestAppTypeMO();
     }
 
     /** 
      * {@inheritDoc}
      */
     @Override
-    protected CellClientState getClientState (CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+    protected CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
             cellClientState = new SwingTestCellClientState(pixelScale);
         }
-        ((SwingTestCellClientState)cellClientState).setPreferredWidth(preferredWidth);
-        ((SwingTestCellClientState)cellClientState).setPreferredHeight(preferredHeight);
+        ((SwingTestCellClientState) cellClientState).setPreferredWidth(preferredWidth);
+        ((SwingTestCellClientState) cellClientState).setPreferredHeight(preferredHeight);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -80,11 +80,11 @@ public class SwingTestCellMO extends App2DCellMO {
      */
     @Override
     public void setServerState(CellServerState state) {
-	super.setServerState(state);
+        super.setServerState(state);
 
-	SwingTestCellServerState serverState = (SwingTestCellServerState) state;
-	preferredWidth = serverState.getPreferredWidth();
-	preferredHeight = serverState.getPreferredHeight();
-	pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
+        SwingTestCellServerState serverState = (SwingTestCellServerState) state;
+        preferredWidth = serverState.getPreferredWidth();
+        preferredHeight = serverState.getPreferredHeight();
+        pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
     }
 }

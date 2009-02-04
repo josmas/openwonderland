@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.swingtest.common;
+package org.jdesktop.wonderland.modules.swingtest.common.cell;
 
 import java.util.logging.Logger;
 import com.jme.math.Vector2f;

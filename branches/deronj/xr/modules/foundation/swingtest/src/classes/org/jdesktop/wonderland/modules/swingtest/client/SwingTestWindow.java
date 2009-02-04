@@ -22,7 +22,6 @@ import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.modules.swingtest.client.TestPanel;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -32,9 +31,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-public class SwingTestWindow extends WindowSwing  {
+public class SwingTestWindow extends WindowSwing {
 
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingTestWindow.class.getName());
@@ -48,19 +46,18 @@ public class SwingTestWindow extends WindowSwing  {
      * @param topLevel Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      */
-    public SwingTestWindow (final App app, int width, int height, boolean topLevel, Vector2f pixelScale)
-        throws InstantiationException
-    {
-	super(app, width, height, topLevel, pixelScale);
-	setSize(width, height);
-	initializeSurface();
+    public SwingTestWindow(final App app, int width, int height, boolean topLevel, Vector2f pixelScale)
+            throws InstantiationException {
+        super(app, width, height, topLevel, pixelScale);
+        setSize(width, height);
+        initializeSurface();
 
-	setTitle("Swing Test");
-	
-	JPanel testPanel = new TestPanel();
-	// Note: this seems to only be required for the swing set, but do it here for safety
-	// TODO: test without
-       	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
-	setComponent(testPanel);
+        setTitle("Swing Test");
+
+        JPanel testPanel = new TestPanel();
+        // Note: this seems to only be required for the swing set, but do it here for safety
+        // TODO: test without
+        JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
+        setComponent(testPanel);
     }
 }
