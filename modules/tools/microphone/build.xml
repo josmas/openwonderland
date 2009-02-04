@@ -15,6 +15,10 @@
         <path location="${current.dir}/../orb/build/lib/server/orb-server.jar"/>
     </pathconvert>
 
+    <!-- microphone is dependent on the jmecolladaloader -->
+    <property name="module-client.classpath" value="${current.dir}/../../world/jmecolladaloader/build/classes"/>
+
+
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
@@ -46,6 +50,7 @@
                 </serverjar>
 
             </server>
+            <art dir="${current.dir}/art"/>
         </module>
     </target>
                                            

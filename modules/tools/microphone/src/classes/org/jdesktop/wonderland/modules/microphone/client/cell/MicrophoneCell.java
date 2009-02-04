@@ -48,30 +48,29 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
 
     private static final Logger logger =
             Logger.getLogger(MicrophoneCell.class.getName());
-
     private MicrophoneMessageHandler microphoneMessageHandler;
 
     public MicrophoneCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
-	logger.fine("CREATED NEW CONEOFSILENCE CELL " + cellID);
+        logger.fine("CREATED NEW CONEOFSILENCE CELL " + cellID);
 
-	CellManager.getCellManager().addCellStatusChangeListener(this);
+        CellManager.getCellManager().addCellStatusChangeListener(this);
     }
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
-	logger.fine("got status " + status + " for cell " + cell.getCellID());
+        logger.fine("got status " + status + " for cell " + cell.getCellID());
 
         if (cell.getCellID() != getCellID()) {
             return;
         }
 
-	if (status.equals(CellStatus.ACTIVE) && microphoneMessageHandler == null) {
-	    microphoneMessageHandler = new MicrophoneMessageHandler(this);
-	} else if (status.equals(CellStatus.DISK) && microphoneMessageHandler != null) {
-	    microphoneMessageHandler.done();
-	    microphoneMessageHandler = null;
-	}
+        if (status.equals(CellStatus.ACTIVE) && microphoneMessageHandler == null) {
+            microphoneMessageHandler = new MicrophoneMessageHandler(this);
+        } else if (status.equals(CellStatus.DISK) && microphoneMessageHandler != null) {
+            microphoneMessageHandler.done();
+            microphoneMessageHandler = null;
+        }
     }
 
     /**
@@ -83,13 +82,13 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
      */
     @Override
     public void setClientState(CellClientState cellClientState) {
-	super.setClientState(cellClientState);
+        super.setClientState(cellClientState);
 
-	MicrophoneCellClientState microphoneCellClientState = (MicrophoneCellClientState) cellClientState;
+        MicrophoneCellClientState microphoneCellClientState = (MicrophoneCellClientState) cellClientState;
     }
 
     public WonderlandSession getSession() {
-	return getCellCache().getSession();
+        return getCellCache().getSession();
     }
 
     @Override
@@ -98,7 +97,7 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
             return new MicrophoneCellRenderer(this);
         }
 
-        throw new IllegalStateException("Cell does not support " + rendererType);
+        logger.warning(this.getClass().getName() + " does not support " + rendererType);
+        return null;
     }
-
 }

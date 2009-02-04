@@ -58,62 +58,57 @@ public class MicrophoneCellMO extends CellMO {
 
     private static final Logger logger =
             Logger.getLogger(MicrophoneCellMO.class.getName());
-
     private String modelFileName;
-
     private String name;
-
     private FullVolumeArea fullVolumeArea;
-
     private ActiveArea activeArea;
-
     private ManagedReference<MicrophoneMessageHandler> microphoneMessageHandlerRef;
-
     private ManagedReference<ProximityComponentMO> proxRef;
 
     public MicrophoneCellMO() {
-	addComponents();
+        addComponents();
     }
 
     public MicrophoneCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size),
-	    new CellTransform(null, center));
+                new CellTransform(null, center));
 
-	addComponents();
+        addComponents();
     }
 
     private void addComponents() {
-	addComponent(new MovableComponentMO(this));
+        addComponent(new MovableComponentMO(this));
 
         ProximityComponentMO prox = new ProximityComponentMO(this);
 
         addComponent(prox);
 
-	proxRef = AppContext.getDataManager().createReference(prox);
+        proxRef = AppContext.getDataManager().createReference(prox);
     }
 
+    @Override
     protected void setLive(boolean live) {
-	super.setLive(live);
+        super.setLive(live);
 
-	if (live == false) {
-	    if (microphoneMessageHandlerRef != null) {
-		MicrophoneMessageHandler microphoneMessageHandler = microphoneMessageHandlerRef.get();
-		microphoneMessageHandler.done();
-		AppContext.getDataManager().removeObject(microphoneMessageHandler);
-		microphoneMessageHandlerRef = null;
-	    }
+        if (live == false) {
+            if (microphoneMessageHandlerRef != null) {
+                MicrophoneMessageHandler microphoneMessageHandler = microphoneMessageHandlerRef.get();
+                microphoneMessageHandler.done();
+                AppContext.getDataManager().removeObject(microphoneMessageHandler);
+                microphoneMessageHandlerRef = null;
+            }
 
-	    return;
-	}
+            return;
+        }
 
-	microphoneMessageHandlerRef = AppContext.getDataManager().createReference(
-	    new MicrophoneMessageHandler(this, name));
+        microphoneMessageHandlerRef = AppContext.getDataManager().createReference(
+                new MicrophoneMessageHandler(this, name));
 
         BoundingVolume[] bounds = new BoundingVolume[2];
 
-	if (fullVolumeArea.areaType.equalsIgnoreCase("Sphere")) {
+        if (fullVolumeArea.areaType.equalsIgnoreCase("Sphere")) {
             bounds[0] = new BoundingSphere((float) fullVolumeArea.xExtent / 2, new Vector3f());
-	} else {
+        } else {
             bounds[0] = new BoundingBox(new Vector3f(), (float) fullVolumeArea.xExtent,
 		(float) fullVolumeArea.yExtent, (float) fullVolumeArea.zExtent);
 	}
@@ -128,8 +123,8 @@ public class MicrophoneCellMO extends CellMO {
 	        (float) activeArea.yExtent, (float) activeArea.zExtent);
 	}
 
-        MicrophoneProximityListener microphoneProximityListener = 
-	    new MicrophoneProximityListener(name, proxRef, bounds);
+        MicrophoneProximityListener microphoneProximityListener =
+                new MicrophoneProximityListener(name, proxRef, bounds);
     }
 
     @Override
@@ -145,7 +140,7 @@ public class MicrophoneCellMO extends CellMO {
 
         if (cellClientState == null) {
             cellClientState = new MicrophoneCellClientState(name, fullVolumeArea,
-                activeArea);
+                    activeArea);
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -155,11 +150,11 @@ public class MicrophoneCellMO extends CellMO {
     public void setServerState(CellServerState cellServerState) {
         super.setServerState(cellServerState);
 
-	MicrophoneCellServerState microphoneCellServerState = (MicrophoneCellServerState) cellServerState;
+        MicrophoneCellServerState microphoneCellServerState = (MicrophoneCellServerState) cellServerState;
 
-	name = microphoneCellServerState.getName();
-	fullVolumeArea = microphoneCellServerState.getFullVolumeArea();
-	activeArea = microphoneCellServerState.getActiveArea();
+        name = microphoneCellServerState.getName();
+        fullVolumeArea = microphoneCellServerState.getFullVolumeArea();
+        activeArea = microphoneCellServerState.getActiveArea();
 
         logger.fine("setServerState fva " + fullVolumeArea.areaType
             + " x " + fullVolumeArea.xExtent
@@ -186,10 +181,9 @@ public class MicrophoneCellMO extends CellMO {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
             cellServerState = new MicrophoneCellServerState(name, fullVolumeArea,
-		activeArea);
+                    activeArea);
         }
 
         return super.getServerState(cellServerState);
     }
-
 }
