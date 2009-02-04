@@ -346,7 +346,18 @@ public abstract class BasicRenderer implements CellRendererJME {
      * @param worldTransform
      */
     public void cellTransformUpdate(CellTransform worldTransform) {
-        if (moveProcessor!=null) {
+        // The fast-path case is if the move processor already exists, in
+        // which case, we move the cell
+        if (moveProcessor != null) {
+            moveProcessor.cellMoved(worldTransform);
+            return;
+        }
+
+        // Otherwise, the move processor is null so we will attempt to add it
+        // but only if there is a movable component on the cell.
+        if (cell.getComponent(MovableComponent.class) != null && rootNode != null) {
+            moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
+            getEntity().addComponent(MoveProcessor.class, moveProcessor);
             moveProcessor.cellMoved(worldTransform);
         }
     }
