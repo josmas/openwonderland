@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client.cell;
 import java.lang.reflect.Constructor;
 import org.jdesktop.wonderland.modules.appbase.client.*;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -71,7 +72,8 @@ public abstract class AppCell extends Cell implements Displayer, ClientPlugin {
             Constructor constructor = clazz.getConstructor();
             gui2DFactory = (GuiFactoryCell) constructor.newInstance();
         } catch(Exception e) {
-            logger.severe("Error instantiating app GUI factory "+ GUI_FACTORY_CLASS_DEFAULT, e);
+            logger.severe("Error instantiating app GUI factory "+ GUI_FACTORY_CLASS_DEFAULT+
+                        ", Exception = " + e);
         }
     }
 
