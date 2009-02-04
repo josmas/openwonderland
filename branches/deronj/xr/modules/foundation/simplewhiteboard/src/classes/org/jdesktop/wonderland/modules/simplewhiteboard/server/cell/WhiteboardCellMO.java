@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.simplewhiteboard.server;
+package org.jdesktop.wonderland.modules.simplewhiteboard.server.cell;
 
 import com.jme.math.Vector2f;
 import com.sun.sgs.app.AppContext;
@@ -30,12 +30,14 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
-import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
+import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellClientState;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardAppTypeMO;
+import org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
