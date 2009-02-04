@@ -87,6 +87,7 @@ import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.common.modules.ModuleUploader;
@@ -225,24 +226,27 @@ public class ImportSessionFrame extends javax.swing.JFrame
         removePMI = new javax.swing.JMenuItem();
         loadingDialogPanel = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        importTable = new javax.swing.JTable();
-        importModelB = new javax.swing.JButton();
-        deployToServerB = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        eastP = new javax.swing.JPanel();
         editB = new javax.swing.JButton();
         removeB = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        cancelButton = new javax.swing.JButton();
+        importModelB = new javax.swing.JButton();
+        centerP = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         targetServerSelector = new javax.swing.JComboBox();
-        targetModuleTF = new javax.swing.JTextField();
-        jLabel6 = new javax.swing.JLabel();
-        descriptionTF = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        saveAsModuleB = new javax.swing.JButton();
+        descriptionTF = new javax.swing.JTextField();
+        targetModuleTF = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        importTable = new javax.swing.JTable();
+        southP = new javax.swing.JPanel();
+        deployToServerB = new javax.swing.JButton();
         saveAsSrcB = new javax.swing.JButton();
+        saveAsModuleB = new javax.swing.JButton();
         okB = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         loadImportGroupMI = new javax.swing.JMenuItem();
@@ -276,6 +280,74 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 formComponentHidden(evt);
             }
         });
+        getContentPane().add(jLabel6, java.awt.BorderLayout.CENTER);
+
+        editB.setText("Edit");
+        editB.setEnabled(false);
+        editB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editBActionPerformed(evt);
+            }
+        });
+
+        removeB.setText("Remove");
+        removeB.setToolTipText("Remove the model from the import");
+        removeB.setEnabled(false);
+        removeB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeBActionPerformed(evt);
+            }
+        });
+
+        importModelB.setText("Load Model...");
+        importModelB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importModelBActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout eastPLayout = new org.jdesktop.layout.GroupLayout(eastP);
+        eastP.setLayout(eastPLayout);
+        eastPLayout.setHorizontalGroup(
+            eastPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(eastPLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(eastPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(removeB)
+                    .add(editB)
+                    .add(importModelB))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        eastPLayout.setVerticalGroup(
+            eastPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(eastPLayout.createSequentialGroup()
+                .add(34, 34, 34)
+                .add(importModelB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(editB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(removeB)
+                .addContainerGap(227, Short.MAX_VALUE))
+        );
+
+        getContentPane().add(eastP, java.awt.BorderLayout.EAST);
+
+        jLabel5.setText("Target Server :");
+
+        targetServerSelector.setRenderer(new LoginManagerRenderer());
+
+        jLabel1.setText("Model List");
+
+        jLabel3.setText("Target Name :");
+
+        jLabel7.setText("Description :");
+
+        targetModuleTF.setText("MyModule");
+        targetModuleTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                targetModuleTFActionPerformed(evt);
+            }
+        });
 
         importTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -302,67 +374,62 @@ public class ImportSessionFrame extends javax.swing.JFrame
         });
         jScrollPane1.setViewportView(importTable);
 
-        importModelB.setText("Load Model...");
-        importModelB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                importModelBActionPerformed(evt);
-            }
-        });
+        org.jdesktop.layout.GroupLayout centerPLayout = new org.jdesktop.layout.GroupLayout(centerP);
+        centerP.setLayout(centerPLayout);
+        centerPLayout.setHorizontalGroup(
+            centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, centerPLayout.createSequentialGroup()
+                .add(508, 508, 508)
+                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(centerPLayout.createSequentialGroup()
+                        .add(jLabel5)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 242, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(245, 245, 245))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, centerPLayout.createSequentialGroup()
+                        .add(6, 6, 6)
+                        .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel1)
+                            .add(centerPLayout.createSequentialGroup()
+                                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jLabel3)
+                                    .add(jLabel7))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
+                                    .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 154, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 571, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap())))
+        );
+        centerPLayout.setVerticalGroup(
+            centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(centerPLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel7))
+                .add(18, 18, 18)
+                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        getContentPane().add(centerP, java.awt.BorderLayout.CENTER);
 
         deployToServerB.setText("Deploy to server");
         deployToServerB.setToolTipText("Deploy target module to server");
         deployToServerB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deployToServerBActionPerformed(evt);
-            }
-        });
-
-        editB.setText("Edit");
-        editB.setEnabled(false);
-        editB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editBActionPerformed(evt);
-            }
-        });
-
-        removeB.setText("Remove");
-        removeB.setToolTipText("Remove the model from the import");
-        removeB.setEnabled(false);
-        removeB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeBActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setText("Model List");
-
-        jLabel3.setText("Target Name :");
-
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel5.setText("Target Server :");
-
-        targetServerSelector.setRenderer(new LoginManagerRenderer());
-
-        targetModuleTF.setText("MyModule");
-        targetModuleTF.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                targetModuleTFActionPerformed(evt);
-            }
-        });
-
-        jLabel7.setText("Description :");
-
-        saveAsModuleB.setText("Save as module...");
-        saveAsModuleB.setToolTipText("Save the module jar file");
-        saveAsModuleB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveAsModuleBActionPerformed(evt);
             }
         });
 
@@ -374,12 +441,59 @@ public class ImportSessionFrame extends javax.swing.JFrame
             }
         });
 
+        saveAsModuleB.setText("Save as module...");
+        saveAsModuleB.setToolTipText("Save the module jar file");
+        saveAsModuleB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsModuleBActionPerformed(evt);
+            }
+        });
+
         okB.setText("OK");
         okB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okBActionPerformed(evt);
             }
         });
+
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout southPLayout = new org.jdesktop.layout.GroupLayout(southP);
+        southP.setLayout(southPLayout);
+        southPLayout.setHorizontalGroup(
+            southPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, southPLayout.createSequentialGroup()
+                .addContainerGap(69, Short.MAX_VALUE)
+                .add(deployToServerB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(saveAsSrcB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(saveAsModuleB)
+                .add(35, 35, 35)
+                .add(okB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cancelButton)
+                .addContainerGap())
+        );
+        southPLayout.setVerticalGroup(
+            southPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(southPLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(southPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(deployToServerB)
+                    .add(saveAsSrcB)
+                    .add(saveAsModuleB)
+                    .add(okB)
+                    .add(cancelButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        getContentPane().add(southP, java.awt.BorderLayout.SOUTH);
 
         jMenu1.setText("File");
 
@@ -414,94 +528,6 @@ public class ImportSessionFrame extends javax.swing.JFrame
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel5)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 242, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(1028, 1028, 1028))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(96, 96, 96)
-                        .add(deployToServerB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(saveAsSrcB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(saveAsModuleB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
-                        .add(okB))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel3)
-                                    .add(jLabel7))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
-                                    .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 154, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                            .add(jLabel6)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 723, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(26, 26, 26)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(editB)
-                            .add(importModelB)
-                            .add(removeB)))
-                    .add(layout.createSequentialGroup()
-                        .add(4, 4, 4)
-                        .add(cancelButton)))
-                .add(20, 20, 20))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(importModelB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(editB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeB))
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel3)
-                            .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel6)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(jLabel7)))
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel5))
-                        .add(48, 48, 48)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(deployToServerB)
-                            .add(saveAsModuleB)
-                            .add(saveAsSrcB)
-                            .add(cancelButton)
-                            .add(okB))))
-                .addContainerGap())
-        );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -606,7 +632,6 @@ public class ImportSessionFrame extends javax.swing.JFrame
                     Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
                 }
             }
-
 
             ModuleJarWriter mjw = new ModuleJarWriter();
             File[] dirs = tmpDir.listFiles();
@@ -986,8 +1011,10 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JPanel centerP;
     private javax.swing.JButton deployToServerB;
     private javax.swing.JTextField descriptionTF;
+    private javax.swing.JPanel eastP;
     private javax.swing.JButton editB;
     private javax.swing.JMenuItem editPMI;
     private javax.swing.JButton importModelB;
@@ -1013,6 +1040,7 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     private javax.swing.JButton saveAsSrcB;
     private javax.swing.JMenuItem saveImportGroupMI;
     private javax.swing.JMenuItem sceneGraphWindowMI;
+    private javax.swing.JPanel southP;
     private javax.swing.JPopupMenu tablePopupMenu;
     private javax.swing.JTextField targetModuleTF;
     private javax.swing.JComboBox targetServerSelector;
