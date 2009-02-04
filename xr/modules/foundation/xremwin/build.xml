@@ -38,6 +38,12 @@
              <clientjar name="xremwin-client" basedir="${build.classes.dir}">
                <include name="${module.src}/client/**"/>
                <include name="${module.src}/common/**"/>
+               <exclude name="${module.src}/client/cell/**"/>
+               <exclude name="${module.src}/common/cell**"/>
+             </clientjar>
+             <clientjar name="xremwin-client-cell" basedir="${build.classes.dir}">
+               <include name="${module.src}/client/cell/**"/>
+               <include name="${module.src}/common/cell/**"/>
              </clientjar>
            </client> 
     
