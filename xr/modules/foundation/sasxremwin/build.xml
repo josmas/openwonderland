@@ -43,18 +43,29 @@
     </target>
 
     <target name="dist" depends="build,jar-provider">
+      <!-- TODO: cannot put in dist; put the runner zip in dist
         <mkdir dir="${module.dist.dir}"/> 
 	<copy todir="${module.dist.dir}"
+	      file="${current.dir}/build/provider/sasxremwin-provider.jar">
+        </copy>
+      -->
+        <mkdir dir="target"/> 
+	<copy todir="target"
 	      file="${current.dir}/build/provider/sasxremwin-provider.jar">
         </copy>
     </target>                                                       
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
 
-    <target name="clean" depends="-module-clean"/>
+    <target name="clean" depends="-module-clean">
+      <delete dir="target"/>
+    </target>
 
     <pathconvert property="provider-run.classpath">
-      <path location="dist/sasxremwin-provider.jar"/>
+      <!-- TODO: cannot put in dist; put the runner zip in dist
+      <path location="{$module.dist.dir}/sasxremwin-provider.jar"/>
+      -->
+      <path location="target/sasxremwin-provider.jar"/>
       <path location="${module-provider.classpath}"/>
       <path location="${core-client.classpath}"/>
     </pathconvert>

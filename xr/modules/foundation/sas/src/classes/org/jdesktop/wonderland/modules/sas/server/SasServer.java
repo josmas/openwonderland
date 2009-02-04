@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.sas.server;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -37,11 +38,16 @@ public class SasServer implements AppConventionalCellMO.AppServerLauncher {
 
     private static final Logger logger = Logger.getLogger(SasServer.class.getName());
 
+    /** A collection of the SAS providers which have connected. */
+    private HashMap<WonderlandClientID,WonderlandClientSender> providers = 
+        new HashMap<WonderlandClientID,WonderlandClientSender>();
+
     /**
      * Called when a new provider client connects to the SAS server.
      */
     public void providerConnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger.severe("**** Sas provider connected, clientID = " + clientID);
+        providers.put(clientID, sender);
     }
 
     /**
@@ -49,6 +55,7 @@ public class SasServer implements AppConventionalCellMO.AppServerLauncher {
      */
     public void providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger.severe("**** Sas provider disconnnected, clientID = " + clientID);
+        providers.remove(clientID);
     }
 
     /**
