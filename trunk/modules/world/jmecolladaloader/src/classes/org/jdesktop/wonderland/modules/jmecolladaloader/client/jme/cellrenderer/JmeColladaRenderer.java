@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer;
 
 import com.jme.scene.Spatial;
+import java.net.MalformedURLException;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -51,13 +53,27 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCe
  */
 public class JmeColladaRenderer extends BasicRenderer {
 
+    private Node model;
+
     public JmeColladaRenderer(Cell cell) {
         super(cell);
     }
     
     @Override
     protected Node createSceneGraph(Entity entity) {
-        return loadColladaAsset(cell.getCellID().toString());        
+        try {
+            Node ret = loadColladaAsset(cell.getCellID().toString(), getAssetURL(((JmeColladaCell) cell).getModelURI()));
+            
+            // Adjust model origin wrt to cell
+            if (((JmeColladaCell)cell).getGeometryTranslation()!=null)
+                model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
+            if (((JmeColladaCell)cell).getGeometryRotation()!=null)
+                model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
     }
 
     /**
@@ -65,12 +81,10 @@ public class JmeColladaRenderer extends BasicRenderer {
      *
      * @param name the name to put in the returned node
      */
-    public Node loadColladaAsset(String name) {        
+    public Node loadColladaAsset(String name, URL url) {
         Node node = new Node();
-        Node model=null;
         
         try {
-            URL url = getAssetURL(((JmeColladaCell)cell).getModelURI());
             logger.warning("URL: " + url);
             InputStream input = url.openStream();
 //            System.out.println("Resource stream "+input);
@@ -81,11 +95,6 @@ public class JmeColladaRenderer extends BasicRenderer {
 
             model = loadModel(input, name);
             
-            // Adjust model origin wrt to cell
-            if (((JmeColladaCell)cell).getGeometryTranslation()!=null)
-                model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
-            if (((JmeColladaCell)cell).getGeometryRotation()!=null)
-                model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
             node.attachChild(model);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error loading Collada file "+((JmeColladaCell)cell).getModelURI(), e);
