@@ -17,12 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.simplewhiteboard.server;
 
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
-import java.math.BigInteger;
-import java.util.Collection;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -30,7 +26,8 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.server.cell.WhiteboardCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

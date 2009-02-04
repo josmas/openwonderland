@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.simplewhiteboard.client;
+package org.jdesktop.wonderland.modules.simplewhiteboard.client.cell;
 
 import java.awt.Point;
 import java.math.BigInteger;
@@ -26,14 +26,18 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
-import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellClientState;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellClientState;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.omg.PortableInterceptor.ACTIVE;
+import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardApp;
+import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardAppType;
+import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardComponent;
+import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardWindow;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
 
 /**
  * Client Cell for a whiteboard shared application.
@@ -123,7 +127,7 @@ public class WhiteboardCell extends App2DCell {
      *
      * @param msg a compound message
      */
-    void processMessage(WhiteboardCompoundCellMessage msg) {
+    public void processMessage(WhiteboardCompoundCellMessage msg) {
         switch (msg.getAction()) {
             case SET_TOOL:
                 whiteboardWin.setTool(msg.getTool());
@@ -155,7 +159,7 @@ public class WhiteboardCell extends App2DCell {
     /**
      * Returns the client ID of this cell's session.
      */
-    BigInteger getClientID() {
+    public BigInteger getClientID() {
         return getCellCache().getSession().getID();
     }
 }
