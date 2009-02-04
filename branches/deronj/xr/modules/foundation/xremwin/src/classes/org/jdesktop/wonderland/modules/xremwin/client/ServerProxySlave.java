@@ -68,8 +68,6 @@ class ServerProxySlave implements ServerProxy {
     private static final boolean debugIO = true;
     private static final int BUTTON4_MASK = 0x08;
     private static final int BUTTON5_MASK = 0x10;
-    /** The cell of the client to which this belongs. */
-    private AppCellXrw cell;
     /** This app's Wonderland session. */
     protected WonderlandSession session;
     private SlaveClientSocket slaveSocket;
@@ -102,16 +100,14 @@ class ServerProxySlave implements ServerProxy {
     /**
      * Create a new instance of ServerProxySlave.
      * @param client The slave client.
-     * @param cell The cell of the client to which this belongs.
      * @param session This app's Wonderland session.
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master and slave.
      * @param disconnectListener The listener to call when the slave is disconnected.
      */
-    public ServerProxySlave(ClientXrwSlave client, AppCellXrw cell, WonderlandSession session,
-            AppXrwConnectionInfo connectionInfo, DisconnectListener disconnectListener) {
+    public ServerProxySlave(ClientXrwSlave client, WonderlandSession session,
+                            AppXrwConnectionInfo connectionInfo, DisconnectListener disconnectListener) {
         this.session = session;
         this.client = client;
-        this.cell = cell;
         this.disconnectListener = disconnectListener;
     }
 

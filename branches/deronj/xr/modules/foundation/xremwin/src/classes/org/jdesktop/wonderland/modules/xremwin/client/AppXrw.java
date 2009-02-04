@@ -106,16 +106,6 @@ class AppXrw extends AppConventional {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized void setCell(AppCell cell)
-            throws IllegalArgumentException, IllegalStateException {
-        client.setCell((AppCellXrw) cell);
-        super.setCell(cell);
-    }
-
-    /**
      * Get the window this window is a transient for.
      * Returns 0 if the window isn't a transient.
      *
@@ -126,6 +116,18 @@ class AppXrw extends AppConventional {
     int getTransientForWid(int wid) {
         // TODO: implement
         return 0;
+    }
+
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setDisplayer(Displayer displayer) throws IllegalArgumentException, IllegalStateException {
+        super.setDisplayer(displayer);
+
+        // Once we have the displayer we can enable the client loop.
+        client.enable();
     }
 }
 
