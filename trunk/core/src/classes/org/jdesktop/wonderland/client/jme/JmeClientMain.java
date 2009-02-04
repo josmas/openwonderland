@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.sun.scenario.animation.Clip;
+import com.sun.scenario.animation.Interpolators;
+import com.sun.scenario.animation.TimingTarget;
 import java.awt.event.ActionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
@@ -125,6 +128,31 @@ public class JmeClientMain {
             serverURL = SERVER_URL_DEFAULT;
             System.setProperty(SERVER_URL_PROP, serverURL);
         }
+
+        // HUGE HACK ! Force scenario to initialize so menus work correctly
+        // (work around for scenario bug)
+        Clip clip2 = Clip.create(1000, new TimingTarget() {
+
+            public void timingEvent(float arg0, long arg1) {
+            }
+
+            public void begin() {
+            }
+
+            public void end() {
+            }
+
+            public void pause() {
+            }
+
+            public void resume() {
+            }
+
+        });
+        clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
+        clip2.start();
+        // End HUGE HACK.
+
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
         worldManager.addUserData(Repository.class, new Repository(worldManager));
