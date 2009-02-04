@@ -28,10 +28,9 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.appbase.server.AppConventionalCellMO;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellCreateMessage;
+import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 

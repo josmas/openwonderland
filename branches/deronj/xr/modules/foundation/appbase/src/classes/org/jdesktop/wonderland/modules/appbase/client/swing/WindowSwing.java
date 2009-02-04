@@ -80,9 +80,11 @@ public class WindowSwing extends WindowGraphics2D {
 
     /** The event listener for this window. */
     protected class MyEventListener extends EventListenerBaseImpl {
+        @Override
 	public boolean consumesEvent (Event event) {
 	    return inputEnabled;
 	}
+        @Override
 	public boolean propagatesToParent (Event event) {
 	    return false;
 	}

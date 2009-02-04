@@ -15,14 +15,13 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server;
+package org.jdesktop.wonderland.modules.appbase.server.cell;
 
 import com.jme.math.Vector2f;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellServerState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
 
 /**
  * An abstract server-side app.base cell for 2D apps. 
@@ -33,7 +32,6 @@ import org.jdesktop.wonderland.modules.appbase.common.App2DCellServerState;
 @ExperimentalAPI
 public abstract class App2DCellMO extends AppCellMO {
 
-    private static final Logger logger = Logger.getLogger(App2DCellMO.class.getName());
     /** The pixel scale. */
     protected Vector2f pixelScale;
 

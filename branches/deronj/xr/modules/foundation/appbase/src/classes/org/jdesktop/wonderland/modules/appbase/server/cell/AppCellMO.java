@@ -15,15 +15,30 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client;
+package org.jdesktop.wonderland.modules.appbase.server.cell;
 
+import org.jdesktop.wonderland.modules.appbase.server.*;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * The generic window frame type for 2D and 3D windows.
+ * A server-side <code>app.base</code> app cell.
  *
  * @author deronj
  */
 @ExperimentalAPI
-public class WindowFrame {
+public abstract class AppCellMO extends CellMO {
+
+    protected static final Logger logger = Logger.getLogger(AppCellMO.class.getName());
+
+    /** Create an instance of AppCellMO. */
+    public AppCellMO() {
+        super();
+    }
+
+    /** 
+     * Return the app type of this cell.
+     */
+    public abstract AppTypeMO getAppType();
 }

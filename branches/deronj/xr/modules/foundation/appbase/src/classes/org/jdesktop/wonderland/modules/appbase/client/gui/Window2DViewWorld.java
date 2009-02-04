@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client;
+package org.jdesktop.wonderland.modules.appbase.client.gui;
 
 import com.jme.math.Vector3f;
 import java.awt.Point;
@@ -37,7 +37,7 @@ public interface Window2DViewWorld {
     /**
      * Sets the translation of the view. Don't forget to also call update(CHANGED_TRANSFORM) afterward.
      *
-     * @param translation The new translation of the window relative to the center of the cell.
+     * @param translation The new translation of the window.
      */
     public void setTranslation(Vector3f translation);
 

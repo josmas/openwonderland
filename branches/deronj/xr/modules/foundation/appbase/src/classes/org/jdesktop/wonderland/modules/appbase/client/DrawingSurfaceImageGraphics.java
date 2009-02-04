@@ -211,7 +211,7 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
     /**
      * Enable or disabling the updating of the texture.
      */
-    // TODO: must tie processor enable in with setvisible. 
+    // TODO: perf: must tie processor enable in with setvisible. 
     public synchronized void setUpdateEnable(boolean enable) {
         if (enable == updateEnable) {
             return;
@@ -262,7 +262,7 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
         /**
          * Initialze the processor to be called once per frame.
          */
-        // TODO: don't enable until the window is visible
+        // TODO: perf: don't enable until the window is visible
         public void initialize() {
             start();
         }

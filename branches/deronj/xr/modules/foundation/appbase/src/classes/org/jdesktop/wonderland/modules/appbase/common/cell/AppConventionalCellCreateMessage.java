@@ -15,8 +15,9 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.common;
+package org.jdesktop.wonderland.modules.appbase.common.cell;
 
+import org.jdesktop.wonderland.modules.appbase.common.*;
 import java.io.Serializable;
 import java.util.UUID;
 import com.jme.bounding.BoundingVolume;

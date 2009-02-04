@@ -15,29 +15,17 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server;
+package org.jdesktop.wonderland.modules.appbase.client.gui;
 
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * A server-side <code>app.base</code> app cell.
+ * A place in which an app is displayed (for example, in a user client cell). 
  *
  * @author deronj
  */
 @ExperimentalAPI
-public abstract class AppCellMO extends CellMO {
-
-    private static final Logger logger = Logger.getLogger(AppCellMO.class.getName());
-
-    /** Create an instance of AppCellMO. */
-    public AppCellMO() {
-        super();
-    }
-
-    /** 
-     * Return the app type of this cell.
-     */
-    public abstract AppTypeMO getAppType();
+public interface Displayer {
+    /** Returns a GuiFactory appropriate for this displayer. */
+    public GuiFactory getGui2DFactory ();
 }

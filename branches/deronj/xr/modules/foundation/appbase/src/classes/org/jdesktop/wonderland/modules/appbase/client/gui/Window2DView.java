@@ -15,11 +15,12 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client;
+package org.jdesktop.wonderland.modules.appbase.client.gui;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import com.jme.image.Texture;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
  * A window view is a visual representation of a window. A window can

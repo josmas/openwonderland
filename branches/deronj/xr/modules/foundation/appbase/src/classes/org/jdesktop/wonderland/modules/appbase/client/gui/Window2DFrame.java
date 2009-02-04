@@ -15,11 +15,12 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client;
+package org.jdesktop.wonderland.modules.appbase.client.gui;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 
 /**
  * The generic root class of all WindowFrame2D objects.

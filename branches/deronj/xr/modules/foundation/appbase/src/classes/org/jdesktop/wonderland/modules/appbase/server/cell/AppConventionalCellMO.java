@@ -15,16 +15,16 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server;
+package org.jdesktop.wonderland.modules.appbase.server.cell;
 
 import java.io.Serializable;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellClientState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.appbase.common.AppConventionalCellServerState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -70,7 +70,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 @ExperimentalAPI
 public abstract class AppConventionalCellMO extends App2DCellMO {
 
-    private static final Logger logger = Logger.getLogger(AppConventionalCellMO.class.getName());
     /** The parameters from the WFS file. */
     AppConventionalCellServerState serverState;
     /** The parameters given to the client. */
@@ -79,31 +78,40 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     private boolean connectionHandlerRegistered;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     protected Serializable connectionInfo;
+    /** The SAS server. */
+    private AppServerLauncher appServerLauncher;
+
+    /**
+     * The SAS server must implement this.
+     */
+    public static interface AppServerLauncher {
+
+        /**
+         * Launch a server shared application.
+         * @param cellID The ID of the cell launching the command.
+         * @param executionCapability The type of execution capability needed (xremwin, vnc, etc.)
+         * @param appName The name of the app.
+         * @param command The execution command.
+         */
+        public Serializable appLaunch (CellID cellID, String executionCapability, String appname, 
+                                       String command);
+        
+        /**
+         * Stop a running server shared application.
+         */
+        public void appStop (CellID cellID);
+    }
+
+    /**
+     * Register an app server launcher with app conventional.
+     */
+    public void registerAppServerLauncher (AppServerLauncher appServerLauncher) {
+        this.appServerLauncher = appServerLauncher;
+    }
 
     /** Create an instance of AppConventionalCellMO. */
     public AppConventionalCellMO() {
         super();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void setLive(boolean live) {
-        super.setLive(live);
-
-        // Register the connection handler when the first cell is created
-        if (live) {
-            if (!connectionHandlerRegistered) {
-                CommsManager cm = WonderlandContext.getCommsManager();
-                //TODO: cm.registerClientHandler(new AppConnectionHandlerXrw());
-                connectionHandlerRegistered = true;
-            }
-        } else {
-            if (connectionHandlerRegistered) {
-                // TODO: how to unregister?
-            }
-        }
     }
 
     /**
@@ -133,7 +141,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
             throw new RuntimeException(msg);
         }
 
-        if ("server".equalsIgnoreCase(launchLocation)) {
+        if ("user".equalsIgnoreCase(launchLocation)) {
             String launchUser = serverState.getLaunchUser();
             if (launchUser == null || launchUser.length() <= 0) {
                 String msg = "Invalid app launch user";
@@ -197,5 +205,51 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         state.setCommand(serverState.getCommand());
 
         return stateToFill;
+    }
+
+    @Override
+    protected void setLive(boolean live) {
+        if (isLive()==live)
+            return;
+
+        super.setLive(live);
+
+        if (!"server".equalsIgnoreCase(serverState.launchLocation)) {
+            return;
+        }
+
+        if (appServerLauncher == null) {
+            logger.warning("No SAS registered. Cannot launch app " + serverState.getAppName());
+        }
+
+        if (live) {
+
+            // Register the connection handler when the first cell is created
+            if (!connectionHandlerRegistered) {
+                CommsManager cm = WonderlandContext.getCommsManager();
+                //TODO: cm.registerClientHandler(new AppConnectionHandlerXrw());
+                connectionHandlerRegistered = true;
+            }
+
+            /* TODO
+            connectionInfo = appServerLauncher.appLaunch(cellID, serverState.getExecutionCapability(), 
+                                                         serverState.getAppName(), serverState.getCommand());
+            */                                                         
+            if (connectionInfo == null) {
+                logger.warning("Could not launch app " + serverState.getAppName());
+                return;
+            }
+
+            // TODO: notifyClientsConnectionInfoChanged(connectionInfo);
+
+        } else {
+            if (connectionInfo != null) {
+                // TODO: SasServer.appStop(cellID);
+                connectionInfo = null;
+            }
+            if (connectionHandlerRegistered) {
+                // TODO: how to unregister?
+            }
+        }
     }
 }

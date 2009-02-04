@@ -15,9 +15,11 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client;
+package org.jdesktop.wonderland.modules.appbase.client.gui;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.Window;
 
 /**
  * Generic app event handler for 2D and 3D window views.

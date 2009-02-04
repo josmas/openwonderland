@@ -24,14 +24,17 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 
 /**
  * The generic application superclass. All apps in Wonderland have this
  * root class. 
  * <br><br>
- * Before an app can become visible in the world it must be associated with an AppCell
- * using <code>setCell</code>. <code>setCell</code> may be called only once for the app. Once called the app 
- * remains permanently associated with that cell until the app or cell is cleaned up.
+ * Before an app can become visible in the world it must be associated with a Displayer which
+ * provides for the display of the app, such as an app cell in the world or the HUD.  
+ * The displayer is configured using <code>setDisplayer</code>. <code>setDisplayer</code> 
+ * may be called only once for the app. Once called, the app remains permanently associated 
+ * with that displayer until the app or the displayer is destroyed.
  *
  * When you are done with this app you should call <code>cleanup</code> to clean up its resources.
  * (This is optional).
@@ -49,14 +52,15 @@ public class App {
     protected AppType appType;
     /** The control arbiter for this app. null means that all users can control the app at the same time */
     protected ControlArb controlArb;
-    /** The world cell to which the app belongs */
-    protected AppCell cell;
+    /** The displayer which renders the app. May be null if the app is not displayed in this client. */
+    protected Displayer displayer;
 
     /**
      * Create a new instance of App.
      *
      * @param appType The type of app to create.
-     * @param controlArb The control arbiter to use. null means that all users can control the app at the same time.
+     * @param controlArb The control arbiter to use. null means that all users can control the app 
+     * at the same time.
      */
     public App(AppType appType, ControlArb controlArb) {
         this.appType = appType;
@@ -78,7 +82,7 @@ public class App {
             controlArb = null;
         }
 
-        cell = null;
+        displayer = null;
 
         if (windows != null) {
             for (Window window : windows) {
@@ -104,13 +108,6 @@ public class App {
      */
     public ControlArb getControlArb() {
         return controlArb;
-    }
-
-    /**
-     * Returns the cell of this app.
-     */
-    public AppCell getCell() {
-        return cell;
     }
 
     /**
@@ -171,24 +168,31 @@ public class App {
     }
 
     /**
-     * Used to associate this app with the given cell.  May only be called one time.
+     * Returns the displayer of this app.
+     */
+    public Displayer getDisplayer() {
+        return displayer;
+    }
+
+    /**
+     * Used to associate this app with the given displayer.  May only be called one time.
      *
-     * @param cell The world cell containing the app.
-     * @throws IllegalArgumentException If the cell already is associated
+     * @param displayer The world displayer containing the app.
+     * @throws IllegalArgumentException If the displayer already is associated
      * with an app.
      * @throws IllegalStateException If the app is already associated 
-     * with a cell.
+     * with a displayer.
      */
-    public void setCell(AppCell cell)
+    public void setDisplayer(Displayer displayer)
             throws IllegalArgumentException, IllegalStateException {
-        if (cell == null) {
+        if (displayer == null) {
             throw new NullPointerException();
         }
-        if (this.cell != null) {
-            throw new IllegalStateException("App already has a cell");
+        if (this.displayer != null) {
+            throw new IllegalStateException("App already has a displayer.");
         }
 
-        this.cell = cell;
+        this.displayer = displayer;
     }
 
     protected static void reportLaunchError(String message) {

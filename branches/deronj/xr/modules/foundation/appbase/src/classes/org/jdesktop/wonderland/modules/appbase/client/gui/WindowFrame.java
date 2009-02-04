@@ -15,17 +15,15 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client;
+package org.jdesktop.wonderland.modules.appbase.client.gui;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * The client-side description of a type of Wonderland or Conventional 2D application. For example,
- * a share-aware PDF app or X11 window. 
+ * The generic window frame type for 2D and 3D windows.
  *
  * @author deronj
  */
 @ExperimentalAPI
-public abstract class AppType2D extends AppType {
-    /// TODO: obsolete?
+public class WindowFrame {
 }
