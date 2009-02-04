@@ -128,6 +128,7 @@ public class ModuleManagerUtils {
                 }
                 os.write(b, 0, len);
             }
+            is.close();
             os.close();
         }
     }
