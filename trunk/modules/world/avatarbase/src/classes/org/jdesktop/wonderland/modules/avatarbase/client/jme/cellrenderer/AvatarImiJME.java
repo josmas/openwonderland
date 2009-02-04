@@ -63,6 +63,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     private CharacterMotionListener characterMotionListener;
     private GameContextListener gameContextListener;
 
+    private int currentTrigger = -1;
+    private boolean currentPressed = false;
+
     public AvatarImiJME(Cell cell) {
         super(cell);
         assert(cell!=null);
@@ -70,13 +73,16 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
         characterMotionListener = new CharacterMotionListener() {
                 public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                    ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation), -1, false, null);
+                    ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation), currentTrigger, currentPressed, null);
                 }
             };
 
         // TODO this info will be sent to the other clients to animate the avatar
         gameContextListener = new GameContextListener() {
                 public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation) {
+                    System.out.println("gameContext Trigger "+trigger+"  "+pressed);
+                    currentTrigger = trigger;
+                    currentPressed = pressed;
                    ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, null);
                 }
 
@@ -160,8 +166,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
         String name = ((ViewCell)cell).getIdentity().getUsername();
 
-        System.err.println("******* "+name+"  "+this);
-
         CharacterAttributes attributes;
         if (name.contains("icole") || name.contains("iriam"))
             attributes = new WlFemaleAvatarAttributes(cell);
@@ -191,9 +195,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
 //        wm.removeEntity(avatarCharacter);
-
-        System.err.println("AVATAR LOADER !!!!!");
-
 
         switch(quality) {
             case High :
@@ -252,12 +253,16 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     public void trigger(int trigger, boolean pressed) {
         if (!selectedForInput && avatarCharacter!=null) {
-//            System.err.println("Trigger "+trigger);
-            if (pressed)
-                avatarCharacter.triggerActionStart(TriggerNames.Move_Forward);
-            else
-                avatarCharacter.triggerActionStop(TriggerNames.Move_Forward);
+            if (currentTrigger==trigger && currentPressed==pressed)
+                return;
 
+            System.err.println("Trigger "+trigger+"  "+pressed);
+            if (pressed)
+                avatarCharacter.getContext().triggerPressed(trigger);
+            else
+                avatarCharacter.getContext().triggerReleased(trigger);
+            currentTrigger = trigger;
+            currentPressed = pressed;
         }
     }
 
