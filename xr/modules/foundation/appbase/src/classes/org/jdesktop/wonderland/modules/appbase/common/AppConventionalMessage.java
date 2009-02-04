@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.appbase.common;
 
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellCreateMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector2f;

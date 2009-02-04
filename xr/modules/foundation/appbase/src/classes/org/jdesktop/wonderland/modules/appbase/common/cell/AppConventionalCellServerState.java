@@ -15,42 +15,42 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.common;
+package org.jdesktop.wonderland.modules.appbase.common.cell;
 
-import java.io.Serializable;
-import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * Container for 2D conventional app client state. The server gives this to the client
- * in order to initialize the client cell.
- *
+ * The WFS server state class for AppConventionalCellMO.
+ * 
  * @author deronj
  */
-@ExperimentalAPI
-public class AppConventionalCellClientState extends App2DCellClientState {
+public abstract class AppConventionalCellServerState extends App2DCellServerState {
 
     /** The name of the app. */
-    protected String appName;
+    @XmlElement(name = "appName")
+    public String appName;
     /** Where the app should be launched (user vs. server host). */
-    protected String launchLocation;
+    @XmlElement(name = "launchLocation")
+    public String launchLocation;
     /** 
      * User that should launch the app. 
      * (Only used when launchLocation == user).
      */
-    protected String launchUser;
+    @XmlElement(name = "launchUser")
+    public String launchUser;
     /** Cell should be configured so that primary window is in best view. */
-    protected boolean isBestView;
+    @XmlElement(name = "bestView")
+    public boolean isBestView;
     /** The command which launches the app. */
-    protected String command;
-    /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
-    protected Serializable connectionInfo;
+    @XmlElement(name = "command")
+    public String command;
 
-    /** Create an instance of AppConventionalCellClientState. */
-    public AppConventionalCellClientState() {
-        super();
+    /** Default constructor */
+    public AppConventionalCellServerState() {
     }
 
+    @XmlTransient
     public String getAppName() {
         return appName;
     }
@@ -59,6 +59,7 @@ public class AppConventionalCellClientState extends App2DCellClientState {
         this.appName = appName;
     }
 
+    @XmlTransient
     public String getLaunchLocation() {
         return launchLocation;
     }
@@ -67,6 +68,7 @@ public class AppConventionalCellClientState extends App2DCellClientState {
         this.launchLocation = launchLocation;
     }
 
+    @XmlTransient
     public String getLaunchUser() {
         return launchUser;
     }
@@ -75,6 +77,7 @@ public class AppConventionalCellClientState extends App2DCellClientState {
         this.launchUser = launchUser;
     }
 
+    @XmlTransient
     public boolean isBestView() {
         return isBestView;
     }
@@ -83,6 +86,7 @@ public class AppConventionalCellClientState extends App2DCellClientState {
         isBestView = bestView;
     }
 
+    @XmlTransient
     public String getCommand() {
         return command;
     }
@@ -91,11 +95,18 @@ public class AppConventionalCellClientState extends App2DCellClientState {
         this.command = command;
     }
 
-    public void setConnectionInfo(Serializable connectionInfo) {
-        this.connectionInfo = connectionInfo;
-    }
-
-    public Serializable getConnectionInfo() {
-        return connectionInfo;
+    /**
+     * Returns a string representation of this class.
+     *
+     * @return The server state information as a string.
+     */
+    @Override
+    public String toString() {
+        return super.toString() + " [AppConventionalCellServerState]: " +
+                "appName=" + appName + 
+                ",launchLocation=" + launchLocation + 
+                ",launchUser=" + launchUser + 
+                ",isBestView=" + isBestView + 
+                ",command=" + command;
     }
 }

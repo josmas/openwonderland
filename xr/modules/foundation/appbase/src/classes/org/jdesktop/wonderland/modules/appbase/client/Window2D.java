@@ -39,6 +39,9 @@ import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.appbase.client.gui.GuiFactory;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DViewWorld;
 
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
@@ -54,7 +57,7 @@ public abstract class Window2D extends Window {
 
     private static final Logger logger = Logger.getLogger(Window2D.class.getName());
 
-    /** The XY (planar) translation of the window within the cell. */
+    /** The XY (planar) translation of the window. */
     protected Vector2f xyTranslation;
     /** The width of the window (in pixels) */
     protected int width;
@@ -84,7 +87,7 @@ public abstract class Window2D extends Window {
     protected Vector3f userDisplacement = new Vector3f();
     /** The angle of rotation around the local Y axis (in radians) specified by the user */
     protected float rotY;
-    /** The local (cell relative) Z depth */
+    /** The local Z depth */
     protected float depth = 0f;
 
     /**
@@ -387,7 +390,12 @@ public abstract class Window2D extends Window {
      * @return The view created. Null indicates that this window type doesn't support the given spaceName.
      */
     public Window2DView createView(String spaceName) {
-        Window2DView view = (Window2DView) guiFactory.createView(this, spaceName);
+        GuiFactory gui2DFactory = app.getDisplayer().getGui2DFactory();
+        if (gui2DFactory == null) {
+            return null;
+        }
+
+        Window2DView view = (Window2DView) gui2DFactory.createView(this, spaceName);
         if (view == null || views == null) {
             return null;
         }

@@ -17,11 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import java.util.HashMap;
-import java.util.UUID;
 import javax.swing.JOptionPane;
 import com.jme.math.Vector2f;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -33,18 +30,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public abstract class AppConventional extends App2D {
 
-    private static final Logger logger = Logger.getLogger(AppConventional.class.getName());
-    /** A list of apps without cells that are awaiting attachment to their cells. This map is keyed on the app ID */
-    protected static HashMap<UUID, App> disembodiedApps = new HashMap<UUID, App>();
     /** The name of the app */
     protected String appName;
-    /** A lock object for server cell creation */
-    protected Integer serverCellCreateLock = new Integer(0);
-    /** Whether the server cell creation succeeded */
-    private boolean createSuccess;
-    /** True when the server has replied to the cell creation command */
-    private boolean gotCreateReply;
-    /** Should the first window made visible make the cell move to the best view position? (Master only) */
+    /** Should the first window made visible be moved to the best view position? (Master only) */
     private boolean initInBestView;
     /** The app conventional connection to the server */
     // TODO: notyet protected static AppConventionalConnection connection;
@@ -73,29 +61,6 @@ public abstract class AppConventional extends App2D {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized void setCell(AppCell cell)
-            throws IllegalArgumentException, IllegalStateException {
-        super.setCell(cell);
-        notify();
-    }
-
-    /**
-     * This should be called by application-specific code prior to attempting to use the app cell. If the app cell 
-     * has not yet been associated with this cell this method blocks until it is.
-     */
-    public synchronized void waitForCell() {
-        while (cell == null) {
-            try {
-                wait();
-            } catch (InterruptedException ex) {
-            }
-        }
-    }
-
-    /**
      * A utility method used to report launch errors to the user.
      */
     protected static void reportLaunchError(String message) {
@@ -103,10 +68,10 @@ public abstract class AppConventional extends App2D {
     }
 
     /**
-     * Specify whether, when the cell for this app is created, it should be moved to approximately the best view 
-     * based on the viewer position at the time of client cell creation.
+     * Specify whether, when the app is made visible, it should be moved to approximately the best view 
+     * based on the current user position.
      *
-     * @param initInBestView Whether the cell should be moved to approximately the best view on cell creation.
+     * @param initInBestView Whether the app should be moved to approximately the best view.
      */
     public void setInitInBestView(boolean initInBestView) {
         this.initInBestView = initInBestView;

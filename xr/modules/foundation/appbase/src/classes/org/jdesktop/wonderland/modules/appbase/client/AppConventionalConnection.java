@@ -42,8 +42,7 @@ public class AppConventionalConnection extends BaseConnection {
     public AppConventionalConnection () {}
     
     /**
-     * Get the type of client
-     * @return CellClientType.CELL_CLIENT_TYPE
+     * Returns the type of client type used by the connection.
      */
     public ConnectionType getConnectionType() {
         return AppConventionalConnectionType.CLIENT_TYPE;

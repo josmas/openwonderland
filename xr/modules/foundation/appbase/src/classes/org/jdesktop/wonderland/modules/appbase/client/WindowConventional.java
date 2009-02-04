@@ -112,6 +112,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
 
