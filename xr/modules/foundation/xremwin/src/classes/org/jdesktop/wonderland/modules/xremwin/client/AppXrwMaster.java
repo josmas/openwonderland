@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.utils.SmallIntegerAllocator;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.modules.appbase.client.MonitoredProcess;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
@@ -39,8 +39,8 @@ import org.jdesktop.wonderland.modules.xremwin.client.wm.X11WindowManager;
  *
  * @author deronj
  */
-@ExperimentalAPI
-class AppXrwMaster
+@InternalAPI
+public class AppXrwMaster
         extends AppXrw
         implements X11WindowManager.WindowTitleListener, WindowSystemXrw.ExitListener {
     /* An allocator for instance numbers */
@@ -71,7 +71,7 @@ class AppXrwMaster
      * @param session This app's Wonderland session.
      * @throws InstantiationException Could not launch app
      */
-    AppXrwMaster(AppTypeXrw appType, String appName, String command, Vector2f pixelScale,
+    public AppXrwMaster(AppTypeXrw appType, String appName, String command, Vector2f pixelScale,
             ProcessReporter reporter, WonderlandSession session)
             throws InstantiationException {
 
@@ -112,9 +112,7 @@ class AppXrwMaster
         int portNum = serverSocket.getLocalPort();
         connectionInfo = new AppXrwConnectionInfo(publicMasterHost, portNum);
 
-        // Create the Xremwin protocol client and start its interpreter loop running.
-        // However, the loop doesn't start completely free running until the
-        // corresponding master cell is created and attached to the app
+        // Create the Xremwin protocol client.
         client = null;
         try {
             client = new ClientXrwMaster(this, (ControlArbXrw) controlArb, session, masterHost, serverSocket,

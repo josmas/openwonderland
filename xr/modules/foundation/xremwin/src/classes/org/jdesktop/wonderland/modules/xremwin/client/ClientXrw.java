@@ -149,7 +149,7 @@ abstract class ClientXrw implements Runnable {
     /** Whether the client is enabled. */
     protected boolean enable;
     /** Lock object used for enable. */
-    private Integer enableLock = new Integer(0);
+    private final Integer enableLock = new Integer(0);
     /** Used by the logging messages in this class */
     private int messageCounter = 0;
 
@@ -373,7 +373,7 @@ abstract class ClientXrw implements Runnable {
                 // We can't make windows visible until we are enable.
                 synchronized (enableLock) {
                     while (!enable) {
-                        enableLock.wait();
+                        try { enableLock.wait(); } catch (InterruptedException ex) {}
                     }
                 }
 

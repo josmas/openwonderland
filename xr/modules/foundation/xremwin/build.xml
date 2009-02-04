@@ -8,11 +8,17 @@
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.xremwin"/>
     <property name="module.jarname" value="xremwin"/>
     
-    <property name="module-common.classpath" value="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+    <pathconvert property="module-common.classpath">
+      <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+      <path location="${current.dir}/../appbase/build/client/appbase-client-cell.jar"/>
+    </pathconvert>
+
     <pathconvert property="module-client.classpath">
       <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+      <path location="${current.dir}/../appbase/build/client/appbase-client-cell.jar"/>
       <path location="${current.dir}/lib/escher-0.2.2.lg.jar"/>
     </pathconvert>
+
     <property name="module-server.classpath" value="${current.dir}/../appbase/build/server/appbase-server.jar"/>
 
     <!-- import common build file -->

@@ -15,15 +15,16 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.wonderland.modules.xremwin.server;
+package org.jdesktop.wonderland.modules.xremwin.server.cell;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.appbase.server.AppConventionalCellMO;
+import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
-import org.jdesktop.wonderland.modules.xremwin.common.AppCellXrwServerState;
+import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwServerState;
+import org.jdesktop.wonderland.modules.xremwin.server.AppTypeMOXrw;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
