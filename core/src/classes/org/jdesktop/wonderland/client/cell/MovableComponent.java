@@ -59,15 +59,16 @@ public class MovableComponent extends CellComponent {
     
     @Override
     public void setStatus(CellStatus status) {
-         switch(status) {
-            case DISK :
-                if (msgReceiver!=null && channelComp!=null) {
+        super.setStatus(status);
+        switch (status) {
+            case DISK:
+                if (msgReceiver != null && channelComp != null) {
                     channelComp.removeMessageReceiver(getMessageClass());
                     msgReceiver = null;
                 }
                 break;
-             case BOUNDS : {
-                 if (msgReceiver==null) {
+            case BOUNDS: {
+                if (msgReceiver == null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
                         public void messageReceived(CellMessage message) {
@@ -77,13 +78,13 @@ public class MovableComponent extends CellComponent {
                                 senderID = BigInteger.ZERO;
                             }
                             if (!senderID.equals(cell.getCellCache().getSession().getID())) {
-                                serverMoveRequest((MovableMessage)message);
+                                serverMoveRequest((MovableMessage) message);
                             }
                         }
                     };
                     channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
-                 }
-             }
+                }
+            }
         }
     }
 
