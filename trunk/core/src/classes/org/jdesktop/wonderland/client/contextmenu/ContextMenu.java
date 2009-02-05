@@ -184,7 +184,7 @@ public class ContextMenu implements ActionListener {
         if (entityList.size()>0) {
             Entity topEntity = entityList.get(0);
             if (topEntity!=null) {
-                CellRefComponent refComp = topEntity.getComponent(CellRefComponent.class);
+                CellRefComponent refComp = (CellRefComponent)topEntity.getComponent(CellRefComponent.class);
                 if (refComp==null) {
                     Logger.getLogger(ContextMenu.class.getName()).warning("No CellRefComponent in Entity "+topEntity);
                 } else {
