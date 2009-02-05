@@ -247,9 +247,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
                 connectionHandlerRegistered = true;
             }
 
-            connectionInfo = appServerLauncher.appLaunch(cellID, 
-                                                         /*TODO:serverState.getExecutionCapability()*/"xremwin", 
-                                                         serverState.getAppName(), serverState.getCommand());
+            connectionInfo = appServerLauncher.appLaunch(cellID, "xremwin", serverState.getAppName(), 
+                                                         serverState.getCommand());
             logger.severe("5");
             if (connectionInfo == null) {
                 logger.warning("Could not launch app " + serverState.getAppName());
