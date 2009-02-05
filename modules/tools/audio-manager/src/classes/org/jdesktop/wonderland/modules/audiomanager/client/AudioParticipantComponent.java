@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
  * @author jprovino
  */
 @ExperimentalAPI
-public class AudioParticipantComponent extends CellComponent {
+public class AudioParticipantComponent extends CellComponent implements VolumeChangeListener {
     
     private static Logger logger = Logger.getLogger(AudioParticipantComponent.class.getName());
 
@@ -50,4 +50,8 @@ public class AudioParticipantComponent extends CellComponent {
         }
     }
     
+    public void volumeChanged(double volume) {
+	System.out.println("Volume is " + volume);
+    }
+
 }

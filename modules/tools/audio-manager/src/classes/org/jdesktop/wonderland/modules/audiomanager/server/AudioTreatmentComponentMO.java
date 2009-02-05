@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
@@ -48,6 +49,7 @@ import org.jdesktop.wonderland.common.modules.ModuleChecksums;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
 import com.sun.voip.client.connector.CallStatus;
 
@@ -89,7 +91,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     private double fullVolumeRadius;
     private double zeroVolumeRadius;
 
-    private boolean spatialize = true;
+    private boolean useFullVolumeSpatializer = false;
 
     private static String serverURL;
 
@@ -117,10 +119,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
 	fullVolumeRadius = state.getFullVolumeRadius();
 	zeroVolumeRadius = state.getZeroVolumeRadius();
-	spatialize = state.getSpatialize();
+	useFullVolumeSpatializer = state.getUseFullVolumeSpatializer();
 
-	System.out.println("Treatment:  fvr " + fullVolumeRadius + " zvr " + zeroVolumeRadius
-	    + " spatialize " + spatialize);
+	logger.finer("Treatment:  fvr " + fullVolumeRadius + " zvr " + zeroVolumeRadius
+	    + " useFullVolumeSpatializer " + useFullVolumeSpatializer);
     }
 
     @Override
@@ -135,7 +137,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         state.setGroupId(groupId);
 	state.setFullVolumeRadius(fullVolumeRadius);
 	state.setZeroVolumeRadius(zeroVolumeRadius);
-	state.setSpatialize(spatialize);
+	state.setUseFullVolumeSpatializer(useFullVolumeSpatializer);
 
         return state;
     }
@@ -161,8 +163,11 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	ChannelComponentMO channelComponent = (ChannelComponentMO) 
 	    cellRef.get().getComponent(ChannelComponentMO.class);
 
-        channelComponent.addMessageReceiver(AudioTreatmentMessage.class,
-	    new ComponentMessageReceiverImpl(cellRef, this));
+	ComponentMessageReceiverImpl receiver = 
+	    new ComponentMessageReceiverImpl(cellRef, this);
+
+        channelComponent.addMessageReceiver(AudioTreatmentMessage.class, receiver);
+        channelComponent.addMessageReceiver(AudioVolumeMessage.class, receiver);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -171,7 +176,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         for (int i = 0; i < treatments.length; i++) {
             TreatmentSetup setup = new TreatmentSetup();
 
-	    if (spatialize) {
+	    if (useFullVolumeSpatializer == false) {
 		DefaultSpatializer spatializer = new DefaultSpatializer();
 
 		setup.spatializer = spatializer;
@@ -270,6 +275,22 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         }
     }
 
+    public String[] getTreatments() {
+	return treatments;
+    }
+
+    public CellMO getCell() {
+	return cellRef.get();
+    }
+
+    public double getFullVolumeRadius() {
+	return fullVolumeRadius;
+    }
+
+    public double getZeroVolumeRadius() {
+	return zeroVolumeRadius;
+    }
+
     public void transformChanged(Vector3f location, double angle) {
 	logger.finer("Treatment moved to " + location + " angle " + angle);
 
@@ -321,9 +342,74 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
                 CellMessage message) {
 
-            AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
+	    if (message instanceof AudioTreatmentMessage) {
+                AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
+                logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
+	        return;
+	    }
 
-            logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
+	    if (message instanceof AudioVolumeMessage) {
+                AudioVolumeMessage msg = (AudioVolumeMessage) message;
+
+		CellID cellID = msg.getCellID();
+		String softphoneCallID = msg.getSoftphoneCallID();
+
+		double volume = msg.getVolume();
+
+		logger.fine("GOT Volume message:  call " + softphoneCallID
+		    + " cell " + cellID + " volume " + volume);
+
+        	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+		Player softphonePlayer = vm.getPlayer(softphoneCallID);
+
+		if (softphonePlayer == null) {
+		    logger.warning("Can't find softphone player, callID "
+			+ softphoneCallID);
+
+		    return;
+		}
+
+		if (softphoneCallID.equals(cellID.toString())) {
+		    logger.fine("Setting master volume for " + getCell().getName());
+		    softphonePlayer.setMasterVolume(volume);
+		    return;
+		}
+
+		DefaultSpatializer spatializer = new DefaultSpatializer();
+
+		AudioTreatmentComponentMO componentMO = compRef.get();
+
+		spatializer.setFullVolumeRadius(componentMO.getFullVolumeRadius());
+
+		if (componentMO.getZeroVolumeRadius() != 0) {
+		    spatializer.setZeroVolumeRadius(componentMO.getZeroVolumeRadius());
+		}
+
+		spatializer.setAttenuator(volume);
+
+		String[] treatments = componentMO.getTreatments();
+
+		for (int i = 0; i < treatments.length; i++) {
+	    	    String treatmentId = treatments[i];
+
+            	    if (treatmentId.startsWith("wls://")) {
+		 	treatmentId = treatmentId.substring(6);
+	    	    }
+
+	    	    Player player = vm.getPlayer(treatmentId);
+
+	    	    if (player == null) {
+			logger.warning("Can't find player for " + treatments[i]);
+	    	    } else {
+			softphonePlayer.setPrivateSpatializer(player, spatializer);
+		    }
+		}
+
+	        return;
+	    }
+
+	    logger.warning("Unknown message:  " + message);
         }
 
     }
