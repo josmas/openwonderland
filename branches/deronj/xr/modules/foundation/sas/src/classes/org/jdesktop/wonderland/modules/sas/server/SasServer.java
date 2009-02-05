@@ -26,6 +26,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.AppContext;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * Provides the main server-side logic for SAS. This singleton contains the Registry,
@@ -39,19 +41,45 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
 
     private static final Logger logger = Logger.getLogger(SasServer.class.getName());
 
-    /** A collection of the SAS providers which have connected. */
-    /*
-   private HashMap<WonderlandClientID,WonderlandClientSender> providers = 
-        new HashMap<WonderlandClientID,WonderlandClientSender>();
-    */
+    /** 
+     * A map of the SAS providers which have connected, indexed by their execution capabilities
+     * Note: because a provider may support multiple capabilities it may appear on more than one list.
+     */
+    private HashMap<String,LinkedList<ProviderProxy>> execCapToProviderList = 
+        new HashMap<String,LinkedList<ProviderProxy>>();
+
+    /**
+     * A list of the app launch requests which still must be honored.
+     */
+    private PendingLaunches pendingLaunches = new PendingLaunches();
 
     /**
      * Called when a new provider client connects to the SAS server.
      */
     public void providerConnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger.severe("**** Sas provider connected, clientID = " + clientID);
-        //providers.put(clientID, sender);
-        //AppContext.getDataManager.markForUpdate(this);
+        
+        // TODO: for now everything uses xremwin
+        String execCap = "xremwin";
+
+        ProviderProxy provider = new ProviderProxy(clientID, sender);
+        provider.addExecutionCapability(execCap);
+
+        // Add to execution capability list
+        LinkedList<ProviderProxy> providers = execCapToProviderList.get(execCap);
+        if (providers == null) {
+            providers = new LinkedList<ProviderProxy>();
+            execCapToProviderList.put(execCap, providers);
+        }
+        providers.add(provider);
+
+        logger.severe("**** provider added to xremwin list, clientID = " + clientID);
+
+        // See if there are any pending launches
+        tryPendingLaunches(execCap);
+
+        // Mark server modified
+        AppContext.getDataManager().markForUpdate(this);
     }
 
     /**
@@ -65,17 +93,35 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
     /**
      * {@inheritDoc}
      */
-    public Serializable appLaunch (CellID cellID, String executionCapability, String appname, 
+    public Serializable appLaunch (CellID cellID, String executionCapability, String appName, 
                                    String command) {
         logger.severe("***** appLaunch, command = " + command);
 
+        LinkedList<ProviderProxy> providers = execCapToProviderList.get(executionCapability);
+        if (providers == null || providers.size() <= 0) {
+            // No provider. Launch must pend
+            logger.warning("No SAS provider for " + executionCapability + " is available.");
+            logger.warning("Launch attempt will pend.");
+            pendingLaunches.add(new PendingLaunches.LaunchRequest(cellID, executionCapability, appName,
+                                                                  command));
+            AppContext.getDataManager().markForUpdate(this);
+            return null;
+        }
 
-        /*
-          Map execution cap to a provider.
-              if can't, pend the launch
-          Map
-         */
-        return null;
+        // TODO: for now, just try only the first provider
+        ProviderProxy provider = providers.getFirst();
+        Serializable connectionInfo = provider.tryLaunch(cellID, executionCapability, appName, command);
+        if (connectionInfo == null) {
+            // Provider cannot launch. Launch must pend.
+            logger.warning("SAS provider launch failed for command = " + command);
+            logger.warning("Launch attempt will pend.");
+            pendingLaunches.add(new PendingLaunches.LaunchRequest(cellID, executionCapability, appName,
+                                                                  command));
+            AppContext.getDataManager().markForUpdate(this);
+            return null;
+        }
+
+        return connectionInfo;
     }
         
     /**
@@ -83,6 +129,36 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
      */
     public void appStop (CellID cellID) {
         logger.severe("***** appLaunch, cellID = " + cellID);
+    }
+
+    private void tryPendingLaunches (String executionCapability) {
+        LinkedList<PendingLaunches.LaunchRequest> reqs = pendingLaunches.getPendingLaunches(executionCapability);
+        if (reqs == null) {
+            return;
+        }
+
+        for (PendingLaunches.LaunchRequest req : reqs) {
+
+            // TODO: Some of this code is dup from above in tryLaunch; share it
+
+            // See if there are any more providers to try
+            LinkedList<ProviderProxy> providers = execCapToProviderList.get(executionCapability);
+            if (providers == null || providers.size() <= 0) {
+                continue;
+            }
+            // TODO: weed out providers already tried
+
+            // TODO: for now, just try only the first provider
+            ProviderProxy provider = providers.getFirst();
+            Serializable connectionInfo = provider.tryLaunch(req.cellID, req.executionCapability, 
+                                                             req.appName, req.command);
+            if (connectionInfo != null) {
+                // TODO: add to noLongerPendingList
+                // TODO: need to set connection info in cell
+            }
+        }
+
+        // TODO: process noLongerPendingList. Remove these from pendingLaunches.
     }
 }
 

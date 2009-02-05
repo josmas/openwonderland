@@ -23,8 +23,6 @@ import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.AppContext;
 
 /**
  * Plugin to support the SAS.
