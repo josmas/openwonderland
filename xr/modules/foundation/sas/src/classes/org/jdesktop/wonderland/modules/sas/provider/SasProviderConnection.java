@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.sas.provider;
 
+import com.jme.math.Vector2f;
 import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Logger;
@@ -25,6 +26,7 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderConnectionType;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchMessage;
 
 /**
  * The SAS provider client.
@@ -67,31 +69,31 @@ public class SasProviderConnection extends BaseConnection {
             return;
         }
         
-        System.err.println("**** Receive message from server: " + message);
-        /* TODO: notyet
-        if (!(message instanceof SasServerToProviderMessage))
+        System.err.println("**** Received message from server: " + message);
+
+        if (!(message instanceof SasProviderLaunchMessage)) {
             throw new RuntimeException("Unexpected message type "+message.getClass().getName());
-        
-        SasServerToProvider msg = (SasServerToProviderMessage)message;
-        switch(msg.getActionType()) {
-
-        case LAUNCH:
-            if (listener == null) {
-                logger.warning("No provider listener is registered.");
-                respondFail();
-            }
-            Serializable connInfo = listener.launch(msg.getAppName(), msg.getCommand(), msg.getPixelScale());
-            if (connInfo != null) {
-                respondSuccess(connInfo);
-            } else {
-                respondFail();
-            }
-            break;
-
-        default :
-            logger.warning("Message type not implemented "+msg.getActionType());
         }
-         **/
+        SasProviderLaunchMessage msg = (SasProviderLaunchMessage) message;
+
+        System.err.println("################### Received launch message from server");
+        System.err.println("execCap = " + msg.getExecutionCapability());
+        System.err.println("appName = " + msg.getAppName());
+        System.err.println("command = " + msg.getCommand());
+
+        if (listener == null) {
+            logger.warning("No provider listener is registered.");
+            respondFail();
+        }
+
+        System.err.println("################### Attempting to launch X app");
+        Serializable connInfo = listener.launch(msg.getAppName(), msg.getCommand(), 
+                                                new Vector2f(0.01f, 0.01f)/*TODO: msg.getPixelScale()*/);
+        if (connInfo != null) {
+            respondSuccess(connInfo);
+        } else {
+            respondFail();
+        }
     }
     
     /**
@@ -107,12 +109,14 @@ public class SasProviderConnection extends BaseConnection {
      */
     private void respondSuccess (Serializable connInfo) {
         // TODO
+        System.err.println("****** Respond success.");
     }
 
     /**
      * Respond with a failure message.
      */
-    private void respondFail (Serializable connInfo) {
+    private void respondFail () {
         // TODO
+        System.err.println("****** Respond fail.");
     }
 }
