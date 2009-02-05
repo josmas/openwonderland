@@ -547,7 +547,7 @@ public class Cell {
 
             if (status==CellStatus.BOUNDS) {
                 resolveAutoComponentAnnotationsForCell();
-                Collection<CellComponent> compList = components.values();
+                CellComponent[] compList = components.values().toArray(new CellComponent[components.size()]);
                 for(CellComponent c : compList) {
                     resolveAutoComponentAnnotationsForComponents(c);
                 }
