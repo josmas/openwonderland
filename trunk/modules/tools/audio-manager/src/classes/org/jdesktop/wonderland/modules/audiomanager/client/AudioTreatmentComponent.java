@@ -22,6 +22,10 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -36,45 +40,57 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatme
  */
 @ExperimentalAPI
 public class AudioTreatmentComponent extends CellComponent {
-    
-    private static Logger logger = Logger.getLogger(AudioTreatmentComponent.class.getName());
 
+    private static Logger logger = Logger.getLogger(AudioTreatmentComponent.class.getName());
     private ChannelComponent channelComp;
-    
     private ChannelComponent.ComponentMessageReceiver msgReceiver;
-    
     private ArrayList<AudioTreatmentDoneListener> listeners = new ArrayList();
+
+    @UsesCellComponent
+    private ContextMenuComponent contextMenu;
+
+    private String[] menuItem = new String[] {"Volume"};  // TODO I18N
 
     public AudioTreatmentComponent(Cell cell) {
         super(cell);
     }
-    
+
     @Override
     public void setStatus(CellStatus status) {
-	switch(status) {
-        case DISK:
-            if (msgReceiver!=null) {
-                channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
-                msgReceiver = null;
-            }
-            break;
+        super.setStatus(status);
+        switch (status) {
+            case DISK:
+                if (msgReceiver != null) {
+                    channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
+                    msgReceiver = null;
+                    contextMenu.removeMenuItem(menuItem);
+                }
+                break;
 
-	case BOUNDS:
-            if (msgReceiver==null) {
-                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-                    public void messageReceived(CellMessage message) {
-                        AudioTreatmentMessage msg = (AudioTreatmentMessage)message;
-                    }
-                };                    
+            case BOUNDS:
+                if (msgReceiver == null) {
+                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
-        	channelComp = cell.getComponent(ChannelComponent.class);
-                channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
-            }
-	    break;
+                        public void messageReceived(CellMessage message) {
+                            AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
+                        }
+                    };
+
+                    channelComp = cell.getComponent(ChannelComponent.class);
+                    channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
+                    contextMenu.addMenuItem(menuItem, new ContextMenuListener() {
+
+                        public void entityContextPerformed(ContextMenuEvent event) {
+                            logger.warning("Volume menu item selected, not implemented");
+                        }
+                    });
+
+                }
+                break;
 
         }
     }
-    
+
     /**
      * Listen for audio treatment done
      * @param listener
@@ -82,7 +98,7 @@ public class AudioTreatmentComponent extends CellComponent {
     public void addTreatmentDoneListener(AudioTreatmentDoneListener listener) {
         listeners.add(listener);
     }
-    
+
     /**
      * Remove the audio treatment done listener.
      * @param listener
@@ -93,10 +109,10 @@ public class AudioTreatmentComponent extends CellComponent {
 
     @Override
     public void setClientState(CellComponentClientState clientState) {
-      // TODO: set own client state?
-      super.setClientState(clientState);
+        // TODO: set own client state?
+        super.setClientState(clientState);
     }
-    
+
     /**
      * Notify any audio treatment done listeners
      * 
@@ -107,15 +123,15 @@ public class AudioTreatmentComponent extends CellComponent {
             listener.audioTreatmentDone();
         }
     }
-    
+
     @ExperimentalAPI
     public interface AudioTreatmentDoneListener {
+
         /**
          * Notification that the cell has moved. Source indicates the source of 
          * the move, local is from this client, remote is from the server.
-	 * XXX arguments?
+         * XXX arguments?
          */
         public void audioTreatmentDone();
     }
-    
 }
