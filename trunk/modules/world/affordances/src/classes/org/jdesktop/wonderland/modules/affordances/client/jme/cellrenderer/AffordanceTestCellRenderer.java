@@ -53,28 +53,27 @@ public class AffordanceTestCellRenderer extends BasicRenderer {
         ret.setName(cell.getCellID().toString());
         Geometry geom=null;
         
-        switch(((AffordanceTestCell)cell).getShape()) {
-            case BOX :
-                ret.attachChild(geom = new Box("Box", new Vector3f(), xExtent, yExtent, zExtent));
-                break;
-            case CYLINDER :
-                ret.attachChild(geom = new Cylinder("Cylinder", 10, 10, xExtent, yExtent));
-                // Make yUp
-                ret.setLocalRotation(new Quaternion(new float[] {(float)Math.PI/2, 0f, 0f}));
-                break;
-            case CONE :
-                ret.attachChild(geom = new Cone("Cone", 10, 10, xExtent, yExtent));
-                // Make yUp
-                ret.setLocalRotation(new Quaternion().fromAngleAxis((float)Math.toRadians(90), new Vector3f(1.0f, 0.0f, 0.0f)));
-                break;
-            case SPHERE :
-                ret.attachChild(geom = new Sphere("Sphere", 10, 10, xExtent));
-                break;
-            case TEAPOT :
-                ret.attachChild(geom = new Teapot());
-                ((Teapot)geom).resetData();
-                ret.setLocalScale(0.2f);
-                break;
+        String shapeType = ((AffordanceTestCell)cell).getShape();
+        if (shapeType.equals("BOX") == true) {
+            ret.attachChild(geom = new Box("Box", new Vector3f(), xExtent, yExtent, zExtent));
+        }
+        else if (shapeType.equals("CYLINDER") == true) {
+            ret.attachChild(geom = new Cylinder("Cylinder", 10, 10, xExtent, yExtent));
+            // Make yUp
+            ret.setLocalRotation(new Quaternion(new float[]{(float) Math.PI / 2, 0f, 0f}));
+        }
+        else if (shapeType.equals("CONE") == true) {
+            ret.attachChild(geom = new Cone("Cone", 10, 10, xExtent, yExtent));
+            // Make yUp
+            ret.setLocalRotation(new Quaternion().fromAngleAxis((float) Math.toRadians(90), new Vector3f(1.0f, 0.0f, 0.0f)));
+        }
+        else if (shapeType.equals("SPHERE") == true) {
+            ret.attachChild(geom = new Sphere("Sphere", 10, 10, xExtent));
+        }
+        else {
+            ret.attachChild(geom = new Teapot());
+            ((Teapot) geom).resetData();
+            ret.setLocalScale(0.2f);
         }
 
         if (geom!=null) {
