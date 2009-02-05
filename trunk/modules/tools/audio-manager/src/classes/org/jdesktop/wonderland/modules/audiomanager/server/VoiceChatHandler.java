@@ -37,6 +37,10 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLea
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
 
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.UserManager;
+import org.jdesktop.wonderland.server.UserMO;
+
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
@@ -115,6 +119,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    if (player == null) {
 		logger.warning("No player for " + msg.getCaller());
+
+	        if (audioGroup.getPlayers().size() == 0) {
+		    endVoiceChat(vm, audioGroup);  // cleanup
+	        }
 		return;
 	    }
 	    
@@ -153,58 +161,85 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    audioGroup = vm.createAudioGroup(group, setup);
 	}
 
-	String players[] = msg.getCalleeList().split(" ");
+	String callerID = getID(msg.getCaller());
 
-	boolean added = addPlayerToChatGroup(vm, audioGroup, msg.getCaller(), msg.getChatType());
-
-	if (added == false && players.length == 0) {
+	if (callerID == null) {
+	    System.out.println("Invalid caller:  " + msg.getCaller());
 	    endVoiceChat(vm, audioGroup);
 	    return;
 	}
 
-	for (int i = 0; i < players.length; i++) {
-	    if (players[i].length() > 0) {
-		Player player = vm.getPlayer(players[i]);
+	String[] playerID = msg.getCalleeList().split(" ");
 
-		if (audioGroup.getPlayerInfo(player) != null) {
-		    logger.fine("Player " + players[i] 
-			+ " is already in audio group " + audioGroup);
-		    continue;
-		}
+	for (int i = 0; i < playerID.length; i++) {
+	    String p = getID(playerID[i]);
 
-		Call call = player.getCall();
-
-		if (call != null) {
-		    try {
-		        call.playTreatment("audioGroupInvite.au");
-		    } catch (IOException e) {
-			logger.warning("Unable to play audioGroupInvite.au:  "
-			    + e.getMessage());
-		    }
-		}
-
-		logger.fine("Asking " + players[i] + " to join audio group " + group + " chatType " 
-	    	    + msg.getChatType());
-
-	        requestPlayerJoinAudioGroup(sender, clientID, group, msg.getCaller(),
-		    msg.getCalleeList(), msg.getChatType());
+	    if (p == null) {
+		System.out.println("Invalid callee:  " + playerID[i]);
 	    }
+
+	    playerID[i] = p;
+	}
+
+	boolean added = addPlayerToChatGroup(vm, audioGroup, callerID, msg.getChatType());
+
+	if (added == false && playerID.length == 0) {
+	    endVoiceChat(vm, audioGroup);
+	    return;
+	}
+
+	System.out.println("AudioGroup " + group + " caller " + msg.getCaller()
+	    + " callees '" + msg.getCalleeList() + "'");
+
+	for (int i = 0; i < playerID.length; i++) {
+	    if (playerID[i] == null || playerID[i].length() == 0) {
+		continue;
+	    }
+
+	    Player player = vm.getPlayer(playerID[i]);
+
+	    if (audioGroup.getPlayerInfo(player) != null) {
+		logger.fine("Player " + playerID[i] 
+		    + " is already in audio group " + audioGroup);
+		continue;
+	    }
+
+	    Call call = player.getCall();
+
+	    if (call != null) {
+		try {
+		    call.playTreatment("audioGroupInvite.au");
+		} catch (IOException e) {
+		    logger.warning("Unable to play audioGroupInvite.au:  "
+			+ e.getMessage());
+		}
+	    }
+
+	    logger.fine("Asking " + playerID[i] + " to join audio group " 
+		+ group + " chatType " + msg.getChatType());
+
+	    requestPlayerJoinAudioGroup(sender, clientID, group, msg.getCaller(),
+		msg.getCalleeList(), msg.getChatType());
 	}
 
 	vm.dump("all");
 	return;
     }
 
+    private String getID(String username) {
+	return username;
+    }
+
     private boolean addPlayerToChatGroup(VoiceManager vm, AudioGroup audioGroup,
-	    String callee, VoiceChatMessage.ChatType chatType) {
+	    String callID, VoiceChatMessage.ChatType chatType) {
 
 	ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = 
 	    audioGroup.getPlayers();
 
-	Player player = vm.getPlayer(callee);
+	Player player = vm.getPlayer(callID);
 
 	if (player == null) {
-	    logger.warning("No player for " + callee);
+	    logger.warning("No player for " + callID);
 	    return false;
 	}
 

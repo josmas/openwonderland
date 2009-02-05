@@ -33,11 +33,16 @@ import com.sun.mpk20.voicelib.app.Player;
 
 import com.jme.math.Vector3f;
 
+import com.sun.voip.client.connector.CallStatus;
+
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
+
 /**
  *
  * @author jprovino
  */
-public class AudioParticipantComponentMO extends CellComponentMO {
+public class AudioParticipantComponentMO extends CellComponentMO 
+	implements ManagedCallStatusListener {
 
     private static final Logger logger =
             Logger.getLogger(AudioParticipantComponentMO.class.getName());
@@ -51,7 +56,7 @@ public class AudioParticipantComponentMO extends CellComponentMO {
     public AudioParticipantComponentMO(CellMO cellMO) {
         super(cellMO);
 
-	logger.info("Adding AudioParticpantComponent to " + cellMO.getName());
+	//System.out.println("Adding AudioParticpantComponent to " + cellMO.getName());
     }
 
     @Override
@@ -66,11 +71,20 @@ public class AudioParticipantComponentMO extends CellComponentMO {
 
 	myTransformChangeListener = new MyTransformChangeListener();
 
-	cellRef.get().addTransformChangeListener(myTransformChangeListener);
+	CellMO cellMO = cellRef.get();
+
+	cellMO.addTransformChangeListener(myTransformChangeListener);
+
+	AppContext.getManager(VoiceManager.class).addCallStatusListener(this,
+	    cellMO.getCellID().toString());
     }
 
     protected String getClientClass() {
 	return "org.jdesktop.wonderland.modules.audiomanager.client.AudioParticipantComponent";
+    }
+
+    public void callStatusChanged(CallStatus status) {
+	//System.out.println("AudioParticipantComponent go call status:  " + status);
     }
 
     static class MyTransformChangeListener implements TransformChangeListenerSrv {

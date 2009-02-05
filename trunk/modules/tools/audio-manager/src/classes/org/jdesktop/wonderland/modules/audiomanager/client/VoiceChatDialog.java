@@ -360,24 +360,25 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     
     stopFlasher();
 
+    String caller = callerText.getText();
     String chatters = chatterText.getText();
 
-    chatters.replaceAll(" " + cellID, "");
-    chatters = chatters.replaceAll(cellID.toString(), "");
+    chatters.replaceAll(" " + caller, "");
+    chatters = chatters.replaceAll(caller, "");
 
     String chatGroup = chatGroupText.getText();
 
     if (chatGroup.length() == 0) {
-        chatGroup = cellID.toString();
+        chatGroup = caller + "-" + cellID.toString();
     }
 
-    logger.warning("JOIN chatGroup " + chatGroup + " chatters "
-        + chatters + " chatType " + chatType);
+    logger.warning("JOIN chatGroup " + chatGroup + " caller " + caller
+	+ " chatters " + chatters + " chatType " + chatType);
 
     statusLabel.setText(chatType + " Chat");
 
     VoiceChatMessage chatMessage = new VoiceChatJoinMessage(
-        chatGroup, cellID.toString(), chatters, chatType);
+        chatGroup, caller, chatters, chatType);
 
     session.send(client, chatMessage);
 
@@ -413,7 +414,9 @@ private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     session.send(client, chatMessage);
 
-    updater.done();
+    if (updater != null) {
+        updater.done();
+    }
 
     dialogs.remove(chatGroup);
     setVisible(false);

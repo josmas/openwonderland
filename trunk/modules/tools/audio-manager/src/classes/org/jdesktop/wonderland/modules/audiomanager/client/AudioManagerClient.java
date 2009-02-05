@@ -42,9 +42,6 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.EventListener;
 
-
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;

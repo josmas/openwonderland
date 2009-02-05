@@ -32,6 +32,9 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 /**
  * A component that provides audio audio treatments
@@ -39,7 +42,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatme
  * @author jprovino
  */
 @ExperimentalAPI
-public class AudioTreatmentComponent extends CellComponent {
+public class AudioTreatmentComponent extends CellComponent implements VolumeChangeListener {
 
     private static Logger logger = Logger.getLogger(AudioTreatmentComponent.class.getName());
     private ChannelComponent channelComp;
@@ -81,7 +84,7 @@ public class AudioTreatmentComponent extends CellComponent {
                     contextMenu.addMenuItem(menuItem, new ContextMenuListener() {
 
                         public void entityContextPerformed(ContextMenuEvent event) {
-                            logger.warning("Volume menu item selected, not implemented");
+			    adjustVolume();
                         }
                     });
 
@@ -89,6 +92,30 @@ public class AudioTreatmentComponent extends CellComponent {
                 break;
 
         }
+    }
+
+    VolumeControlJFrame volumeControlJFrame;
+
+    private void adjustVolume() {
+	if (volumeControlJFrame == null) {
+	    volumeControlJFrame = new VolumeControlJFrame(this, cell.getName());
+	} 
+
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+	if (cell.getCellID().toString().equals(sc.getCallID())) {
+	    volumeControlJFrame.setTitle("Master Volume for " + cell.getName());
+	} else {
+	    volumeControlJFrame.setTitle("Volume Control for " + cell.getName());
+	}
+
+	volumeControlJFrame.setVisible(true);
+    }
+
+    public void volumeChanged(double volume) {
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+	channelComp.send(new AudioVolumeMessage(cell.getCellID(), sc.getCallID(), volume));
     }
 
     /**
