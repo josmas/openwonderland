@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.scenemanager.SceneManager;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemoveEvent;
 
 /**
@@ -39,6 +40,7 @@ import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemove
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@Plugin
 public class AffordancesClientPlugin implements ClientPlugin {
     /* The single instance of the Affordance HUD Panel */
     private JFrame affordanceHUDFrame = null;

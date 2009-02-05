@@ -15,40 +15,28 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.affordances.common.cell.config;
+package org.jdesktop.wonderland.modules.affordances.common.cell.state;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 
 /**
  * Configuration for the SimpleShapeCell
  *
- * Note This includes a lot of JME detail which would not necesarily be
- * relevant to a 2D client, TODO implement a better abstraction
- *
  * @author paulby
  */
-public class AffordanceTestCellConfig extends CellClientState {
-    public enum Shape { BOX, CONE, CYLINDER, SPHERE, TEAPOT };
+public class AffordanceTestCellClientState extends CellClientState {
 
-    private Shape shape;
+    private String shape = "BOX";
 
-    private MaterialJME materialJME = null;
-
-    public AffordanceTestCellConfig(Shape shape) {
-        this(shape, null);
+    public AffordanceTestCellClientState() {
+        super();
     }
 
-    public AffordanceTestCellConfig(Shape shape, MaterialJME material) {
-        this.shape = shape;
-        this.materialJME = material;
-    }
-
-    public Shape getShape() {
+    public String getShape() {
         return shape;
     }
 
-    public MaterialJME getMaterialJME() {
-        return materialJME;
+    public void setShape(String shape) {
+        this.shape = shape;
     }
 }
