@@ -45,11 +45,13 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  */
 @ExperimentalAPI
 public class TestWorldCellMO extends CellMO {
-    
+
     /** Default constructor, used when cell is created via WFS */
     public TestWorldCellMO() {
         this(new Vector3f(), 50);
     }
+
+    private ManagedReference<MovableCellMO> c2Ref, c3Ref;
 
     public TestWorldCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
@@ -60,11 +62,13 @@ public class TestWorldCellMO extends CellMO {
                     new CellTransform(null, new Vector3f(10, 5, 10)));
             c2.setName("c2");
             c2.setLocalBounds(bounds);
+            c2Ref = AppContext.getDataManager().createReference(c2);
 
             MovableCellMO c3 = new MovableCellMO(
                     new BoundingSphere(2, new Vector3f()),
                     new CellTransform(null, new Vector3f(5, 5, 5)));
             c3.setName("c3");
+            c3Ref = AppContext.getDataManager().createReference(c3);
 
             CellMO c4 = new MovableCellMO(
                     new BoundingSphere(0.5f, new Vector3f()),
@@ -101,12 +105,20 @@ public class TestWorldCellMO extends CellMO {
                             null,
                             new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 
-            Task t = new TestTask(c3, c2);
-            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
+        if (live == true) {
+            Task t = new TestTask(c3Ref.get(), c2Ref.get());
+            AppContext.getTaskManager().schedulePeriodicTask(t, 5000, 1000);
+        }
+    }
+
 
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID,

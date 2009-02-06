@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.client.cell;
 
 import java.lang.reflect.InvocationTargetException;
-import org.jdesktop.wonderland.common.cell.messages.CellUpdateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellClientStateMessage;
 import com.jme.bounding.BoundingVolume;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -39,8 +40,11 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.cell.messages.CellClientComponentMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * The client side representation of a cell. Cells are created via the 
@@ -98,6 +102,7 @@ public class Cell {
     protected static Logger logger = Logger.getLogger(Cell.class.getName());
     
     private HashSet<TransformChangeListener> transformChangeListeners = null;
+    private HashSet<ComponentChangeListener> componentChangeListeners = null;
     
     /**
      * Instantiate a new cell
@@ -222,14 +227,25 @@ public class Cell {
     public void addComponent(CellComponent component, Class componentClass) {
         CellComponent previous = components.put(componentClass,component);
         if (previous!=null)
-            throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName()); 
+            throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName());
+
         synchronized(currentStatus) {
-            if (currentStatus.ordinal()>CellStatus.DISK.ordinal())
+            // If the cell is current more than just being on disk, then attempt
+            // to find out what components it depends upon and add them
+            if (currentStatus.ordinal()>CellStatus.DISK.ordinal()) {
                 resolveAutoComponentAnnotationsForComponents(component);
-            component.setStatus(currentStatus);
+            }
+
+            // Set the status of the component, making sure to pass through all
+            // intermediate statues.
+            component.setComponentStatus(currentStatus);
         }
+
+        // Tell all listeners of a new component. Should we only do this if the
+        // cell is live? XXX
+        notifyComponentChangeListeners(ChangeType.ADDED, component);
     }
-    
+
     /**
      * Remove the cell component of the specified class, the components
      * setStatus method will be called with CellStatus.DISK to trigger cleanup
@@ -241,7 +257,8 @@ public class Cell {
      */
     public void removeComponent(Class<? extends CellComponent> componentClass) {
         CellComponent component = components.remove(componentClass);
-        component.setStatus(CellStatus.DISK);
+        component.setComponentStatus(CellStatus.DISK);
+        notifyComponentChangeListeners(ChangeType.REMOVED, component);
     }
     
     /**
@@ -556,7 +573,7 @@ public class Cell {
             currentStatus = status;
 
             for(CellComponent component : components.values())
-                component.setStatus(status);
+                component.setComponentStatus(status);
 
             for(CellRenderer renderer : cellRenderers.values()) {
                 renderer.setStatus(status);
@@ -577,7 +594,8 @@ public class Cell {
                     // cell state
                     ChannelComponent channel = getComponent(ChannelComponent.class);
                     if (channel != null) {
-                        channel.removeMessageReceiver(CellUpdateMessage.class);
+                        channel.removeMessageReceiver(CellClientStateMessage.class);
+                        channel.removeMessageReceiver(CellClientComponentMessage.class);
                     }
                     break;
 
@@ -586,8 +604,10 @@ public class Cell {
                     // cell on the client-side
                     channel = getComponent(ChannelComponent.class);
                     if (channel != null) {
-                        channel.addMessageReceiver(CellUpdateMessage.class,
-                                new CellUpdateMessageReceiver(this));
+                        channel.addMessageReceiver(CellClientStateMessage.class,
+                                new CellClientStateMessageReceiver(this));
+                        channel.addMessageReceiver(CellClientComponentMessage.class,
+                                new CellComponentMessageReceiver(this));
                     }
                     break;
             }
@@ -729,7 +749,53 @@ public class Cell {
             }
         }
     }
-    
+
+    /**
+     * A utility routine that fetches the channel component of the cell and
+     * sends a message on it. If there is no channel component (should never
+     * happen), this method logs an error message.
+     *
+     * @param message The CellMessage
+     */
+    public void sendCellMessage(CellMessage message) {
+        ChannelComponent channel = getComponent(ChannelComponent.class);
+        if (channel == null) {
+            logger.severe("Unable to find channel on cell id " + getCellID() +
+                    " with name " + getName());
+            return;
+        }
+        channel.send(message);
+    }
+
+    /**
+     * A utility routine that fetches the channel component of the cell and
+     * sends a message on it. This method also waits for and returns the
+     * response. If there is no channel component (should never happen), this
+     * method logs an error message and returns null.
+     *
+     * @param message The CellMessage
+     */
+    public ResponseMessage sendCellMessageAndWait(CellMessage message) {
+        // Fetch the channel, if not present, log and error and return null
+        ChannelComponent channel = getComponent(ChannelComponent.class);
+        if (channel == null) {
+            logger.severe("Unable to find channel on cell id " + getCellID() +
+                    " with name " + getName());
+            return null;
+        }
+
+        // Send the message and return the response. Upon exception, log an
+        // error and return null
+        try {
+            return channel.sendAndWait(message);
+        } catch (java.lang.InterruptedException excp) {
+            logger.log(Level.WARNING, "Sending message and waiting got " +
+                    "interrupted on cell id " + getCellID() + " with name " +
+                    getName(), excp);
+            return null;
+        }
+    }
+
     /**
      * Create the renderer for this cell
      * @param rendererType The type of renderer required
@@ -785,5 +851,33 @@ public class Cell {
         
         for(TransformChangeListener listener : transformChangeListeners)
             listener.transformChanged(this, source);
+    }
+
+    /**
+     * Add a ComponentChangeListener to this cell. The listener will be
+     * called for any changes to the cell's list of components
+     *
+     * @param listener to add
+     */
+    public void addComponentChangeListener(ComponentChangeListener listener) {
+        if (componentChangeListeners==null)
+            componentChangeListeners = new HashSet();
+        componentChangeListeners.add(listener);
+    }
+
+    /**
+     * Remove the specified listener.
+     * @param listener to be removed
+     */
+    public void removeComponentChangeListener(ComponentChangeListener listener) {
+        componentChangeListeners.remove(listener);
+    }
+
+    private void notifyComponentChangeListeners(ComponentChangeListener.ChangeType source, CellComponent component) {
+        if (componentChangeListeners==null)
+            return;
+
+        for(ComponentChangeListener listener : componentChangeListeners)
+            listener.componentChanged(this, source, component);
     }
 }

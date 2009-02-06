@@ -18,68 +18,63 @@
 
 package org.jdesktop.wonderland.modules.sample.server;
 
-import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentClientState;
-import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerState;
+import org.jdesktop.wonderland.modules.sample.common.SampleCellSubComponentClientState;
+import org.jdesktop.wonderland.modules.sample.common.SampleCellSubComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
- * A sample cell component
+ * A sample cell sub-component
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class SampleCellComponentMO extends CellComponentMO {
+public class SampleCellSubComponentMO extends CellComponentMO {
 
-    private static Logger logger = Logger.getLogger(SampleCellComponentMO.class.getName());
+    private static Logger logger = Logger.getLogger(SampleCellSubComponentMO.class.getName());
     private String info = null;
 
-    @UsesCellComponentMO(SampleCellSubComponentMO.class)
-    private ManagedReference<SampleCellSubComponentMO> subComponentRef;
-    
-    public SampleCellComponentMO(CellMO cell) {
+    public SampleCellSubComponentMO(CellMO cell) {
         super(cell);
     }
 
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.modules.sample.client.SampleCellComponent";
+        return "org.jdesktop.wonderland.modules.sample.client.SampleCellSubComponent";
     }
 
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
-        logger.warning("Setting SampleCellComponentMO to live = " + live);
+        logger.warning("Setting SampleCellSubComponentMO to live = " + live);
     }
 
 
     @Override
     public CellComponentClientState getClientState(CellComponentClientState state, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (state == null) {
-            state = new SampleCellComponentClientState();
+            state = new SampleCellSubComponentClientState();
         }
-        ((SampleCellComponentClientState)state).setInfo(info);
+        ((SampleCellSubComponentClientState)state).setInfo(info);
         return super.getClientState(state, clientID, capabilities);
     }
 
     @Override
     public CellComponentServerState getServerState(CellComponentServerState state) {
         if (state == null) {
-            state = new SampleCellComponentServerState();
+            state = new SampleCellSubComponentServerState();
         }
-        ((SampleCellComponentServerState)state).setInfo(info);
+        ((SampleCellSubComponentServerState)state).setInfo(info);
         return super.getServerState(state);
     }
 
     @Override
     public void setServerState(CellComponentServerState state) {
         super.setServerState(state);
-        info = ((SampleCellComponentServerState)state).getInfo();
+        info = ((SampleCellSubComponentServerState)state).getInfo();
     }
 }
