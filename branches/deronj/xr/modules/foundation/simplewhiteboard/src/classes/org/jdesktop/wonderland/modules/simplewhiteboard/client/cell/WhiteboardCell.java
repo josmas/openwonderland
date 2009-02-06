@@ -80,9 +80,10 @@ public class WhiteboardCell extends App2DCell {
      */
     @Override
     public void setClientState(CellClientState state) {
-	super.setClientState(state);
+        super.setClientState(state);
         clientState = (WhiteboardCellClientState) state;
     }
+
     /**
      * This is called when the status of the cell changes.
      */
@@ -92,30 +93,37 @@ public class WhiteboardCell extends App2DCell {
 
         switch (status) {
 
-	    // The cell is now visible
+            // The cell is now visible
             case ACTIVE:
 
-		commComponent = getComponent(WhiteboardComponent.class);
-		setApp(new WhiteboardApp(getAppType(), clientState.getPreferredWidth(), 
-					 clientState.getPreferredHeight(), clientState.getPixelScale(), 
-					 commComponent));
+                commComponent = getComponent(WhiteboardComponent.class);
 
-		// Associate the app with this cell (must be done before making it visible)
-		app.setDisplayer(this);
+                WhiteboardApp whiteboardApp = new WhiteboardApp(getAppType(), clientState.getPixelScale());
+                setApp(whiteboardApp);
 
-		// Get the window the app created
-		whiteboardWin = ((WhiteboardApp) app).getWindow();
+                // Associate the app with this cell (must be done before making it visible)
+                whiteboardApp.setDisplayer(this);
 
-		// Make the app window visible
-		((WhiteboardApp) app).setVisible(true);
-		break;
+                // This app has only one window, so it is always top-level 
+                try {
+                    whiteboardWin = new WhiteboardWindow(whiteboardApp, clientState.getPreferredWidth(),
+                                                         clientState.getPreferredHeight(), true, 
+                                                         clientState.getPixelScale(),
+                                                         commComponent);
+                } catch (InstantiationException ex) {
+                    throw new RuntimeException(ex);
+                }
 
-	    // The cell is no longer visible
+                // Make the app window visible
+                whiteboardWin.setVisible(true);
+                break;
+
+            // The cell is no longer visible
             case DISK:
-		((WhiteboardApp) app).setVisible(false);
-		removeComponent(WhiteboardComponent.class);
-		commComponent = null;
-		whiteboardWin = null;
+                whiteboardWin.setVisible(false);
+                removeComponent(WhiteboardComponent.class);
+                commComponent = null;
+                whiteboardWin = null;
                 break;
         }
 

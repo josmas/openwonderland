@@ -52,7 +52,7 @@ public class WhiteboardCellServerState extends App2DCellServerState {
     public WhiteboardCellServerState() {}
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardCellMO";
+        return "org.jdesktop.wonderland.modules.simplewhiteboard.server.cell.WhiteboardCellMO";
     }
 
     @XmlTransient public int getPreferredWidth () {

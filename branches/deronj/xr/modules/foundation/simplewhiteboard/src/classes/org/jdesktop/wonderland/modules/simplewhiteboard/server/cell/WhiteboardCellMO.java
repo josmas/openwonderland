@@ -77,7 +77,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      */
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardCell";
+        return "org.jdesktop.wonderland.modules.simplewhiteboard.client.cell.WhiteboardCell";
     }
 
     /** 
