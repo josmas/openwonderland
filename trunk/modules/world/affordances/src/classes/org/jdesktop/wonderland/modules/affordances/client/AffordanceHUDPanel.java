@@ -77,8 +77,10 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         resizeToggleButton = new javax.swing.JToggleButton();
         slidePanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
         sizeSlider = new javax.swing.JSlider();
-        jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
         setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 0));
@@ -126,12 +128,20 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         });
         add(resizeToggleButton);
 
-        slidePanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        slidePanel.setLayout(new javax.swing.BoxLayout(slidePanel, javax.swing.BoxLayout.Y_AXIS));
 
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel1.setText("1x");
-        jLabel1.setIconTextGap(0);
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 12));
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Affordance Size");
+        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         slidePanel.add(jLabel1);
+
+        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel3.setText("1x");
+        jLabel3.setIconTextGap(0);
+        jPanel1.add(jLabel3);
 
         sizeSlider.setMajorTickSpacing(100);
         sizeSlider.setMaximum(400);
@@ -141,10 +151,12 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
                 sizeSliderStateChanged(evt);
             }
         });
-        slidePanel.add(sizeSlider);
+        jPanel1.add(sizeSlider);
 
-        jLabel2.setText("5x");
-        slidePanel.add(jLabel2);
+        jLabel4.setText("5x");
+        jPanel1.add(jLabel4);
+
+        slidePanel.add(jPanel1);
 
         add(slidePanel);
     }// </editor-fold>//GEN-END:initComponents
@@ -208,34 +220,6 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         setTranslationVisible(translateToggleButton.isSelected());
     }//GEN-LAST:event_translateToggleButtonActionPerformed
 
-    private void sizeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sizeSliderStateChanged
-        // Fetch the current value of the slide and the currently selected
-        // cell
-        float newSize = getSliderSize();
-        Cell cell = getSelectedCell();
-        if (cell == null) {
-            return;
-        }
-
-        // Set the size on the translate affordance
-        TranslateAffordanceCellComponent translateComponent = cell.getComponent(TranslateAffordanceCellComponent.class);
-        if (translateComponent != null) {
-            translateComponent.setSize(newSize);
-        }
-
-        // Set the size on the rotate affordance
-        RotateAffordanceCellComponent rotateComponent = cell.getComponent(RotateAffordanceCellComponent.class);
-        if (rotateComponent != null) {
-            rotateComponent.setSize(newSize);
-        }
-
-        // Set the size on the resize affordance
-        ResizeAffordanceCellComponent resizeComponent = cell.getComponent(ResizeAffordanceCellComponent.class);
-        if (resizeComponent != null) {
-            resizeComponent.setSize(newSize);
-        }
-    }//GEN-LAST:event_sizeSliderStateChanged
-
     private void rotateToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateToggleButtonActionPerformed
         setRotationVisible(rotateToggleButton.isSelected());
     }//GEN-LAST:event_rotateToggleButtonActionPerformed
@@ -243,6 +227,10 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     private void resizeToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resizeToggleButtonActionPerformed
         setResizingVisible(resizeToggleButton.isSelected());
     }//GEN-LAST:event_resizeToggleButtonActionPerformed
+
+    private void sizeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sizeSliderStateChanged
+        updateAffordanceSize();
+}//GEN-LAST:event_sizeSliderStateChanged
 
     /**
      * Manually set whether the translation affordance is visible (true) or
@@ -385,6 +373,38 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     }
 
     /**
+     * Updates the size of the affordances using the current value of the size
+     * slider
+     */
+    private void updateAffordanceSize() {
+        // Fetch the current value of the slide and the currently selected
+        // cell
+        float newSize = getSliderSize();
+        Cell cell = getSelectedCell();
+        if (cell == null) {
+            return;
+        }
+
+        // Set the size on the translate affordance
+        TranslateAffordanceCellComponent translateComponent = cell.getComponent(TranslateAffordanceCellComponent.class);
+        if (translateComponent != null) {
+            translateComponent.setSize(newSize);
+        }
+
+        // Set the size on the rotate affordance
+        RotateAffordanceCellComponent rotateComponent = cell.getComponent(RotateAffordanceCellComponent.class);
+        if (rotateComponent != null) {
+            rotateComponent.setSize(newSize);
+        }
+
+        // Set the size on the resize affordance
+        ResizeAffordanceCellComponent resizeComponent = cell.getComponent(ResizeAffordanceCellComponent.class);
+        if (resizeComponent != null) {
+            resizeComponent.setSize(newSize);
+        }
+    }
+
+    /**
      * Inner class that listens for changes to the selection and upates the
      * state of the dialog appropriately
      */
@@ -404,7 +424,9 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JToggleButton resizeToggleButton;
     private javax.swing.JToggleButton rotateToggleButton;
     private javax.swing.JSlider sizeSlider;
