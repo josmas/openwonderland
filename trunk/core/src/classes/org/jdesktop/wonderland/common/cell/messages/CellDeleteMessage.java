@@ -41,9 +41,9 @@ public class CellDeleteMessage extends CellEditMessage {
     }
     
     /**
-     * Get the ID of the cell of the parent
+     * Get the ID of the cell
      * 
-     * @return the parent cellID
+     * @return the cellID
      */
     public CellID getCellID() {
         return this.cellID;

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.math.Vector3f;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,9 +29,12 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage.EditType;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -118,6 +122,63 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             }
             else {
                 CellManagerMO.getCellManager().removeCellFromWorld(cellMO);
+            }
+        }
+        else if (editMessage.getEditType() == EditType.DUPLICATE_CELL) {
+            // Find the cell object given the ID of the cell. If the ID is
+            // invalid, we just log an error and return.
+            CellID cellID = ((CellDuplicateMessage)editMessage).getCellID();
+            CellMO cellMO = CellManagerMO.getCell(cellID);
+            if (cellMO == null) {
+                logger.warning("No cell found to duplicate with cell id " + cellID);
+                return;
+            }
+            CellMO parentCellMO = cellMO.getParent();
+
+            // We need to fetch the current state of the cell from the cell we
+            // wish to duplicate. We also need the name of the server-side cell
+            // class
+            CellServerState state = cellMO.getServerState(null);
+            String className = state.getServerClassName();
+
+            // Attempt to create the cell using the cell factory and the class
+            // name of the server-side cell.
+            CellMO newCellMO = CellMOFactory.loadCellMO(className);
+            if (newCellMO == null) {
+                /* Log a warning and move onto the next cell */
+                logger.warning("Unable to duplicate cell MO: " + className);
+                return;
+            }
+
+            // We want to modify the position of the new cell slight, so we
+            // offset the position by (1, 1, 1).
+            PositionComponentServerState position = (PositionComponentServerState)state.getComponentServerState(PositionComponentServerState.class);
+            if (position == null) {
+                logger.warning("Unable to determine the position of the cell " +
+                        "to duplicate with id " + cellID);
+                return;
+            }
+            Vector3f offset = new Vector3f(1, 1, 1);
+            Origin origin = position.getOrigin();
+            Origin newOrigin = new Origin(offset.add(new Vector3f((float)origin.x, (float)origin.y, (float)origin.z)));
+            position.setOrigin(newOrigin);
+            state.addComponentServerState(position);
+
+            // Set the state of the new cell and add it to the same parent as
+            // the old cell. If the old parent cell is null, we just insert it
+            // as root.
+            newCellMO.setServerState(state);
+            try {
+                if (parentCellMO == null) {
+                    WonderlandContext.getCellManager().insertCellInWorld(newCellMO);
+                }
+                else {
+                    parentCellMO.addChild(newCellMO);
+                }
+            } catch (MultipleParentException excp) {
+                logger.log(Level.WARNING, "Error duplicating cell " +
+                        newCellMO.getName() + " of type " + newCellMO.getClass() +
+                        ", has multiple parents", excp);
             }
         }
     }
