@@ -57,7 +57,6 @@ public class ProximityComponentMO extends CellComponentMO {
 
     private HashMap<ProximityListenerSrv, ServerProximityListenerRecord> proximityListeners = null;
     private HashMap<ManagedReference<ProximityListenerSrv>, ServerProximityListenerRecord> proximityListenersRef = null;
-    private boolean isLive = false;
     
     /**
      * Set a list of bounds for which the system will track view enter/exit for
@@ -106,20 +105,20 @@ public class ProximityComponentMO extends CellComponentMO {
 
         ServerProximityListenerRecord rec = new ServerProximityListenerRecord(new ServerProximityListenerWrapper(cellID, listener), localBounds);
         if (listener instanceof ManagedObject) {
-            if (proximityListenersRef==null)
+            if (proximityListenersRef == null)
                 proximityListenersRef = new HashMap();
-                proximityListenersRef.put(AppContext.getDataManager().createReference(listener), rec);
+            proximityListenersRef.put(AppContext.getDataManager().createReference(listener), rec);
 
         } else {
-            if (proximityListeners==null)
+            if (proximityListeners == null)
                 proximityListeners = new HashMap();
-                proximityListeners.put(listener, rec);
+            proximityListeners.put(listener, rec);
         }
 
 
         UniverseManager mgr = AppContext.getManager(UniverseManager.class);
         CellMO cell = cellRef.get();
-        rec.setLive(isLive, cell, mgr);
+        rec.setLive(true, cell, mgr);
     }
 
     /**
@@ -129,7 +128,9 @@ public class ProximityComponentMO extends CellComponentMO {
     public void removeProximityListener(ProximityListenerSrv listener) {
         ServerProximityListenerRecord rec;
         if (listener instanceof ManagedObject) {
-            rec = proximityListenersRef.remove(listener);
+            // Since we added a managed reference to the map, we need to remove
+            // a managed reference.
+            rec = proximityListenersRef.remove(AppContext.getDataManager().createReference(listener));
         } else {
             rec = proximityListeners.remove(listener);
         }
