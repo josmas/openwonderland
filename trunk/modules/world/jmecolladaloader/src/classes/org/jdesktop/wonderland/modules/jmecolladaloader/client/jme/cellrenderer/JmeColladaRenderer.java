@@ -69,6 +69,7 @@ public class JmeColladaRenderer extends BasicRenderer {
                 model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
             if (((JmeColladaCell)cell).getGeometryRotation()!=null)
                 model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
+            return ret;
         } catch (MalformedURLException ex) {
             Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -87,7 +88,7 @@ public class JmeColladaRenderer extends BasicRenderer {
         try {
             logger.warning("URL: " + url);
             InputStream input = url.openStream();
-//            System.out.println("Resource stream "+input);
+            System.out.println("Resource stream "+input);
 
             ResourceLocatorTool.addResourceLocator(
                     ResourceLocatorTool.TYPE_TEXTURE,
