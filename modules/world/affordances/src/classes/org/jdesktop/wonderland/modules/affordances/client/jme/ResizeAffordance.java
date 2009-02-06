@@ -28,6 +28,7 @@ import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.BlendState;
+import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
@@ -260,20 +261,12 @@ public class ResizeAffordance extends Affordance {
         MaterialState matState = (MaterialState) rm.createRendererState(RenderState.RS_MATERIAL);
         sphereNode.setRenderState(matState);
         matState.setDiffuse(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
-//        matState.setAmbient(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
+        matState.setAmbient(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
 //        matState.setSpecular(new ColorRGBA(1.0f, 1.0f, 1.0f, 0.5f));
-//        matState.setShininess(128.0f);
-//        matState.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
+        matState.setShininess(128.0f);
+        matState.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
         matState.setEnabled(true);
 
-        // IMPORTANT: this is used to handle the internal sphere faces when
-        // setting them to transparent, try commenting this line to see what
-        // happens
-        matState.setMaterialFace(MaterialState.MaterialFace.FrontAndBack);
-
-        // to handle transparency: a BlendState
-        // an other tutorial will be made to deal with the possibilities of this
-        // RenderState
         BlendState alphaState = (BlendState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_BLEND);
         alphaState.setBlendEnabled(true);
         alphaState.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
@@ -281,13 +274,12 @@ public class ResizeAffordance extends Affordance {
         alphaState.setTestEnabled(true);
         alphaState.setTestFunction(BlendState.TestFunction.GreaterThan);
         alphaState.setEnabled(true);
-
         sphere.setRenderState(alphaState);
-        sphere.updateRenderState();
-//
-//        // IMPORTANT: since the sphere will be transparent, place it
-//        // in the transparent render queue!
-//        sphere.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
+
+        // Remove the back faces of the object so transparency works properly
+        CullState cullState = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_CULL);
+        cullState.setCullFace(CullState.Face.Back);
+        sphereNode.setRenderState(cullState);
 
         // Set the bound so this node can be pickable
         sphere.setModelBound(new BoundingSphere());
