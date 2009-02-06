@@ -93,17 +93,6 @@ public class ContextMenu implements ActionListener {
 
         // Register a global listener for context and selection events
         SceneManager.getSceneManager().addSceneListener(new ContextSelectionListener());
-        
-//        addContextMenuItem("Edit", new ContextMenuListener() {
-//            public void entityContextPerformed(ContextMenuEvent event) {
-//                Logger.getLogger(ContextMenu.class.getName()).warning(event.getName());
-//            }
-//        });
-//        addContextMenuItem("Move", new ContextMenuListener() {
-//            public void entityContextPerformed(ContextMenuEvent event) {
-//                Logger.getLogger(ContextMenu.class.getName()).warning(event.getName());
-//            }
-//        });
     }
     
     /**
@@ -127,15 +116,7 @@ public class ContextMenu implements ActionListener {
      * Adds a context menu entry, along with a listener for events 
      */
     public void addContextMenuItem(String name, ContextMenuListener listener) {
-        // Create a new popup menu entry for this
-//        JButton item = new JButton(name);
-//        item.addActionListener(this);
-//        item.setActionCommand(name);
-
         JLabel item = new JLabel(name);
-//        item.setBorder(BorderFactory.createCompoundBorder(
-//                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-//                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
         item.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 7));
         item.setOpaque(true);
         item.addMouseListener(new LabelListener(name));
@@ -146,7 +127,6 @@ public class ContextMenu implements ActionListener {
         layout.setRows(numChildren+1);
         contextPanel.add(item);
         contextPanel.invalidate();
-//        layout.layoutContainer(contextMenu);
         contextMenu.pack();
         
         // Add an entry to the map of listeners for each menu item, if not null
@@ -167,7 +147,6 @@ public class ContextMenu implements ActionListener {
         layout.setRows(numChildren-1);
         contextPanel.remove(item);
         contextPanel.invalidate();
-//        layout.layoutContainer(contextMenu);
         contextMenu.pack();
 
         listenerMap.remove(name);
@@ -236,9 +215,6 @@ public class ContextMenu implements ActionListener {
         public void mouseClicked(MouseEvent e) {
             // Fetch the listener for this menu item and deliver the event
             JLabel label = (JLabel)e.getSource();
-//            label.setBorder(BorderFactory.createCompoundBorder(
-//                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-//                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
             label.setBackground(Color.LIGHT_GRAY);
             ContextMenuListener listener = listenerMap.get(text);
             hideContextMenu();
