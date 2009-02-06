@@ -85,6 +85,13 @@ public class PaletteClientPlugin implements ClientPlugin {
         ContextMenu contextMenu = ContextMenu.getContextMenu();
         contextMenu.addContextMenuItem("Properties", new ContextMenuListener() {
             public void entityContextPerformed(ContextMenuEvent event) {
+                // Fetch the Entity associated with the event. If there is none,
+                // then ignore the event quietly.
+                if (event.getEntityList() == null || event.getEntityList().size() == 0) {
+                    logger.warning("Unable to find Entity in context menu event, ignoring context event");
+                    return;
+                }
+
                 // Fetch the cell from the context event, using the entity
                 // given in the event
                 Entity entity = event.getEntityList().get(0);
@@ -113,6 +120,13 @@ public class PaletteClientPlugin implements ClientPlugin {
         // a confirmation dialog and then delete the Cell
         contextMenu.addContextMenuItem("Delete", new ContextMenuListener() {
             public void entityContextPerformed(ContextMenuEvent event) {
+                // Fetch the Entity associated with the event. If there is none,
+                // then ignore the event quietly.
+                if (event.getEntityList() == null || event.getEntityList().size() == 0) {
+                    logger.warning("Unable to find Entity in context menu event, ignoring context event");
+                    return;
+                }
+
                // Fetch the cell from the context event, using the entity
                 // given in the event
                 Entity entity = event.getEntityList().get(0);
