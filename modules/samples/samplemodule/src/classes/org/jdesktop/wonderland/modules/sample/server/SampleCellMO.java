@@ -23,10 +23,8 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-
 
 /**
  * A sample cell
@@ -40,11 +38,6 @@ public class SampleCellMO extends CellMO {
 
     /** Default constructor, used when cell is created via WFS */
     public SampleCellMO() {
-        SampleCellComponentMO component = new SampleCellComponentMO(this);
-        SampleCellComponentServerState state = new SampleCellComponentServerState();
-        state.setInfo("My component info");
-        component.setServerState(state);
-        addComponent(component);
     }
 
     @Override

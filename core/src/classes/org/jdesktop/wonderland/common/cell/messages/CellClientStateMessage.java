@@ -9,24 +9,25 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * A base class for all messages that update the state of a cell.
+ * A message to set the client state of cell's, sent from the server to clients.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class CellUpdateMessage extends CellMessage {
+public class CellClientStateMessage extends CellMessage {
 
     private CellClientState clientState = null;
 
-    public CellUpdateMessage(CellID cellID, CellClientState clientState) {
+    public CellClientStateMessage(CellID cellID, CellClientState clientState) {
         super(cellID);
         this.clientState = clientState;
     }
 
+    /**
+     * Returns the cell's client state.
+     *
+     * @return A CellClientState object
+     */
     public CellClientState getClientState() {
         return clientState;
-    }
-
-    public void setClientState(CellClientState clientState) {
-        this.clientState = clientState;
     }
 }

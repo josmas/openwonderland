@@ -23,31 +23,31 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentClientState;
+import org.jdesktop.wonderland.modules.sample.common.SampleCellSubComponentClientState;
 
 /**
- * Client-side sample cell component
+ * Client-side sample cell sub-component
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class SampleCellComponent extends CellComponent {
+public class SampleCellSubComponent extends CellComponent {
 
-    private static Logger logger = Logger.getLogger(SampleCellComponent.class.getName());
+    private static Logger logger = Logger.getLogger(SampleCellSubComponent.class.getName());
     private String info = null;
 
-    public SampleCellComponent(Cell cell) {
+    public SampleCellSubComponent(Cell cell) {
         super(cell);
     }
 
     @Override
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
-        info = ((SampleCellComponentClientState)clientState).getInfo();
+        info = ((SampleCellSubComponentClientState)clientState).getInfo();
     }
 
     @Override
     public void setStatus(CellStatus status) {
         super.setStatus(status);
-        logger.warning("Setting status on SampleCellComponent to " + status);
+        logger.warning("Setting status on SampleCellSubComponent to " + status);
     }
 }

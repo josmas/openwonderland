@@ -19,8 +19,7 @@ package org.jdesktop.wonderland.client.cell;
 
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellUpdateMessage;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.messages.CellClientStateMessage;
 
 /**
  * A listener on a cell's channel to handle updates to its state sent from the
@@ -28,17 +27,15 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class CellUpdateMessageReceiver implements ComponentMessageReceiver {
+public class CellClientStateMessageReceiver implements ComponentMessageReceiver {
 
     private Cell cell = null;
 
-    public CellUpdateMessageReceiver(Cell cell) {
+    public CellClientStateMessageReceiver(Cell cell) {
         this.cell = cell;
     }
 
     public void messageReceived(CellMessage message) {
-       System.out.println("RECEIVED CELL UPDATE MESSAGE: " + message.getCellID());
-       CellClientState clientState = ((CellUpdateMessage)message).getClientState();
-       cell.setClientState(clientState);
+       cell.setClientState(((CellClientStateMessage)message).getClientState());
     }
 }
