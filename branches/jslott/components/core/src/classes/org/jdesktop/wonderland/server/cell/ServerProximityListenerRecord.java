@@ -21,14 +21,11 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.kernel.KernelRunnable;
-import com.sun.sgs.kernel.TransactionScheduler;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 import org.jdesktop.wonderland.common.cell.ProximityListenerRecord.ProximityListenerWrapper;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
-import org.jdesktop.wonderland.server.spatial.UniverseService;
 import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 
@@ -58,8 +55,6 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
 
     void setLive(boolean isLive, final CellMO cell, UniverseManager mgr) {
         if (isLive) {
-            ServerProximityListenerWrapper rec = (ServerProximityListenerWrapper) proximityListener;
-            rec.setUniverseManager(mgr);
             mgr.addTransformChangeListener(cell, this);
             mgr.addViewUpdateListener(cell, this);
 
@@ -73,69 +68,56 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
     }
 
 }
+
 /**
-     * Internal structure containing the array of bounds for a given listener.
-     */
-    class ServerProximityListenerWrapper implements ProximityListenerRecord.ProximityListenerWrapper {
+ * Internal structure containing the array of bounds for a given listener.
+ */
+class ServerProximityListenerWrapper implements ProximityListenerRecord.ProximityListenerWrapper {
 
-        private ProximityListenerSrv listener;
-        private ManagedReference<ProximityListenerSrv> listenerRef = null;
-        private CellID cellID;
-        private UniverseManager universeManager = null;
+    private ProximityListenerSrv listener;
+    private ManagedReference<ProximityListenerSrv> listenerRef = null;
+    private CellID cellID;
 
-        public ServerProximityListenerWrapper(CellID cell, ProximityListenerSrv listener) {
-            if (listener instanceof ManagedObject) {
-                listenerRef = AppContext.getDataManager().createReference(listener);
-            } else {
-                this.listener = listener;
-            }
-            this.cellID = cell;
+    public ServerProximityListenerWrapper(CellID cell, ProximityListenerSrv listener) {
+        if (listener instanceof ManagedObject) {
+            listenerRef = AppContext.getDataManager().createReference(listener);
+        } else {
+            this.listener = listener;
         }
+        this.cellID = cell;
+    }
 
-        CellID getCellID() {
-            return cellID;
+    CellID getCellID() {
+        return cellID;
+    }
+
+    public void viewEnterExit(boolean enter,
+            BoundingVolume proximityVolume,
+            int proximityIndex,
+            CellID viewCellID) {
+        if (listenerRef != null) {
+            listenerRef.get().viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
+        } else {
+            listener.viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
         }
+    }
 
-        /**
-         * Set the universe manager, which will be used to invoke the listener
-         * callback in a transaction if necessary
-         * 
-         * @param universeManager
-         */
-        void setUniverseManager(UniverseManager universeManager) {
-            this.universeManager = universeManager;
-        }
-
-        public void viewEnterExit(boolean enter,
-                                  BoundingVolume proximityVolume,
-                                  int proximityIndex,
-                                  CellID viewCellID) {
-            if (listenerRef!=null) {
-                ProximityNotifierTask tsk = new ProximityNotifierTask(listenerRef, enter, proximityVolume, proximityIndex, cellID, viewCellID);
-                universeManager.scheduleTask(tsk);
-            } else {
-                listener.viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
-            }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof ServerProximityListenerWrapper))
-                return false;
-
-            if (listenerRef!=null) {
-                if (((ServerProximityListenerWrapper)o).listenerRef.equals(listenerRef))
-                    return true;
-
-            } else {
-                if (((ServerProximityListenerWrapper)o).listener==listener)
-                    return true;
-
-            }
-
-
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ServerProximityListenerWrapper))
             return false;
+
+        if (listenerRef != null) {
+            if (((ServerProximityListenerWrapper) o).listenerRef.equals(listenerRef))
+                return true;
+
+        } else {
+            if (((ServerProximityListenerWrapper) o).listener == listener)
+                return true;
+
         }
+        return false;
+    }
 
     @Override
     public int hashCode() {
@@ -144,7 +126,4 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
         hash = 53 * hash + (this.listenerRef != null ? this.listenerRef.hashCode() : 0);
         return hash;
     }
-
-
-    }
-
+}
