@@ -23,7 +23,6 @@
                     
             <client>
                 <clientjar name="palette-client" basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.palette.client.PaletteClientPlugin"/>
                     <include name="${module.src}/client/**"/>
                 </clientjar> 
             </client>
