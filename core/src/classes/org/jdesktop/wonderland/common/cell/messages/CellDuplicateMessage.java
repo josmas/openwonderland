@@ -18,38 +18,34 @@
 package org.jdesktop.wonderland.common.cell.messages;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- * Message sent to edit the cell hierarchy.
+ * Message sent to duplicate a cell hierarchy.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public class CellEditMessage extends Message {
-
-    /** The message type */
-    private EditType editType;
-    
-    /** Enumeration of kinds of editing */
-    public enum EditType {
-        CREATE_CELL, DELETE_CELL, DUPLICATE_CELL
-    };
+public class CellDuplicateMessage extends CellEditMessage {
+    /** The ID of the cell to duplicate */
+    private CellID cellID;
     
     /**
-     * Create a new cell message to the given cellID of the parent.
+     * Create a new cell delete message for the given cellID.
      * 
-     * @param parentID the id of the parent cell
+     * @param cellID the id of the cell
      */
-    public CellEditMessage(EditType editType) {
-        this.editType = editType;
+    public CellDuplicateMessage(CellID cellID) {
+        super(EditType.DUPLICATE_CELL);
+        this.cellID = cellID;
     }
-
-    public EditType getEditType() {
-        return editType;
-    }
-
-    public void setEditType(EditType editType) {
-        this.editType = editType;
+    
+    /**
+     * Get the ID of the cell
+     * 
+     * @return The unique cell ID
+     */
+    public CellID getCellID() {
+        return this.cellID;
     }
 }
