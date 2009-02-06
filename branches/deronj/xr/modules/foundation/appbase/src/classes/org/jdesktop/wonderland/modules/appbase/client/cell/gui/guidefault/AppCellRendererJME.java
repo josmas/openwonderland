@@ -49,6 +49,9 @@ import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
  */
 public class AppCellRendererJME extends AppCellRenderer {
 
+    /** The root node of the cell renderer. */
+    protected Node acrjRootNode;
+
     /** The Z buffer state. */
     //protected ZBufferState zBufferState;
     /** The light state. */
@@ -61,12 +64,12 @@ public class AppCellRendererJME extends AppCellRenderer {
     public AppCellRendererJME(AppCell cell) {
         super(cell);
 
-        rootNode = new Node("Root node for cell " + cell.getCellID().toString());
+        acrjRootNode = new Node("Root node for cell " + cell.getCellID().toString());
 
         //	initZBufferState();
         initLightState();
         //	rootNode.setRenderState(zBufferState);
-        rootNode.setRenderState(lightState);
+        acrjRootNode.setRenderState(lightState);
 
         // For debug
         ClientContext.getInputManager().addGlobalEventListener(new SceneGraphPrinter());
@@ -98,11 +101,11 @@ public class AppCellRendererJME extends AppCellRenderer {
     protected Node createSceneGraph(Entity entity) {
 
         RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().
-                createRenderComponent(rootNode);
+                createRenderComponent(acrjRootNode);
         entity.addComponent(RenderComponent.class, rc);
         rc.setEntity(entity);
 
-        return rootNode;
+        return acrjRootNode;
     }
 
     /**

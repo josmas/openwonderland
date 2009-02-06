@@ -103,6 +103,7 @@ public abstract class Window2D extends Window {
     public Window2D(App app, int width, int height, boolean topLevel, Vector2f pixelScale)
             throws InstantiationException {
         super(app);
+
         this.width = width;
         this.height = height;
         this.topLevel = topLevel;
@@ -392,6 +393,7 @@ public abstract class Window2D extends Window {
     public Window2DView createView(String spaceName) {
         GuiFactory gui2DFactory = app.getDisplayer().getGui2DFactory();
         if (gui2DFactory == null) {
+            logger.warning("Cannot create view because there is no GUI factory.");
             return null;
         }
 

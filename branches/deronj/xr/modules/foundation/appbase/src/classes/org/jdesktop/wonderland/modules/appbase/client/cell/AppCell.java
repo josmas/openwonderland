@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 import org.jdesktop.wonderland.modules.appbase.client.gui.GuiFactory;
 import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
  * The generic application cell superclass. Created with a subclass-specific constructor.
@@ -38,7 +39,8 @@ import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
  * @author deronj
  */
 @ExperimentalAPI
-public abstract class AppCell extends Cell implements Displayer, ClientPlugin {
+//TODO: @Plugin - Is this needed?
+public abstract class AppCell extends Cell implements Displayer /* TODO: , ClientPlugin*/ {
 
     /** The default GUI factory to use. */
     private static final String GUI_FACTORY_CLASS_DEFAULT = 
@@ -60,10 +62,40 @@ public abstract class AppCell extends Cell implements Displayer, ClientPlugin {
      * Statically initialize the appbase cell package (in a user client only). 
      */
     public void initialize(ServerSessionManager loginInfo) {
+        // TODO: initGuiFactoryFromClientPlugin();
+    }
+
+    // TODO: temporary: will break SAS!
+    static {
+        initGuiFactoryStatically();
+    }
+
+    /* TODO
+    public static void initGuiFactoryFromClientPlugin () {
 
         // TODO: later on we might allow the default gui factory to be overridden by the user. 
 
         ClassLoader classLoader = getClass().getClassLoader();
+        try {
+            Class clazz = Class.forName(GUI_FACTORY_CLASS_DEFAULT, true, classLoader);
+            Constructor constructor = clazz.getConstructor();
+            gui2DFactory = (GuiFactoryCell) constructor.newInstance();
+        } catch(Exception e) {
+            logger.severe("Error instantiating app GUI factory "+ GUI_FACTORY_CLASS_DEFAULT+
+                        ", Exception = " + e);
+        }
+    }
+    */
+
+    // TODO: temporary: will break SAS!
+    static {
+        initGuiFactoryStatically();
+    }
+
+    // TODO: temporary
+    public static void initGuiFactoryStatically () {
+
+        ClassLoader classLoader = AppCell.class.getClassLoader();
         try {
             Class clazz = Class.forName(GUI_FACTORY_CLASS_DEFAULT, true, classLoader);
             Constructor constructor = clazz.getConstructor();
@@ -112,6 +144,7 @@ public abstract class AppCell extends Cell implements Displayer, ClientPlugin {
      */
     public void setApp(App app)
             throws IllegalArgumentException, IllegalStateException {
+
         if (app == null) {
             throw new NullPointerException();
         }
@@ -168,7 +201,7 @@ public abstract class AppCell extends Cell implements Displayer, ClientPlugin {
      */
     @InternalAPI
     public void attachView(WindowView view, RendererType rendererType) {
-        switch (rendererType) {
+               switch (rendererType) {
             case RENDERER_JME:
                 ((AppCellRenderer) getCellRenderer(rendererType)).attachView(view);
                 break;
