@@ -57,6 +57,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         labels.put(400, new JLabel("5.0"));
         sizeSlider.setLabelTable(labels);
         this.frame = frame;
+        
         // Listen for selections to update the HUD panel
         InputManager.inputManager().addGlobalEventListener(new SelectionListener());
     }
@@ -265,7 +266,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
 
         // See if there is already a translate component on the Cell.
         CellComponent component = cell.getComponent(TranslateAffordanceCellComponent.class);
-
+        
         // If we are selecting the translate toggle button, then add the translate
         // component if it is not already on there. Also, set its size.
         if (visible == true) {
