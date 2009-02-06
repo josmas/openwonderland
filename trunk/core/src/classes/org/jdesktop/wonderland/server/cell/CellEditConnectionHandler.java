@@ -77,6 +77,7 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             
             // Fetch the server-side cell class name and create the cell
             String className = setup.getServerClassName();
+            logger.warning("Attempting to load cell mo: " + className);
             CellMO cellMO = CellMOFactory.loadCellMO(className);
             if (cellMO == null) {
                 /* Log a warning and move onto the next cell */
@@ -100,10 +101,24 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             }
         }
         else if (editMessage.getEditType() == EditType.DELETE_CELL) {
+            // Find the cell object given the ID of the cell. If the ID is
+            // invalid, we just log an error and return.
             CellID cellID = ((CellDeleteMessage)editMessage).getCellID();
             CellMO cellMO = CellManagerMO.getCell(cellID);
+            if (cellMO == null) {
+                logger.warning("No cell found to delete with cell id " + cellID);
+                return;
+            }
+
+            // Find out the parent of the cell. This may be null if the cell is
+            // at the world root. This determines from where to remove the cell
             CellMO parentMO = cellMO.getParent();
-            parentMO.removeChild(cellMO);
+            if (parentMO != null) {
+                parentMO.removeChild(cellMO);
+            }
+            else {
+                CellManagerMO.getCellManager().removeCellFromWorld(cellMO);
+            }
         }
     }
     
