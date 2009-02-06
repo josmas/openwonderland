@@ -236,8 +236,13 @@ public abstract class BasicRenderer implements CellRendererJME {
         }
 
         if (rootNode!=null) {
-            RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-            entity.addComponent(RenderComponent.class, rc);
+            // Some subclasses (like the imi collada renderer) already add
+            // a render component
+            RenderComponent rc = entity.getComponent(RenderComponent.class);
+            if (rc==null) {
+                rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+                entity.addComponent(RenderComponent.class, rc);
+            }
 
             WonderlandSession session = cell.getCellCache().getSession();
             CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(LoginManager.find(session), "Default");
@@ -259,6 +264,8 @@ public abstract class BasicRenderer implements CellRendererJME {
 //                    entity.addComponent(PhysicsComponent.class, pc);
 //                }
 //            }
+        } else {
+            logger.warning("**** BASIC RENDERER - ROOT NODE WAS NULL !");
         }
 
     }
