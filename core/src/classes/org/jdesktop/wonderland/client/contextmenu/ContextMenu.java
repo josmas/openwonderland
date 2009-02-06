@@ -84,8 +84,9 @@ public class ContextMenu implements ActionListener {
         contextMenu.setResizable(false);
         contextMenu.setUndecorated(true);
         contextMenu.getContentPane().setLayout(new GridLayout(1, 1));
-        contextMenu.getContentPane().setBackground(Color.LIGHT_GRAY);
         contextPanel = new JPanel();
+        contextPanel.setBackground(Color.GRAY);
+        contextPanel.setOpaque(true);
         contextMenu.getContentPane().add(contextPanel);
         contextPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         contextPanel.setLayout(new GridLayout());
@@ -132,9 +133,11 @@ public class ContextMenu implements ActionListener {
 //        item.setActionCommand(name);
 
         JLabel item = new JLabel(name);
-        item.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+//        item.setBorder(BorderFactory.createCompoundBorder(
+//                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+//                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+        item.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 7));
+        item.setOpaque(true);
         item.addMouseListener(new LabelListener(name));
         menuItems.put(name, item);
 
@@ -233,9 +236,10 @@ public class ContextMenu implements ActionListener {
         public void mouseClicked(MouseEvent e) {
             // Fetch the listener for this menu item and deliver the event
             JLabel label = (JLabel)e.getSource();
-            label.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+//            label.setBorder(BorderFactory.createCompoundBorder(
+//                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+//                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+            label.setBackground(Color.LIGHT_GRAY);
             ContextMenuListener listener = listenerMap.get(text);
             hideContextMenu();
             if (listener != null) {
@@ -247,18 +251,14 @@ public class ContextMenu implements ActionListener {
         @Override
         public void mouseEntered(MouseEvent e) {
             JLabel label = (JLabel)e.getSource();
-            label.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(Color.BLACK),
-                    BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+            label.setBackground(Color.LIGHT_GRAY);
             contextMenu.pack();
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
             JLabel label = (JLabel) e.getSource();
-            label.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-                    BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+            label.setBackground(Color.white);
             contextMenu.pack();
         }
     }
