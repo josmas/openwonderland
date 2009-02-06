@@ -27,9 +27,9 @@ import com.jme.scene.GeometricUpdateListener;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Sphere;
+import com.jme.scene.state.BlendState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
-import com.jme.scene.state.WireframeState;
 import com.jme.scene.state.ZBufferState;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -116,7 +116,7 @@ public class ResizeAffordance extends Affordance {
         Node sphereNode = createSphereNode("Sphere Node");
         addSubEntity(resizeEntity, sphereNode);
         listener = addResizeListener(resizeEntity, sphereNode);
-        
+
         // Listen for changes to the cell's translation and apply the same
         // update to the root node of the affordances. We also re-set the size
         // of the affordances: this handles the case where the bounds of the
@@ -217,83 +217,83 @@ public class ResizeAffordance extends Affordance {
      * Creates and returns a Node that contains a sphere that represents the
      * resize affordance
      */
-    private Node createSphereNode(String name) {
-        // Create the new node and sphere primitive
-        Node sphereNode = new Node();
-        Sphere sphere = new Sphere(name, 50, 50, radius);
-        sphereNode.attachChild(sphere);
-
-        // Set the color to black and the transparency
-        sphere.setSolidColor(ColorRGBA.black);
-        sphereNode.setRenderState(zbuf);
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        MaterialState matState = (MaterialState) rm.createRendererState(RenderState.RS_MATERIAL);
-        matState.setDiffuse(ColorRGBA.black);
-        sphereNode.setRenderState(matState);
-        matState.setEnabled(true);
-
-        // Make the sphere wireframe so we can see through it
-        WireframeState wiState = (WireframeState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
-        wiState.setEnabled(true);
-        sphereNode.setRenderState(wiState);
-
-        // Set the bound so this node can be pickable
-        sphere.setModelBound(new BoundingSphere());
-        sphere.updateModelBound();
-        return sphereNode;
-    }
-
-    /**
-     * Creates and returns a Node that contains a sphere that represents the
-     * resize affordance
-     */
 //    private Node createSphereNode(String name) {
 //        // Create the new node and sphere primitive
 //        Node sphereNode = new Node();
-//        Sphere sphere = new Sphere(name, 30, 30, radius);
+//        Sphere sphere = new Sphere(name, 50, 50, radius);
 //        sphereNode.attachChild(sphere);
 //
 //        // Set the color to black and the transparency
-//        sphere.setSolidColor(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
+//        sphere.setSolidColor(ColorRGBA.black);
 //        sphereNode.setRenderState(zbuf);
 //        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
 //        MaterialState matState = (MaterialState) rm.createRendererState(RenderState.RS_MATERIAL);
+//        matState.setDiffuse(ColorRGBA.black);
 //        sphereNode.setRenderState(matState);
-//        matState.setDiffuse(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
-//        matState.setAmbient(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
-//        matState.setSpecular(new ColorRGBA(1.0f, 1.0f, 1.0f, 0.5f));
-//        matState.setShininess(128.0f);
-//        matState.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
 //        matState.setEnabled(true);
 //
-//        // IMPORTANT: this is used to handle the internal sphere faces when
-//        // setting them to transparent, try commenting this line to see what
-//        // happens
-//        matState.setMaterialFace(MaterialState.MaterialFace.FrontAndBack);
-//
-//        // to handle transparency: a BlendState
-//        // an other tutorial will be made to deal with the possibilities of this
-//        // RenderState
-//        BlendState alphaState = (BlendState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_BLEND);
-//        alphaState.setBlendEnabled(true);
-//        alphaState.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
-//        alphaState.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
-//        alphaState.setTestEnabled(true);
-//        alphaState.setTestFunction(BlendState.TestFunction.GreaterThan);
-//        alphaState.setEnabled(true);
-//
-//        sphere.setRenderState(alphaState);
-//        sphere.updateRenderState();
-////
-////        // IMPORTANT: since the sphere will be transparent, place it
-////        // in the transparent render queue!
-////        sphere.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
+//        // Make the sphere wireframe so we can see through it
+//        WireframeState wiState = (WireframeState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
+//        wiState.setEnabled(true);
+//        sphereNode.setRenderState(wiState);
 //
 //        // Set the bound so this node can be pickable
 //        sphere.setModelBound(new BoundingSphere());
 //        sphere.updateModelBound();
 //        return sphereNode;
 //    }
+
+    /**
+     * Creates and returns a Node that contains a sphere that represents the
+     * resize affordance
+     */
+    private Node createSphereNode(String name) {
+        // Create the new node and sphere primitive
+        Node sphereNode = new Node();
+        Sphere sphere = new Sphere(name, 30, 30, radius);
+        sphereNode.attachChild(sphere);
+
+        // Set the color to black and the transparency
+        sphere.setSolidColor(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
+        sphereNode.setRenderState(zbuf);
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        MaterialState matState = (MaterialState) rm.createRendererState(RenderState.RS_MATERIAL);
+        sphereNode.setRenderState(matState);
+        matState.setDiffuse(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
+//        matState.setAmbient(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
+//        matState.setSpecular(new ColorRGBA(1.0f, 1.0f, 1.0f, 0.5f));
+//        matState.setShininess(128.0f);
+//        matState.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
+        matState.setEnabled(true);
+
+        // IMPORTANT: this is used to handle the internal sphere faces when
+        // setting them to transparent, try commenting this line to see what
+        // happens
+        matState.setMaterialFace(MaterialState.MaterialFace.FrontAndBack);
+
+        // to handle transparency: a BlendState
+        // an other tutorial will be made to deal with the possibilities of this
+        // RenderState
+        BlendState alphaState = (BlendState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_BLEND);
+        alphaState.setBlendEnabled(true);
+        alphaState.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+        alphaState.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+        alphaState.setTestEnabled(true);
+        alphaState.setTestFunction(BlendState.TestFunction.GreaterThan);
+        alphaState.setEnabled(true);
+
+        sphere.setRenderState(alphaState);
+        sphere.updateRenderState();
+//
+//        // IMPORTANT: since the sphere will be transparent, place it
+//        // in the transparent render queue!
+//        sphere.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
+
+        // Set the bound so this node can be pickable
+        sphere.setModelBound(new BoundingSphere());
+        sphere.updateModelBound();
+        return sphereNode;
+    }
 
     /**
      * Adds a drag listener to each resize handle, given the Entity and Node
