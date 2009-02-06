@@ -378,6 +378,33 @@ public class ViewManager {
     }
 
     /**
+     * Convienence method to return the camera position as a vector.
+     *
+     * NOTE: THIS IS UNTESTED
+     *
+     * @return The camera position
+     */
+    public Vector3f getCameraPosition() {
+        return getCameraTransform().getTranslation(null);
+    }
+
+    /**
+     * Returns the camera "look direction" as a vector.
+     *
+     * NOTE: THIS IS UNTESTED
+     *
+     * @return The camera look direction
+     */
+    public Vector3f getCameraLookDirection() {
+        CellTransform cameraTransform = getCameraTransform();
+        cameraTransform.invert();
+        Vector3f v = new Vector3f(0, 0, -1);
+        cameraTransform.transform(v);
+        v.normalizeLocal();
+        return v;
+    }
+
+    /**
      * Return the CameraComponent. This is an internal api.
      * 
      * @return
