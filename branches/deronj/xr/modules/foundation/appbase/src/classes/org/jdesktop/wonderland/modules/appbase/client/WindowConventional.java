@@ -160,10 +160,12 @@ public abstract class WindowConventional extends WindowGraphics2D {
             return;
         }
         int srcIdx = 0;
-        int dstIdx = y * dstWidth + x;
+        //        int dstIdx = y * dstWidth + x;
+        int dstIdx = 0;
         int dstNextLineIdx = dstIdx;
         for (int srcY = 0; srcY < h; srcY++) {
             dstNextLineIdx += dstWidth;
+            System.err.println("dstNextLineIdx = " + dstNextLineIdx);
             for (int srcX = 0; srcX < w; srcX++) {
                 dstPixels[dstIdx++] = pixels[srcIdx++];
             }

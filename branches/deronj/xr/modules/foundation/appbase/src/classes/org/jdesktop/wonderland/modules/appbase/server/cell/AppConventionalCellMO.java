@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import com.sun.sgs.app.AppContext;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 
 /**
  * TODO: rework
@@ -79,8 +80,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     AppConventionalCellServerState serverState;
     /** The parameters given to the client. */
     AppConventionalCellClientState clientState;
-    /** Whether the client connection handler has been registered. */
-    private boolean connectionHandlerRegistered;
+    /** The app conventional connection handler */
+    private AppConventionalConnectionHandler connectionHandler;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     protected Serializable connectionInfo;
 
@@ -212,59 +213,68 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
     @Override
     protected void setLive(boolean live) {
-        logger.severe("***** Enter ACCMO.setLive: live = " + live);
-
         if (isLive()==live)
             return;
 
-        logger.severe("1");
-
         super.setLive(live);
+
+        // For both user and server cells
+        if (live) {
+            // Register the connection handler when the first cell is created
+            if (connectionHandler == null) {
+                connectionHandler = new AppConventionalConnectionHandler();
+                WonderlandContext.getCommsManager().registerClientHandler(connectionHandler);
+            }
+        } else {
+            if (connectionHandler != null) {
+                WonderlandContext.getCommsManager().unregisterClientHandler(connectionHandler);
+                connectionHandler = null;
+            }
+        }
 
         if (!"server".equalsIgnoreCase(serverState.launchLocation)) {
             return;
         }
 
-        logger.severe("2");
+        /*
+        ** Server shared app case.
+        */
 
         AppServerLauncher appServerLauncher = 
             (AppServerLauncher) AppContext.getDataManager().getBinding(APP_SERVER_LAUNCHER_BINDING_NAME);
 
-        logger.severe("3");
-
         if (appServerLauncher == null) {
             logger.warning("No SAS registered. Cannot launch app " + serverState.getAppName());
+            return;
         }
 
         if (live) {
 
-            logger.severe("4");
-
-            // Register the connection handler when the first cell is created
-            if (!connectionHandlerRegistered) {
-                CommsManager cm = WonderlandContext.getCommsManager();
-                //TODO: cm.registerClientHandler(new AppConnectionHandlerXrw());
-                connectionHandlerRegistered = true;
-            }
-
             connectionInfo = appServerLauncher.appLaunch(cellID, "xremwin", serverState.getAppName(), 
                                                          serverState.getCommand());
-            logger.severe("5");
             if (connectionInfo == null) {
                 logger.warning("Could not launch app " + serverState.getAppName());
                 return;
             }
 
-            // TODO: notifyClientsConnectionInfoChanged(connectionInfo);
+            // Notify all client cells that connection info for a newly launched SAS master app 
+            // is now available.
+            AppConventionalCellSetConnectionInfoMessage msg = 
+                new AppConventionalCellSetConnectionInfoMessage(cellID, connectionInfo);
+            AppConventionalConnectionHandler.getSender().send(msg);
 
         } else {
             if (connectionInfo != null) {
                 appServerLauncher.appStop(cellID);
                 connectionInfo = null;
             }
-            if (connectionHandlerRegistered) {
-                // TODO: how to unregister?
-            }
+        }
+    }
+
+    void setConnectionInfo (Serializable connInfo) {
+        connectionInfo = connInfo;
+        if (clientState != null) {
+            clientState.setConnectionInfo(connectionInfo);
         }
     }
 }

@@ -21,9 +21,13 @@ import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 
 /**
  * The client-side cell for an 2D conventional application.
@@ -39,6 +43,8 @@ public abstract class AppConventionalCell extends App2DCell {
     protected String appName;
     /** The connection info. */
     protected Serializable connectionInfo;
+    /** The App Conventional connection to the server. */
+    private AppConventionalConnection connection;
 
     // TODO: eventually: do we need to save client state in the cell?
     /** 
@@ -50,6 +56,17 @@ public abstract class AppConventionalCell extends App2DCell {
     public AppConventionalCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         session = cellCache.getSession();
+
+        // The first cell of this type for this session creates the connection
+        connection = (AppConventionalConnection) session.getConnection(AppConventionalConnection.getConnectionTypeStatic());
+        if (connection == null) {
+            connection = new AppConventionalConnection(session);
+            try {
+                connection.connect(session);
+            } catch (ConnectionFailureException ex) {
+                throw new RuntimeException("Cannot create App Conventional connection, exception = " + ex);
+            }
+        }
     }
 
     /**
@@ -62,7 +79,6 @@ public abstract class AppConventionalCell extends App2DCell {
         AppConventionalCellClientState state = (AppConventionalCellClientState) clientState;
         appName = state.getAppName();
 
-
         if (state.getLaunchLocation().equalsIgnoreCase("user") &&
             state.getLaunchUser().equals(session.getUserID().getUsername())) {
 
@@ -72,24 +88,61 @@ public abstract class AppConventionalCell extends App2DCell {
 
             connectionInfo = startMaster(appName, state.getCommand(), false);
             if (connectionInfo == null) {
-                // TODO: what to do?
+                logger.warning("Cannot launch app " + appName);
+                // TODO: what else to do? Delete the cell? If so, how?
                 return;
             }
 
-        // TODO: xxxxx: set connection info
+            // Notify server and clients of the new connection info.
+            AppConventionalCellSetConnectionInfoMessage msg =
+                new AppConventionalCellSetConnectionInfoMessage(getCellID(), connectionInfo);
+            Message response = connection.sendAndWait(msg);
+            if (!(response instanceof OKMessage)) {
+                logger.warning("Cannot notify others of connection info for app + " + appName);
+                // TODO: what else to do? Delete the cell? If so, how?
+                return;
+            }
 
         } else {
 
             // Slave case
+            //
+            // Slaves must wait to connect until valid connection info is known. This can happen in one
+            // of two ways. If the slave cell was loaded into this client AFTER the master app started 
+            // the connection info will already be known (i.e. non-null). Otherwise, if the slave cell
+            // was loaded into this client BEFORE the master app started this client will eventually
+            // receive a SetConnectionInfo message whic contains the connection info.
 
             connectionInfo = state.getConnectionInfo();
-            if (connectionInfo == null) {
-                // TODO: xxx
-                //waitForConnectionInfo();
+            synchronized (this) {
+                while (connectionInfo == null) {
+                    logger.fine("Slave is waiting for connection info.");
+                    try { wait(); } catch (InterruptedException ex) {}
+                }
+                logger.fine("Slave received connection info. Proceeding to connect client.");
             }
 
             // App User or World Launch: Slave case
             startSlave(connectionInfo);
+        }
+    }
+
+    /**
+     * This is called when the server sends the connection info.
+     */
+    synchronized void setConnectionInfo (Serializable connInfo) {
+        
+        // If we already know the connection info then we can skip this.
+        // Note: this will happen if we are the master, or if this cell was created after
+        // the server learned of the connection info.
+
+        if (connectionInfo != null) {
+            return;
+        }
+
+        if (connInfo != null) {
+            connectionInfo = connInfo;
+            notifyAll();
         }
     }
 
