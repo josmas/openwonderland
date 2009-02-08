@@ -53,7 +53,7 @@ public class SwingTestCellServerState extends App2DCellServerState {
     public SwingTestCellServerState() {}
     
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.swingtest.server.SwingTestCellMO";
+        return "org.jdesktop.wonderland.modules.swingtest.server.cell.SwingTestCellMO";
     }
 
     @XmlTransient public int getPreferredWidth () {
