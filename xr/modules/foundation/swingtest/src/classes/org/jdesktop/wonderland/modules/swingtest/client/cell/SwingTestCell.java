@@ -85,23 +85,28 @@ public class SwingTestCell extends App2DCell {
             // The cell is now visible
             case ACTIVE:
 
-                setApp(new SwingTestApp(getAppType(), clientState.getPreferredWidth(),
-                        clientState.getPreferredHeight(),
-                        clientState.getPixelScale()));
+                SwingTestApp stApp = new SwingTestApp(getAppType(), clientState.getPixelScale());
+                setApp(stApp);
 
                 // Associate the app with this cell (must be done before making it visible)
-                app.setDisplayer(this);
+                stApp.setDisplayer(this);
 
-                // Get the window the app created
-                window = ((SwingTestApp) app).getWindow();
+                // This app has only one window, so it is always top-level
+                try {
+                    window = new SwingTestWindow(stApp, clientState.getPreferredWidth(), 
+                                                 clientState.getPreferredHeight(), 
+                                                 /*TODO: until debugged: true*/ false, pixelScale);
+                } catch (InstantiationException ex) {
+                    throw new RuntimeException(ex);
+                }
 
                 // Make the app window visible
-                ((SwingTestApp) app).setVisible(true);
+                window.setVisible(true);
                 break;
 
             // The cell is no longer visible
             case DISK:
-                ((SwingTestApp) app).setVisible(false);
+                window.setVisible(false);
                 window = null;
                 break;
         }
