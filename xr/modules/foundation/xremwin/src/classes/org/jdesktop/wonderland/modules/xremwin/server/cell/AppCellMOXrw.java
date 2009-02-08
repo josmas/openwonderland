@@ -57,7 +57,7 @@ public class AppCellMOXrw extends AppConventionalCellMO {
      */
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.modules.xremwin.client.AppCellXrw";
+        return "org.jdesktop.wonderland.modules.xremwin.client.cell.AppCellXrw";
     }
 
     /**
