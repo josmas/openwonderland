@@ -52,7 +52,7 @@ public class SwingTestCellMO extends App2DCellMO {
      */
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.modules.swingtest.client.SwingTestCell";
+        return "org.jdesktop.wonderland.modules.swingtest.client.cell.SwingTestCell";
     }
 
     /** 
