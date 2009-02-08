@@ -151,7 +151,7 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener 
                 break;
 
             case SET_WINDOW_TITLE:
-                // Ignore the message
+                // TODO: Ignore the message for now
                 break;
 
             default:

@@ -799,6 +799,11 @@ abstract class ClientXrw implements Runnable {
                 int pixel = ((chunkBuf[chunkOffset + 2] + 256) & 0xFF) << 16 |
                         ((chunkBuf[chunkOffset + 1] + 256) & 0xFF) << 8 |
                         ((chunkBuf[chunkOffset + 0] + 256) & 0xFF);
+                //System.err.println("pixel = " + Integer.toHexString(pixel));
+
+                // Make the pixels opaque so that we can copy them with Graphics.drawImage
+                pixel |= 0xff000000;
+
                 /*
                 if (numRunsReceived++ < maxVerboseRuns) {
                 AppXrw.logger.finer("numRunsReceived = " + numRunsReceived);
