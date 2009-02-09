@@ -295,7 +295,7 @@ of the cell.
                 }
             }
 
-            windowSwing.setSize2(newSize.width, newSize.height);
+            windowSwing.setSize(newSize.width, newSize.height);
         }
 
 	private void paintOnWindow (final WindowSwing window,
