@@ -101,6 +101,7 @@ public class FrameWorldDefault extends Window2DFrame {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void cleanup() {
         super.cleanup();
 
@@ -160,7 +161,9 @@ public class FrameWorldDefault extends Window2DFrame {
             RenderComponent rcEntity = (RenderComponent) entity.getComponent(RenderComponent.class);
 
             // TODO: hack
-            ClientContextJME.getWorldManager().addEntity(rcEntity.getEntity());
+            if (rcEntity != null) {
+                ClientContextJME.getWorldManager().addEntity(rcEntity.getEntity());
+            }
 
             if (rcParentEntity != null && rcParentEntity.getSceneRoot() != null && rcEntity != null) {
                 rcEntity.setAttachPoint(rcParentEntity.getSceneRoot());
@@ -215,6 +218,7 @@ public class FrameWorldDefault extends Window2DFrame {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setTitle(String title) {
         super.setTitle(title);
         if (header != null) {
@@ -225,6 +229,7 @@ public class FrameWorldDefault extends Window2DFrame {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void updateControl(ControlArb controlArb) {
         if (view == null || ((ViewWorldDefault) view).getActuallyVisible()) {
             return;
