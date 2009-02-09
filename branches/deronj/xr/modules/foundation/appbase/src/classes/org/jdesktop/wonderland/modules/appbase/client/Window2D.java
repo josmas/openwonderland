@@ -127,6 +127,7 @@ public abstract class Window2D extends Window {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void cleanup() {
         super.cleanup();
 
@@ -306,6 +307,7 @@ public abstract class Window2D extends Window {
      *
      * @param visible Whether the window should be visible.
      */
+    @Override
     public void setVisible(boolean visible) {
         if (this.visible == visible) {
             return;

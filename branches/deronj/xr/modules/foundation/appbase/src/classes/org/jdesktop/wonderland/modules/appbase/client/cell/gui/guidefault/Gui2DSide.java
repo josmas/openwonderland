@@ -65,6 +65,7 @@ class Gui2DSide extends Gui2D {
         /**
          * Called when a 3D event has occurred.
          */
+        @Override
         public void commitEvent(Event event) {
             Action action;
 
@@ -91,6 +92,7 @@ class Gui2DSide extends Gui2D {
     /**
      * For Debug: Register this Gui's key listener on the given entity.
      */
+    @Override
     protected void attachKeyListener(Entity entity) {
         // For debug
         keyListener = new SideKeyListener();
@@ -100,6 +102,7 @@ class Gui2DSide extends Gui2D {
     /**
      * For Debug: Remove this Gui's key listener from its assigned entity.
      */
+    @Override
     protected void detachKeyListener(Entity entity) {
         // For debug
         if (keyListener != null && entity != null) {
@@ -115,6 +118,7 @@ class Gui2DSide extends Gui2D {
         /**
          * {@inheritDoc}
          */
+        @Override
         public Class[] eventClassesToConsume() {
             return new Class[]{KeyEvent3D.class};
         }
@@ -122,6 +126,7 @@ class Gui2DSide extends Gui2D {
         /**
          * {@inheritDoc}
          */
+        @Override
         public void commitEvent(Event event) {
 
             KeyEvent3D ke3d = (KeyEvent3D) event;
@@ -142,6 +147,7 @@ class Gui2DSide extends Gui2D {
      * @param me The AWT event for this 3D mouse event.
      * @param me3d The 3D mouse event.
      */
+    @Override
     protected Action determineIfConfigAction(MouseEvent me, MouseEvent3D me3d) {
         Action action = determineIfToFrontAction(me);
         if (action != null) {
@@ -157,6 +163,7 @@ class Gui2DSide extends Gui2D {
      * @param me The AWT event for this 3D mouse event.
      * @param me3d The 3D mouse event.
      */
+    @Override
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
         if (action.type == ActionType.TO_FRONT) {
             ((Window2D) window).toFront();

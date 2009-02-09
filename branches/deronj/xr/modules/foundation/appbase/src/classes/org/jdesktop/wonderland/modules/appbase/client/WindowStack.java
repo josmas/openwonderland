@@ -38,7 +38,7 @@ public class WindowStack {
     /**
      * Deallocate resources.
      */
-    public void cleanup() {
+    public synchronized void cleanup() {
         if (stack != null) {
             stack.clear();
             stack = null;
@@ -50,7 +50,7 @@ public class WindowStack {
      *
      * @param window The window whose stack position is to be returned.
      */
-    public int getStackPosition(Window2D window) {
+    public synchronized int getStackPosition(Window2D window) {
         int index = stack.indexOf(window);
         if (index < 0) {
             return index;
@@ -69,7 +69,7 @@ public class WindowStack {
             stack.remove(window);
         }
         stack.addFirst(window);
-    //printStack();
+        //printStack();
     }
 
     /**
@@ -113,7 +113,7 @@ public class WindowStack {
     /** 
      * Return the top window of the stack.
      */
-    public Window2D getTop() {
+    public synchronized Window2D getTop() {
         try {
             return stack.getFirst();
         } catch (NoSuchElementException ex) {
@@ -124,7 +124,7 @@ public class WindowStack {
     /** 
      * Return the bottom window of the stack.
      */
-    public Window2D getBottom() {
+    public synchronized Window2D getBottom() {
         try {
             return stack.getLast();
         } catch (NoSuchElementException ex) {

@@ -1000,7 +1000,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         //cell.logSceneGraph(RendererType.RENDERER_JME);
 
         // Attach this view's event listeners
-        AppCellRendererJME cellRenderer = (AppCellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
         for (EventListener listener : eventListeners) {
             listener.addToEntity(entity);
         }
@@ -1022,7 +1021,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         detachEventListeners(getEntity());
 
         // Detach this view's event listeners
-        AppCellRendererJME cellRenderer = (AppCellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
         for (EventListener listener : eventListeners) {
             listener.removeFromEntity(entity);
         }

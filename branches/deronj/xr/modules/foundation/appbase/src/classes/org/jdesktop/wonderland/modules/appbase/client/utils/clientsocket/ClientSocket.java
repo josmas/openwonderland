@@ -106,19 +106,19 @@ public class ClientSocket {
         return otherClientID;
     }
 
-    long getNumBytesRead() {
+    synchronized long getNumBytesRead() {
         return numBytesRead;
     }
 
-    void setNumBytesRead(long n) {
+    synchronized void setNumBytesRead(long n) {
         numBytesRead = n;
     }
 
-    long getNumBytesWritten() {
+    synchronized long getNumBytesWritten() {
         return numBytesWritten;
     }
 
-    void setNumBytesWritten(long n) {
+    synchronized void setNumBytesWritten(long n) {
         numBytesWritten = n;
     }
 
@@ -249,6 +249,7 @@ public class ClientSocket {
      * Wait until the size of the write queue changes. (Note that this
      * might be either because something was added to it or something was removed).
      * Must be called inside a synchronized (writeQueue) block.
+     * Note: this method must be called in a loop.
      * @return true if the socket is closed.
      */
     private boolean writeQueueWait() {

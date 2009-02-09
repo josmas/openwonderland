@@ -97,6 +97,9 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
                                    String command) {
         logger.severe("***** appLaunch, command = " + command);
 
+        // TODO: For now eventually make sure that only one app can be launched per cell.
+        // Later: allow multiple apps per cell.
+
         LinkedList<ProviderProxy> providers = execCapToProviderList.get(executionCapability);
         if (providers == null || providers.size() <= 0) {
             // No provider. Launch must pend

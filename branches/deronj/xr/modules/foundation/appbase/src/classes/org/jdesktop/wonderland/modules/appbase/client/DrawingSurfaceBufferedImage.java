@@ -104,7 +104,7 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
      * {@inheritDoc}
      */
     @Override
-    public void cleanup() {
+    public synchronized void cleanup() {
         bufImage = null;
         g = null;
     }
@@ -175,8 +175,8 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
      * @param width The width of the subrectangle.
      * @param height The height of the subrectangle.
      */
-    public void getPixelBytes(final byte[] pixelBytes, final int x, final int y,
-            final int width, final int height) {
+    public synchronized void getPixelBytes(final byte[] pixelBytes, final int x, final int y,
+                                           final int width, final int height) {
 
         WritableRaster srcRas = bufImage.getRaster();
         DataBufferInt srcDataBuf = (DataBufferInt) srcRas.getDataBuffer();
@@ -336,11 +336,11 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
             return new Rectangle(x0, y0, x1 - x0, y1 - y0);
         }
 
-        public Rectangle getDirtyRectangle() {
+        public synchronized Rectangle getDirtyRectangle() {
             return dirtyRect;
         }
 
-        public void clearDirty() {
+        public synchronized void clearDirty() {
             dirtyRect = null;
         }
 

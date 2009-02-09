@@ -193,7 +193,7 @@ public class MonitoredProcess {
 
         this.reporter = reporter;
         if (reporter == null) {
-            reporter = ProcessReporterFactory.getFactory().create(processName);
+            this.reporter = ProcessReporterFactory.getFactory().create(processName);
         }
     }
 

@@ -57,6 +57,7 @@ public abstract class AppConventionalCell extends App2DCell {
         super(cellID, cellCache);
         session = cellCache.getSession();
 
+        /* TODO: notyet
         // The first cell of this type for this session creates the connection
         connection = (AppConventionalConnection) session.getConnection(AppConventionalConnection.getConnectionTypeStatic());
         if (connection == null) {
@@ -67,6 +68,7 @@ public abstract class AppConventionalCell extends App2DCell {
                 throw new RuntimeException("Cannot create App Conventional connection, exception = " + ex);
             }
         }
+        */
     }
 
     /**
@@ -93,6 +95,7 @@ public abstract class AppConventionalCell extends App2DCell {
                 return;
             }
 
+            /* TODO: notyet
             // Notify server and clients of the new connection info.
             AppConventionalCellSetConnectionInfoMessage msg =
                 new AppConventionalCellSetConnectionInfoMessage(getCellID(), connectionInfo);
@@ -102,6 +105,7 @@ public abstract class AppConventionalCell extends App2DCell {
                 // TODO: what else to do? Delete the cell? If so, how?
                 return;
             }
+            */
 
         } else {
 

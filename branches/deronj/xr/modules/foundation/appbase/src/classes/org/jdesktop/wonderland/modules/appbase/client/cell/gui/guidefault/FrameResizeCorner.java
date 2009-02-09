@@ -122,6 +122,7 @@ public class FrameResizeCorner extends FrameComponent {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void update () throws InstantiationException {
         updateLayout();
 

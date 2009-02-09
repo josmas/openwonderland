@@ -67,6 +67,7 @@ class Gui2DResizeCorner extends Gui2DSide {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void attachMouseListener(Entity entity) {
         mouseListener = new ResizeCornerMouseListener();
         mouseListener.addToEntity(entity);
@@ -80,6 +81,7 @@ class Gui2DResizeCorner extends Gui2DSide {
         /**
          * Called when a 3D event has occurred.
          */
+        @Override
         public void commitEvent(Event event) {
             Action action;
 
@@ -101,6 +103,7 @@ class Gui2DResizeCorner extends Gui2DSide {
      * @param me The AWT event for this 3D mouse event.
      * @param me3d The 3D mouse event.
      */
+    @Override
     protected Action determineIfConfigAction(MouseEvent me, MouseEvent3D me3d) {
         Action action = determineIfToFrontAction(me);
         if (action != null) {
@@ -117,6 +120,7 @@ class Gui2DResizeCorner extends Gui2DSide {
      * @param me The AWT event for this 3D mouse event.
      * @param me3d The 3D mouse event.
      */
+    @Override
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
         if (action.type == ActionType.TO_FRONT) {
             ((Window2D) window).toFront();
