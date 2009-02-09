@@ -66,6 +66,7 @@ public class FrameRect extends FrameComponent {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void cleanup() {
         super.cleanup();
         quad = null;
@@ -95,6 +96,7 @@ public class FrameRect extends FrameComponent {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void update() throws InstantiationException {
         updateLayout();
 

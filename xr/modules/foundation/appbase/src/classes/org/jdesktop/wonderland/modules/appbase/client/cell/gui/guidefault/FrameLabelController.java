@@ -49,6 +49,7 @@ public class FrameLabelController extends FrameLabel {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void cleanup() {
         closeButton = null;
     }
@@ -56,6 +57,7 @@ public class FrameLabelController extends FrameLabel {
     /**
      * Recalculate the geometry layout.
      */
+    @Override
     protected void updateLayout() {
         if (closeButton == null) {
             return;
