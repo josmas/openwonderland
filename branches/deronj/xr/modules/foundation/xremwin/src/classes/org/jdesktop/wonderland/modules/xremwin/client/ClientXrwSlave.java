@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.UserNameMsgArgs;
  * @author deronj
  */
 @ExperimentalAPI
-class ClientXrwSlave extends ClientXrw implements ServerProxySlave.DisconnectListener {
+public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.DisconnectListener {
 
     /** Argument buffers for slave-specific messages */
     private SetWindowTitleMsgArgs setWindowTitleMsgArgs = new SetWindowTitleMsgArgs();

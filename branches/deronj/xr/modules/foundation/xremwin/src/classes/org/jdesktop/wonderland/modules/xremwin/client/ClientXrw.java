@@ -57,7 +57,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowCursorMsgArgs;
  * @author deronj
  */
 @ExperimentalAPI
-abstract class ClientXrw implements Runnable {
+public abstract class ClientXrw implements Runnable {
 
     // The connection to the XRemwin server or master.
     protected ServerProxy serverProxy;
@@ -149,7 +149,7 @@ abstract class ClientXrw implements Runnable {
     /** Whether the client is enabled. */
     protected boolean enable;
     /** Lock object used for enable. */
-    private final Integer enableLock = new Integer(0);
+    private final Object enableLock = new Object();
     /** Used by the logging messages in this class */
     private int messageCounter = 0;
 

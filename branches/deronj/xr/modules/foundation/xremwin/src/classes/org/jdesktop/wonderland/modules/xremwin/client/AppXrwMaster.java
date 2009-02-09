@@ -193,6 +193,7 @@ public class AppXrwMaster
     /**
      * Clean up resources.
      */
+    @Override
     public void cleanup() {
         super.cleanup();
 
@@ -219,6 +220,7 @@ public class AppXrwMaster
     /** 
      * This method is called when the window system has exitted.
      */
+    @Override
     public void windowSystemExitted() {
         cleanup();
     }
@@ -266,6 +268,7 @@ public class AppXrwMaster
      * @param wid The X window ID of the window.
      * @param String The new window title.
      */
+    @Override
     public void setWindowTitle(int wid, String windowTitle) {
         // Relay window title to master client
         ((ClientXrwMaster) client).setWindowTitle(wid, windowTitle);

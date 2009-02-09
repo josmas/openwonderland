@@ -41,6 +41,7 @@ public class AppTypeXrw extends AppTypeConventional {
     /**
      * {@inheritDoc}
      */
+    @Override
     public AppLaunchMethods getLaunchMethods() {
         return new AppLaunchMethodsXrw();
     }

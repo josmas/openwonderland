@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.wm.X11IntegrationModule;
  * @author deronj
  */
 @ExperimentalAPI
-class WindowSystemXrw
+public class WindowSystemXrw
         implements X11WindowManager.ExitListener {
 
     /**
@@ -241,18 +241,6 @@ class WindowSystemXrw
      */
     private static void deallocDisplayNum(int displayNum) {
         displayNumAllocator.free(displayNum);
-    }
-
-    /**
-     * Returns true if the Wonderland client is being run via Java webstart.
-     */
-    private static boolean usingWebStart() {
-        try {
-            Class clazz = Class.forName("javax.jnlp.BasicService");
-            return true;
-        } catch (Exception ex) {
-            return false;
-        }
     }
 
     /**

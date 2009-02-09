@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
  * @author deronj
  */
 @ExperimentalAPI
-class WindowXrw extends WindowConventional {
+public class WindowXrw extends WindowConventional {
 
     /** The X11 window ID */
     private int wid;
