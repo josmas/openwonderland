@@ -63,7 +63,7 @@ public class TranslateAffordance extends Affordance {
     private static final float THICKNESS = 0.10f;
 
     /* The constant amount to extent the arrows beyond the size of the object */
-    private static final float LENGTH_OFFSET = 0.2f;
+    private static final float LENGTH_OFFSET = 0.1f;
 
     /* The current scale of the affordance w.r.t the size of the cell */
     private float currentScale = LENGTH_SCALE;
@@ -110,14 +110,14 @@ public class TranslateAffordance extends Affordance {
         sceneRoot = getSceneGraphRoot();
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
-            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius + LENGTH_OFFSET;
+            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius;
         }
         else if (bounds instanceof BoundingBox) {
-            xExtent = ((BoundingBox)bounds).xExtent + LENGTH_OFFSET;
-            yExtent = ((BoundingBox)bounds).yExtent + LENGTH_OFFSET;
-            zExtent = ((BoundingBox)bounds).zExtent + LENGTH_OFFSET;
+            xExtent = ((BoundingBox)bounds).xExtent;
+            yExtent = ((BoundingBox)bounds).yExtent;
+            zExtent = ((BoundingBox)bounds).zExtent;
         }
-
+        
         // Fetch the world translation for the root node of the cell and set
         // the translation for this entity root node
         Vector3f translation = sceneRoot.getWorldTranslation();
@@ -127,7 +127,7 @@ public class TranslateAffordance extends Affordance {
         // pointed in the +y direction, so we rotate around the -z axis to
         // orient the arrow properly.
         xEntity = new Entity("Entity X");
-        xNode = createArrow("Arrow X", xExtent, THICKNESS, ColorRGBA.red);
+        xNode = createArrow("Arrow X", xExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.red);
         Quaternion xRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(0, 0, -1));
         xNode.setLocalRotation(xRotation);
         xNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
@@ -138,7 +138,7 @@ public class TranslateAffordance extends Affordance {
         // Create a green arrow in the +y direction. We arrow we get back is
         // pointed in the +y direction.
         yEntity = new Entity("Entity Y");
-        yNode = createArrow("Arrow Y", yExtent, THICKNESS, ColorRGBA.green);
+        yNode = createArrow("Arrow Y", yExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.green);
         yNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
         yNode.setRenderState(zbuf);
         addSubEntity(yEntity, yNode);
@@ -148,7 +148,7 @@ public class TranslateAffordance extends Affordance {
         // pointed in the +y direction, so we rotate around the +x axis to
         // orient the arrow properly.
         zEntity = new Entity("Entity Z");
-        zNode = createArrow("Arrow Z", zExtent, THICKNESS, ColorRGBA.blue);
+        zNode = createArrow("Arrow Z", zExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.blue);
         Quaternion zRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(1, 0, 0));
         zNode.setLocalRotation(zRotation);
         zNode.setRenderState(zbuf);
