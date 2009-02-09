@@ -26,7 +26,6 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;

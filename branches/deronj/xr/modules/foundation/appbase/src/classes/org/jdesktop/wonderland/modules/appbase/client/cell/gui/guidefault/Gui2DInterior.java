@@ -86,6 +86,7 @@ public class Gui2DInterior extends Gui2D {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void detachMouseListener(Entity entity) {
         if (mouseListener != null && entity != null) {
             mouseListener.removeFromEntity(entity);
@@ -102,6 +103,7 @@ public class Gui2DInterior extends Gui2D {
      */
     protected class InteriorMouseListener extends Gui2D.MouseListener {
 
+        @Override
         public void commitEvent(Event event) {
             logger.fine("event = " + event);
             MouseEvent3D me3d = (MouseEvent3D) event;
@@ -153,6 +155,7 @@ public class Gui2DInterior extends Gui2D {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void attachKeyListener(Entity entity) {
         keyListener = new InteriorKeyListener();
         keyListener.addToEntity(entity);
@@ -161,6 +164,7 @@ public class Gui2DInterior extends Gui2D {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void detachKeyListener(Entity entity) {
         if (keyListener != null && entity != null) {
             keyListener.removeFromEntity(entity);
@@ -179,10 +183,12 @@ public class Gui2DInterior extends Gui2D {
      */
     protected class InteriorKeyListener extends EventClassListener {
 
+        @Override
         public Class[] eventClassesToConsume() {
             return new Class[]{KeyEvent3D.class};
         }
 
+        @Override
         public void commitEvent(Event event) {
             KeyEvent3D ke3d = (KeyEvent3D) event;
             KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();

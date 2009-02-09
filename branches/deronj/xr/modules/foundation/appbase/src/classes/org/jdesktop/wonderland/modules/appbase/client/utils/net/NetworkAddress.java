@@ -233,6 +233,7 @@ public class NetworkAddress {
 	setHostAddress(hostAddress);
     }
 
+    @Override
     public String toString() {
 	if (getName().equals(getHostAddress()))
 	    return getName();

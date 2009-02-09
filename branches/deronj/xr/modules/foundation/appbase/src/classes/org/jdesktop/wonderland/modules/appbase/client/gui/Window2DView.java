@@ -64,6 +64,7 @@ public abstract class Window2DView extends WindowView {
     /** 
      * Clean up resources 
      */
+    @Override
     public void cleanup() {
         super.cleanup();
         texture = null;

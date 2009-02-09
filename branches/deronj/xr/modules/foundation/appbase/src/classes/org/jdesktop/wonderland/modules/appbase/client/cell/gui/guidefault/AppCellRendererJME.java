@@ -83,6 +83,7 @@ public class AppCellRendererJME extends AppCellRenderer {
             return new Class[]{KeyEvent3D.class};
         }
 
+        @Override
         public void commitEvent(Event event) {
             KeyEvent3D ke3d = (KeyEvent3D) event;
             if (ke3d.isPressed()) {

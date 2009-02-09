@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.appbase.client.gui;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Gui;
 import org.jdesktop.wonderland.modules.appbase.client.Window;
 
 /**

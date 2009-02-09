@@ -92,6 +92,7 @@ public class FrameSide extends FrameComponent {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void update() throws InstantiationException {
         updateLayout();
 

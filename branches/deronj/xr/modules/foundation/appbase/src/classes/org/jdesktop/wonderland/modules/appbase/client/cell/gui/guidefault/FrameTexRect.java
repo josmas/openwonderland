@@ -81,6 +81,7 @@ public class FrameTexRect extends FrameRect {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void cleanup() {
         super.cleanup();
         texture = null;
@@ -89,6 +90,7 @@ public class FrameTexRect extends FrameRect {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void update() throws InstantiationException {
         updateLayout();
 
