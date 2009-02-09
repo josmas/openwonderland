@@ -63,6 +63,7 @@ public class AppXrwSlave extends AppXrw {
     /**
      * {inheritDoc}
      */
+    @Override
     int getTransientForWid(int wid) {
         // TODO: If the slave really needs to know this we need to
         // create a protocol for it to ask the master.

@@ -78,6 +78,7 @@ public class AppXrw extends AppConventional {
     /**
      * Clean up resources.
      */
+    @Override
     public void cleanup() {
         super.cleanup();
 
@@ -121,6 +122,7 @@ public class AppXrw extends AppConventional {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setDisplayer(Displayer displayer) throws IllegalArgumentException, IllegalStateException {
         super.setDisplayer(displayer);
 

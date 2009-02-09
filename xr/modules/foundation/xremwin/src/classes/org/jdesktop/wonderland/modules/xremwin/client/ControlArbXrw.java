@@ -22,8 +22,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArb.EventMode;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
 
@@ -34,7 +32,7 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
  * @author deronj
  */
 @ExperimentalAPI
-class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
+public class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
 
     /** The default take control politeness mode */
     private static boolean TAKE_CONTROL_IMPOLITE = true;
@@ -44,8 +42,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
     protected boolean takeControlPending;
     /** The politeness of the pending take control */
     protected boolean takeControlPendingImpolite;
-    /** The previous event mode before a takeControl() method call */
-    protected EventMode eventModePrev;
+   
     /** 
      * It is okay to send events when this is enabled. This not 
      * necessarily the same as hasControl. For example, we allow
@@ -59,7 +56,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * {@inheritDoc}
      */
     @Override
-    public void cleanup() {
+    public synchronized void cleanup() {
         super.cleanup();
 
         if (hasControl()) {
@@ -79,7 +76,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * Attach a server proxy to this control arb. The control arb forwards events to the server proxy.
      * @param serverProxy The server proxy to which to attach this ControlArbXrw.
      */
-    public void setServerProxy(ServerProxy serverProxy) {
+    public synchronized void setServerProxy(ServerProxy serverProxy) {
         this.serverProxy = serverProxy;
     }
 
@@ -98,8 +95,6 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      */
     @Override
     public synchronized void takeControl() {
-        // TODO: eventModePrev = InputManager.getEventMode();
-
         if (!hasControl()) {
             super.takeControl();
         }
@@ -125,7 +120,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * from the server indicating success. At that time the setController method of this 
      * controlArb will be called with the user name of this client. 
      */
-    private void take(boolean impolite) {
+    private synchronized void take(boolean impolite) {
 
         // Enable our client to send events to the server ("event ahead").
         // If control is refused the events will just be ignored.
@@ -145,7 +140,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
     /**
      * Tell the server to release control.
      */
-    private void release() {
+    private synchronized void release() {
         eventsEnabled = false;
         takeControlPending = false;
 
@@ -161,7 +156,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * The server has refused our request for control. If our first
      * attempt was polite get confirmation from the user to continue.
      */
-    void controlRefused() {
+    synchronized void controlRefused() {
         String currentController = serverProxy.getControllingUser();
 
         if (!takeControlPending) {
@@ -185,15 +180,12 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
         appControl = false;
 
         setController(currentController);
-
-    // Revert to the previous event mode (before the take control attempt)
-    //TODO: InputManager.setEventMode(eventModePrev);
     }
 
     /** 
      * The server has told us that our request for control has succeeded. 
      */
-    void controlGained() {
+    synchronized void controlGained() {
         String currentController = serverProxy.getControllingUser();
 
         if (!takeControlPending) {
@@ -212,7 +204,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
     /**
      * The server has taken control away from us.
      */
-    void controlLost() {
+    synchronized void controlLost() {
         takeControlPending = false;
         eventsEnabled = false;
         appControl = false;
@@ -248,6 +240,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deliverEvent(Window2D window, KeyEvent event) {
         if (!eventsEnabled) {
             return;
@@ -270,6 +263,7 @@ class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deliverEvent(Window2D window, MouseEvent event) {
         if (!eventsEnabled) {
             return;

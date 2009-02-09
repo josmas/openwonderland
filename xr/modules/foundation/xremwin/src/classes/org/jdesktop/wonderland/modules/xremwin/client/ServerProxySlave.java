@@ -106,8 +106,9 @@ class ServerProxySlave implements ServerProxy {
      */
     public ServerProxySlave(ClientXrwSlave client, WonderlandSession session,
                             AppXrwConnectionInfo connectionInfo, DisconnectListener disconnectListener) {
-        this.session = session;
         this.client = client;
+        this.session = session;
+        this.connectionInfo = connectionInfo;
         this.disconnectListener = disconnectListener;
     }
 
@@ -875,7 +876,6 @@ class ServerProxySlave implements ServerProxy {
         int n = 0;
 
         toFrontBuf[n++] = (byte) Proto.ClientMessageType.WINDOW_TO_FRONT.ordinal();
-        ;
         toFrontBuf[n++] = 0; // Pad
         toFrontBuf[n++] = 0; // Pad
         toFrontBuf[n++] = 0; // Pad

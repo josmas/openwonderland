@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArg
  * @author deronj
  */
 @ExperimentalAPI
-class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener {
+public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener {
 
     private SlaveCloseWindowMsgArgs slaveCloseWindowMsgArgs = new SlaveCloseWindowMsgArgs();
     private SetWindowTitleMsgArgs setWindowTitleMsgArgs = new SetWindowTitleMsgArgs();
@@ -85,6 +85,7 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener 
     /**
      * Release held resources.
      */
+    @Override
     public void cleanup() {
         super.cleanup();
         winSys = null;
@@ -183,6 +184,7 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener 
     /**
      * Handle the ControllerStatus Message.
      */
+    @Override
     protected void processControllerStatus(ControllerStatusMsgArgs msgArgs) {
         super.processControllerStatus(msgArgs);
         if (msgArgs.status == ControllerStatus.GAINED) {

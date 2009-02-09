@@ -45,6 +45,7 @@ public class AppTypeMOXrw extends AppTypeConventionalMO {
     /**
      * {@inheritDoc}
      */
+    @Override
     public AppLaunchMethods getLaunchMethods() {
         return new AppLaunchMethodsXrw();
     }
