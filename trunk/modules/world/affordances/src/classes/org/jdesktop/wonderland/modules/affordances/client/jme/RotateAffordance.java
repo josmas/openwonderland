@@ -161,6 +161,11 @@ public class RotateAffordance extends Affordance {
         addSubEntity(zEntity, zNode);
         zListener = addRotateListener(zEntity, zNode, RotateAxis.Z_AXIS);
 
+        // Make sure we rotate the affordance based upon the current rotation
+        // of the geometry when we first display it.
+        Quaternion rotation = cell.getLocalTransform().getRotation(null);
+        rootNode.setLocalRotation(rotation);
+        
         // Listen for changes to the cell's translation and apply the same
         // update to the root node of the affordances
         final Node[] nodeArray = new Node[1];
@@ -176,8 +181,6 @@ public class RotateAffordance extends Affordance {
                 nodeArray[0].setLocalTranslation(translation);
 
                 Quaternion rotation = arg0.getLocalRotation();
-                Quaternion affordanceRotation = nodeArray[0].getLocalRotation();
-//                affordanceRotation = affordanceRotation.mult(rotation);
                 nodeArray[0].setLocalRotation(rotation);
                 setSize(currentScale);
                 ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
