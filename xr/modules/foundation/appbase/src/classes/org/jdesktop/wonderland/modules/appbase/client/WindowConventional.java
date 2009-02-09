@@ -152,7 +152,6 @@ public abstract class WindowConventional extends WindowGraphics2D {
 
         // Put pixel buffer into tempImage
         int dstWidth = tempImage.getWidth();
-        int dstHeight = tempImage.getHeight();
         WritableRaster ras = tempImage.getRaster();
         DataBufferInt dataBuf = (DataBufferInt) ras.getDataBuffer();
         int[] dstPixels = dataBuf.getData();

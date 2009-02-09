@@ -68,6 +68,7 @@ class Gui2DCloseButton extends Gui2D {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void attachMouseListener(Entity entity) {
         mouseListener = new CloseButtonMouseListener();
         mouseListener.addToEntity(entity);
@@ -76,6 +77,7 @@ class Gui2DCloseButton extends Gui2D {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void detachMouseListener(Entity entity) {
         if (mouseListener != null && entity != null) {
             mouseListener.removeFromEntity(entity);
@@ -90,6 +92,7 @@ class Gui2DCloseButton extends Gui2D {
         /**
          * {@inheritDoc}
          */
+        @Override
         public void commitEvent(Event event) {
             Action action;
 
