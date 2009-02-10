@@ -30,6 +30,7 @@ import java.awt.Point;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -134,15 +135,14 @@ public class WindowSwing extends WindowGraphics2D {
         }
 
 	// TODO: Uncomment this to demonstrate the embedded component enter/exit bug
-	component.addMouseListener(new MyAwtEnterListener());
+	//component.addMouseListener(new MyAwtEnterListener());
 
        	addWorldEventListener(new MySwingEnterExitListener());
 
-	setSize(size);
-        embeddedPeer.repaint();
+        embeddedPeer.validate();
     }
 
-    // TODO: I'm leaving this hear to illustrate a bug
+    /* TODO: I'm leaving this hear to illustrate a bug
     private class MyAwtEnterListener extends MouseAdapter {
 	public void mouseEntered(MouseEvent e) {
 	    if (e.getID() == MouseEvent.MOUSE_ENTERED) {
@@ -152,6 +152,7 @@ public class WindowSwing extends WindowGraphics2D {
 	    }
 	}
     }
+    */
 
     private static class MySwingEnterExitListener extends EventClassListener {
 	public Class[] eventClassesToConsume () {
@@ -243,46 +244,7 @@ public class WindowSwing extends WindowGraphics2D {
 	return embeddedPeer;
     }
 
-    public void setSize(int width, int height) {
-        setSize(new Dimension(width, height));
-    }
-
-    public void setSize(Dimension size) {
-	this.size = size;
-	/* TODO: Igor says: this is wrong. Can cause infinite recursion
-	if (component != null) {
-	    component.setSize(size);
-	}
-	*/
-        if (embeddedPeer != null) {
-            embeddedPeer.setSize(size);
-            embeddedPeer.validate();
-        }
-    }
-
-    protected void paint(Graphics2D g) {
-	/* TODO: obsolete
-	if (drawingSurface != null) {
-	    drawingSurface.paint(g);
-	}
-	*/
-    }
-
-    /* TODO
-    public final Rectangle2D getBounds(AffineTransform transform) {
-        checkContainer();
-        if (embeddedPeer == null) {
-            return new Rectangle2D.Float();
-        }
-        embeddedPeer.validate();
-        Rectangle2D bounds = 
-            new Rectangle(0, 0, component.getWidth(), component.getHeight());
-        if (transform != null && !transform.isIdentity()) {
-            bounds = transform.createTransformedShape(bounds).getBounds2D();
-        }
-        return bounds;
-    }
-    */
+    protected void paint(Graphics2D g) {}
 
     /** 
      * Set the input enable for this window. By default, input for a WindowSwing is enabled.
