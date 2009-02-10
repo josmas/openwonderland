@@ -117,7 +117,20 @@ public class WindowSwing extends WindowGraphics2D {
 	addWorldEventListener(new MyEventListener());
     }
 
-    /** Specify the Swing component displayed in this window */
+    /** 
+     * Specify the Swing component displayed in this window. The component is validated (that is it
+     * is layed out).
+     *
+     * Note: After you call <code>setComponent</code> the window will be in "preferred size" mode, 
+     * that is, it the window will be sized according to the Swing component's preferred sizes and 
+     * the component's layout manager. If you call <code>WindowSwing.setSize(int width, int height)</code> or 
+     * <code>WindowSwing.setSize(Dimension dims)</code> with a non-null <code>dims</code> the window will be 
+     * in "forced size" mode. This means that the window will always be the size you specify and this
+     * will constrain the sizes of the contained component. To switch back into preferred size mode
+     * call <code>WindowSwing.setSize(null)</code>.
+     *
+     * @param component The component to be displayed.
+     */
     public void setComponent(Component component) {
         if (this.component == component) {
             return;
@@ -138,9 +151,6 @@ public class WindowSwing extends WindowGraphics2D {
 	//component.addMouseListener(new MyAwtEnterListener());
 
        	addWorldEventListener(new MySwingEnterExitListener());
-
-        // TODO: debug
-        //embeddedPeer.setSize(new Dimension(600, 600));
 
         embeddedPeer.validate();
         embeddedPeer.repaint();
@@ -275,7 +285,8 @@ public class WindowSwing extends WindowGraphics2D {
     }
 
     /**
-     * Re-lay out the contents of this window.
+     * Re-lay out the contents of this window. This should be called whenever you make changes which
+     * affect the layout of the contained component.
      */
     public void validate () {
         if (embeddedPeer == null) {
