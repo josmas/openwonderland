@@ -285,10 +285,6 @@ of the cell.
     
         @Override
         protected void sizeChanged(Dimension oldSize, Dimension newSize) {
-	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Size changed");
-	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> oldSize = " + oldSize);
-	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> newSize = " + newSize);
-
             synchronized (this) {
                 while (windowSwing == null) {
                     try { wait(); } catch (InterruptedException ex) {}
