@@ -140,6 +140,7 @@ public class WindowSwing extends WindowGraphics2D {
        	addWorldEventListener(new MySwingEnterExitListener());
 
         embeddedPeer.validate();
+        embeddedPeer.repaint();
     }
 
     /* TODO: I'm leaving this hear to illustrate a bug
