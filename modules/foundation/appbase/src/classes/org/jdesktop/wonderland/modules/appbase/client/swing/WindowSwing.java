@@ -139,6 +139,9 @@ public class WindowSwing extends WindowGraphics2D {
 
        	addWorldEventListener(new MySwingEnterExitListener());
 
+        // TODO: debug
+        //embeddedPeer.setSize(new Dimension(600, 600));
+
         embeddedPeer.validate();
         embeddedPeer.repaint();
     }
@@ -241,6 +244,57 @@ public class WindowSwing extends WindowGraphics2D {
         }
     }
 
+    /**
+     * Specify the size of the window only (not the embedded peer).
+     */
+    void setWindowSize (int width, int height) {
+        super.setSize(width, height);
+    }
+
+    /**
+     * Specify the size of this WindowSwing. This switches the window from "preferred size" mode
+     * to "forced size" mode?
+     */
+    public void setSize (int width, int height) {
+        setSize(new Dimension(width, height));
+    }
+
+    /**
+     * Specify the size of this WindowSwing. If dims is non-null, the window is switched
+     * into "forced size" mode--the window will be always be the size you specify. If dims is null,
+     * the window is switched into "preferred size" mode--the window will size will be determined
+     * by the size and layout of the embedded Swing component.
+     */
+    public void setSize (Dimension dims) {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.setSize(dims);
+        embeddedPeer.validate();
+        embeddedPeer.repaint();
+    }
+
+    /**
+     * Re-lay out the contents of this window.
+     */
+    public void validate () {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.validate();
+        embeddedPeer.repaint();
+    }
+
+    /**
+     * Repaint out the contents of this window.
+     */
+    public void repaint () {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.repaint();
+    }
+     
     public final EmbeddedPeer getEmbeddedPeer () {
 	return embeddedPeer;
     }
