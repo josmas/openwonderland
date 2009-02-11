@@ -121,7 +121,9 @@
     <target name="deploy" depends="dist, -core-deploy"/>
 
     <!-- clean -->
-    <target name="clean" depends="-core-clean" description="Clean core directories"/>
+    <target name="clean" depends="-core-clean" description="Clean core directories">
+        <delete dir="cache"/>
+    </target>
     
     <!-- remove libraries too -->
     <target name="scrub" depends="-core-clean, -core-scrub-libs"/>
